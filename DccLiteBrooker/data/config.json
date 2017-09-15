@@ -1,0 +1,22 @@
+{  
+  "services": 
+  [
+    {
+      "class": "DccLite",
+      "name": "Dcc1",
+      "port": 8989,
+      "nodes": [
+        {
+          "id": "0x0128",
+          "name": "ArduinoStaging",
+          "class": "ArduinoMega"
+        },
+        {
+          "id": "0x0129",
+          "name": "ArduinoPanelStaging",
+          "class": "ArduinoUno"
+        }
+      ]
+    }
+  ]
+}

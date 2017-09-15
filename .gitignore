@@ -1,1 +1,6 @@
 # Add any directories, files, or patterns you don't want to be tracked by version control
+.vs/
+DccLiteBrooker/DccLiteBrooker.vcxproj.user
+DccLiteBrooker/Debug/
+DccLiteBrooker/x64/
+x64/
