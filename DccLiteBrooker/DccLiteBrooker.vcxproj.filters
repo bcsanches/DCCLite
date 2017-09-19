@@ -25,6 +25,9 @@
     <ClInclude Include="src\Service.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\TerminalService.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -34,6 +37,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\DccLiteService.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TerminalService.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

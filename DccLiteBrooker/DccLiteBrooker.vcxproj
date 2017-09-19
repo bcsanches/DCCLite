@@ -23,11 +23,13 @@
     <ClInclude Include="src\DccLiteService.h" />
     <ClInclude Include="src\json.hpp" />
     <ClInclude Include="src\Service.h" />
+    <ClInclude Include="src\TerminalService.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Brooker.cpp" />
     <ClCompile Include="src\DccLiteService.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\TerminalService.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="data\config.json" />
@@ -89,6 +91,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(BOOST_HOME)\;$(IncludePath)</IncludePath>
+    <LibraryPath>$(BOOST_HOME)\stage\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
