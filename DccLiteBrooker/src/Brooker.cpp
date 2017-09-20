@@ -4,6 +4,8 @@
 #include <fstream>
 #include <stdexcept>
 
+#include <boost/log/trivial.hpp>
+
 #include "json.hpp"
 
 #include "DccLiteService.h"
@@ -16,7 +18,11 @@ static std::unique_ptr<Service> CreateService(const json &obj)
 
 	if (className.compare("DccLite") == 0)
 	{
-		return std::make_unique<DccLiteService>( obj["name"].get<std::string>());
+		const auto name = obj["name"].get<std::string>();
+		
+		BOOST_LOG_TRIVIAL(info) << "Creating DccLite Service: " << name;
+
+		return std::make_unique<DccLiteService>(name);
 	}
 	else
 	{

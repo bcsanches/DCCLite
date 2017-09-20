@@ -1,29 +1,67 @@
 #include <iostream>
 #include <stdexcept>
 
-#include <boost/log/core.hpp>
-#include <boost/log/expressions/predicates/is_debugger_present.hpp>
-#include <boost/log/sinks/debug_output_backend.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/utility/setup/console.hpp>
-#include <boost/log/utility/setup/file.hpp>
+#pragma warning(push)
+#pragma warning(disable:4244)
+#pragma warning(disable:4819)
+
+#	include <boost/log/core.hpp>
+#	include <boost/log/expressions.hpp>
+#	include <boost/log/expressions/predicates/is_debugger_present.hpp>
+#	include <boost/log/expressions/formatters/date_time.hpp>
+#	include <boost/log/sinks/debug_output_backend.hpp>
+#	include <boost/log/support/date_time.hpp>
+#	include <boost/log/trivial.hpp>
+#	include <boost/log/utility/setup/common_attributes.hpp>
+#	include <boost/log/utility/setup/console.hpp>
+#	include <boost/log/utility/setup/file.hpp>
+#pragma warning(pop)
 
 #include "Brooker.h"
 
+//Thanks to https://gist.github.com/xiongjia/e23b9572d3fc3d677e3d
 static void InitLog()
 {
 	namespace blog = boost::log;
 	namespace sinks = boost::log::sinks;
 	namespace keywords = boost::log::keywords;
+	namespace exprs = blog::expressions;
 
-	blog::add_file_log(
+	blog::add_common_attributes();
+
+	/* log formatter:
+	* [TimeStamp] [ThreadId] [Severity Level] [Scope] Log message
+	*/
+	auto fmtTimeStamp = boost::log::expressions::
+		format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S");
+	auto fmtThreadId = boost::log::expressions::
+		attr<boost::log::attributes::current_thread_id::value_type>("ThreadID");
+	auto fmtSeverity = boost::log::expressions::
+		attr<boost::log::trivial::severity_level>("Severity");
+
+	/*
+	auto fmtScope = boost::log::expressions::format_named_scope("Scope",
+		boost::log::keywords::format = "%n(%f:%l)",
+		boost::log::keywords::iteration = boost::log::expressions::reverse,
+		boost::log::keywords::depth = 2);
+	*/
+
+	boost::log::formatter logFmt =
+		boost::log::expressions::format("[%1%] (%2%) [%3%] %4%")
+		% fmtTimeStamp % fmtThreadId % fmtSeverity
+		% boost::log::expressions::smessage;
+
+	auto fileLogSink = blog::add_file_log(
 		keywords::file_name = "DccLiteBrooker_%N.log",
 		keywords::rotation_size = 10 * 1024 * 1024,
-		keywords::time_based_rotation = sinks::file::rotation_at_time_point(0, 0, 0),
-		keywords::format = "[%TimeStamp%]: %Message%"
+		keywords::time_based_rotation = sinks::file::rotation_at_time_point(0, 0, 0)
 	);
 
-	blog::add_console_log();
+	fileLogSink->set_formatter(logFmt);
+	fileLogSink->locked_backend()->auto_flush(true);
+
+	auto consoleSink = blog::add_console_log();
+	consoleSink->set_formatter(logFmt);
 
 	auto core = blog::core::get();
 
@@ -41,10 +79,7 @@ static void InitLog()
 
 int main(int argc, char **argv)
 {
-	InitLog();
-
-	// Here we go, we can write logs right away
-	BOOST_LOG_TRIVIAL(info) << "Hello";
+	InitLog();	
 
 	const char *configFileName = (argc == 1) ? "config.json" : argv[1];	
 
@@ -56,7 +91,7 @@ int main(int argc, char **argv)
 	}	
 	catch (std::exception &ex)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "caught: " << ex.what();	
+		BOOST_LOG_TRIVIAL(fatal) << "caught " << ex.what();	
 	}
 
 	return 0;
