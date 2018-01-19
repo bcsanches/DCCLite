@@ -4,3 +4,5 @@ DccLiteBrooker/DccLiteBrooker.vcxproj.user
 DccLiteBrooker/Debug/
 DccLiteBrooker/x64/
 x64/
+bin/
+lib/

@@ -5,7 +5,7 @@
 class DccLiteService : public Service
 {
 	public:
-		DccLiteService(const std::string &name);
+		DccLiteService(const ServiceClass &serviceClass, const std::string &name);
 
 		virtual ~DccLiteService();
 };

@@ -42,6 +42,9 @@
     <ClCompile Include="src\TerminalService.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Service.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\config.json">

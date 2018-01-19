@@ -5,7 +5,7 @@
 class TerminalService : public Service
 {
 	public:
-		TerminalService(const std::string &name);
+		TerminalService(const ServiceClass &serviceClass, const std::string &name);
 
 		virtual ~TerminalService();
 };

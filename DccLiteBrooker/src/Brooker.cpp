@@ -15,22 +15,21 @@ using json = nlohmann::json;
 static std::unique_ptr<Service> CreateService(const json &obj)
 {
 	std::string className = obj["class"];
+	std::string name = obj["name"].get<std::string>();
 
-	if (className.compare("DccLite") == 0)
-	{
-		const auto name = obj["name"].get<std::string>();
-		
-		BOOST_LOG_TRIVIAL(info) << "Creating DccLite Service: " << name;
+	std::unique_ptr<Service> output;
 
-		return std::make_unique<DccLiteService>(name);
-	}
-	else
+	BOOST_LOG_TRIVIAL(info) << "Creating DccLite Service: " << name;
+
+	if (!ServiceClass::TryProduce(output, className.c_str(), name))
 	{
 		std::stringstream stream;
 
 		stream << "error: unknown service type " << className;
 		throw std::runtime_error(stream.str());
 	}
+
+	return output;
 }
 
 Brooker::Brooker()

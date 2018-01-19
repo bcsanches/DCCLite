@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\ClassInfo.h" />
     <ClInclude Include="include\LogUtils.h" />
   </ItemGroup>
   <ItemGroup>
