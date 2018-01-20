@@ -15,21 +15,19 @@ using json = nlohmann::json;
 static std::unique_ptr<Service> CreateService(const json &obj)
 {
 	std::string className = obj["class"];
-	std::string name = obj["name"].get<std::string>();
-
-	std::unique_ptr<Service> output;
+	std::string name = obj["name"].get<std::string>();	
 
 	BOOST_LOG_TRIVIAL(info) << "Creating DccLite Service: " << name;
-
-	if (!ServiceClass::TryProduce(output, className.c_str(), name))
+	
+	if (auto output = ServiceClass::TryProduce(className.c_str(), name))
 	{
-		std::stringstream stream;
-
-		stream << "error: unknown service type " << className;
-		throw std::runtime_error(stream.str());
+		return output;	
 	}
 
-	return output;
+	std::stringstream stream;
+
+	stream << "error: unknown service type " << className;
+	throw std::runtime_error(stream.str());
 }
 
 Brooker::Brooker()
@@ -48,7 +46,7 @@ void Brooker::LoadConfig(const char *configFileName)
 
 	json data;
 
-	data << configFile;	
+	configFile >> data;
 
 	const auto &services = data["services"];
 

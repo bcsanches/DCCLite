@@ -16,7 +16,7 @@ namespace dcclite
 			CreateObjectProc_t m_pfnProc;
 
 			class ClassInfo<T, ARGS...> *m_pNext;
-			static class ClassInfo<T, ARGS...> *g_pHead;
+			static inline class ClassInfo<T, ARGS...> *g_pHead = nullptr;
 
 		public:
 			ClassInfo(const char *name, CreateObjectProc_t proc) :
@@ -38,19 +38,17 @@ namespace dcclite
 				return m_pfnProc(*this, args...);
 			}
 
-			static bool TryProduce(std::unique_ptr<T> &output, const char *className, ARGS... args)
+			static std::unique_ptr<T> TryProduce(const char *className, ARGS... args)
 			{
 				for (auto ptr = g_pHead; ptr; ptr = ptr->m_pNext)
 				{
 					if (strcmp(ptr->m_pszName, className) == 0)
 					{
-						output = ptr->CreateUnique(args...);
-
-						return true;
+						return ptr->CreateUnique(args...);
 					}
 				}
 
-				return false;
+				return nullptr;
 			}
 	};
 }

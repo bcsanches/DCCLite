@@ -4,4 +4,4 @@
 
 using namespace dcclite;
 
-ServiceClass *ServiceClass::g_pHead = nullptr;
+//ServiceClass *ServiceClass::g_pHead = nullptr;
