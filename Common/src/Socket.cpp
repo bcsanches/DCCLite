@@ -94,6 +94,18 @@ namespace dcclite
 		#endif
 	}
 
+	Socket &Socket::operator=(Socket &&other)
+	{
+		if (this != &other)
+		{
+			m_iHandle = other.m_iHandle;
+
+			other.m_iHandle = NULL_SOCKET;
+		}
+
+		return *this;
+	}
+
 	bool Socket::TryOpen(Port_t port, Type type)
 	{
 		assert(g_iCount > 0);
@@ -129,6 +141,15 @@ namespace dcclite
 			this->Close();
 
 			BOOST_LOG_TRIVIAL(error) << "Failed to set socket to non-blocking mode.";
+			return false;
+		}
+
+		int noDelay = 1;
+		if ((type == Type::STREAM) && (setsockopt(m_iHandle, IPPROTO_TCP, TCP_NODELAY, (const char *)&noDelay, sizeof(int)) != 0))
+		{
+			this->Close();
+
+			BOOST_LOG_TRIVIAL(error) << "Failed enable NO_DELAY.";
 			return false;
 		}
 
@@ -217,7 +238,7 @@ namespace dcclite
 		return true;
 	}
 
-	std::pair<Socket::Status, size_t> Socket::Receive(Address &sender, void *data, size_t size)
+	std::tuple<Socket::Status, size_t> Socket::Receive(Address &sender, void *data, size_t size)
 	{	
 #if PLATFORM == PLATFORM_WINDOWS
 		typedef int socklen_t;
@@ -230,14 +251,15 @@ namespace dcclite
 		auto result = recvfrom(m_iHandle, (char*)data, size, 0, (sockaddr*)&from, &fromLength);
 
 		if (result == 0)
-			return std::make_pair(Status::DISCONNECTED, 0);
+			return std::make_tuple(Status::DISCONNECTED, 0);
 
-		if (result < 0)
+		if (result < SOCKET_ERROR)
 		{
+			result = WSAGetLastError();
 			switch(result)
 			{
 				case WSAEWOULDBLOCK:
-					return std::make_pair(Status::EMPTY, 0);
+					return std::make_tuple(Status::EMPTY, 0);
 
 				case WSAEMSGSIZE:
 					throw std::runtime_error("receive overflow");					
@@ -250,6 +272,34 @@ namespace dcclite
 
 		sender = Address(from_address, from_port);
 
-		return std::make_pair(Status::OK, result);
+		return std::make_tuple(Status::OK, result);
+	}
+
+	std::tuple<Socket::Status, size_t> Socket::Receive(void *data, size_t size)
+	{
+#if PLATFORM == PLATFORM_WINDOWS
+		typedef int socklen_t;
+#endif
+		assert(m_iHandle != NULL_SOCKET);		
+
+		auto result = recv(m_iHandle, (char*)data, size, 0);
+
+		if (result == 0)
+			return std::make_tuple(Status::DISCONNECTED, 0);
+
+		if (result == SOCKET_ERROR)
+		{
+			result = WSAGetLastError();
+			switch (result)
+			{
+				case WSAEWOULDBLOCK:
+					return std::make_pair(Status::EMPTY, 0);
+
+				case WSAEMSGSIZE:
+					throw std::runtime_error("receive overflow");
+			}
+		}
+
+		return std::make_tuple(Status::OK, result);
 	}
 }

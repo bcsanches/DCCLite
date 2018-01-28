@@ -4,12 +4,14 @@
 
 #include "Socket.h"
 
-class ConnectionHandler;
+class TerminalClient;
 
 class TerminalService : public Service
 {
 	private:		
 		dcclite::Socket m_clSocket;
+
+		std::vector<TerminalClient> m_vecClients;
 
 	public:
 		TerminalService(const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params);

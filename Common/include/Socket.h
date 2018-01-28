@@ -73,6 +73,8 @@ namespace dcclite
 			Socket(const Socket &other) = delete;
 			~Socket();
 
+			Socket &operator=(Socket &&other);
+
 			bool TryOpen(Port_t port, Type type);
 
 			bool TryListen(int backlog = 8);
@@ -86,7 +88,8 @@ namespace dcclite
 
 			bool Send(const Address &destination, const void *data, size_t size);
 
-			std::pair<Status, size_t> Receive(Address &sender, void *data, size_t size);
+			std::tuple<Status, size_t> Receive(Address &sender, void *data, size_t size);
+			std::tuple<Status, size_t> Receive(void *data, size_t size);
 
 		private:
 			int m_iHandle;

@@ -19,7 +19,8 @@ int main(int argc, char **argv)
 
 		brooker.LoadConfig(configFileName);
 		
-		brooker.Update();
+		for(;;)
+			brooker.Update();
 	}	
 	catch (std::exception &ex)
 	{
