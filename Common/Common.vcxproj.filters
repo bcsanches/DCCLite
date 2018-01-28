@@ -16,6 +16,9 @@
     <ClCompile Include="src\Socket.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\NetMessenger.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\LogUtils.h">
@@ -25,6 +28,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="include\Socket.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="include\NetMessenger.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

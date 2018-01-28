@@ -21,10 +21,12 @@
   <ItemGroup>
     <ClInclude Include="include\ClassInfo.h" />
     <ClInclude Include="include\LogUtils.h" />
+    <ClInclude Include="include\NetMessenger.h" />
     <ClInclude Include="include\Socket.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\LogUtils.cpp" />
+    <ClCompile Include="src\NetMessenger.cpp" />
     <ClCompile Include="src\Socket.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -86,8 +88,12 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)\lib\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
     <IncludePath>$(SolutionDir)\Common\include\;$(BOOST_HOME)\;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)\lib\</OutDir>
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

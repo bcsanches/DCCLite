@@ -4,6 +4,8 @@
 
 #include <boost/log/trivial.hpp>
 
+#include "NetMessenger.h"
+
 using namespace dcclite;
 
 static ServiceClass terminalService("Terminal",
@@ -14,14 +16,14 @@ class TerminalClient
 {
 	public:
 		TerminalClient(Socket socket);
-		TerminalClient(const TerminalClient &socket) = delete;
+		TerminalClient(const TerminalClient &client) = delete;
 		TerminalClient(TerminalClient &&other);
 
 		TerminalClient &operator=(TerminalClient &&other)
 		{
 			if (this != &other)
 			{
-				m_clSocket = std::move(other.m_clSocket);
+				m_clMessenger = std::move(other.m_clMessenger);
 			}
 
 			return *this;
@@ -30,34 +32,31 @@ class TerminalClient
 		bool Update();
 
 	private:
-		Socket m_clSocket;
+		NetMessenger m_clMessenger;
 };
 
 TerminalClient::TerminalClient(Socket socket):
-	m_clSocket(std::move(socket))
+	m_clMessenger(std::move(socket))
 {
 	//emtpy
 }
 
 TerminalClient::TerminalClient(TerminalClient &&other) :
-	m_clSocket(std::move(other.m_clSocket))
+	m_clMessenger(std::move(other.m_clMessenger))
 {
 	//empty
 }
 
 bool TerminalClient::Update()
 {
-	char buffer[256];
-
-	auto [status, size]  = m_clSocket.Receive(buffer, sizeof(buffer));	
+	auto[status, msg] = m_clMessenger.Poll();	
 
 	if (status == Socket::Status::DISCONNECTED)
 		return false;
 
 	if (status == Socket::Status::OK)
-	{
-		buffer[std::min(sizeof(buffer)-1,  size)] = 0;
-		BOOST_LOG_TRIVIAL(info) << "Received " << buffer;
+	{		
+		BOOST_LOG_TRIVIAL(info) << "Received " << msg;
 	}
 
 	return true;
