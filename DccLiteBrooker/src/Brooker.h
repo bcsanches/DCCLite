@@ -15,4 +15,6 @@ class Brooker
 		Brooker();
 
 		void LoadConfig(const char *fileName);
+
+		void Update();
 };

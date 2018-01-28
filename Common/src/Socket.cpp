@@ -1,0 +1,255 @@
+#include "Socket.h"
+
+#include <boost/log/trivial.hpp>
+
+#include <cassert>
+#include <stdexcept>
+
+#define PLATFORM_WINDOWS  1
+#define PLATFORM_MAC      2
+#define PLATFORM_UNIX     3
+
+#if defined(_WIN32)
+#define PLATFORM PLATFORM_WINDOWS
+#elif defined(__APPLE__)
+#define PLATFORM PLATFORM_MAC
+#else
+#define PLATFORM PLATFORM_UNIX
+#endif
+
+#if PLATFORM == PLATFORM_WINDOWS
+
+#include <winsock2.h>
+
+static const int NULL_SOCKET = INVALID_SOCKET;
+
+#elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <fcntl.h>
+
+#endif
+
+#if PLATFORM == PLATFORM_WINDOWS
+#pragma comment( lib, "wsock32.lib" )
+#endif
+
+namespace dcclite
+{
+	static sockaddr_in MakeAddr(const Address &address)
+	{						
+		sockaddr_in addr;
+		addr.sin_family = AF_INET;
+		addr.sin_addr.s_addr = htonl(address.GetAddress());
+		addr.sin_port = htons(address.GetPort());
+
+		return addr;
+	}
+
+	Socket::Socket() :
+		m_iHandle(NULL_SOCKET)
+	{
+		if (g_iCount == 0)
+		{
+			#if PLATFORM == PLATFORM_WINDOWS
+			WSADATA WsaData;
+			if (WSAStartup(MAKEWORD(2, 2), &WsaData) != NO_ERROR)
+			{
+				throw std::runtime_error("WSAStartup failed.");
+			}
+			#endif
+		}
+
+		++g_iCount;
+	}
+
+	Socket::Socket(int validHandle) :
+		m_iHandle(validHandle)
+	{
+		assert(g_iCount);
+
+		++g_iCount;
+	}
+
+	Socket::Socket(Socket &&other):
+		m_iHandle(std::move(other.m_iHandle))
+	{
+		assert(g_iCount > 0);
+
+		++g_iCount;
+
+		other.m_iHandle = NULL_SOCKET;
+	}
+
+	Socket::~Socket()
+	{
+		--g_iCount;
+
+		this->Close();
+
+		#if PLATFORM == PLATFORM_WINDOWS
+		if(g_iCount == 0)
+			WSACleanup();
+		#endif
+	}
+
+	bool Socket::TryOpen(Port_t port, Type type)
+	{
+		assert(g_iCount > 0);
+
+		if (m_iHandle != NULL_SOCKET)
+			this->Close();
+
+		auto intType = type == Type::DATAGRAM ? SOCK_DGRAM : SOCK_STREAM;
+		auto intProto = type == Type::DATAGRAM ? IPPROTO_UDP : IPPROTO_TCP;
+
+		m_iHandle = socket(AF_INET, intType, intProto);
+
+		if (m_iHandle == INVALID_SOCKET)
+		{
+			BOOST_LOG_TRIVIAL(error) << "Failed to create socket.";
+			return false;
+		}
+
+		#if PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+
+		int nonBlocking = 1;
+		if (fcntl(m_iHandle, F_SETFL, O_NONBLOCK, nonBlocking) == -1)
+		{
+			BOOST_LOG_TRIVIAL(error) << "Failed to set socket to non-blocking mode.";
+			return false;
+		}
+
+		#elif PLATFORM == PLATFORM_WINDOWS
+
+		DWORD nonBlocking = 1;
+		if (ioctlsocket(m_iHandle, FIONBIO, &nonBlocking) != 0)
+		{
+			this->Close();
+
+			BOOST_LOG_TRIVIAL(error) << "Failed to set socket to non-blocking mode.";
+			return false;
+		}
+
+		#endif
+
+		sockaddr_in address;
+		address.sin_family = AF_INET;
+		address.sin_addr.s_addr = INADDR_ANY;
+		address.sin_port = htons((unsigned short)port);
+
+		if (bind(m_iHandle, (const sockaddr*)&address, sizeof(sockaddr_in)) < 0)
+		{
+			this->Close();
+
+			BOOST_LOG_TRIVIAL(error) << "Failed to bind socket.";
+			return false;
+		}
+
+		return true;
+	}
+
+	void Socket::Close()
+	{		
+		if (m_iHandle == NULL_SOCKET)
+			return;
+
+#if PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+		close(m_iHandle);
+#elif PLATFORM == PLATFORM_WINDOWS
+		closesocket(m_iHandle);
+#endif
+
+		m_iHandle = NULL_SOCKET;
+	}
+
+	bool Socket::TryListen(int backlog)
+	{
+		assert(m_iHandle != NULL_SOCKET);
+
+		return listen(m_iHandle, backlog) == 0;
+	}
+
+	bool TryConnect(const Address &server)
+	{
+		return false;
+	}
+
+	std::tuple<Socket::Status, Socket, Address> Socket::TryAccept()
+	{
+		sockaddr_in addr;
+		int addrSize = sizeof(addr);
+
+		auto s = accept(m_iHandle, (sockaddr*)&addr, &addrSize);
+
+		if (s == NULL_SOCKET)
+		{
+			return std::make_tuple(Status::EMPTY, Socket(), Address());
+		}
+
+		unsigned int from_address = ntohl(addr.sin_addr.s_addr);
+
+		unsigned int from_port = ntohs(addr.sin_port);		
+
+		return std::make_tuple(Status::OK, Socket(s), Address(from_address, from_port));
+	}
+
+	bool Socket::IsOpen() const
+	{
+		return m_iHandle != NULL_SOCKET;
+	}
+
+	bool Socket::Send(const Address &destination, const void *data, size_t size)
+	{
+		assert(m_iHandle != NULL_SOCKET);
+
+		auto saddr = MakeAddr(destination);
+
+		int sent_bytes = sendto(m_iHandle, (const char*)data, size, 0, (const sockaddr *)&saddr, sizeof(saddr));
+
+		if (sent_bytes != size)
+		{
+			BOOST_LOG_TRIVIAL(error) << "Failed to send packet.";
+			return false;
+		}
+
+		return true;
+	}
+
+	std::pair<Socket::Status, size_t> Socket::Receive(Address &sender, void *data, size_t size)
+	{	
+#if PLATFORM == PLATFORM_WINDOWS
+		typedef int socklen_t;
+#endif
+		assert(m_iHandle != NULL_SOCKET);
+
+		sockaddr_in from;
+		socklen_t fromLength = sizeof(from);
+
+		auto result = recvfrom(m_iHandle, (char*)data, size, 0, (sockaddr*)&from, &fromLength);
+
+		if (result == 0)
+			return std::make_pair(Status::DISCONNECTED, 0);
+
+		if (result < 0)
+		{
+			switch(result)
+			{
+				case WSAEWOULDBLOCK:
+					return std::make_pair(Status::EMPTY, 0);
+
+				case WSAEMSGSIZE:
+					throw std::runtime_error("receive overflow");					
+			}
+		}
+
+		unsigned int from_address = ntohl(from.sin_addr.s_addr);
+
+		unsigned int from_port = ntohs(from.sin_port);
+
+		sender = Address(from_address, from_port);
+
+		return std::make_pair(Status::OK, result);
+	}
+}

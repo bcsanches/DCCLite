@@ -6,3 +6,9 @@ DccLiteBrooker/x64/
 x64/
 bin/
 lib/
+Common/Debug/
+Common/Win32/Debug/Common.idb
+Common/Win32/
+DccLiteBrooker/Win32/
+DccLiteTerminal/Debug/
+DccLiteTerminal/Win32/Debug/

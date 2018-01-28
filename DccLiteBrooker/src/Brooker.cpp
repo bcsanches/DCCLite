@@ -19,7 +19,7 @@ static std::unique_ptr<Service> CreateService(const json &obj)
 
 	BOOST_LOG_TRIVIAL(info) << "Creating DccLite Service: " << name;
 	
-	if (auto output = ServiceClass::TryProduce(className.c_str(), name))
+	if (auto output = ServiceClass::TryProduce(className.c_str(), name, obj))
 	{
 		return output;	
 	}
@@ -60,5 +60,13 @@ void Brooker::LoadConfig(const char *configFileName)
 		auto service = CreateService(services[i]);
 
 		m_mapServices.insert(std::make_pair(service->GetName(), std::move(service)));
+	}
+}
+
+void Brooker::Update()
+{
+	for (auto &it : m_mapServices)
+	{
+		it.second->Update();
 	}
 }

@@ -18,6 +18,8 @@ int main(int argc, char **argv)
 		Brooker brooker;
 
 		brooker.LoadConfig(configFileName);
+		
+		brooker.Update();
 	}	
 	catch (std::exception &ex)
 	{

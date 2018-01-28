@@ -4,8 +4,10 @@
 
 #include "ClassInfo.h"
 
+#include "json.hpp"
+
 class Service;
-typedef dcclite::ClassInfo<Service, const std::string&> ServiceClass;
+typedef dcclite::ClassInfo<Service, const std::string&, const nlohmann::json &> ServiceClass;
 
 class Service
 {
@@ -15,7 +17,7 @@ class Service
 		const ServiceClass &m_rclServiceClass;
 
 	protected:
-		Service(const ServiceClass &serviceClass, const std::string &name):
+		Service(const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params):
 			m_rclServiceClass(serviceClass),
 			m_strName(name)
 		{
@@ -26,6 +28,8 @@ class Service
 		virtual ~Service() {}
 
 		const std::string &GetName() { return m_strName; }
+
+		virtual void Update() { ; }
 
 };
 
