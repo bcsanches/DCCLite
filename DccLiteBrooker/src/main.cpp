@@ -1,15 +1,28 @@
 #include <iostream>
+#include <signal.h>
 #include <stdexcept>
 
 #include <boost/log/trivial.hpp>
 
 #include "Brooker.h"
 
+#include "ConsoleUtils.h"
 #include "LogUtils.h"
+
+static bool fExitRequested = false;
+
+static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
+{
+	fExitRequested = true;
+
+	return true;
+}
 
 int main(int argc, char **argv)
 {
-	dcclite::InitLog("DccLiteBrooker_%N.log");
+	dcclite::InitLog("DccLiteBrooker_%N.log");	
+
+	dcclite::InstallConsoleEventHandler(ConsoleCtrlHandler);
 
 	const char *configFileName = (argc == 1) ? "config.json" : argv[1];	
 
@@ -19,7 +32,7 @@ int main(int argc, char **argv)
 
 		brooker.LoadConfig(configFileName);
 		
-		for(;;)
+		while(!fExitRequested)
 			brooker.Update();
 	}	
 	catch (std::exception &ex)

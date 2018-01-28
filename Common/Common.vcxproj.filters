@@ -19,6 +19,9 @@
     <ClCompile Include="src\NetMessenger.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\ConsoleUtils.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\LogUtils.h">
@@ -31,6 +34,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="include\NetMessenger.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ConsoleUtils.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
