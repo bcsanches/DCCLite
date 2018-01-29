@@ -192,7 +192,7 @@ namespace dcclite
 		return listen(m_iHandle, backlog) == 0;
 	}
 
-	bool TryConnect(const Address &server)
+	bool Socket::TryConnect(const Address &server)
 	{
 		return false;
 	}
