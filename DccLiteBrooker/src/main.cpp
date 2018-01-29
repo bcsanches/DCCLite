@@ -2,7 +2,7 @@
 #include <signal.h>
 #include <stdexcept>
 
-#include <boost/log/trivial.hpp>
+#include <plog/Log.h>
 
 #include "Brooker.h"
 
@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 	}	
 	catch (std::exception &ex)
 	{
-		BOOST_LOG_TRIVIAL(fatal) << "caught " << ex.what();	
+		LOG_FATAL << "caught " << ex.what();
 	}
 
 	return 0;

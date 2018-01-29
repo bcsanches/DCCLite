@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-#include <boost/log/trivial.hpp>
+#include <plog/Log.h>
 
 #include "NetMessenger.h"
 
@@ -56,7 +56,7 @@ bool TerminalClient::Update()
 
 	if (status == Socket::Status::OK)
 	{		
-		BOOST_LOG_TRIVIAL(info) << "Received " << msg;
+		LOG_INFO << "Received " << msg;
 	}
 
 	return true;
@@ -88,7 +88,7 @@ void TerminalService::Update()
 
 	if (status == Socket::Status::OK)
 	{
-		BOOST_LOG_TRIVIAL(info) << "[TermnialService] Client connected";
+		LOG_INFO << "[TermnialService] Client connected";
 
 		m_vecClients.emplace_back(std::move(socket));
 	}
@@ -99,7 +99,7 @@ void TerminalService::Update()
 
 		if (!client.Update())
 		{
-			BOOST_LOG_TRIVIAL(info) << "[TermnialService] Client disconnected";
+			LOG_INFO << "[TermnialService] Client disconnected";
 
 			m_vecClients.erase(m_vecClients.begin() + i);
 		}

@@ -4,7 +4,7 @@
 #include <fstream>
 #include <stdexcept>
 
-#include <boost/log/trivial.hpp>
+#include <plog/Log.h>
 
 #include "json.hpp"
 
@@ -17,7 +17,7 @@ static std::unique_ptr<Service> CreateService(const json &obj)
 	std::string className = obj["class"];
 	std::string name = obj["name"].get<std::string>();	
 
-	BOOST_LOG_TRIVIAL(info) << "Creating DccLite Service: " << name;
+	LOG_INFO << "Creating DccLite Service: " << name;
 	
 	if (auto output = ServiceClass::TryProduce(className.c_str(), name, obj))
 	{
