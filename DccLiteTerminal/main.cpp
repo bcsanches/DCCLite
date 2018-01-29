@@ -2,13 +2,13 @@
 
 #include "LogUtils.h"
 
-#include <boost\log\trivial.hpp>
+#include <plog/log.h>
 
 int main(int, char **)
 {
 	dcclite::InitLog("terminal.log");
 
-	BOOST_LOG_TRIVIAL(info) << "hello";
+	LOG_INFO << "hello";
 
 	return 0;
 }

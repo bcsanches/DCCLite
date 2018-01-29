@@ -90,7 +90,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)\lib\</OutDir>
-    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <IncludePath>$(SolutionDir)\Common\include\;$(BOOST_HOME)\;$(PLOG_HOME)\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

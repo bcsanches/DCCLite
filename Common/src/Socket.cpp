@@ -1,9 +1,9 @@
 #include "Socket.h"
 
-#include <boost/log/trivial.hpp>
-
 #include <cassert>
 #include <stdexcept>
+
+#include <plog/Log.h>
 
 #define PLATFORM_WINDOWS  1
 #define PLATFORM_MAC      2
@@ -120,7 +120,7 @@ namespace dcclite
 
 		if (m_iHandle == INVALID_SOCKET)
 		{
-			BOOST_LOG_TRIVIAL(error) << "Failed to create socket.";
+			LOG_ERROR << "Failed to create socket.";
 			return false;
 		}
 
@@ -140,7 +140,7 @@ namespace dcclite
 		{
 			this->Close();
 
-			BOOST_LOG_TRIVIAL(error) << "Failed to set socket to non-blocking mode.";
+			LOG_ERROR << "Failed to set socket to non-blocking mode.";
 			return false;
 		}
 
@@ -149,7 +149,7 @@ namespace dcclite
 		{
 			this->Close();
 
-			BOOST_LOG_TRIVIAL(error) << "Failed enable NO_DELAY.";
+			LOG_ERROR << "Failed enable NO_DELAY.";
 			return false;
 		}
 
@@ -164,7 +164,7 @@ namespace dcclite
 		{
 			this->Close();
 
-			BOOST_LOG_TRIVIAL(error) << "Failed to bind socket.";
+			LOG_ERROR << "Failed to bind socket.";
 			return false;
 		}
 
@@ -231,7 +231,7 @@ namespace dcclite
 
 		if (sent_bytes != size)
 		{
-			BOOST_LOG_TRIVIAL(error) << "Failed to send packet.";
+			LOG_ERROR << "Failed to send packet.";
 			return false;
 		}
 
