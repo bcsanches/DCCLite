@@ -21,7 +21,7 @@
 
 #include <winsock2.h>
 
-static const int NULL_SOCKET = INVALID_SOCKET;
+static const dcclite::Socket::Handler_t NULL_SOCKET = INVALID_SOCKET;
 
 #elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
 
@@ -48,7 +48,7 @@ namespace dcclite
 	}
 
 	Socket::Socket() :
-		m_iHandle(NULL_SOCKET)
+		m_hHandle(NULL_SOCKET)
 	{
 		if (g_iCount == 0)
 		{
@@ -64,8 +64,8 @@ namespace dcclite
 		++g_iCount;
 	}
 
-	Socket::Socket(int validHandle) :
-		m_iHandle(validHandle)
+	Socket::Socket(Handler_t validHandle):
+		m_hHandle(validHandle)
 	{
 		assert(g_iCount);
 
@@ -73,13 +73,13 @@ namespace dcclite
 	}
 
 	Socket::Socket(Socket &&other):
-		m_iHandle(std::move(other.m_iHandle))
+		m_hHandle(std::move(other.m_hHandle))
 	{
 		assert(g_iCount > 0);
 
 		++g_iCount;
 
-		other.m_iHandle = NULL_SOCKET;
+		other.m_hHandle = NULL_SOCKET;
 	}
 
 	Socket::~Socket()
@@ -98,9 +98,9 @@ namespace dcclite
 	{
 		if (this != &other)
 		{
-			m_iHandle = other.m_iHandle;
+			m_hHandle = other.m_hHandle;
 
-			other.m_iHandle = NULL_SOCKET;
+			other.m_hHandle = NULL_SOCKET;
 		}
 
 		return *this;
@@ -110,15 +110,15 @@ namespace dcclite
 	{
 		assert(g_iCount > 0);
 
-		if (m_iHandle != NULL_SOCKET)
+		if (m_hHandle != NULL_SOCKET)
 			this->Close();
 
 		auto intType = type == Type::DATAGRAM ? SOCK_DGRAM : SOCK_STREAM;
 		auto intProto = type == Type::DATAGRAM ? IPPROTO_UDP : IPPROTO_TCP;
 
-		m_iHandle = socket(AF_INET, intType, intProto);
+		m_hHandle = socket(AF_INET, intType, intProto);
 
-		if (m_iHandle == INVALID_SOCKET)
+		if (m_hHandle == INVALID_SOCKET)
 		{
 			LOG_ERROR << "Failed to create socket.";
 			return false;
@@ -127,7 +127,7 @@ namespace dcclite
 		#if PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
 
 		int nonBlocking = 1;
-		if (fcntl(m_iHandle, F_SETFL, O_NONBLOCK, nonBlocking) == -1)
+		if (fcntl(m_hHandle, F_SETFL, O_NONBLOCK, nonBlocking) == -1)
 		{
 			BOOST_LOG_TRIVIAL(error) << "Failed to set socket to non-blocking mode.";
 			return false;
@@ -136,7 +136,7 @@ namespace dcclite
 		#elif PLATFORM == PLATFORM_WINDOWS
 
 		DWORD nonBlocking = 1;
-		if (ioctlsocket(m_iHandle, FIONBIO, &nonBlocking) != 0)
+		if (ioctlsocket(m_hHandle, FIONBIO, &nonBlocking) != 0)
 		{
 			this->Close();
 
@@ -145,7 +145,7 @@ namespace dcclite
 		}
 
 		int noDelay = 1;
-		if ((type == Type::STREAM) && (setsockopt(m_iHandle, IPPROTO_TCP, TCP_NODELAY, (const char *)&noDelay, sizeof(int)) != 0))
+		if ((type == Type::STREAM) && (setsockopt(m_hHandle, IPPROTO_TCP, TCP_NODELAY, (const char *)&noDelay, sizeof(int)) != 0))
 		{
 			this->Close();
 
@@ -160,7 +160,7 @@ namespace dcclite
 		address.sin_addr.s_addr = INADDR_ANY;
 		address.sin_port = htons((unsigned short)port);
 
-		if (bind(m_iHandle, (const sockaddr*)&address, sizeof(sockaddr_in)) < 0)
+		if (bind(m_hHandle, (const sockaddr*)&address, sizeof(sockaddr_in)) < 0)
 		{
 			this->Close();
 
@@ -173,23 +173,23 @@ namespace dcclite
 
 	void Socket::Close()
 	{		
-		if (m_iHandle == NULL_SOCKET)
+		if (m_hHandle == NULL_SOCKET)
 			return;
 
 #if PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
 		close(m_iHandle);
 #elif PLATFORM == PLATFORM_WINDOWS
-		closesocket(m_iHandle);
+		closesocket(m_hHandle);
 #endif
 
-		m_iHandle = NULL_SOCKET;
+		m_hHandle = NULL_SOCKET;
 	}
 
 	bool Socket::TryListen(int backlog)
 	{
-		assert(m_iHandle != NULL_SOCKET);
+		assert(m_hHandle != NULL_SOCKET);
 
-		return listen(m_iHandle, backlog) == 0;
+		return listen(m_hHandle, backlog) == 0;
 	}
 
 	bool Socket::TryConnect(const Address &server)
@@ -202,7 +202,7 @@ namespace dcclite
 		sockaddr_in addr;
 		int addrSize = sizeof(addr);
 
-		auto s = accept(m_iHandle, (sockaddr*)&addr, &addrSize);
+		auto s = accept(m_hHandle, (sockaddr*)&addr, &addrSize);
 
 		if (s == NULL_SOCKET)
 		{
@@ -218,16 +218,23 @@ namespace dcclite
 
 	bool Socket::IsOpen() const
 	{
-		return m_iHandle != NULL_SOCKET;
+		return m_hHandle != NULL_SOCKET;
 	}
 
 	bool Socket::Send(const Address &destination, const void *data, size_t size)
 	{
-		assert(m_iHandle != NULL_SOCKET);
+		assert(m_hHandle != NULL_SOCKET);
 
 		auto saddr = MakeAddr(destination);
 
-		int sent_bytes = sendto(m_iHandle, (const char*)data, size, 0, (const sockaddr *)&saddr, sizeof(saddr));
+		auto sent_bytes = sendto(
+			m_hHandle, 
+			(const char*)data, 
+			static_cast<int>(size), 
+			0, 
+			(const sockaddr *)&saddr, 
+			sizeof(saddr)
+		);
 
 		if (sent_bytes != size)
 		{
@@ -243,12 +250,19 @@ namespace dcclite
 #if PLATFORM == PLATFORM_WINDOWS
 		typedef int socklen_t;
 #endif
-		assert(m_iHandle != NULL_SOCKET);
+		assert(m_hHandle != NULL_SOCKET);
 
 		sockaddr_in from;
 		socklen_t fromLength = sizeof(from);
 
-		auto result = recvfrom(m_iHandle, (char*)data, size, 0, (sockaddr*)&from, &fromLength);
+		auto result = recvfrom(
+			m_hHandle, 
+			(char*)data, 
+			static_cast<int>(size), 
+			0, 
+			(sockaddr*)&from, 
+			&fromLength
+		);
 
 		if (result == 0)
 			return std::make_tuple(Status::DISCONNECTED, 0);
@@ -280,9 +294,14 @@ namespace dcclite
 #if PLATFORM == PLATFORM_WINDOWS
 		typedef int socklen_t;
 #endif
-		assert(m_iHandle != NULL_SOCKET);		
+		assert(m_hHandle != NULL_SOCKET);
 
-		auto result = recv(m_iHandle, (char*)data, size, 0);
+		auto result = recv(
+			m_hHandle, 
+			(char*)data, 
+			static_cast<int>(size), 
+			0
+		);
 
 		if (result == 0)
 			return std::make_tuple(Status::DISCONNECTED, 0);

@@ -5,6 +5,8 @@
 #include <tuple>
 #include <utility>
 
+#include "defs.h"
+
 //
 //
 // Based on: https://gafferongames.com/post/sending_and_receiving_packets/
@@ -64,8 +66,14 @@ namespace dcclite
 				DATAGRAM
 			};
 
+#ifdef DCCLITE64
+			typedef std::int64_t Handler_t;
+#else
+			typedef std::int32_t Handler_t;
+#endif
+
 		private:
-			Socket(int validHandle);
+			Socket(Handler_t validHandle);
 
 		public:
 			Socket();
@@ -92,8 +100,9 @@ namespace dcclite
 			std::tuple<Status, size_t> Receive(void *data, size_t size);
 
 		private:
-			int m_iHandle;
+			Handler_t m_hHandle;
 
 			static inline size_t g_iCount = 0;
 	};
 }
+
