@@ -35,7 +35,7 @@ namespace dcclite
 	std::tuple<Socket::Status, std::string> NetMessenger::PollInternalQueue()
 	{
 		if (m_lstMessages.empty())
-			return std::make_tuple(Socket::Status::EMPTY, std::string{});
+			return std::make_tuple(Socket::Status::WOULD_BLOCK, std::string{});
 		
 		std::string output{ std::move(m_lstMessages.front()) };
 

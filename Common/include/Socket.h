@@ -2,6 +2,8 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <sstream>
+#include <string>
 #include <tuple>
 #include <utility>
 
@@ -19,31 +21,44 @@ namespace dcclite
 
 	class Address
 	{
-	public:
-		Address() :
-			m_uAddress{ 0 },
-			m_uPort{ 0 }
-		{
+		public:
+			Address() :
+				m_uAddress{ 0 },
+				m_uPort{ 0 }
+			{
+				//empty
+			}
 
-		}
+			inline Address(std::uint_fast8_t a, std::uint_fast8_t b, std::uint_fast8_t c, std::uint_fast8_t d, Port_t port):
+				m_uAddress{ (std::uint32_t{ a } << 24) | (std::uint32_t{ b } << 16) | (std::uint32_t{ c } << 8) | std::uint32_t{ d } },
+				m_uPort{ port }
+			{
+				//empty
+			}
 
-		inline Address(std::uint_fast8_t a, std::uint_fast8_t b, std::uint_fast8_t c, std::uint_fast8_t d, Port_t port):
-			m_uAddress{ (std::uint32_t{ a } << 24) | (std::uint32_t{ b } << 16) | (std::uint32_t{ c } << 8) | std::uint32_t{ d } },
-			m_uPort{ port }
-		{
-			//empty
-		}
+			Address(std::uint_fast32_t address, Port_t port) :
+				m_uAddress{ address },
+				m_uPort{ port }
+			{
+				//emtpy
+			}
 
-		Address(std::uint_fast32_t address, Port_t port) :
-			m_uAddress{ address },
-			m_uPort{ port }
-		{
-			//emtpy
-		}
+			inline std::uint32_t GetAddress() const { return m_uAddress; }
 
-		inline std::uint32_t GetAddress() const { return m_uAddress; }
+			inline std::string GetIpString() const
+			{
+				std::stringstream stream;
 
-		inline Port_t GetPort() const { return m_uPort; }
+				stream <<
+					((m_uAddress >> 24) & 0x000000FF) << "." <<
+					((m_uAddress >> 16) & 0x000000FF) << "." <<
+					((m_uAddress >> 8) & 0x000000FF) << "." <<
+					((m_uAddress >> 0) & 0x000000FF);
+
+				return stream.str();
+			}
+
+			inline Port_t GetPort() const { return m_uPort; }
 
 		private:
 			std::uint_fast32_t m_uAddress;
@@ -56,7 +71,7 @@ namespace dcclite
 			enum class Status
 			{
 				OK = 0,
-				EMPTY,
+				WOULD_BLOCK,
 				DISCONNECTED
 			};
 
@@ -83,10 +98,12 @@ namespace dcclite
 
 			Socket &operator=(Socket &&other);
 
-			bool TryOpen(Port_t port, Type type);
+			bool Open(Port_t port, Type type);
 
-			bool TryListen(int backlog = 8);
-			bool TryConnect(const Address &server);
+			bool Listen(int backlog = 8);
+			bool StartConnection(const Address &server);
+
+			Status GetConnectionProgress();
 
 			std::tuple<Status, Socket, Address> TryAccept();
 

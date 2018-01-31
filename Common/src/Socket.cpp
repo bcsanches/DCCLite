@@ -19,7 +19,10 @@
 
 #if PLATFORM == PLATFORM_WINDOWS
 
+#define FD_SETSIZE 1
+
 #include <winsock2.h>
+#include <Ws2tcpip.h>
 
 static const dcclite::Socket::Handler_t NULL_SOCKET = INVALID_SOCKET;
 
@@ -33,6 +36,7 @@ static const dcclite::Socket::Handler_t NULL_SOCKET = INVALID_SOCKET;
 
 #if PLATFORM == PLATFORM_WINDOWS
 #pragma comment( lib, "wsock32.lib" )
+#pragma comment( lib, "Ws2_32.lib" )
 #endif
 
 namespace dcclite
@@ -106,7 +110,7 @@ namespace dcclite
 		return *this;
 	}
 
-	bool Socket::TryOpen(Port_t port, Type type)
+	bool Socket::Open(Port_t port, Type type)
 	{
 		assert(g_iCount > 0);
 
@@ -185,16 +189,60 @@ namespace dcclite
 		m_hHandle = NULL_SOCKET;
 	}
 
-	bool Socket::TryListen(int backlog)
+	bool Socket::Listen(int backlog)
 	{
 		assert(m_hHandle != NULL_SOCKET);
 
 		return listen(m_hHandle, backlog) == 0;
 	}
 
-	bool Socket::TryConnect(const Address &server)
+	bool Socket::StartConnection(const Address &serverAddress)
 	{
-		return false;
+		auto addr = MakeAddr(serverAddress);
+
+		auto rc = connect(m_hHandle, reinterpret_cast<const sockaddr *>(&addr), sizeof(addr));
+
+		if ((rc == SOCKET_ERROR) && (WSAGetLastError() != WSAEWOULDBLOCK))
+		{			
+			LOG_ERROR << "Unknown connect error";
+		}		
+
+		//connection in progress, check it
+		return true;
+	}
+
+	Socket::Status Socket::GetConnectionProgress()
+	{		
+		fd_set set;
+
+		set.fd_array[0] = this->m_hHandle;
+		set.fd_count = 1;
+
+		timeval tval = { 0 };
+
+		int rc = select(0, nullptr, &set, nullptr, &tval);
+		if (rc < 0)
+			throw std::runtime_error("select (write test) failed for GetConnectionProgress");
+
+		if (rc > 0)
+			return Status::OK;
+
+		//rc == 0, this means that socket is not ready, but it can have failed, so try again and check error state
+		set.fd_array[0] = this->m_hHandle;
+		set.fd_count = 1;
+
+		rc = select(0, nullptr, nullptr, &set, &tval);
+		if (rc < 0)
+			throw std::runtime_error("select (error test) failed for GetConnectionProgress");
+
+		if (rc > 0)
+		{
+			//sorry dude, failed
+			return Status::DISCONNECTED;
+		}
+
+		//not ready, try later
+		return Status::WOULD_BLOCK;
 	}
 
 	std::tuple<Socket::Status, Socket, Address> Socket::TryAccept()
@@ -206,7 +254,7 @@ namespace dcclite
 
 		if (s == NULL_SOCKET)
 		{
-			return std::make_tuple(Status::EMPTY, Socket(), Address());
+			return std::make_tuple(Status::WOULD_BLOCK, Socket(), Address());
 		}
 
 		unsigned int from_address = ntohl(addr.sin_addr.s_addr);
@@ -273,7 +321,7 @@ namespace dcclite
 			switch(result)
 			{
 				case WSAEWOULDBLOCK:
-					return std::make_tuple(Status::EMPTY, 0);
+					return std::make_tuple(Status::WOULD_BLOCK, 0);
 
 				case WSAEMSGSIZE:
 					throw std::runtime_error("receive overflow");					
@@ -291,9 +339,6 @@ namespace dcclite
 
 	std::tuple<Socket::Status, size_t> Socket::Receive(void *data, size_t size)
 	{
-#if PLATFORM == PLATFORM_WINDOWS
-		typedef int socklen_t;
-#endif
 		assert(m_hHandle != NULL_SOCKET);
 
 		auto result = recv(
@@ -312,7 +357,7 @@ namespace dcclite
 			switch (result)
 			{
 				case WSAEWOULDBLOCK:
-					return std::make_pair(Status::EMPTY, 0);
+					return std::make_pair(Status::WOULD_BLOCK, 0);
 
 				case WSAEMSGSIZE:
 					throw std::runtime_error("receive overflow");

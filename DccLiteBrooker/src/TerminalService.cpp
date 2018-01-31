@@ -65,12 +65,12 @@ bool TerminalClient::Update()
 TerminalService::TerminalService(const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params) :
 	Service(serviceClass, name, params)	
 {	
-	if (!m_clSocket.TryOpen(params["port"].get<unsigned short>(), dcclite::Socket::Type::STREAM))
+	if (!m_clSocket.Open(params["port"].get<unsigned short>(), dcclite::Socket::Type::STREAM))
 	{
 		throw std::runtime_error("[TerminalService] Cannot open socket");
 	}
 
-	if (!m_clSocket.TryListen())
+	if (!m_clSocket.Listen())
 	{
 		throw std::runtime_error("[TerminalService] Cannot put socket on listen mode");
 	}
