@@ -205,6 +205,8 @@ namespace dcclite
 		if ((rc == SOCKET_ERROR) && (WSAGetLastError() != WSAEWOULDBLOCK))
 		{			
 			LOG_ERROR << "Unknown connect error";
+
+			return false;
 		}		
 
 		//connection in progress, check it
