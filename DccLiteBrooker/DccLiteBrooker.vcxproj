@@ -33,12 +33,12 @@
     <ClCompile Include="src\TerminalService.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="data\config.json" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Common\Common.vcxproj">
       <Project>{260f028d-1029-4332-831b-ad7dd20eba4a}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\data\brooker.config.json" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
