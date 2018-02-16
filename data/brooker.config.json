@@ -7,9 +7,113 @@
       "port": 8989,
       "nodes": [
         {
-          "id": "0x0128",
-          "name": "ArduinoStaging",
-          "class": "ArduinoMega"
+          "id": "0x10",
+          "name": "ArduinoRelayStaging",
+          "class": "ArduinoLeonard",
+          "decoders": [
+            {
+              "name": "ATrack01",
+              "class": "Output",
+              "address": "0x10",
+              "pin": 0
+            },
+            {
+              "name": "ATrack02",
+              "class": "Output",
+              "address": "0x11",
+              "pin": 1
+            },
+            {
+              "name": "ATrack03",
+              "class": "Output",
+              "address": "0x12",
+              "pin": 2
+            },
+            {
+              "name": "ATrack04",
+              "class": "Output",
+              "address": "0x13",
+              "pin": 3
+            },
+            {
+              "name": "ATrack05",
+              "class": "Output",
+              "address": "0x14",
+              "pin": 4
+            },
+            {
+              "name": "ATrack06",
+              "class": "Output",
+              "address": "0x15",
+              "pin": 5
+            },
+            {
+              "name": "ATrack07",
+              "class": "Output",
+              "address": "0x16",
+              "pin": 5
+            },
+            {
+              "name": "ATrack08",
+              "class": "Output",
+              "address": "0x17",
+              "pin": 5
+            },
+            {
+              "name": "ATrack09",
+              "class": "Output",
+              "address": "0x18",
+              "pin": 5
+            },
+            {
+              "name": "ATrack10",
+              "class": "Output",
+              "address": "0x19",
+              "pin": 5
+            },
+            {
+              "name": "ATrack11",
+              "class": "Output",
+              "address": "0x1A",
+              "pin": 5
+            },
+            {
+              "name": "ATrack12",
+              "class": "Output",
+              "address": "0x1B",
+              "pin": 5
+            },
+            {
+              "name": "BTrack01",
+              "class": "Output",
+              "address": "0x1C",
+              "pin": 5
+            },
+            {
+              "name": "BTrack02",
+              "class": "Output",
+              "address": "0x1D",
+              "pin": 5
+            },
+            {
+              "name": "BTrack03",
+              "class": "Output",
+              "address": "0x1E",
+              "pin": 5
+            },
+            {
+              "name": "BTrack04",
+              "class": "Output",
+              "address": "0x1F",
+              "pin": 5
+            },
+            {
+              "name": "BTrack05",
+              "class": "Output",
+              "address": "0x20",
+              "pin": 5
+            }
+          ]
         },
         {
           "id": "0x0129",
