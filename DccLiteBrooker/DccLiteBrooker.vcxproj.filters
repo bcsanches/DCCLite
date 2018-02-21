@@ -28,6 +28,15 @@
     <ClInclude Include="src\TerminalService.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\Decoder.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Node.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DecoderManager.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">

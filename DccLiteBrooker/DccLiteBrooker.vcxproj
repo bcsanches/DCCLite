@@ -21,7 +21,10 @@
   <ItemGroup>
     <ClInclude Include="src\Brooker.h" />
     <ClInclude Include="src\DccLiteService.h" />
+    <ClInclude Include="src\Decoder.h" />
+    <ClInclude Include="src\DecoderManager.h" />
     <ClInclude Include="src\json.hpp" />
+    <ClInclude Include="src\Node.h" />
     <ClInclude Include="src\Service.h" />
     <ClInclude Include="src\TerminalService.h" />
   </ItemGroup>
