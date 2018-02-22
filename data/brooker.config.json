@@ -7,7 +7,6 @@
       "port": 8989,
       "nodes": [
         {
-          "id": "0x10",
           "name": "ArduinoRelayStaging",
           "class": "ArduinoLeonard",
           "decoders": [

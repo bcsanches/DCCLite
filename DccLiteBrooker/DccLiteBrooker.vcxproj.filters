@@ -54,6 +54,15 @@
     <ClCompile Include="src\Service.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Decoder.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DecoderManager.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Node.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\data\brooker.config.json">
