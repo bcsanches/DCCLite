@@ -37,6 +37,9 @@
     <ClInclude Include="src\DecoderManager.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\OutputDecoder.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -61,6 +64,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\Node.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OutputDecoder.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

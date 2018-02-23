@@ -1,5 +1,9 @@
 #pragma once
 
+#include "ClassInfo.h"
+
+#include "json.hpp"
+
 class DecoderManager;
 class Node;
 
@@ -23,8 +27,10 @@ class Decoder
 				int m_iAddress;
 		};
 
+		typedef dcclite::ClassInfo<Decoder, const Address &, DecoderManager &, const nlohmann::json &> Class;
+
 	public:
-		Decoder(const Address &address, DecoderManager &owner);
+		Decoder(const Class &decoderClass, const Address &address, DecoderManager &owner, const nlohmann::json &params);
 
 	private:
 		Address m_iAddress;
