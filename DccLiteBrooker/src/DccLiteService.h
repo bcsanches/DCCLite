@@ -16,6 +16,16 @@ class DccLiteService : public Service
 
 		virtual ~DccLiteService();
 
+		inline Decoder &Create(
+			const std::string &className,
+			Decoder::Address address,
+			const std::string &name,
+			const nlohmann::json &params
+		)
+		{
+			return m_clDecoderManager.Create(className, address, name, params);
+		}
+
 	private:
 		std::map<std::string, std::unique_ptr<Node>> m_mapNodes;
 

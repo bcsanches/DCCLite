@@ -5,6 +5,7 @@
 #include "json.hpp"
 
 class DccLiteService;
+class Decoder;
 
 class Node
 {
@@ -18,4 +19,6 @@ class Node
 		std::string m_strName;
 
 		DccLiteService &m_clDccService;
+
+		std::vector<Decoder *> m_vecDecoders;
 };
