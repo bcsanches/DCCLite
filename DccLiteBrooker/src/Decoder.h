@@ -21,6 +21,8 @@ class Decoder
 					//empty
 				}
 
+				Address(const nlohmann::json::value_type &value);
+
 				Address() = default;
 				Address(const Address &) = default;
 				Address(Address &&) = default;		
@@ -65,5 +67,3 @@ inline std::ostream &operator<<(std::ostream& os, const Decoder::Address &addres
 
 	return os;
 }
-
-

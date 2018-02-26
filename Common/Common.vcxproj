@@ -24,9 +24,11 @@
     <ClInclude Include="include\defs.h" />
     <ClInclude Include="include\LogUtils.h" />
     <ClInclude Include="include\NetMessenger.h" />
+    <ClInclude Include="include\Parser.h" />
     <ClInclude Include="include\Socket.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="include\Parser.cpp" />
     <ClCompile Include="src\ConsoleUtils.cpp" />
     <ClCompile Include="src\LogUtils.cpp" />
     <ClCompile Include="src\NetMessenger.cpp" />
@@ -126,7 +128,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>

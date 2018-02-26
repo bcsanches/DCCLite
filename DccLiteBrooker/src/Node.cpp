@@ -18,7 +18,7 @@ Node::Node(const std::string &name, DccLiteService &dccService, const nlohmann::
 
 		auto decoderName = decoderData["name"].get<std::string>();
 		auto className = decoderData["class"].get<std::string>();
-		Decoder::Address address{ decoderData["address"].get<int>() };
+		Decoder::Address address{ decoderData["address"] };
 
 		m_vecDecoders.push_back(&m_clDccService.Create(className, address, decoderName, decodersData));
 	}
