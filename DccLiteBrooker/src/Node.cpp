@@ -6,19 +6,21 @@
 Node::Node(const std::string &name, DccLiteService &dccService, const nlohmann::json &params) :
 	m_strName(name),
 	m_clDccService(dccService)
-{
-	auto decodersData = params["decoders"];
+{	
+	auto it = params.find("decoders");
+	if (it == params.end())
+		return;
+
+	auto decodersData = *it;
 
 	if (!decodersData.is_array())
 		throw std::runtime_error("error: invalid config, expected decoders array inside Node");
 
-	for (size_t i = 0, size = decodersData.size(); i < size; ++i)
+	for (auto &element : decodersData)
 	{
-		auto decoderData = decodersData[i];
-
-		auto decoderName = decoderData["name"].get<std::string>();
-		auto className = decoderData["class"].get<std::string>();
-		Decoder::Address address{ decoderData["address"] };
+		auto decoderName = element["name"].get<std::string>();
+		auto className = element["class"].get<std::string>();
+		Decoder::Address address{ element["address"] };
 
 		m_vecDecoders.push_back(&m_clDccService.Create(className, address, decoderName, decodersData));
 	}
