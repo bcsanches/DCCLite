@@ -14,10 +14,8 @@ DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::stri
 	if (!nodesData.is_array())
 		throw std::runtime_error("error: invalid config, expected nodes array inside DccLiteService");
 
-	for (unsigned i = 0, size = nodesData.size(); i < size; ++i)
+	for (auto &node : nodesData)
 	{
-		auto node = nodesData[i];
-
 		auto nodeName = node["name"].get<std::string>();
 
 		auto existingNodeIt = m_mapNodes.find(nodeName);
