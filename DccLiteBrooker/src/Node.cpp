@@ -5,7 +5,8 @@
 
 Node::Node(const std::string &name, DccLiteService &dccService, const nlohmann::json &params) :
 	m_strName(name),
-	m_clDccService(dccService)
+	m_clDccService(dccService),
+	m_eStatus(Status::OFFLINE)
 {	
 	auto it = params.find("decoders");
 	if (it == params.end())

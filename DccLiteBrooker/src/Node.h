@@ -10,6 +10,13 @@ class Decoder;
 class Node
 {
 	public:
+		enum class Status
+		{
+			OFFLINE,
+			ONLINE
+		};
+
+	public:
 		Node(const std::string &name, DccLiteService &dccService, const nlohmann::json &params);
 
 		Node(const Node &) = delete;
@@ -21,4 +28,6 @@ class Node
 		DccLiteService &m_clDccService;
 
 		std::vector<Decoder *> m_vecDecoders;
+
+		Status					m_eStatus;
 };
