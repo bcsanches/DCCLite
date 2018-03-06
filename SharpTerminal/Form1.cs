@@ -8,6 +8,10 @@ namespace SharpTerminal
         public Form1()
         {
             InitializeComponent();
+
+            TerminalClient client = new TerminalClient("localhost", 4190);
+
+            m_tbConsole.Text += "Connected\n";
         }
     }
 }
