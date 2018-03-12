@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System;
+using System.Net.Sockets;
 
 namespace SharpTerminal
 {
@@ -6,9 +7,15 @@ namespace SharpTerminal
     {
         private TcpClient mClient;
 
-        public TerminalClient(string server, int port)
+        public TerminalClient()
         {
-            mClient = new TcpClient(server, port);
+            mClient = new TcpClient();
+            mClient.NoDelay = true;            
+        }        
+
+        public IAsyncResult BeginConnect(string host, int port)
+        {
+            return mClient.BeginConnect(host, port, null, null);
         }
     }
 }
