@@ -115,6 +115,9 @@ namespace SharpTerminal
                     if (string.IsNullOrWhiteSpace(str))
                         continue;
 
+                    if (!str.EndsWith("\r\n"))
+                        str += "\r\n";
+
                     var data = System.Text.Encoding.ASCII.GetBytes(str);
                     stream.Write(data, 0, data.Length);
                 }
@@ -127,15 +130,15 @@ namespace SharpTerminal
 
         public void Stop()
         {
-            mCancellationTokenSource.Cancel();            
+            mCancellationTokenSource.Cancel();
 
-            if(mSenderThread.ThreadState == ThreadState.Running)
+            mClient.Close();
+
+            if (mSenderThread.ThreadState == ThreadState.Running)
                 mSenderThread.Join();
 
             if (mReceiverThread.ThreadState == ThreadState.Running)
-                mReceiverThread.Join();
-
-            mClient.Close();
+                mReceiverThread.Join();            
         }
 
         #region IDisposable Support
