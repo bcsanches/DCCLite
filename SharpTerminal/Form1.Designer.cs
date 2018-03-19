@@ -13,9 +13,13 @@
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing)
             {
-                components.Dispose();
+                if(components != null)
+                    components.Dispose();
+
+                if (mClient != null)
+                    mClient.Dispose();
             }
             base.Dispose(disposing);
         }
@@ -48,10 +52,12 @@
             // 
             this.m_tbInput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_tbInput.Enabled = false;
             this.m_tbInput.Location = new System.Drawing.Point(12, 529);
             this.m_tbInput.Name = "m_tbInput";
             this.m_tbInput.Size = new System.Drawing.Size(760, 20);
             this.m_tbInput.TabIndex = 1;
+            this.m_tbInput.KeyUp += new System.Windows.Forms.KeyEventHandler(this.m_tbInput_KeyUp);
             // 
             // Form1
             // 

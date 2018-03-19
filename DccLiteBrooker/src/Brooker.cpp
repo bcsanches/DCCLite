@@ -55,9 +55,9 @@ void Brooker::LoadConfig(const char *configFileName)
 		throw std::runtime_error("error: invalid config, expected services array");
 	}
 
-	for (unsigned i = 0, size = services.size(); i < size; ++i)
+	for(auto &serviceData : services)	
 	{
-		auto service = CreateService(services[i]);
+		auto service = CreateService(serviceData);
 
 		m_mapServices.insert(std::make_pair(service->GetName(), std::move(service)));
 	}
