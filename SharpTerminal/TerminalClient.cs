@@ -74,7 +74,7 @@ namespace SharpTerminal
                 {
                     data = stream.ReadByte();
                 }
-                catch(System.IO.IOException ex)
+                catch(System.IO.IOException )
                 {
                     //LOGME?
                     //FIXME

@@ -25,7 +25,7 @@ namespace dcclite
 			{								
 				m_lstMessages.emplace_back(m_strIncomingMessage.substr(0, pos));
 
-				m_strIncomingMessage.erase(0, m_strIncomingMessage[pos]);
+				m_strIncomingMessage.erase(0, pos+2);
 			}
 		}
 
