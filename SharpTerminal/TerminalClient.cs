@@ -67,10 +67,20 @@ namespace SharpTerminal
             var stream = mClient.GetStream();
             var bytes = new byte[1];
 
-
             while (!token.IsCancellationRequested)
             {
-                var data = stream.ReadByte();
+                int data = 0;
+                try
+                {
+                    data = stream.ReadByte();
+                }
+                catch(System.IO.IOException ex)
+                {
+                    //LOGME?
+                    //FIXME
+                    continue;
+                }
+
                 if (data < 0)
                 {                   
                     Thread.Sleep(100);
