@@ -5,9 +5,10 @@ using System.Threading;
 
 namespace SharpTerminal
 {
-    public enum ConnectionStatus
+    public enum ConnectionState
     {
         OK,
+        CONNECTING,
         DISCONNECTED,
         WOULD_BLOCK,
         ERROR
@@ -27,7 +28,7 @@ namespace SharpTerminal
 
         private CancellationTokenSource mCancellationTokenSource = new CancellationTokenSource();
 
-        private BlockingCollection<string> mSendQueue = new BlockingCollection<string>();
+        private BlockingCollection<string> mSendQueue = new BlockingCollection<string>();        
 
         public TerminalClient()
         {
@@ -53,6 +54,8 @@ namespace SharpTerminal
             mReceiverThread = new Thread(ReceiverWorker);
             mSenderThread = new Thread(SenderWorker);
             mSenderThread.Start();
+
+            SetState(ConnectionState.CONNECTING, null);
         }
 
         public void SendMessage(string msg)
@@ -74,18 +77,22 @@ namespace SharpTerminal
                 {
                     data = stream.ReadByte();
                 }
-                catch(System.IO.IOException )
+                catch(System.IO.IOException ex)
                 {
-                    //LOGME?
-                    //FIXME
+                    if(!token.IsCancellationRequested)
+                    {
+                        SetState(ConnectionState.ERROR, ex);
+                        break;
+                    }
+
+
                     continue;
                 }
 
                 if (data < 0)
-                {                   
-                    Thread.Sleep(100);
-
-                    throw new InvalidOperationException("fixme");                    
+                {
+                    SetState(ConnectionState.ERROR, null);
+                    break;
                 }
 
                 bytes[0] = (byte)data;
@@ -101,12 +108,12 @@ namespace SharpTerminal
             }            
             catch(Exception ex)
             {
-                Listener?.OnConnected(ConnectionStatus.ERROR, ex);
+                SetState(ConnectionState.ERROR, ex);
 
                 return;
             }
 
-            Listener?.OnConnected(ConnectionStatus.OK, null);
+            SetState(ConnectionState.OK, null);            
 
             var cancellationToken = mCancellationTokenSource.Token;
 
@@ -135,6 +142,7 @@ namespace SharpTerminal
             catch(OperationCanceledException)
             {
                 //ignore
+                SetState(ConnectionState.DISCONNECTED, null);
             }
         }
 
@@ -150,6 +158,30 @@ namespace SharpTerminal
             if (mReceiverThread.ThreadState == ThreadState.Running)
                 mReceiverThread.Join();            
         }
+
+        #region ConnectionState
+
+        private ConnectionState mState;
+
+        public ConnectionState State
+        {
+            get { return mState; }
+        }
+
+        private void SetState(ConnectionState newState, object param)
+        {
+            lock(this)
+            {
+                if (newState == mState)
+                    return;
+
+                mState = newState;
+
+                Listener?.OnStatusChanged(mState, param);
+            }
+        }
+
+        #endregion
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls

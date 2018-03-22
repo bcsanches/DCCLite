@@ -16,37 +16,75 @@ namespace SharpTerminal
             InitializeComponent();
 
             mClient.Listener = this;
-            mClient.BeginConnect("localhost", 4190);            
+            mClient.BeginConnect("localhost", 4190);
+
+            SetStatus("Connecting");
+
+            m_tbInput.Select();
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             base.OnFormClosed(e);
 
+            //avoid deadlock on invoke, so we disable the listenning
+            mClient.Listener = null;
+
+            //close connections
             mClient.Stop();
         }
 
-        public void OnConnected(ConnectionStatus status, object param)
+        public void OnStatusChanged(ConnectionState state, object param)
         {
             if(this.InvokeRequired)
             {
-                this.Invoke(new MethodInvoker(delegate { this.OnConnected(status, param); }));
+                this.Invoke(new MethodInvoker(delegate { this.OnStatusChanged(state, param); }));
             }
             else
             {
-                m_tbConsole.Text += "Connected";
-                m_tbInput.Enabled = true;
+                switch(state)
+                {
+                    case ConnectionState.OK:
+                        var label = "Connected";
+
+                        this.Console_Println(label);
+                        this.SetStatus(label);
+                        break;
+
+                    case ConnectionState.DISCONNECTED:
+                        var ex = param as Exception;                        
+
+                        this.Console_Println("Disconnected " + (ex != null ? ex.Message : " by unknown reason"));
+                        this.SetStatus("Disconnected");
+                        break;
+
+                    default:
+                        this.Console_Println("Connection state changed to " + state);
+                        this.SetStatus(state.ToString());
+                        break;
+
+                }                
             }
+        }
+
+        private void SendCmd()
+        {
+            var text = m_tbInput.Text.Trim();
+            m_tbInput.Text = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(text))
+                return;
+
+            Console_Println("> " + text);
+
+            ProcessInput(text);
         }
 
         private void m_tbInput_KeyUp(object sender, KeyEventArgs e)
         {
             if(e.KeyCode == Keys.Enter)
             {
-                var text = m_tbInput.Text;
-                m_tbInput.Text = string.Empty;
-                
-                ProcessInput(text);
+                SendCmd();
             }
         }
 
@@ -59,7 +97,7 @@ namespace SharpTerminal
                     break;
 
                 default:
-                    MessageBox.Show("Unknown cmd " + input);
+                    Console_Println("Unknown local command " + input);
                     break;
             }
         }
@@ -115,5 +153,41 @@ namespace SharpTerminal
                 DispatchJsonCmd(input);
             }
         }
+
+        private void m_btnClear_Click(object sender, EventArgs e)
+        {
+            Console_Clear();
+        }
+
+        private void m_btnSend_Click(object sender, EventArgs e)
+        {
+            SendCmd();
+        }
+
+        private void m_btnQuit_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        #region StatusBar
+        private void SetStatus(string text)
+        {
+            m_lbStatus.Text = text;
+        }
+        #endregion
+
+        #region ConsoleText
+
+        private void Console_Println(string text)
+        {
+            m_tbConsole.Text += text + Environment.NewLine;
+        }
+
+        private void Console_Clear()
+        {
+            m_tbConsole.Text = string.Empty;
+        }
+
+        #endregion
     }
 }

@@ -4,6 +4,6 @@ namespace SharpTerminal
 {
     interface ITerminalClientListener
     {
-        void OnConnected(ConnectionStatus status, object param);
+        void OnStatusChanged(ConnectionState state, object param);
     }
 }
