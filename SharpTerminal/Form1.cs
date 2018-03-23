@@ -5,13 +5,13 @@ using System.Windows.Forms;
 
 namespace SharpTerminal
 {
-    public partial class Form1 : Form, ITerminalClientListener
+    public partial class Console : Form, ITerminalClientListener
     {
         private TerminalClient mClient = new TerminalClient();
 
         private int m_iRequestCount = 1;
 
-        public Form1()
+        public Console()
         {
             InitializeComponent();
 
@@ -82,10 +82,20 @@ namespace SharpTerminal
 
         private void m_tbInput_KeyUp(object sender, KeyEventArgs e)
         {
-            if(e.KeyCode == Keys.Enter)
+            switch(e.KeyCode)
             {
-                SendCmd();
-            }
+                case Keys.Enter:
+                    SendCmd();
+                    e.Handled = true;
+
+                    break;
+
+                case Keys.Escape:
+                    m_tbInput.Text = string.Empty;
+                    e.Handled = true;
+
+                    break;
+            }            
         }
 
         private void ProcessLocalCmd(string input)
