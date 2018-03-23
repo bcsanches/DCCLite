@@ -52,17 +52,17 @@ namespace SharpTerminal
                         break;
 
                     case ConnectionState.DISCONNECTED:
-                        var ex = param as Exception;                        
+                        var ex = param as Exception;                  
 
                         this.Console_Println("Disconnected " + (ex != null ? ex.Message : " by unknown reason"));
                         this.SetStatus("Disconnected");
                         break;
 
                     default:
-                        this.Console_Println("Connection state changed to " + state);
+                        ex = param as Exception;
+                        this.Console_Println("Connection state changed to " + state + " " + (ex != null ? ex.Message : " by unknown reason"));
                         this.SetStatus(state.ToString());
                         break;
-
                 }                
             }
         }
@@ -92,8 +92,20 @@ namespace SharpTerminal
         {
             switch(input)
             {
+                case "/clear":
+                    Console_Clear();
+                    break;
+
+                case "/disconnect":
+                    mClient.Stop();
+                    break;
+
                 case "/quit":
-                    this.Close();
+                    Close();
+                    break;                
+
+                case "/reconnect":
+                    mClient.Reconnect();
                     break;
 
                 default:
@@ -137,6 +149,18 @@ namespace SharpTerminal
             mClient.SendMessage(strBuilder.ToString());
         }
 
+        private void ProcessRemoteCmd(string input)
+        {
+            if(mClient.State != ConnectionState.OK)
+            {
+                Console_Println("Cannot send command, client not connected. Try /reconnect");
+
+                return;
+            }
+
+            DispatchJsonCmd(input);
+        }
+
         private void ProcessInput(string input)
         {
             input = input.Trim();
@@ -150,7 +174,7 @@ namespace SharpTerminal
             }
             else
             {
-                DispatchJsonCmd(input);
+                ProcessRemoteCmd(input);
             }
         }
 

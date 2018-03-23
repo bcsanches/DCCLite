@@ -38,11 +38,6 @@ namespace SharpTerminal
 
         public void BeginConnect(string host, int port)
         {
-            if(mSenderThread != null)
-            {
-                throw new InvalidOperationException("Sender thread running? WTF");
-            }
-
             if(string.IsNullOrWhiteSpace(host))
             {
                 throw new ArgumentNullException(nameof(host));
@@ -51,7 +46,31 @@ namespace SharpTerminal
             mHost = host;
             mHostPort = port;
 
-            mReceiverThread = new Thread(ReceiverWorker);
+            Connect();
+        }
+
+        public void Reconnect()
+        {
+            Stop();
+
+            mClient = new TcpClient();
+            mClient.NoDelay = true;
+
+            Connect();
+        }
+
+        private void Connect()
+        {
+            if (mSenderThread != null)
+            {
+                throw new InvalidOperationException("Sender thread running? WTF");
+            }
+
+            if (mReceiverThread != null)
+            {
+                throw new InvalidOperationException("mReceiverThread running? WTF");
+            }
+            
             mSenderThread = new Thread(SenderWorker);
             mSenderThread.Start();
 
@@ -61,6 +80,11 @@ namespace SharpTerminal
         public void SendMessage(string msg)
         {
             mSendQueue.Add(msg);
+        }
+
+        private void IOThreadFailure(object param)
+        {            
+            SetState(ConnectionState.ERROR, param);
         }
 
         private void ReceiverWorker(Object param)
@@ -81,23 +105,24 @@ namespace SharpTerminal
                 {
                     if(!token.IsCancellationRequested)
                     {
-                        SetState(ConnectionState.ERROR, ex);
+                        IOThreadFailure(ex);
                         break;
                     }
-
 
                     continue;
                 }
 
                 if (data < 0)
                 {
-                    SetState(ConnectionState.ERROR, null);
+                    IOThreadFailure(null);
                     break;
                 }
 
                 bytes[0] = (byte)data;
                 var ch = System.Text.Encoding.ASCII.GetChars(bytes);
             }
+
+            mReceiverThread = null;
         }
 
         private void SenderWorker(Object param)
@@ -109,6 +134,7 @@ namespace SharpTerminal
             catch(Exception ex)
             {
                 SetState(ConnectionState.ERROR, ex);
+                mSenderThread = null;
 
                 return;
             }
@@ -117,7 +143,7 @@ namespace SharpTerminal
 
             var cancellationToken = mCancellationTokenSource.Token;
 
-            System.Diagnostics.Debug.Assert(mReceiverThread != null);
+            mReceiverThread = new Thread(ReceiverWorker);
             mReceiverThread.Start();
 
             var stream = mClient.GetStream();
@@ -139,12 +165,25 @@ namespace SharpTerminal
                     stream.Write(data, 0, data.Length);
                 }
             }
-            catch(OperationCanceledException)
+            catch(System.IO.IOException ex)
+            {
+                IOThreadFailure(ex);
+            }
+            catch (OperationCanceledException)
             {
                 //ignore
-                SetState(ConnectionState.DISCONNECTED, null);
             }
+
+            mSenderThread = null;
         }
+
+        private void JoinWorkerThread(Thread t)
+        {
+            if ((t != null) && (Thread.CurrentThread != t) && (t.ThreadState == ThreadState.Running))
+            {
+                t.Join();
+            }
+        }        
 
         public void Stop()
         {
@@ -152,11 +191,12 @@ namespace SharpTerminal
 
             mClient.Close();
 
-            if (mSenderThread.ThreadState == ThreadState.Running)
-                mSenderThread.Join();
+            JoinWorkerThread(mSenderThread);
+            JoinWorkerThread(mReceiverThread);
 
-            if (mReceiverThread.ThreadState == ThreadState.Running)
-                mReceiverThread.Join();            
+            mCancellationTokenSource = new CancellationTokenSource();
+
+            SetState(ConnectionState.DISCONNECTED, null);
         }
 
         #region ConnectionState
@@ -173,7 +213,7 @@ namespace SharpTerminal
             lock(this)
             {
                 if (newState == mState)
-                    return;
+                    return;                
 
                 mState = newState;
 
