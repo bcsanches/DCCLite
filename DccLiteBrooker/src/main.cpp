@@ -8,8 +8,11 @@
 
 #include "ConsoleUtils.h"
 #include "LogUtils.h"
+#include "TerminalCmd.h"
 
 static bool fExitRequested = false;
+
+static TerminalCmd g_ShutdownCmd{ "shutdown" };
 
 static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 {

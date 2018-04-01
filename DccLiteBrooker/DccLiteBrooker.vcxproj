@@ -27,6 +27,7 @@
     <ClInclude Include="src\Node.h" />
     <ClInclude Include="src\OutputDecoder.h" />
     <ClInclude Include="src\Service.h" />
+    <ClInclude Include="src\TerminalCmd.h" />
     <ClInclude Include="src\TerminalService.h" />
   </ItemGroup>
   <ItemGroup>
@@ -38,6 +39,7 @@
     <ClCompile Include="src\Node.cpp" />
     <ClCompile Include="src\OutputDecoder.cpp" />
     <ClCompile Include="src\Service.cpp" />
+    <ClCompile Include="src\TerminalCmd.cpp" />
     <ClCompile Include="src\TerminalService.cpp" />
   </ItemGroup>
   <ItemGroup>
