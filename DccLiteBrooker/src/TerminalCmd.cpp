@@ -3,14 +3,21 @@
 #include <map>
 #include <sstream>
 
-static std::map<std::string_view, TerminalCmd *> g_mapCmds;
+static std::map<std::string_view, TerminalCmd *> GetCmdMap()
+{
+	static std::map<std::string_view, TerminalCmd *> g_mapCmds;
+
+	return g_mapCmds;
+}
 
 TerminalCmd::TerminalCmd(std::string_view name):
 	m_strName(name)
 {
-	auto it = g_mapCmds.find(name);
+	auto &mapCmds = GetCmdMap();
 
-	if (it != g_mapCmds.end())
+	auto it = mapCmds.find(name);
+
+	if (it != mapCmds.end())
 	{
 		std::stringstream stream;
 
@@ -19,15 +26,17 @@ TerminalCmd::TerminalCmd(std::string_view name):
 		throw std::runtime_error(stream.str());
 	}
 
-	g_mapCmds.insert(it, std::make_pair(m_strName, this));
+	mapCmds.insert(it, std::make_pair(m_strName, this));
 }
 
 TerminalCmd::~TerminalCmd()
 {
-	auto it = g_mapCmds.find(m_strName);
+	auto &mapCmds = GetCmdMap();
 
-	if (it != g_mapCmds.end())
-		g_mapCmds.erase(it);
+	auto it = mapCmds.find(m_strName);
+
+	if (it != mapCmds.end())
+		mapCmds.erase(it);
 }
 
 

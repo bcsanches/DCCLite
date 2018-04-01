@@ -1,11 +1,14 @@
 #include "TerminalService.h"
 
+#include <sstream>
 #include <stdexcept>
 
 #include <plog/Log.h>
 
+#include "json.hpp"
 #include "NetMessenger.h"
 
+using json = nlohmann::json;
 using namespace dcclite;
 
 static ServiceClass terminalService("Terminal",
@@ -52,11 +55,18 @@ bool TerminalClient::Update()
 	auto[status, msg] = m_clMessenger.Poll();	
 
 	if (status == Socket::Status::DISCONNECTED)
-		return false;
+		return false;	
 
 	if (status == Socket::Status::OK)
 	{		
 		LOG_INFO << "Received " << msg;
+
+		std::stringstream stream;
+		stream << msg;
+
+		json data;
+
+		stream >> data;
 	}
 
 	return true;
