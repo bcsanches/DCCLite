@@ -317,7 +317,7 @@ namespace dcclite
 		if (result == 0)
 			return std::make_tuple(Status::DISCONNECTED, 0);
 
-		if (result < SOCKET_ERROR)
+		if (result == SOCKET_ERROR)
 		{
 			result = WSAGetLastError();
 			switch(result)

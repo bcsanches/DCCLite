@@ -24,6 +24,9 @@ class Service
 			//empty
 		}
 
+		Service(const Service &) = delete;
+		Service(Service &&) = delete;
+
 	public:
 		virtual ~Service() {}
 

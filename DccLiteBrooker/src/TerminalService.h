@@ -18,5 +18,5 @@ class TerminalService : public Service
 
 		virtual ~TerminalService();
 
-		virtual void Update();			
+		virtual void Update() override;
 };

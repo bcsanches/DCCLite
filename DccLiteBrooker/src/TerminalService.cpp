@@ -67,6 +67,8 @@ bool TerminalClient::Update()
 		json data;
 
 		stream >> data;
+
+
 	}
 
 	return true;
@@ -98,7 +100,7 @@ void TerminalService::Update()
 
 	if (status == Socket::Status::OK)
 	{
-		LOG_INFO << "[TermnialService] Client connected";
+		LOG_INFO << "[TermnialService] Client connected " << address.GetIpString();
 
 		m_vecClients.emplace_back(std::move(socket));
 	}

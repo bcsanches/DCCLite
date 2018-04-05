@@ -1,5 +1,7 @@
 #include "DccLiteService.h"
 
+#include <plog/Log.h>
+
 #include "Node.h"
 
 static ServiceClass dccLiteService("DccLite", 
@@ -9,6 +11,13 @@ static ServiceClass dccLiteService("DccLite",
 DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params) :
 	Service(serviceClass, name, params)
 {
+	auto port = params["port"].get<int>();
+
+	if (!m_clSocket.Open(port, dcclite::Socket::Type::DATAGRAM))
+	{
+		throw std::runtime_error("[DccLiteService] error: cannot open socket");
+	}
+
 	auto nodesData = params["nodes"];
 
 	if (!nodesData.is_array())
@@ -43,4 +52,19 @@ DccLiteService::~DccLiteService()
 	//empty
 }
 
+void DccLiteService::Update()
+{
+	std::uint8_t data[2048];
+
+	dcclite::Address sender;	
+
+	auto[status, size] = m_clSocket.Receive(sender, data, sizeof(data));
+
+	if (status != dcclite::Socket::Status::OK)
+	{
+		return;
+	}
+
+	LOG_INFO << "[DccLiteService::Update] got data";
+}
 

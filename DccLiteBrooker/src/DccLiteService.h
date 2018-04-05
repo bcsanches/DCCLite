@@ -7,6 +7,9 @@
 
 #include "DecoderManager.h"
 
+#include "Socket.h"
+
+
 class Node;
 
 class DccLiteService : public Service
@@ -26,8 +29,12 @@ class DccLiteService : public Service
 			return m_clDecoderManager.Create(className, address, name, params);
 		}
 
+		virtual void Update() override;
+
 	private:
 		std::map<std::string, std::unique_ptr<Node>> m_mapNodes;
 
 		DecoderManager m_clDecoderManager;
+
+		dcclite::Socket m_clSocket;
 };
