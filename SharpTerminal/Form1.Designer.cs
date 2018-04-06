@@ -83,6 +83,7 @@
             this.m_tbInput.Size = new System.Drawing.Size(760, 20);
             this.m_tbInput.TabIndex = 1;
             this.m_tbInput.KeyUp += new System.Windows.Forms.KeyEventHandler(this.m_tbInput_KeyUp);
+            this.m_tbInput.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.m_tbInput_PreviewKeyDown);
             // 
             // m_btnQuit
             // 

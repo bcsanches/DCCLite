@@ -1,5 +1,7 @@
 ﻿
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
@@ -8,6 +10,11 @@ namespace SharpTerminal
     public partial class Console : Form, ITerminalClientListener
     {
         private TerminalClient mClient = new TerminalClient();
+
+        private List<string> mUsedCmds = new List<string>();
+        private int m_iCurrentCmd = 0;
+
+        private List<string> mKnownCmds = new List<string>();
 
         private int m_iRequestCount = 1;
 
@@ -21,6 +28,12 @@ namespace SharpTerminal
             SetStatus("Connecting");
 
             m_tbInput.Select();
+
+            mKnownCmds.Add("/clear");
+            mKnownCmds.Add("/disconnect");
+            mKnownCmds.Add("/quit");
+            mKnownCmds.Add("/reconnect");
+            mKnownCmds.Add("/udpping");
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)
@@ -67,17 +80,39 @@ namespace SharpTerminal
             }
         }
 
-        private void SendCmd()
+        private void Input_Set(string text)
+        {
+            m_tbInput.ResetText();
+            m_tbInput.AppendText(text);
+        }
+
+        private void Input_Clear()
+        {
+            m_tbInput.ResetText();
+        }
+
+        private void Input_SendCmd()
         {
             var text = m_tbInput.Text.Trim();
-            m_tbInput.Text = string.Empty;
+            Input_Clear();
 
             if (string.IsNullOrWhiteSpace(text))
                 return;
 
             Console_Println("> " + text);
 
+            mUsedCmds.Add(text);
+            m_iCurrentCmd = 0;
+
             ProcessInput(text);
+        }
+
+        private void m_tbInput_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            if (e.KeyCode == Keys.Tab)
+            {
+                e.IsInputKey = true;
+            }
         }
 
         private void m_tbInput_KeyUp(object sender, KeyEventArgs e)
@@ -85,16 +120,59 @@ namespace SharpTerminal
             switch(e.KeyCode)
             {
                 case Keys.Enter:
-                    SendCmd();
+                    Input_SendCmd();
                     e.Handled = true;
 
                     break;
 
                 case Keys.Escape:
-                    m_tbInput.Text = string.Empty;
+                    Input_Clear();
                     e.Handled = true;
 
                     break;
+
+                case Keys.Up:
+                    var count = mUsedCmds.Count;
+                    if (m_iCurrentCmd < count)
+                    {
+                        ++m_iCurrentCmd;
+
+                        Input_Set(mUsedCmds[mUsedCmds.Count - m_iCurrentCmd]);
+
+                        e.Handled = true;
+                    }                    
+                    break;
+
+                case Keys.Down:
+                    if(m_iCurrentCmd > 1)
+                    {
+                        --m_iCurrentCmd;
+
+                        Input_Set(mUsedCmds[mUsedCmds.Count - m_iCurrentCmd]);
+
+                        e.Handled = true;
+                    }                    
+                    break;
+
+                case Keys.Tab:
+                    {
+                        e.Handled = true;
+
+                        var input = m_tbInput.Text.Trim();
+
+                        if (string.IsNullOrWhiteSpace(input))
+                            return;
+
+                        var query = from str in mKnownCmds where str.StartsWith(input) select str;
+
+                        var result = query.FirstOrDefault();
+                        if(!string.IsNullOrWhiteSpace(result))
+                        {
+                            Input_Set(result);
+                        }
+                    }
+                    break;
+
             }            
         }
 
@@ -116,6 +194,11 @@ namespace SharpTerminal
 
                 case "/reconnect":
                     mClient.Reconnect();
+                    break;
+
+
+                case "/udpping":
+                    UdpPing();
                     break;
 
                 default:
@@ -195,7 +278,7 @@ namespace SharpTerminal
 
         private void m_btnSend_Click(object sender, EventArgs e)
         {
-            SendCmd();
+            Input_SendCmd();
         }
 
         private void m_btnQuit_Click(object sender, EventArgs e)
@@ -223,5 +306,15 @@ namespace SharpTerminal
         }
 
         #endregion
+
+        private void UdpPing()
+        {            
+            var client = new System.Net.Sockets.UdpClient();
+            var ep = new System.Net.IPEndPoint(System.Net.IPAddress.Parse("127.0.0.1"), 8989); // endpoint where server is listening
+            client.Connect(ep);
+
+            // send data
+            client.Send(new byte[] { 1, 2, 3, 4, 5 }, 5);
+        }
     }
 }
