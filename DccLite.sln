@@ -1,18 +1,18 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Brooker", "DccLiteBrooker\DccLiteBrooker.vcxproj", "{A843EB21-2EB3-4BF7-AE24-E310A82EF4E8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Brooker", "src\DccLiteBrooker\DccLiteBrooker.vcxproj", "{A843EB21-2EB3-4BF7-AE24-E310A82EF4E8}"
 	ProjectSection(ProjectDependencies) = postProject
 		{260F028D-1029-4332-831B-AD7DD20EBA4A} = {260F028D-1029-4332-831B-AD7DD20EBA4A}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Terminal", "DccLiteTerminal\DccLiteTerminal.vcxproj", "{705E2C24-43C3-4CAE-A007-F0DB5DCDDF84}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Terminal", "src\DccLiteTerminal\DccLiteTerminal.vcxproj", "{705E2C24-43C3-4CAE-A007-F0DB5DCDDF84}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common\Common.vcxproj", "{260F028D-1029-4332-831B-AD7DD20EBA4A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "src\Common\Common.vcxproj", "{260F028D-1029-4332-831B-AD7DD20EBA4A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpTerminal", "SharpTerminal\SharpTerminal.csproj", "{E0E7EDCF-CF88-4410-A72C-EC10F9F1402C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpTerminal", "src\SharpTerminal\SharpTerminal.csproj", "{E0E7EDCF-CF88-4410-A72C-EC10F9F1402C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
