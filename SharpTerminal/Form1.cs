@@ -176,9 +176,9 @@ namespace SharpTerminal
             }            
         }
 
-        private void ProcessLocalCmd(string input)
+        private void ProcessLocalCmd(string[] vargs)
         {
-            switch(input)
+            switch(vargs[0])
             {
                 case "/clear":
                     Console_Clear();
@@ -196,38 +196,35 @@ namespace SharpTerminal
                     mClient.Reconnect();
                     break;
 
-
                 case "/udpping":
-                    UdpPing();
+                    UdpPing(vargs);
                     break;
 
                 default:
-                    Console_Println("Unknown local command " + input);
+                    Console_Println("Unknown local command " + vargs[0]);
                     break;
             }
         }
 
-        private void DispatchJsonCmd(string input)
-        {
-            var rawCmd = input.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
-            var strBuilder = new StringBuilder(input.Length + 32);
+        private void DispatchJsonCmd(string[] vargs)
+        {            
+            var strBuilder = new StringBuilder(256);
 
             strBuilder.Append("{\n\t\"jsonrpc\":\"2.0\",\n\t \"method\":\"");
-            strBuilder.Append(rawCmd[0]);
+            strBuilder.Append(vargs[0]);
             strBuilder.Append("\"");
 
-            if(rawCmd.Length > 1)
+            if(vargs.Length > 1)
             {
                 strBuilder.Append(",\n\t\"params\":[\"");
 
                 bool first = true;
-                for(int i = 1;i < rawCmd.Length; ++i)
+                for(int i = 1;i < vargs.Length; ++i)
                 {                     
                     strBuilder.Append(first ? "" : ",\"");
                     first = false;
 
-                    strBuilder.Append(rawCmd[i]);
+                    strBuilder.Append(vargs[i]);
                     strBuilder.Append("\"");
                 }
 
@@ -242,7 +239,7 @@ namespace SharpTerminal
             mClient.SendMessage(strBuilder.ToString());
         }
 
-        private void ProcessRemoteCmd(string input)
+        private void ProcessRemoteCmd(string[] vargs)
         {
             if(mClient.State != ConnectionState.OK)
             {
@@ -251,7 +248,7 @@ namespace SharpTerminal
                 return;
             }
 
-            DispatchJsonCmd(input);
+            DispatchJsonCmd(vargs);
         }
 
         private void ProcessInput(string input)
@@ -260,14 +257,16 @@ namespace SharpTerminal
             if (string.IsNullOrWhiteSpace(input))
                 return;
 
+            var vargs = input.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
             //local command?
-            if(input[0] == '/')
+            if (input[0] == '/')
             {
-                ProcessLocalCmd(input);
+                ProcessLocalCmd(vargs);
             }
             else
             {
-                ProcessRemoteCmd(input);
+                ProcessRemoteCmd(vargs);
             }
         }
 
@@ -307,14 +306,18 @@ namespace SharpTerminal
 
         #endregion
 
-        private void UdpPing()
-        {            
+        private void UdpPing(string[] vargs)
+        {
+            string ip = vargs.Length > 1 ? vargs[1] : "127.0.0.1";
+            int port = vargs.Length > 2 ? int.Parse(vargs[2]) : 8989;
+
+
             var client = new System.Net.Sockets.UdpClient();
-            var ep = new System.Net.IPEndPoint(System.Net.IPAddress.Parse("127.0.0.1"), 8989); // endpoint where server is listening
+            var ep = new System.Net.IPEndPoint(System.Net.IPAddress.Parse(ip), port); // endpoint where server is listening
             client.Connect(ep);
 
             // send data
-            client.Send(new byte[] { 1, 2, 3, 4, 5 }, 5);
+            client.Send(new byte[] { 104, 101, 108, 108, 111, 0 }, 6);
         }
     }
 }
