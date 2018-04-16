@@ -70,13 +70,16 @@ void Blinker::Update()
 			g_iVoltage = LOW;			
 		}
 		g_iNextThink = ticks + (bitRead(g_uAnimations[g_iAnimation], g_iFrame) ? FAST : SLOW);
+
+#if 0
 		Serial.println("bit / think / frame");
 		Serial.print(bitRead(g_uAnimations[g_iAnimation], g_iFrame));
 		Serial.print("  ");
 		Serial.print(g_iNextThink);
 		Serial.print("  ");
 		Serial.println(g_iFrame);
+#endif
 
-        digitalWrite(LOCAL_LED, g_iVoltage);   // turn the LED on (HIGH is the voltage level)
+        digitalWrite(LOCAL_LED, g_iVoltage);
     }
 }

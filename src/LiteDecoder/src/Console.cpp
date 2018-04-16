@@ -1,4 +1,4 @@
-#include "SerialNet.h"
+#include "Console.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -8,7 +8,7 @@
 #include "LiteDecoder.h"
 
 
-void SerialNet::Init()
+void Console::Init()
 {
     Serial.begin(9600);
     Serial.flush();
@@ -23,7 +23,7 @@ void SerialNet::Init()
     Serial.println(__TIME__);    
 }
 
-void SerialNet::SendLog(const char *module, const char *format, ...)
+void Console::SendLog(const char *module, const char *format, ...)
 {
     char buffer[128];
 
@@ -44,27 +44,27 @@ void SerialNet::SendLog(const char *module, const char *format, ...)
     va_end(args);
 }
 
-void SerialNet::Send(const char *str)
+void Console::Send(const char *str)
 {
     Serial.print(str);
 }
 
-void SerialNet::SendLn(const char *str)
+void Console::SendLn(const char *str)
 {
     Serial.println(str);
 }
 
-void SerialNet::Send(int value)
+void Console::Send(int value)
 {
     Serial.print(value);
 }
 
-int SerialNet::Available()
+int Console::Available()
 {
     return Serial.available();
 }
 
-int SerialNet::ReadChar()
+int Console::ReadChar()
 {
     return Serial.read();
 }
