@@ -3,13 +3,14 @@
 #include <Ethercard.h>
 
 #include "Console.h"
+#include "Storage.h"
 
 #define MODULE_NAME "NetUdp"
 
 static uint8_t g_u8Mac[] = { 0x00,0x00,0x00,0x00,0x00,0x00 };
 byte Ethernet::buffer[512];
 
-static int g_iSrcPort = 4551;
+static uint16_t g_iSrcPort = 4551;
 
 char textToSend[] = "test 123";
 
@@ -24,9 +25,37 @@ static void UdpCallback(uint16_t dest_port,    	///< Port the packet was sent to
     Serial.println(data);
 }
 
+void NetUdp::LoadConfig(EpromStream &stream)
+{
+	for(int i = 0;i < 6; ++i)
+	{
+		stream.Get(g_u8Mac[i]);
+	}
+
+	stream.Get(g_iSrcPort);
+}
 
 bool NetUdp::Init()
 {
+	{	
+		bool validMac = false;
+		for(int i = 0;i < 6; ++i)
+		{
+			if(g_u8Mac[i])
+			{
+				validMac = true;
+				break;
+			}						
+		}
+
+		if(!validMac)
+		{
+			Console::SendLog(MODULE_NAME, "mac not set");
+
+			return false;			
+		}
+	}
+
 	if (ether.begin(512, g_u8Mac, 53) == 0) 
 	{
 		Console::SendLog(MODULE_NAME, "ether.begin failed");

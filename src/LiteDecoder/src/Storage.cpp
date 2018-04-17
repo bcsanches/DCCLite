@@ -11,33 +11,20 @@
 #include <EEPROM.h>
 
 #include "Console.h"
-
+#include "NetUdp.h"
 #include "Storage.h"
 
-#define STORAGE_MAGIC "Bcs0001"
+#define STORAGE_MAGIC "Bcs0002"
+#define NET_UDP_STORAGE_ID "NetU001"
 
 #define MODULE_NAME "Storage"
 
-//#define SKIP_BYTE
-
-struct StorageData
+struct Lump
 {
-    char m_archMagic[sizeof(STORAGE_MAGIC)];
+	char		m_archName[8];
 
-    unsigned short m_nNumObjects;
+	uint16_t 	m_uLength;
 };
-
-static StorageData  gData;
-
-static void Clear()
-{
-	Console::SendLog(MODULE_NAME, "Clear");
-
-	sprintf(gData.m_archMagic, STORAGE_MAGIC);
-	gData.m_nNumObjects = 0;
-
-	EEPROM.put(0, gData);
-}
 
 void Storage::Dump()
 {
@@ -62,30 +49,39 @@ bool Storage::LoadConfig()
 {
     Console::SendLog(MODULE_NAME, "init %d", sizeof(STORAGE_MAGIC));
 
-    memset(&gData, 0, sizeof(gData));
+	Lump header;
 
-    EpromStream stream(0);
+    memset(&header, 0, sizeof(header));
 
-	Console::SendLog(MODULE_NAME, gData.m_archMagic);
+    EpromStream stream(0);	
 
-    stream.Get(gData.m_archMagic, sizeof(gData.m_archMagic));
-    stream.Get(gData.m_nNumObjects);
+    stream.Get(header.m_archName, sizeof(header.m_archName));
+    stream.Get(header.m_uLength);
 
-	Console::SendLog(MODULE_NAME, gData.m_archMagic);
+	//Console::SendLog(MODULE_NAME, gData.m_archMagic);
 
-    if(strncmp(gData.m_archMagic, STORAGE_MAGIC, sizeof(STORAGE_MAGIC)))
+    if(strncmp(header.m_archName, STORAGE_MAGIC, sizeof(STORAGE_MAGIC)))
     {
         Console::SendLog(MODULE_NAME, "invalid header");
-
-        //Garbage or nothing at storage, so we clear it
-	    Clear();
 
         return false;
     }
     else
     {
-        Console::SendLog(MODULE_NAME, "load %s %u objs", gData.m_archMagic, gData.m_nNumObjects);
+		Lump lump;
+
+		stream.Get(lump.m_archName, sizeof(lump.m_archName));
+    	stream.Get(lump.m_uLength);
+
+		if(strncmp(lump.m_archName, NET_UDP_STORAGE_ID, sizeof(NET_UDP_STORAGE_ID)) == 0)
+		{
+			Console::SendLog(MODULE_NAME, "netudp config");
+			NetUdp::LoadConfig(stream);
+		}
+
 #if 0
+
+        Console::SendLog(MODULE_NAME, "load %s %u objs", gData.m_archMagic, gData.m_nNumObjects);
 		unsigned short loadedObjects = 0;
 		while(loadedObjects < gData.m_nNumObjects)
 		{
@@ -145,10 +141,19 @@ bool Storage::LoadConfig()
 }
 
 void Storage::SaveConfig()
-{
-    unsigned short numDevices = 0;
+{   
+	EpromStream stream(0);
+
+	Lump header;
+
+	strncpy(header.m_archName, STORAGE_MAGIC, sizeof(header.m_archName));
+	header.m_uLength = sizeof(header);
+
+	stream.PutData(header);
 
 #if 0
+	unsigned short numDevices = 0;
+
     //count how many devices we have in total
     for(auto dev = Device::getHead(); dev; dev = dev->getNext(), ++numDevices);
 
@@ -229,6 +234,13 @@ void EpromStream::Get(unsigned short &number)
 	m_uIndex += sizeof(number);
 }
 
+void EpromStream::Get(uint16_t &number)
+{
+	EEPROM.get(m_uIndex, number);
+
+	m_uIndex += sizeof(number);
+}
+
 unsigned int EpromStream::Get(char *name, unsigned int nameSize)
 {
 	if(!nameSize)
@@ -281,6 +293,18 @@ void EpromStream::Put(unsigned short number)
 
     EEPROM.put(m_uIndex, number);
     m_uIndex += sizeof(number);
+}
+
+template <typename T>
+unsigned int EpromStream::PutData(const T &data)
+{
+	auto index = m_uIndex;
+
+	EEPROM.put(m_uIndex, data);
+
+	m_uIndex += sizeof(T);
+
+	return index;
 }
 
 #if 0

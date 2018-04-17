@@ -16,15 +16,15 @@ void setup()
 	Console::Init();
 	Blinker::Init();
 
-	if(Storage::LoadConfig())
-	{
-		//If config, initialize network
-		NetUdp::Init();
-	}
+	Storage::LoadConfig();
+
+	NetUdp::Init();	
 
 	g_uStartTime = millis();
 
-	Blinker::Play(Blinker::Animations::OK);
+	Blinker::Play(Blinker::Animations::OK);	
+
+	Console::SendLog("setup", "done");
 }
 
 void loop() 
