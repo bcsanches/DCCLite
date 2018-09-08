@@ -75,7 +75,7 @@
     <LinkIncremental>true</LinkIncremental>
     <IntDir>$(SolutionDir)\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)\bin\</OutDir>
-    <IncludePath>$(SolutionDir)\Common\include;$(PLOG_HOME)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Common\include;$(PLOG_HOME)\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(BOOST_HOME)\stage\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

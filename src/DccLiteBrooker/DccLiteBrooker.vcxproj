@@ -111,7 +111,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(PLOG_HOME)\include;$(SolutionDir)\Common\include\;$(IncludePath)</IncludePath>
+    <IncludePath>$(PLOG_HOME)\include;$(SolutionDir)src\Common\include\;$(IncludePath)</IncludePath>
     <LibraryPath>$(BOOST_HOME)\stage\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)\bin\</OutDir>
     <IntDir>$(SolutionDir)\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
