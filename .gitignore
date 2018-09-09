@@ -5,7 +5,6 @@ DccLiteBrooker/Debug/
 DccLiteBrooker/x64/
 x64/
 bin/
-lib/
 Common/Debug/
 Common/Win32/Debug/Common.idb
 Common/Win32/
@@ -15,3 +14,4 @@ DccLiteTerminal/Win32/Debug/
 Common/obj/
 obj/
 src/LiteDecoder/.vscode/
+/lib/

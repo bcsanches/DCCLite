@@ -11,6 +11,10 @@ namespace dcclite
 		TOKEN_CMD_START,
 		TOKEN_CMD_END,
 
+		TOKEN_DOT,
+
+		TOKEN_COLON,
+
 		TOKEN_EOF,
 
 		TOKEN_ERROR

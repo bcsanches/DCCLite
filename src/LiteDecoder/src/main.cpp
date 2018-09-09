@@ -48,5 +48,6 @@ void loop()
 		//Console::sendLog("main", "fps %d", (int)g_fps);
 	}
 
+	Console::Update();
 	Blinker::Update();
 }

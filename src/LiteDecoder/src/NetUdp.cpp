@@ -8,9 +8,14 @@
 #define MODULE_NAME "NetUdp"
 
 static uint8_t g_u8Mac[] = { 0x00,0x00,0x00,0x00,0x00,0x00 };
+static uint8_t g_u8ServerIp[] = {0x00, 0x00, 0x00, 0x00};
+
 byte Ethernet::buffer[512];
 
 static uint16_t g_iSrcPort = 4551;
+
+#define MAX_NODE_NAME 16
+static char g_szNodeName[MAX_NODE_NAME + 1];
 
 char textToSend[] = "test 123";
 
@@ -33,6 +38,17 @@ void NetUdp::LoadConfig(EpromStream &stream)
 	}
 
 	stream.Get(g_iSrcPort);
+}
+
+bool NetUdp::Configure(const char *nodeName, uint16_t port, const uint8_t *mac, const uint8_t *srvIp)
+{
+	strncpy(g_szNodeName, nodeName, sizeof(g_szNodeName));
+	g_szNodeName[MAX_NODE_NAME] = 0;
+
+	g_iSrcPort = port;
+
+	memcpy(g_u8Mac, mac, sizeof(g_u8Mac));
+	memcpy(g_u8ServerIp, srvIp, sizeof(g_u8ServerIp));
 }
 
 bool NetUdp::Init()

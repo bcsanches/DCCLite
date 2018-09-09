@@ -66,83 +66,89 @@ namespace dcclite
 
 			switch (ch)
 			{
-			case ' ':
-			case '\n':
-			case '\t':
-			case '\r':
-				break;
+				case ' ':
+				case '\n':
+				case '\t':
+				case '\r':
+					break;
 
-			case '<':
-				return TOKEN_CMD_START;
+				case '<':
+					return TOKEN_CMD_START;
 
-			case '>':
-				return TOKEN_CMD_END;
+				case '>':
+					return TOKEN_CMD_END;
 
-			case '0':
-				ch = m_pszCmd[m_iPos];
-				if ((ch == 'x') || (ch == 'X'))
-				{
-					//hex digit
-					++m_iPos;
+				case '.':
+					return TOKEN_DOT;
+
+				case ':':
+					return TOKEN_COLON;
+
+				case '0':
 					ch = m_pszCmd[m_iPos];
-
-					if (!ch)
-						return TOKEN_ERROR;
-
-					++m_iPos;
-
-					hexMode = true;
-				}
-				else
-				{
-					ch = '0';
-				}
-				//fall throught
-
-			default:
-				if (IS_DIGIT(ch) || (hexMode && IS_HEX_DIGIT(ch)))
-				{
-					SafeCopy(dest, destPos, destSize, ch);					
-
-					for (;;)
+					if ((ch == 'x') || (ch == 'X'))
 					{
-						ch = m_pszCmd[m_iPos];
-						if (IS_DIGIT(ch) || (hexMode && IS_HEX_DIGIT(ch)))
-						{
-							SafeCopy(dest, destPos, destSize, ch);
-							++m_iPos;
-						}
-						else
-						{
-							FinishToken(dest, destPos, destSize);
-
-							return hexMode ? TOKEN_HEX_NUMBER : TOKEN_NUMBER;
-						}
-					}
-				}
-				else if (IS_ID_START(ch))
-				{
-					SafeCopy(dest, destPos, destSize, ch);
-
-					for (;;)
-					{
+						//hex digit
+						++m_iPos;
 						ch = m_pszCmd[m_iPos];
 
-						if (IS_ID(ch))
+						if (!ch)
+							return TOKEN_ERROR;
+
+						++m_iPos;
+
+						hexMode = true;
+					}
+					else
+					{
+						ch = '0';
+					}
+					//fall throught
+
+				default:
+					if (IS_DIGIT(ch) || (hexMode && IS_HEX_DIGIT(ch)))
+					{
+						SafeCopy(dest, destPos, destSize, ch);					
+
+						for (;;)
 						{
-							SafeCopy(dest, destPos, destSize, ch);
-							++m_iPos;
-						}
-						else
-						{							
-							FinishToken(dest, destPos, destSize);
-							
-							return TOKEN_ID;
+							ch = m_pszCmd[m_iPos];
+							if (IS_DIGIT(ch) || (hexMode && IS_HEX_DIGIT(ch)))
+							{
+								SafeCopy(dest, destPos, destSize, ch);
+								++m_iPos;
+							}
+							else
+							{
+								FinishToken(dest, destPos, destSize);
+
+								return hexMode ? TOKEN_HEX_NUMBER : TOKEN_NUMBER;
+							}
 						}
 					}
-				}
+					else if (IS_ID_START(ch))
+					{
+						SafeCopy(dest, destPos, destSize, ch);
 
-				return TOKEN_ERROR;
+						for (;;)
+						{
+							ch = m_pszCmd[m_iPos];
+
+							if (IS_ID(ch))
+							{
+								SafeCopy(dest, destPos, destSize, ch);
+								++m_iPos;
+							}
+							else
+							{							
+								FinishToken(dest, destPos, destSize);
+								
+								return TOKEN_ID;
+							}
+						}
+					}
+
+					return TOKEN_ERROR;
 			}
 		}
 

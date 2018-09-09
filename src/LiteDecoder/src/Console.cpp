@@ -6,9 +6,12 @@
 #include <Arduino.h>
 
 #include "LiteDecoder.h"
+#include "NetUdp.h"
+
+#include "Parser.h"
 
 
-void Console::Init()
+void Console::Init() 
 {
     Serial.begin(9600);
     Serial.flush();
@@ -67,4 +70,115 @@ int Console::Available()
 int Console::ReadChar()
 {
     return Serial.read();
+}
+
+static void Parse(const char *command)
+{
+	if(strncmp(command, "cfg", 3) == 0)
+	{
+		//format: cfg <nodeName> <mac> <port> <srvipv4>		
+
+		dcclite::Parser parser(command+3);
+
+		char nodeName[17];
+		if(parser.GetToken(nodeName, sizeof(nodeName)) != dcclite::TOKEN_ID)
+		{
+			Console::SendLog("[CONSOLE]", "cfg invalid node name");
+
+			return;
+		}
+		
+		uint8_t mac[8];
+		for(int i = 0;i < 8; ++i)
+		{
+			int number;
+			if(parser.GetNumber(number) != dcclite::TOKEN_NUMBER)
+			{
+				Console::SendLog("[CONSOLE]", "cfg invalid mac");
+
+				return;
+			}
+
+			mac[i] = number;
+
+			if(i == 7)
+				break;
+
+			if(parser.GetToken(nullptr, 0) != dcclite::TOKEN_COLON)
+			{				
+				Console::SendLog("[CONSOLE]", "cfg invalid mac sep");
+
+				return;
+			}
+		}
+
+		int port;
+		if(parser.GetNumber(port) != dcclite::TOKEN_NUMBER)
+		{
+			Console::SendLog("[CONSOLE]", "cfg invalid port");
+
+			return;
+		}
+
+		uint8_t ip[4];
+		for(int i = 0;i < 4; ++i)
+		{
+			int number;
+			if(parser.GetNumber(number) != dcclite::TOKEN_NUMBER)
+			{
+				Console::SendLog("[CONSOLE]", "invalid ip");
+
+				return;
+			}
+			ip[i] = number; 
+
+			if(parser.GetToken(nullptr, 0) != dcclite::TOKEN_DOT)
+			{
+				Console::SendLog("[CONSOLE]", "invalid ip sep");
+
+				return;
+			}
+		}
+
+		NetUdp::Configure(nodeName, port, mac, ip);
+
+		Console::SendLn("OK");
+	}
+	else
+	{
+		Console::SendLog("[CONSOLE]", "Invalid cmd");
+	}
+}
+
+
+#define MAX_COMMAND_LENGTH 33
+
+void Console::Update()
+{
+	static char command[MAX_COMMAND_LENGTH + 1];
+    static int pos = 0;
+
+	char c;
+
+    while(Console::Available() > 0)
+    {
+        c = Console::ReadChar();		
+
+        if(c == '/')
+        {
+          pos = 0;
+          command[pos] = 0;
+        }
+        else if(c == ';')
+        {
+            command[pos] = 0;
+            Parse(command);
+        }
+        //if we are overflowing, we simple skip characters
+        else if(pos < MAX_COMMAND_LENGTH)
+        {
+            command[pos] = c;
+            ++pos;
+        }
+    }
 }

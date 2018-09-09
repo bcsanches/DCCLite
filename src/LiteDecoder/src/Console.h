@@ -14,6 +14,8 @@ namespace Console
 	extern int Available();
 
 	extern int ReadChar();
+
+	extern void Update();
 };
 
 #endif
