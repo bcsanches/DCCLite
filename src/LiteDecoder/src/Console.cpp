@@ -5,10 +5,12 @@
 
 #include <Arduino.h>
 
+#include <Parser.h>
+
 #include "LiteDecoder.h"
 #include "NetUdp.h"
+#include "Storage.h"
 
-#include "Parser.h"
 
 
 void Console::Init() 
@@ -74,6 +76,8 @@ int Console::ReadChar()
 
 static void Parse(const char *command)
 {
+	Console::SendLog("[CONSOLE]", "Parsing: %s", command);
+
 	if(strncmp(command, "cfg", 3) == 0)
 	{
 		//format: cfg <nodeName> <mac> <port> <srvipv4>		
@@ -87,9 +91,11 @@ static void Parse(const char *command)
 
 			return;
 		}
+
+		//Console::SendLog("[CONSOLE]", "name: %s", nodeName);
 		
-		uint8_t mac[8];
-		for(int i = 0;i < 8; ++i)
+		uint8_t mac[6];
+		for(int i = 0;i < 6; ++i)
 		{
 			int number;
 			if(parser.GetNumber(number) != dcclite::TOKEN_NUMBER)
@@ -99,12 +105,14 @@ static void Parse(const char *command)
 				return;
 			}
 
+			//Console::SendLog("[CONSOLE]", "mac: %d", number);
+
 			mac[i] = number;
 
-			if(i == 7)
+			if(i == 5)
 				break;
 
-			if(parser.GetToken(nullptr, 0) != dcclite::TOKEN_COLON)
+			if(parser.GetToken(nullptr, 0) != dcclite::TOKEN_DOT)
 			{				
 				Console::SendLog("[CONSOLE]", "cfg invalid mac sep");
 
@@ -120,6 +128,8 @@ static void Parse(const char *command)
 			return;
 		}
 
+		//Console::SendLog("[CONSOLE]", "port: %d", port);
+
 		uint8_t ip[4];
 		for(int i = 0;i < 4; ++i)
 		{
@@ -130,7 +140,12 @@ static void Parse(const char *command)
 
 				return;
 			}
-			ip[i] = number; 
+			ip[i] = number; 		
+
+			//Console::SendLog("[CONSOLE]", "ip: %d", number);
+
+			if(i == 3)
+				break;
 
 			if(parser.GetToken(nullptr, 0) != dcclite::TOKEN_DOT)
 			{
@@ -144,6 +159,11 @@ static void Parse(const char *command)
 
 		Console::SendLn("OK");
 	}
+	else if(strncmp(command, "sv", 2) == 0)
+	{
+		Storage::SaveConfig();
+		Console::SendLn("OK");
+	}
 	else
 	{
 		Console::SendLog("[CONSOLE]", "Invalid cmd");
@@ -151,7 +171,7 @@ static void Parse(const char *command)
 }
 
 
-#define MAX_COMMAND_LENGTH 33
+#define MAX_COMMAND_LENGTH 65
 
 void Console::Update()
 {

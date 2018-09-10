@@ -30,14 +30,40 @@ static void UdpCallback(uint16_t dest_port,    	///< Port the packet was sent to
     Serial.println(data);
 }
 
+//<nodeName> <mac> <port> <srvipv4>		
+
 void NetUdp::LoadConfig(EpromStream &stream)
 {
+	for(int i = 0;i < MAX_NODE_NAME; ++i)
+		stream.Get(g_szNodeName[i]);
+
+	g_szNodeName[MAX_NODE_NAME] = 0;
+
 	for(int i = 0;i < 6; ++i)
 	{
 		stream.Get(g_u8Mac[i]);
 	}
 
 	stream.Get(g_iSrcPort);
+
+	for(int i = 0;i < 4; ++i)
+		stream.Get(g_u8ServerIp[i]);
+
+	NetUdp::LogStatus();
+}
+
+void NetUdp::SaveConfig(EpromStream &stream)
+{
+	for(int i = 0;i < MAX_NODE_NAME; ++i)
+		stream.Put(g_szNodeName[i]);
+
+	for(int i = 0;i < 6; ++i)
+		stream.Put(g_u8Mac[i]);
+
+	stream.Put(g_iSrcPort);
+
+	for(int i = 0;i < 4; ++i)
+		stream.Put(g_u8ServerIp[i]);
 }
 
 bool NetUdp::Configure(const char *nodeName, uint16_t port, const uint8_t *mac, const uint8_t *srvIp)
@@ -49,6 +75,8 @@ bool NetUdp::Configure(const char *nodeName, uint16_t port, const uint8_t *mac, 
 
 	memcpy(g_u8Mac, mac, sizeof(g_u8Mac));
 	memcpy(g_u8ServerIp, srvIp, sizeof(g_u8ServerIp));
+
+	return true;
 }
 
 bool NetUdp::Init()
@@ -119,4 +147,14 @@ void NetUdp::SendPacket(const char *data, uint8_t length, const uint8_t *destIp,
 void NetUdp::Update()
 {
 	ether.packetLoop(ether.packetReceive());
+}
+
+void NetUdp::LogStatus()
+{
+	Console::SendLog(MODULE_NAME, "Name: %s, Mac: %X-%X-%X-%X-%X-%X, Port: %d, Srv: %d.%d.%d.%d", 
+		g_szNodeName, 
+		g_u8Mac[0], g_u8Mac[1], g_u8Mac[2], g_u8Mac[3], g_u8Mac[4], g_u8Mac[5], 
+		g_iSrcPort,
+		g_u8ServerIp[0], g_u8ServerIp[1], g_u8ServerIp[2], g_u8ServerIp[3] 
+	);
 }

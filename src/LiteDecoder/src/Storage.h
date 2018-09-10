@@ -9,18 +9,26 @@ class EpromStream
     EpromStream(unsigned int index);
 
     friend struct Storage;
+	friend class LumpWriter;
 
-    unsigned int m_uIndex;
+    uint32_t m_uIndex;
+
+	//for lump writer
+	void Skip(uint32_t bytes);
+	void Seek(uint32_t pos);
 
   public:
-    void Get(unsigned char &byte);
+  	void Get(char &ch);
+    void Get(unsigned char &byte);	
     void Get(unsigned short &number);
 	void Get(uint16_t &number);
 
 	unsigned int Get(char *name, unsigned int nameSize);
 
+	void Put(char ch);
     void Put(unsigned char byte);
     void Put(unsigned short number);
+	void Put(uint16_t number);
 
 	template <typename T>
 	unsigned int PutData(const T &data);
@@ -29,6 +37,20 @@ class EpromStream
     void Put(const char *str);
 #endif
 
+};
+
+class LumpWriter
+{
+	private:
+		const char *m_pszName;
+		EpromStream &m_rStream;
+
+		uint32_t	m_uStartIndex;
+
+	public:
+		LumpWriter(EpromStream &stream, const char *lumpName);
+
+		~LumpWriter();
 };
 
 struct Storage

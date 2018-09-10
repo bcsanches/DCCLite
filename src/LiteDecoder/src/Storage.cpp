@@ -23,6 +23,7 @@ struct Lump
 {
 	char		m_archName[8];
 
+	//size in bytes of the lump data
 	uint16_t 	m_uLength;
 };
 
@@ -144,12 +145,12 @@ void Storage::SaveConfig()
 {   
 	EpromStream stream(0);
 
-	Lump header;
+	LumpWriter lump(stream, STORAGE_MAGIC);
+	{
+		LumpWriter netLump(stream, NET_UDP_STORAGE_ID);
 
-	strncpy(header.m_archName, STORAGE_MAGIC, sizeof(header.m_archName));
-	header.m_uLength = sizeof(header);
-
-	stream.PutData(header);
+		NetUdp::SaveConfig(stream);	
+	}
 
 #if 0
 	unsigned short numDevices = 0;
@@ -214,6 +215,13 @@ EpromStream::EpromStream(unsigned int index):
     //empty
 }
 
+
+void EpromStream::Get(char &ch)
+{
+	ch = EEPROM.read(m_uIndex);
+	m_uIndex += sizeof(ch);
+}
+
 void EpromStream::Get(unsigned char &byte)
 {
 	byte = EEPROM.read(m_uIndex);
@@ -269,6 +277,12 @@ unsigned int EpromStream::Get(char *name, unsigned int nameSize)
 	return nameSize-1;
 }
 
+void EpromStream::Put(char ch)
+{
+	EEPROM.put(m_uIndex, ch);
+	m_uIndex += sizeof(ch);
+}
+
 void EpromStream::Put(unsigned char byte)
 {
 	//NetClient::sendLog(MODULE_NAME, "w 1 byte %c at %u", (char)byte, m_uIndex);
@@ -295,6 +309,12 @@ void EpromStream::Put(unsigned short number)
     m_uIndex += sizeof(number);
 }
 
+void EpromStream::Put(uint16_t number)
+{	
+    EEPROM.put(m_uIndex, number);
+    m_uIndex += sizeof(number);
+}
+
 template <typename T>
 unsigned int EpromStream::PutData(const T &data)
 {
@@ -305,6 +325,16 @@ unsigned int EpromStream::PutData(const T &data)
 	m_uIndex += sizeof(T);
 
 	return index;
+}
+
+void EpromStream::Seek(uint32_t pos)
+{
+	m_uIndex = pos;
+}
+
+void EpromStream::Skip(uint32_t bytes)
+{
+	m_uIndex += bytes;
 }
 
 #if 0
@@ -321,3 +351,27 @@ void EpromStream::Put(const char *str)
     this->Put(static_cast<unsigned char>(*str));
 }
 #endif
+
+LumpWriter::LumpWriter(EpromStream &stream, const char *lumpName):
+	m_pszName(lumpName),
+	m_rStream(stream),
+	m_uStartIndex(stream.m_uIndex)
+{		
+	m_rStream.Skip(sizeof(Lump));
+}
+
+LumpWriter::~LumpWriter()
+{
+	auto currentPos = m_rStream.m_uIndex;
+
+	m_rStream.Seek(m_uStartIndex);
+
+	Lump header;
+
+	strncpy(header.m_archName, m_pszName, sizeof(header.m_archName));
+	header.m_uLength = currentPos - m_uStartIndex - sizeof(Lump);
+
+	m_rStream.PutData(header);
+
+	m_rStream.Seek(currentPos);
+}
