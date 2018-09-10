@@ -28,10 +28,10 @@
     <ClInclude Include="include\Socket.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="include\Parser.cpp" />
     <ClCompile Include="src\ConsoleUtils.cpp" />
     <ClCompile Include="src\LogUtils.cpp" />
     <ClCompile Include="src\NetMessenger.cpp" />
+    <ClCompile Include="src\Parser.cpp" />
     <ClCompile Include="src\Socket.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
