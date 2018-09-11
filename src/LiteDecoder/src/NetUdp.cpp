@@ -10,7 +10,7 @@
 static uint8_t g_u8Mac[] = { 0x00,0x00,0x00,0x00,0x00,0x00 };
 static uint8_t g_u8ServerIp[] = {0x00, 0x00, 0x00, 0x00};
 
-byte Ethernet::buffer[512];
+uint8_t Ethernet::buffer[512];
 
 static uint16_t g_iSrcPort = 4551;
 
@@ -128,7 +128,8 @@ bool NetUdp::Init()
 #endif
 
 	ether.printIp("IP:  ", ether.myip);	
-	ether.printIp("DNS: ", ether.dnsip);    
+	Console::SendLog(MODULE_NAME, "port: %d", g_iSrcPort);
+	//ether.printIp("DNS: ", ether.dnsip);    
 
 	//ether.parseIp(destip, "192.168.1.101");	
 

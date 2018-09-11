@@ -22,9 +22,6 @@
     <ClCompile Include="src\ConsoleUtils.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Parser.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\LogUtils.h">
@@ -43,9 +40,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="include\defs.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Parser.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

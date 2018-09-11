@@ -20,14 +20,21 @@ class EpromStream
   public:
   	void Get(char &ch);
     void Get(unsigned char &byte);	
+
+#ifndef WIN32
     void Get(unsigned short &number);
+#endif
 	void Get(uint16_t &number);
 
 	unsigned int Get(char *name, unsigned int nameSize);
 
 	void Put(char ch);
     void Put(unsigned char byte);
+
+#ifndef WIN32
     void Put(unsigned short number);
+#endif
+
 	void Put(uint16_t number);
 
 	template <typename T>

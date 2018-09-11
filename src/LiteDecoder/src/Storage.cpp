@@ -229,6 +229,7 @@ void EpromStream::Get(unsigned char &byte)
 	++m_uIndex;
 }
 
+#ifndef WIN32
 void EpromStream::Get(unsigned short &number)
 {
 
@@ -241,6 +242,7 @@ void EpromStream::Get(unsigned short &number)
 
 	m_uIndex += sizeof(number);
 }
+#endif
 
 void EpromStream::Get(uint16_t &number)
 {
@@ -291,6 +293,7 @@ void EpromStream::Put(unsigned char byte)
     m_uIndex += sizeof(byte);
 }
 
+#ifndef WIN32
 void EpromStream::Put(unsigned short number)
 {
 	//NetClient::sendLog(MODULE_NAME, "w %u bytes (short) %u at %u", sizeof(number), number,  m_uIndex);
@@ -308,6 +311,7 @@ void EpromStream::Put(unsigned short number)
     EEPROM.put(m_uIndex, number);
     m_uIndex += sizeof(number);
 }
+#endif
 
 void EpromStream::Put(uint16_t number)
 {	

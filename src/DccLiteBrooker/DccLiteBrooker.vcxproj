@@ -46,6 +46,9 @@
     <ProjectReference Include="..\Common\Common.vcxproj">
       <Project>{260f028d-1029-4332-831b-ad7dd20eba4a}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\LiteDecoder\EmbeddedLib.vcxproj">
+      <Project>{e8505ec4-3adb-4c8c-8770-ca51bf0e7d94}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\data\brooker.config.json" />
@@ -107,7 +110,7 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)\bin\</OutDir>
     <IntDir>$(SolutionDir)\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)\src\Common\include\;$(PLOG_HOME)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\src\Common\include\;$(PLOG_HOME)\include;$(SolutionDir)src\LiteDecoder\lib\Common\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>

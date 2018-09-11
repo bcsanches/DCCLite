@@ -50,4 +50,5 @@ void loop()
 
 	Console::Update();
 	Blinker::Update();
+	NetUdp::Update();
 }
