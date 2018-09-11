@@ -19,6 +19,13 @@ static char g_szNodeName[MAX_NODE_NAME + 1];
 
 char textToSend[] = "test 123";
 
+enum States
+{
+	DISCONNECTED,
+	CONNECTING,
+	LOOKING_UP
+}
+
 static void UdpCallback(uint16_t dest_port,    	///< Port the packet was sent to
     uint8_t src_ip[IP_LEN],    					///< IP address of the sender
     uint16_t src_port,    						///< Port the packet was sent from
