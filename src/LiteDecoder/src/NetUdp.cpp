@@ -10,7 +10,9 @@
 static uint8_t g_u8Mac[] = { 0x00,0x00,0x00,0x00,0x00,0x00 };
 static uint8_t g_u8ServerIp[] = {0x00, 0x00, 0x00, 0x00};
 
+#ifndef BCS_ARDUINO_EMULATOR
 uint8_t Ethernet::buffer[512];
+#endif
 
 static uint16_t g_iSrcPort = 4551;
 
@@ -24,7 +26,7 @@ enum States
 	DISCONNECTED,
 	CONNECTING,
 	LOOKING_UP
-}
+};
 
 static void UdpCallback(uint16_t dest_port,    	///< Port the packet was sent to
     uint8_t src_ip[IP_LEN],    					///< IP address of the sender

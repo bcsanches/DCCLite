@@ -90,6 +90,13 @@ namespace ArduinoLib
 		{
 			return g_Pins.at(pin).digitalRead();
 		}
+
+		//
+		//
+		//
+
+		static ArduinoProc_t g_pfnSetup;
+		static ArduinoProc_t g_pfnLoop;
 	}
 	
 	using namespace detail;
@@ -100,12 +107,21 @@ namespace ArduinoLib
 	//
 	//
 
-	void setup()
+	void setup(ArduinoProc_t pfnSetup, ArduinoProc_t pfnLoop)
 	{
+		if(!pfnSetup)
+			throw std::logic_error("[ArduinoLib] setup proc is null");
+
+		if(!pfnLoop)
+			throw std::logic_error("[ArduinoLib] loop proc is null");
+
+		g_pfnSetup = pfnSetup;
+		g_pfnLoop = pfnLoop;
+
 		g_CurrentTime = g_StartTime = DefaultClock_t::now();
 
 		//initialize client
-		::setup();
+		g_pfnSetup();
 	}
 
 	void tick()
@@ -115,7 +131,7 @@ namespace ArduinoLib
 		g_Millis = static_cast<unsigned long>(chrono::duration_cast<chrono::milliseconds>(g_CurrentTime - g_StartTime).count());
 
 		//run client loop
-		::loop();
+		g_pfnLoop();
 	}
 
 	void setSerialInput(const char *data) 

@@ -2,11 +2,14 @@
 
 #include "Arduino.h"
 
+extern void loop();
+extern void setup();
+
 int main(int, char **)
 {
 	printf("hello\n");
 
-	ArduinoLib::setup();
+	ArduinoLib::setup(setup, loop);
 
 	ArduinoLib::tick();
 

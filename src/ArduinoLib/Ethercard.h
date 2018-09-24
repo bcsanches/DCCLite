@@ -2,12 +2,15 @@
 
 #include <cstdint>
 
+#include "ArduinoLibDefs.h"
+
 #define IP_LEN 4
 
-class Ethernet
+class ARDUINO_API Ethernet
 {
 	public:
-		static uint8_t buffer[];
+		//Not supported on emulator
+		//static uint8_t buffer[];
 
 		static uint16_t packetReceive();
 };
@@ -21,7 +24,7 @@ typedef void(*UdpServerCallback)(
 	const char *data,   ///< UDP payload data
 	uint16_t len);        ///< Length of the payload data
 
-class EtherCard : public Ethernet
+class ARDUINO_API EtherCard : public Ethernet
 {
 	public:
 		static uint8_t myip[IP_LEN];    ///< IP address
@@ -41,4 +44,4 @@ class EtherCard : public Ethernet
 		static void printIp(const char* msg, const uint8_t *buf);
 };
 
-extern EtherCard ether;
+ARDUINO_API extern EtherCard ether;

@@ -11,7 +11,7 @@ namespace dcclite
 	class NetMessenger
 	{
 		public:
-			NetMessenger(Socket socket);
+			NetMessenger(Socket &&socket);
 
 
 			std::tuple<Socket::Status, std::string> Poll();

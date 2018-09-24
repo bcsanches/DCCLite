@@ -2,7 +2,9 @@
 
 #include <string>
 
-struct SerialImpl
+#include "ArduinoLibDefs.h"
+
+struct ARDUINO_API SerialImpl
 {
 	void begin(int frequency);
 
@@ -22,10 +24,15 @@ struct SerialImpl
 	}
 
 	private:
+#pragma warning(disable:4251)
 		std::string m_strData;
+#pragma warning(default:4251)
+
 		size_t		m_uPos = 0;
+
+
 };
 
-extern SerialImpl Serial;
+ARDUINO_API extern SerialImpl Serial;
 
 

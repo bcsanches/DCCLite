@@ -2,9 +2,11 @@
 
 #include <array>
 
+#include "ArduinoLibDefs.h"
+
 #define EEPROM_SIZE 2048
 
-struct EEPROMImpl
+struct ARDUINO_API EEPROMImpl
 {
 	void put(size_t pos, const void *ptr, size_t len);
 	void get(size_t pos, void *ptr, size_t len);
@@ -29,5 +31,5 @@ struct EEPROMImpl
 		std::array<unsigned char, EEPROM_SIZE> m_Data;
 };
 
-extern EEPROMImpl EEPROM;
+ARDUINO_API extern EEPROMImpl EEPROM;
 

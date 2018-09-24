@@ -17,5 +17,6 @@
     <ClInclude Include="EEPROM.h" />
     <ClInclude Include="Serial.h" />
     <ClInclude Include="Ethercard.h" />
+    <ClInclude Include="ArduinoLibDefs.h" />
   </ItemGroup>
 </Project>

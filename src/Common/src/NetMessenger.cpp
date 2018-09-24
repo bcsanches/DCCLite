@@ -2,7 +2,7 @@
 
 namespace dcclite
 {
-	NetMessenger::NetMessenger(Socket socket) :
+	NetMessenger::NetMessenger(Socket &&socket) :
 		m_clSocket(std::move(socket))
 	{
 		//empty

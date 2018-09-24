@@ -18,7 +18,7 @@ static ServiceClass terminalService("Terminal",
 class TerminalClient
 {
 	public:
-		TerminalClient(Socket socket);
+		TerminalClient(Socket &&socket);
 		TerminalClient(const TerminalClient &client) = delete;
 		TerminalClient(TerminalClient &&other);
 
@@ -38,7 +38,7 @@ class TerminalClient
 		NetMessenger m_clMessenger;
 };
 
-TerminalClient::TerminalClient(Socket socket):
+TerminalClient::TerminalClient(Socket &&socket):
 	m_clMessenger(std::move(socket))
 {
 	//emtpy

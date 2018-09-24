@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ArduinoLibDefs.h"
 #include "Serial.h"
 
 #define BCS_ARDUINO_EMULATOR 1
@@ -17,28 +18,24 @@ enum VoltageModes
 	HIGH
 };
 
-extern void pinMode(int pin, PinModes mode);
-extern int digitalRead(int pin);
+ARDUINO_API extern void pinMode(int pin, PinModes mode);
+ARDUINO_API extern int digitalRead(int pin);
 
-extern void digitalWrite(int pin, int value);
+ARDUINO_API extern void digitalWrite(int pin, int value);
 
-extern unsigned int bitRead(unsigned int flags, int pos);
+ARDUINO_API extern unsigned int bitRead(unsigned int flags, int pos);
 
-extern unsigned long millis();
+ARDUINO_API extern unsigned long millis();
 
-//
-// Client functions that should be implemented
-//
-extern void setup();
-extern void loop();
+typedef void(*ArduinoProc_t)();
 
 namespace ArduinoLib
 {
-	void setup();
+	ARDUINO_API void setup(ArduinoProc_t pfnSetup, ArduinoProc_t pfnLoop);
 
-	void tick();
+	ARDUINO_API void tick();
 
-	void setSerialInput(const char *data);
+	ARDUINO_API void setSerialInput(const char *data);
 
-	void setPinDigitalVoltage(int pin, VoltageModes voltage);
+	ARDUINO_API void setPinDigitalVoltage(int pin, VoltageModes voltage);
 }
