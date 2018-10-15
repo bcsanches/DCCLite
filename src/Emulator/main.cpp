@@ -9,37 +9,37 @@ int main(int, char **)
 {
 	printf("hello\n");
 
-	ArduinoLib::setup(setup, loop);
+	ArduinoLib::Setup(setup, loop);
 
-	ArduinoLib::tick();
+	ArduinoLib::Tick();
 
-	ArduinoLib::setSerialInput("<*C OUTD 1 7 0>");
+	ArduinoLib::SetSerialInput("<*C OUTD 1 7 0>");
 
-	ArduinoLib::tick();
+	ArduinoLib::Tick();
 
-	ArduinoLib::setSerialInput("<*C TRGR 2 6 1 T>");
+	ArduinoLib::SetSerialInput("<*C TRGR 2 6 1 T>");
 
-	ArduinoLib::tick();
+	ArduinoLib::Tick();
 
-	ArduinoLib::setSerialInput("<*C TRGR 3 5 1 C>");		
+	ArduinoLib::SetSerialInput("<*C TRGR 3 5 1 C>");		
 
-	ArduinoLib::tick();
+	ArduinoLib::Tick();
 
-	ArduinoLib::setPinDigitalVoltage(6, LOW);	
+	ArduinoLib::SetPinDigitalVoltage(6, LOW);	
 
-	ArduinoLib::tick();	
+	ArduinoLib::Tick();	
 
-	ArduinoLib::setPinDigitalVoltage(5, LOW);
+	ArduinoLib::SetPinDigitalVoltage(5, LOW);
 
-	ArduinoLib::tick();
+	ArduinoLib::Tick();
 
-	ArduinoLib::setPinDigitalVoltage(6, HIGH);
+	ArduinoLib::SetPinDigitalVoltage(6, HIGH);
 
-	ArduinoLib::tick();
+	ArduinoLib::Tick();
 
-	ArduinoLib::setPinDigitalVoltage(5, HIGH);
+	ArduinoLib::SetPinDigitalVoltage(5, HIGH);
 
-	ArduinoLib::tick();
+	ArduinoLib::Tick();
 
 	return 0;
 }

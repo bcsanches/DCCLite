@@ -107,7 +107,7 @@ namespace ArduinoLib
 	//
 	//
 
-	void setup(ArduinoProc_t pfnSetup, ArduinoProc_t pfnLoop)
+	void Setup(ArduinoProc_t pfnSetup, ArduinoProc_t pfnLoop)
 	{
 		if(!pfnSetup)
 			throw std::logic_error("[ArduinoLib] setup proc is null");
@@ -124,7 +124,7 @@ namespace ArduinoLib
 		g_pfnSetup();
 	}
 
-	void tick()
+	void Tick()
 	{
 		g_CurrentTime = DefaultClock_t::now();
 
@@ -134,12 +134,12 @@ namespace ArduinoLib
 		g_pfnLoop();
 	}
 
-	void setSerialInput(const char *data) 
+	void SetSerialInput(const char *data) 
 	{
 		Serial.internalSetData(data);
 	}
 
-	void setPinDigitalVoltage(int pin, VoltageModes voltage)
+	void SetPinDigitalVoltage(int pin, VoltageModes voltage)
 	{
 		g_Pins.at(pin).setDigitalVoltage(voltage);
 	}

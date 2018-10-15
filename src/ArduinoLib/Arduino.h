@@ -31,11 +31,11 @@ typedef void(*ArduinoProc_t)();
 
 namespace ArduinoLib
 {
-	ARDUINO_API void setup(ArduinoProc_t pfnSetup, ArduinoProc_t pfnLoop);
+	ARDUINO_API void Setup(ArduinoProc_t pfnSetup, ArduinoProc_t pfnLoop);
 
-	ARDUINO_API void tick();
+	ARDUINO_API void Tick();
 
-	ARDUINO_API void setSerialInput(const char *data);
+	ARDUINO_API void SetSerialInput(const char *data);
 
-	ARDUINO_API void setPinDigitalVoltage(int pin, VoltageModes voltage);
+	ARDUINO_API void SetPinDigitalVoltage(int pin, VoltageModes voltage);
 }
