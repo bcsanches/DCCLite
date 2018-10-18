@@ -31,9 +31,6 @@
     <ClInclude Include="src\Decoder.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\Node.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\DecoderManager.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -41,6 +38,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\TerminalCmd.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Device.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
@@ -66,13 +66,13 @@
     <ClCompile Include="src\DecoderManager.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Node.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\OutputDecoder.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\TerminalCmd.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Device.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

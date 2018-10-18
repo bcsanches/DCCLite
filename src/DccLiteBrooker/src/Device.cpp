@@ -1,9 +1,9 @@
-#include "Node.h"
+#include "Device.h"
 
 #include "Decoder.h"
 #include "DccLiteService.h"
 
-Node::Node(const std::string &name, DccLiteService &dccService, const nlohmann::json &params) :
+Device::Device(const std::string &name, DccLiteService &dccService, const nlohmann::json &params) :
 	m_strName(name),
 	m_clDccService(dccService),
 	m_eStatus(Status::OFFLINE)

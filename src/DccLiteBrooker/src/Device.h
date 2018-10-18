@@ -7,7 +7,7 @@
 class DccLiteService;
 class Decoder;
 
-class Node
+class Device
 {
 	public:
 		enum class Status
@@ -17,10 +17,10 @@ class Node
 		};
 
 	public:
-		Node(const std::string &name, DccLiteService &dccService, const nlohmann::json &params);
+		Device(const std::string &name, DccLiteService &dccService, const nlohmann::json &params);
 
-		Node(const Node &) = delete;
-		Node(Node &&) = delete;
+		Device(const Device &) = delete;
+		Device(Device &&) = delete;
 
 	private:
 		std::string m_strName;

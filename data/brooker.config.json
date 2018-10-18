@@ -5,7 +5,7 @@
       "class": "DccLite",
       "name": "Dcc1",
       "port": 8989,
-      "nodes": [
+      "devices": [
         {
           "name": "ArduinoRelayStaging",
           "class": "ArduinoLeonard",

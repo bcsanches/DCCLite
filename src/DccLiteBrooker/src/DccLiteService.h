@@ -10,7 +10,7 @@
 #include "Socket.h"
 
 
-class Node;
+class Device;
 
 class DccLiteService : public Service
 {
@@ -32,7 +32,7 @@ class DccLiteService : public Service
 		virtual void Update() override;
 
 	private:
-		std::map<std::string, std::unique_ptr<Node>> m_mapNodes;
+		std::map<std::string, std::unique_ptr<Device>> m_mapDevices;
 
 		DecoderManager m_clDecoderManager;
 
