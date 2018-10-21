@@ -4,12 +4,13 @@
 #include <memory>
 #include <string>
 
+#include "Object.h"
 #include "Service.h"
 
 class Brooker
 {
-	private:
-		std::map<std::string, std::unique_ptr<Service>> m_mapServices;	
+	private:	
+		dcclite::Object m_clRoot;
 
 	public:
 		Brooker();

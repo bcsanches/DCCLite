@@ -25,25 +25,9 @@ DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::stri
 
 	for (auto &device : devicesData)
 	{
-		auto nodeName = device["name"].get<std::string>();
+		auto nodeName = device["name"].get<std::string>();		
 
-		auto existingNodeIt = m_mapDevices.find(nodeName);
-		if (existingNodeIt != m_mapDevices.end())
-		{
-			std::stringstream stream;
-
-			stream << "error: device " << nodeName << " already exists on this service (" << this->GetName() << ").";
-
-			throw std::runtime_error(stream.str());
-		}		
-
-		auto pair = m_mapDevices.insert(
-			existingNodeIt,
-			std::make_pair(
-				nodeName,
-				std::make_unique<Device>(nodeName, *this, device)
-			)
-		);
+		this->AddChild(std::make_unique<Device>(nodeName, *this, device));
 	}
 }
 

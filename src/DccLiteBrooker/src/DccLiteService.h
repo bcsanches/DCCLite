@@ -31,9 +31,7 @@ class DccLiteService : public Service
 
 		virtual void Update() override;
 
-	private:
-		std::map<std::string, std::unique_ptr<Device>> m_mapDevices;
-
+	private:		
 		DecoderManager m_clDecoderManager;
 
 		dcclite::Socket m_clSocket;

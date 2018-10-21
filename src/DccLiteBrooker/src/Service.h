@@ -3,23 +3,22 @@
 #include <string>
 
 #include "ClassInfo.h"
+#include "Object.h"
 
 #include "json.hpp"
 
 class Service;
 typedef dcclite::ClassInfo<Service, const std::string&, const nlohmann::json &> ServiceClass;
 
-class Service
+class Service: public dcclite::Object
 {
-	private:
-		std::string m_strName;
-
+	private:		
 		const ServiceClass &m_rclServiceClass;
 
 	protected:
-		Service(const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params):
-			m_rclServiceClass(serviceClass),
-			m_strName(name)
+		Service(const ServiceClass &serviceClass, std::string name, const nlohmann::json &params):
+			Object(std::move(name)),
+			m_rclServiceClass(serviceClass)
 		{
 			//empty
 		}
@@ -28,9 +27,7 @@ class Service
 		Service(Service &&) = delete;
 
 	public:
-		virtual ~Service() {}
-
-		const std::string &GetName() { return m_strName; }
+		virtual ~Service() {}		
 
 		virtual void Update() { ; }
 

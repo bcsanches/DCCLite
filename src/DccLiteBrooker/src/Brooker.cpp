@@ -30,7 +30,8 @@ static std::unique_ptr<Service> CreateService(const json &obj)
 	throw std::runtime_error(stream.str());
 }
 
-Brooker::Brooker()
+Brooker::Brooker():
+	m_clRoot("root")
 {
 	//empty
 }
@@ -59,14 +60,14 @@ void Brooker::LoadConfig(const char *configFileName)
 	{
 		auto service = CreateService(serviceData);
 
-		m_mapServices.insert(std::make_pair(service->GetName(), std::move(service)));
+		m_clRoot.AddChild(std::move(service));
 	}
 }
 
 void Brooker::Update()
 {
-	for (auto &it : m_mapServices)
+	for (auto &it : m_clRoot)
 	{
-		it.second->Update();
+		static_cast<Service *>(it.second.get())->Update();
 	}
 }

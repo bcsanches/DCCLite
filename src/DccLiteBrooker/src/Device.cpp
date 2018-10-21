@@ -3,8 +3,8 @@
 #include "Decoder.h"
 #include "DccLiteService.h"
 
-Device::Device(const std::string &name, DccLiteService &dccService, const nlohmann::json &params) :
-	m_strName(name),
+Device::Device(std::string name, DccLiteService &dccService, const nlohmann::json &params) :
+	Object(std::move(name)),
 	m_clDccService(dccService),
 	m_eStatus(Status::OFFLINE)
 {	
