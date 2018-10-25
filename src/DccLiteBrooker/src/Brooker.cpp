@@ -66,8 +66,10 @@ void Brooker::LoadConfig(const char *configFileName)
 
 void Brooker::Update()
 {
-	for (auto &it : m_clRoot)
+	auto enumerator = m_clRoot.GetEnumerator();
+
+	while (enumerator.MoveNext())
 	{
-		static_cast<Service *>(it.second.get())->Update();
-	}
+		enumerator.TryGetCurrent<Service>()->Update();
+	}	
 }

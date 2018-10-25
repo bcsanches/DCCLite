@@ -10,7 +10,7 @@
 class Brooker
 {
 	private:	
-		dcclite::Object m_clRoot;
+		dcclite::FolderObject m_clRoot;
 
 	public:
 		Brooker();

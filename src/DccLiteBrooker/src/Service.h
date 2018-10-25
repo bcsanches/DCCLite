@@ -10,14 +10,14 @@
 class Service;
 typedef dcclite::ClassInfo<Service, const std::string&, const nlohmann::json &> ServiceClass;
 
-class Service: public dcclite::Object
+class Service: public dcclite::FolderObject
 {
 	private:		
 		const ServiceClass &m_rclServiceClass;
 
 	protected:
 		Service(const ServiceClass &serviceClass, std::string name, const nlohmann::json &params):
-			Object(std::move(name)),
+			FolderObject(std::move(name)),
 			m_rclServiceClass(serviceClass)
 		{
 			//empty

@@ -8,7 +8,7 @@ class OutputDecoder : public Decoder
 		OutputDecoder(const Class &decoderClass,
 			const Address &address,
 			const std::string &name,
-			DecoderManager &owner,
+			DccLiteService &owner,
 			const nlohmann::json &params
 		);
 

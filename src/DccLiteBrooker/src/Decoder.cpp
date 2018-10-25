@@ -26,9 +26,9 @@ Decoder::Address::Address(const nlohmann::json::value_type &value)
 	}
 }
 
-Decoder::Decoder(const Class &decoderClass, const Address &address, const std::string &name, DecoderManager &owner, const nlohmann::json &params):
-	m_iAddress(address),
-	m_strName(name),
+Decoder::Decoder(const Class &decoderClass, const Address &address, std::string name, DccLiteService &owner, const nlohmann::json &params):
+	Object(std::move(name)),
+	m_iAddress(address),	
 	m_rclManager(owner)
 {
 	//empty

@@ -22,7 +22,6 @@
     <ClInclude Include="src\Brooker.h" />
     <ClInclude Include="src\DccLiteService.h" />
     <ClInclude Include="src\Decoder.h" />
-    <ClInclude Include="src\DecoderManager.h" />
     <ClInclude Include="src\json.hpp" />
     <ClInclude Include="src\Device.h" />
     <ClInclude Include="src\OutputDecoder.h" />
@@ -34,7 +33,6 @@
     <ClCompile Include="src\Brooker.cpp" />
     <ClCompile Include="src\DccLiteService.cpp" />
     <ClCompile Include="src\Decoder.cpp" />
-    <ClCompile Include="src\DecoderManager.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Device.cpp" />
     <ClCompile Include="src\OutputDecoder.cpp" />

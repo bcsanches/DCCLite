@@ -5,7 +5,7 @@
 #include <map>
 #include <string>
 
-#include "DecoderManager.h"
+#include "Decoder.h"
 
 #include "Socket.h"
 
@@ -19,20 +19,21 @@ class DccLiteService : public Service
 
 		virtual ~DccLiteService();
 
-		inline Decoder &Create(
+		Decoder &Create(
 			const std::string &className,
 			Decoder::Address address,
 			const std::string &name,
 			const nlohmann::json &params
-		)
-		{
-			return m_clDecoderManager.Create(className, address, name, params);
-		}
+		);
 
 		virtual void Update() override;
 
-	private:		
-		DecoderManager m_clDecoderManager;
-
+	private:
 		dcclite::Socket m_clSocket;
+
+		FolderObject *m_pDecoders;
+		FolderObject *m_pAddresses;
+		FolderObject *m_pDevices;
 };
+
+

@@ -11,6 +11,10 @@ static ServiceClass dccLiteService("DccLite",
 DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params) :
 	Service(serviceClass, name, params)
 {
+	m_pDecoders = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("decoders")));
+	m_pAddresses = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("addresses")));
+	m_pDevices = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("devices")));	
+
 	auto port = params["port"].get<int>();
 
 	if (!m_clSocket.Open(port, dcclite::Socket::Type::DATAGRAM))
@@ -27,13 +31,38 @@ DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::stri
 	{
 		auto nodeName = device["name"].get<std::string>();		
 
-		this->AddChild(std::make_unique<Device>(nodeName, *this, device));
+		m_pDevices->AddChild(std::make_unique<Device>(nodeName, *this, device));
 	}
 }
 
 DccLiteService::~DccLiteService()
 {
 	//empty
+}
+
+Decoder &DccLiteService::Create(
+	const std::string &className,
+	Decoder::Address address,
+	const std::string &name,
+	const nlohmann::json &params
+)
+{
+	auto decoder = Decoder::Class::TryProduce(className.c_str(), address, name, *this, params);
+	if (!decoder)
+	{
+		std::stringstream stream;
+
+		stream << "error: failed to instantiate decoder " << address << " named " << name;
+
+		throw std::runtime_error(stream.str());
+	}
+
+	auto pDecoder = decoder.get();	
+
+	m_pDecoders->AddChild(std::move(decoder));
+	m_pAddresses->AddChild(std::make_unique<dcclite::Shortcut>(pDecoder->GetAddress().ToString(), *pDecoder));
+
+	return *pDecoder;
 }
 
 void DccLiteService::Update()

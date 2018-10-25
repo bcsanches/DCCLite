@@ -6,21 +6,37 @@
 
 namespace dcclite
 {
+	class FolderObject;
+
 	class IObject
 	{
+		friend class FolderObject;
+
 		public:
 			IObject(std::string name) :
-				m_strName(std::move(name))
+				m_strName(std::move(name)),
+				m_pParent(nullptr)
+			{
+				//empty
+			}
+
+			virtual ~IObject()
 			{
 				//empty
 			}
 
 			inline const std::string &GetName() const { return m_strName; }
 
+			virtual bool IsShortcut() const { return false; }
+
 		private:
 			const std::string m_strName;
+
+		protected:			
+			FolderObject *m_pParent;
 	};
 
+#if 0
 	template <typename T>
 	class GenericObject: public IObject
 	{
@@ -73,14 +89,76 @@ namespace dcclite
 			}
 
 		private:			
-			IObject *m_pParent;
+			GenericObject<T> *m_pParent;
 
 			Container_t m_mapObjects;
 	};
+#endif
 
-	class Object: public GenericObject<Object>
+	class Object: public IObject
 	{
 		public:
 			Object(std::string name);			
+	};	
+
+	class Shortcut : public IObject
+	{
+		public:
+			Shortcut(std::string name, IObject &target) :
+				IObject(std::move(name)),
+				m_rTarget(target)
+			{
+				//empty
+			}
+
+			IObject *TryResolve()
+			{
+				return &m_rTarget;
+			}
+
+			virtual bool IsShortcut() const { return true; }
+
+		private:
+			IObject &m_rTarget;			
 	};
+
+	class FolderObject : public IObject
+	{
+		public:
+			typedef std::map<std::string_view, std::unique_ptr<IObject>> Container_t;
+			typename typedef Container_t::iterator Iterator_t;
+
+			class FolderEnumerator
+			{
+				public:
+					FolderEnumerator(Iterator_t begin, Iterator_t end);
+
+					bool MoveNext();
+
+					IObject *TryGetCurrent();
+
+					template<typename T>
+					inline T *TryGetCurrent()
+					{
+						return static_cast<T*>(TryGetCurrent());
+					}
+
+				private:
+					FolderObject::Iterator_t m_itBegin, m_itEnd, m_itCurrent;
+					bool m_fFirst;
+			};
+
+		public:
+			FolderObject(std::string name);
+
+			IObject *AddChild(std::unique_ptr<IObject> obj);
+
+			inline FolderEnumerator GetEnumerator() 
+			{
+				return FolderEnumerator(m_mapObjects.begin(), m_mapObjects.end());
+			}
+
+		private:
+			Container_t m_mapObjects;
+	};	
 }

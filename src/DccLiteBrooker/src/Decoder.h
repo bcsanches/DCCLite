@@ -4,12 +4,14 @@
 
 #include "ClassInfo.h"
 
+#include "Object.h"
+
 #include "json.hpp"
 
-class DecoderManager;
+class DccLiteService;
 class Node;
 
-class Decoder
+class Decoder: public dcclite::Object
 {
 	public:
 		class Address
@@ -37,28 +39,41 @@ class Decoder
 					return m_iAddress < rhs.m_iAddress;
 				}
 
+				std::string ToString()
+				{
+					std::stringstream sstream;
+
+					sstream << m_iAddress;
+
+					return sstream.str();
+				}
+
 			private:
 				int m_iAddress;
 
 				friend std::ostream& operator<<(std::ostream& os, const Address& address);
 		};
 
-		typedef dcclite::ClassInfo<Decoder, const Address &, const std::string &, DecoderManager &, const nlohmann::json &> Class;
+		typedef dcclite::ClassInfo<Decoder, const Address &, const std::string &, DccLiteService &, const nlohmann::json &> Class;
 
 	public:
 		Decoder(
 			const Class &decoderClass, 
 			const Address &address, 
-			const std::string &name,
-			DecoderManager &owner, 
+			std::string name,
+			DccLiteService &owner,
 			const nlohmann::json &params
 		);
 
-	private:
-		Address m_iAddress;
-		std::string m_strName;
+		inline Address GetAddress() const
+		{
+			return m_iAddress;
+		}
 
-		DecoderManager &m_rclManager;
+	private:
+		Address m_iAddress;		
+
+		DccLiteService &m_rclManager;
 };
 
 inline std::ostream &operator<<(std::ostream& os, const Decoder::Address &address)
