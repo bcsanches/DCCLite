@@ -8,6 +8,9 @@
     <Filter Include="src">
       <UniqueIdentifier>{b91adb34-09cb-4d2b-b58c-97421c19c5ab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\fmt">
+      <UniqueIdentifier>{61a04c44-bd4b-4b06-b97a-a88d6f72a4a5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\LogUtils.cpp">
@@ -24,6 +27,12 @@
     </ClCompile>
     <ClCompile Include="src\Object.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\contrib\fmt\src\format.cc">
+      <Filter>src\fmt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\contrib\fmt\src\posix.cc">
+      <Filter>src\fmt</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -47,6 +56,33 @@
     </ClInclude>
     <ClInclude Include="include\Object.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\contrib\fmt\include\fmt\color.h">
+      <Filter>src\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\contrib\fmt\include\fmt\core.h">
+      <Filter>src\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\contrib\fmt\include\fmt\format.h">
+      <Filter>src\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\contrib\fmt\include\fmt\format-inl.h">
+      <Filter>src\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\contrib\fmt\include\fmt\ostream.h">
+      <Filter>src\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\contrib\fmt\include\fmt\posix.h">
+      <Filter>src\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\contrib\fmt\include\fmt\printf.h">
+      <Filter>src\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\contrib\fmt\include\fmt\ranges.h">
+      <Filter>src\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\contrib\fmt\include\fmt\time.h">
+      <Filter>src\fmt</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

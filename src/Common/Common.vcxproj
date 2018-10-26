@@ -19,6 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\contrib\fmt\include\fmt\color.h" />
+    <ClInclude Include="..\..\contrib\fmt\include\fmt\core.h" />
+    <ClInclude Include="..\..\contrib\fmt\include\fmt\format-inl.h" />
+    <ClInclude Include="..\..\contrib\fmt\include\fmt\format.h" />
+    <ClInclude Include="..\..\contrib\fmt\include\fmt\ostream.h" />
+    <ClInclude Include="..\..\contrib\fmt\include\fmt\posix.h" />
+    <ClInclude Include="..\..\contrib\fmt\include\fmt\printf.h" />
+    <ClInclude Include="..\..\contrib\fmt\include\fmt\ranges.h" />
+    <ClInclude Include="..\..\contrib\fmt\include\fmt\time.h" />
     <ClInclude Include="include\ClassInfo.h" />
     <ClInclude Include="include\ConsoleUtils.h" />
     <ClInclude Include="include\defs.h" />
@@ -28,6 +37,8 @@
     <ClInclude Include="include\Socket.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\contrib\fmt\src\format.cc" />
+    <ClCompile Include="..\..\contrib\fmt\src\posix.cc" />
     <ClCompile Include="src\ConsoleUtils.cpp" />
     <ClCompile Include="src\LogUtils.cpp" />
     <ClCompile Include="src\NetMessenger.cpp" />
@@ -95,7 +106,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)\lib\</OutDir>
     <IntDir>$(SolutionDir)\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)\src\Common\include\;$(BOOST_HOME)\;$(PLOG_HOME)\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\src\Common\include\;$(BOOST_HOME)\;$(PLOG_HOME)\include;$(SolutionDir)\contrib\fmt\include\;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

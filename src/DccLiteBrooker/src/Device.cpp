@@ -23,6 +23,6 @@ Device::Device(std::string name, DccLiteService &dccService, const nlohmann::jso
 		auto className = element["class"].get<std::string>();
 		Decoder::Address address{ element["address"] };
 
-		m_vecDecoders.push_back(&m_clDccService.Create(className, address, decoderName, decodersData));
+		m_vecDecoders.push_back(&m_clDccService.Create(className, address, decoderName, element));
 	}
 }

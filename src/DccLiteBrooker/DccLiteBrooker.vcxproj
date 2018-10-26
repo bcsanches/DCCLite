@@ -108,7 +108,7 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)\bin\</OutDir>
     <IntDir>$(SolutionDir)\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)\src\Common\include\;$(PLOG_HOME)\include;$(SolutionDir)src\LiteDecoder\lib\Common\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\src\Common\include\;$(PLOG_HOME)\include;$(SolutionDir)src\LiteDecoder\lib\Common\;$(SolutionDir)\contrib\fmt\include\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>

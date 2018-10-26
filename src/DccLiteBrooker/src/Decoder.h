@@ -8,6 +8,8 @@
 
 #include "json.hpp"
 
+#include <fmt/format.h>
+
 class DccLiteService;
 class Node;
 
@@ -41,11 +43,7 @@ class Decoder: public dcclite::Object
 
 				std::string ToString()
 				{
-					std::stringstream sstream;
-
-					sstream << m_iAddress;
-
-					return sstream.str();
+					return fmt::format("{:#05x}", m_iAddress);					
 				}
 
 			private:

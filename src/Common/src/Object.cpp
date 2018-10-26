@@ -3,6 +3,8 @@
 #include <cassert>
 #include <sstream>
 
+#include <fmt/format.h>
+
 namespace dcclite
 {
 	Object::Object(std::string name) :
@@ -20,29 +22,23 @@ namespace dcclite
 	IObject *FolderObject::AddChild(std::unique_ptr<IObject> obj)
 	{
 		if (obj->m_pParent)
-		{
-			std::stringstream stream;
-
-			stream << "error: Object::AddChild(std::unique_ptr<Object> obj) object " << obj->GetName() << " is a child of " << obj->m_pParent->GetName();
-
-			throw std::runtime_error(stream.str());
+		{			
+			throw std::runtime_error(fmt::format("error: Object::AddChild(std::unique_ptr<Object> obj) object {} is a child of {}", obj->GetName(), obj->m_pParent->GetName()));
 		}
 
 		auto it = m_mapObjects.lower_bound(obj->GetName());
 
 		if ((it != m_mapObjects.end()) && (!m_mapObjects.key_comp()(obj->GetName(), it->first)))
 		{
-			std::stringstream stream;
-
-			stream << "error: Object::AddChild(std::unique_ptr<Object> obj) object " << obj->GetName() << " already exists in " << this->GetName();
-
-			throw std::runtime_error(stream.str());
+			throw std::runtime_error(fmt::format("error: Object::AddChild(std::unique_ptr<Object> obj) object {} already exists in {}", obj->GetName(), this->GetName()));			
 		}
 
-		m_mapObjects.insert(it, std::make_pair(obj->GetName(), std::move(obj)));
-		obj->m_pParent = this;
+		auto ptr = obj.get();
 
-		return obj.get();
+		m_mapObjects.insert(it, std::pair<std::string_view, std::unique_ptr<IObject>>(obj->GetName(), std::move(obj)));
+		ptr->m_pParent = this;
+
+		return ptr;
 	}
 
 	FolderObject::FolderEnumerator::FolderEnumerator(FolderObject::Iterator_t begin, FolderObject::Iterator_t end):

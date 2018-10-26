@@ -12,8 +12,9 @@ OutputDecoder::OutputDecoder(
 	const std::string &name,
 	DccLiteService &owner,
 	const nlohmann::json &params
-):
-	Decoder(decoderClass, address, name, owner, params)
+) :
+	Decoder(decoderClass, address, name, owner, params),
+	m_iPin(params["pin"].get<int>())
 {
 	//empty
 }

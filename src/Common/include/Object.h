@@ -25,7 +25,7 @@ namespace dcclite
 				//empty
 			}
 
-			inline const std::string &GetName() const { return m_strName; }
+			inline std::string_view GetName() const { return m_strName; }
 
 			virtual bool IsShortcut() const { return false; }
 
