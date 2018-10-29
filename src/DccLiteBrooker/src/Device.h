@@ -9,7 +9,7 @@
 class DccLiteService;
 class Decoder;
 
-class Device: public dcclite::Object
+class Device: public dcclite::FolderObject
 {
 	public:
 		enum class Status
@@ -25,9 +25,7 @@ class Device: public dcclite::Object
 		Device(Device &&) = delete;
 
 	private:		
-		DccLiteService &m_clDccService;
-
-		std::vector<Decoder *> m_vecDecoders;
+		DccLiteService &m_clDccService;		
 
 		Status					m_eStatus;
 };

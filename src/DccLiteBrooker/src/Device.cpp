@@ -4,7 +4,7 @@
 #include "DccLiteService.h"
 
 Device::Device(std::string name, DccLiteService &dccService, const nlohmann::json &params) :
-	Object(std::move(name)),
+	FolderObject(std::move(name)),
 	m_clDccService(dccService),
 	m_eStatus(Status::OFFLINE)
 {	
@@ -23,6 +23,8 @@ Device::Device(std::string name, DccLiteService &dccService, const nlohmann::jso
 		auto className = element["class"].get<std::string>();
 		Decoder::Address address{ element["address"] };
 
-		m_vecDecoders.push_back(&m_clDccService.Create(className, address, decoderName, element));
+		auto &decoder = m_clDccService.Create(className, address, decoderName, element);
+
+		this->AddChild(std::make_unique<dcclite::Shortcut>(std::string(decoder.GetName()), decoder));
 	}
 }
