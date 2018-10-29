@@ -3,6 +3,8 @@
 #include <array>
 #include <chrono>
 
+#include "DynamicLibrary.h"
+
 using namespace std;
 
 #define MAX_PINS 64
@@ -107,16 +109,14 @@ namespace ArduinoLib
 	//
 	//
 
-	void Setup(ArduinoProc_t pfnSetup, ArduinoProc_t pfnLoop)
+	DynamicLibrary g_ModuleLib;
+
+	void Setup(std::string_view moduleName)
 	{
-		if(!pfnSetup)
-			throw std::logic_error("[ArduinoLib] setup proc is null");
+		g_ModuleLib.Load(moduleName);
 
-		if(!pfnLoop)
-			throw std::logic_error("[ArduinoLib] loop proc is null");
-
-		g_pfnSetup = pfnSetup;
-		g_pfnLoop = pfnLoop;
+		g_pfnSetup = static_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("setup"));
+		g_pfnLoop = static_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("loop"));		
 
 		g_CurrentTime = g_StartTime = DefaultClock_t::now();
 

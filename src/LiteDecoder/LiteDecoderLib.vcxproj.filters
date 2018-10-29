@@ -19,5 +19,6 @@
     <ClInclude Include="src\LiteDecoder.h" />
     <ClInclude Include="src\NetUdp.h" />
     <ClInclude Include="src\Storage.h" />
+    <ClInclude Include="src\main.h" />
   </ItemGroup>
 </Project>

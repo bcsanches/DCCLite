@@ -1,5 +1,6 @@
 #include <Arduino.h>
 
+#include "main.h"
 #include "Blinker.h"
 #include "Console.h"
 #include "NetUdp.h"

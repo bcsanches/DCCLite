@@ -9,7 +9,11 @@ int main(int, char **)
 {
 	printf("hello\n");
 
-	ArduinoLib::Setup(setup, loop);
+#ifdef _DEBUG
+	ArduinoLib::Setup("LiteDecoderLib_d.dll");
+#else
+	ArduinoLib::Setup("LiteDecoderLib.dll");
+#endif
 
 	ArduinoLib::Tick();
 

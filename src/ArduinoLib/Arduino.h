@@ -31,7 +31,7 @@ typedef void(*ArduinoProc_t)();
 
 namespace ArduinoLib
 {
-	ARDUINO_API void Setup(ArduinoProc_t pfnSetup, ArduinoProc_t pfnLoop);
+	ARDUINO_API void Setup(std::string_view moduleName);
 
 	ARDUINO_API void Tick();
 

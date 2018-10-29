@@ -23,7 +23,7 @@
     <ProjectGuid>{22C1A5B2-1AEE-484C-8FC7-D68E17146E65}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Emulator</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -92,6 +92,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -150,9 +151,6 @@
     </ProjectReference>
     <ProjectReference Include="..\LiteDecoder\EmbeddedLib.vcxproj">
       <Project>{e8505ec4-3adb-4c8c-8770-ca51bf0e7d94}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\LiteDecoder\LiteDecoderLib.vcxproj">
-      <Project>{bd3396b9-0574-4964-84c9-b2940815bfac}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -29,8 +29,17 @@
     <ClInclude Include="src\Blinker.h" />
     <ClInclude Include="src\Console.h" />
     <ClInclude Include="src\LiteDecoder.h" />
+    <ClInclude Include="src\main.h" />
     <ClInclude Include="src\NetUdp.h" />
     <ClInclude Include="src\Storage.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ArduinoLib\ArduinoLib.vcxproj">
+      <Project>{fecea21d-59d8-4b6c-b2a8-200d9b1b34bb}</Project>
+    </ProjectReference>
+    <ProjectReference Include="EmbeddedLib.vcxproj">
+      <Project>{e8505ec4-3adb-4c8c-8770-ca51bf0e7d94}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -41,7 +50,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -86,7 +95,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)\lib\</OutDir>
+    <OutDir>$(SolutionDir)\bin\</OutDir>
     <IntDir>$(SolutionDir)\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <IncludePath>$(SolutionDir)\src\ArduinoLib\;$(SolutionDir)\src\LiteDecoder\lib\Common\;$(IncludePath)</IncludePath>
@@ -106,13 +115,15 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;LITEDECODERLIB_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile />
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImportLibrary>$(SolutionDir)lib\$(TargetName).lib</ImportLibrary>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
