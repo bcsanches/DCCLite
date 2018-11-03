@@ -13,6 +13,10 @@ namespace dcclite
 
 	typedef bool (*ConsoleEventCallback_t)(ConsoleEvent );
 
-	extern void InstallConsoleEventHandler(ConsoleEventCallback_t callback);
+	extern void ConsoleInstallEventHandler(ConsoleEventCallback_t callback);
+
+	extern void ConsoleMakeNice();
+
+
 }
 

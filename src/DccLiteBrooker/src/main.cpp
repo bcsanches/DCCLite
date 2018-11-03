@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 {
 	dcclite::InitLog("DccLiteBrooker_%N.log");	
 
-	dcclite::InstallConsoleEventHandler(ConsoleCtrlHandler);
+	dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
 
 	const char *configFileName = (argc == 1) ? "config.json" : argv[1];	
 

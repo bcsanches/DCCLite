@@ -110,10 +110,13 @@ namespace ArduinoLib
 	//
 
 	DynamicLibrary g_ModuleLib;
+	std::string g_strModuleName;
 
-	void Setup(std::string_view moduleName)
+	void Setup(std::string moduleName)
 	{
 		g_ModuleLib.Load(moduleName);
+
+		g_strModuleName = std::move(moduleName);
 
 		g_pfnSetup = static_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("setup"));
 		g_pfnLoop = static_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("loop"));		

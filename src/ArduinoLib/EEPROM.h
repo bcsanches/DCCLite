@@ -4,8 +4,6 @@
 
 #include "ArduinoLibDefs.h"
 
-#define EEPROM_SIZE 2048
-
 struct ARDUINO_API EEPROMImpl
 {
 	void put(size_t pos, const void *ptr, size_t len);
@@ -25,11 +23,18 @@ struct ARDUINO_API EEPROMImpl
 
 	size_t length();
 
-	unsigned char read(size_t pos);
-
-	private:
-		std::array<unsigned char, EEPROM_SIZE> m_Data;
+	unsigned char read(size_t pos);	
 };
 
 ARDUINO_API extern EEPROMImpl EEPROM;
+
+namespace ArduinoLib::detail
+{
+	void RomClear();
+
+	bool TryRomSaveState(const char *fileName);
+	bool TryRomLoadState(const char *fileName);
+}
+
+
 
