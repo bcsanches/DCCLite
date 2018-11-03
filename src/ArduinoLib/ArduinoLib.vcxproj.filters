@@ -20,5 +20,6 @@
     <ClInclude Include="Ethercard.h" />
     <ClInclude Include="ArduinoLibDefs.h" />
     <ClInclude Include="DynamicLibrary.h" />
+    <ClInclude Include="ArduinoLib.h" />
   </ItemGroup>
 </Project>

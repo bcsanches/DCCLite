@@ -1,31 +1,33 @@
 #include <iostream>
 
+#include <spdlog/logger.h>
+
 #include "LogUtils.h"
 
 #include "NetMessenger.h"
-
-#include <plog/log.h>
 
 using namespace dcclite;
 
 int main(int, char **)
 {
-	InitLog("terminal.log");
+	LogInit("terminal.log");
 
-	LOG_INFO << "Trying to connect...";
+	auto log = LogGetDefault();
+
+	log->info("Trying to connect...");	
 
 	Socket socket{};	
 
 	if (!socket.Open(0, Socket::Type::STREAM))
 	{
-		LOG_ERROR << "Cannot create socket";
+		log->error("Cannot create socket");
 
 		return -1;
 	}
 
 	if (!socket.StartConnection(Address(127, 0, 0, 1, 4190)))
 	{
-		LOG_ERROR << "Cannot connect to server";
+		log->error("Cannot connect to server");
 
 		return -1;
 	}
@@ -34,7 +36,7 @@ int main(int, char **)
 
 	auto info = socket.GetConnectionProgress();
 
-	LOG_INFO << "Connection: " << (info == Socket::Status::OK ? "OK" : "FAILED");	
+	log->info("Connection: {}", info == Socket::Status::OK ? "OK" : "FAILED");
 
 	return 0;
 }

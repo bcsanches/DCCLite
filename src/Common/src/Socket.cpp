@@ -1,9 +1,11 @@
 #include "Socket.h"
 
+#include "LogUtils.h"
+
 #include <cassert>
 #include <stdexcept>
 
-#include <plog/Log.h>
+#include <spdlog/logger.h>
 
 #define PLATFORM_WINDOWS  1
 #define PLATFORM_MAC      2
@@ -120,11 +122,11 @@ namespace dcclite
 		auto intType = type == Type::DATAGRAM ? SOCK_DGRAM : SOCK_STREAM;
 		auto intProto = type == Type::DATAGRAM ? IPPROTO_UDP : IPPROTO_TCP;
 
-		m_hHandle = socket(AF_INET, intType, intProto);
+		m_hHandle = socket(AF_INET, intType, intProto);		
 
 		if (m_hHandle == INVALID_SOCKET)
 		{
-			LOG_ERROR << "Failed to create socket.";
+			LogGetDefault()->error("Failed to create socket.");
 			return false;
 		}
 
@@ -144,7 +146,7 @@ namespace dcclite
 		{
 			this->Close();
 
-			LOG_ERROR << "Failed to set socket to non-blocking mode.";
+			LogGetDefault()->error("Failed to set socket to non-blocking mode.");
 			return false;
 		}
 
@@ -153,7 +155,7 @@ namespace dcclite
 		{
 			this->Close();
 
-			LOG_ERROR << "Failed enable NO_DELAY.";
+			LogGetDefault()->error("Failed enable NO_DELAY.");
 			return false;
 		}
 
@@ -168,7 +170,7 @@ namespace dcclite
 		{
 			this->Close();
 
-			LOG_ERROR << "Failed to bind socket.";
+			LogGetDefault()->error("Failed to bind socket.");
 			return false;
 		}
 
@@ -204,7 +206,7 @@ namespace dcclite
 
 		if ((rc == SOCKET_ERROR) && (WSAGetLastError() != WSAEWOULDBLOCK))
 		{			
-			LOG_ERROR << "Unknown connect error";
+			LogGetDefault()->error("Unknown connect error");			
 
 			return false;
 		}		
@@ -288,7 +290,7 @@ namespace dcclite
 
 		if (sent_bytes != size)
 		{
-			LOG_ERROR << "Failed to send packet.";
+			LogGetDefault()->error("Failed to send packet.");
 			return false;
 		}
 

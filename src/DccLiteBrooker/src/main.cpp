@@ -10,6 +10,8 @@
 #include "LogUtils.h"
 #include "TerminalCmd.h"
 
+#include <spdlog/logger.h>
+
 static bool fExitRequested = false;
 
 static TerminalCmd g_ShutdownCmd{ "shutdown" };
@@ -22,10 +24,11 @@ static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 }
 
 int main(int argc, char **argv)
-{
-	dcclite::InitLog("DccLiteBrooker_%N.log");	
+{		
+	dcclite::LogInit("DccLiteBrooker_%N.log");		
 
 	dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
+	dcclite::ConsoleMakeNice();
 
 	const char *configFileName = (argc == 1) ? "config.json" : argv[1];	
 
@@ -40,7 +43,7 @@ int main(int argc, char **argv)
 	}	
 	catch (std::exception &ex)
 	{
-		LOG_FATAL << "caught " << ex.what();
+		dcclite::LogGetDefault()->critical("caught {}", ex.what());
 	}
 
 	return 0;

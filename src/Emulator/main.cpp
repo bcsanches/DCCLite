@@ -1,13 +1,15 @@
 #include <stdio.h>
 
-#include <plog/Log.h>
-
-#include "Arduino.h"
-
 #include "ConsoleUtils.h"
-#include "LogUtils.h"
+
 #include "NetMessenger.h"
 #include "Socket.h"
+
+#include "ArduinoLib.h"
+
+#include <spdlog/logger.h>
+
+#include "LogUtils.h"
 
 using namespace dcclite;
 
@@ -55,7 +57,7 @@ bool TerminalClient::Update()
 
 	if (status == Socket::Status::OK)
 	{
-		LOG_INFO << "Received " << msg;
+		dcclite::LogGetDefault()->info("Received {}", msg);		
 
 		std::stringstream stream;
 		stream << msg;
@@ -103,7 +105,7 @@ static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 
 int main(int, char **)
 {
-	dcclite::InitLog("Emulator%N.log");
+	dcclite::LogInit("Emulator%N.log");
 
 	dcclite::ConsoleMakeNice();
 
