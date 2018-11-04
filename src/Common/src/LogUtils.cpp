@@ -8,8 +8,7 @@
 namespace dcclite
 {
 	static std::shared_ptr<spdlog::logger> g_spLogger;
-
-	//https://github.com/SergiusTheBest/plog#logger
+	
 	void LogInit(const char *fileName)
 	{
 		//auto console = spdlog::stdout_color_mt("console");
