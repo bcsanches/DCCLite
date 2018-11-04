@@ -1,5 +1,9 @@
 #include "ConsoleUtils.h"
 
+#include "LogUtils.h"
+
+#include <spdlog/logger.h>
+
 #include <Windows.h>
 
 namespace dcclite
@@ -38,7 +42,7 @@ namespace dcclite
 		SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleCtrlHandler, TRUE);
 	}
 
-	void ConsoleMakeNice()
+	bool ConsoleTryMakeNice()
 	{
 		HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -46,7 +50,10 @@ namespace dcclite
 		fontInfo.cbSize = sizeof(fontInfo);
 
 		if (!GetCurrentConsoleFontEx(hStdout, false, &fontInfo))
-			return;
+		{
+			LogGetDefault()->error("GetCurrentConsoleFontEx failed");
+			return false;
+		}
 
 		fontInfo.dwFontSize.X = 7;
 		fontInfo.dwFontSize.Y = 14;
@@ -57,7 +64,10 @@ namespace dcclite
 		bufferInfo.cbSize = sizeof(CONSOLE_SCREEN_BUFFER_INFOEX);
 
 		if (!GetConsoleScreenBufferInfoEx(hStdout, &bufferInfo))
-			return;				
+		{
+			LogGetDefault()->error("GetConsoleScreenBufferInfoEx failed");
+			return false;
+		}
 
 		bufferInfo.dwSize.X = 120;
 		bufferInfo.dwSize.Y = 3000;
@@ -68,6 +78,8 @@ namespace dcclite
 		bufferInfo.ColorTable[0] = RGB(1, 36, 86);
 		bufferInfo.ColorTable[7] = RGB(238, 237, 240);
 
-		SetConsoleScreenBufferInfoEx(hStdout, &bufferInfo);			
+		SetConsoleScreenBufferInfoEx(hStdout, &bufferInfo);	
+
+		return true;
 	}
 }

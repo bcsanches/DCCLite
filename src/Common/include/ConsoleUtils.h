@@ -15,7 +15,7 @@ namespace dcclite
 
 	extern void ConsoleInstallEventHandler(ConsoleEventCallback_t callback);
 
-	extern void ConsoleMakeNice();
+	extern bool ConsoleTryMakeNice();
 
 
 }

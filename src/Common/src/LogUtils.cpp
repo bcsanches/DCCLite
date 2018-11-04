@@ -41,14 +41,18 @@ namespace dcclite
 		//console->debug("This message should be displayed..");
 
 		// Customize msg format for all loggers
-		spdlog::set_pattern("[%H:%M:%S %z] [%n] [%^---%L---%$] [thread %t] %v");
+		spdlog::set_pattern("[%T] [%^-%L-%$] [T %t] %v");
 		//console->info("This an info message with custom format");		
+
+		combined_logger->flush_on(spdlog::level::err);
+
+		combined_logger->info("Log started");
 
 		g_spLogger = combined_logger;
 	}
 
 	extern std::shared_ptr<spdlog::logger> LogGetDefault()
-	{
+	{		
 		return g_spLogger;
 	}
 }

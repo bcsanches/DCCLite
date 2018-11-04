@@ -105,9 +105,9 @@ static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 
 int main(int, char **)
 {
-	dcclite::LogInit("Emulator%N.log");
+	dcclite::LogInit("Emulator.log");
 
-	dcclite::ConsoleMakeNice();
+	dcclite::ConsoleTryMakeNice();
 
 	dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
 

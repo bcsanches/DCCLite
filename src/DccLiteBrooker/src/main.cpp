@@ -2,8 +2,6 @@
 #include <signal.h>
 #include <stdexcept>
 
-#include <plog/Log.h>
-
 #include "Brooker.h"
 
 #include "ConsoleUtils.h"
@@ -28,7 +26,7 @@ int main(int argc, char **argv)
 	dcclite::LogInit("DccLiteBrooker_%N.log");		
 
 	dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
-	dcclite::ConsoleMakeNice();
+	dcclite::ConsoleTryMakeNice();
 
 	const char *configFileName = (argc == 1) ? "config.json" : argv[1];	
 
