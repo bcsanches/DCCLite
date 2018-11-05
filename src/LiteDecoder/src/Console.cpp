@@ -80,7 +80,7 @@ static void Parse(const char *command)
 
 	if(strncmp(command, "cfg", 3) == 0)
 	{
-		//format: cfg <nodeName> <mac> <port> <srvipv4>		
+		//format: cfg <nodeName> <mac> <port> <srvipv4>	<srvport>	
 
 		dcclite::Parser parser(command+3);
 
@@ -155,7 +155,15 @@ static void Parse(const char *command)
 			}
 		}
 
-		NetUdp::Configure(nodeName, port, mac, ip);
+		int srvport;
+		if (parser.GetNumber(srvport) != dcclite::TOKEN_NUMBER)
+		{
+			Console::SendLog("[CONSOLE]", "cfg invalid srvport");
+
+			return;
+		}
+
+		NetUdp::Configure(nodeName, port, mac, ip, srvport);
 
 		Console::SendLn("OK");
 	}
@@ -193,6 +201,8 @@ void Console::Update()
         {
             command[pos] = 0;
             Parse(command);
+
+			pos = 0;
         }
         //if we are overflowing, we simple skip characters
         else if(pos < MAX_COMMAND_LENGTH)

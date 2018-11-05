@@ -15,7 +15,7 @@
 #include "Storage.h"
 
 #define STORAGE_MAGIC "Bcs0002"
-#define NET_UDP_STORAGE_ID "NetU001"
+#define NET_UDP_STORAGE_ID "NetU002"
 
 #define MODULE_NAME "Storage"
 

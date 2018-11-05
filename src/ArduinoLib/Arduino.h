@@ -1,9 +1,7 @@
 #pragma once
 
-#include "ArduinoLib.h"
+#include "ArduinoDefs.h"
 #include "Serial.h"
-
-#define BCS_ARDUINO_EMULATOR 1
 
 enum PinModes
 {
@@ -12,6 +10,7 @@ enum PinModes
 	INPUT_PULLUP
 };
 
+#define BCS_ARDUINO_EMULATOR 1
 
 ARDUINO_API extern void pinMode(int pin, PinModes mode);
 ARDUINO_API extern int digitalRead(int pin);

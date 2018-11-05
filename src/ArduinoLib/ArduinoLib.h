@@ -3,14 +3,9 @@
 //Due to stupid headers, like windows.h and Arduino.h, we need to split the files to try to avoid name conflict
 
 #include "ArduinoLibDefs.h"
+#include "ArduinoDefs.h"
 
 #include <string>
-
-enum VoltageModes
-{
-	LOW,
-	HIGH
-};
 
 namespace ArduinoLib
 {

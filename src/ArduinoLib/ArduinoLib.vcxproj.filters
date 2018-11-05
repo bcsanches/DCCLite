@@ -21,5 +21,7 @@
     <ClInclude Include="ArduinoLibDefs.h" />
     <ClInclude Include="DynamicLibrary.h" />
     <ClInclude Include="ArduinoLib.h" />
+    <ClInclude Include="ArduinoDefs.h" />
+    <ClInclude Include="EEPROMLib.h" />
   </ItemGroup>
 </Project>

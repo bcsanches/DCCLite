@@ -27,10 +27,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Arduino.h" />
+    <ClInclude Include="ArduinoDefs.h" />
     <ClInclude Include="ArduinoLib.h" />
     <ClInclude Include="ArduinoLibDefs.h" />
     <ClInclude Include="DynamicLibrary.h" />
     <ClInclude Include="EEPROM.h" />
+    <ClInclude Include="EEPROMLib.h" />
     <ClInclude Include="Ethercard.h" />
     <ClInclude Include="Serial.h" />
   </ItemGroup>
@@ -95,7 +97,7 @@
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>$(SolutionDir)\contrib\fmt\include\;$(SolutionDir)\contrib\spdlog\include\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\contrib\fmt\include\;$(SolutionDir)\contrib\spdlog\include\;$(SolutionDir)\src\Common\include\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

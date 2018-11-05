@@ -15,6 +15,7 @@ uint8_t Ethernet::buffer[512];
 #endif
 
 static uint16_t g_iSrcPort = 4551;
+static uint16_t g_iSrvPort = 2424;
 
 #define MAX_NODE_NAME 16
 static char g_szNodeName[MAX_NODE_NAME + 1];
@@ -58,6 +59,8 @@ void NetUdp::LoadConfig(EpromStream &stream)
 	for(int i = 0;i < 4; ++i)
 		stream.Get(g_u8ServerIp[i]);
 
+	stream.Get(g_iSrvPort);
+
 	NetUdp::LogStatus();
 }
 
@@ -73,9 +76,11 @@ void NetUdp::SaveConfig(EpromStream &stream)
 
 	for(int i = 0;i < 4; ++i)
 		stream.Put(g_u8ServerIp[i]);
+
+	stream.Put(g_iSrvPort);
 }
 
-bool NetUdp::Configure(const char *nodeName, uint16_t port, const uint8_t *mac, const uint8_t *srvIp)
+bool NetUdp::Configure(const char *nodeName, uint16_t port, const uint8_t *mac, const uint8_t *srvIp, uint16_t srvport)
 {
 	strncpy(g_szNodeName, nodeName, sizeof(g_szNodeName));
 	g_szNodeName[MAX_NODE_NAME] = 0;
@@ -84,6 +89,8 @@ bool NetUdp::Configure(const char *nodeName, uint16_t port, const uint8_t *mac, 
 
 	memcpy(g_u8Mac, mac, sizeof(g_u8Mac));
 	memcpy(g_u8ServerIp, srvIp, sizeof(g_u8ServerIp));
+
+	g_iSrvPort = srvport;
 
 	return true;
 }

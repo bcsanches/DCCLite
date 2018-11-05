@@ -9,9 +9,11 @@ namespace spdlog
 
 namespace dcclite
 {
+	typedef std::shared_ptr<spdlog::logger> Logger_t;
+
 	extern void LogInit(const char *fileName);
 
-	extern std::shared_ptr<spdlog::logger> LogGetDefault();
-	inline std::shared_ptr<spdlog::logger> Log() { return LogGetDefault(); }
+	extern Logger_t LogGetDefault();
+	inline Logger_t Log() { return LogGetDefault(); }
 }
 

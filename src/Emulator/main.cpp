@@ -121,11 +121,11 @@ int main(int, char **)
 
 	ArduinoLib::Tick();
 
-	ArduinoLib::SetSerialInput("<*C OUTD 1 7 0>");
+	ArduinoLib::SetSerialInput("/cfg emul 11.11.11.11.11.11 7202 127.0.0.1 8989;");
 
 	ArduinoLib::Tick();
 
-	ArduinoLib::SetSerialInput("<*C TRGR 2 6 1 T>");
+	ArduinoLib::SetSerialInput("/sv;");
 
 	ArduinoLib::Tick();
 

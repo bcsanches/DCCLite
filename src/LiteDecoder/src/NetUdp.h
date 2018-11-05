@@ -10,7 +10,7 @@ namespace NetUdp
 	extern void LoadConfig(EpromStream &stream);
 	extern void SaveConfig(EpromStream &stream);
 
-	extern bool Configure(const char *nodeName, uint16_t port, const uint8_t *mac, const uint8_t *srvIp);
+	extern bool Configure(const char *nodeName, uint16_t port, const uint8_t *mac, const uint8_t *srvIp, uint16_t srvport);
 
 	extern bool Init();
 

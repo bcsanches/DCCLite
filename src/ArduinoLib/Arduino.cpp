@@ -3,7 +3,11 @@
 #include <array>
 #include <chrono>
 
+#include "ArduinoLib.h"
+
 #include "DynamicLibrary.h"
+
+#include "EEPROMLib.h"
 
 using namespace std;
 
@@ -123,6 +127,8 @@ namespace ArduinoLib
 
 		g_CurrentTime = g_StartTime = DefaultClock_t::now();
 
+		detail::RomSetupModule(g_strModuleName);
+
 		//initialize client
 		g_pfnSetup();
 	}
@@ -135,6 +141,8 @@ namespace ArduinoLib
 
 		//run client loop
 		g_pfnLoop();
+
+		detail::RomAfterLoop();
 	}
 
 	void SetSerialInput(const char *data) 

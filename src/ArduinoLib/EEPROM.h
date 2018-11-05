@@ -28,13 +28,6 @@ struct ARDUINO_API EEPROMImpl
 
 ARDUINO_API extern EEPROMImpl EEPROM;
 
-namespace ArduinoLib::detail
-{
-	void RomClear();
-
-	bool TryRomSaveState(const char *fileName);
-	bool TryRomLoadState(const char *fileName);
-}
 
 
 
