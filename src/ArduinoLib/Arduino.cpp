@@ -116,7 +116,7 @@ namespace ArduinoLib
 	DynamicLibrary g_ModuleLib;
 	std::string g_strModuleName;
 
-	void Setup(std::string moduleName)
+	void Setup(std::string moduleName, dcclite::Logger_t log)
 	{
 		g_ModuleLib.Load(moduleName);
 
@@ -127,10 +127,15 @@ namespace ArduinoLib
 
 		g_CurrentTime = g_StartTime = DefaultClock_t::now();
 
-		detail::RomSetupModule(g_strModuleName);
+		detail::RomSetupModule(g_strModuleName, log);
 
 		//initialize client
 		g_pfnSetup();
+	}
+
+	void Finalize()
+	{
+		detail::RomFinalize();
 	}
 
 	void Tick()

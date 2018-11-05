@@ -112,12 +112,21 @@ int main(int, char **)
 	dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
 
 #ifdef _DEBUG
-	ArduinoLib::Setup("LiteDecoderLib_d.dll");
+	ArduinoLib::Setup("LiteDecoderLib_d.dll", dcclite::Log());
 #else
 	ArduinoLib::Setup("LiteDecoderLib.dll");
 #endif
 
-	TerminalService terminalService;
+	TerminalService terminalService;	
+
+	while(!fExitRequested)
+	{
+		ArduinoLib::Tick();
+	}
+
+	ArduinoLib::Finalize();
+
+#if 0
 
 	ArduinoLib::Tick();
 
@@ -148,6 +157,7 @@ int main(int, char **)
 	ArduinoLib::SetPinDigitalVoltage(5, HIGH);
 
 	ArduinoLib::Tick();
+#endif
 
 	return 0;
 }

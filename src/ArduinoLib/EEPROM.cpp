@@ -6,6 +6,8 @@
 #include <thread>
 #include <mutex>
 
+#include <spdlog/logger.h>
+
 #include "EEPROMLib.h"
 
 EEPROMImpl EEPROM;
@@ -26,8 +28,10 @@ static std::mutex g_WorkerMutex;
 
 static std::thread g_thWorker;
 
-static bool g_fWorkerStop = false;
-static bool g_fDataReady = false;
+static volatile bool g_fWorkerStop = false;
+static volatile bool g_fDataReady = false;
+
+static dcclite::Logger_t g_Log;
 
 void EEPROMImpl::get(size_t pos, void *ptr, size_t len)
 {
@@ -112,31 +116,36 @@ namespace ArduinoLib::detail
 	static void WorkerThread()
 	{
 		std::unique_lock<std::mutex> lck(g_WorkerMutex, std::defer_lock);
-		for (;;)
+		while(!g_fWorkerStop)
 		{			
 			lck.lock();
 			
 			g_WorkerMonitor.wait(lck, [] 
 			{
-				//g_Log->trace("RomWorkerThread waiting[{}]", !g_fDataReady);
+				g_Log->trace("RomWorkerThread waiting [WorkerStop {}] [DataReady {}]", g_fWorkerStop, g_fDataReady);
 
-				return g_fDataReady; 
+				return g_fWorkerStop ? true : g_fDataReady;
 			});
 
-			if (g_fWorkerStop)
-				return;			
+			if (!g_fDataReady)
+			{
+				g_Log->trace("RomWorkerThread exiting");
+				break;
+			}
 			
-			//g_Log->info("RomWorkerThread working");
+			g_Log->info("RomWorkerThread working");
 
 			TrySaveRomState();
 
 			g_fDataReady = false;			
 
-			//g_Log->info("RomWorkerThread done");
+			g_Log->info("RomWorkerThread done");
 			
 			lck.unlock();			
 			g_MainMonitor.notify_one();
 		}
+
+		g_MainMonitor.notify_one();
 	}
 
 	static void RequestRomStateSave()
@@ -188,17 +197,25 @@ namespace ArduinoLib::detail
 	*/
 	static bool TryLoadRomState()
 	{
+		g_Log->info("TryLoadRomState: trying to load Rom {}", g_strRomFileName);
+
 		if (std::filesystem::exists(g_strRomBackup) && std::filesystem::exists(g_strRomTempFileName))
 		{
+			g_Log->warn("TryLoadRomState: found backup {}, restoring it", g_strRomTempFileName);
+
 			std::filesystem::remove(g_strRomFileName);
 			
 			std::filesystem::rename(g_strRomTempFileName, g_strRomFileName);
-			std::filesystem::remove(g_strRomBackup);			
+			std::filesystem::remove(g_strRomBackup);
+
+			g_Log->warn("TryLoadRomState: backup ready");
 		}
 
 		FILE *fp = fopen(g_strRomFileName.c_str(), "rb");
 		if (fp == nullptr)
 		{
+			g_Log->warn("TryLoadRomState: failed to open Rom {}", g_strRomFileName);
+
 			return false;
 		}		
 
@@ -206,27 +223,28 @@ namespace ArduinoLib::detail
 
 		fclose(fp);
 
+		g_Log->warn("TryLoadRomState: ok");
 		return true;
 	}
 
-	void RomSetupModule(std::string_view moduleName)
+	void RomSetupModule(std::string_view moduleName, dcclite::Logger_t log)
 	{
 		//first time?
 		if (!g_thWorker.joinable())
 		{
+			g_Log = log;
+
+			g_Log->info("RomSetupModule: started worker thread");
+
 			//start the thread
 			g_fWorkerStop = false;			
 
-			g_thWorker = std::move(std::thread(WorkerThread));
-
-			//g_Log = log;
-
-			//g_Log->info("RomSetupModule: started worker thread");
+			g_thWorker = std::move(std::thread(WorkerThread));			
 		}
 
 		if (g_fDirty)
 		{
-			//g_Log->info("RomSetupModule: Updating module and requesting to save old rom");
+			g_Log->info("RomSetupModule: Updating module and requesting to save old rom");
 
 			RequestRomStateSave();			
 		}
@@ -244,6 +262,38 @@ namespace ArduinoLib::detail
 		
 		TryLoadRomState();
 	}	
+
+	void RomFinalize()
+	{
+		if (g_thWorker.joinable())
+		{	
+			{
+				std::unique_lock lck(g_WorkerMutex);
+				g_fWorkerStop = true;
+			}
+
+			g_Log->trace("RomFinalize waiting worker thread");
+
+			g_WorkerMonitor.notify_one();
+			WaitSaveWorker();
+
+			g_Log->trace("RomFinalize joining worker");
+
+			g_WorkerMonitor.notify_one();
+			g_thWorker.join();
+
+			g_Log->trace("RomFinalize worker finished");
+
+			if (g_fDataReady)
+			{
+				g_Log->info("RomFinalize g_fDataReady, saving last state on main thread");
+
+				TrySaveRomState();
+			}
+
+			g_Log->info("RomFinalize done");
+		}
+	}
 
 	void RomAfterLoop()
 	{		
