@@ -58,6 +58,11 @@ namespace dcclite
 				return stream.str();
 			}
 
+			inline std::uint_fast8_t GetA() const { return static_cast<std::uint_fast8_t>((m_uAddress >> 24) & 0x000000FF); }
+			inline std::uint_fast8_t GetB() const { return static_cast<std::uint_fast8_t>((m_uAddress >> 16) & 0x000000FF); }
+			inline std::uint_fast8_t GetC() const { return static_cast<std::uint_fast8_t>((m_uAddress >> 8) & 0x000000FF); }
+			inline std::uint_fast8_t GetD() const { return static_cast<std::uint_fast8_t>((m_uAddress >> 0) & 0x000000FF); }
+
 			inline Port_t GetPort() const { return m_uPort; }
 
 		private:

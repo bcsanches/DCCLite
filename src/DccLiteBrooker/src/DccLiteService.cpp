@@ -1,6 +1,8 @@
 #include "DccLiteService.h"
 
-#include <plog/Log.h>
+#include <spdlog/spdlog.h>
+
+#include <LogUtils.h>
 
 #include "Device.h"
 
@@ -78,6 +80,6 @@ void DccLiteService::Update()
 		return;
 	}
 
-	LOG_INFO << "[DccLiteService::Update] got data";
+	dcclite::Log()->info("[DccLiteService::Update] got data");	
 }
 
