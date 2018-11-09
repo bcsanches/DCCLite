@@ -176,6 +176,26 @@ namespace SharpTerminal
             }            
         }
 
+        private void GenerateMac()
+        {
+            //http://www.noah.org/wiki/MAC_address
+            //02:00:00:00:00:00, and then logically AND it with fe: ff: ff: ff: ff: ff            
+
+            byte []mac = new byte[6];
+
+            var guid = Guid.NewGuid().ToByteArray();
+
+            for(int i = 0;i < 6; ++i)
+            {
+                mac[i] = guid[i];
+                mac[i] = (byte)(mac[i] | ((i == 0) ? 0x2 : 0x0));
+                mac[i] = (byte)(mac[i] & ((i == 0) ? 0xfe : 0xff));
+            }
+
+            Console_Println(String.Format("{0:X2}:{1:X2}:{2:X2}:{3:X2}:{4:X2}:{5:X2}", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]));
+            Console_Println(String.Format("{0}:{1}:{2}:{3}:{4}:{5}", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]));
+        }
+
         private void ProcessLocalCmd(string[] vargs)
         {
             switch(vargs[0])
@@ -186,6 +206,10 @@ namespace SharpTerminal
 
                 case "/disconnect":
                     mClient.Stop();
+                    break;
+
+                case "/mac":
+                    GenerateMac();
                     break;
 
                 case "/quit":

@@ -150,19 +150,20 @@ namespace ArduinoLib::detail
 
 	static void RequestRomStateSave()
 	{
-		std::unique_lock lck(g_WorkerMutex);
-		
-		g_MainMonitor.wait(lck, [] 
 		{
-			//g_Log->trace("RequestRomStateSave waiting[{}]", g_fDataReady);
-			return !g_fDataReady; 
-		});
+			std::unique_lock<std::mutex> lck(g_WorkerMutex);
 
-		memcpy(&g_DataBackup[0], &g_Data[0], g_Data.size());
-		g_fDirty = false;	
-		g_fDataReady = true;
-		
-		lck.unlock();
+			g_MainMonitor.wait(lck, []
+			{
+				//g_Log->trace("RequestRomStateSave waiting[{}]", g_fDataReady);
+				return !g_fDataReady;
+			});
+
+			memcpy(&g_DataBackup[0], &g_Data[0], g_Data.size());
+			g_fDirty = false;
+			g_fDataReady = true;
+		}		
+				
 		g_WorkerMonitor.notify_one();
 	}
 
@@ -268,7 +269,7 @@ namespace ArduinoLib::detail
 		if (g_thWorker.joinable())
 		{	
 			{
-				std::unique_lock lck(g_WorkerMutex);
+				std::lock_guard lck(g_WorkerMutex);
 				g_fWorkerStop = true;
 			}
 

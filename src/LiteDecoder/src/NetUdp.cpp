@@ -8,19 +8,19 @@
 #define MODULE_NAME "NetUdp"
 
 static uint8_t g_u8Mac[] = { 0x00,0x00,0x00,0x00,0x00,0x00 };
-static uint8_t g_u8ServerIp[] = {0x00, 0x00, 0x00, 0x00};
 
 #ifndef BCS_ARDUINO_EMULATOR
 uint8_t Ethernet::buffer[512];
 #endif
 
 static uint16_t g_iSrcPort = 4551;
-static uint16_t g_iSrvPort = 2424;
 
 #define MAX_NODE_NAME 16
 static char g_szNodeName[MAX_NODE_NAME + 1];
 
 char textToSend[] = "test 123";
+
+static NetUdp::ReceiveCallback_t g_pfnReceiverCallback;
 
 enum States
 {
@@ -38,6 +38,9 @@ static void UdpCallback(uint16_t dest_port,    	///< Port the packet was sent to
     Serial.println("Got udp packet");
     ether.printIp("SRV: ", src_ip);
     Serial.println(data);
+
+	if(g_pfnReceiverCallback)
+		g_pfnReceiverCallback(src_ip, src_port, data, len);
 }
 
 //<nodeName> <mac> <port> <srvipv4>		
@@ -56,11 +59,6 @@ void NetUdp::LoadConfig(EpromStream &stream)
 
 	stream.Get(g_iSrcPort);
 
-	for(int i = 0;i < 4; ++i)
-		stream.Get(g_u8ServerIp[i]);
-
-	stream.Get(g_iSrvPort);
-
 	NetUdp::LogStatus();
 }
 
@@ -73,24 +71,16 @@ void NetUdp::SaveConfig(EpromStream &stream)
 		stream.Put(g_u8Mac[i]);
 
 	stream.Put(g_iSrcPort);
-
-	for(int i = 0;i < 4; ++i)
-		stream.Put(g_u8ServerIp[i]);
-
-	stream.Put(g_iSrvPort);
 }
 
-bool NetUdp::Configure(const char *nodeName, uint16_t port, const uint8_t *mac, const uint8_t *srvIp, uint16_t srvport)
+bool NetUdp::Configure(const char *nodeName, uint16_t port, const uint8_t *mac)
 {
 	strncpy(g_szNodeName, nodeName, sizeof(g_szNodeName));
 	g_szNodeName[MAX_NODE_NAME] = 0;
 
 	g_iSrcPort = port;
 
-	memcpy(g_u8Mac, mac, sizeof(g_u8Mac));
-	memcpy(g_u8ServerIp, srvIp, sizeof(g_u8ServerIp));
-
-	g_iSrvPort = srvport;
+	memcpy(g_u8Mac, mac, sizeof(g_u8Mac));	
 
 	return true;
 }
@@ -168,10 +158,14 @@ void NetUdp::Update()
 
 void NetUdp::LogStatus()
 {
-	Console::SendLog(MODULE_NAME, "Name: %s, Mac: %X-%X-%X-%X-%X-%X, Port: %d, Srv: %d.%d.%d.%d", 
+	Console::SendLog(MODULE_NAME, "Name: %s, Mac: %X-%X-%X-%X-%X-%X, Port: %d", 
 		g_szNodeName, 
 		g_u8Mac[0], g_u8Mac[1], g_u8Mac[2], g_u8Mac[3], g_u8Mac[4], g_u8Mac[5], 
-		g_iSrcPort,
-		g_u8ServerIp[0], g_u8ServerIp[1], g_u8ServerIp[2], g_u8ServerIp[3] 
+		g_iSrcPort
 	);
+}
+
+void NetUdp::RegisterCallback(ReceiveCallback_t callback)
+{
+	g_pfnReceiverCallback = callback;
 }

@@ -117,7 +117,13 @@ int main(int, char **)
 	ArduinoLib::Setup("LiteDecoderLib.dll");
 #endif
 
-	TerminalService terminalService;	
+	TerminalService terminalService;		
+
+	//ArduinoLib::SetSerialInput("/cfg emul 206.174.184.251.21.20 7202 127.0.0.1 8989;");
+
+	//ArduinoLib::Tick();
+
+	//ArduinoLib::SetSerialInput("/sv;");
 
 	while(!fExitRequested)
 	{
@@ -126,11 +132,11 @@ int main(int, char **)
 
 	ArduinoLib::Finalize();
 
-#if 0
-
+#if 0	
 	ArduinoLib::Tick();
 
-	ArduinoLib::SetSerialInput("/cfg emul 11.11.11.11.11.11 7202 127.0.0.1 8989;");
+	//CE:83:5A:D3:E5:E5
+	ArduinoLib::SetSerialInput("/cfg emul CE.83.5A.D3.E5.E5 7202 127.0.0.1 8989;");
 
 	ArduinoLib::Tick();
 

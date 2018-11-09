@@ -159,6 +159,15 @@ namespace dcclite
 			return false;
 		}
 
+		char broadcast = 1;
+		if ((type == Type::DATAGRAM) && (setsockopt(m_hHandle, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast)) != 0))
+		{
+			this->Close();
+
+			LogGetDefault()->error("Failed enable SO_BROADCAST.");
+			return false;
+		}
+
 		#endif
 
 		sockaddr_in address;

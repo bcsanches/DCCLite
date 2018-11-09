@@ -4,6 +4,7 @@
 #include "Blinker.h"
 #include "Console.h"
 #include "NetUdp.h"
+#include "Session.h"
 #include "Storage.h"
 
 static unsigned long g_uStartTime = 0;
@@ -12,6 +13,8 @@ static float g_uFps = 0;
 
 const int onboardLedPin = 13;
 
+bool g_fNetReady = false;
+
 void setup()
 {
 	Console::Init();
@@ -19,11 +22,13 @@ void setup()
 
 	Storage::LoadConfig();
 
-	NetUdp::Init();	
+	g_fNetReady = NetUdp::Init();
 
 	g_uStartTime = millis();
 
 	Blinker::Play(Blinker::Animations::OK);	
+
+	Session::Init();
 
 	Console::SendLog("setup", "done");
 }
@@ -51,5 +56,10 @@ void loop()
 
 	Console::Update();
 	Blinker::Update();
-	NetUdp::Update();
+
+	if (g_fNetReady)
+	{
+		NetUdp::Update();
+		Session::Update();
+	}
 }

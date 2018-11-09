@@ -12,10 +12,13 @@
 
 #include "Console.h"
 #include "NetUdp.h"
+#include "Session.h"
 #include "Storage.h"
 
-#define STORAGE_MAGIC "Bcs0002"
+#define STORAGE_MAGIC "Bcs0003"
 #define NET_UDP_STORAGE_ID "NetU002"
+#define SESSION_STORAGE_ID "Sson001"
+#define END_ID "ENDEND1"
 
 #define MODULE_NAME "Storage"
 
@@ -71,14 +74,30 @@ bool Storage::LoadConfig()
     {
 		Lump lump;
 
-		stream.Get(lump.m_archName, sizeof(lump.m_archName));
-    	stream.Get(lump.m_uLength);
-
-		if(strncmp(lump.m_archName, NET_UDP_STORAGE_ID, sizeof(NET_UDP_STORAGE_ID)) == 0)
+		for (;;)
 		{
-			Console::SendLog(MODULE_NAME, "netudp config");
-			NetUdp::LoadConfig(stream);
+			stream.Get(lump.m_archName, sizeof(lump.m_archName));
+			stream.Get(lump.m_uLength);
+
+			if (strncmp(lump.m_archName, NET_UDP_STORAGE_ID, sizeof(NET_UDP_STORAGE_ID)) == 0)
+			{
+				Console::SendLog(MODULE_NAME, "netudp config");
+				NetUdp::LoadConfig(stream);
+			}
+			else if (strncmp(lump.m_archName, SESSION_STORAGE_ID, sizeof(SESSION_STORAGE_ID)) == 0)
+			{
+				Console::SendLog(MODULE_NAME, "session config");
+
+				Session::LoadConfig(stream);
+			}
+			else if (strncmp(lump.m_archName, END_ID, sizeof(END_ID)) == 0)
+			{
+				Console::SendLog(MODULE_NAME, "stream end");
+
+				break;
+			}
 		}
+
 
 #if 0
 
@@ -150,6 +169,14 @@ void Storage::SaveConfig()
 		LumpWriter netLump(stream, NET_UDP_STORAGE_ID);
 
 		NetUdp::SaveConfig(stream);	
+	}
+	{
+		LumpWriter sessionLump(stream, SESSION_STORAGE_ID);
+
+		Session::SaveConfig(stream);
+	}
+	{
+		LumpWriter endLump(stream, END_ID);
 	}
 
 #if 0

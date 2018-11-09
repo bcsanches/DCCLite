@@ -9,9 +9,8 @@
 
 #include "LiteDecoder.h"
 #include "NetUdp.h"
+#include "Session.h"
 #include "Storage.h"
-
-
 
 void Console::Init() 
 {
@@ -163,7 +162,8 @@ static void Parse(const char *command)
 			return;
 		}
 
-		NetUdp::Configure(nodeName, port, mac, ip, srvport);
+		NetUdp::Configure(nodeName, port, mac);
+		Session::Configure(ip, srvport);
 
 		Console::SendLn("OK");
 	}

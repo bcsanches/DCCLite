@@ -12,6 +12,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\NetUdp.cpp" />
     <ClCompile Include="src\Storage.cpp" />
+    <ClCompile Include="src\Session.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Blinker.h" />
@@ -20,5 +21,6 @@
     <ClInclude Include="src\NetUdp.h" />
     <ClInclude Include="src\Storage.h" />
     <ClInclude Include="src\main.h" />
+    <ClInclude Include="src\Session.h" />
   </ItemGroup>
 </Project>
