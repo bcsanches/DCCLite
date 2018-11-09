@@ -3,9 +3,7 @@
 #include <sstream>
 #include <stdexcept>
 
-#include <spdlog/spdlog.h>
-
-#include <LogUtils.h>
+#include <Log.h>
 
 #include "json.hpp"
 #include "NetMessenger.h"
@@ -61,7 +59,7 @@ bool TerminalClient::Update()
 
 	if (status == Socket::Status::OK)
 	{		
-		dcclite::Log()->info("Received {}", msg);		
+		dcclite::Log::Info("Received {}", msg);		
 
 		std::stringstream stream;
 		stream << msg;
@@ -102,7 +100,7 @@ void TerminalService::Update()
 
 	if (status == Socket::Status::OK)
 	{
-		dcclite::Log()->info("[TermnialService] Client connected {}", address.GetIpString());
+		dcclite::Log::Info("[TermnialService] Client connected {}", address.GetIpString());
 
 		m_vecClients.emplace_back(std::move(socket));
 	}
@@ -113,7 +111,7 @@ void TerminalService::Update()
 
 		if (!client.Update())
 		{
-			dcclite::Log()->info("[TermnialService] Client disconnected");			
+			dcclite::Log::Info("[TermnialService] Client disconnected");			
 
 			m_vecClients.erase(m_vecClients.begin() + i);
 		}

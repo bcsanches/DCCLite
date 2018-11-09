@@ -118,6 +118,8 @@ namespace ArduinoLib
 
 	void Setup(std::string moduleName, dcclite::Logger_t log)
 	{
+		dcclite::LogReplace(log);
+
 		g_ModuleLib.Load(moduleName);
 
 		g_strModuleName = std::move(moduleName);
@@ -127,7 +129,7 @@ namespace ArduinoLib
 
 		g_CurrentTime = g_StartTime = DefaultClock_t::now();
 
-		detail::RomSetupModule(g_strModuleName, log);
+		detail::RomSetupModule(g_strModuleName);
 
 		//initialize client
 		g_pfnSetup();

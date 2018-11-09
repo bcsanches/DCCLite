@@ -31,6 +31,7 @@
     <ClInclude Include="include\ClassInfo.h" />
     <ClInclude Include="include\ConsoleUtils.h" />
     <ClInclude Include="include\defs.h" />
+    <ClInclude Include="include\Log.h" />
     <ClInclude Include="include\LogUtils.h" />
     <ClInclude Include="include\NetMessenger.h" />
     <ClInclude Include="include\Object.h" />

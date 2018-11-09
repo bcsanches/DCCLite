@@ -112,7 +112,7 @@ int main(int, char **)
 	dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
 
 #ifdef _DEBUG
-	ArduinoLib::Setup("LiteDecoderLib_d.dll", dcclite::Log());
+	ArduinoLib::Setup("LiteDecoderLib_d.dll", dcclite::LogGetDefault());
 #else
 	ArduinoLib::Setup("LiteDecoderLib.dll");
 #endif

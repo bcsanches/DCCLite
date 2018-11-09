@@ -50,6 +50,11 @@ namespace dcclite
 		g_spLogger = combined_logger;
 	}
 
+	void LogReplace(Logger_t log)
+	{
+		g_spLogger = log;
+	}
+
 	extern std::shared_ptr<spdlog::logger> LogGetDefault()
 	{		
 		return g_spLogger;

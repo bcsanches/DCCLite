@@ -13,7 +13,9 @@ namespace dcclite
 
 	extern void LogInit(const char *fileName);
 
+	extern void LogReplace(Logger_t log);
+
 	extern Logger_t LogGetDefault();
-	inline Logger_t Log() { return LogGetDefault(); }
+	//inline Logger_t Log() { return LogGetDefault(); }
 }
 

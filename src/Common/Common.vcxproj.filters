@@ -84,5 +84,8 @@
     <ClInclude Include="..\..\contrib\fmt\include\fmt\time.h">
       <Filter>src\fmt</Filter>
     </ClInclude>
+    <ClInclude Include="include\Log.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

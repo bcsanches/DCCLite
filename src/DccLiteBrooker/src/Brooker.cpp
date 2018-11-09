@@ -7,7 +7,7 @@
 #include <fmt/format.h>
 #include <spdlog/logger.h>
 
-#include "LogUtils.h"
+#include "Log.h"
 
 #include "json.hpp"
 
@@ -20,7 +20,7 @@ static std::unique_ptr<Service> CreateService(const json &obj)
 	std::string className = obj["class"];
 	std::string name = obj["name"].get<std::string>();	
 
-	dcclite::Log()->info("Creating DccLite Service: {}", name);
+	dcclite::Log::Info("Creating DccLite Service: {}", name);
 	
 	if (auto output = ServiceClass::TryProduce(className.c_str(), name, obj))
 	{
@@ -45,7 +45,7 @@ void Brooker::LoadConfig(const char *configFileName)
 		throw std::runtime_error("error: cannot open config file");		
 	}
 
-	dcclite::Log()->debug("Loaded config {}", configFileName);
+	dcclite::Log::Debug("Loaded config {}", configFileName);
 
 	json data;
 
@@ -58,7 +58,7 @@ void Brooker::LoadConfig(const char *configFileName)
 		throw std::runtime_error("error: invalid config, expected services array");
 	}
 
-	dcclite::Log()->debug("Processing config services {}", services.size());
+	dcclite::Log::Debug("Processing config services {}", services.size());
 
 	for(auto &serviceData : services)	
 	{

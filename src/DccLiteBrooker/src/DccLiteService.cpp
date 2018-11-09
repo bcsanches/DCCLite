@@ -2,7 +2,7 @@
 
 #include <spdlog/spdlog.h>
 
-#include <LogUtils.h>
+#include <Log.h>
 
 #include "Device.h"
 
@@ -80,6 +80,6 @@ void DccLiteService::Update()
 		return;
 	}
 
-	dcclite::Log()->info("[DccLiteService::Update] got data");	
+	dcclite::Log::Info("[DccLiteService::Update] got data");	
 }
 
