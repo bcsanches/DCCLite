@@ -5,6 +5,7 @@
 #include <Log.h>
 
 #include "Device.h"
+#include "Packet.h"
 
 static ServiceClass dccLiteService("DccLite", 
 	[](const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params) -> std::unique_ptr<Service> { return std::make_unique<DccLiteService>(serviceClass, name, params); }
@@ -80,6 +81,37 @@ void DccLiteService::Update()
 		return;
 	}
 
-	dcclite::Log::Info("[DccLiteService::Update] got data");	
+	dcclite::Log::Info("[DccLiteService::Update] got data");
+
+	if (size >= dcclite::PACKET_MAX_SIZE)
+	{
+		dcclite::Log::Error("[DccLiteService::Update] packet size too big, truncating");
+
+		size = dcclite::PACKET_MAX_SIZE;
+	}
+
+	dcclite::Packet pkt{ data, static_cast<uint8_t>(size) };
+
+	//dcclite::PacketReader reader{ pkt };	
+
+	if (pkt.Read<uint32_t>() != dcclite::PACKET_ID)
+	{
+		dcclite::Log::Warn("[DccLiteService::Update] Invalid packet id");
+
+		return;
+	}
+
+	auto msgType = static_cast<dcclite::MsgTypes>(pkt.Read<uint8_t>());
+
+	switch (msgType)
+	{
+		case dcclite::MsgTypes::HELLO:
+			dcclite::Log::Info("received hello");
+			break;
+
+		default:
+			dcclite::Log::Error("Invalid msg type: {}", static_cast<uint8_t>(msgType));
+			return;
+	}
 }
 

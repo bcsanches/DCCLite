@@ -18,5 +18,11 @@
     <ClInclude Include="lib\Common\Parser.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="lib\Common\Packet.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\Common\Guid.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

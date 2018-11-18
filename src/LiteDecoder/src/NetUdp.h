@@ -20,13 +20,15 @@ namespace NetUdp
 
 	extern bool Init();
 
-	extern void SendPacket(const char *data, uint8_t length, const uint8_t *destIp, uint16_t destPort);
+	extern void SendPacket(const uint8_t *data, uint8_t length, const uint8_t *destIp, uint16_t destPort);
 
 	extern void RegisterCallback(ReceiveCallback_t callback);
 
 	extern void Update();
 
 	extern void LogStatus();
+
+	extern const char *GetNodeName() noexcept;
 }
 
 #endif

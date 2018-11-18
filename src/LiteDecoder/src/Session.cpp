@@ -4,45 +4,33 @@
 
 #include "Console.h"
 #include "NetUdp.h"
+#include "Packet.h"
 #include "Storage.h"
 
 #define MODULE_NAME "Session"
 
-struct Guid
-{
-	union
-	{
-		uint8_t m_bId[8];
-		uint64_t m_bBigId[2];
-	};
-
-	inline bool IsNull() const
-	{
-		return (m_bBigId[0] == 0) && (m_bBigId[1] == 0);
-	}
-};
-
 enum class States
 {
-	DISCONNECTED,
-	SEARCHING
+	OFFLINE,
+	SEARCHING_SERVER
 };
 
-static Guid g_SessionToken = { 0 };
-static Guid g_ConfigToken = { 0 };
+static dcclite::Guid g_SessionToken;
+static dcclite::Guid g_ConfigToken;
 
 static uint8_t g_u8ServerIp[] = { 0x00, 0x00, 0x00, 0x00 };
 static uint16_t g_iSrvPort = 2424;
 
-static States g_eState = States::DISCONNECTED;
+static unsigned long g_uTicks = 0;
+
+static States g_eState = States::OFFLINE;
 
 static void ReceiveCallback(
 	uint8_t src_ip[4],    ///< IP address of the sender
 	uint16_t src_port,    ///< Port the packet was sent from
 	const char *data,   ///< UDP payload data
 	uint16_t len)
-{
-
+{	
 }
 
 void Session::LoadConfig(EpromStream &stream)
@@ -79,29 +67,40 @@ bool Session::Init()
 	return true;
 }
 
-static void OnDisconnected()
+static void OnOffline()
 {
-	g_eState = States::SEARCHING;
+	g_eState = States::SEARCHING_SERVER;
+
+	dcclite::Packet pkt;
+	dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::HELLO, g_SessionToken, g_ConfigToken };
+
+	builder.WriteStr(NetUdp::GetNodeName());
 
 	uint8_t destip[4] = { 255, 255, 255, 255 };
-	NetUdp::SendPacket("hello", 5, destip, g_iSrvPort);
+	NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), destip, g_iSrvPort);
+
+	g_uTicks = millis() + 1000;
+	g_eState = States::SEARCHING_SERVER;
 }
 
-static void OnSearching()
+static void OnSearchingServer()
 {
+	if (g_uTicks > millis())
+		return;
 
+	OnOffline();
 }
 
 void Session::Update()
 {
 	switch (g_eState)
 	{
-		case States::DISCONNECTED:
-			OnDisconnected();
+		case States::OFFLINE:
+			OnOffline();
 			break;
 
-		case States::SEARCHING:
-			OnSearching();
+		case States::SEARCHING_SERVER:
+			OnSearchingServer();
 			break;
 	}
 }

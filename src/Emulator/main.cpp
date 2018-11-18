@@ -2,6 +2,7 @@
 
 #include "ConsoleUtils.h"
 
+#include "Clock.h"
 #include "NetMessenger.h"
 #include "Socket.h"
 
@@ -125,8 +126,16 @@ int main(int, char **)
 
 	//ArduinoLib::SetSerialInput("/sv;");
 
+	dcclite::Clock clock;
+
 	while(!fExitRequested)
 	{
+		if (!clock.Tick(std::chrono::milliseconds{ 10 }))
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds{ 1 });
+			continue;
+		}
+
 		ArduinoLib::Tick();
 	}
 

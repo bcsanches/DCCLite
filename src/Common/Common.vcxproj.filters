@@ -34,6 +34,12 @@
     <ClCompile Include="..\..\contrib\fmt\src\posix.cc">
       <Filter>src\fmt</Filter>
     </ClCompile>
+    <ClCompile Include="src\GuidUtils.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Clock.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\LogUtils.h">
@@ -85,6 +91,12 @@
       <Filter>src\fmt</Filter>
     </ClInclude>
     <ClInclude Include="include\Log.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GuidUtils.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Clock.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

@@ -18,8 +18,6 @@ static uint16_t g_iSrcPort = 4551;
 #define MAX_NODE_NAME 16
 static char g_szNodeName[MAX_NODE_NAME + 1];
 
-char textToSend[] = "test 123";
-
 static NetUdp::ReceiveCallback_t g_pfnReceiverCallback;
 
 enum States
@@ -146,9 +144,9 @@ bool NetUdp::Init()
 	return true;
 }
 
-void NetUdp::SendPacket(const char *data, uint8_t length, const uint8_t *destIp, uint16_t destPort)
+void NetUdp::SendPacket(const uint8_t *data, uint8_t length, const uint8_t *destIp, uint16_t destPort)
 {
-	ether.sendUdp(data, length, g_iSrcPort, destIp, destPort );   
+	ether.sendUdp(reinterpret_cast<const char *>(data), length, g_iSrcPort, destIp, destPort );   
 }
 
 void NetUdp::Update()
@@ -168,4 +166,9 @@ void NetUdp::LogStatus()
 void NetUdp::RegisterCallback(ReceiveCallback_t callback)
 {
 	g_pfnReceiverCallback = callback;
+}
+
+const char *NetUdp::GetNodeName() noexcept
+{
+	return g_szNodeName;
 }

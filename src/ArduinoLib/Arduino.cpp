@@ -4,6 +4,7 @@
 #include <chrono>
 
 #include "ArduinoLib.h"
+#include "Clock.h"
 
 #include "DynamicLibrary.h"
 
@@ -22,10 +23,7 @@ namespace ArduinoLib
 		// Time Facilities
 		//
 		//
-		typedef chrono::high_resolution_clock DefaultClock_t;
-
-		static std::chrono::time_point<DefaultClock_t> g_StartTime;
-		static std::chrono::time_point<DefaultClock_t> g_CurrentTime;
+		dcclite::Clock g_Clock;
 
 		static unsigned long g_Millis;
 
@@ -127,7 +125,7 @@ namespace ArduinoLib
 		g_pfnSetup = static_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("setup"));
 		g_pfnLoop = static_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("loop"));		
 
-		g_CurrentTime = g_StartTime = DefaultClock_t::now();
+		g_Clock = dcclite::Clock();
 
 		detail::RomSetupModule(g_strModuleName);
 
@@ -142,9 +140,9 @@ namespace ArduinoLib
 
 	void Tick()
 	{
-		g_CurrentTime = DefaultClock_t::now();
+		g_Clock.Tick();
 
-		g_Millis = static_cast<unsigned long>(chrono::duration_cast<chrono::milliseconds>(g_CurrentTime - g_StartTime).count());
+		g_Millis = static_cast<unsigned long>(g_Clock.Total().count());
 
 		//run client loop
 		g_pfnLoop();

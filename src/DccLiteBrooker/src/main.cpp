@@ -4,6 +4,7 @@
 
 #include "Brooker.h"
 
+#include "Clock.h"
 #include "ConsoleUtils.h"
 #include "LogUtils.h"
 #include "TerminalCmd.h"
@@ -35,9 +36,19 @@ int main(int argc, char **argv)
 		Brooker brooker;
 
 		brooker.LoadConfig(configFileName);
+
+		dcclite::Clock clock;
 		
-		while(!fExitRequested)
+		while (!fExitRequested)
+		{
+			if (!clock.Tick(std::chrono::milliseconds{ 100 }))
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds{ 10 });
+				continue;
+			}			
+
 			brooker.Update();
+		}			
 	}	
 	catch (std::exception &ex)
 	{

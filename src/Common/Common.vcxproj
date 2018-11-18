@@ -29,8 +29,10 @@
     <ClInclude Include="..\..\contrib\fmt\include\fmt\ranges.h" />
     <ClInclude Include="..\..\contrib\fmt\include\fmt\time.h" />
     <ClInclude Include="include\ClassInfo.h" />
+    <ClInclude Include="include\Clock.h" />
     <ClInclude Include="include\ConsoleUtils.h" />
     <ClInclude Include="include\defs.h" />
+    <ClInclude Include="include\GuidUtils.h" />
     <ClInclude Include="include\Log.h" />
     <ClInclude Include="include\LogUtils.h" />
     <ClInclude Include="include\NetMessenger.h" />
@@ -40,7 +42,9 @@
   <ItemGroup>
     <ClCompile Include="..\..\contrib\fmt\src\format.cc" />
     <ClCompile Include="..\..\contrib\fmt\src\posix.cc" />
+    <ClCompile Include="src\Clock.cpp" />
     <ClCompile Include="src\ConsoleUtils.cpp" />
+    <ClCompile Include="src\GuidUtils.cpp" />
     <ClCompile Include="src\LogUtils.cpp" />
     <ClCompile Include="src\NetMessenger.cpp" />
     <ClCompile Include="src\Object.cpp" />
@@ -107,7 +111,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)\lib\</OutDir>
     <IntDir>$(SolutionDir)\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)\src\Common\include\;$(SolutionDir)\contrib\spdlog\include\;$(SolutionDir)\contrib\fmt\include\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\src\Common\include\;$(SolutionDir)\contrib\spdlog\include\;$(SolutionDir)\contrib\fmt\include\;$(SolutionDir)\src\LiteDecoder\lib\Common\;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
