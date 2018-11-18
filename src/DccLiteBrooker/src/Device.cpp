@@ -6,7 +6,8 @@
 Device::Device(std::string name, DccLiteService &dccService, const nlohmann::json &params) :
 	FolderObject(std::move(name)),
 	m_clDccService(dccService),
-	m_eStatus(Status::OFFLINE)
+	m_eStatus(Status::OFFLINE),
+	m_fRegistered(true)
 {	
 	auto it = params.find("decoders");
 	if (it == params.end())
@@ -27,4 +28,14 @@ Device::Device(std::string name, DccLiteService &dccService, const nlohmann::jso
 
 		this->AddChild(std::make_unique<dcclite::Shortcut>(std::string(decoder.GetName()), decoder));
 	}
+}
+
+
+Device::Device(std::string name, DccLiteService &dccService):
+	FolderObject(std::move(name)),
+	m_clDccService(dccService),
+	m_eStatus(Status::OFFLINE),
+	m_fRegistered(false)
+{
+	//empty
 }

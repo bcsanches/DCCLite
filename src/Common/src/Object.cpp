@@ -41,6 +41,13 @@ namespace dcclite
 		return ptr;
 	}
 
+	IObject *FolderObject::TryGetChild(std::string_view name)
+	{
+		auto it = m_mapObjects.find(name);		
+
+		return it == m_mapObjects.end() ? nullptr : it->second.get();
+	}
+
 	FolderObject::FolderEnumerator::FolderEnumerator(FolderObject::Iterator_t begin, FolderObject::Iterator_t end):
 		m_itBegin(begin),
 		m_itEnd(end),
@@ -71,5 +78,5 @@ namespace dcclite
 		auto obj = m_itCurrent->second.get();
 
 		return (obj->IsShortcut()) ? static_cast<Shortcut *>(obj)->TryResolve() : obj;		
-	}
+	}	
 }

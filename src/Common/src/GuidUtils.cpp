@@ -6,6 +6,11 @@
 
 #include "Guid.h"
 
+#if 0
+#include "FmtUtils.h"
+#include "Log.h"
+#endif
+
 
 dcclite::Guid dcclite::GuidCreate()
 {
@@ -19,10 +24,16 @@ dcclite::Guid dcclite::GuidCreate()
 
 	dcclite::Guid guid;
 
-	memcpy(guid.m_bId, &g.Data1, sizeof(g.Data1));
-	memcpy(guid.m_bId + 4, &g.Data2, sizeof(g.Data2));
-	memcpy(guid.m_bId + 8, &g.Data3, sizeof(g.Data3));
-	memcpy(guid.m_bId + 12, &g.Data4, sizeof(g.Data4));
+	memcpy(&guid.m_bId[0], &g.Data1, 4);
+	memcpy(&guid.m_bId[4], &g.Data2, 2);
+	memcpy(&guid.m_bId[6], &g.Data3, 2);
+	memcpy(&guid.m_bId[8], &g.Data4, 8);
+
+#if 0
+	dcclite::Log::Debug("{}", guid);
+
+	dcclite::Log::Debug("{}", memcmp(&guid, &g, sizeof(guid)));
+#endif
 
 	return guid;
 }

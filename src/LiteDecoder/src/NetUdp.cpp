@@ -35,7 +35,7 @@ static void UdpCallback(uint16_t dest_port,    	///< Port the packet was sent to
 {
     Serial.println("Got udp packet");
     ether.printIp("SRV: ", src_ip);
-    Serial.println(data);
+    //Serial.println(data);
 
 	if(g_pfnReceiverCallback)
 		g_pfnReceiverCallback(src_ip, src_port, data, len);

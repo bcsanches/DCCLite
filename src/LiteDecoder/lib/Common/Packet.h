@@ -13,7 +13,12 @@ namespace dcclite
 		RESERVED0,
 
 		HELLO,
-		ACCEPTED
+		ACCEPTED,
+		CONFIG_START,
+		CONFIG_DEV,
+		CONFIG_FINISHED,
+		PING,
+		PONG
 	};	
 
 	constexpr uint32_t PACKET_ID = 0xBEEFFEED;
@@ -102,6 +107,11 @@ namespace dcclite
 				return &m_arData[0];
 			}
 
+			inline void Reset() noexcept
+			{
+				m_iIndex = 0;
+			}
+
 		private:
 			std::array<std::uint8_t, PACKET_MAX_SIZE> m_arData;
 
@@ -140,13 +150,30 @@ namespace dcclite
 	class PacketReader
 	{
 		public:
-			inline PacketReader(const Packet &pkt):
+			inline PacketReader(Packet &pkt):
 				m_Packet(pkt)
 			{
 				//empty
-			}			
+			}
+
+			inline void ReadStr(char *str, size_t max)
+			{
+				size_t len = m_Packet.Read<uint8_t>();
+
+				size_t bytesToRead = std::min(len, max);
+				for (size_t i = 0; i < bytesToRead; ++i)
+				{
+					str[i] = m_Packet.Read<uint8_t>();
+				}
+
+				str[bytesToRead] = '\0';
+
+				//make sure we read everything
+				while (bytesToRead < len)
+					m_Packet.Read<uint8_t>();
+			}
 
 		private:
-			const Packet &m_Packet;
+			Packet &m_Packet;
 	};
 }

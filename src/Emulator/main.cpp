@@ -120,11 +120,13 @@ int main(int, char **)
 
 	TerminalService terminalService;		
 
-	//ArduinoLib::SetSerialInput("/cfg emul 206.174.184.251.21.20 7202 127.0.0.1 8989;");
+#if 0
+	ArduinoLib::SetSerialInput("/cfg LeoRelayStaging 206.174.184.251.21.20 7202 127.0.0.1 8989;");
 
-	//ArduinoLib::Tick();
+	ArduinoLib::Tick();
 
-	//ArduinoLib::SetSerialInput("/sv;");
+	ArduinoLib::SetSerialInput("/sv;");
+#endif
 
 	dcclite::Clock clock;
 

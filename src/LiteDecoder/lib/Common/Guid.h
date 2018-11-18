@@ -26,6 +26,11 @@ namespace dcclite
 			{
 				return ((m_bBigId[0] == g.m_bBigId[0]) && (m_bBigId[1] == g.m_bBigId[1]));
 			}
+
+			inline bool operator!=(const Guid &g) const noexcept
+			{
+				return ((m_bBigId[0] != g.m_bBigId[0]) || (m_bBigId[1] != g.m_bBigId[1]));
+			}
 	};
 
 }

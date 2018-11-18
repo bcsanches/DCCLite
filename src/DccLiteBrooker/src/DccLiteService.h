@@ -9,8 +9,12 @@
 
 #include "Socket.h"
 
-
 class Device;
+
+namespace dcclite
+{
+	class Packet;
+}
 
 class DccLiteService : public Service
 {
@@ -27,6 +31,14 @@ class DccLiteService : public Service
 		);
 
 		virtual void Update() override;
+
+	private:
+		void OnNet_Hello(const dcclite::Address &senderAddress, dcclite::Packet &packet);
+		void OnNet_Ping(const dcclite::Address &senderAddress, dcclite::Packet &packet);
+
+		void SendPacket(const dcclite::Address &senderAddress, const dcclite::Packet &packet);
+
+		Device *TryFindDeviceByName(std::string_view name);
 
 	private:
 		dcclite::Socket m_clSocket;

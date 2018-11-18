@@ -32,6 +32,7 @@
     <ClInclude Include="include\Clock.h" />
     <ClInclude Include="include\ConsoleUtils.h" />
     <ClInclude Include="include\defs.h" />
+    <ClInclude Include="include\FmtUtils.h" />
     <ClInclude Include="include\GuidUtils.h" />
     <ClInclude Include="include\Log.h" />
     <ClInclude Include="include\LogUtils.h" />

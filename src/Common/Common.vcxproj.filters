@@ -99,5 +99,8 @@
     <ClInclude Include="include\Clock.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="include\FmtUtils.h">
+      <Filter>src\fmt</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
