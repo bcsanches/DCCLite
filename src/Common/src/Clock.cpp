@@ -22,13 +22,5 @@ namespace dcclite
 		return true;
 	}
 
-	std::chrono::milliseconds Clock::Delta()
-	{
-		return std::chrono::duration_cast<std::chrono::milliseconds>(m_CurrentTime - m_PreviousTime);
-	}
-
-	std::chrono::milliseconds Clock::Total()
-	{
-		return std::chrono::duration_cast<std::chrono::milliseconds>(m_CurrentTime - m_StartTime);
-	}
+	
 }

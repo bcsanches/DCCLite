@@ -5,7 +5,6 @@
 #include <Log.h>
 
 #include "Device.h"
-#include "GuidUtils.h"
 #include "FmtUtils.h"
 #include "Packet.h"
 
@@ -75,66 +74,71 @@ Device *DccLiteService::TryFindDeviceByName(std::string_view name)
 	return static_cast<Device *>(m_pDevices->TryGetChild(name));
 }
 
-void DccLiteService::Update()
+void DccLiteService::Update(const dcclite::Clock &clock)
 {
 	std::uint8_t data[2048];
 
 	dcclite::Address sender;	
 
-	auto[status, size] = m_clSocket.Receive(sender, data, sizeof(data));
+	for (;;)
+	{	
+		auto[status, size] = m_clSocket.Receive(sender, data, sizeof(data));
 
-	if (status != dcclite::Socket::Status::OK)
-	{
-		return;
-	}
-
-	dcclite::Log::Info("[DccLiteService::Update] got data");
-
-	if (size >= dcclite::PACKET_MAX_SIZE)
-	{
-		dcclite::Log::Error("[DccLiteService::Update] packet size too big, truncating");
-
-		size = dcclite::PACKET_MAX_SIZE;
-	}
-
-	dcclite::Packet pkt{ data, static_cast<uint8_t>(size) };
-
-	//dcclite::PacketReader reader{ pkt };	
-
-	if (pkt.Read<uint32_t>() != dcclite::PACKET_ID)
-	{
-		dcclite::Log::Warn("[DccLiteService::Update] Invalid packet id");
-
-		return;
-	}
-
-	auto msgType = static_cast<dcclite::MsgTypes>(pkt.Read<uint8_t>());
-
-	switch (msgType)
-	{
-		case dcclite::MsgTypes::HELLO:			
-			this->OnNet_Hello(sender, pkt);
+		if (status != dcclite::Socket::Status::OK)
+		{
 			break;
+		}
 
-		case dcclite::MsgTypes::PING:
-			this->OnNet_Ping(sender, pkt);
-			break;
+		dcclite::Log::Info("[DccLiteService::Update] got data");
 
-		default:
-			dcclite::Log::Error("Invalid msg type: {}", static_cast<uint8_t>(msgType));
+		if (size >= dcclite::PACKET_MAX_SIZE)
+		{
+			dcclite::Log::Error("[DccLiteService::Update] packet size too big, truncating");
+
+			size = dcclite::PACKET_MAX_SIZE;
+		}
+
+		dcclite::Packet pkt{ data, static_cast<uint8_t>(size) };
+
+		//dcclite::PacketReader reader{ pkt };	
+
+		if (pkt.Read<uint32_t>() != dcclite::PACKET_ID)
+		{
+			dcclite::Log::Warn("[DccLiteService::Update] Invalid packet id");
+
 			return;
-	}
-}
+		}
 
-void DccLiteService::SendPacket(const dcclite::Address &senderAddress, const dcclite::Packet &packet)
-{
-	if (!m_clSocket.Send(senderAddress, packet.GetData(), packet.GetSize()))
+		auto seq = pkt.Read<dcclite::PacketSequence_t>();
+		auto msgType = static_cast<dcclite::MsgTypes>(pkt.Read<uint8_t>());
+
+		switch (msgType)
+		{
+			case dcclite::MsgTypes::HELLO:			
+				this->OnNet_Hello(clock, sender, pkt);
+				break;
+
+			case dcclite::MsgTypes::PING:
+				this->OnNet_Ping(clock, sender, pkt);
+				break;
+
+			default:
+				dcclite::Log::Error("Invalid msg type: {}", static_cast<uint8_t>(msgType));
+				return;
+		}
+	}
+
+	auto enumerator = this->m_pDevices->GetEnumerator();
+	while (enumerator.MoveNext())
 	{
-		dcclite::Log::Error("[{}::DccLiteService::SendPacket] Failed to send answer to device {}", this->GetName(), senderAddress);
+		auto dev = enumerator.TryGetCurrent<Device>();
+
+		if (dev->IsOnline())
+			dev->SendPackets(m_clSocket);
 	}
 }
 
-void DccLiteService::OnNet_Hello(const dcclite::Address &senderAddress, dcclite::Packet &packet)
+void DccLiteService::OnNet_Hello(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
 {
 	auto remoteSessionToken = packet.ReadGuid();
 	auto remoteConfigToken = packet.ReadGuid();
@@ -157,53 +161,12 @@ void DccLiteService::OnNet_Hello(const dcclite::Address &senderAddress, dcclite:
 		dev = static_cast<Device*>(m_pDevices->AddChild(std::make_unique<Device>(name, *this)));
 	}	
 
-	auto sessionToken = dcclite::GuidCreate();
-	dev->SetSessionToken(sessionToken);
-
-	auto configToken = dev->GetConfigToken();
-	if (configToken.IsNull())
-	{		
-		configToken = dcclite::GuidCreate();
-		dev->SetConfigToken(configToken);
-
-		dcclite::Log::Info("[{}::DccLiteService::OnNet_Hello] Created config token {} for {}", this->GetName(), configToken, name);
-	}
-	
-	dcclite::Packet response;
-
-	if (remoteConfigToken != configToken)
-	{
-		dcclite::Log::Info("[{}::DccLiteService::OnNet_Hello] Started configuring {}", this->GetName(), name);
-		dev->SetStatus(Device::Status::CONFIGURING);
-		
-		{
-			dcclite::PacketBuilder responseBuilder{ response, dcclite::MsgTypes::CONFIG_START, sessionToken, dcclite::Guid{} };
-			SendPacket(senderAddress, response);
-		}
-		
-		{
-			response.Reset();
-
-			dcclite::PacketBuilder responseBuilder{ response, dcclite::MsgTypes::CONFIG_FINISHED, sessionToken, configToken };
-			SendPacket(senderAddress, response);
-		}
-
-		dcclite::Log::Info("[{}::DccLiteService::OnNet_Hello] {} configured", this->GetName(), name);
-	}
-	else
-	{
-		dev->SetStatus(Device::Status::ONLINE);
-
-		dcclite::PacketBuilder responseBuilder{ response, dcclite::MsgTypes::ACCEPTED, sessionToken, configToken };
-
-		SendPacket(senderAddress, response);
-	}
-
-	dev->SetRemoteAddress(senderAddress);	
+	dev->AcceptConnection(clock.Now(), senderAddress, remoteSessionToken, remoteConfigToken);	
 }
 
-void DccLiteService::OnNet_Ping(const dcclite::Address &senderAddress, dcclite::Packet &packet)
+void DccLiteService::OnNet_Ping(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
 {
+#if 0
 	dcclite::Log::Trace("[{}::DccLiteService::OnNet_Hello] Received ping, sending pong...", this->GetName());
 
 	auto remoteSessionToken = packet.ReadGuid();
@@ -217,5 +180,6 @@ void DccLiteService::OnNet_Ping(const dcclite::Address &senderAddress, dcclite::
 	{
 		dcclite::Log::Error("[{}::DccLiteService::OnNet_Ping] Failed to send answer to device {}", this->GetName(), senderAddress);
 	}
+#endif
 }
 

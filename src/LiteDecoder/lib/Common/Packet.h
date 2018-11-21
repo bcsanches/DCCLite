@@ -12,23 +12,26 @@ namespace dcclite
 	{
 		RESERVED0,
 
-		HELLO,
+		HELLO,				
 		ACCEPTED,
 		CONFIG_START,
 		CONFIG_DEV,
 		CONFIG_FINISHED,
 		PING,
-		PONG
+		PONG,
+		ACK
 	};	
 
 	constexpr uint32_t PACKET_ID = 0xBEEFFEED;
 
-	constexpr uint8_t PACKET_MAX_SIZE = 220;
+	constexpr uint8_t PACKET_MAX_SIZE = 128;
+
+	typedef uint32_t PacketSequence_t;
 
 	/**
 	Basic packet format:
 
-	ID MSG_TYPE SESSION_TOKEN CONFIG_TOKEN MSG
+	ID MSG_TYPE SEQUENCE SESSION_TOKEN CONFIG_TOKEN MSG
 	
 	
 	*/
@@ -44,7 +47,13 @@ namespace dcclite
 				memcpy(&m_arData[0], data, len);
 			}
 
-			Packet(const Packet &) = delete;
+			Packet(const Packet &rhs):
+				m_arData(rhs.m_arData),
+				m_iIndex(rhs.m_iIndex)
+			{
+				//emtpy
+			}
+
 			Packet(Packet &&) = delete;
 
 			Packet &operator=(const Packet &) = delete;			
@@ -121,10 +130,11 @@ namespace dcclite
 	class PacketBuilder
 	{
 		public:
-			inline PacketBuilder(Packet &pkt, MsgTypes msgType, const Guid &sessionToken, const Guid &configToken):
+			inline PacketBuilder(Packet &pkt, MsgTypes msgType, PacketSequence_t seq, const Guid &sessionToken, const Guid &configToken):
 				m_Packet(pkt)
 			{
 				pkt.Write32(PACKET_ID);
+				pkt.Write32(seq);
 				pkt.Write8(static_cast<uint8_t>(msgType));
 				pkt.Write(sessionToken);
 				pkt.Write(configToken);

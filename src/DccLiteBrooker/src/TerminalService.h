@@ -18,5 +18,5 @@ class TerminalService : public Service
 
 		virtual ~TerminalService();
 
-		virtual void Update() override;
+		virtual void Update(const dcclite::Clock &clock) override;
 };

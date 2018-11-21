@@ -30,13 +30,11 @@ class DccLiteService : public Service
 			const nlohmann::json &params
 		);
 
-		virtual void Update() override;
+		virtual void Update(const dcclite::Clock &clock) override;
 
 	private:
-		void OnNet_Hello(const dcclite::Address &senderAddress, dcclite::Packet &packet);
-		void OnNet_Ping(const dcclite::Address &senderAddress, dcclite::Packet &packet);
-
-		void SendPacket(const dcclite::Address &senderAddress, const dcclite::Packet &packet);
+		void OnNet_Hello(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);
+		void OnNet_Ping(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);		
 
 		Device *TryFindDeviceByName(std::string_view name);
 

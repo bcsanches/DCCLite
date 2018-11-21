@@ -2,9 +2,11 @@
 
 #include <string>
 
+#include "Clock.h"
 #include "Guid.h"
 #include "json.hpp"
 #include "Object.h"
+#include "Packet.h"
 #include "Socket.h"
 
 class DccLiteService;
@@ -16,8 +18,22 @@ class Device: public dcclite::FolderObject
 		enum class Status
 		{
 			OFFLINE,
-			ONLINE,
-			CONFIGURING
+			ONLINE			
+		};
+
+		struct Message
+		{
+			dcclite::Clock::TimePoint_t m_Time;
+			dcclite::PacketSequence_t m_uSequence;
+
+			dcclite::Packet m_Packet;
+
+			inline Message(dcclite::Clock::TimePoint_t time, dcclite::PacketSequence_t sequence) :
+				m_Time(time),
+				m_uSequence(sequence)				
+			{
+				//empty
+			}
 		};
 
 	public:
@@ -27,35 +43,27 @@ class Device: public dcclite::FolderObject
 		Device(const Device &) = delete;
 		Device(Device &&) = delete;
 
-		inline void SetStatus(Status status) noexcept
-		{
-			m_eStatus = status;
-		}
+		void AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken);
+
+		dcclite::Packet &ProducePacket(dcclite::Clock::TimePoint_t time, dcclite::MsgTypes msgType);
+
+		void SendPackets(dcclite::Socket &m_clSocket);
 
 		inline const dcclite::Guid &GetSessionToken() noexcept 
 		{
 			return m_SessionToken;
 		}
-
-		inline void SetSessionToken(const dcclite::Guid &guid) noexcept
-		{
-			m_SessionToken = guid;
-		}
-
+		
 		inline const dcclite::Guid &GetConfigToken() noexcept
 		{
 			return m_ConfigToken;
 		}
 
-		inline void SetConfigToken(const dcclite::Guid &guid) noexcept
+		inline bool IsOnline() const noexcept
 		{
-			m_ConfigToken = guid;
+			return m_eStatus == Status::ONLINE;
 		}
-
-		inline void SetRemoteAddress(dcclite::Address address) noexcept
-		{
-			m_RemoteAddress = address;
-		}
+		
 
 	private:		
 		DccLiteService &m_clDccService;			
@@ -70,5 +78,13 @@ class Device: public dcclite::FolderObject
 
 		dcclite::Address	m_RemoteAddress;
 
-		Status				m_eStatus;
+		Status						m_eStatus;
+
+		dcclite::PacketSequence_t	m_uLastReceivedPacket = 0;
+		dcclite::PacketSequence_t	m_uSentPacketsAck = 0;
+
+		dcclite::PacketSequence_t	m_uSequence = 0;
+
+		std::vector<Message>		m_vecPendingPackets;
+		size_t						m_uNextPacket = 0;
 };

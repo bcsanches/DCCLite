@@ -26,6 +26,11 @@ static uint16_t g_iSrvPort = 2424;
 static unsigned long g_uTicks = 0;
 static unsigned long g_uTimeoutTicks = 0;
 
+static dcclite::PacketSequence_t g_uLastReceivedPacket = 0;
+static dcclite::PacketSequence_t g_uPendingAck = 0;
+
+static dcclite::PacketSequence_t g_uSentPacketCount = 0;
+
 static States g_eState = States::OFFLINE;
 
 #define PING_TICKS 1000
@@ -119,6 +124,12 @@ static void GotoOnlineState()
 	UpdatePingStatus(millis());
 }
 
+static void StartPacketFlow()
+{
+	g_uLastReceivedPacket = 0;
+	g_uSentPacketCount = 0;
+}
+
 static void LogInvalidPacket(const char *state, dcclite::MsgTypes type)
 {
 	Console::SendLog(MODULE_NAME, "Invalid packet on %s %d, ignoring", state, type);
@@ -127,7 +138,7 @@ static void LogInvalidPacket(const char *state, dcclite::MsgTypes type)
 static void OfflineTick()
 {
 	dcclite::Packet pkt;
-	dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::HELLO, g_SessionToken, g_ConfigToken };
+	dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::HELLO, 0, g_SessionToken, g_ConfigToken };
 
 	builder.WriteStr(NetUdp::GetNodeName());
 
@@ -136,6 +147,8 @@ static void OfflineTick()
 
 	UpdatePingStatus(millis());	
 	g_eState = States::SEARCHING_SERVER;
+
+	StartPacketFlow();
 }
 
 static void SearchingServerTick()
@@ -146,10 +159,8 @@ static void SearchingServerTick()
 	OfflineTick();
 }
 
-static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclite::Packet &packet)
-{
-	dcclite::MsgTypes type = packet.Read<dcclite::MsgTypes>();
-
+static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclite::MsgTypes type, dcclite::Packet &packet)
+{	
 	if (type == dcclite::MsgTypes::ACCEPTED)
 	{
 		g_SessionToken = packet.ReadGuid();
@@ -169,7 +180,7 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 		LogInvalidPacket("OnSearchingServerPacket", type);
 
 		return;
-	}
+	}	
 
 	memcpy(g_u8ServerIp, src_ip, sizeof(g_u8ServerIp));
 	g_iSrvPort = src_port;
@@ -187,20 +198,16 @@ static void OnlineTick()
 
 	dcclite::Packet pkt;
 	
-	dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::PING, g_SessionToken, g_ConfigToken };
+	dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::PING, 0, g_SessionToken, g_ConfigToken };
 
 	NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_iSrvPort);
 	g_uTicks = millis() + PING_TICKS;
 }
 
-static void OnOnlinePacket(uint8_t src_ip[4], uint16_t src_port, dcclite::Packet &packet)
-{	
-	if (!IsValidServer(src_ip, src_port))
-		return;	
-
+static void OnOnlinePacket(uint8_t src_ip[4], uint16_t src_port, dcclite::MsgTypes type, dcclite::Packet &packet)
+{		
 	UpdatePingStatus(millis());	
-
-	dcclite::MsgTypes type = packet.Read<dcclite::MsgTypes>();
+	
 	switch (type)
 	{
 		case dcclite::MsgTypes::PONG:
@@ -217,13 +224,8 @@ static void ConfiguringTick()
 		return;
 }
 
-void OnConfiguringPacket(uint8_t src_ip[4], uint16_t src_port, dcclite::Packet &packet)
-{
-	if (!IsValidServer(src_ip, src_port))
-		return;
-
-	dcclite::MsgTypes type = packet.Read<dcclite::MsgTypes>();
-
+void OnConfiguringPacket(uint8_t src_ip[4], uint16_t src_port, dcclite::MsgTypes type, dcclite::Packet &packet)
+{		
 	switch (type)
 	{
 		case dcclite::MsgTypes::CONFIG_DEV:
@@ -279,18 +281,40 @@ static void ReceiveCallback(
 		return;
 	}
 
+	dcclite::PacketSequence_t sequence = packet.Read<dcclite::PacketSequence_t>();
+	dcclite::MsgTypes type = packet.Read<dcclite::MsgTypes>();	
+
+	if (g_eState != States::SEARCHING_SERVER)
+	{	
+		if (!IsValidServer(src_ip, src_port))
+		{
+			Console::SendLog(MODULE_NAME, "Got packet from invalid srv %d.%d.%d.%d:%d", src_ip[0], src_ip[1], src_ip[2], src_ip[3], src_port);
+			return;
+		}				
+	}	
+
+	if ((type != dcclite::MsgTypes::PONG) && (g_uLastReceivedPacket + 1 != sequence))
+	{
+		Console::SendLog(MODULE_NAME, "Dropping out of seq pkt");
+		return;
+	}
+	else if (type != dcclite::MsgTypes::PONG)
+	{
+		++g_uLastReceivedPacket;
+	}
+	
 	switch (g_eState)
 	{
 		case States::SEARCHING_SERVER:
-			OnSearchingServerPacket(src_ip, src_port, packet);
+			OnSearchingServerPacket(src_ip, src_port, type, packet);
 			break;
 
 		case States::CONFIGURING:
-			OnConfiguringPacket(src_ip, src_port, packet);
+			OnConfiguringPacket(src_ip, src_port, type, packet);
 			break;
 
 		case States::ONLINE:
-			OnOnlinePacket(src_ip, src_port, packet);
+			OnOnlinePacket(src_ip, src_port, type, packet);
 			break;
 
 		default:

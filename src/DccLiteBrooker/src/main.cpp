@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 				continue;
 			}			
 
-			brooker.Update();
+			brooker.Update(clock);
 		}			
 	}	
 	catch (std::exception &ex)

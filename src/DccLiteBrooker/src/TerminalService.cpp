@@ -94,7 +94,7 @@ TerminalService::~TerminalService()
 	//empty
 }
 
-void TerminalService::Update()
+void TerminalService::Update(const dcclite::Clock &clock)
 {
 	auto [status, socket, address] = m_clSocket.TryAccept();
 

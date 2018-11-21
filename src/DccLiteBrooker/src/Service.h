@@ -10,6 +10,11 @@
 class Service;
 typedef dcclite::ClassInfo<Service, const std::string&, const nlohmann::json &> ServiceClass;
 
+namespace dcclite
+{
+	class Clock;
+}
+
 class Service: public dcclite::FolderObject
 {
 	private:		
@@ -29,7 +34,7 @@ class Service: public dcclite::FolderObject
 	public:
 		virtual ~Service() {}		
 
-		virtual void Update() { ; }
+		virtual void Update(const dcclite::Clock &clock) { ; }
 
 };
 

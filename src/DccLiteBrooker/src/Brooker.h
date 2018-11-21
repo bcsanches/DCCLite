@@ -7,6 +7,11 @@
 #include "Object.h"
 #include "Service.h"
 
+namespace dcclite
+{
+	class Clock;
+}
+
 class Brooker
 {
 	private:	
@@ -17,5 +22,5 @@ class Brooker
 
 		void LoadConfig(const char *fileName);
 
-		void Update();
+		void Update(const dcclite::Clock &clock);
 };

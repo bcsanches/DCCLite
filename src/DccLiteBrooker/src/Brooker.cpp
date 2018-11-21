@@ -68,12 +68,12 @@ void Brooker::LoadConfig(const char *configFileName)
 	}
 }
 
-void Brooker::Update()
+void Brooker::Update(const dcclite::Clock &clock)
 {
 	auto enumerator = m_clRoot.GetEnumerator();
 
 	while (enumerator.MoveNext())
 	{
-		enumerator.TryGetCurrent<Service>()->Update();
+		enumerator.TryGetCurrent<Service>()->Update(clock);
 	}	
 }
