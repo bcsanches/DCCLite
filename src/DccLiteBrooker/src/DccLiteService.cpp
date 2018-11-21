@@ -108,8 +108,7 @@ void DccLiteService::Update(const dcclite::Clock &clock)
 
 			return;
 		}
-
-		auto seq = pkt.Read<dcclite::PacketSequence_t>();
+		
 		auto msgType = static_cast<dcclite::MsgTypes>(pkt.Read<uint8_t>());
 
 		switch (msgType)

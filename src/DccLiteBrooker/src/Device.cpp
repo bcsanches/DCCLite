@@ -48,9 +48,6 @@ void Device::AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address
 	m_eStatus = Status::ONLINE;
 	m_RemoteAddress = remoteAddress;
 
-	m_uLastReceivedPacket = 0;
-	m_uSentPacketsAck = 0;
-	m_uSequence = 0;
 	m_uNextPacket = 0;
 
 	m_vecPendingPackets.clear();
@@ -69,14 +66,27 @@ void Device::AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address
 		dcclite::Log::Info("[{}::Device::AcceptConnection] Started configuring", this->GetName());
 
 		{
-			this->ProducePacket(time, dcclite::MsgTypes::CONFIG_START);
+			auto &pkt = this->ProducePacket(time, dcclite::MsgTypes::CONFIG_START);
+			pkt.Write8(0);
+		}
+
+		auto enumerator = this->GetEnumerator();
+
+		uint8_t counter = 1;
+		while (enumerator.MoveNext())
+		{
+			auto *decoder = enumerator.TryGetCurrent<Decoder>();
+
+			auto &pkt = this->ProducePacket(time, dcclite::MsgTypes::CONFIG_DEV);
+			pkt.Write8(counter++);
 		}
 
 		{
-			this->ProducePacket(time, dcclite::MsgTypes::CONFIG_FINISHED);
+			auto &pkt = this->ProducePacket(time, dcclite::MsgTypes::CONFIG_FINISHED);
+			pkt.Write8(counter);
 		}
 
-		dcclite::Log::Info("[{}::Device::AcceptConnection] configured", this->GetName());
+		dcclite::Log::Info("[{}::Device::AcceptConnection] configured", this->GetName());		
 	}
 	else
 	{
@@ -85,14 +95,12 @@ void Device::AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address
 }
 
 dcclite::Packet &Device::ProducePacket(dcclite::Clock::TimePoint_t time, dcclite::MsgTypes msgType)
-{
-	++m_uSequence;
-
-	m_vecPendingPackets.push_back(Message(time, m_uSequence));
+{	
+	m_vecPendingPackets.push_back(Message(time));
 
 	auto &pkt = m_vecPendingPackets.back().m_Packet;
 
-	dcclite::PacketBuilder builder{ pkt, msgType, m_uSequence, m_SessionToken, m_ConfigToken };
+	dcclite::PacketBuilder builder{ pkt, msgType, m_SessionToken, m_ConfigToken };
 
 	return pkt;
 }

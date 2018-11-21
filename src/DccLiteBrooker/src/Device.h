@@ -24,13 +24,11 @@ class Device: public dcclite::FolderObject
 		struct Message
 		{
 			dcclite::Clock::TimePoint_t m_Time;
-			dcclite::PacketSequence_t m_uSequence;
 
 			dcclite::Packet m_Packet;
 
-			inline Message(dcclite::Clock::TimePoint_t time, dcclite::PacketSequence_t sequence) :
-				m_Time(time),
-				m_uSequence(sequence)				
+			inline Message(dcclite::Clock::TimePoint_t time) :
+				m_Time{time}
 			{
 				//empty
 			}
@@ -78,12 +76,7 @@ class Device: public dcclite::FolderObject
 
 		dcclite::Address	m_RemoteAddress;
 
-		Status						m_eStatus;
-
-		dcclite::PacketSequence_t	m_uLastReceivedPacket = 0;
-		dcclite::PacketSequence_t	m_uSentPacketsAck = 0;
-
-		dcclite::PacketSequence_t	m_uSequence = 0;
+		Status						m_eStatus;		
 
 		std::vector<Message>		m_vecPendingPackets;
 		size_t						m_uNextPacket = 0;

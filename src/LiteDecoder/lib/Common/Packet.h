@@ -26,8 +26,6 @@ namespace dcclite
 
 	constexpr uint8_t PACKET_MAX_SIZE = 128;
 
-	typedef uint32_t PacketSequence_t;
-
 	/**
 	Basic packet format:
 
@@ -130,11 +128,10 @@ namespace dcclite
 	class PacketBuilder
 	{
 		public:
-			inline PacketBuilder(Packet &pkt, MsgTypes msgType, PacketSequence_t seq, const Guid &sessionToken, const Guid &configToken):
+			inline PacketBuilder(Packet &pkt, MsgTypes msgType, const Guid &sessionToken, const Guid &configToken):
 				m_Packet(pkt)
 			{
-				pkt.Write32(PACKET_ID);
-				pkt.Write32(seq);
+				pkt.Write32(PACKET_ID);				
 				pkt.Write8(static_cast<uint8_t>(msgType));
 				pkt.Write(sessionToken);
 				pkt.Write(configToken);
