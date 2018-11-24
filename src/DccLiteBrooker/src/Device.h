@@ -21,19 +21,6 @@ class Device: public dcclite::FolderObject
 			ONLINE			
 		};
 
-		struct Message
-		{
-			dcclite::Clock::TimePoint_t m_Time;
-
-			dcclite::Packet m_Packet;
-
-			inline Message(dcclite::Clock::TimePoint_t time) :
-				m_Time{time}
-			{
-				//empty
-			}
-		};
-
 	public:
 		Device(std::string name, DccLiteService &dccService, const nlohmann::json &params);
 		Device(std::string name, DccLiteService &dccService);
@@ -43,14 +30,9 @@ class Device: public dcclite::FolderObject
 
 		void AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken);
 
-		dcclite::Packet &ProducePacket(dcclite::Clock::TimePoint_t time, dcclite::MsgTypes msgType);
+		dcclite::Packet &ProducePacket(dcclite::Address destination, dcclite::MsgTypes msgType);
 
-		void SendPackets(dcclite::Socket &m_clSocket);
-
-		inline const dcclite::Guid &GetSessionToken() noexcept 
-		{
-			return m_SessionToken;
-		}
+		void SendPackets(dcclite::Socket &m_clSocket);		
 		
 		inline const dcclite::Guid &GetConfigToken() noexcept
 		{
@@ -64,20 +46,18 @@ class Device: public dcclite::FolderObject
 		
 
 	private:		
-		DccLiteService &m_clDccService;			
+		DccLiteService			&m_clDccService;			
 
-		bool			m_fRegistered;
+		bool					m_fRegistered;
+
+		std::vector<Decoder *>	m_vecDecoders;
 
 		//
 		//
-		//Remote Device Info
-		dcclite::Guid		m_SessionToken;
+		//Remote Device Info		
 		dcclite::Guid		m_ConfigToken;
 
 		dcclite::Address	m_RemoteAddress;
 
-		Status						m_eStatus;		
-
-		std::vector<Message>		m_vecPendingPackets;
-		size_t						m_uNextPacket = 0;
+		Status						m_eStatus;				
 };

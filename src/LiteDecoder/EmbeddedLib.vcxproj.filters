@@ -24,5 +24,8 @@
     <ClInclude Include="lib\Common\Guid.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="lib\Common\EmbeddedLibDefs.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

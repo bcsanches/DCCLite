@@ -6,6 +6,7 @@
 
 #include "Device.h"
 #include "FmtUtils.h"
+#include "GuidUtils.h"
 #include "Packet.h"
 
 static ServiceClass dccLiteService("DccLite", 
@@ -13,11 +14,13 @@ static ServiceClass dccLiteService("DccLite",
 );
 
 DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params) :
-	Service(serviceClass, name, params)
+	Service(serviceClass, name, params),
+	m_SessionToken(dcclite::GuidCreate())
 {
 	m_pDecoders = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("decoders")));
 	m_pAddresses = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("addresses")));
 	m_pDevices = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("devices")));	
+	m_pConfigs = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("configs")));
 
 	auto port = params["port"].get<int>();
 
@@ -74,6 +77,11 @@ Device *DccLiteService::TryFindDeviceByName(std::string_view name)
 	return static_cast<Device *>(m_pDevices->TryGetChild(name));
 }
 
+Device *DccLiteService::TryFindDeviceByConfig(const dcclite::Guid &guid)
+{
+	return static_cast<Device *>(m_pConfigs->TryResolveChild(dcclite::GuidToString(guid)));
+}
+
 void DccLiteService::Update(const dcclite::Clock &clock)
 {
 	std::uint8_t data[2048];
@@ -125,8 +133,9 @@ void DccLiteService::Update(const dcclite::Clock &clock)
 				dcclite::Log::Error("Invalid msg type: {}", static_cast<uint8_t>(msgType));
 				return;
 		}
-	}
+	}	
 
+#if 0
 	auto enumerator = this->m_pDevices->GetEnumerator();
 	while (enumerator.MoveNext())
 	{
@@ -135,6 +144,7 @@ void DccLiteService::Update(const dcclite::Clock &clock)
 		if (dev->IsOnline())
 			dev->SendPackets(m_clSocket);
 	}
+#endif
 }
 
 void DccLiteService::OnNet_Hello(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
@@ -165,20 +175,46 @@ void DccLiteService::OnNet_Hello(const dcclite::Clock &clock, const dcclite::Add
 
 void DccLiteService::OnNet_Ping(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
 {
-#if 0
 	dcclite::Log::Trace("[{}::DccLiteService::OnNet_Hello] Received ping, sending pong...", this->GetName());
+	
+	dcclite::Guid sessionToken = packet.ReadGuid();
+	dcclite::Guid configToken = packet.ReadGuid();
 
-	auto remoteSessionToken = packet.ReadGuid();
-	auto remoteConfigToken = packet.ReadGuid();
-
-	dcclite::Packet pkt;
-
-	dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::PONG, remoteSessionToken, remoteConfigToken };
-
-	if (!m_clSocket.Send(senderAddress, pkt.GetData(), pkt.GetSize()))
+	if (sessionToken != m_SessionToken)
 	{
-		dcclite::Log::Error("[{}::DccLiteService::OnNet_Ping] Failed to send answer to device {}", this->GetName(), senderAddress);
+		dcclite::Log::Warn("[{}::DccLiteService::OnNet_Hello] Received ping, from invalid session, ignoring...", this->GetName());
+
+		return;
 	}
-#endif
+	
+	if (this->TryFindDeviceByConfig(configToken) == nullptr)
+	{
+		dcclite::Log::Warn("[{}::DccLiteService::OnNet_Hello] Received ping, from invalid unknown config, ignoring...", this->GetName());
+
+		return;
+	}
+	
+	dcclite::Packet pkt;
+	this->Device_ConfigurePacket(pkt, dcclite::MsgTypes::PONG, configToken);
+
+	this->Device_SendPacket(senderAddress, pkt);
+}
+
+void DccLiteService::Device_ConfigurePacket(dcclite::Packet &packet, dcclite::MsgTypes msgType, const dcclite::Guid &configToken)
+{
+	dcclite::PacketBuilder builder{ packet, msgType, m_SessionToken, configToken };
+}
+
+void DccLiteService::Device_SendPacket(const dcclite::Address destination, const dcclite::Packet &packet)
+{
+	if (!m_clSocket.Send(destination, packet.GetData(), packet.GetSize()))
+	{
+		dcclite::Log::Error("[{}::DccLiteService::Device_SendPacket] Failed to send packet to {}", this->GetName(), destination);
+	}
+}
+
+void DccLiteService::Device_RegisterConfig(Device &dev, const dcclite::Guid &configToken)
+{
+	m_pConfigs->AddChild(std::make_unique<dcclite::Shortcut>(dcclite::GuidToString(configToken), dev));
 }
 

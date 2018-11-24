@@ -155,6 +155,8 @@ namespace dcclite
 
 			IObject *TryGetChild(std::string_view name);
 
+			IObject *TryResolveChild(std::string_view name);
+
 			inline FolderEnumerator GetEnumerator() 
 			{
 				return FolderEnumerator(m_mapObjects.begin(), m_mapObjects.end());

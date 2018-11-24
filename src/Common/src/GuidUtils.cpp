@@ -3,11 +3,12 @@
 #include <Windows.h>
 
 #include "fmt/format.h"
+#include "FmtUtils.h"
 
 #include "Guid.h"
 
 #if 0
-#include "FmtUtils.h"
+
 #include "Log.h"
 #endif
 
@@ -36,4 +37,9 @@ dcclite::Guid dcclite::GuidCreate()
 #endif
 
 	return guid;
+}
+
+std::string dcclite::GuidToString(const dcclite::Guid &g)
+{
+	return fmt::format("{}", g);
 }

@@ -2,6 +2,8 @@
 
 #include "Decoder.h"
 
+#include "EmbeddedLibDefs.h"
+
 class OutputDecoder : public Decoder
 {
 	public:
@@ -12,6 +14,13 @@ class OutputDecoder : public Decoder
 			const nlohmann::json &params
 		);
 
+		virtual void WriteConfig(dcclite::Packet &packet);
+
+		virtual dcclite::DecoderTypes GetType() const noexcept
+		{
+			return dcclite::DecoderTypes::OUTPUT;
+		}
+
 	private:
-		int m_iPin;
+		dcclite::PinType_t m_iPin;
 };

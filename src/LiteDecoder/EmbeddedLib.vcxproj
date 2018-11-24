@@ -22,6 +22,7 @@
     <ClCompile Include="lib\Common\Parser.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="lib\Common\EmbeddedLibDefs.h" />
     <ClInclude Include="lib\Common\Guid.h" />
     <ClInclude Include="lib\Common\Packet.h" />
     <ClInclude Include="lib\Common\Parser.h" />

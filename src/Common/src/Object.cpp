@@ -48,6 +48,13 @@ namespace dcclite
 		return it == m_mapObjects.end() ? nullptr : it->second.get();
 	}
 
+	IObject *FolderObject::TryResolveChild(std::string_view name)
+	{
+		auto *obj = this->TryGetChild(name);
+		
+		return (obj && obj->IsShortcut()) ? static_cast<Shortcut*>(obj)->TryResolve() : nullptr;
+	}
+
 	FolderObject::FolderEnumerator::FolderEnumerator(FolderObject::Iterator_t begin, FolderObject::Iterator_t end):
 		m_itBegin(begin),
 		m_itEnd(end),

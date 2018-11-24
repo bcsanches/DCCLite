@@ -7,7 +7,7 @@
       "port": 8989,
       "devices": [
         {
-          "name": "LeoxRelayStaging",
+          "name": "LeoRelayStaging",
           "class": "ArduinoLeonard",
           "decoders": [
             {

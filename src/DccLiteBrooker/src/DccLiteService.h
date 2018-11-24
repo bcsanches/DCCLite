@@ -6,15 +6,12 @@
 #include <string>
 
 #include "Decoder.h"
+#include "Guid.h"
+#include "Packet.h"
 
 #include "Socket.h"
 
 class Device;
-
-namespace dcclite
-{
-	class Packet;
-}
 
 class DccLiteService : public Service
 {
@@ -30,7 +27,16 @@ class DccLiteService : public Service
 			const nlohmann::json &params
 		);
 
-		virtual void Update(const dcclite::Clock &clock) override;
+		virtual void Update(const dcclite::Clock &clock) override;		
+
+		//
+		// To be used only by Devices
+		//
+		//
+		void Device_ConfigurePacket(dcclite::Packet &packet, dcclite::MsgTypes msgType, const dcclite::Guid &configToken);
+		void Device_SendPacket(const dcclite::Address destination, const dcclite::Packet &packet);
+
+		void Device_RegisterConfig(Device &dev, const dcclite::Guid &configToken);
 
 	private:
 		void OnNet_Hello(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);
@@ -38,12 +44,17 @@ class DccLiteService : public Service
 
 		Device *TryFindDeviceByName(std::string_view name);
 
+		Device *TryFindDeviceByConfig(const dcclite::Guid &guid);
+
 	private:
 		dcclite::Socket m_clSocket;
+
+		dcclite::Guid m_SessionToken;
 
 		FolderObject *m_pDecoders;
 		FolderObject *m_pAddresses;
 		FolderObject *m_pDevices;
+		FolderObject *m_pConfigs;
 };
 
 

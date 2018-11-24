@@ -29,6 +29,8 @@ Device::Device(std::string name, DccLiteService &dccService, const nlohmann::jso
 
 		auto &decoder = m_clDccService.Create(className, address, decoderName, element);
 
+		m_vecDecoders.push_back(&decoder);
+
 		this->AddChild(std::make_unique<dcclite::Shortcut>(std::string(decoder.GetName()), decoder));
 	}
 }
@@ -47,73 +49,55 @@ void Device::AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address
 {
 	m_eStatus = Status::ONLINE;
 	m_RemoteAddress = remoteAddress;
-
-	m_uNextPacket = 0;
-
-	m_vecPendingPackets.clear();
-
-	m_SessionToken = dcclite::GuidCreate();	
-
+		
 	if(m_ConfigToken.IsNull())
 	{
 		m_ConfigToken = dcclite::GuidCreate();		
 
 		dcclite::Log::Info("[{}::Device::AcceptConnection] Created config token {} for {}", this->GetName(), m_ConfigToken, remoteAddress);
+
+		m_clDccService.Device_RegisterConfig(*this, m_ConfigToken);
 	}
 
 	if (remoteConfigToken != m_ConfigToken)
 	{
 		dcclite::Log::Info("[{}::Device::AcceptConnection] Started configuring", this->GetName());
 
+		dcclite::Packet pkt;
 		{
-			auto &pkt = this->ProducePacket(time, dcclite::MsgTypes::CONFIG_START);
-			pkt.Write8(0);
+			m_clDccService.Device_ConfigurePacket(pkt, dcclite::MsgTypes::CONFIG_START, m_ConfigToken);
+
+			m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
 		}
 
-		auto enumerator = this->GetEnumerator();
-
-		uint8_t counter = 1;
-		while (enumerator.MoveNext())
+		for(size_t i = 0, sz = m_vecDecoders.size(); i < m_vecDecoders.size(); ++i)		
 		{
-			auto *decoder = enumerator.TryGetCurrent<Decoder>();
+			pkt.Reset();
 
-			auto &pkt = this->ProducePacket(time, dcclite::MsgTypes::CONFIG_DEV);
-			pkt.Write8(counter++);
+			m_clDccService.Device_ConfigurePacket(pkt, dcclite::MsgTypes::CONFIG_DEV, m_ConfigToken);
+			pkt.Write8(static_cast<uint8_t>(i));
+
+			m_vecDecoders[i]->WriteConfig(pkt);
+
+			m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
 		}
 
 		{
-			auto &pkt = this->ProducePacket(time, dcclite::MsgTypes::CONFIG_FINISHED);
-			pkt.Write8(counter);
+			pkt.Reset();
+
+			m_clDccService.Device_ConfigurePacket(pkt, dcclite::MsgTypes::CONFIG_FINISHED, m_ConfigToken);	
+			pkt.Write8(static_cast<uint8_t>(m_vecDecoders.size()));
+
+			m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
 		}
 
 		dcclite::Log::Info("[{}::Device::AcceptConnection] configured", this->GetName());		
 	}
 	else
 	{
-		this->ProducePacket(time, dcclite::MsgTypes::ACCEPTED);
+		dcclite::Packet pkt;
+		m_clDccService.Device_ConfigurePacket(pkt, dcclite::MsgTypes::ACCEPTED, m_ConfigToken);
+		m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);		
 	}	
 }
 
-dcclite::Packet &Device::ProducePacket(dcclite::Clock::TimePoint_t time, dcclite::MsgTypes msgType)
-{	
-	m_vecPendingPackets.push_back(Message(time));
-
-	auto &pkt = m_vecPendingPackets.back().m_Packet;
-
-	dcclite::PacketBuilder builder{ pkt, msgType, m_SessionToken, m_ConfigToken };
-
-	return pkt;
-}
-
-void Device::SendPackets(dcclite::Socket &m_clSocket)
-{
-	for(;m_uNextPacket < m_vecPendingPackets.size(); ++m_uNextPacket)
-	{
-		const auto &pkt = m_vecPendingPackets[m_uNextPacket].m_Packet;
-
-		if (!m_clSocket.Send(m_RemoteAddress, pkt.GetData(), pkt.GetSize()))
-		{
-			dcclite::Log::Error("[{}::Device::SendPackets] Failed to send answer to device {}", this->GetName(), m_RemoteAddress);
-		}
-	}
-}

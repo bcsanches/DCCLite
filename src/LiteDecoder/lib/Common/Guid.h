@@ -8,7 +8,7 @@ namespace dcclite
 			//it is public, but access it at your own risk.
 			union
 			{
-				uint8_t m_bId[8];
+				uint8_t m_bId[16];
 				uint64_t m_bBigId[2];
 			};
 

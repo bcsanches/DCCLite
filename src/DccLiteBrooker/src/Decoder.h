@@ -3,7 +3,7 @@
 #include <ostream>
 
 #include "ClassInfo.h"
-
+#include "EmbeddedLibDefs.h"
 #include "Object.h"
 
 #include "json.hpp"
@@ -12,6 +12,11 @@
 
 class DccLiteService;
 class Node;
+
+namespace dcclite
+{
+	class Packet;
+}
 
 class Decoder: public dcclite::Object
 {
@@ -46,8 +51,10 @@ class Decoder: public dcclite::Object
 					return fmt::format("{:#05x}", m_iAddress);					
 				}
 
+				void WriteConfig(dcclite::Packet &packet);
+
 			private:
-				int m_iAddress;
+				int16_t m_iAddress;
 
 				friend std::ostream& operator<<(std::ostream& os, const Address& address);
 		};
@@ -68,6 +75,10 @@ class Decoder: public dcclite::Object
 			return m_iAddress;
 		}
 
+		virtual void WriteConfig(dcclite::Packet &packet);
+
+		virtual dcclite::DecoderTypes GetType() const noexcept = 0;
+
 	private:
 		Address m_iAddress;		
 
@@ -80,3 +91,4 @@ inline std::ostream &operator<<(std::ostream& os, const Decoder::Address &addres
 
 	return os;
 }
+

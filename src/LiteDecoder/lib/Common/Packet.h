@@ -17,9 +17,9 @@ namespace dcclite
 		CONFIG_START,
 		CONFIG_DEV,
 		CONFIG_FINISHED,
+		CONFIG_ACK,
 		PING,
-		PONG,
-		ACK
+		PONG,		
 	};	
 
 	constexpr uint32_t PACKET_ID = 0xBEEFFEED;
@@ -29,7 +29,7 @@ namespace dcclite
 	/**
 	Basic packet format:
 
-	ID MSG_TYPE SEQUENCE SESSION_TOKEN CONFIG_TOKEN MSG
+	ID MSG_TYPE SESSION_TOKEN CONFIG_TOKEN MSG
 	
 	
 	*/
@@ -61,6 +61,14 @@ namespace dcclite
 				assert(m_iIndex + 1 < PACKET_MAX_SIZE);
 
 				m_arData[m_iIndex++] = byte;
+			}
+
+			inline void Write16(uint16_t data) noexcept
+			{
+				assert(m_iIndex + 2 < PACKET_MAX_SIZE);
+
+				memcpy(&m_arData[m_iIndex], &data, sizeof(data));				
+				m_iIndex += sizeof(data);
 			}
 			
 			inline void Write32(uint32_t data)

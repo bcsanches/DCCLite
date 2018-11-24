@@ -1,5 +1,6 @@
 #include "Decoder.h"
 
+#include "Packet.h"
 #include "Parser.h"
 
 Decoder::Address::Address(const nlohmann::json::value_type &value)
@@ -10,8 +11,8 @@ Decoder::Address::Address(const nlohmann::json::value_type &value)
 
 		dcclite::Parser parser{ str.c_str() };
 		
-		auto token = parser.GetNumber(m_iAddress);
-		if (token != dcclite::TOKEN_NUMBER)
+		int adr;		
+		if (parser.GetNumber(adr) != dcclite::TOKEN_NUMBER)
 		{
 			std::stringstream stream;
 
@@ -19,6 +20,8 @@ Decoder::Address::Address(const nlohmann::json::value_type &value)
 
 			throw std::runtime_error(stream.str());
 		}		
+
+		m_iAddress = adr;
 	}
 	else
 	{
@@ -32,4 +35,16 @@ Decoder::Decoder(const Class &decoderClass, const Address &address, std::string 
 	m_rclManager(owner)
 {
 	//empty
+}
+
+
+void Decoder::WriteConfig(dcclite::Packet &packet)
+{
+	packet.Write8(static_cast<std::uint8_t>(this->GetType()));
+	m_iAddress.WriteConfig(packet);
+}
+
+void Decoder::Address::WriteConfig(dcclite::Packet &packet)
+{
+	packet.Write16(m_iAddress);
 }
