@@ -14,8 +14,7 @@ static ServiceClass dccLiteService("DccLite",
 );
 
 DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params) :
-	Service(serviceClass, name, params),
-	m_SessionToken(dcclite::GuidCreate())
+	Service(serviceClass, name, params)	
 {
 	m_pDecoders = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("decoders")));
 	m_pAddresses = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("addresses")));
@@ -129,6 +128,9 @@ void DccLiteService::Update(const dcclite::Clock &clock)
 				this->OnNet_Ping(clock, sender, pkt);
 				break;
 
+			case dcclite::MsgTypes::CONFIG_ACK:
+				break;
+
 			default:
 				dcclite::Log::Error("Invalid msg type: {}", static_cast<uint8_t>(msgType));
 				return;
@@ -173,36 +175,51 @@ void DccLiteService::OnNet_Hello(const dcclite::Clock &clock, const dcclite::Add
 	dev->AcceptConnection(clock.Now(), senderAddress, remoteSessionToken, remoteConfigToken);	
 }
 
+Device *DccLiteService::TryFindPacketDestination(dcclite::Packet &packet)
+{	
+	dcclite::Guid configToken = packet.ReadGuid();
+
+	auto dev = this->TryFindDeviceByConfig(configToken);
+	if (dev == nullptr)
+	{
+		dcclite::Log::Warn("[{}::DccLiteService::TryCheckPacketOrigin] Received ping, from invalid unknown config, ignoring...", this->GetName());
+
+		return nullptr;
+	}
+
+	return dev;
+}
+
 void DccLiteService::OnNet_Ping(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
 {
 	dcclite::Log::Trace("[{}::DccLiteService::OnNet_Hello] Received ping, sending pong...", this->GetName());
-	
+
 	dcclite::Guid sessionToken = packet.ReadGuid();
-	dcclite::Guid configToken = packet.ReadGuid();
 
-	if (sessionToken != m_SessionToken)
-	{
-		dcclite::Log::Warn("[{}::DccLiteService::OnNet_Hello] Received ping, from invalid session, ignoring...", this->GetName());
-
+	auto dev = TryFindPacketDestination(packet);
+	if (!dev)
 		return;
-	}
-	
-	if (this->TryFindDeviceByConfig(configToken) == nullptr)
-	{
-		dcclite::Log::Warn("[{}::DccLiteService::OnNet_Hello] Received ping, from invalid unknown config, ignoring...", this->GetName());
 
-		return;
-	}
-	
-	dcclite::Packet pkt;
-	this->Device_ConfigurePacket(pkt, dcclite::MsgTypes::PONG, configToken);
-
-	this->Device_SendPacket(senderAddress, pkt);
+	dev->OnPacket_Ping(packet, clock.Now(), senderAddress, sessionToken);	
 }
 
-void DccLiteService::Device_ConfigurePacket(dcclite::Packet &packet, dcclite::MsgTypes msgType, const dcclite::Guid &configToken)
+void DccLiteService::OnNet_ConfigAck(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
 {
-	dcclite::PacketBuilder builder{ packet, msgType, m_SessionToken, configToken };
+	dcclite::Log::Trace("[{}::DccLiteService::OnNet_Hello] Received ping, sending pong...", this->GetName());
+
+	dcclite::Guid sessionToken = packet.ReadGuid();
+
+	auto dev = TryFindPacketDestination(packet);
+	if (!dev)
+		return;
+
+	dev->OnPacket_ConfigAck(packet, clock.Now(), senderAddress, sessionToken);
+}
+
+
+void DccLiteService::Device_PreparePacket(dcclite::Packet &packet, dcclite::MsgTypes msgType, const dcclite::Guid &sessionToken, const dcclite::Guid &configToken)
+{
+	dcclite::PacketBuilder builder{ packet, msgType, sessionToken, configToken };
 }
 
 void DccLiteService::Device_SendPacket(const dcclite::Address destination, const dcclite::Packet &packet)

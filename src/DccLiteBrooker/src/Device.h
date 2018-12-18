@@ -30,6 +30,9 @@ class Device: public dcclite::FolderObject
 
 		void AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken);
 
+		void OnPacket_ConfigAck(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteSessionToken);
+		void OnPacket_Ping(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteSessionToken);
+
 		dcclite::Packet &ProducePacket(dcclite::Address destination, dcclite::MsgTypes msgType);
 
 		void SendPackets(dcclite::Socket &m_clSocket);		
@@ -43,6 +46,9 @@ class Device: public dcclite::FolderObject
 		{
 			return m_eStatus == Status::ONLINE;
 		}
+
+	private:
+		bool CheckSession(dcclite::Guid remoteSessionToken, dcclite::Address remoteAddress);
 		
 
 	private:		
@@ -56,8 +62,11 @@ class Device: public dcclite::FolderObject
 		//
 		//Remote Device Info		
 		dcclite::Guid		m_ConfigToken;
+		dcclite::Guid		m_SessionToken;
 
 		dcclite::Address	m_RemoteAddress;
 
-		Status						m_eStatus;				
+		Status				m_eStatus;				
+
+		uint8_t				m_uConfigSeqAck;
 };

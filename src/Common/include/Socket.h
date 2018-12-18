@@ -65,6 +65,16 @@ namespace dcclite
 
 			inline Port_t GetPort() const { return m_uPort; }
 
+			inline bool operator==(const Address &rhs) const noexcept
+			{
+				return (m_uAddress == rhs.m_uAddress) && (m_uPort == rhs.m_uPort);
+			}
+
+			inline bool operator!=(const Address &rhs) const noexcept
+			{
+				return (m_uAddress != rhs.m_uAddress) || (m_uPort != rhs.m_uPort);
+			}
+
 		private:
 			std::uint_fast32_t m_uAddress;
 			Port_t m_uPort;

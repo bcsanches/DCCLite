@@ -33,23 +33,24 @@ class DccLiteService : public Service
 		// To be used only by Devices
 		//
 		//
-		void Device_ConfigurePacket(dcclite::Packet &packet, dcclite::MsgTypes msgType, const dcclite::Guid &configToken);
+		void Device_PreparePacket(dcclite::Packet &packet, dcclite::MsgTypes msgType, const dcclite::Guid &sessionToken, const dcclite::Guid &configToken);
 		void Device_SendPacket(const dcclite::Address destination, const dcclite::Packet &packet);
 
 		void Device_RegisterConfig(Device &dev, const dcclite::Guid &configToken);
 
 	private:
 		void OnNet_Hello(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);
-		void OnNet_Ping(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);		
+		void OnNet_Ping(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);
+		void OnNet_ConfigAck(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);
 
 		Device *TryFindDeviceByName(std::string_view name);
 
 		Device *TryFindDeviceByConfig(const dcclite::Guid &guid);
 
-	private:
-		dcclite::Socket m_clSocket;
+		Device *DccLiteService::TryFindPacketDestination(dcclite::Packet &packet);
 
-		dcclite::Guid m_SessionToken;
+	private:
+		dcclite::Socket m_clSocket;		
 
 		FolderObject *m_pDecoders;
 		FolderObject *m_pAddresses;
