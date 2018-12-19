@@ -36,7 +36,8 @@ class DccLiteService : public Service
 		void Device_PreparePacket(dcclite::Packet &packet, dcclite::MsgTypes msgType, const dcclite::Guid &sessionToken, const dcclite::Guid &configToken);
 		void Device_SendPacket(const dcclite::Address destination, const dcclite::Packet &packet);
 
-		void Device_RegisterConfig(Device &dev, const dcclite::Guid &configToken);
+		void Device_RegisterSession(Device &dev, const dcclite::Guid &configToken);
+		void Device_UnregisterSession(const dcclite::Guid &sessionToken);
 
 	private:
 		void OnNet_Hello(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);
@@ -45,7 +46,7 @@ class DccLiteService : public Service
 
 		Device *TryFindDeviceByName(std::string_view name);
 
-		Device *TryFindDeviceByConfig(const dcclite::Guid &guid);
+		Device *TryFindDeviceSession(const dcclite::Guid &guid);
 
 		Device *DccLiteService::TryFindPacketDestination(dcclite::Packet &packet);
 
@@ -55,7 +56,7 @@ class DccLiteService : public Service
 		FolderObject *m_pDecoders;
 		FolderObject *m_pAddresses;
 		FolderObject *m_pDevices;
-		FolderObject *m_pConfigs;
+		FolderObject *m_pSessions;
 };
 
 

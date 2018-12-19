@@ -55,6 +55,19 @@ namespace dcclite
 		return (obj && obj->IsShortcut()) ? static_cast<Shortcut*>(obj)->TryResolve() : nullptr;
 	}
 
+	std::unique_ptr<IObject> FolderObject::RemoveChild(std::string_view name) 
+	{
+		auto it = m_mapObjects.find(name);
+		if (it == m_mapObjects.end())
+			return std::unique_ptr<IObject>{};
+
+		auto ptr = std::move(it->second);
+
+		m_mapObjects.erase(it);
+
+		return ptr;
+	}
+
 	FolderObject::FolderEnumerator::FolderEnumerator(FolderObject::Iterator_t begin, FolderObject::Iterator_t end):
 		m_itBegin(begin),
 		m_itEnd(end),

@@ -19,7 +19,7 @@ DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::stri
 	m_pDecoders = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("decoders")));
 	m_pAddresses = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("addresses")));
 	m_pDevices = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("devices")));	
-	m_pConfigs = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("configs")));
+	m_pSessions = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("sessions")));
 
 	auto port = params["port"].get<int>();
 
@@ -76,9 +76,9 @@ Device *DccLiteService::TryFindDeviceByName(std::string_view name)
 	return static_cast<Device *>(m_pDevices->TryGetChild(name));
 }
 
-Device *DccLiteService::TryFindDeviceByConfig(const dcclite::Guid &guid)
+Device *DccLiteService::TryFindDeviceSession(const dcclite::Guid &guid)
 {
-	return static_cast<Device *>(m_pConfigs->TryResolveChild(dcclite::GuidToString(guid)));
+	return static_cast<Device *>(m_pSessions->TryResolveChild(dcclite::GuidToString(guid)));
 }
 
 void DccLiteService::Update(const dcclite::Clock &clock)
@@ -129,6 +129,7 @@ void DccLiteService::Update(const dcclite::Clock &clock)
 				break;
 
 			case dcclite::MsgTypes::CONFIG_ACK:
+				this->OnNet_ConfigAck(clock, sender, pkt);
 				break;
 
 			default:
@@ -177,12 +178,12 @@ void DccLiteService::OnNet_Hello(const dcclite::Clock &clock, const dcclite::Add
 
 Device *DccLiteService::TryFindPacketDestination(dcclite::Packet &packet)
 {	
-	dcclite::Guid configToken = packet.ReadGuid();
+	dcclite::Guid sessionToken = packet.ReadGuid();	
 
-	auto dev = this->TryFindDeviceByConfig(configToken);
+	auto dev = this->TryFindDeviceSession(sessionToken);
 	if (dev == nullptr)
 	{
-		dcclite::Log::Warn("[{}::DccLiteService::TryCheckPacketOrigin] Received ping, from invalid unknown config, ignoring...", this->GetName());
+		dcclite::Log::Warn("[{}::DccLiteService::TryFindPacketDestination] Received packet from unknown session", this->GetName());
 
 		return nullptr;
 	}
@@ -192,28 +193,28 @@ Device *DccLiteService::TryFindPacketDestination(dcclite::Packet &packet)
 
 void DccLiteService::OnNet_Ping(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
 {
-	dcclite::Log::Trace("[{}::DccLiteService::OnNet_Hello] Received ping, sending pong...", this->GetName());
-
-	dcclite::Guid sessionToken = packet.ReadGuid();
+	dcclite::Log::Trace("[{}::DccLiteService::OnNet_Hello] Received ping, sending pong...", this->GetName());	
 
 	auto dev = TryFindPacketDestination(packet);
 	if (!dev)
 		return;
 
-	dev->OnPacket_Ping(packet, clock.Now(), senderAddress, sessionToken);	
+	dcclite::Guid configToken = packet.ReadGuid();
+
+	dev->OnPacket_Ping(packet, clock.Now(), senderAddress, configToken);
 }
 
 void DccLiteService::OnNet_ConfigAck(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
 {
-	dcclite::Log::Trace("[{}::DccLiteService::OnNet_Hello] Received ping, sending pong...", this->GetName());
-
-	dcclite::Guid sessionToken = packet.ReadGuid();
+	dcclite::Log::Trace("[{}::DccLiteService::OnNet_Hello] Received ping, sending pong...", this->GetName());	
 
 	auto dev = TryFindPacketDestination(packet);
 	if (!dev)
 		return;
 
-	dev->OnPacket_ConfigAck(packet, clock.Now(), senderAddress, sessionToken);
+	dcclite::Guid configToken = packet.ReadGuid();
+
+	dev->OnPacket_ConfigAck(packet, clock.Now(), senderAddress);
 }
 
 
@@ -230,8 +231,12 @@ void DccLiteService::Device_SendPacket(const dcclite::Address destination, const
 	}
 }
 
-void DccLiteService::Device_RegisterConfig(Device &dev, const dcclite::Guid &configToken)
+void DccLiteService::Device_RegisterSession(Device &dev, const dcclite::Guid &sessionToken)
 {
-	m_pConfigs->AddChild(std::make_unique<dcclite::Shortcut>(dcclite::GuidToString(configToken), dev));
+	m_pSessions->AddChild(std::make_unique<dcclite::Shortcut>(dcclite::GuidToString(sessionToken), dev));
 }
 
+void DccLiteService::Device_UnregisterSession(const dcclite::Guid &sessionToken)
+{
+	m_pSessions->RemoveChild(dcclite::GuidToString(sessionToken));
+}

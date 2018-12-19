@@ -152,6 +152,8 @@ namespace dcclite
 			FolderObject(std::string name);
 
 			IObject *AddChild(std::unique_ptr<IObject> obj);
+			
+			std::unique_ptr<IObject> RemoveChild(std::string_view name);
 
 			IObject *TryGetChild(std::string_view name);
 

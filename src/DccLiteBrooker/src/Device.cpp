@@ -45,6 +45,25 @@ Device::Device(std::string name, DccLiteService &dccService):
 	//empty
 }
 
+void Device::GoOnline(dcclite::Address remoteAddress)
+{	
+	m_RemoteAddress = remoteAddress;
+	m_SessionToken = dcclite::GuidCreate();
+	m_clDccService.Device_RegisterSession(*this, m_SessionToken);
+
+	m_eStatus = Status::ONLINE;
+	m_uConfigSeqAck = 0;
+}
+
+void Device::GoOffline()
+{
+	m_eStatus = Status::OFFLINE;
+	m_uConfigSeqAck = 0;
+
+	m_clDccService.Device_UnregisterSession(m_SessionToken);
+	m_SessionToken = dcclite::Guid{};
+}
+
 void Device::AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken)
 {
 	if (m_eStatus == Status::ONLINE)
@@ -54,18 +73,13 @@ void Device::AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address
 		return;
 	}
 
-	m_eStatus = Status::ONLINE;
-	m_RemoteAddress = remoteAddress;
-	m_SessionToken = dcclite::GuidCreate();
-	m_uConfigSeqAck = 0;
+	this->GoOnline(remoteAddress);
 		
 	if(m_ConfigToken.IsNull())
 	{
 		m_ConfigToken = dcclite::GuidCreate();		
 
-		dcclite::Log::Info("[{}::Device::AcceptConnection] Created config token {} for {}", this->GetName(), m_ConfigToken, remoteAddress);
-
-		m_clDccService.Device_RegisterConfig(*this, m_ConfigToken);
+		dcclite::Log::Info("[{}::Device::AcceptConnection] Created config token {} for {}", this->GetName(), m_ConfigToken, remoteAddress);		
 	}
 
 	if (remoteConfigToken != m_ConfigToken)
@@ -110,9 +124,9 @@ void Device::AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address
 	}	
 }
 
-void Device::OnPacket_Ping(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteSessionToken)
+void Device::OnPacket_Ping(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteConfigToken)
 {
-	if (!this->CheckSession(remoteSessionToken, remoteAddress))
+	if (!this->CheckSessionConfig(remoteConfigToken, remoteAddress))
 		return;
 
 	dcclite::Packet pkt;
@@ -120,9 +134,9 @@ void Device::OnPacket_Ping(dcclite::Packet &packet, dcclite::Clock::TimePoint_t 
 	m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
 }
 
-void Device::OnPacket_ConfigAck(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteSessionToken)
+void Device::OnPacket_ConfigAck(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress)
 {
-	if (!this->CheckSession(remoteSessionToken, remoteAddress))
+	if (!this->CheckSession(remoteAddress))
 		return;
 
 	auto seq = packet.Read<uint8_t>();
@@ -130,7 +144,7 @@ void Device::OnPacket_ConfigAck(dcclite::Packet &packet, dcclite::Clock::TimePoi
 	{
 		dcclite::Log::Error("[{}::Device::OnPacket_ConfigAck] config out of sync, dropping connection", this->GetName());
 
-		m_eStatus = Status::OFFLINE;
+		this->GoOffline();
 	}
 	else
 	{
@@ -138,21 +152,31 @@ void Device::OnPacket_ConfigAck(dcclite::Packet &packet, dcclite::Clock::TimePoi
 	}
 }
 
-bool Device::CheckSession(dcclite::Guid remoteSessionToken, dcclite::Address remoteAddress)
+bool Device::CheckSessionConfig(dcclite::Guid remoteConfigToken, dcclite::Address remoteAddress)
+{
+	if (!this->CheckSession(remoteAddress))
+		return false;
+
+	if (remoteConfigToken != m_ConfigToken)
+	{
+		dcclite::Log::Warn("[{}::Device::CheckSession] Received packet from invalid config...", this->GetName());
+
+		return false;
+	}
+
+	return true;
+}
+
+
+
+bool Device::CheckSession(dcclite::Address remoteAddress)
 {
 	if (m_eStatus != Status::ONLINE)
 	{
 		dcclite::Log::Error("[{}::Device::CheckSession] got packet from disconnected device", this->GetName());
 
 		return false;
-	}
-
-	if (remoteSessionToken != m_SessionToken)
-	{
-		dcclite::Log::Warn("[{}::Device::CheckSession] Received packet from invalid session...", this->GetName());
-
-		return false;
-	}
+	}	
 
 	if (remoteAddress != m_RemoteAddress)
 	{
