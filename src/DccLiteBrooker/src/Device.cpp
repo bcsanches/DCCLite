@@ -6,6 +6,10 @@
 #include "GuidUtils.h"
 #include "Log.h"
 
+using namespace std::chrono_literals;
+
+static auto constexpr TIMEOUT = 2s;
+
 Device::Device(std::string name, DccLiteService &dccService, const nlohmann::json &params) :
 	FolderObject(std::move(name)),
 	m_clDccService(dccService),
@@ -51,17 +55,20 @@ void Device::GoOnline(dcclite::Address remoteAddress)
 	m_SessionToken = dcclite::GuidCreate();
 	m_clDccService.Device_RegisterSession(*this, m_SessionToken);
 
-	m_eStatus = Status::ONLINE;
-	m_uConfigSeqAck = 0;
+	m_eStatus = Status::ONLINE;	
+
+	dcclite::Log::Info("[{}::Device::GoOnline] Is online", this->GetName());
 }
 
 void Device::GoOffline()
 {
-	m_eStatus = Status::OFFLINE;
-	m_uConfigSeqAck = 0;
+	m_eStatus = Status::OFFLINE;	
 
 	m_clDccService.Device_UnregisterSession(m_SessionToken);
 	m_SessionToken = dcclite::Guid{};
+	m_upConfigState.reset();
+
+	dcclite::Log::Warn("[{}::Device::GoOffline] Is OFFLINE", this->GetName());
 }
 
 void Device::AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken)
@@ -84,7 +91,11 @@ void Device::AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address
 
 	if (remoteConfigToken != m_ConfigToken)
 	{
-		dcclite::Log::Info("[{}::Device::AcceptConnection] Started configuring", this->GetName());
+		dcclite::Log::Info("[{}::Device::AcceptConnection] Started configuring for token {}", this->GetName(), m_ConfigToken);
+
+		m_upConfigState = std::make_unique<ConfigInfo>();
+		m_upConfigState->m_vecAcks.resize(m_vecDecoders.size());
+		this->RefreshTimeout(time);
 
 		dcclite::Packet pkt;
 		{
@@ -103,18 +114,9 @@ void Device::AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address
 			m_vecDecoders[i]->WriteConfig(pkt);
 
 			m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
-		}
+		}		
 
-		{
-			pkt.Reset();
-
-			m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::CONFIG_FINISHED, m_SessionToken, m_ConfigToken);
-			pkt.Write8(static_cast<uint8_t>(m_vecDecoders.size()));
-
-			m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
-		}
-
-		dcclite::Log::Info("[{}::Device::AcceptConnection] configured", this->GetName());		
+		dcclite::Log::Info("[{}::Device::AcceptConnection] config data sent", this->GetName());		
 	}
 	else
 	{
@@ -132,6 +134,10 @@ void Device::OnPacket_Ping(dcclite::Packet &packet, dcclite::Clock::TimePoint_t 
 	dcclite::Packet pkt;
 	m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::PONG, m_SessionToken, m_ConfigToken);
 	m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
+
+	//dcclite::Log::Trace("[{}::Device::OnPacket_ConfigAck] ping ", this->GetName());
+
+	this->RefreshTimeout(time);
 }
 
 void Device::OnPacket_ConfigAck(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress)
@@ -140,15 +146,33 @@ void Device::OnPacket_ConfigAck(dcclite::Packet &packet, dcclite::Clock::TimePoi
 		return;
 
 	auto seq = packet.Read<uint8_t>();
-	if (seq != m_uConfigSeqAck)
+
+	if (seq >= m_upConfigState->m_vecAcks.size())
 	{
 		dcclite::Log::Error("[{}::Device::OnPacket_ConfigAck] config out of sync, dropping connection", this->GetName());
 
 		this->GoOffline();
 	}
-	else
+
+	//only increment seq count if m_vecAcks[seq] is not set yet, so we handle duplicate packets
+	m_upConfigState->m_uSeqCount += m_upConfigState->m_vecAcks[seq] == false;
+	m_upConfigState->m_vecAcks[seq] = true;	
+	RefreshTimeout(time);	
+
+	dcclite::Log::Trace("[{}::Device::OnPacket_ConfigAck] Config ACK {}", this->GetName(), seq);
+
+	if (m_upConfigState->m_uSeqCount == m_upConfigState->m_vecAcks.size())
 	{
-		++m_uConfigSeqAck;
+		dcclite::Log::Info("[{}::Device::OnPacket_ConfigAck] Config Finished, configured {} decoders", this->GetName(), m_upConfigState->m_uSeqCount);
+
+		dcclite::Packet pkt;
+
+		m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::CONFIG_FINISHED, m_SessionToken, m_ConfigToken);
+		pkt.Write8(static_cast<uint8_t>(m_vecDecoders.size()));
+
+		m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);				
+
+		m_upConfigState.reset();
 	}
 }
 
@@ -186,4 +210,29 @@ bool Device::CheckSession(dcclite::Address remoteAddress)
 	}
 
 	return true;
+}
+
+void Device::RefreshTimeout(dcclite::Clock::TimePoint_t time)
+{
+	m_Timeout = time + TIMEOUT;
+}
+
+bool Device::CheckTimeout(dcclite::Clock::TimePoint_t time)
+{
+	if (time > m_Timeout)
+	{
+		dcclite::Log::Warn("[{}::Device::Update] timeout", this->GetName());
+
+		this->GoOffline();
+
+		return false;
+	}
+
+	return true;
+}
+
+void Device::Update(const dcclite::Clock &clock)
+{
+	if (m_eStatus == Status::ONLINE)
+		this->CheckTimeout(clock.Now());
 }

@@ -18,6 +18,12 @@ uint8_t EtherCard::dnsip[IP_LEN];  // dns server
 
 static dcclite::Socket g_Socket;
 
+//#define DROP
+
+#ifdef DROP
+static uint8_t g_uDropRate = 250;
+#endif
+
 typedef struct 
 {
 	UdpServerCallback callback;
@@ -77,9 +83,24 @@ void EtherCard::udpServerListenOnPort(UdpServerCallback callback, uint16_t port)
 	g_vecListeners.push_back(listener);	
 }
 
+#ifdef DROP
+static bool ShouldDrop()
+{
+	if ((rand() % 255) > g_uDropRate)
+		return true;
+
+	return false;
+}
+#endif
+
 void EtherCard::sendUdp(const char *data, uint8_t len, uint16_t sport, const uint8_t *dip, uint16_t dport)
 {
 	dcclite::Address adr{ dip[0], dip[1], dip[2], dip[3], dport };
+
+#ifdef DROP
+	if (ShouldDrop())
+		return;
+#endif
 
 	if (!g_Socket.Send(adr, data, len))
 		throw std::logic_error(fmt::format("EtherCard::sendUdp: failed to send {} bytes", len));
@@ -96,6 +117,12 @@ uint16_t EtherCard::packetLoop(uint16_t plen)
 
 		if (status != dcclite::Socket::Status::OK)
 			break;
+
+#ifdef DROPR
+		if (ShouldDrop())
+			continue;
+#endif
+
 
 		for (auto &listener : g_vecListeners)
 		{

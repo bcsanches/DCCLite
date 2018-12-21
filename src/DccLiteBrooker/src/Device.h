@@ -28,10 +28,12 @@ class Device: public dcclite::FolderObject
 		Device(const Device &) = delete;
 		Device(Device &&) = delete;
 
+		void Update(const dcclite::Clock &clock);
+
 		void AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken);
 
 		void OnPacket_ConfigAck(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress);
-		void OnPacket_Ping(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteConfigToken);
+		void OnPacket_Ping(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteConfigToken);		
 
 		dcclite::Packet &ProducePacket(dcclite::Address destination, dcclite::MsgTypes msgType);
 
@@ -53,6 +55,9 @@ class Device: public dcclite::FolderObject
 
 		void GoOnline(dcclite::Address remoteAddress);
 		void GoOffline();
+
+		void RefreshTimeout(dcclite::Clock::TimePoint_t time);
+		bool CheckTimeout(dcclite::Clock::TimePoint_t time);
 		
 
 	private:		
@@ -70,7 +75,17 @@ class Device: public dcclite::FolderObject
 
 		dcclite::Address	m_RemoteAddress;
 
-		Status				m_eStatus;				
+		Status				m_eStatus;	
 
-		uint8_t				m_uConfigSeqAck;
+		dcclite::Clock::TimePoint_t m_Timeout;
+
+		struct ConfigInfo
+		{
+			std::vector<bool>	m_vecAcks;			
+
+			uint8_t				m_uSeqCount = { 0 };			
+			bool				m_fAckReceived = { false };
+		};		
+
+		std::unique_ptr<ConfigInfo> m_upConfigState;
 };

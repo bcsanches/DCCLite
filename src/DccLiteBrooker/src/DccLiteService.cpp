@@ -96,7 +96,7 @@ void DccLiteService::Update(const dcclite::Clock &clock)
 			break;
 		}
 
-		dcclite::Log::Info("[DccLiteService::Update] got data");
+		//dcclite::Log::Info("[DccLiteService::Update] got data");
 
 		if (size >= dcclite::PACKET_MAX_SIZE)
 		{
@@ -138,14 +138,13 @@ void DccLiteService::Update(const dcclite::Clock &clock)
 		}
 	}	
 
-#if 0
+#if 1
 	auto enumerator = this->m_pDevices->GetEnumerator();
 	while (enumerator.MoveNext())
 	{
 		auto dev = enumerator.TryGetCurrent<Device>();
 
-		if (dev->IsOnline())
-			dev->SendPackets(m_clSocket);
+		dev->Update(clock);
 	}
 #endif
 }
@@ -192,12 +191,14 @@ Device *DccLiteService::TryFindPacketDestination(dcclite::Packet &packet)
 }
 
 void DccLiteService::OnNet_Ping(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
-{
-	dcclite::Log::Trace("[{}::DccLiteService::OnNet_Hello] Received ping, sending pong...", this->GetName());	
-
+{	
 	auto dev = TryFindPacketDestination(packet);
 	if (!dev)
+	{
+		dcclite::Log::Warn("[{}::DccLiteService::OnNet_Hello] Received ping from unkown device", this->GetName());
+
 		return;
+	}		
 
 	dcclite::Guid configToken = packet.ReadGuid();
 
@@ -206,7 +207,7 @@ void DccLiteService::OnNet_Ping(const dcclite::Clock &clock, const dcclite::Addr
 
 void DccLiteService::OnNet_ConfigAck(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
 {
-	dcclite::Log::Trace("[{}::DccLiteService::OnNet_Hello] Received ping, sending pong...", this->GetName());	
+	//dcclite::Log::Trace("[{}::DccLiteService::OnNet_Hello] Received ping, sending pong...", this->GetName());	
 
 	auto dev = TryFindPacketDestination(packet);
 	if (!dev)
