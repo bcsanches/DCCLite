@@ -46,12 +46,12 @@ class Decoder: public dcclite::Object
 					return m_iAddress < rhs.m_iAddress;
 				}
 
-				std::string ToString()
+				std::string ToString() const
 				{
 					return fmt::format("{:#05x}", m_iAddress);					
 				}
 
-				void WriteConfig(dcclite::Packet &packet);
+				void WriteConfig(dcclite::Packet &packet) const;
 
 			private:
 				int16_t m_iAddress;
@@ -75,7 +75,7 @@ class Decoder: public dcclite::Object
 			return m_iAddress;
 		}
 
-		virtual void WriteConfig(dcclite::Packet &packet);
+		virtual void WriteConfig(dcclite::Packet &packet) const;
 
 		virtual dcclite::DecoderTypes GetType() const noexcept = 0;
 

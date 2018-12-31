@@ -33,6 +33,7 @@ class Device: public dcclite::FolderObject
 		void AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken);
 
 		void OnPacket_ConfigAck(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress);
+		void OnPacket_ConfigFinished(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress);
 		void OnPacket_Ping(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteConfigToken);		
 
 		dcclite::Packet &ProducePacket(dcclite::Address destination, dcclite::MsgTypes msgType);
@@ -58,6 +59,9 @@ class Device: public dcclite::FolderObject
 
 		void RefreshTimeout(dcclite::Clock::TimePoint_t time);
 		bool CheckTimeout(dcclite::Clock::TimePoint_t time);
+
+		void SendDecoderConfigPacket(size_t index) const;
+		void SendConfigFinishedPacket() const;
 		
 
 	private:		
@@ -81,7 +85,9 @@ class Device: public dcclite::FolderObject
 
 		struct ConfigInfo
 		{
-			std::vector<bool>	m_vecAcks;			
+			std::vector<bool>	m_vecAcks;
+
+			dcclite::Clock::TimePoint_t m_RetryTime;
 
 			uint8_t				m_uSeqCount = { 0 };			
 			bool				m_fAckReceived = { false };

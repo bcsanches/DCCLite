@@ -14,7 +14,7 @@ class OutputDecoder : public Decoder
 			const nlohmann::json &params
 		);
 
-		virtual void WriteConfig(dcclite::Packet &packet);
+		virtual void WriteConfig(dcclite::Packet &packet) const;
 
 		virtual dcclite::DecoderTypes GetType() const noexcept
 		{

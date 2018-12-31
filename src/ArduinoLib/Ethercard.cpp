@@ -21,7 +21,7 @@ static dcclite::Socket g_Socket;
 //#define DROP
 
 #ifdef DROP
-static uint8_t g_uDropRate = 250;
+static uint8_t g_uDropRate = 200;
 #endif
 
 typedef struct 

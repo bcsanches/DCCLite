@@ -163,7 +163,7 @@ void NetUdp::LogStatus()
 	);
 }
 
-void NetUdp::RegisterCallback(ReceiveCallback_t callback)
+void NetUdp::SetReceiverCallback(ReceiveCallback_t callback)
 {
 	g_pfnReceiverCallback = callback;
 }

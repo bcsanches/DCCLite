@@ -8,7 +8,8 @@
 
 using namespace std::chrono_literals;
 
-static auto constexpr TIMEOUT = 2s;
+static auto constexpr TIMEOUT = 5s;
+static auto constexpr CONFIG_RETRY_TIME = 300ms;
 
 Device::Device(std::string name, DccLiteService &dccService, const nlohmann::json &params) :
 	FolderObject(std::move(name)),
@@ -71,6 +72,28 @@ void Device::GoOffline()
 	dcclite::Log::Warn("[{}::Device::GoOffline] Is OFFLINE", this->GetName());
 }
 
+void Device::SendDecoderConfigPacket(size_t index) const
+{
+	dcclite::Packet pkt;
+
+	m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::CONFIG_DEV, m_SessionToken, m_ConfigToken);
+	pkt.Write8(static_cast<uint8_t>(index));
+
+	m_vecDecoders[index]->WriteConfig(pkt);
+
+	m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
+}
+
+void Device::SendConfigFinishedPacket() const
+{
+	dcclite::Packet pkt;
+
+	m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::CONFIG_FINISHED, m_SessionToken, m_ConfigToken);
+	pkt.Write8(static_cast<uint8_t>(m_vecDecoders.size()));
+
+	m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
+}
+
 void Device::AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken)
 {
 	if (m_eStatus == Status::ONLINE)
@@ -95,10 +118,14 @@ void Device::AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address
 
 		m_upConfigState = std::make_unique<ConfigInfo>();
 		m_upConfigState->m_vecAcks.resize(m_vecDecoders.size());
-		this->RefreshTimeout(time);
 
-		dcclite::Packet pkt;
+		m_upConfigState->m_RetryTime = time + CONFIG_RETRY_TIME;
+
+		this->RefreshTimeout(time);
+		
 		{
+			dcclite::Packet pkt;
+
 			m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::CONFIG_START, m_SessionToken, m_ConfigToken);
 
 			m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
@@ -106,14 +133,7 @@ void Device::AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address
 
 		for(size_t i = 0, sz = m_vecDecoders.size(); i < m_vecDecoders.size(); ++i)		
 		{
-			pkt.Reset();
-
-			m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::CONFIG_DEV, m_SessionToken, m_ConfigToken);
-			pkt.Write8(static_cast<uint8_t>(i));
-
-			m_vecDecoders[i]->WriteConfig(pkt);
-
-			m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
+			this->SendDecoderConfigPacket(i);
 		}		
 
 		dcclite::Log::Info("[{}::Device::AcceptConnection] config data sent", this->GetName());		
@@ -133,21 +153,21 @@ void Device::OnPacket_Ping(dcclite::Packet &packet, dcclite::Clock::TimePoint_t 
 
 	dcclite::Packet pkt;
 	m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::PONG, m_SessionToken, m_ConfigToken);
-	m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
-
-	//dcclite::Log::Trace("[{}::Device::OnPacket_ConfigAck] ping ", this->GetName());
+	m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);	
 
 	this->RefreshTimeout(time);
+
+	dcclite::Log::Trace("[{}::Device::OnPacket_Ping] ping", this->GetName());
 }
 
 void Device::OnPacket_ConfigAck(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress)
 {
 	if (!this->CheckSession(remoteAddress))
-		return;
+		return;	
 
 	auto seq = packet.Read<uint8_t>();
 
-	if (seq >= m_upConfigState->m_vecAcks.size())
+	if ((!m_upConfigState) || (seq >= m_upConfigState->m_vecAcks.size()))
 	{
 		dcclite::Log::Error("[{}::Device::OnPacket_ConfigAck] config out of sync, dropping connection", this->GetName());
 
@@ -159,21 +179,27 @@ void Device::OnPacket_ConfigAck(dcclite::Packet &packet, dcclite::Clock::TimePoi
 	m_upConfigState->m_vecAcks[seq] = true;	
 	RefreshTimeout(time);	
 
+	m_upConfigState->m_RetryTime = time + CONFIG_RETRY_TIME;
+
 	dcclite::Log::Trace("[{}::Device::OnPacket_ConfigAck] Config ACK {}", this->GetName(), seq);
 
 	if (m_upConfigState->m_uSeqCount == m_upConfigState->m_vecAcks.size())
 	{
 		dcclite::Log::Info("[{}::Device::OnPacket_ConfigAck] Config Finished, configured {} decoders", this->GetName(), m_upConfigState->m_uSeqCount);
 
-		dcclite::Packet pkt;
-
-		m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::CONFIG_FINISHED, m_SessionToken, m_ConfigToken);
-		pkt.Write8(static_cast<uint8_t>(m_vecDecoders.size()));
-
-		m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);				
-
-		m_upConfigState.reset();
+		this->SendConfigFinishedPacket();
 	}
+}
+
+void Device::OnPacket_ConfigFinished(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress)
+{
+	if (!this->CheckSession(remoteAddress))
+		return;
+
+	m_upConfigState.reset();
+	dcclite::Log::Trace("[{}::Device::OnPacket_ConfigFinished] Config Finished, device is ready", this->GetName());
+
+	RefreshTimeout(time);
 }
 
 bool Device::CheckSessionConfig(dcclite::Guid remoteConfigToken, dcclite::Address remoteAddress)
@@ -218,7 +244,7 @@ void Device::RefreshTimeout(dcclite::Clock::TimePoint_t time)
 }
 
 bool Device::CheckTimeout(dcclite::Clock::TimePoint_t time)
-{
+{	
 	if (time > m_Timeout)
 	{
 		dcclite::Log::Warn("[{}::Device::Update] timeout", this->GetName());
@@ -234,5 +260,28 @@ bool Device::CheckTimeout(dcclite::Clock::TimePoint_t time)
 void Device::Update(const dcclite::Clock &clock)
 {
 	if (m_eStatus == Status::ONLINE)
-		this->CheckTimeout(clock.Now());
+	{
+		auto time = clock.Now();
+
+		if (!this->CheckTimeout(time))
+			return;
+
+		if (m_upConfigState && (m_upConfigState->m_RetryTime < time))
+		{
+			//we havent received ack for some time, wake up the device (timeout keeps counting)
+			size_t i = 0;
+			for (auto sz = m_upConfigState->m_vecAcks.size(); m_upConfigState->m_vecAcks[i]; ++i);
+
+			if (i < m_vecDecoders.size())
+			{
+				dcclite::Log::Warn("[{}::Device::Update] retrying config for device {} at {}", this->GetName(), m_vecDecoders[i]->GetName(), i);
+				this->SendDecoderConfigPacket(i);
+			}
+			else
+			{
+				//remote device already acked all decoders, but not acked the config finished, so, send it again
+				dcclite::Log::Warn("[{}::Device::Update] retrying config finished for remote device", this->GetName());
+			}
+		}
+	}
 }

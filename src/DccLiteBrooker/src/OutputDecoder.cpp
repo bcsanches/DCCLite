@@ -18,11 +18,11 @@ OutputDecoder::OutputDecoder(
 	Decoder(decoderClass, address, name, owner, params),
 	m_iPin(params["pin"].get<dcclite::PinType_t>())
 {
-	//empty
+	//empty.
 }
 
 
-void OutputDecoder::WriteConfig(dcclite::Packet &packet)
+void OutputDecoder::WriteConfig(dcclite::Packet &packet) const
 {
 	Decoder::WriteConfig(packet);
 

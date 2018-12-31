@@ -22,7 +22,7 @@ namespace NetUdp
 
 	extern void SendPacket(const uint8_t *data, uint8_t length, const uint8_t *destIp, uint16_t destPort);
 
-	extern void RegisterCallback(ReceiveCallback_t callback);
+	extern void SetReceiverCallback(ReceiveCallback_t callback);
 
 	extern void Update();
 

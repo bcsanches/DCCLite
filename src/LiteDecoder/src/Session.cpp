@@ -29,8 +29,6 @@ static unsigned long g_uTimeoutTicks = 0;
 
 static States g_eState = States::OFFLINE;
 
-static uint8_t	g_uConfigSeq = 0;
-
 #define PING_TICKS 1000
 
 #ifdef _DEBUG
@@ -76,7 +74,7 @@ bool Session::Configure(const uint8_t *srvIp, uint16_t srvport)
 
 bool Session::Init()
 {
-	NetUdp::RegisterCallback(ReceiveCallback);
+	NetUdp::SetReceiverCallback(ReceiveCallback);
 
 	return true;
 }
@@ -114,6 +112,17 @@ static bool IsValidServer(uint8_t src_ip[4], uint16_t src_port)
 
 	return true;
 }
+
+static void SendConfigPacket(dcclite::Packet &packet, dcclite::MsgTypes msgType, uint8_t seq)
+{
+	packet.Reset();
+	dcclite::PacketBuilder builder{ packet, msgType, g_SessionToken, g_ConfigToken };
+
+	packet.Write8(seq);
+
+	NetUdp::SendPacket(packet.GetData(), packet.GetSize(), g_u8ServerIp, g_iSrvPort);
+}
+
 
 static void GotoOnlineState()
 {
@@ -165,9 +174,7 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 		g_SessionToken = packet.ReadGuid();		
 
 		g_eState = States::CONFIGURING;		
-		g_uTicks = millis() + 1000;
-
-		g_uConfigSeq = 0;
+		g_uTicks = millis() + 1000;		
 	}
 	else
 	{
@@ -207,6 +214,16 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 		case dcclite::MsgTypes::PONG:
 			//nothing to do, already done
 			break;
+
+		case dcclite::MsgTypes::CONFIG_FINISHED:		
+			//this may happen when we send a CONFIG_FINISHED to server to ACK that we are configured but for some reason
+			//server does not get it and so, it resends the CONFIG_FINISHED for us to ACK
+			//we simple ignore and ack again to the server, yes
+			SendConfigPacket(packet, dcclite::MsgTypes::CONFIG_FINISHED, 255);
+			break;
+
+		default:
+			LogInvalidPacket("ONLINE", type);
 	}
 }
 
@@ -218,23 +235,12 @@ static void ConfiguringTick()
 		return;
 }
 
-static bool CheckConfigSequence(uint8_t seq)
-{
-	if (seq != g_uConfigSeq)
-	{
-		Console::SendLog(MODULE_NAME, "HandleConfigPacket Invalid sequence %d, expected %d", seq, g_uConfigSeq + 1);
 
-		return false;
-	}
-
-	return true;
-}
 
 static void HandleConfigPacket(dcclite::Packet &packet)
 {	
-	if (!CheckConfigSequence(packet.Read<uint8_t>()))
-		return;
-
+	uint8_t seq = packet.Read<uint8_t>();
+	
 	auto decType = static_cast<dcclite::DecoderTypes>(packet.Read <uint8_t>());
 
 	switch (decType)
@@ -244,14 +250,7 @@ static void HandleConfigPacket(dcclite::Packet &packet)
 			break;
 	}
 
-	packet.Reset();
-	dcclite::PacketBuilder builder{ packet, dcclite::MsgTypes::CONFIG_ACK, g_SessionToken, g_ConfigToken };
-	
-	packet.Write8(g_uConfigSeq);
-	
-	NetUdp::SendPacket(packet.GetData(), packet.GetSize(), g_u8ServerIp, g_iSrvPort);
-
-	++g_uConfigSeq;
+	SendConfigPacket(packet, dcclite::MsgTypes::CONFIG_ACK, seq);
 }
 
 void OnConfiguringPacket(dcclite::MsgTypes type, dcclite::Packet &packet)
@@ -261,17 +260,6 @@ void OnConfiguringPacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 		case dcclite::MsgTypes::CONFIG_DEV:
 			UpdatePingStatus(millis());
 			HandleConfigPacket(packet);
-			return;
-
-		case dcclite::MsgTypes::CONFIG_FINISHED:
-			if (!CheckConfigSequence(packet.Read<uint8_t>()))
-			{
-				//clear config token, it is set by ReceiveCallback
-				g_ConfigToken = dcclite::Guid();
-				return;
-			}
-						
-			GotoOnlineState();
 			break;
 
 		default:
@@ -320,58 +308,63 @@ static void ReceiveCallback(
 	
 	dcclite::MsgTypes type = packet.Read<dcclite::MsgTypes>();	
 
-	if (g_eState != States::SEARCHING_SERVER)
-	{	
-		if (!IsValidServer(src_ip, src_port))
-		{
-			Console::SendLog(MODULE_NAME, "Got packet from invalid srv %d.%d.%d.%d:%d", src_ip[0], src_ip[1], src_ip[2], src_ip[3], src_port);
-			return;
-		}
-
-		dcclite::Guid token = packet.ReadGuid();
-		if (token != g_SessionToken)
-		{
-			Console::SendLog(MODULE_NAME, "Invalid session token, going to offline");
-
-			g_eState = States::OFFLINE;
-			return;
-		}
-
-		token = packet.ReadGuid();
-		if (g_eState == States::CONFIGURING)
-		{
-			if (type == dcclite::MsgTypes::CONFIG_FINISHED)
-			{
-				g_ConfigToken = token;
-			}
-		}
-		else if (token != g_ConfigToken)
-		{
-			Console::SendLog(MODULE_NAME, "Invalid cfg token, going to offline");
-
-			g_eState = States::OFFLINE;
-			return;
-		}
-	}	
-	
-	switch (g_eState)
+	if (g_eState == States::SEARCHING_SERVER)
 	{
-		case States::SEARCHING_SERVER:
-			OnSearchingServerPacket(src_ip, src_port, type, packet);
-			break;
+		//this state is special, we skip several checks
+		OnSearchingServerPacket(src_ip, src_port, type, packet);
 
-		case States::CONFIGURING:
-			OnConfiguringPacket(type, packet);
-			break;
-
-		case States::ONLINE:
-			OnOnlinePacket(type, packet);
-			break;
-
-		default:
-			//ignore
-			break;
+		return;
 	}
+	
+	//does the packet comes from the known server?
+	if (!IsValidServer(src_ip, src_port))
+	{
+		Console::SendLog(MODULE_NAME, "Got packet from invalid srv %d.%d.%d.%d:%d", src_ip[0], src_ip[1], src_ip[2], src_ip[3], src_port);
+		return;
+	}
+
+	dcclite::Guid token = packet.ReadGuid();
+	if (token != g_SessionToken)
+	{
+		Console::SendLog(MODULE_NAME, "Invalid session token, ignoring");
+
+		// g_eState = States::OFFLINE;
+		return;
+	}
+
+	token = packet.ReadGuid();
+
+	//if we are on config state, config_token is not set yet, so we ignore if for now and handle config packets
+	if (g_eState == States::CONFIGURING)
+	{		
+		if (type == dcclite::MsgTypes::CONFIG_FINISHED)
+		{			
+			//let server know that we are in a good state
+			SendConfigPacket(packet, dcclite::MsgTypes::CONFIG_FINISHED, 255);			
+
+			//This is the place where we set the config token
+			g_ConfigToken = token;
+
+			GotoOnlineState();			
+		}
+		else
+		{
+			OnConfiguringPacket(type, packet);
+		}	
+
+		return;
+	}			
+	
+	//we have been already configured, so validate the config token
+	if (token != g_ConfigToken)
+	{
+		Console::SendLog(MODULE_NAME, "Invalid cfg token, going to offline");
+
+		g_eState = States::OFFLINE;
+		return;
+	}
+
+	OnOnlinePacket(type, packet);	
 }
 
 void Session::LogStatus()

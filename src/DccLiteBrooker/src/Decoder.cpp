@@ -38,13 +38,13 @@ Decoder::Decoder(const Class &decoderClass, const Address &address, std::string 
 }
 
 
-void Decoder::WriteConfig(dcclite::Packet &packet)
+void Decoder::WriteConfig(dcclite::Packet &packet) const
 {
 	packet.Write8(static_cast<std::uint8_t>(this->GetType()));
 	m_iAddress.WriteConfig(packet);
 }
 
-void Decoder::Address::WriteConfig(dcclite::Packet &packet)
+void Decoder::Address::WriteConfig(dcclite::Packet &packet) const
 {
 	packet.Write16(m_iAddress);
 }

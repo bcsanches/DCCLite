@@ -132,6 +132,10 @@ void DccLiteService::Update(const dcclite::Clock &clock)
 				this->OnNet_ConfigAck(clock, sender, pkt);
 				break;
 
+			case dcclite::MsgTypes::CONFIG_FINISHED:
+				this->OnNet_ConfigFinished(clock, sender, pkt);
+				break;
+
 			default:
 				dcclite::Log::Error("Invalid msg type: {}", static_cast<uint8_t>(msgType));
 				return;
@@ -216,6 +220,18 @@ void DccLiteService::OnNet_ConfigAck(const dcclite::Clock &clock, const dcclite:
 	dcclite::Guid configToken = packet.ReadGuid();
 
 	dev->OnPacket_ConfigAck(packet, clock.Now(), senderAddress);
+}
+
+void DccLiteService::OnNet_ConfigFinished(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
+{
+	auto dev = TryFindPacketDestination(packet);
+	if (!dev)
+		return;
+
+	dcclite::Guid configToken = packet.ReadGuid();
+
+	dev->OnPacket_ConfigFinished(packet, clock.Now(), senderAddress);
+
 }
 
 
