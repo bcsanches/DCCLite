@@ -121,7 +121,7 @@ int main(int, char **)
 	TerminalService terminalService;		
 
 #if 0
-	ArduinoLib::SetSerialInput("/cfg LeoRelayStaging 206.174.184.251.21.20 7202 127.0.0.1 8989;");
+	ArduinoLib::SetSerialInput("/cfg LeoRelayStaging 206.174.184.251.21.20 7202 192.168.0.20 8989;");
 
 	ArduinoLib::Tick();
 

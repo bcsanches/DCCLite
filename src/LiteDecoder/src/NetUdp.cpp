@@ -10,7 +10,7 @@
 static uint8_t g_u8Mac[] = { 0x00,0x00,0x00,0x00,0x00,0x00 };
 
 #ifndef BCS_ARDUINO_EMULATOR
-uint8_t Ethernet::buffer[512];
+uint8_t Ethernet::buffer[256];
 #endif
 
 static uint16_t g_iSrcPort = 4551;
@@ -33,8 +33,8 @@ static void UdpCallback(uint16_t dest_port,    	///< Port the packet was sent to
     const char *data,   						///< UDP payload data
     uint16_t len)
 {
-    Serial.println("Got udp packet");
-    ether.printIp("SRV: ", src_ip);
+    //Serial.println("Got udp packet");
+    ether.printIp("PKT: ", src_ip);
     //Serial.println(data);
 
 	if(g_pfnReceiverCallback)

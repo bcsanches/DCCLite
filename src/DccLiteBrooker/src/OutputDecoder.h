@@ -18,7 +18,7 @@ class OutputDecoder : public Decoder
 
 		virtual dcclite::DecoderTypes GetType() const noexcept
 		{
-			return dcclite::DecoderTypes::OUTPUT;
+			return dcclite::DecoderTypes::DEC_OUTPUT;
 		}
 
 	private:

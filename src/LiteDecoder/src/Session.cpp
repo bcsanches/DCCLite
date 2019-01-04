@@ -29,12 +29,12 @@ static unsigned long g_uTimeoutTicks = 0;
 
 static States g_eState = States::OFFLINE;
 
-#define PING_TICKS 1000
+#define PING_TICKS 2500
 
 #ifdef _DEBUG
-#define TIMEOUT 5000
+#define TIMEOUT 10000
 #else
-#define TIMEOUT 5000
+#define TIMEOUT 10000
 #endif
 
 
@@ -199,7 +199,7 @@ static void OnlineTick()
 
 	dcclite::Packet pkt;
 	
-	dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::PING, g_SessionToken, g_ConfigToken };
+	dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::MSG_PING, g_SessionToken, g_ConfigToken };
 
 	NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_iSrvPort);
 	g_uTicks = millis() + PING_TICKS;
@@ -211,7 +211,7 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 	
 	switch (type)
 	{
-		case dcclite::MsgTypes::PONG:
+		case dcclite::MsgTypes::MSG_PONG:
 			//nothing to do, already done
 			break;
 
@@ -245,8 +245,14 @@ static void HandleConfigPacket(dcclite::Packet &packet)
 
 	switch (decType)
 	{
-		case dcclite::DecoderTypes::OUTPUT:
-			dcclite::PinType_t pin = packet.Read<uint8_t>();
+		case dcclite::DecoderTypes::DEC_OUTPUT:
+			{
+				dcclite::PinType_t pin = packet.Read<uint8_t>();
+			}
+			break;
+
+		default:
+			Console::SendLog(MODULE_NAME, "Invalid dec type %d", decType);
 			break;
 	}
 

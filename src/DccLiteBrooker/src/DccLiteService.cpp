@@ -124,7 +124,7 @@ void DccLiteService::Update(const dcclite::Clock &clock)
 				this->OnNet_Hello(clock, sender, pkt);
 				break;
 
-			case dcclite::MsgTypes::PING:
+			case dcclite::MsgTypes::MSG_PING:
 				this->OnNet_Ping(clock, sender, pkt);
 				break;
 

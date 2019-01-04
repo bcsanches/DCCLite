@@ -75,7 +75,7 @@ int Console::ReadChar()
 
 static void Parse(const char *command)
 {
-	Console::SendLog("[CONSOLE]", "Parsing: %s", command);
+	Console::SendLog("[CONSOLE]", "in: %s", command);
 
 	if(strncmp(command, "cfg", 3) == 0)
 	{
@@ -86,7 +86,7 @@ static void Parse(const char *command)
 		char nodeName[17];
 		if(parser.GetToken(nodeName, sizeof(nodeName)) != dcclite::TOKEN_ID)
 		{
-			Console::SendLog("[CONSOLE]", "cfg invalid node name");
+			Console::SendLog("[CONSOLE]", "NOK node name");
 
 			return;
 		}
@@ -99,7 +99,7 @@ static void Parse(const char *command)
 			int number;
 			if(parser.GetNumber(number) != dcclite::TOKEN_NUMBER)
 			{
-				Console::SendLog("[CONSOLE]", "cfg invalid mac");
+				Console::SendLog("[CONSOLE]", "NOK mac");
 
 				return;
 			}
@@ -113,7 +113,7 @@ static void Parse(const char *command)
 
 			if(parser.GetToken(nullptr, 0) != dcclite::TOKEN_DOT)
 			{				
-				Console::SendLog("[CONSOLE]", "cfg invalid mac sep");
+				Console::SendLog("[CONSOLE]", "NOK mac sep");
 
 				return;
 			}
@@ -122,7 +122,7 @@ static void Parse(const char *command)
 		int port;
 		if(parser.GetNumber(port) != dcclite::TOKEN_NUMBER)
 		{
-			Console::SendLog("[CONSOLE]", "cfg invalid port");
+			Console::SendLog("[CONSOLE]", "NOK port");
 
 			return;
 		}
@@ -135,7 +135,7 @@ static void Parse(const char *command)
 			int number;
 			if(parser.GetNumber(number) != dcclite::TOKEN_NUMBER)
 			{
-				Console::SendLog("[CONSOLE]", "invalid ip");
+				Console::SendLog("[CONSOLE]", "NOK ip");
 
 				return;
 			}
@@ -148,7 +148,7 @@ static void Parse(const char *command)
 
 			if(parser.GetToken(nullptr, 0) != dcclite::TOKEN_DOT)
 			{
-				Console::SendLog("[CONSOLE]", "invalid ip sep");
+				Console::SendLog("[CONSOLE]", "NOK ip sep");
 
 				return;
 			}
@@ -157,7 +157,7 @@ static void Parse(const char *command)
 		int srvport;
 		if (parser.GetNumber(srvport) != dcclite::TOKEN_NUMBER)
 		{
-			Console::SendLog("[CONSOLE]", "cfg invalid srvport");
+			Console::SendLog("[CONSOLE]", "NOK srvport");
 
 			return;
 		}
@@ -174,7 +174,7 @@ static void Parse(const char *command)
 	}
 	else
 	{
-		Console::SendLog("[CONSOLE]", "Invalid cmd");
+		Console::SendLog("[CONSOLE]", "NOK cmd");
 	}
 }
 

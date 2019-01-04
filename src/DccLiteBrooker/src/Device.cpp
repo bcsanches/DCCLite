@@ -8,7 +8,7 @@
 
 using namespace std::chrono_literals;
 
-static auto constexpr TIMEOUT = 5s;
+static auto constexpr TIMEOUT = 10s;
 static auto constexpr CONFIG_RETRY_TIME = 300ms;
 
 Device::Device(std::string name, DccLiteService &dccService, const nlohmann::json &params) :
@@ -152,12 +152,12 @@ void Device::OnPacket_Ping(dcclite::Packet &packet, dcclite::Clock::TimePoint_t 
 		return;
 
 	dcclite::Packet pkt;
-	m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::PONG, m_SessionToken, m_ConfigToken);
+	m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::MSG_PONG, m_SessionToken, m_ConfigToken);
 	m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);	
 
 	this->RefreshTimeout(time);
 
-	dcclite::Log::Trace("[{}::Device::OnPacket_Ping] ping", this->GetName());
+	// dcclite::Log::Trace("[{}::Device::OnPacket_Ping] ping", this->GetName());
 }
 
 void Device::OnPacket_ConfigAck(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress)

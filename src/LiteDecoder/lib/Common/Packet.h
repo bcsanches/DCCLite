@@ -1,14 +1,13 @@
 #pragma once
 
-#include <cassert>
-#include <cinttypes>
-#include <array>
+#include <assert.h>
+#include <stdint.h>
 
 #include "Guid.h"
 
 namespace dcclite
 {
-	enum class MsgTypes : std::uint8_t
+	enum class MsgTypes: uint8_t
 	{
 		RESERVED0,
 
@@ -18,8 +17,8 @@ namespace dcclite
 		CONFIG_DEV,
 		CONFIG_FINISHED,
 		CONFIG_ACK,
-		PING,
-		PONG,		
+		MSG_PING,
+		MSG_PONG,		
 	};	
 
 	constexpr uint32_t PACKET_ID = 0xBEEFFEED;
@@ -45,11 +44,10 @@ namespace dcclite
 				memcpy(&m_arData[0], data, len);
 			}
 
-			Packet(const Packet &rhs):
-				m_arData(rhs.m_arData),
-				m_iIndex(rhs.m_iIndex)
+			Packet(const Packet &rhs):				
+				m_iIndex{ rhs.m_iIndex }
 			{
-				//emtpy
+				memcpy(m_arData, rhs.m_arData, sizeof(m_arData));
 			}
 
 			Packet(Packet &&) = delete;
@@ -128,7 +126,7 @@ namespace dcclite
 			}
 
 		private:
-			std::array<std::uint8_t, PACKET_MAX_SIZE> m_arData;
+			uint8_t m_arData[PACKET_MAX_SIZE];
 
 			unsigned int				m_iIndex = 0;
 	};
@@ -175,7 +173,7 @@ namespace dcclite
 			{
 				size_t len = m_Packet.Read<uint8_t>();
 
-				size_t bytesToRead = std::min(len, max);
+				size_t bytesToRead = len < max ? len : max;
 				for (size_t i = 0; i < bytesToRead; ++i)
 				{
 					str[i] = m_Packet.Read<uint8_t>();
