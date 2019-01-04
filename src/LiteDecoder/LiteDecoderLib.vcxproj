@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="src\Blinker.cpp" />
     <ClCompile Include="src\Console.cpp" />
+    <ClCompile Include="src\DecoderManager.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\NetUdp.cpp" />
     <ClCompile Include="src\Session.cpp" />
@@ -29,6 +30,7 @@
   <ItemGroup>
     <ClInclude Include="src\Blinker.h" />
     <ClInclude Include="src\Console.h" />
+    <ClInclude Include="src\DecoderManager.h" />
     <ClInclude Include="src\LiteDecoder.h" />
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\NetUdp.h" />

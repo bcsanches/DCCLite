@@ -13,6 +13,7 @@
     <ClCompile Include="src\NetUdp.cpp" />
     <ClCompile Include="src\Storage.cpp" />
     <ClCompile Include="src\Session.cpp" />
+    <ClCompile Include="src\DecoderManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Blinker.h" />
@@ -22,5 +23,6 @@
     <ClInclude Include="src\Storage.h" />
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\Session.h" />
+    <ClInclude Include="src\DecoderManager.h" />
   </ItemGroup>
 </Project>

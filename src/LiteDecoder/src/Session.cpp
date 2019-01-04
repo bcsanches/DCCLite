@@ -92,7 +92,7 @@ static bool Timeout(unsigned long currentTime)
 	if (currentTime >= g_uTimeoutTicks)
 	{
 		//Server is dead?
-		Console::SendLog(MODULE_NAME, "Server timeout");
+		Console::SendLog(MODULE_NAME, "Srv timeout");
 
 		g_eState = States::OFFLINE;
 
@@ -106,7 +106,7 @@ static bool IsValidServer(uint8_t src_ip[4], uint16_t src_port)
 {
 	if (memcmp(src_ip, g_u8ServerIp, sizeof(g_u8ServerIp)) || (g_iSrvPort != src_port))
 	{
-		Console::SendLog(MODULE_NAME, "Got packet from strange ip or port");
+		Console::SendLog(MODULE_NAME, "unknown ip");
 		return false;
 	}
 
@@ -135,7 +135,7 @@ static void GotoOnlineState()
 
 static void LogInvalidPacket(const char *state, dcclite::MsgTypes type)
 {
-	Console::SendLog(MODULE_NAME, "Invalid packet on %s %d, ignoring", state, type);
+	Console::SendLog(MODULE_NAME, "Invalid pkt on %s %d", state, type);
 }
 
 static void OfflineTick()
@@ -307,7 +307,7 @@ static void ReceiveCallback(
 
 	if (packet.Read<uint32_t>() != dcclite::PACKET_ID)
 	{
-		Console::SendLog(MODULE_NAME, "Got invalid packet id");
+		Console::SendLog(MODULE_NAME, "invalid pkt id");
 
 		return;
 	}
@@ -325,14 +325,14 @@ static void ReceiveCallback(
 	//does the packet comes from the known server?
 	if (!IsValidServer(src_ip, src_port))
 	{
-		Console::SendLog(MODULE_NAME, "Got packet from invalid srv %d.%d.%d.%d:%d", src_ip[0], src_ip[1], src_ip[2], src_ip[3], src_port);
+		Console::SendLog(MODULE_NAME, "pkt from invalid srv %d.%d.%d.%d:%d", src_ip[0], src_ip[1], src_ip[2], src_ip[3], src_port);
 		return;
 	}
 
 	dcclite::Guid token = packet.ReadGuid();
 	if (token != g_SessionToken)
 	{
-		Console::SendLog(MODULE_NAME, "Invalid session token, ignoring");
+		Console::SendLog(MODULE_NAME, "Invalid session id");
 
 		// g_eState = States::OFFLINE;
 		return;
@@ -364,7 +364,7 @@ static void ReceiveCallback(
 	//we have been already configured, so validate the config token
 	if (token != g_ConfigToken)
 	{
-		Console::SendLog(MODULE_NAME, "Invalid cfg token, going to offline");
+		Console::SendLog(MODULE_NAME, "Invalid cfg id, going to offline");
 
 		g_eState = States::OFFLINE;
 		return;
