@@ -1,16 +1,18 @@
 #include "NetUdp.h"
 
-#include <Ethercard.h>
+#include "Ethercard.h"
 
 #include "Console.h"
 #include "Storage.h"
+
+#include <avr/pgmspace.h>
 
 #define MODULE_NAME "NetUdp"
 
 static uint8_t g_u8Mac[] = { 0x00,0x00,0x00,0x00,0x00,0x00 };
 
 #ifndef BCS_ARDUINO_EMULATOR
-uint8_t Ethernet::buffer[256];
+uint8_t Ethernet::buffer[256+128];
 #endif
 
 static uint16_t g_iSrcPort = 4551;
@@ -98,30 +100,30 @@ bool NetUdp::Init()
 
 		if(!validMac)
 		{
-			Console::SendLog(MODULE_NAME, "mac not set");
+			Console::SendLog(MODULE_NAME, "no mac");
 
 			return false;			
 		}
 	}
 
-	if (ether.begin(512, g_u8Mac, 53) == 0) 
+	if (ether.begin(sizeof(Ethernet::buffer), g_u8Mac, 53) == 0) 
 	{
-		Console::SendLog(MODULE_NAME, "ether.begin failed");
+		Console::SendLog(MODULE_NAME, "ether.begin NOK");
 
 		return false;
 	}
 
-	Console::SendLog(MODULE_NAME, "ether.begin ok");	
+	Console::SendLog(MODULE_NAME, "net ok");	
 
 #if 1
-	if (!ether.dhcpSetup())
+	if (!ether.dhcpSetup(g_szNodeName, true))
 	{
-		Console::SendLog(MODULE_NAME, "DHCP failed");
+		Console::SendLog(MODULE_NAME, "DHCP NOK");
 
 		return false;
 	}		
 
-	Console::SendLog(MODULE_NAME, "ether.dhcpSetup ok");
+	Console::SendLog(MODULE_NAME, "dhcp ok");
 #else
 
 	if(!ether.staticSetup(ip, gw, dns))
@@ -154,9 +156,11 @@ void NetUdp::Update()
 	ether.packetLoop(ether.packetReceive());
 }
 
+const char STATUS_STR[] = {"Name: %s, Mac: %X-%X-%X-%X-%X-%X, Port: %d"}; 
+
 void NetUdp::LogStatus()
 {
-	Console::SendLog(MODULE_NAME, "Name: %s, Mac: %X-%X-%X-%X-%X-%X, Port: %d", 
+	Console::SendLog(MODULE_NAME, STATUS_STR, 
 		g_szNodeName, 
 		g_u8Mac[0], g_u8Mac[1], g_u8Mac[2], g_u8Mac[3], g_u8Mac[4], g_u8Mac[5], 
 		g_iSrcPort

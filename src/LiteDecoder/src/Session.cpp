@@ -266,7 +266,7 @@ void OnConfiguringPacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 		case dcclite::MsgTypes::CONFIG_DEV:
 			UpdatePingStatus(millis());
 			HandleConfigPacket(packet);
-			break;
+			break;		
 
 		default:
 			LogInvalidPacket("OnConfiguringPacket", type);
@@ -351,7 +351,11 @@ static void ReceiveCallback(
 			//This is the place where we set the config token
 			g_ConfigToken = token;
 
-			GotoOnlineState();			
+			GotoOnlineState();
+		}
+		else if(type == dcclite::MsgTypes::ACCEPTED)
+		{
+			GotoOnlineState();
 		}
 		else
 		{

@@ -66,7 +66,7 @@ bool Storage::LoadConfig()
 
     if(strncmp(header.m_archName, STORAGE_MAGIC, sizeof(STORAGE_MAGIC)))
     {
-        Console::SendLog(MODULE_NAME, "invalid header");
+        Console::SendLog(MODULE_NAME, "no rom");
 
         return false;
     }
@@ -81,18 +81,18 @@ bool Storage::LoadConfig()
 
 			if (strncmp(lump.m_archName, NET_UDP_STORAGE_ID, sizeof(NET_UDP_STORAGE_ID)) == 0)
 			{
-				Console::SendLog(MODULE_NAME, "netudp config");
+				Console::SendLog(MODULE_NAME, "netudp cfg");
 				NetUdp::LoadConfig(stream);
 			}
 			else if (strncmp(lump.m_archName, SESSION_STORAGE_ID, sizeof(SESSION_STORAGE_ID)) == 0)
 			{
-				Console::SendLog(MODULE_NAME, "session config");
+				Console::SendLog(MODULE_NAME, "session cfg");
 
 				Session::LoadConfig(stream);
 			}
 			else if (strncmp(lump.m_archName, END_ID, sizeof(END_ID)) == 0)
 			{
-				Console::SendLog(MODULE_NAME, "stream end");
+				Console::SendLog(MODULE_NAME, "rom end");
 
 				break;
 			}
@@ -231,7 +231,7 @@ void Storage::SaveConfig()
         }
     }
 #endif
-    Console::SendLog(MODULE_NAME, "save done");
+    Console::SendLog(MODULE_NAME, "sv ok");
 }
 
 

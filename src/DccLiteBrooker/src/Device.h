@@ -61,6 +61,7 @@ class Device: public dcclite::FolderObject
 		bool CheckTimeout(dcclite::Clock::TimePoint_t time);
 
 		void SendDecoderConfigPacket(size_t index) const;
+		void SendConfigStartPacket() const;
 		void SendConfigFinishedPacket() const;
 		
 
