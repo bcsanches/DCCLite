@@ -54,8 +54,10 @@ class LumpWriter
 
 		uint32_t	m_uStartIndex;
 
+		bool 		m_fNameFromRam;
+
 	public:
-		LumpWriter(EpromStream &stream, const char *lumpName);
+		LumpWriter(EpromStream &stream, const char *lumpName, bool nameFromRam = true);
 
 		~LumpWriter();
 };

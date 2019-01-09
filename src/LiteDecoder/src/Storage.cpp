@@ -15,10 +15,10 @@
 #include "Session.h"
 #include "Storage.h"
 
-#define STORAGE_MAGIC "Bcs0003"
-#define NET_UDP_STORAGE_ID "NetU002"
-#define SESSION_STORAGE_ID "Sson001"
-#define END_ID "ENDEND1"
+static const char StorageMagic[] PROGMEM = {"Bcs0003"};
+static const char NetUdpStorageId[] PROGMEM = {"NetU002"};
+static const char SessionStorageId[] PROGMEM = {"Sson001"};
+static const char EndStorageId[] PROGMEM = {"ENDEND1"};
 
 const char StorageModuleName[] PROGMEM = {"Storage"} ;
 #define MODULE_NAME Console::FlashStr(StorageModuleName)
@@ -55,7 +55,7 @@ void Storage::Dump()
 bool Storage::LoadConfig()
 {
     //Console::SendLog(MODULE_NAME, "init %d", sizeof(STORAGE_MAGIC));		
-	Console::SendLogEx(MODULE_NAME, "init", ' ', sizeof(STORAGE_MAGIC));
+	Console::SendLogEx(MODULE_NAME, "init", ' ', strlen_P(StorageMagic));
 
 	Lump header;
 
@@ -68,7 +68,7 @@ bool Storage::LoadConfig()
 
 	//Console::SendLog(MODULE_NAME, gData.m_archMagic);
 
-    if(strncmp(header.m_archName, STORAGE_MAGIC, sizeof(STORAGE_MAGIC)))
+    if(strncmp_P(header.m_archName, StorageMagic, strlen_P(StorageMagic)))
     {
         Console::SendLogEx(MODULE_NAME, "no", ' ', "rom");
 
@@ -83,18 +83,18 @@ bool Storage::LoadConfig()
 			stream.Get(lump.m_archName, sizeof(lump.m_archName));
 			stream.Get(lump.m_uLength);
 
-			if (strncmp(lump.m_archName, NET_UDP_STORAGE_ID, sizeof(NET_UDP_STORAGE_ID)) == 0)
+			if (strncmp_P(lump.m_archName, NetUdpStorageId, strlen_P(NetUdpStorageId)) == 0)
 			{
 				Console::SendLogEx(MODULE_NAME, "net", "udp", ' ', "cfg");
 				NetUdp::LoadConfig(stream);
 			}
-			else if (strncmp(lump.m_archName, SESSION_STORAGE_ID, sizeof(SESSION_STORAGE_ID)) == 0)
+			else if (strncmp_P(lump.m_archName, SessionStorageId, strlen_P(SessionStorageId)) == 0)
 			{
 				Console::SendLogEx(MODULE_NAME, "session", ' ',  "cfg");
 
 				Session::LoadConfig(stream);
 			}
-			else if (strncmp(lump.m_archName, END_ID, sizeof(END_ID)) == 0)
+			else if (strncmp_P(lump.m_archName, EndStorageId, strlen_P(EndStorageId)) == 0)
 			{
 				Console::SendLogEx(MODULE_NAME, "rom", ' ', "end");
 
@@ -168,19 +168,19 @@ void Storage::SaveConfig()
 {   
 	EpromStream stream(0);
 
-	LumpWriter lump(stream, STORAGE_MAGIC);
+	LumpWriter lump(stream, StorageMagic, false);
 	{
-		LumpWriter netLump(stream, NET_UDP_STORAGE_ID);
+		LumpWriter netLump(stream, NetUdpStorageId, false);
 
 		NetUdp::SaveConfig(stream);	
 	}
 	{
-		LumpWriter sessionLump(stream, SESSION_STORAGE_ID);
+		LumpWriter sessionLump(stream, SessionStorageId, false);
 
 		Session::SaveConfig(stream);
 	}
 	{
-		LumpWriter endLump(stream, END_ID);
+		LumpWriter endLump(stream, EndStorageId, false);
 	}
 
 #if 0
@@ -387,10 +387,11 @@ void EpromStream::Put(const char *str)
 }
 #endif
 
-LumpWriter::LumpWriter(EpromStream &stream, const char *lumpName):
+LumpWriter::LumpWriter(EpromStream &stream, const char *lumpName, bool nameFromRam):
 	m_pszName(lumpName),
 	m_rStream(stream),
-	m_uStartIndex(stream.m_uIndex)
+	m_uStartIndex(stream.m_uIndex),
+	m_fNameFromRam(nameFromRam)
 {		
 	m_rStream.Skip(sizeof(Lump));
 }
@@ -403,6 +404,11 @@ LumpWriter::~LumpWriter()
 
 	Lump header;
 
+	if(m_fNameFromRam)
+		strncpy(header.m_archName, m_pszName, sizeof(header.m_archName));
+	else
+		strncpy_P(header.m_archName, m_pszName, sizeof(header.m_archName));
+	
 	strncpy(header.m_archName, m_pszName, sizeof(header.m_archName));
 	header.m_uLength = currentPos - m_uStartIndex - sizeof(Lump);
 
