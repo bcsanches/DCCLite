@@ -30,7 +30,7 @@ void setup()
 
 	Session::Init();
 
-	Console::SendLog("setup", "done");
+	Console::SendLogEx("setup", "done");
 }
 
 void loop() 

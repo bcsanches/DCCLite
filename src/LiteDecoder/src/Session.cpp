@@ -8,7 +8,8 @@
 #include "Packet.h"
 #include "Storage.h"
 
-#define MODULE_NAME "Session"
+const char StorageModuleName[] PROGMEM = {"Session"} ;
+#define MODULE_NAME Console::FlashStr(StorageModuleName)
 
 enum class States
 {
@@ -92,7 +93,7 @@ static bool Timeout(unsigned long currentTime)
 	if (currentTime >= g_uTimeoutTicks)
 	{
 		//Server is dead?
-		Console::SendLog(MODULE_NAME, "Srv timeout");
+		Console::SendLogEx(MODULE_NAME, "srv", ' ',  "timeout");
 
 		g_eState = States::OFFLINE;
 
@@ -106,7 +107,7 @@ static bool IsValidServer(uint8_t src_ip[4], uint16_t src_port)
 {
 	if (memcmp(src_ip, g_u8ServerIp, sizeof(g_u8ServerIp)) || (g_iSrvPort != src_port))
 	{
-		Console::SendLog(MODULE_NAME, "unknown ip");
+		Console::SendLogEx(MODULE_NAME, "unknown", ' ', "ip");
 		return false;
 	}
 
@@ -126,16 +127,16 @@ static void SendConfigPacket(dcclite::Packet &packet, dcclite::MsgTypes msgType,
 
 static void GotoOnlineState()
 {
-	Console::SendLog(MODULE_NAME, "Online ON");
+	Console::SendLogEx(MODULE_NAME, "Online");
 
 	g_eState = States::ONLINE;
 
 	UpdatePingStatus(millis());
 }
 
-static void LogInvalidPacket(const char *state, dcclite::MsgTypes type)
+static void LogInvalidPacket(const Console::FlashStr &stateName, dcclite::MsgTypes type)
 {
-	Console::SendLog(MODULE_NAME, "Invalid pkt on %s %d", state, type);
+	Console::SendLogEx(MODULE_NAME, "invalid", ' ', "pkt", ' ', stateName, ' ', static_cast<int>(type));
 }
 
 static void OfflineTick()
@@ -160,6 +161,9 @@ static void SearchingServerTick()
 	OfflineTick();
 }
 
+const char OnSearchingServerPacketStateName[] PROGMEM = {"OnSearchingServerPacket"} ;
+#define OnSearchingServerPacketStateNameStr Console::FlashStr(OnSearchingServerPacketStateName)
+
 static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclite::MsgTypes type, dcclite::Packet &packet)
 {	
 	if (type == dcclite::MsgTypes::ACCEPTED)
@@ -178,7 +182,7 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 	}
 	else
 	{
-		LogInvalidPacket("OnSearchingServerPacket", type);
+		LogInvalidPacket(OnSearchingServerPacketStateNameStr, type);
 
 		return;
 	}	
@@ -205,6 +209,9 @@ static void OnlineTick()
 	g_uTicks = millis() + PING_TICKS;
 }
 
+const char OnOnlineStateName[] PROGMEM = {"Online"} ;
+#define OnOnlineStateNameStr Console::FlashStr(OnOnlineStateName)
+
 static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 {		
 	UpdatePingStatus(millis());	
@@ -223,7 +230,7 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 			break;
 
 		default:
-			LogInvalidPacket("ONLINE", type);
+			LogInvalidPacket(OnOnlineStateNameStr, type);
 	}
 }
 
@@ -252,12 +259,15 @@ static void HandleConfigPacket(dcclite::Packet &packet)
 			break;
 
 		default:
-			Console::SendLog(MODULE_NAME, "Invalid dec type %d", decType);
+			Console::SendLogEx(MODULE_NAME, "invalid", ' ', "dec", ' ', "type", ' ', static_cast<int>(decType));
 			break;
 	}
 
 	SendConfigPacket(packet, dcclite::MsgTypes::CONFIG_ACK, seq);
 }
+
+const char OnConfiguringPacketStateName[] PROGMEM = {"OnConfiguringPacket"} ;
+#define OnConfiguringPacketStateNameStr Console::FlashStr(OnConfiguringPacketStateName)
 
 void OnConfiguringPacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 {		
@@ -269,7 +279,7 @@ void OnConfiguringPacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 			break;		
 
 		default:
-			LogInvalidPacket("OnConfiguringPacket", type);
+			LogInvalidPacket(OnConfiguringPacketStateNameStr, type);
 			break;
 	}
 }
@@ -307,7 +317,7 @@ static void ReceiveCallback(
 
 	if (packet.Read<uint32_t>() != dcclite::PACKET_ID)
 	{
-		Console::SendLog(MODULE_NAME, "invalid pkt id");
+		Console::SendLogEx(MODULE_NAME, "invalid", ' ', "pkt", ' ', "id");
 
 		return;
 	}
@@ -325,14 +335,14 @@ static void ReceiveCallback(
 	//does the packet comes from the known server?
 	if (!IsValidServer(src_ip, src_port))
 	{
-		Console::SendLog(MODULE_NAME, "pkt from invalid srv %d.%d.%d.%d:%d", src_ip[0], src_ip[1], src_ip[2], src_ip[3], src_port);
+		Console::SendLogEx(MODULE_NAME, "pkt", ' ', "from", ' ', "invalid", ' ', "srv", Console::IpPrinter(src_ip), ':', src_port);
 		return;
 	}
 
 	dcclite::Guid token = packet.ReadGuid();
 	if (token != g_SessionToken)
 	{
-		Console::SendLog(MODULE_NAME, "Invalid session id");
+		Console::SendLogEx(MODULE_NAME, "invalid", ' ', "session", ' ', "id");
 
 		// g_eState = States::OFFLINE;
 		return;
@@ -368,7 +378,7 @@ static void ReceiveCallback(
 	//we have been already configured, so validate the config token
 	if (token != g_ConfigToken)
 	{
-		Console::SendLog(MODULE_NAME, "Invalid cfg id, going to offline");
+		Console::SendLogEx(MODULE_NAME, "invalid", ' ', "cfg", ' ', "id", ',', ' ', "going", ' ', "to", ' ', "offline");
 
 		g_eState = States::OFFLINE;
 		return;
@@ -379,8 +389,5 @@ static void ReceiveCallback(
 
 void Session::LogStatus()
 {
-	Console::SendLog(MODULE_NAME, "Srv: %d.%d.%d.%d:%d",		
-		g_u8ServerIp[0], g_u8ServerIp[1], g_u8ServerIp[2], g_u8ServerIp[3],
-		g_iSrvPort
-	);
+	Console::SendLogEx(MODULE_NAME, "srv", ':', ' ', Console::IpPrinter(g_u8ServerIp), ':', g_iSrvPort);
 }

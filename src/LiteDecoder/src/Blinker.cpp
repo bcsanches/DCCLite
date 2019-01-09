@@ -10,9 +10,9 @@
 #define MAX_FRAMES 3
 
 static unsigned long g_iNextThink = 0;
-static int g_iVoltage = 0;
-static int g_iAnimation = -1;
-static int g_iFrame = 0;
+static short g_iAnimation = -1;
+static uint8_t g_iVoltage = 0;
+static char g_iFrame = 0;
 
 #define MAX_ANIMATIONS 2
 

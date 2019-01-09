@@ -5,14 +5,17 @@
 #include "Console.h"
 #include "Storage.h"
 
-#include <avr/pgmspace.h>
+//#include <avr/pgmspace.h>
 
-#define MODULE_NAME "NetUdp"
+const char StorageModuleName[] PROGMEM = {"NetUdp"} ;
+#define MODULE_NAME Console::FlashStr(StorageModuleName)
 
 static uint8_t g_u8Mac[] = { 0x00,0x00,0x00,0x00,0x00,0x00 };
 
+#define BUFFER_SIZE (256+128)
+
 #ifndef BCS_ARDUINO_EMULATOR
-uint8_t Ethernet::buffer[256+128];
+uint8_t Ethernet::buffer[BUFFER_SIZE];
 #endif
 
 static uint16_t g_iSrcPort = 4551;
@@ -100,30 +103,30 @@ bool NetUdp::Init()
 
 		if(!validMac)
 		{
-			Console::SendLog(MODULE_NAME, "no mac");
+			Console::SendLogEx(MODULE_NAME, "no", ' ', "mac");
 
 			return false;			
 		}
 	}
 
-	if (ether.begin(sizeof(Ethernet::buffer), g_u8Mac, 53) == 0) 
+	if (ether.begin(BUFFER_SIZE, g_u8Mac, 53) == 0)
 	{
-		Console::SendLog(MODULE_NAME, "ether.begin NOK");
+		Console::SendLogEx(MODULE_NAME, "ether", '.', "begin", ' ', "NOK");
 
 		return false;
 	}
 
-	Console::SendLog(MODULE_NAME, "net ok");	
+	Console::SendLogEx(MODULE_NAME, "net", "ok");	
 
 #if 1
 	if (!ether.dhcpSetup(g_szNodeName, true))
 	{
-		Console::SendLog(MODULE_NAME, "DHCP NOK");
+		Console::SendLogEx(MODULE_NAME, "dhcp", ' ',  "NOK");
 
 		return false;
 	}		
 
-	Console::SendLog(MODULE_NAME, "dhcp ok");
+	Console::SendLogEx(MODULE_NAME, "dhcp", ' ', "ok");
 #else
 
 	if(!ether.staticSetup(ip, gw, dns))
@@ -134,12 +137,12 @@ bool NetUdp::Init()
 #endif
 
 	ether.printIp("IP:  ", ether.myip);	
-	Console::SendLog(MODULE_NAME, "port: %d", g_iSrcPort);
+	Console::SendLogEx(MODULE_NAME, "port", ':', ' ', g_iSrcPort);
 	//ether.printIp("DNS: ", ether.dnsip);    
 
 	//ether.parseIp(destip, "192.168.1.101");	
 
-	Console::SendLog(MODULE_NAME, "setup OK");
+	Console::SendLogEx(MODULE_NAME, "setup", ' ', "ok");
 
 	ether.udpServerListenOnPort(UdpCallback, g_iSrcPort);
 
@@ -156,14 +159,14 @@ void NetUdp::Update()
 	ether.packetLoop(ether.packetReceive());
 }
 
-const char STATUS_STR[] = {"Name: %s, Mac: %X-%X-%X-%X-%X-%X, Port: %d"}; 
+//const char STATUS_STR[] = {"Name: %s, Mac: %X-%X-%X-%X-%X-%X, Port: %d"}; 
 
 void NetUdp::LogStatus()
 {
-	Console::SendLog(MODULE_NAME, STATUS_STR, 
-		g_szNodeName, 
-		g_u8Mac[0], g_u8Mac[1], g_u8Mac[2], g_u8Mac[3], g_u8Mac[4], g_u8Mac[5], 
-		g_iSrcPort
+	Console::SendLogEx(MODULE_NAME, "Name", ':', ' ', 
+		g_szNodeName, ' ',
+		Console::Hex(g_u8Mac[0]), '-', Console::Hex(g_u8Mac[1]), '-', Console::Hex(g_u8Mac[2]), '-', Console::Hex(g_u8Mac[3]), '-', Console::Hex(g_u8Mac[4]), '-', Console::Hex(g_u8Mac[5]), ',', ' ',
+		"Port", ':', ' ', g_iSrcPort
 	);
 }
 

@@ -23,5 +23,6 @@
     <ClInclude Include="ArduinoLib.h" />
     <ClInclude Include="ArduinoDefs.h" />
     <ClInclude Include="EEPROMLib.h" />
+    <ClInclude Include="avr\pgmspace.h" />
   </ItemGroup>
 </Project>

@@ -12,6 +12,15 @@
 #include "Session.h"
 #include "Storage.h"
 
+//hack for emulator for avoiding polutating namespace with stupid names
+#ifndef DEC
+#define DEC 10
+#endif
+
+#ifndef HEX
+#define HEX 16
+#endif
+
 void Console::Init() 
 {
     Serial.begin(9600);
@@ -27,26 +36,6 @@ void Console::Init()
     Serial.println(__TIME__);    
 }
 
-void Console::SendLog(const char *module, const char *format, ...)
-{
-    char buffer[128];
-
-    va_list args;
-    va_start(args, format);
-
-    vsnprintf(buffer, 128, format, args);
-
-    Serial.println("");
-    Serial.print("<LOG ");
-    Serial.print(module);
-    Serial.print(" ");
-
-    Serial.print(buffer);
-
-    Serial.println(">");
-
-    va_end(args);
-}
 
 void Console::Send(const char *str)
 {
@@ -58,9 +47,19 @@ void Console::SendLn(const char *str)
     Serial.println(str);
 }
 
-void Console::Send(int value)
+void Console::Send(int value, Format format)
 {
-    Serial.print(value);
+    Serial.print(value, format == Format::DECIMAL ? DEC : HEX);
+}
+
+void Console::Send(unsigned int value, Format format)
+{
+	Serial.print(value, format == Format::DECIMAL ? DEC : HEX);
+}
+
+void Console::Send(char value)
+{
+	Serial.print(value);
 }
 
 int Console::Available()
@@ -75,7 +74,7 @@ int Console::ReadChar()
 
 static void Parse(const char *command)
 {
-	Console::SendLog("[CONSOLE]", "in: %s", command);
+	Console::SendLogEx("[CONSOLE]", "in:", ' ', command);
 
 	if(strncmp(command, "cfg", 3) == 0)
 	{
@@ -86,7 +85,7 @@ static void Parse(const char *command)
 		char nodeName[17];
 		if(parser.GetToken(nodeName, sizeof(nodeName)) != dcclite::TOKEN_ID)
 		{
-			Console::SendLog("[CONSOLE]", "NOK node name");
+			Console::SendLogEx("[CONSOLE]", "NOK", ' ', "node", ' ', "name");
 
 			return;
 		}
@@ -99,7 +98,7 @@ static void Parse(const char *command)
 			int number;
 			if(parser.GetNumber(number) != dcclite::TOKEN_NUMBER)
 			{
-				Console::SendLog("[CONSOLE]", "NOK mac");
+				Console::SendLogEx("[CONSOLE]", "NOK", ' ', "mac");
 
 				return;
 			}
@@ -113,7 +112,7 @@ static void Parse(const char *command)
 
 			if(parser.GetToken(nullptr, 0) != dcclite::TOKEN_DOT)
 			{				
-				Console::SendLog("[CONSOLE]", "NOK mac sep");
+				Console::SendLogEx("[CONSOLE]", "NOK", ' ', "mac", ' ', "sep");
 
 				return;
 			}
@@ -122,7 +121,7 @@ static void Parse(const char *command)
 		int port;
 		if(parser.GetNumber(port) != dcclite::TOKEN_NUMBER)
 		{
-			Console::SendLog("[CONSOLE]", "NOK port");
+			Console::SendLogEx("[CONSOLE]", "NOK", ' ', "port");
 
 			return;
 		}
@@ -135,7 +134,7 @@ static void Parse(const char *command)
 			int number;
 			if(parser.GetNumber(number) != dcclite::TOKEN_NUMBER)
 			{
-				Console::SendLog("[CONSOLE]", "NOK ip");
+				Console::SendLogEx("[CONSOLE]", "NOK", ' ', "ip");
 
 				return;
 			}
@@ -148,7 +147,7 @@ static void Parse(const char *command)
 
 			if(parser.GetToken(nullptr, 0) != dcclite::TOKEN_DOT)
 			{
-				Console::SendLog("[CONSOLE]", "NOK ip sep");
+				Console::SendLogEx("[CONSOLE]", "NOK", ' ', "ip", ' ', "sep");
 
 				return;
 			}
@@ -157,7 +156,7 @@ static void Parse(const char *command)
 		int srvport;
 		if (parser.GetNumber(srvport) != dcclite::TOKEN_NUMBER)
 		{
-			Console::SendLog("[CONSOLE]", "NOK srvport");
+			Console::SendLogEx("[CONSOLE]", "NOK", ' ', "srvport");
 
 			return;
 		}
@@ -165,16 +164,16 @@ static void Parse(const char *command)
 		NetUdp::Configure(nodeName, port, mac);
 		Session::Configure(ip, srvport);
 
-		Console::SendLn("OK");
+		Console::SendLn("ok");
 	}
 	else if(strncmp(command, "sv", 2) == 0)
 	{
 		Storage::SaveConfig();
-		Console::SendLn("OK");
+		Console::SendLn("ok");
 	}
 	else
 	{
-		Console::SendLog("[CONSOLE]", "NOK cmd");
+		Console::SendLogEx("[CONSOLE]", "NOK", ' ', command);
 	}
 }
 

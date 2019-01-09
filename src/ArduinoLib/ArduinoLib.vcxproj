@@ -30,6 +30,7 @@
     <ClInclude Include="ArduinoDefs.h" />
     <ClInclude Include="ArduinoLib.h" />
     <ClInclude Include="ArduinoLibDefs.h" />
+    <ClInclude Include="avr\pgmspace.h" />
     <ClInclude Include="DynamicLibrary.h" />
     <ClInclude Include="EEPROM.h" />
     <ClInclude Include="EEPROMLib.h" />

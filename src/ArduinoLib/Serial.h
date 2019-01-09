@@ -9,7 +9,9 @@ struct ARDUINO_API SerialImpl
 	void begin(int frequency);
 
 	void print(const char *str);
-	void print(int value);
+	void print(int value, int base = 10);
+	void print(unsigned int value, int base = 10);
+	void print(char value);
 	void println(const char *str);
 
 	int available();

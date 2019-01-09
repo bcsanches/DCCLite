@@ -14,9 +14,19 @@ void SerialImpl::print(const char *str)
 	printf("%s", str);
 }
 
-void SerialImpl::print(int value)
+void SerialImpl::print(int value, int base)
 {
-	printf("%d", value);
+	printf(base == 10 ? "%d" : "%X", value);
+}
+
+void SerialImpl::print(unsigned int value, int base)
+{
+	printf(base == 10 ? "%u" : "%X", value);
+}
+
+void SerialImpl::print(char value)
+{
+	printf("%c", value);
 }
 
 void SerialImpl::println(const char *str)
