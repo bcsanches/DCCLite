@@ -4,8 +4,14 @@
 
 class Decoder;
 
+namespace dcclite
+{
+	class Packet;
+}
+
 namespace DecoderManager
 {
-	Decoder *Create(uint8_t slot, dcclite::DecoderTypes type);
-	void Destroy(uint8_t slot);
+	Decoder *Create(const uint8_t slot, dcclite::Packet &packet);
+
+	void Destroy(const uint8_t slot);
 }

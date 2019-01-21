@@ -30,10 +30,12 @@
   <ItemGroup>
     <ClInclude Include="src\Blinker.h" />
     <ClInclude Include="src\Console.h" />
+    <ClInclude Include="src\Decoder.h" />
     <ClInclude Include="src\DecoderManager.h" />
     <ClInclude Include="src\LiteDecoder.h" />
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\NetUdp.h" />
+    <ClInclude Include="src\OutputDecoder.h" />
     <ClInclude Include="src\Session.h" />
     <ClInclude Include="src\Storage.h" />
   </ItemGroup>

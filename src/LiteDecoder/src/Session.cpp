@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "Console.h"
+#include "DecoderManager.h"
 #include "EmbeddedLibDefs.h"
 #include "NetUdp.h"
 #include "Packet.h"
@@ -248,20 +249,7 @@ static void HandleConfigPacket(dcclite::Packet &packet)
 {	
 	uint8_t seq = packet.Read<uint8_t>();
 	
-	auto decType = static_cast<dcclite::DecoderTypes>(packet.Read <uint8_t>());
-
-	switch (decType)
-	{
-		case dcclite::DecoderTypes::DEC_OUTPUT:
-			{
-				dcclite::PinType_t pin = packet.Read<uint8_t>();
-			}
-			break;
-
-		default:
-			Console::SendLogEx(MODULE_NAME, "invalid", ' ', "dec", ' ', "type", ' ', static_cast<int>(decType));
-			break;
-	}
+	auto device = DecoderManager::Create(seq, packet);
 
 	SendConfigPacket(packet, dcclite::MsgTypes::CONFIG_ACK, seq);
 }

@@ -24,5 +24,7 @@
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\Session.h" />
     <ClInclude Include="src\DecoderManager.h" />
+    <ClInclude Include="src\Decoder.h" />
+    <ClInclude Include="src\OutputDecoder.h" />
   </ItemGroup>
 </Project>
