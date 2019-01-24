@@ -24,6 +24,7 @@
     <ClCompile Include="src\DecoderManager.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\NetUdp.cpp" />
+    <ClCompile Include="src\OutputDecoder.cpp" />
     <ClCompile Include="src\Session.cpp" />
     <ClCompile Include="src\Storage.cpp" />
   </ItemGroup>

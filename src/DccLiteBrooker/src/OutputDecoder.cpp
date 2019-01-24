@@ -18,7 +18,14 @@ OutputDecoder::OutputDecoder(
 	Decoder(decoderClass, address, name, owner, params),
 	m_iPin(params["pin"].get<dcclite::PinType_t>())
 {
-	//empty.
+	auto inverted = params.find("inverted");	
+	m_fInvertedOperation = inverted != params.end() ? inverted->get<bool>() : false;
+
+	auto setOnPower = params.find("setOnPowerUp");
+	m_fSetOnPowerUp = setOnPower != params.end() ? setOnPower->get<bool>() : false;
+
+	auto activateOnPowerUp = params.find("activateOnPowerUp");
+	m_fActivateOnPowerUp = activateOnPowerUp != params.end() ? activateOnPowerUp->get<bool>() : false;	
 }
 
 
@@ -27,4 +34,9 @@ void OutputDecoder::WriteConfig(dcclite::Packet &packet) const
 	Decoder::WriteConfig(packet);
 
 	packet.Write8(m_iPin);
+	packet.Write8(
+		(m_fInvertedOperation ? dcclite::OutputDecoderFlags::OUTD_INVERTED_OPERATION : 0) |
+		(m_fSetOnPowerUp ? dcclite::OutputDecoderFlags::OUTD_SET_ON_POWER_UP : 0) |
+		(m_fActivateOnPowerUp ? dcclite::OUTD_ACTIVATE_ON_POWER_UP : 0)
+	);
 }

@@ -19,12 +19,12 @@ static const char FStrSlotInUse[] PROGMEM = { "Slot already in use" };
 static const char FStrSlotOutOfRange[] PROGMEM = { "Slot out of range" };
 #define FSTR_SLOT_OUT_OF_RANGE Console::FlashStr(FStrSlotOutOfRange)
 
-static Decoder *Create(const dcclite::DecoderTypes type)
+static Decoder *Create(const dcclite::DecoderTypes type, dcclite::Packet &packet)
 {
 	switch (type)
 	{
 		case dcclite::DecoderTypes::DEC_OUTPUT:
-			return new OutputDecoder();
+			return new OutputDecoder(packet);
 
 		case dcclite::DecoderTypes::DEC_INPUT:
 		default:
@@ -51,7 +51,7 @@ Decoder *DecoderManager::Create(const uint8_t slot, dcclite::Packet &packet)
 
 	auto decType = static_cast<dcclite::DecoderTypes>(packet.Read <uint8_t>());	
 
-	auto decoder = ::Create(decType);
+	auto decoder = ::Create(decType, packet);
 
 	g_pDecoders[slot] = decoder;
 

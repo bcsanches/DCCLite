@@ -2,16 +2,17 @@
 
 #include "Decoder.h"
 
-class OutputDecoder : public Decoder
+namespace dcclite
 {
+	class Packet;
+}
+
+class OutputDecoder : public Decoder
+{	
 	private:
 		Pin_t	m_tPin = null_pin;
-		bool	m_fSet = false;
+		uint8_t	m_fFlags = 0;
 
 	public:
-		OutputDecoder() :
-			Decoder(dcclite::DecoderTypes::DEC_OUTPUT)			
-		{
-			//empty
-		}
+		OutputDecoder(dcclite::Packet &packet);
 };
