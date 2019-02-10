@@ -16,7 +16,7 @@ namespace fmt
 		template <typename FormatContext>
 		auto format(const dcclite::Guid &g, FormatContext &ctx) 
 		{
-			return format_to(ctx.begin(), "{:08x}-{:04x}-{:04x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}", 
+			return format_to(ctx.out(), "{:08x}-{:04x}-{:04x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}", 
 				*reinterpret_cast<const uint32_t*>(&g.m_bId[0]),
 				*reinterpret_cast<const uint16_t*>(&g.m_bId[4]),
 				*reinterpret_cast<const uint16_t*>(&g.m_bId[6]),
@@ -35,7 +35,7 @@ namespace fmt
 		template <typename FormatContext>
 		auto format(const dcclite::Address &a, FormatContext &ctx)
 		{
-			return format_to(ctx.begin(), "{:03d}.{:03d}.{:03d}.{:03d}",
+			return format_to(ctx.out(), "{:03d}.{:03d}.{:03d}.{:03d}",
 				a.GetA(),
 				a.GetB(),
 				a.GetC(),
