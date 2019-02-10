@@ -11,6 +11,9 @@
     <Filter Include="data">
       <UniqueIdentifier>{99310732-6793-4bd5-b8c2-0987391256bf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="data\EFMR">
+      <UniqueIdentifier>{2fc03913-617b-4a48-85fa-91c7a28556cf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\json.hpp">
@@ -38,6 +41,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Device.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Project.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
@@ -69,10 +75,16 @@
     <ClCompile Include="src\Device.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Project.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\data\brooker.config.json">
-      <Filter>data</Filter>
+    <None Include="..\..\data\EFMR\brooker.config.json">
+      <Filter>data\EFMR</Filter>
+    </None>
+    <None Include="..\..\data\EFMR\RelayStagingA.decoders.json">
+      <Filter>data\EFMR</Filter>
     </None>
   </ItemGroup>
 </Project>

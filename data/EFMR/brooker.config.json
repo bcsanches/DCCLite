@@ -1,0 +1,26 @@
+{  
+  "services": 
+  [
+    {
+      "class": "DccLite",
+      "name": "Dcc1",
+      "port": 8989,
+      "devices": [
+        {
+          "name": "RelayStagingA",
+          "class": "ArduinoLeonard"          
+        },
+        {
+          "id": "0x0129",
+          "name": "ArduinoPanelStaging",
+          "class": "ArduinoUno"
+        }
+      ]
+    },
+    {
+      "class": "Terminal",
+      "name": "terminal",
+      "port": 4190
+    }
+  ]
+}

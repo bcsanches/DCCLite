@@ -11,6 +11,7 @@
 
 class DccLiteService;
 class Decoder;
+class Project;
 
 class Device: public dcclite::FolderObject
 {
@@ -22,7 +23,7 @@ class Device: public dcclite::FolderObject
 		};
 
 	public:
-		Device(std::string name, DccLiteService &dccService, const nlohmann::json &params);
+		Device(std::string name, DccLiteService &dccService, const nlohmann::json &params, const Project &project);
 		Device(std::string name, DccLiteService &dccService);
 
 		Device(const Device &) = delete;

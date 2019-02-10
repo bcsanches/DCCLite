@@ -7,8 +7,10 @@
 
 #include "json.hpp"
 
+class Project;
 class Service;
-typedef dcclite::ClassInfo<Service, const std::string&, const nlohmann::json &> ServiceClass;
+
+typedef dcclite::ClassInfo<Service, const std::string&, const nlohmann::json &, const Project &> ServiceClass;
 
 namespace dcclite
 {
@@ -21,7 +23,7 @@ class Service: public dcclite::FolderObject
 		const ServiceClass &m_rclServiceClass;
 
 	protected:
-		Service(const ServiceClass &serviceClass, std::string name, const nlohmann::json &params):
+		Service(const ServiceClass &serviceClass, std::string name, const nlohmann::json &params, const Project &project):
 			FolderObject(std::move(name)),
 			m_rclServiceClass(serviceClass)
 		{

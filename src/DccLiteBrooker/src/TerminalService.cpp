@@ -12,7 +12,8 @@ using json = nlohmann::json;
 using namespace dcclite;
 
 static ServiceClass terminalService("Terminal",
-	[](const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params) -> std::unique_ptr<Service> { return std::make_unique<TerminalService>(serviceClass, name, params); }
+	[](const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params, const Project &project) -> 
+	std::unique_ptr<Service> { return std::make_unique<TerminalService>(serviceClass, name, params, project); }
 );
 
 class TerminalClient
@@ -74,8 +75,8 @@ bool TerminalClient::Update()
 	return true;
 }
 
-TerminalService::TerminalService(const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params) :
-	Service(serviceClass, name, params)	
+TerminalService::TerminalService(const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params, const Project &project) :
+	Service(serviceClass, name, params, project)	
 {	
 	if (!m_clSocket.Open(params["port"].get<unsigned short>(), dcclite::Socket::Type::STREAM))
 	{

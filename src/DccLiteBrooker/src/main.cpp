@@ -7,6 +7,7 @@
 #include "Clock.h"
 #include "ConsoleUtils.h"
 #include "LogUtils.h"
+#include "PathUtils.h"
 #include "TerminalCmd.h"
 
 #include <spdlog/logger.h>
@@ -24,18 +25,16 @@ static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 
 int main(int argc, char **argv)
 {		
-	dcclite::LogInit("DccLiteBrooker_%N.log");		
+	dcclite::LogInit("DccLiteBrooker_%N.log");
 
 	dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
 	dcclite::ConsoleTryMakeNice();
 
-	const char *configFileName = (argc == 1) ? "config.json" : argv[1];	
+	dcclite::PathUtils::SetAppName("Brooker");		
 
 	try
 	{ 
-		Brooker brooker;
-
-		brooker.LoadConfig(configFileName);
+		Brooker brooker{ (argc == 1) ? "MyRailroad" : argv[1] };
 
 		dcclite::Clock clock;
 		

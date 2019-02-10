@@ -5,6 +5,7 @@
 #include <string>
 
 #include "Object.h"
+#include "Project.h"
 #include "Service.h"
 
 namespace dcclite
@@ -17,10 +18,14 @@ class Brooker
 	private:	
 		dcclite::FolderObject m_clRoot;
 
-	public:
-		Brooker();
+		Project m_clProject;
 
-		void LoadConfig(const char *fileName);
+	private:
+
+		void LoadConfig();
+
+	public:
+		Brooker(std::filesystem::path projectPath);
 
 		void Update(const dcclite::Clock &clock);
 };

@@ -38,6 +38,7 @@
     <ClInclude Include="include\LogUtils.h" />
     <ClInclude Include="include\NetMessenger.h" />
     <ClInclude Include="include\Object.h" />
+    <ClInclude Include="include\PathUtils.h" />
     <ClInclude Include="include\Socket.h" />
   </ItemGroup>
   <ItemGroup>
@@ -49,6 +50,7 @@
     <ClCompile Include="src\LogUtils.cpp" />
     <ClCompile Include="src\NetMessenger.cpp" />
     <ClCompile Include="src\Object.cpp" />
+    <ClCompile Include="src\PathUtils.cpp" />
     <ClCompile Include="src\Socket.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

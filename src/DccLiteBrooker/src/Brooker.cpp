@@ -15,14 +15,14 @@
 
 using json = nlohmann::json;
 
-static std::unique_ptr<Service> CreateService(const json &obj)
+static std::unique_ptr<Service> CreateService(const json &obj, const Project &project)
 {
 	std::string className = obj["class"];
 	std::string name = obj["name"].get<std::string>();	
 
 	dcclite::Log::Info("Creating DccLite Service: {}", name);
 	
-	if (auto output = ServiceClass::TryProduce(className.c_str(), name, obj))
+	if (auto output = ServiceClass::TryProduce(className.c_str(), name, obj, project))
 	{
 		return output;	
 	}
@@ -30,14 +30,16 @@ static std::unique_ptr<Service> CreateService(const json &obj)
 	throw std::runtime_error(fmt::format("error: unknown service type {}", className));
 }
 
-Brooker::Brooker():
-	m_clRoot("root")
+Brooker::Brooker(std::filesystem::path projectPath):
+	m_clRoot("root"),
+	m_clProject(std::move(projectPath))
 {
-	//empty
+	this->LoadConfig();
 }
 
-void Brooker::LoadConfig(const char *configFileName)
+void Brooker::LoadConfig()
 {
+	const auto configFileName = m_clProject.GetFilePath("brooker.config.json");
 	std::ifstream configFile(configFileName);
 
 	if (!configFile)
@@ -45,7 +47,7 @@ void Brooker::LoadConfig(const char *configFileName)
 		throw std::runtime_error("error: cannot open config file");		
 	}
 
-	dcclite::Log::Debug("Loaded config {}", configFileName);
+	dcclite::Log::Debug("Loaded config {}", configFileName.string());
 
 	json data;
 
@@ -62,7 +64,7 @@ void Brooker::LoadConfig(const char *configFileName)
 
 	for(auto &serviceData : services)	
 	{
-		auto service = CreateService(serviceData);
+		auto service = CreateService(serviceData, m_clProject);
 
 		m_clRoot.AddChild(std::move(service));
 	}

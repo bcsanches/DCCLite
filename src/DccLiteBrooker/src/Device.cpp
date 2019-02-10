@@ -1,27 +1,40 @@
 #include "Device.h"
 
+#include <fstream>
+
 #include "Decoder.h"
 #include "DccLiteService.h"
 #include "FmtUtils.h"
 #include "GuidUtils.h"
 #include "Log.h"
+#include "Project.h"
 
 using namespace std::chrono_literals;
 
 static auto constexpr TIMEOUT = 10s;
 static auto constexpr CONFIG_RETRY_TIME = 300ms;
 
-Device::Device(std::string name, DccLiteService &dccService, const nlohmann::json &params) :
+Device::Device(std::string name, DccLiteService &dccService, const nlohmann::json &params, const Project &project) :
 	FolderObject(std::move(name)),
 	m_clDccService(dccService),
 	m_eStatus(Status::OFFLINE),
 	m_fRegistered(true)
 {	
-	auto it = params.find("decoders");
-	if (it == params.end())
-		return;
 
-	auto decodersData = *it;
+	const auto deviceConfigFileName = project.GetFilePath(std::string(this->GetName()) + ".decoders.json");
+	std::ifstream configFile(deviceConfigFileName);
+	if (!configFile)
+	{
+		dcclite::Log::Error("Device cannot find {}", deviceConfigFileName.string());
+
+		return;
+	}
+
+	dcclite::Log::Trace("Device {} reading config {}", this->GetName(), deviceConfigFileName.string());
+
+	nlohmann::json decodersData;
+
+	configFile >> decodersData;
 
 	if (!decodersData.is_array())
 		throw std::runtime_error("error: invalid config, expected decoders array inside Node");
@@ -38,6 +51,8 @@ Device::Device(std::string name, DccLiteService &dccService, const nlohmann::jso
 
 		this->AddChild(std::make_unique<dcclite::Shortcut>(std::string(decoder.GetName()), decoder));
 	}
+
+	dcclite::Log::Trace("Device {} ready.", this->GetName());
 }
 
 

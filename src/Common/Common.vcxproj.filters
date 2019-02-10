@@ -40,6 +40,9 @@
     <ClCompile Include="src\Clock.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\PathUtils.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\LogUtils.h">
@@ -101,6 +104,9 @@
     </ClInclude>
     <ClInclude Include="include\FmtUtils.h">
       <Filter>src\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PathUtils.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -10,11 +10,12 @@
 #include "Packet.h"
 
 static ServiceClass dccLiteService("DccLite", 
-	[](const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params) -> std::unique_ptr<Service> { return std::make_unique<DccLiteService>(serviceClass, name, params); }
+	[](const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params, const Project &project) -> 
+	std::unique_ptr<Service> { return std::make_unique<DccLiteService>(serviceClass, name, params, project); }
 );
 
-DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params) :
-	Service(serviceClass, name, params)	
+DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params, const Project &project) :
+	Service(serviceClass, name, params, project)	
 {
 	m_pDecoders = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("decoders")));
 	m_pAddresses = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("addresses")));
@@ -37,7 +38,7 @@ DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::stri
 	{
 		auto nodeName = device["name"].get<std::string>();		
 
-		m_pDevices->AddChild(std::make_unique<Device>(nodeName, *this, device));
+		m_pDevices->AddChild(std::make_unique<Device>(nodeName, *this, device, project));
 	}
 }
 
