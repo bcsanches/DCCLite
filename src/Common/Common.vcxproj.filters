@@ -43,6 +43,9 @@
     <ClCompile Include="src\PathUtils.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Sha1.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\LogUtils.h">
@@ -106,6 +109,9 @@
       <Filter>src\fmt</Filter>
     </ClInclude>
     <ClInclude Include="include\PathUtils.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Sha1.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

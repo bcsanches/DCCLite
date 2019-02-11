@@ -1,6 +1,6 @@
-{  
-  "services": 
-  [
+{
+  "name": "EFMR",
+  "services": [
     {
       "class": "DccLite",
       "name": "Dcc1",
@@ -8,7 +8,7 @@
       "devices": [
         {
           "name": "RelayStagingA",
-          "class": "ArduinoLeonard"          
+          "class": "ArduinoLeonard"
         },
         {
           "id": "0x0129",

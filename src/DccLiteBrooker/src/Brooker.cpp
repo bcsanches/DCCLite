@@ -53,6 +53,8 @@ void Brooker::LoadConfig()
 
 	configFile >> data;
 
+	m_clProject.SetName(data["name"].get<std::string>());
+
 	const auto &services = data["services"];
 
 	if (!services.is_array())

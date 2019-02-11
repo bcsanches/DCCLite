@@ -20,17 +20,20 @@ Device::Device(std::string name, DccLiteService &dccService, const nlohmann::jso
 	m_eStatus(Status::OFFLINE),
 	m_fRegistered(true)
 {	
+	const std::string deviceConfigFileName(std::string(this->GetName()) + ".decoders.json");
 
-	const auto deviceConfigFileName = project.GetFilePath(std::string(this->GetName()) + ".decoders.json");
-	std::ifstream configFile(deviceConfigFileName);
+	const auto deviceConfigFilePath = project.GetFilePath(deviceConfigFileName);
+	std::ifstream configFile(deviceConfigFilePath);
 	if (!configFile)
 	{
-		dcclite::Log::Error("Device cannot find {}", deviceConfigFileName.string());
+		dcclite::Log::Error("Device cannot find {}", deviceConfigFilePath.string());
 
 		return;
 	}
 
-	dcclite::Log::Trace("Device {} reading config {}", this->GetName(), deviceConfigFileName.string());
+	FileState state = project.GetFileState(deviceConfigFileName);
+
+	dcclite::Log::Trace("Device {} reading config {}", this->GetName(), deviceConfigFilePath.string());
 
 	nlohmann::json decodersData;
 
