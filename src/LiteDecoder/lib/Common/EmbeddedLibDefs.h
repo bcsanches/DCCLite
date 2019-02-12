@@ -9,8 +9,9 @@ namespace dcclite
 
 	enum class DecoderTypes : uint8_t
 	{
-		DEC_OUTPUT,
-		DEC_INPUT
+		DEC_NULL = 0,
+		DEC_OUTPUT = 1,
+		DEC_INPUT = 2
 	};
 
 	/**
@@ -32,7 +33,9 @@ namespace dcclite
 	enum OutputDecoderFlags : uint8_t
 	{
 		OUTD_INVERTED_OPERATION = 0x01,
-		OUTD_SET_ON_POWER_UP = 0x02,
-		OUTD_ACTIVATE_ON_POWER_UP = 0x04
+		OUTD_IGNORE_SAVED_STATE = 0x02,
+		OUTD_ACTIVATE_ON_POWER_UP = 0x04,
+
+		OUTD_ACTIVE = 0x80
 	};
 }

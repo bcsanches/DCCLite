@@ -25,6 +25,6 @@ class OutputDecoder : public Decoder
 		dcclite::PinType_t m_iPin;
 
 		bool m_fInvertedOperation = false;
-		bool m_fSetOnPowerUp = false;
+		bool m_fIgnoreSavedState = false;
 		bool m_fActivateOnPowerUp = false;
 };

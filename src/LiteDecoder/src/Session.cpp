@@ -81,8 +81,6 @@ bool Session::Init()
 	return true;
 }
 
-
-
 static void UpdatePingStatus(unsigned long currentTime)
 {
 	g_uTicks = currentTime + PING_TICKS;

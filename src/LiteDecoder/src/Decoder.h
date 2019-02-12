@@ -6,21 +6,26 @@ typedef unsigned char Pin_t;
 
 constexpr Pin_t null_pin = 255;
 
-class Decoder
-{
-	private:
-		const dcclite::DecoderTypes mType;
+class EpromStream;
 
+class Decoder
+{	
 	public:
-		Decoder(const dcclite::DecoderTypes type) :
-			mType{ type }
+		Decoder()			
 		{
 			//empty
 		}
 
+		virtual dcclite::DecoderTypes GetType() const = 0;
+
 		virtual ~Decoder() = default;
+
+		virtual void SaveConfig(EpromStream &stream)
+		{
+			//empty
+		}
 
 		Decoder(const Decoder &) = delete;
 		Decoder(const Decoder &&) = delete;
-		Decoder operator=(const Decoder &) = delete;
+		Decoder &operator=(const Decoder &) = delete;
 };

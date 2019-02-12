@@ -21,8 +21,8 @@ OutputDecoder::OutputDecoder(
 	auto inverted = params.find("inverted");	
 	m_fInvertedOperation = inverted != params.end() ? inverted->get<bool>() : false;
 
-	auto setOnPower = params.find("setOnPowerUp");
-	m_fSetOnPowerUp = setOnPower != params.end() ? setOnPower->get<bool>() : false;
+	auto setOnPower = params.find("ignoreSavedState");
+	m_fIgnoreSavedState = setOnPower != params.end() ? setOnPower->get<bool>() : false;
 
 	auto activateOnPowerUp = params.find("activateOnPowerUp");
 	m_fActivateOnPowerUp = activateOnPowerUp != params.end() ? activateOnPowerUp->get<bool>() : false;	
@@ -36,7 +36,7 @@ void OutputDecoder::WriteConfig(dcclite::Packet &packet) const
 	packet.Write8(m_iPin);
 	packet.Write8(
 		(m_fInvertedOperation ? dcclite::OutputDecoderFlags::OUTD_INVERTED_OPERATION : 0) |
-		(m_fSetOnPowerUp ? dcclite::OutputDecoderFlags::OUTD_SET_ON_POWER_UP : 0) |
+		(m_fIgnoreSavedState ? dcclite::OutputDecoderFlags::OUTD_IGNORE_SAVED_STATE : 0) |
 		(m_fActivateOnPowerUp ? dcclite::OUTD_ACTIVATE_ON_POWER_UP : 0)
 	);
 }

@@ -15,4 +15,11 @@ class OutputDecoder : public Decoder
 
 	public:
 		OutputDecoder(dcclite::Packet &packet);
+
+		virtual void SaveConfig(EpromStream &stream);
+
+		virtual dcclite::DecoderTypes GetType() const 
+		{
+			return dcclite::DecoderTypes::DEC_OUTPUT;
+		};
 };

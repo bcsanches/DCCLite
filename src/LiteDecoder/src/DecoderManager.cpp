@@ -1,8 +1,8 @@
 #include "DecoderManager.h"
 
-#include "OutputDecoder.h"
-
 #include "Console.h"
+#include "OutputDecoder.h"
+#include "Storage.h"
 
 #include <Packet.h>
 
@@ -69,4 +69,64 @@ void DecoderManager::Destroy(const uint8_t slot)
 
 	delete g_pDecoders[slot];
 	g_pDecoders[slot] = nullptr;
+}
+
+void DecoderManager::SaveConfig(EpromStream &stream)
+{
+	dcclite::DecoderTypes types[] = { 
+		dcclite::DecoderTypes::DEC_OUTPUT , 
+		dcclite::DecoderTypes::DEC_INPUT,
+
+		dcclite::DecoderTypes::DEC_NULL
+	};
+
+	//
+	//First we save the decoder type, then we save all decoders of this kind:
+	//[DecoderType]
+	//[NumOfKind]
+	//for each decoder of this type:
+	//	[slot0]
+	//	[decoderData0]
+	//	...
+	//	[slotn]
+	//	[decoderDatan]
+
+	//If there are no decoders of type, nothing is written for the type	
+	//
+
+	//This is quite slow, but keep memory usage low (at it is rare here)
+	//For each type, run across all decoders and count how many are there
+	//If more than zero, write type down, the number and then write each decoder
+	for (int typeIndex = 0; types[typeIndex] != dcclite::DecoderTypes::DEC_NULL; ++typeIndex)
+	{
+		//We may mark the stream position and come back later to save the num, but in this case
+		//we will have to put an if on the loop to mark the first position (to avoid saving number 0)
+		//this will overcomplicate code, so lets just run throught the array twice
+		uint8_t typeCount = 0;
+		for (int i = 0; i < MAX_DECODERS; ++i)
+		{
+			if (g_pDecoders[i] && g_pDecoders[i]->GetType() == types[typeIndex])
+				++typeCount;
+		}
+
+		if (!typeCount)
+			continue;
+
+		stream.Put(static_cast<uint8_t>(types[typeIndex]));
+		stream.Put(typeCount);
+
+		//Now that we counted, run across all decoders and save them
+		for (int i = 0; i < MAX_DECODERS; ++i)
+		{
+			if (g_pDecoders[i] && g_pDecoders[i]->GetType() == types[typeIndex])
+			{
+				stream.Put(static_cast<uint8_t>(i));
+				
+				g_pDecoders[i]->SaveConfig(stream);
+			}
+		}
+	}
+
+	//write null type marker so we know we are done
+	stream.Put(static_cast<uint8_t>(dcclite::DecoderTypes::DEC_NULL));
 }

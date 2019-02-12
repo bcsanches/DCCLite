@@ -18,6 +18,7 @@
 static const char StorageMagic[] PROGMEM = {"Bcs0003"};
 static const char NetUdpStorageId[] PROGMEM = {"NetU002"};
 static const char SessionStorageId[] PROGMEM = {"Sson001"};
+static const char DecodersStorageId[] PROGMEM = { "DECS001" };
 static const char EndStorageId[] PROGMEM = {"ENDEND1"};
 
 const char StorageModuleName[] PROGMEM = {"Storage"} ;
