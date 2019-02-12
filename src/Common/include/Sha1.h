@@ -11,8 +11,14 @@ namespace dcclite
 		Sha1();
 
 		std::string ToString() const;
-	};
 
-	void ComputeSha1ForFile(Sha1 &dest, const std::filesystem::path &fileName);
+		void ComputeForFile(const std::filesystem::path &fileName);
+		bool TryLoadFromString(std::string_view str);
+
+		inline bool operator!=(const Sha1 &rhs) const
+		{
+			return memcmp(mData, rhs.mData, sizeof(mData)) != 0;
+		}
+	};		
 }
 	

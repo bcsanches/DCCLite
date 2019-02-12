@@ -7,15 +7,7 @@
 
 class Project;
 
-class FileState
-{
-	public:
-		FileState(const Project &owner, std::string_view fileName);
 
-	private:
-		dcclite::Sha1 m_Hash;
-		dcclite::Guid m_Token;
-};
 
 class Project
 {
@@ -37,10 +29,7 @@ class Project
 
 		std::filesystem::path GetAppFilePath(const std::string_view fileName) const;
 
-		FileState GetFileState(const std::string_view fileName) const
-		{
-			return FileState(*this, fileName);
-		}
+		dcclite::Guid GetFileToken(const std::string_view fileName) const;
 
 		inline void SetName(std::string_view name)
 		{

@@ -41,6 +41,7 @@
     <ClInclude Include="include\PathUtils.h" />
     <ClInclude Include="include\Sha1.h" />
     <ClInclude Include="include\Socket.h" />
+    <ClInclude Include="include\Util.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\contrib\fmt\src\format.cc" />
@@ -54,6 +55,7 @@
     <ClCompile Include="src\PathUtils.cpp" />
     <ClCompile Include="src\Sha1.cpp" />
     <ClCompile Include="src\Socket.cpp" />
+    <ClCompile Include="src\Util.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

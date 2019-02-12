@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 
+#include "Misc.h"
+
 namespace dcclite
 {
 
@@ -12,11 +14,9 @@ namespace dcclite
 	{
 		//empty
 	}
-
-	#define IS_DIGIT(x) ((x >= '0') && (x <= '9'))
-	#define IS_HEX_DIGIT(x) (((x >= 'a') && (x <= 'f')) || ((x >= 'A') && (x <= 'F')))
+		
 	#define IS_ID_START(x) (((x >= 'a') && (x <= 'z')) || ((x >= 'A') && (x <= 'Z')) || (x == '_'))
-	#define IS_ID(x) (IS_ID_START(x) || IS_DIGIT(x))
+	#define IS_ID(x) (IS_ID_START(x) || IsDigit(x))
 
 
 	inline void SafeCopy(char *dest, unsigned int &destPos, unsigned int destSize, char ch)
@@ -106,14 +106,14 @@ namespace dcclite
 					//fall throught
 
 				default:
-					if (IS_DIGIT(ch) || (hexMode && IS_HEX_DIGIT(ch)))
+					if (IsDigit(ch) || (hexMode && IsHexLetter(ch)))
 					{
 						SafeCopy(dest, destPos, destSize, ch);					
 
 						for (;;)
 						{
 							ch = m_pszCmd[m_iPos];
-							if (IS_DIGIT(ch) || (hexMode && IS_HEX_DIGIT(ch)))
+							if (IsDigit(ch) || (hexMode && IsHexLetter(ch)))
 							{
 								SafeCopy(dest, destPos, destSize, ch);
 								++m_iPos;

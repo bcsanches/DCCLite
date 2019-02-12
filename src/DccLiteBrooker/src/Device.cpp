@@ -31,8 +31,9 @@ Device::Device(std::string name, DccLiteService &dccService, const nlohmann::jso
 		return;
 	}
 
-	FileState state = project.GetFileState(deviceConfigFileName);
+	m_ConfigToken = project.GetFileToken(deviceConfigFileName);	
 
+	dcclite::Log::Trace("Device {} config token {}", this->GetName(), m_ConfigToken);
 	dcclite::Log::Trace("Device {} reading config {}", this->GetName(), deviceConfigFilePath.string());
 
 	nlohmann::json decodersData;
@@ -130,14 +131,7 @@ void Device::AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address
 		return;
 	}
 
-	this->GoOnline(remoteAddress);
-		
-	if(m_ConfigToken.IsNull())
-	{
-		m_ConfigToken = dcclite::GuidCreate();		
-
-		dcclite::Log::Info("[{}::Device::AcceptConnection] Created config token {} for {}", this->GetName(), m_ConfigToken, remoteAddress);		
-	}
+	this->GoOnline(remoteAddress);	
 
 	this->RefreshTimeout(time);
 

@@ -24,6 +24,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Emulator", "src\Emulator\Em
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LiteDecoderLib", "src\LiteDecoder\LiteDecoderLib.vcxproj", "{BD3396B9-0574-4964-84C9-B2940815BFAC}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTest", "src\UnitTest\UnitTest.vcxproj", "{7C14862B-51BE-4C48-91D2-D2860E2B6F75}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -116,6 +118,16 @@ Global
 		{BD3396B9-0574-4964-84C9-B2940815BFAC}.Release|x64.Build.0 = Release|x64
 		{BD3396B9-0574-4964-84C9-B2940815BFAC}.Release|x86.ActiveCfg = Release|Win32
 		{BD3396B9-0574-4964-84C9-B2940815BFAC}.Release|x86.Build.0 = Release|Win32
+		{7C14862B-51BE-4C48-91D2-D2860E2B6F75}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{7C14862B-51BE-4C48-91D2-D2860E2B6F75}.Debug|x64.ActiveCfg = Debug|x64
+		{7C14862B-51BE-4C48-91D2-D2860E2B6F75}.Debug|x64.Build.0 = Debug|x64
+		{7C14862B-51BE-4C48-91D2-D2860E2B6F75}.Debug|x86.ActiveCfg = Debug|Win32
+		{7C14862B-51BE-4C48-91D2-D2860E2B6F75}.Debug|x86.Build.0 = Debug|Win32
+		{7C14862B-51BE-4C48-91D2-D2860E2B6F75}.Release|Any CPU.ActiveCfg = Release|Win32
+		{7C14862B-51BE-4C48-91D2-D2860E2B6F75}.Release|x64.ActiveCfg = Release|x64
+		{7C14862B-51BE-4C48-91D2-D2860E2B6F75}.Release|x64.Build.0 = Release|x64
+		{7C14862B-51BE-4C48-91D2-D2860E2B6F75}.Release|x86.ActiveCfg = Release|Win32
+		{7C14862B-51BE-4C48-91D2-D2860E2B6F75}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

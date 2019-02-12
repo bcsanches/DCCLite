@@ -24,6 +24,9 @@
 #include <Windows.h>    // Win32 Platform SDK
 #include <bcrypt.h>     // Cryptography API
 
+#include "Misc.h"
+#include "Util.h"
+
 #ifndef WIN32
 #error "Please implement"
 #endif
@@ -341,7 +344,7 @@ std::string dcclite::Sha1::ToString() const
 	return hashDigest;
 }
 
-void dcclite::ComputeSha1ForFile(dcclite::Sha1 &dest, const std::filesystem::path &fileName)
+void dcclite::Sha1::ComputeForFile(const std::filesystem::path &fileName)
 {
 	// Create the algorithm provider for SHA-1 hashing
 	CryptAlgorithmProvider sha1;
@@ -366,7 +369,14 @@ void dcclite::ComputeSha1ForFile(dcclite::Sha1 &dest, const std::filesystem::pat
 	}
 
 	// Finalize hashing
-	hasher.FinishHash(dest.mData);	
+	hasher.FinishHash(mData);	
+}
+
+
+
+bool dcclite::Sha1::TryLoadFromString(std::string_view str)
+{	
+	return TryHexStrToBinary(mData, sizeof(mData), str);	
 }
 
 

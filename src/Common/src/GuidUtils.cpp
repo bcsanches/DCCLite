@@ -6,6 +6,8 @@
 #include "FmtUtils.h"
 
 #include "Guid.h"
+#include "Misc.h"
+#include "Util.h"
 
 #if 0
 
@@ -42,4 +44,9 @@ dcclite::Guid dcclite::GuidCreate()
 std::string dcclite::GuidToString(const dcclite::Guid &g)
 {
 	return fmt::format("{}", g);
+}
+
+bool dcclite::TryGuidLoadFromString(dcclite::Guid &dest, std::string_view str)
+{
+	return TryHexStrToBinary(dest.m_bId, sizeof(dest.m_bId), str);	
 }

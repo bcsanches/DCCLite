@@ -13,6 +13,9 @@
     <ClCompile Include="lib\Common\Parser.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="lib\Common\Misc.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\Common\Parser.h">
@@ -25,6 +28,9 @@
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="lib\Common\EmbeddedLibDefs.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\Common\Misc.h">
       <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,23 +1,14 @@
 #include "Project.h"
 
+#include <fstream>
+
+#include "json.hpp"
+
+#include "FmtUtils.h"
+#include "GuidUtils.h"
 #include "PathUtils.h"
 
 #include "Log.h"
-
-FileState::FileState(const Project &owner, std::string_view fileName)
-{
-	auto filePath = owner.GetFilePath(fileName);	
-
-	std::string tmp(fileName);
-	tmp.append(".state");
-
-	auto cacheFilePath = owner.GetAppFilePath(fileName);
-
-	dcclite::Sha1 hash;
-	dcclite::ComputeSha1ForFile(hash, filePath);
-
-	dcclite::Log::Trace("hash {} -> {}", filePath.string(), hash.ToString());
-}
 
 
 std::filesystem::path Project::GetAppFilePath(const std::string_view fileName) const
@@ -28,4 +19,97 @@ std::filesystem::path Project::GetAppFilePath(const std::string_view fileName) c
 	cacheFilePath.append(fileName);
 
 	return cacheFilePath;
+}
+
+dcclite::Guid Project::GetFileToken(const std::string_view fileName) const
+{
+	auto filePath = this->GetFilePath(fileName);		
+
+	dcclite::Sha1 currentFileHash;
+	currentFileHash.ComputeForFile(filePath);
+
+	//dcclite::Log::Trace("hash {} -> {}", filePath.string(), currentFileHash.ToString());
+
+	dcclite::Guid token;
+	dcclite::Sha1 storedHash;
+
+	std::string stateFileName(fileName);
+	stateFileName.append(".state");
+
+	auto stateFilePath = this->GetAppFilePath(stateFileName);
+
+	{
+		std::ifstream stateFile(stateFilePath);
+		if (stateFile)
+		{
+			nlohmann::json stateData;
+
+			stateFile >> stateData;			
+
+			//read token first, because if it fails, hash is already null
+			auto tokenData = stateData["token"];
+			if (!tokenData.is_string())
+			{
+				dcclite::Log::Error("project state file does not contain token");
+				goto SKIP_LOAD;
+			}
+			auto tokenStr = tokenData.get<std::string>();
+			if (!dcclite::TryGuidLoadFromString(token, tokenStr))
+			{
+				dcclite::Log::Error("project error parsing stored token");
+				goto SKIP_LOAD;
+			}	
+
+			auto hashData = stateData["sha1"];
+			if (!hashData.is_string())
+			{
+				dcclite::Log::Error("Project state file does not contain hash");
+
+				goto SKIP_LOAD;
+			}
+			auto hashStr = hashData.get<std::string>();
+			if (!storedHash.TryLoadFromString(hashStr))
+			{
+				dcclite::Log::Error("Project error parsing hash");
+				goto SKIP_LOAD;
+			}			
+		}
+		else
+		{
+			dcclite::Log::Info("Project state file for {} not found", fileName);
+		}
+
+SKIP_LOAD:
+		if (storedHash != currentFileHash)
+		{
+			dcclite::Log::Info("Project config file {} modified", fileName);
+
+			token = dcclite::GuidCreate();
+			
+			std::filesystem::path filePath = stateFilePath;
+			filePath.remove_filename();
+
+			std::error_code ec;
+			std::filesystem::create_directories(filePath, ec);
+
+			if (ec)
+			{
+				dcclite::Log::Error("Cannot create app path for storing state for {}, system error: {}", fileName, ec.message());				
+			}
+			else
+			{
+				std::ofstream stateFile(stateFilePath, std::ios_base::trunc);
+
+				nlohmann::json stateData;
+				stateData["token"] = fmt::format("{}", token);
+				stateData["sha1"] = currentFileHash.ToString();
+
+				stateFile << stateData;
+
+				dcclite::Log::Info("Stored {} state data on {}", fileName, stateFilePath.string());
+			}
+		}
+	}	
+
+	return token;
 }
