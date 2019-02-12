@@ -9,6 +9,7 @@
 #include <spdlog/logger.h>
 
 #include "EEPROMLib.h"
+#include "PathUtils.h"
 
 #include <Log.h>
 
@@ -224,7 +225,7 @@ namespace ArduinoLib::detail
 
 		fclose(fp);
 
-		dcclite::Log::Warn("TryLoadRomState: ok");
+		dcclite::Log::Info("TryLoadRomState: ok");
 		return true;
 	}
 
@@ -252,7 +253,11 @@ namespace ArduinoLib::detail
 		//make sure thread is not busy
 		WaitSaveWorker();
 
-		g_strRomFileName = std::filesystem::path(moduleName).replace_extension(".rom").string();
+		auto appPath = dcclite::PathUtils::GetAppFolder();
+		appPath.append("Emulator");
+		std::filesystem::create_directories(appPath);
+
+		g_strRomFileName = (appPath / std::filesystem::path(moduleName).replace_extension(".rom")).string();
 
 		g_strRomTempFileName = g_strRomFileName;
 		g_strRomTempFileName += ".tmp";

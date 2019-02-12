@@ -1,16 +1,16 @@
 #include <stdio.h>
 
-#include "ConsoleUtils.h"
-
 #include "Clock.h"
+#include "ConsoleUtils.h"
+#include "LogUtils.h"
 #include "NetMessenger.h"
+#include "PathUtils.h"
 #include "Socket.h"
 
 #include "ArduinoLib.h"
 
 #include <spdlog/logger.h>
 
-#include "LogUtils.h"
 
 using namespace dcclite;
 
@@ -111,6 +111,8 @@ int main(int, char **)
 	dcclite::ConsoleTryMakeNice();
 
 	dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
+
+	dcclite::PathUtils::SetAppName("Emulator");
 
 #ifdef _DEBUG
 	ArduinoLib::Setup("LiteDecoderLib_d.dll", dcclite::LogGetDefault());

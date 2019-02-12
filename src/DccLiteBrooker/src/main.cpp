@@ -30,7 +30,7 @@ int main(int argc, char **argv)
 	dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
 	dcclite::ConsoleTryMakeNice();
 
-	dcclite::PathUtils::SetAppName("Brooker");		
+	dcclite::PathUtils::SetAppName("Brooker");
 
 	try
 	{ 
