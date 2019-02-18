@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -19,26 +19,26 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Arduino.cpp" />
-    <ClCompile Include="DynamicLibrary.cpp" />
-    <ClCompile Include="EEPROM.cpp" />
-    <ClCompile Include="Ethercard.cpp" />
-    <ClCompile Include="Serial.cpp" />
+    <ClCompile Include="..\src\ArduinoLib\Arduino.cpp" />
+    <ClCompile Include="..\src\ArduinoLib\DynamicLibrary.cpp" />
+    <ClCompile Include="..\src\ArduinoLib\EEPROM.cpp" />
+    <ClCompile Include="..\src\ArduinoLib\Ethercard.cpp" />
+    <ClCompile Include="..\src\ArduinoLib\Serial.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Arduino.h" />
-    <ClInclude Include="ArduinoDefs.h" />
-    <ClInclude Include="ArduinoLib.h" />
-    <ClInclude Include="ArduinoLibDefs.h" />
-    <ClInclude Include="avr\pgmspace.h" />
-    <ClInclude Include="DynamicLibrary.h" />
-    <ClInclude Include="EEPROM.h" />
-    <ClInclude Include="EEPROMLib.h" />
-    <ClInclude Include="Ethercard.h" />
-    <ClInclude Include="Serial.h" />
+    <ClInclude Include="..\src\ArduinoLib\Arduino.h" />
+    <ClInclude Include="..\src\ArduinoLib\ArduinoDefs.h" />
+    <ClInclude Include="..\src\ArduinoLib\ArduinoLib.h" />
+    <ClInclude Include="..\src\ArduinoLib\ArduinoLibDefs.h" />
+    <ClInclude Include="..\src\ArduinoLib\avr\pgmspace.h" />
+    <ClInclude Include="..\src\ArduinoLib\DynamicLibrary.h" />
+    <ClInclude Include="..\src\ArduinoLib\EEPROM.h" />
+    <ClInclude Include="..\src\ArduinoLib\EEPROMLib.h" />
+    <ClInclude Include="..\src\ArduinoLib\Ethercard.h" />
+    <ClInclude Include="..\src\ArduinoLib\Serial.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Common\Common.vcxproj">
+    <ProjectReference Include="..\src\Common\Common.vcxproj">
       <Project>{260f028d-1029-4332-831b-ad7dd20eba4a}</Project>
     </ProjectReference>
   </ItemGroup>
