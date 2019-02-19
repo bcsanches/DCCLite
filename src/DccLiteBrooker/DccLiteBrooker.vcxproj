@@ -43,7 +43,7 @@
     <ClCompile Include="src\TerminalService.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Common\Common.vcxproj">
+    <ProjectReference Include="..\..\Project\Common.vcxproj">
       <Project>{260f028d-1029-4332-831b-ad7dd20eba4a}</Project>
     </ProjectReference>
     <ProjectReference Include="..\LiteDecoder\EmbeddedLib.vcxproj">
@@ -111,7 +111,7 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)\bin\</OutDir>
     <IntDir>$(SolutionDir)\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)\src\Common\include\;$(SolutionDir)src\LiteDecoder\lib\Common\;$(SolutionDir)\contrib\fmt\include\;$(SolutionDir)\contrib\spdlog\include\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\src\Common\;$(SolutionDir)src\LiteDecoder\lib\Common\;$(SolutionDir)\contrib\fmt\include\;$(SolutionDir)\contrib\spdlog\include\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>

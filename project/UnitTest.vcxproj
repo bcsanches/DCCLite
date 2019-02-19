@@ -77,7 +77,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)src\Common\include\;$(SolutionDir)\src\DccLiteBrooker\src;$(SolutionDir)src\LiteDecoder\lib\Common\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)src\Common\;$(SolutionDir)\src\DccLiteBrooker\src;$(SolutionDir)src\LiteDecoder\lib\Common\;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\bin\</OutDir>
     <IntDir>$(SolutionDir)\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
@@ -162,7 +162,7 @@
     <ClInclude Include="..\src\UnitTest\targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\src\Common\Common.vcxproj">
+    <ProjectReference Include="Common.vcxproj">
       <Project>{260f028d-1029-4332-831b-ad7dd20eba4a}</Project>
     </ProjectReference>
   </ItemGroup>

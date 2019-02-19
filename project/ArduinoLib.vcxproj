@@ -38,7 +38,7 @@
     <ClInclude Include="..\src\ArduinoLib\Serial.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\src\Common\Common.vcxproj">
+    <ProjectReference Include="Common.vcxproj">
       <Project>{260f028d-1029-4332-831b-ad7dd20eba4a}</Project>
     </ProjectReference>
   </ItemGroup>
@@ -98,7 +98,7 @@
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>$(SolutionDir)\contrib\fmt\include\;$(SolutionDir)\contrib\spdlog\include\;$(SolutionDir)\src\Common\include\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\contrib\fmt\include\;$(SolutionDir)\contrib\spdlog\include\;$(SolutionDir)\src\Common\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
