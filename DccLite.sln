@@ -9,13 +9,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Brooker", "src\DccLiteBrook
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Terminal", "src\DccLiteTerminal\DccLiteTerminal.vcxproj", "{705E2C24-43C3-4CAE-A007-F0DB5DCDDF84}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "src\Common\Common.vcxproj", "{260F028D-1029-4332-831B-AD7DD20EBA4A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Project\Common.vcxproj", "{260F028D-1029-4332-831B-AD7DD20EBA4A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpTerminal", "src\SharpTerminal\SharpTerminal.csproj", "{E0E7EDCF-CF88-4410-A72C-EC10F9F1402C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EmbeddedLib", "src\LiteDecoder\EmbeddedLib.vcxproj", "{E8505EC4-3ADB-4C8C-8770-CA51BF0E7D94}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ArduinoLib", "src\ArduinoLib\ArduinoLib.vcxproj", "{FECEA21D-59D8-4B6C-B2A8-200D9B1B34BB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ArduinoLib", "Project\ArduinoLib.vcxproj", "{FECEA21D-59D8-4B6C-B2A8-200D9B1B34BB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Emulator", "src\Emulator\Emulator.vcxproj", "{22C1A5B2-1AEE-484C-8FC7-D68E17146E65}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -24,7 +24,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Emulator", "src\Emulator\Em
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LiteDecoderLib", "src\LiteDecoder\LiteDecoderLib.vcxproj", "{BD3396B9-0574-4964-84C9-B2940815BFAC}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTest", "src\UnitTest\UnitTest.vcxproj", "{7C14862B-51BE-4C48-91D2-D2860E2B6F75}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTest", "project\UnitTest.vcxproj", "{7C14862B-51BE-4C48-91D2-D2860E2B6F75}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

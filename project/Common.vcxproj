@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -19,43 +19,43 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\contrib\fmt\include\fmt\color.h" />
-    <ClInclude Include="..\..\contrib\fmt\include\fmt\core.h" />
-    <ClInclude Include="..\..\contrib\fmt\include\fmt\format-inl.h" />
-    <ClInclude Include="..\..\contrib\fmt\include\fmt\format.h" />
-    <ClInclude Include="..\..\contrib\fmt\include\fmt\ostream.h" />
-    <ClInclude Include="..\..\contrib\fmt\include\fmt\posix.h" />
-    <ClInclude Include="..\..\contrib\fmt\include\fmt\printf.h" />
-    <ClInclude Include="..\..\contrib\fmt\include\fmt\ranges.h" />
-    <ClInclude Include="..\..\contrib\fmt\include\fmt\time.h" />
-    <ClInclude Include="include\ClassInfo.h" />
-    <ClInclude Include="include\Clock.h" />
-    <ClInclude Include="include\ConsoleUtils.h" />
-    <ClInclude Include="include\defs.h" />
-    <ClInclude Include="include\FmtUtils.h" />
-    <ClInclude Include="include\GuidUtils.h" />
-    <ClInclude Include="include\Log.h" />
-    <ClInclude Include="include\LogUtils.h" />
-    <ClInclude Include="include\NetMessenger.h" />
-    <ClInclude Include="include\Object.h" />
-    <ClInclude Include="include\PathUtils.h" />
-    <ClInclude Include="include\Sha1.h" />
-    <ClInclude Include="include\Socket.h" />
-    <ClInclude Include="include\Util.h" />
+    <ClInclude Include="..\contrib\fmt\include\fmt\color.h" />
+    <ClInclude Include="..\contrib\fmt\include\fmt\core.h" />
+    <ClInclude Include="..\contrib\fmt\include\fmt\format-inl.h" />
+    <ClInclude Include="..\contrib\fmt\include\fmt\format.h" />
+    <ClInclude Include="..\contrib\fmt\include\fmt\ostream.h" />
+    <ClInclude Include="..\contrib\fmt\include\fmt\posix.h" />
+    <ClInclude Include="..\contrib\fmt\include\fmt\printf.h" />
+    <ClInclude Include="..\contrib\fmt\include\fmt\ranges.h" />
+    <ClInclude Include="..\contrib\fmt\include\fmt\time.h" />
+    <ClInclude Include="..\src\Common\ClassInfo.h" />
+    <ClInclude Include="..\src\Common\Clock.h" />
+    <ClInclude Include="..\src\Common\ConsoleUtils.h" />
+    <ClInclude Include="..\src\Common\defs.h" />
+    <ClInclude Include="..\src\Common\FmtUtils.h" />
+    <ClInclude Include="..\src\Common\GuidUtils.h" />
+    <ClInclude Include="..\src\Common\Log.h" />
+    <ClInclude Include="..\src\Common\LogUtils.h" />
+    <ClInclude Include="..\src\Common\NetMessenger.h" />
+    <ClInclude Include="..\src\Common\Object.h" />
+    <ClInclude Include="..\src\Common\PathUtils.h" />
+    <ClInclude Include="..\src\Common\Sha1.h" />
+    <ClInclude Include="..\src\Common\Socket.h" />
+    <ClInclude Include="..\src\Common\Util.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\contrib\fmt\src\format.cc" />
-    <ClCompile Include="..\..\contrib\fmt\src\posix.cc" />
-    <ClCompile Include="src\Clock.cpp" />
-    <ClCompile Include="src\ConsoleUtils.cpp" />
-    <ClCompile Include="src\GuidUtils.cpp" />
-    <ClCompile Include="src\LogUtils.cpp" />
-    <ClCompile Include="src\NetMessenger.cpp" />
-    <ClCompile Include="src\Object.cpp" />
-    <ClCompile Include="src\PathUtils.cpp" />
-    <ClCompile Include="src\Sha1.cpp" />
-    <ClCompile Include="src\Socket.cpp" />
-    <ClCompile Include="src\Util.cpp" />
+    <ClCompile Include="..\contrib\fmt\src\format.cc" />
+    <ClCompile Include="..\contrib\fmt\src\posix.cc" />
+    <ClCompile Include="..\src\Common\Clock.cpp" />
+    <ClCompile Include="..\src\Common\ConsoleUtils.cpp" />
+    <ClCompile Include="..\src\Common\GuidUtils.cpp" />
+    <ClCompile Include="..\src\Common\LogUtils.cpp" />
+    <ClCompile Include="..\src\Common\NetMessenger.cpp" />
+    <ClCompile Include="..\src\Common\Object.cpp" />
+    <ClCompile Include="..\src\Common\PathUtils.cpp" />
+    <ClCompile Include="..\src\Common\Sha1.cpp" />
+    <ClCompile Include="..\src\Common\Socket.cpp" />
+    <ClCompile Include="..\src\Common\Util.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

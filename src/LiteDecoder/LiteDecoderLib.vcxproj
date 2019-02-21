@@ -42,7 +42,7 @@
     <ClInclude Include="src\Storage.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ArduinoLib\ArduinoLib.vcxproj">
+    <ProjectReference Include="..\..\Project\ArduinoLib.vcxproj">
       <Project>{fecea21d-59d8-4b6c-b2a8-200d9b1b34bb}</Project>
     </ProjectReference>
     <ProjectReference Include="EmbeddedLib.vcxproj">
