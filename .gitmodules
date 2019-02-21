@@ -4,3 +4,9 @@
 [submodule "contrib/spdlog"]
 	path = contrib/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "contrib/JsonCreator"]
+	path = contrib/JsonCreator
+	url = https://github.com/bcsanches/JsonCreator.git
+[submodule "contrib/rapidjson"]
+	path = contrib/rapidjson
+	url = https://github.com/Tencent/rapidjson.git
