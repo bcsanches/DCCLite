@@ -15,6 +15,7 @@
     <ClCompile Include="src\Session.cpp" />
     <ClCompile Include="src\DecoderManager.cpp" />
     <ClCompile Include="src\OutputDecoder.cpp" />
+    <ClCompile Include="src\Decoder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Blinker.h" />

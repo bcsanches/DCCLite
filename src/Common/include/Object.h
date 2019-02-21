@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <map>
 #include <string>
 #include <memory>
@@ -7,6 +8,8 @@
 namespace dcclite
 {
 	class FolderObject;
+
+	typedef std::filesystem::path Path_t;
 
 	class IObject
 	{
@@ -28,9 +31,15 @@ namespace dcclite
 			inline std::string_view GetName() const { return m_strName; }
 
 			virtual bool IsShortcut() const { return false; }
+			virtual bool IsFolder() const { return false; }
+
+			Path_t GetPath() const;
+			IObject &GetRoot();
 
 		private:
 			const std::string m_strName;
+
+			void GetPath_r(Path_t &path) const;
 
 		protected:			
 			FolderObject *m_pParent;
@@ -157,7 +166,11 @@ namespace dcclite
 
 			IObject *TryGetChild(std::string_view name);
 
-			IObject *TryResolveChild(std::string_view name);
+			IObject *TryResolveChild(std::string_view name);			
+
+			IObject *TryNavigate(const Path_t &path);
+
+			virtual bool IsFolder() const { return true; }
 
 			inline FolderEnumerator GetEnumerator() 
 			{

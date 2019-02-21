@@ -11,6 +11,7 @@
 #include <EEPROM.h>
 
 #include "Console.h"
+#include "DecoderManager.h"
 #include "NetUdp.h"
 #include "Session.h"
 #include "Storage.h"
@@ -18,7 +19,7 @@
 static const char StorageMagic[] PROGMEM = {"Bcs0003"};
 static const char NetUdpStorageId[] PROGMEM = {"NetU002"};
 static const char SessionStorageId[] PROGMEM = {"Sson001"};
-static const char DecodersStorageId[] PROGMEM = { "DECS001" };
+static const char DecodersStorageId[] PROGMEM = { "DECS002" };
 static const char EndStorageId[] PROGMEM = {"ENDEND1"};
 
 const char StorageModuleName[] PROGMEM = {"Storage"} ;
@@ -95,12 +96,28 @@ bool Storage::LoadConfig()
 
 				Session::LoadConfig(stream);
 			}
+#if 1
+			else if (strncmp_P(lump.m_archName, DecodersStorageId, strlen_P(DecodersStorageId)) == 0)
+			{
+				Console::SendLogEx(MODULE_NAME, "decoders", ' ', "cfg");
+
+				DecoderManager::LoadConfig(stream);
+			}
+#endif
 			else if (strncmp_P(lump.m_archName, EndStorageId, strlen_P(EndStorageId)) == 0)
 			{
 				Console::SendLogEx(MODULE_NAME, "rom", ' ', "end");
 
 				break;
 			}
+			else
+			{
+				Console::SendLogEx(MODULE_NAME, "unknown", ' ', "lump", ' ', lump.m_archName);
+
+				stream.Skip(lump.m_uLength);
+				continue;
+			}
+
 		}
 
 
@@ -179,6 +196,11 @@ void Storage::SaveConfig()
 		LumpWriter sessionLump(stream, SessionStorageId, false);
 
 		Session::SaveConfig(stream);
+	}
+	{
+		LumpWriter decodersLump(stream, DecodersStorageId, false);
+
+		DecoderManager::SaveConfig(stream);
 	}
 	{
 		LumpWriter endLump(stream, EndStorageId, false);

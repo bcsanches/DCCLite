@@ -8,13 +8,16 @@ constexpr Pin_t null_pin = 255;
 
 class EpromStream;
 
+namespace dcclite
+{
+	class Packet;
+}
+
 class Decoder
 {	
 	public:
-		Decoder()			
-		{
-			//empty
-		}
+		Decoder(dcclite::Packet &packet);
+		Decoder(EpromStream &stream) {}
 
 		virtual dcclite::DecoderTypes GetType() const = 0;
 

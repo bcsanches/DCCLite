@@ -14,7 +14,7 @@
 
 static bool fExitRequested = false;
 
-static TerminalCmd g_ShutdownCmd{ "shutdown" };
+//static TerminalCmd g_ShutdownCmd{ "shutdown" };
 
 static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 {

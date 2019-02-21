@@ -7,6 +7,7 @@
 
 #include "json.hpp"
 #include "NetMessenger.h"
+#include "TerminalCmd.h"
 
 using json = nlohmann::json;
 using namespace dcclite;
@@ -16,10 +17,28 @@ static ServiceClass terminalService("Terminal",
 	std::unique_ptr<Service> { return std::make_unique<TerminalService>(serviceClass, name, params, project); }
 );
 
+class GetChildItemCmd : public TerminalCmd
+{
+	public:
+		GetChildItemCmd():
+			TerminalCmd("Get-ChildItem")
+		{
+			//empty
+		}
+
+		virtual nlohmann::json Run(TerminalContext &context, const nlohmann::json &params)
+		{
+
+		}
+
+};
+
+
+
 class TerminalClient
 {
 	public:
-		TerminalClient(Socket &&socket);
+		TerminalClient(TerminalService &owner, Socket &&socket);
 		TerminalClient(const TerminalClient &client) = delete;
 		TerminalClient(TerminalClient &&other);
 
@@ -37,16 +56,22 @@ class TerminalClient
 
 	private:
 		NetMessenger m_clMessenger;
+		TerminalService &m_rclOwner;
+		TerminalContext m_clContext;
 };
 
-TerminalClient::TerminalClient(Socket &&socket):
-	m_clMessenger(std::move(socket))
+TerminalClient::TerminalClient(TerminalService &owner, Socket &&socket) :
+	m_rclOwner(owner),
+	m_clMessenger(std::move(socket)),
+	m_clContext(static_cast<dcclite::FolderObject &>(owner.GetRoot()))
 {
-	//emtpy
+	m_clContext.SetLocation(owner.GetPath());
 }
 
 TerminalClient::TerminalClient(TerminalClient &&other) :
-	m_clMessenger(std::move(other.m_clMessenger))
+	m_rclOwner(other.m_rclOwner),
+	m_clMessenger(std::move(other.m_clMessenger)),
+	m_clContext(std::move(other.m_clContext))
 {
 	//empty
 }
@@ -103,7 +128,7 @@ void TerminalService::Update(const dcclite::Clock &clock)
 	{
 		dcclite::Log::Info("[TermnialService] Client connected {}", address.GetIpString());
 
-		m_vecClients.emplace_back(std::move(socket));
+		m_vecClients.emplace_back(*this, std::move(socket));
 	}
 
 	for (size_t i = 0; i < m_vecClients.size(); ++i)

@@ -15,6 +15,8 @@ namespace DecoderManager
 	Decoder *Create(const uint8_t slot, dcclite::Packet &packet);
 
 	void Destroy(const uint8_t slot);
+	void DestroyAll();
 
 	void SaveConfig(EpromStream &stream);
+	void LoadConfig(EpromStream &stream);
 }

@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="src\Blinker.cpp" />
     <ClCompile Include="src\Console.cpp" />
+    <ClCompile Include="src\Decoder.cpp" />
     <ClCompile Include="src\DecoderManager.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\NetUdp.cpp" />

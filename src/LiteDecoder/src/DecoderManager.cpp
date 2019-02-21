@@ -2,6 +2,7 @@
 
 #include "Console.h"
 #include "OutputDecoder.h"
+#include "Session.h"
 #include "Storage.h"
 
 #include <Packet.h>
@@ -71,8 +72,26 @@ void DecoderManager::Destroy(const uint8_t slot)
 	g_pDecoders[slot] = nullptr;
 }
 
-void DecoderManager::SaveConfig(EpromStream &stream)
+void DecoderManager::DestroyAll()
 {
+	for (int i = 0; i < MAX_DECODERS; ++i)
+	{
+		delete g_pDecoders[i];
+		g_pDecoders[i] = nullptr;
+	}
+}
+
+void DecoderManager::SaveConfig(EpromStream &stream)
+{	
+	const dcclite::Guid &token = Session::GetConfigToken();
+
+#ifdef WIN32
+	static_assert(sizeof(dcclite::Guid::m_bId) == 16);
+#endif
+
+	for (unsigned int i = 0; i < sizeof(token.m_bId); ++i)
+		stream.Put(token.m_bId[i]);
+
 	dcclite::DecoderTypes types[] = { 
 		dcclite::DecoderTypes::DEC_OUTPUT , 
 		dcclite::DecoderTypes::DEC_INPUT,
@@ -129,4 +148,68 @@ void DecoderManager::SaveConfig(EpromStream &stream)
 
 	//write null type marker so we know we are done
 	stream.Put(static_cast<uint8_t>(dcclite::DecoderTypes::DEC_NULL));
+}
+
+void DecoderManager::LoadConfig(EpromStream &stream)
+{
+	DestroyAll();
+
+	dcclite::Guid configToken;
+
+#ifdef WIN32
+	static_assert(sizeof(dcclite::Guid::m_bId) == 16);
+#endif
+
+	for (unsigned int i = 0; i < sizeof(configToken.m_bId); ++i)
+	{
+		uint8_t byte;
+
+		stream.Get(byte);
+
+		configToken.m_bId[i] = byte;
+	}
+
+	for (;;)
+	{
+		uint8_t byte;
+
+		stream.Get(byte);
+
+		dcclite::DecoderTypes type = static_cast<dcclite::DecoderTypes>(byte);
+
+		if (type == dcclite::DecoderTypes::DEC_NULL)
+			break;
+
+		stream.Get(byte);
+
+		for (int i = 0; i < byte; ++i)
+		{
+			uint8_t slot;
+			stream.Get(slot);
+
+			//should we check or trust?
+			//if(slot >= MAX_DECODERS)
+
+			//should we check?
+			//if(g_pDecoder[slot])
+
+			Decoder *decoder = nullptr;
+
+			switch (type)
+			{
+				case dcclite::DecoderTypes::DEC_OUTPUT:
+					decoder = new OutputDecoder(stream);
+					break;
+
+				default:
+					//should we check?
+					break;
+			}
+
+			g_pDecoders[slot] = decoder;
+		}
+	}
+
+	//loaded all decoders, set config token
+	Session::ReplaceConfigToken(configToken);
 }

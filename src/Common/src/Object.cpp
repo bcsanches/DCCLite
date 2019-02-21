@@ -7,6 +7,33 @@
 
 namespace dcclite
 {
+	Path_t IObject::GetPath() const
+	{
+		Path_t path;
+
+		GetPath_r(path);
+
+		return path;
+	}
+
+	IObject &IObject::GetRoot()
+	{
+		IObject *result = this;
+
+		while (result->m_pParent)
+			result = result->m_pParent;
+
+		return *result;
+	}
+
+	void IObject::GetPath_r(Path_t &path) const
+	{
+		if (m_pParent)
+			m_pParent->GetPath_r(path);
+
+		path.append(this->GetName());
+	}
+
 	Object::Object(std::string name) :
 		IObject(std::move(name))		
 	{
@@ -53,6 +80,42 @@ namespace dcclite
 		auto *obj = this->TryGetChild(name);
 		
 		return (obj && obj->IsShortcut()) ? static_cast<Shortcut*>(obj)->TryResolve() : nullptr;
+	}
+
+	IObject *FolderObject::TryNavigate(const Path_t &path)
+	{
+		IObject *currentNode = nullptr;
+
+		auto it = path.begin();
+
+		if (path.is_absolute())
+		{
+			currentNode = &this->GetRoot();
+			++it;
+		}
+		else
+		{
+			currentNode = this;
+		}
+
+		for (; it != path.end(); ++it)
+		{
+			if (currentNode->IsFolder())
+			{
+				auto *folder = static_cast<FolderObject *>(currentNode);
+
+				currentNode = folder->TryResolveChild(it->string());
+
+				if (!currentNode)
+					return nullptr;
+			}
+			else
+			{
+				return nullptr;
+			}
+		}
+
+		return currentNode;
 	}
 
 	std::unique_ptr<IObject> FolderObject::RemoveChild(std::string_view name) 

@@ -174,7 +174,9 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 	}	
 	else if(type == dcclite::MsgTypes::CONFIG_START)
 	{
-		g_SessionToken = packet.ReadGuid();		
+		g_SessionToken = packet.ReadGuid();
+		
+		DecoderManager::DestroyAll();
 
 		g_eState = States::CONFIGURING;		
 		g_uTicks = millis() + 1000;		
@@ -347,6 +349,8 @@ static void ReceiveCallback(
 			//This is the place where we set the config token
 			g_ConfigToken = token;
 
+			Storage::SaveConfig();
+
 			GotoOnlineState();
 		}
 		else if(type == dcclite::MsgTypes::ACCEPTED)
@@ -376,4 +380,14 @@ static void ReceiveCallback(
 void Session::LogStatus()
 {
 	Console::SendLogEx(MODULE_NAME, "srv", ':', ' ', Console::IpPrinter(g_u8ServerIp), ':', g_iSrvPort);
+}
+
+const dcclite::Guid &Session::GetConfigToken()
+{
+	return g_ConfigToken;
+}
+
+void Session::ReplaceConfigToken(const dcclite::Guid &configToken)
+{
+	g_ConfigToken = configToken;
 }

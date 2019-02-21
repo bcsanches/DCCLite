@@ -1,7 +1,24 @@
 #include "TerminalCmd.h"
 
+#include <fmt/format.h>
+
 #include <map>
 #include <sstream>
+
+void TerminalContext::SetLocation(const dcclite::Path_t &newLocation)
+{
+	if (newLocation.is_relative())
+	{		
+		throw std::invalid_argument(fmt::format("TerminalContext::SetLocation->cannot use relative path: {}", newLocation.string()));
+	}
+
+	m_pthLocation = newLocation;
+}
+
+dcclite::IObject *TerminalContext::GetItem() const
+{
+	return m_rclRoot.TryNavigate(m_pthLocation);
+}
 
 static std::map<std::string_view, TerminalCmd *> GetCmdMap()
 {

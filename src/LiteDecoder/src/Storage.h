@@ -21,6 +21,11 @@ class EpromStream
   	void Get(char &ch);
     void Get(unsigned char &byte);	
 
+	uint32_t GetIndex() const
+	{
+		return m_uIndex;
+	}
+
 #ifndef WIN32
     void Get(unsigned short &number);
 #endif
