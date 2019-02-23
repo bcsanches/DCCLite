@@ -9,6 +9,87 @@ namespace dcclite
 {
 	class FolderObject;
 
+	class ObjectPathConstIterator
+	{
+		private:
+			friend class ObjectPath;
+
+			ObjectPathConstIterator(std::string::const_iterator begin, std::string::const_iterator end):
+				m_itBlockBegin(begin),
+				m_itPathEnd(end)
+			{
+				if (begin == end)
+					m_itBlockEnd = end;
+				else if (*begin == '/')
+				{
+					m_itBlockEnd = begin + 1;
+				}
+			}
+
+		public:
+			typedef std::forward_iterator_tag iterator_category;
+			
+			ObjectPathConstIterator(const ObjectPathConstIterator &rhs) = default;
+
+			ObjectPathConstIterator& operator=(const ObjectPathConstIterator&rhs) = default;
+
+			bool operator==(const ObjectPathConstIterator&rhs) const
+			{
+				return (m_itBlockBegin == rhs.m_itBlockBegin) && (m_itBlockEnd == rhs.m_itBlockEnd);
+			}
+
+			bool operator!=(const ObjectPathConstIterator &rhs) const
+			{
+				return (m_itBlockBegin != rhs.m_itBlockBegin) || (m_itBlockEnd != rhs.m_itBlockEnd);
+			}
+
+			ObjectPathConstIterator& operator++()
+			{
+
+			}
+
+			ObjectPathConstIterator operator++(int) //optional
+			{
+				auto temp = *this;
+
+				++*this;
+
+				return temp;
+			}
+
+		private:
+			std::string::const_iterator m_itBlockBegin;
+			std::string::const_iterator m_itBlockEnd;
+			std::string::const_iterator m_itPathEnd;
+	};
+
+	class ObjectPath
+	{
+		public:
+			
+
+		public:
+			ObjectPath() noexcept;
+			ObjectPath(const ObjectPath &rhs) :
+				m_strPath(rhs.m_strPath)
+			{
+				//empty
+			}
+
+			ObjectPath(ObjectPath &&rhs) :
+				m_strPath(std::move(rhs.m_strPath))
+			{
+				//empty
+			}
+
+			void append(std::string_view other);
+
+			bool is_absolute() const;
+
+		private:
+			std::string m_strPath;
+	};
+
 	typedef std::filesystem::path Path_t;
 
 	class IObject

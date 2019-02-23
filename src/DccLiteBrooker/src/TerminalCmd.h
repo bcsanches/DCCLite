@@ -40,6 +40,24 @@ The Invoke verb is used to perform an operation that is generally a synchronous 
 */
 
 
+/*
+
+Responses:
+{
+	"jsonrpc": "2.0", 
+	"result":
+	{
+		"class":"something"
+		"data":[...] or "data":{...}"
+	}
+	"id": 4
+}
+
+*/
+
+typedef int CmdId_t;
+
+
 class TerminalContext
 {
 	public:		
@@ -75,6 +93,32 @@ class TerminalContext
 		dcclite::Path_t m_pthLocation;
 };
 
+class TerminalCmdException: public std::exception
+{
+	public:
+		TerminalCmdException(std::string &&what, CmdId_t id) :
+			m_iId(id),
+			m_strWhat(std::move(what))
+		{
+			//empty
+		}
+
+
+		virtual const char *what() const noexcept
+		{
+			return m_strWhat.c_str();
+		}
+
+		CmdId_t GetId() const noexcept
+		{
+			return m_iId;
+		}
+
+	private:
+		CmdId_t		m_iId;
+		std::string m_strWhat;
+};
+
 class TerminalCmd
 {
 	public:
@@ -85,7 +129,9 @@ class TerminalCmd
 
 		~TerminalCmd();
 
-		virtual nlohmann::json Run(TerminalContext &context, const nlohmann::json &params) = 0;
+		virtual nlohmann::json Run(TerminalContext &context, const CmdId_t id, const nlohmann::json &request) = 0;
+
+		static TerminalCmd *TryFindCmd(std::string_view name);
 
 	private:
 		std::string m_strName;

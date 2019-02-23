@@ -14,6 +14,9 @@
     <ClCompile Include="..\src\UnitTest\ProjectUnitTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\UnitTest\ObjectPathUnitTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\UnitTest\targetver.h">

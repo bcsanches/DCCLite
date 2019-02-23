@@ -111,7 +111,7 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)\bin\</OutDir>
     <IntDir>$(SolutionDir)\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)\src\Common\;$(SolutionDir)src\LiteDecoder\lib\Common\;$(SolutionDir)\contrib\fmt\include\;$(SolutionDir)\contrib\spdlog\include\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\src\Common\;$(SolutionDir)src\LiteDecoder\lib\Common\;$(SolutionDir)\contrib\fmt\include\;$(SolutionDir)\contrib\spdlog\include\;$(SolutionDir)\contrib\JsonCreator\include\;$(SolutionDir)\contrib\rapidjson\include\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>

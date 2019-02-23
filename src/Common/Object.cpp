@@ -7,6 +7,29 @@
 
 namespace dcclite
 {
+	void ObjectPath::append(std::string_view other)
+	{		
+		if (m_strPath.empty())
+		{
+			m_strPath = other;
+		}
+		else
+		{
+			auto it = m_strPath.rend();
+			if (*it != '/')
+			{
+				m_strPath += '/';
+			}
+
+			m_strPath += other;
+		}
+	}
+
+	bool ObjectPath::is_absolute() const
+	{
+		return m_strPath.empty() ? false : m_strPath[0] == '/';
+	}
+
 	Path_t IObject::GetPath() const
 	{
 		Path_t path;
@@ -29,9 +52,15 @@ namespace dcclite
 	void IObject::GetPath_r(Path_t &path) const
 	{
 		if (m_pParent)
+		{
 			m_pParent->GetPath_r(path);
 
-		path.append(this->GetName());
+			path.append(this->GetName());
+		}				
+		else
+		{
+			path.append("c:\\" + std::string(this->GetName()));
+		}
 	}
 
 	Object::Object(std::string name) :
@@ -87,7 +116,7 @@ namespace dcclite
 		IObject *currentNode = nullptr;
 
 		auto it = path.begin();
-
+		
 		if (path.is_absolute())
 		{
 			currentNode = &this->GetRoot();

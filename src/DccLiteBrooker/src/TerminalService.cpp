@@ -5,6 +5,9 @@
 
 #include <Log.h>
 
+#include <JsonCreator/StringWriter.h>
+#include <JsonCreator/Object.h>
+
 #include "json.hpp"
 #include "NetMessenger.h"
 #include "TerminalCmd.h"
@@ -26,14 +29,51 @@ class GetChildItemCmd : public TerminalCmd
 			//empty
 		}
 
-		virtual nlohmann::json Run(TerminalContext &context, const nlohmann::json &params)
+		virtual nlohmann::json Run(TerminalContext &context, const CmdId_t id, const nlohmann::json &request)
 		{
+			auto item = context.GetItem();
+			if (!item->IsFolder())
+			{
+				throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
+			}
+
+			auto folder = static_cast<FolderObject *>(item);			
+
+			JsonCreator::StringWriter responseWriter;
+
+			{
+				auto responseObj = JsonCreator::MakeObject(responseWriter);
+
+				responseObj.AddStringValue("jsonrpc", "2.0");
+				responseObj.AddIntValue("id", id);
+				
+				{
+					auto resultObject = responseObj.AddObject("result");
+					resultObject.AddStringValue("class", "Item");
+					
+					{
+						auto dataArray = resultObject.AddArray("data");
+
+						auto enumerator = folder->GetEnumerator();
+
+						while (enumerator.MoveNext())
+						{
+							auto item = enumerator.TryGetCurrent();
+
+							auto itemObject = dataArray.AddObject();
+							itemObject.AddStringValue("name", item->GetName());
+							itemObject.AddBool("isFolder", item->IsFolder());							
+						}
+
+					}					
+				}
+			}
+
 
 		}
-
 };
 
-
+static GetChildItemCmd g_GetChildItemCmd{};
 
 class TerminalClient
 {
@@ -78,24 +118,67 @@ TerminalClient::TerminalClient(TerminalClient &&other) :
 
 bool TerminalClient::Update()
 {
-	auto[status, msg] = m_clMessenger.Poll();	
+	for (;;)
+	{
+		auto[status, msg] = m_clMessenger.Poll();
 
-	if (status == Socket::Status::DISCONNECTED)
-		return false;	
+		if (status == Socket::Status::DISCONNECTED)
+			return false;
 
-	if (status == Socket::Status::OK)
-	{		
-		dcclite::Log::Info("Received {}", msg);		
+		if (status == Socket::Status::WOULD_BLOCK)
+			return true;
 
-		std::stringstream stream;
-		stream << msg;
+		if (status == Socket::Status::OK)
+		{
+			dcclite::Log::Info("Received {}", msg);
 
-		json data;
+			std::stringstream stream;
+			stream << msg;
 
-		stream >> data;
+			json data;
 
+			stream >> data;
 
+			auto jsonrpcKey = data["jsonrpc"];
+			if (!jsonrpcKey.is_string() || jsonrpcKey.get<std::string>().compare("2.0"))
+			{
+				dcclite::Log::Error("Invalid rpc version: {}", msg);
+
+				continue;
+			}
+
+			auto methodKey = data["method"];
+			if (!methodKey.is_string())
+			{
+				dcclite::Log::Error("No method name in msg: {}", msg);
+
+				continue;
+			}
+
+			const auto methodName = methodKey.get<std::string>();
+
+			auto idKey = data["id"];
+			if (!idKey.is_number_integer())
+			{
+				dcclite::Log::Error("No method id");
+
+				continue;
+			}
+
+			int id = idKey.get<int>();
+
+			auto cmd = TerminalCmd::TryFindCmd(methodName);
+			if (cmd == nullptr)
+			{
+				dcclite::Log::Error("Invalid cmd: {}", methodName);
+
+				continue;
+			}
+
+			cmd->Run(m_clContext, id, data);
+		}
 	}
+	
 
 	return true;
 }
