@@ -24,6 +24,10 @@ namespace dcclite
 				{
 					m_itBlockEnd = begin + 1;
 				}
+				else
+				{
+					m_itBlockEnd = std::find(begin, end, '/');
+				}
 			}
 
 		public:
@@ -45,7 +49,23 @@ namespace dcclite
 
 			ObjectPathConstIterator& operator++()
 			{
+				if (m_itBlockBegin == m_itPathEnd)
+					return *this;
 
+				m_itBlockBegin = m_itBlockEnd;
+				if (m_itBlockBegin == m_itPathEnd)
+					return *this;
+
+				//for root paths, m_itBlockBegin will not point to /, so we must check
+				if (*m_itBlockBegin == '/')
+				{
+					//skip current /
+					++m_itBlockBegin;
+				}				
+
+				m_itBlockEnd = std::find(m_itBlockBegin, m_itPathEnd, '/');
+
+				return *this;
 			}
 
 			ObjectPathConstIterator operator++(int) //optional
@@ -55,6 +75,11 @@ namespace dcclite
 				++*this;
 
 				return temp;
+			}
+
+			inline std::string ToString() const
+			{
+				return std::string(m_itBlockBegin, m_itBlockEnd);
 			}
 
 		private:
@@ -69,15 +94,16 @@ namespace dcclite
 			
 
 		public:
-			ObjectPath() noexcept;
-			ObjectPath(const ObjectPath &rhs) :
-				m_strPath(rhs.m_strPath)
+			ObjectPath() noexcept
 			{
 				//empty
 			}
 
-			ObjectPath(ObjectPath &&rhs) :
-				m_strPath(std::move(rhs.m_strPath))
+			ObjectPath(const ObjectPath &rhs) = default;				
+			ObjectPath(ObjectPath &&rhs) = default;
+
+			ObjectPath(std::string_view str) :
+				m_strPath(str)
 			{
 				//empty
 			}
@@ -85,6 +111,16 @@ namespace dcclite
 			void append(std::string_view other);
 
 			bool is_absolute() const;
+
+			ObjectPathConstIterator begin() const
+			{
+				return ObjectPathConstIterator(m_strPath.begin(), m_strPath.end());
+			}
+
+			ObjectPathConstIterator end() const
+			{
+				return ObjectPathConstIterator(m_strPath.end(), m_strPath.end());
+			}
 
 		private:
 			std::string m_strPath;
