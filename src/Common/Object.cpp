@@ -113,27 +113,30 @@ namespace dcclite
 
 	IObject *FolderObject::TryNavigate(const Path_t &path)
 	{
-		IObject *currentNode = nullptr;
+		IObject *currentNode = this;
+					
+		for (auto it = path.begin(); (it != path.end()) && (currentNode); ++it)
+		{
+			auto path = it.ToString();
 
-		auto it = path.begin();
-		
-		if (path.is_absolute())
-		{
-			currentNode = &this->GetRoot();
-			++it;
-		}
-		else
-		{
-			currentNode = this;
-		}
-
-		for (; it != path.end(); ++it)
-		{
-			if (currentNode->IsFolder())
+			if (path.compare("/") == 0)
 			{
-				auto *folder = static_cast<FolderObject *>(currentNode);
+				currentNode = &this->GetRoot();
+				continue;
+			}
+			else if (path.compare(".") == 0)
+				continue;
+			else if (path.compare("..") == 0)
+			{
+				currentNode = this->GetParent();
 
-				currentNode = folder->TryResolveChild(it->string());
+				continue;
+			}
+			else if (currentNode->IsFolder())
+			{
+				auto *folder = static_cast<FolderObject *>(currentNode);				
+
+				currentNode = folder->TryResolveChild(path);
 
 				if (!currentNode)
 					return nullptr;

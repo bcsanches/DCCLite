@@ -118,7 +118,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)\lib\</OutDir>
     <IntDir>$(SolutionDir)\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <IncludePath>$(SolutionDir)\src\Common\include\;$(SolutionDir)\contrib\spdlog\include\;$(SolutionDir)\contrib\fmt\include\;$(SolutionDir)\src\LiteDecoder\lib\Common\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)\src\Common\include\;$(SolutionDir)\contrib\spdlog\include\;$(SolutionDir)\contrib\fmt\include\;$(SolutionDir)\src\LiteDecoder\lib\Common\;$(SolutionDir)\contrib\rapidjson\include\;$(SolutionDir)\contrib\JsonCreator\include\;$(IncludePath)</IncludePath>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

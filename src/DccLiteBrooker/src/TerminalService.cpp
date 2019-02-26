@@ -39,7 +39,7 @@ class GetChildItemCmd : public TerminalCmd
 
 			auto folder = static_cast<FolderObject *>(item);
 
-			auto objectArray = results.AddArray("data");
+			auto dataArray = results.AddArray("data");
 												
 			auto enumerator = folder->GetEnumerator();
 
@@ -48,8 +48,7 @@ class GetChildItemCmd : public TerminalCmd
 				auto item = enumerator.TryGetCurrent();
 
 				auto itemObject = dataArray.AddObject();
-				itemObject.AddStringValue("name", item->GetName());
-				itemObject.AddBool("isFolder", item->IsFolder());							
+				item->Serialize(itemObject);				
 			}
 		}
 };
@@ -119,7 +118,7 @@ std::string TerminalClient::CreateErrorResponse(const std::string &msg, const Cm
 		}
 	}
 
-	return responseWriter.String();
+	return std::string(responseWriter.GetString());
 }
 
 
@@ -183,7 +182,14 @@ bool TerminalClient::Update()
 					continue;
 				}
 
-				cmd->Run(m_clContext, id, data);
+				JsonCreator::StringWriter responseWriter;
+				auto responseObj = JsonCreator::MakeObject(responseWriter);
+
+				responseObj.AddStringValue("jsonrpc", "2.0");				
+				responseObj.AddIntValue("id", id);
+				auto resultObj = responseObj.AddObject("result");
+
+				cmd->Run(m_clContext, resultObj, id, data);
 			}
 			catch (TerminalCmdException &ex)
 			{

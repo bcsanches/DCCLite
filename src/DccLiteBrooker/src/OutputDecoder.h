@@ -21,6 +21,11 @@ class OutputDecoder : public Decoder
 			return dcclite::DecoderTypes::DEC_OUTPUT;
 		}
 
+		virtual const char *GetTypeName() const noexcept
+		{
+			return "OutputDecoder";
+		}
+
 	private:
 		dcclite::PinType_t m_iPin;
 

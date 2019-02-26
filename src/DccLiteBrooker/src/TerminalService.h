@@ -19,4 +19,6 @@ class TerminalService : public Service
 		virtual ~TerminalService();
 
 		virtual void Update(const dcclite::Clock &clock) override;
+
+		virtual const char *GetTypeName() const noexcept { return "TerminalService"; }
 };

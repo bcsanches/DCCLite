@@ -77,7 +77,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)src\Common\;$(SolutionDir)\src\DccLiteBrooker\src;$(SolutionDir)src\LiteDecoder\lib\Common\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)src\Common\;$(SolutionDir)\src\DccLiteBrooker\src;$(SolutionDir)src\LiteDecoder\lib\Common\;$(SolutionDir)\contrib\JsonCreator\include\;$(SolutionDir)\contrib\rapidjson\include\;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)\bin\</OutDir>
     <IntDir>$(SolutionDir)\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>

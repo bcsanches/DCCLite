@@ -5,8 +5,6 @@
 #include "json.hpp"
 #include "Object.h"
 
-#include <JsonCreator/Object.h>
-#include <JsonCreator/StringWriter.h>
 
 //add drives?
 		//add Providers?
@@ -59,7 +57,6 @@ Responses:
 */
 
 typedef int CmdId_t;
-
 
 class TerminalContext
 {

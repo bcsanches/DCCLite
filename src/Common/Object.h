@@ -91,10 +91,7 @@ namespace dcclite
 	};
 
 	class ObjectPath
-	{
-		public:
-			
-
+	{		
 		public:
 			ObjectPath() noexcept
 			{
@@ -110,9 +107,16 @@ namespace dcclite
 				//empty
 			}
 
+			ObjectPath &operator=(const ObjectPath &rhs) = default;
+			ObjectPath &operator=(ObjectPath &&rhs) = default;
+
 			void append(std::string_view other);
 
 			bool is_absolute() const;
+			bool is_relative() const
+			{
+				return !is_absolute();
+			}
 
 			ObjectPathConstIterator begin() const
 			{
@@ -124,11 +128,16 @@ namespace dcclite
 				return ObjectPathConstIterator(m_strPath.end(), m_strPath.end());
 			}
 
+			inline const std::string &string() const
+			{
+				return m_strPath;
+			}
+
 		private:
 			std::string m_strPath;
 	};
 
-	typedef std::filesystem::path Path_t;
+	typedef ObjectPath Path_t;
 	typedef JsonCreator::Object<JsonCreator::StringWriter> JsonOutputStream_t;
 
 	class IObject
@@ -148,15 +157,22 @@ namespace dcclite
 				//empty
 			}
 
-			inline std::string_view GetName() const { return m_strName; }
+			inline std::string_view GetName() const noexcept { return m_strName; }
 
-			virtual bool IsShortcut() const { return false; }
-			virtual bool IsFolder() const { return false; }
+			virtual bool IsShortcut() const noexcept { return false; }
+			virtual bool IsFolder() const noexcept { return false; }
 
 			Path_t GetPath() const;
 			IObject &GetRoot();
 
-			virtual const char *GetTypeName() const = 0;
+			virtual const char *GetTypeName() const noexcept = 0;
+
+			virtual void Serialize(JsonOutputStream_t &stream);
+
+			inline FolderObject *GetParent() const noexcept
+			{
+				return m_pParent;
+			}
 
 		private:
 			const std::string m_strName;
@@ -247,7 +263,12 @@ namespace dcclite
 				return &m_rTarget;
 			}
 
-			virtual bool IsShortcut() const { return true; }
+			virtual bool IsShortcut() const noexcept { return true; }
+
+			virtual const char *GetTypeName() const noexcept
+			{
+				return "dcclite::Shortcut";
+			}
 
 		private:
 			IObject &m_rTarget;			
@@ -292,11 +313,16 @@ namespace dcclite
 
 			IObject *TryNavigate(const Path_t &path);
 
-			virtual bool IsFolder() const { return true; }
+			virtual bool IsFolder() const noexcept { return true; }
 
 			inline FolderEnumerator GetEnumerator() 
 			{
 				return FolderEnumerator(m_mapObjects.begin(), m_mapObjects.end());
+			}
+
+			virtual const char *GetTypeName() const noexcept
+			{
+				return "dcclite::FolderObject";
 			}
 
 		private:
