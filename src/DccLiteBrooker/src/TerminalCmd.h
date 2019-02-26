@@ -5,6 +5,9 @@
 #include "json.hpp"
 #include "Object.h"
 
+#include <JsonCreator/Object.h>
+#include <JsonCreator/StringWriter.h>
+
 //add drives?
 		//add Providers?
 		//Add HomeLocation for Providers?
@@ -122,6 +125,9 @@ class TerminalCmdException: public std::exception
 class TerminalCmd
 {
 	public:
+		typedef JsonCreator::Object<JsonCreator::StringWriter> Result_t;
+
+	public:
 		TerminalCmd(std::string_view name);
 
 		TerminalCmd(const TerminalCmd &) = delete;
@@ -129,7 +135,7 @@ class TerminalCmd
 
 		~TerminalCmd();
 
-		virtual nlohmann::json Run(TerminalContext &context, const CmdId_t id, const nlohmann::json &request) = 0;
+		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const nlohmann::json &request) = 0;
 
 		static TerminalCmd *TryFindCmd(std::string_view name);
 

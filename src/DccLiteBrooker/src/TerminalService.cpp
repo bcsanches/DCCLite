@@ -29,7 +29,7 @@ class GetChildItemCmd : public TerminalCmd
 			//empty
 		}
 
-		virtual nlohmann::json Run(TerminalContext &context, const CmdId_t id, const nlohmann::json &request)
+		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const nlohmann::json &request)
 		{
 			auto item = context.GetItem();
 			if (!item->IsFolder())
@@ -37,39 +37,20 @@ class GetChildItemCmd : public TerminalCmd
 				throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
 			}
 
-			auto folder = static_cast<FolderObject *>(item);			
+			auto folder = static_cast<FolderObject *>(item);
 
-			JsonCreator::StringWriter responseWriter;
+			auto objectArray = results.AddArray("data");
+												
+			auto enumerator = folder->GetEnumerator();
 
+			while (enumerator.MoveNext())
 			{
-				auto responseObj = JsonCreator::MakeObject(responseWriter);
+				auto item = enumerator.TryGetCurrent();
 
-				responseObj.AddStringValue("jsonrpc", "2.0");
-				responseObj.AddIntValue("id", id);
-				
-				{
-					auto resultObject = responseObj.AddObject("result");
-					resultObject.AddStringValue("class", "Item");
-					
-					{
-						auto dataArray = resultObject.AddArray("data");
-
-						auto enumerator = folder->GetEnumerator();
-
-						while (enumerator.MoveNext())
-						{
-							auto item = enumerator.TryGetCurrent();
-
-							auto itemObject = dataArray.AddObject();
-							itemObject.AddStringValue("name", item->GetName());
-							itemObject.AddBool("isFolder", item->IsFolder());							
-						}
-
-					}					
-				}
+				auto itemObject = dataArray.AddObject();
+				itemObject.AddStringValue("name", item->GetName());
+				itemObject.AddBool("isFolder", item->IsFolder());							
 			}
-
-
 		}
 };
 
@@ -95,6 +76,9 @@ class TerminalClient
 		bool Update();
 
 	private:
+		static std::string CreateErrorResponse(const std::string &msg, const CmdId_t id);
+
+	private:
 		NetMessenger m_clMessenger;
 		TerminalService &m_rclOwner;
 		TerminalContext m_clContext;
@@ -116,6 +100,29 @@ TerminalClient::TerminalClient(TerminalClient &&other) :
 	//empty
 }
 
+std::string TerminalClient::CreateErrorResponse(const std::string &msg, const CmdId_t id)
+{
+	JsonCreator::StringWriter responseWriter;
+
+	{
+		auto responseObj = JsonCreator::MakeObject(responseWriter);
+
+		responseObj.AddStringValue("jsonrpc", "2.0");
+
+		if (id >= 0)
+			responseObj.AddIntValue("id", id);
+
+		{
+			auto errorObj = responseObj.AddObject("error");
+
+			errorObj.AddStringValue("message", msg);
+		}
+	}
+
+	return responseWriter.String();
+}
+
+
 bool TerminalClient::Update()
 {
 	for (;;)
@@ -130,52 +137,62 @@ bool TerminalClient::Update()
 
 		if (status == Socket::Status::OK)
 		{
-			dcclite::Log::Info("Received {}", msg);
+			std::string response;
 
-			std::stringstream stream;
-			stream << msg;
-
-			json data;
-
-			stream >> data;
-
-			auto jsonrpcKey = data["jsonrpc"];
-			if (!jsonrpcKey.is_string() || jsonrpcKey.get<std::string>().compare("2.0"))
+			try
 			{
-				dcclite::Log::Error("Invalid rpc version: {}", msg);
+				dcclite::Log::Info("Received {}", msg);
 
-				continue;
+				std::stringstream stream;
+				stream << msg;
+
+				json data;
+
+				stream >> data;
+
+				auto jsonrpcKey = data["jsonrpc"];
+				if (!jsonrpcKey.is_string() || jsonrpcKey.get<std::string>().compare("2.0"))
+				{
+					throw TerminalCmdException(fmt::format("Invalid rpc version: {}", msg), -1);
+				}
+
+				auto methodKey = data["method"];
+				if (!methodKey.is_string())
+				{
+					throw TerminalCmdException(fmt::format("No method name in msg: {}", msg), -1);
+				}
+
+				const auto methodName = methodKey.get<std::string>();
+
+				auto idKey = data["id"];
+				if (!idKey.is_number_integer())
+				{
+					throw TerminalCmdException(fmt::format("No method id in: {}", msg), -1);
+
+					continue;
+				}
+
+				int id = idKey.get<int>();
+
+				auto cmd = TerminalCmd::TryFindCmd(methodName);
+				if (cmd == nullptr)
+				{
+					throw TerminalCmdException(fmt::format("Invalid cmd name: {}", methodName), id);
+					dcclite::Log::Error("Invalid cmd: {}", methodName);
+
+					continue;
+				}
+
+				cmd->Run(m_clContext, id, data);
 			}
-
-			auto methodKey = data["method"];
-			if (!methodKey.is_string())
+			catch (TerminalCmdException &ex)
 			{
-				dcclite::Log::Error("No method name in msg: {}", msg);
-
-				continue;
+				response = CreateErrorResponse(ex.what(), ex.GetId());
 			}
-
-			const auto methodName = methodKey.get<std::string>();
-
-			auto idKey = data["id"];
-			if (!idKey.is_number_integer())
+			catch (std::exception &ex)
 			{
-				dcclite::Log::Error("No method id");
-
-				continue;
+				response = CreateErrorResponse(ex.what(), -1);
 			}
-
-			int id = idKey.get<int>();
-
-			auto cmd = TerminalCmd::TryFindCmd(methodName);
-			if (cmd == nullptr)
-			{
-				dcclite::Log::Error("Invalid cmd: {}", methodName);
-
-				continue;
-			}
-
-			cmd->Run(m_clContext, id, data);
 		}
 	}
 	

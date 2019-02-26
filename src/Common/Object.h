@@ -1,9 +1,11 @@
 #pragma once
 
-#include <filesystem>
 #include <map>
 #include <string>
 #include <memory>
+
+#include <JsonCreator/Object.h>
+#include <JsonCreator/StringWriter.h>
 
 namespace dcclite
 {
@@ -91,6 +93,7 @@ namespace dcclite
 	};
 
 	typedef std::filesystem::path Path_t;
+	typedef JsonCreator::Object<JsonCreator::StringWriter> JsonOutputStream_t;
 
 	class IObject
 	{
@@ -116,6 +119,8 @@ namespace dcclite
 
 			Path_t GetPath() const;
 			IObject &GetRoot();
+
+			virtual const char *GetTypeName() const = 0;
 
 		private:
 			const std::string m_strName;
