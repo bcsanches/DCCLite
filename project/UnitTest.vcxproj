@@ -158,6 +158,7 @@
   <ItemGroup>
     <ClCompile Include="..\src\UnitTest\ObjectPathUnitTest.cpp" />
     <ClCompile Include="..\src\UnitTest\ProjectUnitTest.cpp" />
+    <ClCompile Include="..\src\UnitTest\UtilUnitTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\UnitTest\targetver.h" />

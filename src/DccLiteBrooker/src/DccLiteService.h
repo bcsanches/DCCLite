@@ -39,6 +39,23 @@ class DccLiteService : public Service
 		void Device_RegisterSession(Device &dev, const dcclite::Guid &configToken);
 		void Device_UnregisterSession(const dcclite::Guid &sessionToken);
 
+		//
+		//IObject
+		//
+		//
+
+		virtual const char *GetTypeName() const noexcept
+		{
+			return "DccLiteService";
+		}
+
+		virtual void Serialize(dcclite::JsonOutputStream_t &stream) const
+		{
+			Service::Serialize(stream);
+
+			//nothing
+		}
+
 	private:
 		void OnNet_Hello(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);
 		void OnNet_Ping(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);

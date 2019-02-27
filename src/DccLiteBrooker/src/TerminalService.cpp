@@ -37,9 +37,12 @@ class GetChildItemCmd : public TerminalCmd
 				throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
 			}
 
+			results.AddStringValue("classname", "ChildItem");
+			results.AddStringValue("location", item->GetPath().string());
+
 			auto folder = static_cast<FolderObject *>(item);
 
-			auto dataArray = results.AddArray("data");
+			auto dataArray = results.AddArray("children");
 												
 			auto enumerator = folder->GetEnumerator();
 
@@ -140,7 +143,7 @@ bool TerminalClient::Update()
 
 			try
 			{
-				dcclite::Log::Info("Received {}", msg);
+				dcclite::Log::Trace("Received {}", msg);
 
 				std::stringstream stream;
 				stream << msg;
@@ -183,13 +186,17 @@ bool TerminalClient::Update()
 				}
 
 				JsonCreator::StringWriter responseWriter;
-				auto responseObj = JsonCreator::MakeObject(responseWriter);
+				{
+					auto responseObj = JsonCreator::MakeObject(responseWriter);
 
-				responseObj.AddStringValue("jsonrpc", "2.0");				
-				responseObj.AddIntValue("id", id);
-				auto resultObj = responseObj.AddObject("result");
+					responseObj.AddStringValue("jsonrpc", "2.0");
+					responseObj.AddIntValue("id", id);
+					auto resultObj = responseObj.AddObject("result");
 
-				cmd->Run(m_clContext, resultObj, id, data);
+					cmd->Run(m_clContext, resultObj, id, data);
+				}
+
+				dcclite::Log::Trace("response {}", responseWriter.GetString());
 			}
 			catch (TerminalCmdException &ex)
 			{

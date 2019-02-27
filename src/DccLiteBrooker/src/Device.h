@@ -51,6 +51,18 @@ class Device: public dcclite::FolderObject
 			return m_eStatus == Status::ONLINE;
 		}
 
+		//
+		//IObject
+		//
+		//
+
+		virtual const char *GetTypeName() const noexcept
+		{
+			return "Device";
+		}
+
+		virtual void Serialize(dcclite::JsonOutputStream_t &stream) const;
+
 	private:
 		bool CheckSessionConfig(dcclite::Guid remoteConfigToken, dcclite::Address remoteAddress);
 		bool CheckSession(dcclite::Address remoteAddress);
@@ -69,6 +81,12 @@ class Device: public dcclite::FolderObject
 	private:		
 		DccLiteService			&m_clDccService;			
 
+		/**
+		Registered is a device that is stored on config.
+
+		Devices that contact the Brooker, but are not in the config files, are marked as unregistered
+		
+		*/
 		bool					m_fRegistered;
 
 		std::vector<Decoder *>	m_vecDecoders;

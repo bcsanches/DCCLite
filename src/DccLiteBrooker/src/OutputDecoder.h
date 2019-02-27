@@ -21,9 +21,24 @@ class OutputDecoder : public Decoder
 			return dcclite::DecoderTypes::DEC_OUTPUT;
 		}
 
+		//
+		//IObject
+		//
+		//
+
 		virtual const char *GetTypeName() const noexcept
 		{
-			return "OutputDecoder";
+			return "Device";
+		}
+
+		virtual void Serialize(dcclite::JsonOutputStream_t &stream) const
+		{
+			Decoder::Serialize(stream);
+
+			stream.AddIntValue ("pin", m_iPin);
+			stream.AddBool("invertedOperation", m_fInvertedOperation);
+			stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
+			stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
 		}
 
 	private:

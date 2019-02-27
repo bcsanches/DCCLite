@@ -69,6 +69,17 @@ Device::Device(std::string name, DccLiteService &dccService):
 	//empty
 }
 
+void Device::Serialize(dcclite::JsonOutputStream_t &stream) const
+{
+	FolderObject::Serialize(stream);
+
+	stream.AddBool("registered", m_fRegistered);
+	stream.AddStringValue("configToken", dcclite::GuidToString(m_ConfigToken));
+	stream.AddStringValue("sessionToken", dcclite::GuidToString(m_SessionToken));
+	stream.AddStringValue("remoteAddress", m_RemoteAddress.GetIpString());
+	stream.AddBool("isOnline", this->IsOnline());
+}
+
 void Device::GoOnline(dcclite::Address remoteAddress)
 {	
 	m_RemoteAddress = remoteAddress;

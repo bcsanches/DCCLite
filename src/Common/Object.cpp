@@ -1,22 +1,28 @@
 #include "Object.h"
-
-#include <cassert>
 #include <sstream>
 
 #include <fmt/format.h>
 
+#include "Util.h"
+
 namespace dcclite
 {
+	ObjectPath::ObjectPath(std::string_view str) :
+		m_strPath(dcclite::StrTrim(str))
+	{
+		//empty
+	}
+
 	void ObjectPath::append(std::string_view other)
 	{		
+		other = dcclite::StrTrim(other);
 		if (m_strPath.empty())
 		{
 			m_strPath = other;
 		}
 		else
-		{
-			auto it = m_strPath.rend();
-			if (*it != '/')
+		{					
+			if (m_strPath.back() != '/')
 			{
 				m_strPath += '/';
 			}
@@ -59,14 +65,32 @@ namespace dcclite
 		}				
 		else
 		{
-			path.append("c:\\" + std::string(this->GetName()));
+			path = Path_t("/");
 		}
+	}
+
+	void IObject::Serialize(JsonOutputStream_t &stream) const
+	{
+		stream.AddStringValue("classname", this->GetTypeName());
+		stream.AddStringValue("name", this->GetName());
+		stream.AddBool("isShortcut", this->IsShortcut());
+		stream.AddBool("isFolder", this->IsFolder());
+
+		if (m_pParent)
+			stream.AddStringValue("parentName", m_pParent->GetName());
 	}
 
 	Object::Object(std::string name) :
 		IObject(std::move(name))		
 	{
 		//empty
+	}
+
+	void Shortcut::Serialize(JsonOutputStream_t &stream) const
+	{
+		IObject::Serialize(stream);
+
+		stream.AddStringValue("target", m_rTarget.GetPath().string());
 	}
 
 	FolderObject::FolderObject(std::string name):
@@ -106,9 +130,10 @@ namespace dcclite
 
 	IObject *FolderObject::TryResolveChild(std::string_view name)
 	{
-		auto *obj = this->TryGetChild(name);
-		
-		return (obj && obj->IsShortcut()) ? static_cast<Shortcut*>(obj)->TryResolve() : nullptr;
+		if (auto *obj = this->TryGetChild(name))
+			return (obj->IsShortcut()) ? static_cast<Shortcut*>(obj)->TryResolve() : obj;
+		else
+			return nullptr;		
 	}
 
 	IObject *FolderObject::TryNavigate(const Path_t &path)

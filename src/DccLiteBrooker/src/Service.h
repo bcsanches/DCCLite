@@ -33,6 +33,18 @@ class Service: public dcclite::FolderObject
 		Service(const Service &) = delete;
 		Service(Service &&) = delete;
 
+		virtual const char *GetTypeName() const noexcept
+		{
+			return "Service";
+		}
+
+		virtual void Serialize(dcclite::JsonOutputStream_t &stream) const
+		{
+			FolderObject::Serialize(stream);
+
+			//nothing
+		}
+
 	public:
 		virtual ~Service() {}		
 

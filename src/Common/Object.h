@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <map>
 #include <string>
 #include <memory>
@@ -101,11 +102,7 @@ namespace dcclite
 			ObjectPath(const ObjectPath &rhs) = default;				
 			ObjectPath(ObjectPath &&rhs) = default;
 
-			ObjectPath(std::string_view str) :
-				m_strPath(str)
-			{
-				//empty
-			}
+			ObjectPath(std::string_view str);
 
 			ObjectPath &operator=(const ObjectPath &rhs) = default;
 			ObjectPath &operator=(ObjectPath &&rhs) = default;
@@ -167,7 +164,7 @@ namespace dcclite
 
 			virtual const char *GetTypeName() const noexcept = 0;
 
-			virtual void Serialize(JsonOutputStream_t &stream);
+			virtual void Serialize(JsonOutputStream_t &stream) const;
 
 			inline FolderObject *GetParent() const noexcept
 			{
@@ -270,6 +267,8 @@ namespace dcclite
 				return "dcclite::Shortcut";
 			}
 
+			virtual void Serialize(JsonOutputStream_t &stream) const;
+
 		private:
 			IObject &m_rTarget;			
 	};
@@ -323,6 +322,13 @@ namespace dcclite
 			virtual const char *GetTypeName() const noexcept
 			{
 				return "dcclite::FolderObject";
+			}
+
+			virtual void Serialize(JsonOutputStream_t &stream) const
+			{
+				IObject::Serialize(stream);
+
+				//nothing
 			}
 
 		private:

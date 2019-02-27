@@ -79,6 +79,23 @@ class Decoder: public dcclite::Object
 
 		virtual dcclite::DecoderTypes GetType() const noexcept = 0;
 
+		//
+		//IObject
+		//
+		//
+
+		virtual const char *GetTypeName() const noexcept
+		{
+			return "Decoder";
+		}
+
+		virtual void Serialize(dcclite::JsonOutputStream_t &stream) const
+		{
+			Object::Serialize(stream);
+
+			stream.AddIntValue("address", m_iAddress.GetAddress());
+		}
+
 	private:
 		Address m_iAddress;		
 

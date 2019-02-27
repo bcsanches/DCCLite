@@ -37,3 +37,19 @@ bool dcclite::TryHexStrToBinary(std::uint8_t dest[], size_t destSize, std::strin
 
 	return true;
 }
+
+std::string_view dcclite::StrTrim(std::string_view str)
+{
+	auto newBegin = str.begin();
+	for (auto end = str.end(); (newBegin != end) && (*newBegin == ' '); ++newBegin);
+
+	if (newBegin == str.end())
+		return std::string_view("");
+
+	auto newEnd = str.end() - 1;
+	for (; (newEnd != newBegin) && (*newEnd == ' '); --newEnd);
+	
+	++newEnd;
+
+	return str.substr(newBegin - str.begin(), newEnd - newBegin);
+}
