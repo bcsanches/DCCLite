@@ -80,7 +80,7 @@ void Device::Serialize(dcclite::JsonOutputStream_t &stream) const
 	stream.AddBool("isOnline", this->IsOnline());
 }
 
-void Device::GoOnline(dcclite::Address remoteAddress)
+void Device::GoOnline(const dcclite::Address remoteAddress)
 {	
 	m_RemoteAddress = remoteAddress;
 	m_SessionToken = dcclite::GuidCreate();

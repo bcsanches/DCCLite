@@ -28,7 +28,8 @@ namespace SharpTerminal
 
         private CancellationTokenSource mCancellationTokenSource = new CancellationTokenSource();
 
-        private BlockingCollection<string> mSendQueue = new BlockingCollection<string>();        
+        private BlockingCollection<string> mSendQueue = new BlockingCollection<string>();
+        private BlockingCollection<string> mReceiveQueue = new BlockingCollection<string>();
 
         public TerminalClient()
         {
@@ -93,6 +94,9 @@ namespace SharpTerminal
 
             var stream = mClient.GetStream();
             var bytes = new byte[1];
+            var stringBuilder = new System.Text.StringBuilder(128);
+
+            bool lastCharWasCarriageReturn = false;
 
             while (!token.IsCancellationRequested)
             {
@@ -120,6 +124,28 @@ namespace SharpTerminal
 
                 bytes[0] = (byte)data;
                 var ch = System.Text.Encoding.ASCII.GetChars(bytes);
+                stringBuilder.Append(ch);
+
+                if (ch[0] == '\r')
+                    lastCharWasCarriageReturn = true;
+                else if ((ch[0] == '\n') && (lastCharWasCarriageReturn))
+                {
+                    lastCharWasCarriageReturn = false;
+
+                    var msg = stringBuilder.ToString();
+                    stringBuilder.Clear();
+
+                    //empty msg?
+                    if (msg == "\r\n")
+                        continue;
+
+                    mReceiveQueue.Add(msg);
+                }
+                else
+                {
+                    //always clear 
+                    lastCharWasCarriageReturn = false;
+                }                    
             }
 
             mReceiverThread = null;

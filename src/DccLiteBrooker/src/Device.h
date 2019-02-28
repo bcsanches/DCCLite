@@ -67,7 +67,7 @@ class Device: public dcclite::FolderObject
 		bool CheckSessionConfig(dcclite::Guid remoteConfigToken, dcclite::Address remoteAddress);
 		bool CheckSession(dcclite::Address remoteAddress);
 
-		void GoOnline(dcclite::Address remoteAddress);
+		void GoOnline(const dcclite::Address remoteAddress);
 		void GoOffline();
 
 		void RefreshTimeout(dcclite::Clock::TimePoint_t time);

@@ -61,7 +61,7 @@ static GetChildItemCmd g_GetChildItemCmd{};
 class TerminalClient
 {
 	public:
-		TerminalClient(TerminalService &owner, Socket &&socket);
+		TerminalClient(TerminalService &owner, Address address, Socket &&socket);
 		TerminalClient(const TerminalClient &client) = delete;
 		TerminalClient(TerminalClient &&other);
 
@@ -84,10 +84,13 @@ class TerminalClient
 		NetMessenger m_clMessenger;
 		TerminalService &m_rclOwner;
 		TerminalContext m_clContext;
+
+		const Address	m_clAddress;
 };
 
-TerminalClient::TerminalClient(TerminalService &owner, Socket &&socket) :
+TerminalClient::TerminalClient(TerminalService &owner, Address address, Socket &&socket) :
 	m_rclOwner(owner),
+	m_clAddress(address),
 	m_clMessenger(std::move(socket)),
 	m_clContext(static_cast<dcclite::FolderObject &>(owner.GetRoot()))
 {
@@ -96,6 +99,7 @@ TerminalClient::TerminalClient(TerminalService &owner, Socket &&socket) :
 
 TerminalClient::TerminalClient(TerminalClient &&other) :
 	m_rclOwner(other.m_rclOwner),
+	m_clAddress(std::move(other.m_clAddress)),
 	m_clMessenger(std::move(other.m_clMessenger)),
 	m_clContext(std::move(other.m_clContext))
 {
@@ -196,7 +200,9 @@ bool TerminalClient::Update()
 					cmd->Run(m_clContext, resultObj, id, data);
 				}
 
-				dcclite::Log::Trace("response {}", responseWriter.GetString());
+				response = responseWriter.GetString();
+
+				dcclite::Log::Trace("response {}", response);
 			}
 			catch (TerminalCmdException &ex)
 			{
@@ -205,6 +211,11 @@ bool TerminalClient::Update()
 			catch (std::exception &ex)
 			{
 				response = CreateErrorResponse(ex.what(), -1);
+			}
+
+			if (!m_clMessenger.Send(m_clAddress, response))
+			{
+				dcclite::Log::Error("message for {} not sent, contents: {}", m_clAddress.GetIpString(), response);
 			}
 		}
 	}
@@ -241,7 +252,7 @@ void TerminalService::Update(const dcclite::Clock &clock)
 	{
 		dcclite::Log::Info("[TermnialService] Client connected {}", address.GetIpString());
 
-		m_vecClients.emplace_back(*this, std::move(socket));
+		m_vecClients.emplace_back(*this, address, std::move(socket));
 	}
 
 	for (size_t i = 0; i < m_vecClients.size(); ++i)

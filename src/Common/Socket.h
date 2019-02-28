@@ -29,6 +29,8 @@ namespace dcclite
 				//empty
 			}
 
+			Address(const Address &rhs) = default;			
+
 			inline Address(std::uint_fast8_t a, std::uint_fast8_t b, std::uint_fast8_t c, std::uint_fast8_t d, Port_t port):
 				m_uAddress{ (std::uint32_t{ a } << 24) | (std::uint32_t{ b } << 16) | (std::uint32_t{ c } << 8) | std::uint32_t{ d } },
 				m_uPort{ port }
@@ -42,6 +44,8 @@ namespace dcclite
 			{
 				//emtpy
 			}
+
+			Address &operator=(const Address &rhs) = default;			
 
 			inline std::uint32_t GetAddress() const { return m_uAddress; }
 
