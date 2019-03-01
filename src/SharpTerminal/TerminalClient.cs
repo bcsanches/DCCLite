@@ -28,8 +28,7 @@ namespace SharpTerminal
 
         private CancellationTokenSource mCancellationTokenSource = new CancellationTokenSource();
 
-        private BlockingCollection<string> mSendQueue = new BlockingCollection<string>();
-        private BlockingCollection<string> mReceiveQueue = new BlockingCollection<string>();
+        private BlockingCollection<string> mSendQueue = new BlockingCollection<string>();        
 
         public TerminalClient()
         {
@@ -139,7 +138,7 @@ namespace SharpTerminal
                     if (msg == "\r\n")
                         continue;
 
-                    mReceiveQueue.Add(msg);
+                    Listener?.OnMessageReceived(msg);                    
                 }
                 else
                 {

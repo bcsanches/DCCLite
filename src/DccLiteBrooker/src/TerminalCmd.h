@@ -2,8 +2,9 @@
 
 #include <string_view>
 
-#include "json.hpp"
 #include "Object.h"
+
+#include <rapidjson/document.h>
 
 
 //add drives?
@@ -132,7 +133,7 @@ class TerminalCmd
 
 		~TerminalCmd();
 
-		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const nlohmann::json &request) = 0;
+		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request) = 0;
 
 		static TerminalCmd *TryFindCmd(std::string_view name);
 

@@ -64,13 +64,14 @@
             this.m_tbConsole.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_tbConsole.BackColor = System.Drawing.Color.MediumBlue;
-            this.m_tbConsole.Font = new System.Drawing.Font("Lucida Console", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.m_tbConsole.BackColor = System.Drawing.Color.MidnightBlue;
+            this.m_tbConsole.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.m_tbConsole.ForeColor = System.Drawing.Color.White;
             this.m_tbConsole.Location = new System.Drawing.Point(12, 12);
             this.m_tbConsole.Multiline = true;
             this.m_tbConsole.Name = "m_tbConsole";
             this.m_tbConsole.ReadOnly = true;
+            this.m_tbConsole.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.m_tbConsole.Size = new System.Drawing.Size(760, 468);
             this.m_tbConsole.TabIndex = 0;
             // 

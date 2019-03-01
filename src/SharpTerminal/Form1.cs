@@ -47,6 +47,18 @@ namespace SharpTerminal
             mClient.Stop();
         }
 
+        public void OnMessageReceived(string msg)
+        {
+            if(this.InvokeRequired)
+            {
+                this.Invoke(new MethodInvoker(delegate { this.OnMessageReceived(msg); }));
+            }
+            else
+            {
+                Console_Println(msg);
+            }
+        }
+
         public void OnStatusChanged(ConnectionState state, object param)
         {
             if(this.InvokeRequired)
@@ -320,7 +332,12 @@ namespace SharpTerminal
 
         private void Console_Println(string text)
         {
-            m_tbConsole.Text += text + Environment.NewLine;
+            if(this.InvokeRequired)
+            {
+                this.Invoke(new MethodInvoker(delegate { this.Console_Println(text); }));
+            }
+            else
+                m_tbConsole.AppendText(text + Environment.NewLine);
         }
 
         private void Console_Clear()

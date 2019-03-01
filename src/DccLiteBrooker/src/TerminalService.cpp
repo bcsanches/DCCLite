@@ -8,7 +8,8 @@
 #include <JsonCreator/StringWriter.h>
 #include <JsonCreator/Object.h>
 
-#include "json.hpp"
+#include <rapidjson/document.h>
+
 #include "NetMessenger.h"
 #include "TerminalCmd.h"
 
@@ -29,7 +30,7 @@ class GetChildItemCmd : public TerminalCmd
 			//empty
 		}
 
-		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const nlohmann::json &request)
+		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
 		{
 			auto item = context.GetItem();
 			if (!item->IsFolder())
@@ -56,7 +57,58 @@ class GetChildItemCmd : public TerminalCmd
 		}
 };
 
+class SetLocationCmd : public TerminalCmd
+{
+	public:
+		SetLocationCmd() :
+			TerminalCmd("Set-Location")
+		{
+			//empty
+		}
+
+		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
+		{
+			auto item = context.GetItem();
+			if (!item->IsFolder())
+			{
+				throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
+			}
+
+			auto folder = static_cast<FolderObject *>(item);
+
+			auto paramsIt = request.FindMember("params");			
+			if (paramsIt != request.MemberEnd())
+			{							
+				if (!paramsIt->value.IsArray())
+				{
+					throw TerminalCmdException("Expected positional parameters", id);
+				}
+
+				auto destinationPath = paramsIt->value[0].GetString();
+
+				auto destinationObj = folder->TryNavigate(Path_t(destinationPath));
+				if (!destinationObj)
+				{
+					throw TerminalCmdException(fmt::format("Invalid path {}", destinationPath), id);
+				}
+
+				if (!destinationObj->IsFolder())
+				{
+					throw TerminalCmdException(fmt::format("Path {} led to an IObject, not IFolder", destinationPath), id);
+				}
+
+
+				context.SetLocation(destinationObj->GetPath());
+				item = destinationObj;
+			}
+		
+			results.AddStringValue("classname", "Location");
+			results.AddStringValue("location", item->GetPath().string());
+		}
+};
+
 static GetChildItemCmd g_GetChildItemCmd{};
+static SetLocationCmd g_SetLocationCmd{};
 
 class TerminalClient
 {
@@ -149,36 +201,35 @@ bool TerminalClient::Update()
 			{
 				dcclite::Log::Trace("Received {}", msg);
 
-				std::stringstream stream;
-				stream << msg;
+				rapidjson::Document doc;
+				doc.Parse(msg.c_str());
 
-				json data;
-
-				stream >> data;
-
-				auto jsonrpcKey = data["jsonrpc"];
-				if (!jsonrpcKey.is_string() || jsonrpcKey.get<std::string>().compare("2.0"))
+				if (doc.HasParseError())
 				{
-					throw TerminalCmdException(fmt::format("Invalid rpc version: {}", msg), -1);
+					throw TerminalCmdException(fmt::format("Invalid json: {}", msg), -1);
 				}
 
-				auto methodKey = data["method"];
-				if (!methodKey.is_string())
+				auto jsonrpcKey = doc.FindMember("jsonrpc");
+				if ((jsonrpcKey == doc.MemberEnd()) || (!jsonrpcKey->value.IsString()) || (strcmp(jsonrpcKey->value.GetString(), "2.0")))
 				{
-					throw TerminalCmdException(fmt::format("No method name in msg: {}", msg), -1);
+					throw TerminalCmdException(fmt::format("Invalid rpc version or was not set: {}", msg), -1);
 				}
 
-				const auto methodName = methodKey.get<std::string>();
+				auto methodKey = doc.FindMember("method");
+				if ((methodKey == doc.MemberEnd()) || (!methodKey->value.IsString()))
+				{
+					throw TerminalCmdException(fmt::format("Invalid method name in msg: {}", msg), -1);
+				}
 
-				auto idKey = data["id"];
-				if (!idKey.is_number_integer())
+				const auto methodName = methodKey->value.GetString();
+
+				auto idKey = doc.FindMember("id");
+				if ((idKey == doc.MemberEnd()) || (!idKey->value.IsInt()))
 				{
 					throw TerminalCmdException(fmt::format("No method id in: {}", msg), -1);
+				}				
 
-					continue;
-				}
-
-				int id = idKey.get<int>();
+				int id = idKey->value.GetInt();
 
 				auto cmd = TerminalCmd::TryFindCmd(methodName);
 				if (cmd == nullptr)
@@ -197,7 +248,7 @@ bool TerminalClient::Update()
 					responseObj.AddIntValue("id", id);
 					auto resultObj = responseObj.AddObject("result");
 
-					cmd->Run(m_clContext, resultObj, id, data);
+					cmd->Run(m_clContext, resultObj, id, doc);
 				}
 
 				response = responseWriter.GetString();
