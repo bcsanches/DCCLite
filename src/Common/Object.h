@@ -302,7 +302,7 @@ namespace dcclite
 		public:
 			FolderObject(std::string name);
 
-			IObject *AddChild(std::unique_ptr<IObject> obj);
+			virtual IObject *AddChild(std::unique_ptr<IObject> obj);
 			
 			std::unique_ptr<IObject> RemoveChild(std::string_view name);
 

@@ -10,6 +10,7 @@
 #include "Log.h"
 
 #include "json.hpp"
+#include "TerminalCmd.h"
 
 #include "DccLiteService.h"
 
@@ -33,7 +34,12 @@ static std::unique_ptr<Service> CreateService(const json &obj, const Project &pr
 Brooker::Brooker(std::filesystem::path projectPath):
 	m_clRoot("root"),
 	m_clProject(std::move(projectPath))
-{
+{	
+	m_clRoot.AddChild(std::make_unique<TerminalCmdHost>());
+
+	using namespace dcclite;
+	m_pServices = static_cast<FolderObject*>(m_clRoot.AddChild(std::make_unique<FolderObject>("services")));
+
 	this->LoadConfig();
 }
 
@@ -68,13 +74,13 @@ void Brooker::LoadConfig()
 	{
 		auto service = CreateService(serviceData, m_clProject);
 
-		m_clRoot.AddChild(std::move(service));
+		m_pServices->AddChild(std::move(service));
 	}
 }
 
 void Brooker::Update(const dcclite::Clock &clock)
 {
-	auto enumerator = m_clRoot.GetEnumerator();
+	auto enumerator = m_pServices->GetEnumerator();
 
 	while (enumerator.MoveNext())
 	{

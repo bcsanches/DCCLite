@@ -5,6 +5,8 @@
 #include <map>
 #include <sstream>
 
+static TerminalCmdHost *g_CmdHost = nullptr;
+
 void TerminalContext::SetLocation(const dcclite::Path_t &newLocation)
 {
 #if 1
@@ -22,49 +24,46 @@ dcclite::IObject *TerminalContext::GetItem() const
 	return m_rclRoot.TryNavigate(m_pthLocation);
 }
 
-static std::map<std::string_view, TerminalCmd *> &GetCmdMap()
+TerminalCmdHost::TerminalCmdHost():
+	FolderObject("CmdHost")
 {
-	static std::map<std::string_view, TerminalCmd *> g_mapCmds;
-
-	return g_mapCmds;
+	g_CmdHost = this;
 }
 
-TerminalCmd::TerminalCmd(std::string_view name):
-	m_strName(name)
+TerminalCmdHost::~TerminalCmdHost()
 {
-	auto &mapCmds = GetCmdMap();
+	g_CmdHost = nullptr;
+}
 
-	auto it = mapCmds.find(m_strName);
+dcclite::IObject *TerminalCmdHost::AddChild(std::unique_ptr<IObject> obj)
+{
+	throw std::logic_error(fmt::format("Cannot add childs to TerminalCmdHost, sorry, obj name {}", obj->GetName()));
+}
 
-	if (it != mapCmds.end())
-	{
-		std::stringstream stream;
+void TerminalCmdHost::AddCmd(std::unique_ptr<TerminalCmd> cmd)
+{
+	FolderObject::AddChild(std::move(cmd));
+}
 
-		stream << "TerminalCmd " << name << " already exists";
+TerminalCmd *TerminalCmdHost::TryFindCmd(std::string_view name)
+{
+	return static_cast<TerminalCmd *>(this->TryGetChild(name));
+}
 
-		throw std::runtime_error(stream.str());
-	}
+TerminalCmdHost *TerminalCmdHost::Instance()
+{
+	return g_CmdHost;
+}
 
-	mapCmds.insert(it, std::make_pair(std::string_view(m_strName), this));
+
+TerminalCmd::TerminalCmd(std::string name):
+	IObject(name)
+{
+	//empty
 }
 
 TerminalCmd::~TerminalCmd()
 {
-	auto &mapCmds = GetCmdMap();
-
-	auto it = mapCmds.find(m_strName);
-
-	if (it != mapCmds.end())
-		mapCmds.erase(it);
+	//empty
 }
-
-TerminalCmd *TerminalCmd::TryFindCmd(std::string_view name)
-{
-	auto &mapCmds = GetCmdMap();
-
-	auto it = mapCmds.find(name);
-
-	return it != mapCmds.end() ? it->second : nullptr;
-}
-
 

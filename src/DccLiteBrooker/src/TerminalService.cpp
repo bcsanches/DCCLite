@@ -107,9 +107,6 @@ class SetLocationCmd : public TerminalCmd
 		}
 };
 
-static GetChildItemCmd g_GetChildItemCmd{};
-static SetLocationCmd g_SetLocationCmd{};
-
 class TerminalClient
 {
 	public:
@@ -231,7 +228,10 @@ bool TerminalClient::Update()
 
 				int id = idKey->value.GetInt();
 
-				auto cmd = TerminalCmd::TryFindCmd(methodName);
+				auto cmdHost = TerminalCmdHost::Instance();
+				assert(cmdHost);
+
+				auto cmd = cmdHost->TryFindCmd(methodName);
 				if (cmd == nullptr)
 				{
 					throw TerminalCmdException(fmt::format("Invalid cmd name: {}", methodName), id);
@@ -278,6 +278,13 @@ bool TerminalClient::Update()
 TerminalService::TerminalService(const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params, const Project &project) :
 	Service(serviceClass, name, params, project)	
 {	
+	auto cmdHost = TerminalCmdHost::Instance();
+
+	assert(cmdHost);
+
+	cmdHost->AddCmd(std::make_unique<GetChildItemCmd>());
+	cmdHost->AddCmd(std::make_unique<SetLocationCmd>());	
+
 	if (!m_clSocket.Open(params["port"].get<unsigned short>(), dcclite::Socket::Type::STREAM))
 	{
 		throw std::runtime_error("[TerminalService] Cannot open socket");

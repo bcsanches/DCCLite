@@ -13,10 +13,13 @@ namespace dcclite
 	class Clock;
 }
 
+class TerminalCmdHost;
+
 class Brooker
 {
 	private:	
 		dcclite::FolderObject m_clRoot;
+		dcclite::FolderObject *m_pServices;
 
 		Project m_clProject;
 

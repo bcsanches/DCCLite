@@ -332,7 +332,7 @@ namespace SharpTerminal
 
         private void Console_Println(string text)
         {
-            if(this.InvokeRequired)
+            if(m_tbConsole.InvokeRequired)
             {
                 this.Invoke(new MethodInvoker(delegate { this.Console_Println(text); }));
             }

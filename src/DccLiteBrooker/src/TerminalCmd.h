@@ -58,6 +58,7 @@ Responses:
 */
 
 typedef int CmdId_t;
+class TerminalCmd;
 
 class TerminalContext
 {
@@ -120,23 +121,42 @@ class TerminalCmdException: public std::exception
 		std::string m_strWhat;
 };
 
-class TerminalCmd
+class TerminalCmdHost: public dcclite::FolderObject
+{
+	public:		
+		TerminalCmdHost();
+		virtual ~TerminalCmdHost();
+
+		virtual IObject *AddChild(std::unique_ptr<IObject> obj);
+		void AddCmd(std::unique_ptr<TerminalCmd> cmd);	
+
+		TerminalCmd *TryFindCmd(std::string_view name);
+
+		virtual const char *GetTypeName() const noexcept
+		{
+			return "TerminalCmdHost";
+		}
+
+		static TerminalCmdHost *Instance();
+};
+
+class TerminalCmd: public dcclite::IObject
 {
 	public:
 		typedef JsonCreator::Object<JsonCreator::StringWriter> Result_t;
 
 	public:
-		TerminalCmd(std::string_view name);
+		TerminalCmd(std::string name);
 
 		TerminalCmd(const TerminalCmd &) = delete;
 		TerminalCmd(TerminalCmd &&) = delete;
 
 		~TerminalCmd();
 
-		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request) = 0;
+		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request) = 0;	
 
-		static TerminalCmd *TryFindCmd(std::string_view name);
-
-	private:
-		std::string m_strName;
+		virtual const char *GetTypeName() const noexcept
+		{
+			return "TerminalCmd";
+		}
 };
