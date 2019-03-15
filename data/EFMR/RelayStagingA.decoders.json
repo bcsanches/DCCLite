@@ -54,7 +54,7 @@
       "name": "ATrack09",
       "class": "Output",
       "address": "0x18",
-      "pin": 5
+      "pin": 9
     },
     {
       "name": "ATrack10",

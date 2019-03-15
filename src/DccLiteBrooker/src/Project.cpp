@@ -2,7 +2,11 @@
 
 #include <fstream>
 
-#include "json.hpp"
+#include <JsonCreator/StringWriter.h>
+#include <JsonCreator/Object.h>
+
+#include <rapidjson/document.h>
+#include <rapidjson/istreamwrapper.h>
 
 #include "FmtUtils.h"
 #include "GuidUtils.h"
@@ -42,33 +46,37 @@ dcclite::Guid Project::GetFileToken(const std::string_view fileName) const
 		std::ifstream stateFile(stateFilePath);
 		if (stateFile)
 		{
-			nlohmann::json stateData;
+			using namespace rapidjson;
 
-			stateFile >> stateData;			
+			IStreamWrapper isw(stateFile);
+			Document stateData;
+			stateData.ParseStream(isw);
 
-			//read token first, because if it fails, hash is already null
-			auto tokenData = stateData["token"];
-			if (!tokenData.is_string())
+			//read token first, because if it fails, hash is already null			
+			auto tokenData = stateData.FindMember("token");
+			if (!tokenData->value.IsString())
 			{
 				dcclite::Log::Error("project state file does not contain token");
 				goto SKIP_LOAD;
 			}
-			auto tokenStr = tokenData.get<std::string>();
-			if (!dcclite::TryGuidLoadFromString(token, tokenStr))
+
+			//read tokenStr
+			if (!dcclite::TryGuidLoadFromString(token, tokenData->value.GetString()))
 			{
 				dcclite::Log::Error("project error parsing stored token");
 				goto SKIP_LOAD;
 			}	
 
-			auto hashData = stateData["sha1"];
-			if (!hashData.is_string())
+			auto hashData = stateData.FindMember("sha1");
+			if (!hashData->value.IsString())
 			{
 				dcclite::Log::Error("Project state file does not contain hash");
 
 				goto SKIP_LOAD;
 			}
-			auto hashStr = hashData.get<std::string>();
-			if (!storedHash.TryLoadFromString(hashStr))
+			
+			//read hash
+			if (!storedHash.TryLoadFromString(hashData->value.GetString()))
 			{
 				dcclite::Log::Error("Project error parsing hash");
 				goto SKIP_LOAD;
@@ -100,11 +108,15 @@ SKIP_LOAD:
 			{
 				std::ofstream stateFile(stateFilePath, std::ios_base::trunc);
 
-				nlohmann::json stateData;
-				stateData["token"] = fmt::format("{}", token);
-				stateData["sha1"] = currentFileHash.ToString();
+				JsonCreator::StringWriter responseWriter;
+				{
+					auto object = JsonCreator::MakeObject(responseWriter);
 
-				stateFile << stateData;
+					object.AddStringValue("token", fmt::format("{}", token));
+					object.AddStringValue("sha1", fmt::format("{}", currentFileHash.ToString()));
+				}
+							
+				stateFile << responseWriter.GetString();
 
 				dcclite::Log::Info("Stored {} state data on {}", fileName, stateFilePath.string());
 			}
