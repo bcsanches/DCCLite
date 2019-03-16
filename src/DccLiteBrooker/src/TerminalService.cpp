@@ -13,11 +13,10 @@
 #include "NetMessenger.h"
 #include "TerminalCmd.h"
 
-using json = nlohmann::json;
 using namespace dcclite;
 
 static ServiceClass terminalService("Terminal",
-	[](const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params, const Project &project) -> 
+	[](const ServiceClass &serviceClass, const std::string &name, const rapidjson::Value &params, const Project &project) -> 
 	std::unique_ptr<Service> { return std::make_unique<TerminalService>(serviceClass, name, params, project); }
 );
 
@@ -275,7 +274,7 @@ bool TerminalClient::Update()
 	return true;
 }
 
-TerminalService::TerminalService(const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params, const Project &project) :
+TerminalService::TerminalService(const ServiceClass &serviceClass, const std::string &name, const rapidjson::Value &params, const Project &project) :
 	Service(serviceClass, name, params, project)	
 {	
 	auto cmdHost = TerminalCmdHost::Instance();
@@ -290,7 +289,7 @@ TerminalService::TerminalService(const ServiceClass &serviceClass, const std::st
 
 	cmdHost->AddAlias("cd", *setLocationCmd);
 
-	if (!m_clSocket.Open(params["port"].get<unsigned short>(), dcclite::Socket::Type::STREAM))
+	if (!m_clSocket.Open(params["port"].GetInt(), dcclite::Socket::Type::STREAM))
 	{
 		throw std::runtime_error("[TerminalService] Cannot open socket");
 	}

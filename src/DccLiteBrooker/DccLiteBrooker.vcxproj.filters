@@ -16,9 +16,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\json.hpp">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="src\Brooker.h">
       <Filter>src</Filter>
     </ClInclude>

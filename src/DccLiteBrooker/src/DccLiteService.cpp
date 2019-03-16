@@ -10,11 +10,11 @@
 #include "Packet.h"
 
 static ServiceClass dccLiteService("DccLite", 
-	[](const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params, const Project &project) -> 
+	[](const ServiceClass &serviceClass, const std::string &name, const rapidjson::Value &params, const Project &project) ->
 	std::unique_ptr<Service> { return std::make_unique<DccLiteService>(serviceClass, name, params, project); }
 );
 
-DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params, const Project &project) :
+DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::string &name, const rapidjson::Value &params, const Project &project) :
 	Service(serviceClass, name, params, project)	
 {
 	m_pDecoders = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("decoders")));
@@ -22,21 +22,21 @@ DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::stri
 	m_pDevices = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("devices")));	
 	m_pSessions = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("sessions")));
 
-	auto port = params["port"].get<int>();
+	auto port = params["port"].GetInt();
 
 	if (!m_clSocket.Open(port, dcclite::Socket::Type::DATAGRAM))
 	{
 		throw std::runtime_error("[DccLiteService] error: cannot open socket");
 	}
 
-	auto devicesData = params["devices"];
+	const rapidjson::Value &devicesData = params["devices"];
 
-	if (!devicesData.is_array())
+	if (!devicesData.IsArray())
 		throw std::runtime_error("error: invalid config, expected devices array inside DccLiteService");
 
-	for (auto &device : devicesData)
+	for (auto &device : devicesData.GetArray())
 	{
-		auto nodeName = device["name"].get<std::string>();		
+		auto nodeName = device["name"].GetString();
 
 		m_pDevices->AddChild(std::make_unique<Device>(nodeName, *this, device, project));
 	}
@@ -51,7 +51,7 @@ Decoder &DccLiteService::Create(
 	const std::string &className,
 	Decoder::Address address,
 	const std::string &name,
-	const nlohmann::json &params
+	const rapidjson::Value &params
 )
 {
 	auto decoder = Decoder::Class::TryProduce(className.c_str(), address, name, *this, params);

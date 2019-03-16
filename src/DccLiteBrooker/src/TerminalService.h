@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "Service.h"
 
 #include "Socket.h"
@@ -14,7 +16,7 @@ class TerminalService : public Service
 		std::vector<TerminalClient> m_vecClients;
 
 	public:
-		TerminalService(const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params, const Project &project);
+		TerminalService(const ServiceClass &serviceClass, const std::string &name, const rapidjson::Value &params, const Project &project);
 
 		virtual ~TerminalService();
 

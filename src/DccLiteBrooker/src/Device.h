@@ -1,13 +1,15 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "Clock.h"
 #include "Guid.h"
-#include "json.hpp"
 #include "Object.h"
 #include "Packet.h"
 #include "Socket.h"
+
+#include <rapidjson/document.h>
 
 class DccLiteService;
 class Decoder;
@@ -23,7 +25,7 @@ class Device: public dcclite::FolderObject
 		};
 
 	public:
-		Device(std::string name, DccLiteService &dccService, const nlohmann::json &params, const Project &project);
+		Device(std::string name, DccLiteService &dccService, const rapidjson::Value &params, const Project &project);
 		Device(std::string name, DccLiteService &dccService);
 
 		Device(const Device &) = delete;

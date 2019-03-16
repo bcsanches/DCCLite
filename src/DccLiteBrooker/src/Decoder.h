@@ -6,7 +6,7 @@
 #include "EmbeddedLibDefs.h"
 #include "Object.h"
 
-#include "json.hpp"
+#include <rapidjson/document.h>
 
 #include <fmt/format.h>
 
@@ -30,7 +30,7 @@ class Decoder: public dcclite::Object
 					//empty
 				}
 
-				Address(const nlohmann::json::value_type &value);
+				Address(const rapidjson::Value &value);
 
 				Address() = default;
 				Address(const Address &) = default;
@@ -59,7 +59,7 @@ class Decoder: public dcclite::Object
 				friend std::ostream& operator<<(std::ostream& os, const Address& address);
 		};
 
-		typedef dcclite::ClassInfo<Decoder, const Address &, const std::string &, DccLiteService &, const nlohmann::json &> Class;
+		typedef dcclite::ClassInfo<Decoder, const Address &, const std::string &, DccLiteService &, const rapidjson::Value &> Class;
 
 	public:
 		Decoder(
@@ -67,7 +67,7 @@ class Decoder: public dcclite::Object
 			const Address &address, 
 			std::string name,
 			DccLiteService &owner,
-			const nlohmann::json &params
+			const rapidjson::Value &params
 		);
 
 		inline Address GetAddress() const

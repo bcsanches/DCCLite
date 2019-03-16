@@ -11,7 +11,7 @@ class OutputDecoder : public Decoder
 			const Address &address,
 			const std::string &name,
 			DccLiteService &owner,
-			const nlohmann::json &params
+			const rapidjson::Value &params
 		);
 
 		virtual void WriteConfig(dcclite::Packet &packet) const;

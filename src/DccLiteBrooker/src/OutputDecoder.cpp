@@ -3,7 +3,7 @@
 #include "Packet.h"
 
 static Decoder::Class outputDecoder("Output",
-	[](const Decoder::Class &decoderClass, const Decoder::Address &address, const std::string &name, DccLiteService &owner, const nlohmann::json &params)
+	[](const Decoder::Class &decoderClass, const Decoder::Address &address, const std::string &name, DccLiteService &owner, const rapidjson::Value &params)
 		-> std::unique_ptr<Decoder> { return std::make_unique<OutputDecoder>(decoderClass, address, name, owner, params); }
 );
 
@@ -13,19 +13,19 @@ OutputDecoder::OutputDecoder(
 	const Address &address,
 	const std::string &name,
 	DccLiteService &owner,
-	const nlohmann::json &params
+	const rapidjson::Value &params
 ) :
 	Decoder(decoderClass, address, name, owner, params),
-	m_iPin(params["pin"].get<dcclite::PinType_t>())
+	m_iPin(params["pin"].GetInt())
 {
-	auto inverted = params.find("inverted");	
-	m_fInvertedOperation = inverted != params.end() ? inverted->get<bool>() : false;
+	auto inverted = params.FindMember("inverted");	
+	m_fInvertedOperation = inverted != params.MemberEnd() ? inverted->value.GetBool() : false;
 
-	auto setOnPower = params.find("ignoreSavedState");
-	m_fIgnoreSavedState = setOnPower != params.end() ? setOnPower->get<bool>() : false;
+	auto setOnPower = params.FindMember("ignoreSavedState");
+	m_fIgnoreSavedState = setOnPower != params.MemberEnd() ? setOnPower->value.GetBool() : false;
 
-	auto activateOnPowerUp = params.find("activateOnPowerUp");
-	m_fActivateOnPowerUp = activateOnPowerUp != params.end() ? activateOnPowerUp->get<bool>() : false;	
+	auto activateOnPowerUp = params.FindMember("activateOnPowerUp");
+	m_fActivateOnPowerUp = activateOnPowerUp != params.MemberEnd() ? activateOnPowerUp->value.GetBool() : false;
 }
 
 

@@ -2,6 +2,8 @@
 
 #include <fstream>
 
+#include <rapidjson/istreamwrapper.h>
+
 #include "Decoder.h"
 #include "DccLiteService.h"
 #include "FmtUtils.h"
@@ -14,7 +16,7 @@ using namespace std::chrono_literals;
 static auto constexpr TIMEOUT = 10s;
 static auto constexpr CONFIG_RETRY_TIME = 300ms;
 
-Device::Device(std::string name, DccLiteService &dccService, const nlohmann::json &params, const Project &project) :
+Device::Device(std::string name, DccLiteService &dccService, const rapidjson::Value &params, const Project &project) :
 	FolderObject(std::move(name)),
 	m_clDccService(dccService),
 	m_eStatus(Status::OFFLINE),
@@ -36,17 +38,17 @@ Device::Device(std::string name, DccLiteService &dccService, const nlohmann::jso
 	dcclite::Log::Trace("Device {} config token {}", this->GetName(), m_ConfigToken);
 	dcclite::Log::Trace("Device {} reading config {}", this->GetName(), deviceConfigFilePath.string());
 
-	nlohmann::json decodersData;
+	rapidjson::IStreamWrapper isw(configFile);
+	rapidjson::Document decodersData;
+	decodersData.ParseStream(isw);	
 
-	configFile >> decodersData;
-
-	if (!decodersData.is_array())
+	if (!decodersData.IsArray())
 		throw std::runtime_error("error: invalid config, expected decoders array inside Node");
 
-	for (auto &element : decodersData)
+	for (auto &element : decodersData.GetArray())
 	{
-		auto decoderName = element["name"].get<std::string>();
-		auto className = element["class"].get<std::string>();
+		auto decoderName = element["name"].GetString();
+		auto className = element["class"].GetString();
 		Decoder::Address address{ element["address"] };
 
 		auto &decoder = m_clDccService.Create(className, address, decoderName, element);

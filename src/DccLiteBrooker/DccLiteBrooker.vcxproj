@@ -22,7 +22,6 @@
     <ClInclude Include="src\Brooker.h" />
     <ClInclude Include="src\DccLiteService.h" />
     <ClInclude Include="src\Decoder.h" />
-    <ClInclude Include="src\json.hpp" />
     <ClInclude Include="src\Device.h" />
     <ClInclude Include="src\OutputDecoder.h" />
     <ClInclude Include="src\Project.h" />

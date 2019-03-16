@@ -3,33 +3,27 @@
 #include "Packet.h"
 #include "Parser.h"
 
-Decoder::Address::Address(const nlohmann::json::value_type &value)
+Decoder::Address::Address(const rapidjson::Value &value)
 {
-	if (value.is_string())
-	{
-		auto str = value.get<std::string>();
-
-		dcclite::Parser parser{ str.c_str() };
+	if (value.IsString())
+	{		
+		dcclite::Parser parser{ value.GetString() };
 		
 		int adr;		
 		if (parser.GetNumber(adr) != dcclite::TOKEN_NUMBER)
-		{
-			std::stringstream stream;
-
-			stream << "error: Decoder::Address::Address(const nlohmann::json::value_type &value) invalid value for address, see " << value;
-
-			throw std::runtime_error(stream.str());
+		{					
+			throw std::runtime_error(fmt::format("error: Decoder::Address::Address(const nlohmann::json::value_type &value) invalid value for address, see {}", value.GetString()));
 		}		
 
 		m_iAddress = adr;
 	}
 	else
 	{
-		m_iAddress = value.get<int>();
+		m_iAddress = value.GetInt();
 	}
 }
 
-Decoder::Decoder(const Class &decoderClass, const Address &address, std::string name, DccLiteService &owner, const nlohmann::json &params):
+Decoder::Decoder(const Class &decoderClass, const Address &address, std::string name, DccLiteService &owner, const rapidjson::Value &params):
 	Object(std::move(name)),
 	m_iAddress(address),	
 	m_rclManager(owner)

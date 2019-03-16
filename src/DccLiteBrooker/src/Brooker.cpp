@@ -5,25 +5,27 @@
 #include <stdexcept>
 
 #include <fmt/format.h>
+#include <rapidjson/document.h>
+#include <rapidjson/istreamwrapper.h>
 #include <spdlog/logger.h>
 
 #include "Log.h"
 
-#include "json.hpp"
 #include "TerminalCmd.h"
 
 #include "DccLiteService.h"
 
-using json = nlohmann::json;
+//fucking header leak
+#undef GetObject
 
-static std::unique_ptr<Service> CreateService(const json &obj, const Project &project)
+static std::unique_ptr<Service> CreateService(const rapidjson::Value &data, const Project &project)
 {
-	std::string className = obj["class"];
-	std::string name = obj["name"].get<std::string>();	
+	const char *className = data["class"].GetString();
+	const char *name = data["name"].GetString();
 
 	dcclite::Log::Info("Creating DccLite Service: {}", name);
 	
-	if (auto output = ServiceClass::TryProduce(className.c_str(), name, obj, project))
+	if (auto output = ServiceClass::TryProduce(className, name, data, project))
 	{
 		return output;	
 	}
@@ -55,24 +57,24 @@ void Brooker::LoadConfig()
 
 	dcclite::Log::Debug("Loaded config {}", configFileName.string());
 
-	json data;
+	rapidjson::IStreamWrapper isw(configFile);
+	rapidjson::Document data;
+	data.ParseStream(isw);
 
-	configFile >> data;
-
-	m_clProject.SetName(data["name"].get<std::string>());
+	m_clProject.SetName(data["name"].GetString());
 
 	const auto &services = data["services"];
 
-	if (!services.is_array())
+	if (!services.IsArray())
 	{
 		throw std::runtime_error("error: invalid config, expected services array");
 	}
 
-	dcclite::Log::Debug("Processing config services {}", services.size());
-
-	for(auto &serviceData : services)	
-	{
-		auto service = CreateService(serviceData, m_clProject);
+	dcclite::Log::Debug("Processing config services {}", services.Size());
+	
+	for(auto &serviceData : services.GetArray())	
+	{		
+		auto service = CreateService(serviceData, m_clProject);			
 
 		m_pServices->AddChild(std::move(service));
 	}

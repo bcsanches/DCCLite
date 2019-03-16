@@ -16,7 +16,7 @@ class Device;
 class DccLiteService : public Service
 {
 	public:
-		DccLiteService(const ServiceClass &serviceClass, const std::string &name, const nlohmann::json &params, const Project &project);
+		DccLiteService(const ServiceClass &serviceClass, const std::string &name, const rapidjson::Value &params, const Project &project);
 
 		virtual ~DccLiteService();
 
@@ -24,7 +24,7 @@ class DccLiteService : public Service
 			const std::string &className,
 			Decoder::Address address,
 			const std::string &name,
-			const nlohmann::json &params
+			const rapidjson::Value &params
 		);
 
 		virtual void Update(const dcclite::Clock &clock) override;		
