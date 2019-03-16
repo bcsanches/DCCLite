@@ -37,17 +37,31 @@ TerminalCmdHost::~TerminalCmdHost()
 
 dcclite::IObject *TerminalCmdHost::AddChild(std::unique_ptr<IObject> obj)
 {
-	throw std::logic_error(fmt::format("Cannot add childs to TerminalCmdHost, sorry, obj name {}", obj->GetName()));
+	throw std::logic_error(fmt::format("[TerminalCmdHost::AddChild] Cannot add childs, sorry, obj name {}", obj->GetName()));
 }
 
-void TerminalCmdHost::AddCmd(std::unique_ptr<TerminalCmd> cmd)
+TerminalCmd *TerminalCmdHost::AddCmd(std::unique_ptr<TerminalCmd> cmd)
 {
+	auto tmp = cmd.get();
+
 	FolderObject::AddChild(std::move(cmd));
+
+	return tmp;
+}
+
+void TerminalCmdHost::AddAlias(std::string name, TerminalCmd &target)
+{
+	if (target.GetParent() != this)
+	{
+		throw std::logic_error(fmt::format("[TerminalCmdHost::AddAlias] Invalid parent for {}", target.GetName()));
+	}
+
+	FolderObject::AddChild(std::make_unique<dcclite::Shortcut>(std::move(name), target));
 }
 
 TerminalCmd *TerminalCmdHost::TryFindCmd(std::string_view name)
 {
-	return static_cast<TerminalCmd *>(this->TryGetChild(name));
+	return static_cast<TerminalCmd *>(this->TryResolveChild(name));
 }
 
 TerminalCmdHost *TerminalCmdHost::Instance()

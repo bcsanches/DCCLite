@@ -196,7 +196,7 @@ bool TerminalClient::Update()
 
 			try
 			{
-				dcclite::Log::Trace("Received {}", msg);
+				//dcclite::Log::Trace("Received {}", msg);
 
 				rapidjson::Document doc;
 				doc.Parse(msg.c_str());
@@ -280,10 +280,15 @@ TerminalService::TerminalService(const ServiceClass &serviceClass, const std::st
 {	
 	auto cmdHost = TerminalCmdHost::Instance();
 
-	assert(cmdHost);
+	assert(cmdHost);	
 
-	cmdHost->AddCmd(std::make_unique<GetChildItemCmd>());
-	cmdHost->AddCmd(std::make_unique<SetLocationCmd>());	
+	auto getChildItemCmd = cmdHost->AddCmd(std::make_unique<GetChildItemCmd>());
+	auto setLocationCmd = cmdHost->AddCmd(std::make_unique<SetLocationCmd>());
+
+	cmdHost->AddAlias("dir", *getChildItemCmd);
+	cmdHost->AddAlias("ls", *getChildItemCmd);
+
+	cmdHost->AddAlias("cd", *setLocationCmd);
 
 	if (!m_clSocket.Open(params["port"].get<unsigned short>(), dcclite::Socket::Type::STREAM))
 	{

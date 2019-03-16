@@ -50,11 +50,11 @@ dcclite::Guid Project::GetFileToken(const std::string_view fileName) const
 
 			IStreamWrapper isw(stateFile);
 			Document stateData;
-			stateData.ParseStream(isw);
+			stateData.ParseStream(isw);			
 
 			//read token first, because if it fails, hash is already null			
 			auto tokenData = stateData.FindMember("token");
-			if (!tokenData->value.IsString())
+			if ((tokenData == stateData.MemberEnd()) || (!tokenData->value.IsString()))
 			{
 				dcclite::Log::Error("project state file does not contain token");
 				goto SKIP_LOAD;
@@ -68,7 +68,7 @@ dcclite::Guid Project::GetFileToken(const std::string_view fileName) const
 			}	
 
 			auto hashData = stateData.FindMember("sha1");
-			if (!hashData->value.IsString())
+			if ((hashData == stateData.MemberEnd()) || (!hashData->value.IsString()))
 			{
 				dcclite::Log::Error("Project state file does not contain hash");
 

@@ -128,7 +128,8 @@ class TerminalCmdHost: public dcclite::FolderObject
 		virtual ~TerminalCmdHost();
 
 		virtual IObject *AddChild(std::unique_ptr<IObject> obj);
-		void AddCmd(std::unique_ptr<TerminalCmd> cmd);	
+		TerminalCmd *AddCmd(std::unique_ptr<TerminalCmd> cmd);
+		void AddAlias(std::string name, TerminalCmd &target);
 
 		TerminalCmd *TryFindCmd(std::string_view name);
 
