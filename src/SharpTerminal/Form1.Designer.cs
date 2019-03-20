@@ -28,8 +28,8 @@ namespace SharpTerminal
                 if(components != null)
                     components.Dispose();
 
-                if (mClient != null)
-                    mClient.Dispose();
+                if (mRequestManager != null)
+                    mRequestManager.Dispose();
             }
             base.Dispose(disposing);
         }

@@ -16,23 +16,26 @@ using System.Windows.Forms;
 
 namespace SharpTerminal
 {
-    public partial class Console : Form, ITerminalClientListener
+    public partial class Console : Form, IResponseHandler
     {
-        private TerminalClient mClient = new TerminalClient();
+        private RequestManager mRequestManager = new RequestManager();
 
         private List<string> mUsedCmds = new List<string>();
         private int m_iCurrentCmd = 0;
 
-        private List<string> mKnownCmds = new List<string>();
-
-        private int m_iRequestCount = 1;
+        private List<string> mKnownCmds = new List<string>();        
 
         public Console()
         {
-            InitializeComponent();
+            InitializeComponent();                               
+        }
 
-            mClient.Listener = this;
-            mClient.BeginConnect("localhost", 4190);
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            mRequestManager.ConnectionStateChanged += mRequestManager_ConnectionStateChanged;
+            mRequestManager.BeginConnect("localhost", 4190);
 
             SetStatus("Connecting");
 
@@ -43,36 +46,29 @@ namespace SharpTerminal
             mKnownCmds.Add("/quit");
             mKnownCmds.Add("/reconnect");
             mKnownCmds.Add("/udpping");
-        }
+        }        
 
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
             base.OnFormClosed(e);
 
             //avoid deadlock on invoke, so we disable the listenning
-            mClient.Listener = null;
+            mRequestManager.ConnectionStateChanged -= mRequestManager_ConnectionStateChanged;
 
             //close connections
-            mClient.Stop();
+            mRequestManager.Stop();
+        }        
+
+        private void mRequestManager_ConnectionStateChanged(RequestManager sender, ConnectionStateEventArgs args)
+        {
+            this.OnConnectionStatusChanged(args.State, args.Exception);
         }
 
-        public void OnMessageReceived(string msg)
+        private void OnConnectionStatusChanged(ConnectionState state, Exception ex)
         {
             if(this.InvokeRequired)
             {
-                this.Invoke(new MethodInvoker(delegate { this.OnMessageReceived(msg); }));
-            }
-            else
-            {
-                Console_Println(msg);
-            }
-        }
-
-        public void OnStatusChanged(ConnectionState state, object param)
-        {
-            if(this.InvokeRequired)
-            {
-                this.Invoke(new MethodInvoker(delegate { this.OnStatusChanged(state, param); }));
+                this.Invoke(new MethodInvoker(delegate { this.OnConnectionStatusChanged(state, ex); }));
             }
             else
             {
@@ -86,14 +82,11 @@ namespace SharpTerminal
                         break;
 
                     case ConnectionState.DISCONNECTED:
-                        var ex = param as Exception;                  
-
                         this.Console_Println("Disconnected " + (ex != null ? ex.Message : " by unknown reason"));
                         this.SetStatus("Disconnected");
                         break;
 
                     default:
-                        ex = param as Exception;
                         this.Console_Println("Connection state changed to " + state + " " + (ex != null ? ex.Message : " by unknown reason"));
                         this.SetStatus(state.ToString());
                         break;
@@ -226,7 +219,7 @@ namespace SharpTerminal
                     break;
 
                 case "/disconnect":
-                    mClient.Stop();
+                    mRequestManager.Stop();                    
                     break;
 
                 case "/mac":
@@ -238,7 +231,7 @@ namespace SharpTerminal
                     break;                
 
                 case "/reconnect":
-                    mClient.Reconnect();
+                    mRequestManager.Reconnect();
                     break;
 
                 case "/udpping":
@@ -250,50 +243,17 @@ namespace SharpTerminal
                     break;
             }
         }
-
-        private void DispatchJsonCmd(string[] vargs)
-        {            
-            var strBuilder = new StringBuilder(256);
-
-            strBuilder.Append("{\n\t\"jsonrpc\":\"2.0\",\n\t \"method\":\"");
-            strBuilder.Append(vargs[0]);
-            strBuilder.Append("\"");
-
-            if(vargs.Length > 1)
-            {
-                strBuilder.Append(",\n\t\"params\":[\"");
-
-                bool first = true;
-                for(int i = 1;i < vargs.Length; ++i)
-                {                     
-                    strBuilder.Append(first ? "" : ",\"");
-                    first = false;
-
-                    strBuilder.Append(vargs[i]);
-                    strBuilder.Append("\"");
-                }
-
-                strBuilder.Append("]");
-            }
-
-            strBuilder.Append(",\n\t\"id\":");
-            strBuilder.Append(m_iRequestCount++);
-
-            strBuilder.Append("}");
-
-            mClient.SendMessage(strBuilder.ToString());
-        }
-
+        
         private void ProcessRemoteCmd(string[] vargs)
         {
-            if(mClient.State != ConnectionState.OK)
+            if(mRequestManager.State != ConnectionState.OK)
             {
                 Console_Println("Cannot send command, client not connected. Try /reconnect");
 
                 return;
             }
 
-            DispatchJsonCmd(vargs);
+            mRequestManager.DispatchRequest(vargs, this);
         }
 
         private void ProcessInput(string input)
@@ -361,13 +321,26 @@ namespace SharpTerminal
             string ip = vargs.Length > 1 ? vargs[1] : "127.0.0.1";
             int port = vargs.Length > 2 ? int.Parse(vargs[2]) : 8989;
 
+            using (var client = new System.Net.Sockets.UdpClient())
+            {
+                var ep = new System.Net.IPEndPoint(System.Net.IPAddress.Parse(ip), port); // endpoint where server is listening
+                client.Connect(ep);
 
-            var client = new System.Net.Sockets.UdpClient();
-            var ep = new System.Net.IPEndPoint(System.Net.IPAddress.Parse(ip), port); // endpoint where server is listening
-            client.Connect(ep);
+                // send data
+                client.Send(new byte[] { 104, 101, 108, 108, 111, 0 }, 6);
+            }            
+        }
 
-            // send data
-            client.Send(new byte[] { 104, 101, 108, 108, 111, 0 }, 6);
+        public void OnResponse(string msg, int id)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new MethodInvoker(delegate { this.OnResponse(msg, id); }));
+            }
+            else
+            {
+                Console_Println(msg);
+            }
         }
     }
 }
