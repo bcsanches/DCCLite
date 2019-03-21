@@ -15,3 +15,4 @@ Common/obj/
 obj/
 src/LiteDecoder/.vscode/
 /lib/
+packages/

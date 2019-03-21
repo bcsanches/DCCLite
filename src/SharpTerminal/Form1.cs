@@ -10,8 +10,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Json;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace SharpTerminal
@@ -331,15 +331,56 @@ namespace SharpTerminal
             }            
         }
 
-        public void OnResponse(string msg, int id)
+        void IResponseHandler.OnError(string msg, int id)
         {
-            if (this.InvokeRequired)
+            if(this.InvokeRequired)
             {
-                this.Invoke(new MethodInvoker(delegate { this.OnResponse(msg, id); }));
+                this.Invoke(new MethodInvoker(delegate { ((IResponseHandler)this).OnError(msg, id); }));
             }
             else
             {
-                Console_Println(msg);
+                Console_Println("Call failed for " + id + ": " + msg);
+            }
+        }
+
+        void IResponseHandler.OnResponse(JsonValue response, int id)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new MethodInvoker(delegate { ((IResponseHandler)this).OnResponse(response, id); }));
+            }
+            else
+            {                
+                if(response.JsonType == JsonType.Object)
+                {
+                    var responseObj = (JsonObject)response;
+
+                    switch((string)responseObj["classname"])
+                    {
+                        case "Location":
+                            Console_Println(responseObj["location"]);
+                            break;
+
+                        case "ChildItem":
+                            Console_Println("Contents of " + responseObj["location"]);
+                            {
+                                var items = (JsonArray) responseObj["children"];
+                                foreach(var item in items)
+                                {
+                                    Console_Println(item["name"]);
+                                }
+                            }
+                            break;
+
+                        default:
+                            Console_Println(response.ToString());
+                            break;
+                    }
+                }
+                else
+                {
+                    Console_Println(response.ToString());
+                }                
             }
         }
     }

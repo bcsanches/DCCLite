@@ -1,8 +1,18 @@
-﻿using System;
+﻿// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
+// file at the top-level directory of this distribution.
+// 
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// 
+// This Source Code Form is "Incompatible With Secondary Licenses", as
+// defined by the Mozilla Public License, v. 2.0.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Json;
 
 namespace SharpTerminal
 {
@@ -20,22 +30,38 @@ namespace SharpTerminal
 
     public interface IResponseHandler
     {
-        void OnResponse(string msg, int id);
+        void OnResponse(JsonValue response, int id);
+        void OnError(string msg, int id);
     }
 
     delegate void ConnectionStateChangedEventHandler(RequestManager sender, ConnectionStateEventArgs args);
 
     class RequestManager: ITerminalClientListener, IDisposable
     {
+        struct RequestInfo
+        {
+            public IResponseHandler mHandler;
+
+            public DateTime mTime;
+
+            public RequestInfo(IResponseHandler handler)
+            {
+                mHandler = handler ?? throw new ArgumentNullException(nameof(handler));
+                mTime = DateTime.Now + new TimeSpan(0, 0, 3);
+            }
+        }
+
         TerminalClient mClient = new TerminalClient();
 
-        private int m_iRequestCount = 1;        
+        private int m_iRequestCount = 1;
+
+        Dictionary<int, RequestInfo> mRequests = new Dictionary<int, RequestInfo>();
 
         public event ConnectionStateChangedEventHandler ConnectionStateChanged;
 
         public RequestManager()
         {
-            //empty
+            mClient.Listener = this;
         }
 
         public ConnectionState State
@@ -70,12 +96,39 @@ namespace SharpTerminal
 
         public void OnMessageReceived(string msg)
         {
-            if(mHandler != null)
-                mHandler.OnResponse(msg, -1);
-        }
+            var jsonObject = (JsonObject) JsonObject.Parse(msg);
 
-        //FIXME hacl
-        private IResponseHandler mHandler;
+            int id = int.Parse(jsonObject["id"].ToString());
+
+            lock(this)
+            {
+                RequestInfo request;
+                if (!mRequests.TryGetValue(id, out request))
+                {
+                    throw new Exception("Request response " + id + " not found, data: " + msg);
+                }
+
+                if(jsonObject.TryGetValue("error", out JsonValue errorValue))
+                {
+                    request.mHandler.OnError(((JsonObject)errorValue)["message"].ToString(), id);
+                }
+                else
+                {
+                    request.mHandler.OnResponse(jsonObject["result"], id);
+                }
+                
+                mRequests.Remove(id);
+
+                var expiredCalls = mRequests.Where(pair => pair.Value.mTime <= DateTime.Now).Select(pair => pair).ToArray();
+
+                foreach(var pair in expiredCalls)
+                {
+                    pair.Value.mHandler.OnError("timeout", pair.Key);
+
+                    mRequests.Remove(pair.Key);
+                }
+            }            
+        }        
 
         public int DispatchRequest(string[] vargs, IResponseHandler handler)
         {
@@ -102,15 +155,21 @@ namespace SharpTerminal
                 strBuilder.Append("]");
             }
 
-            strBuilder.Append(",\n\t\"id\":");
-            strBuilder.Append(m_iRequestCount++);
+            lock(this)
+            {
+                int requestId = m_iRequestCount;
+                ++m_iRequestCount;
 
-            strBuilder.Append("}");
+                strBuilder.Append(",\n\t\"id\":");
+                strBuilder.Append(requestId);
 
-            mHandler = handler;
-            mClient.SendMessage(strBuilder.ToString());
+                strBuilder.Append("}");
 
-            return m_iRequestCount - 1;
+                mRequests.Add(requestId, new RequestInfo(handler));
+                mClient.SendMessage(strBuilder.ToString());
+
+                return requestId;
+            }            
         }
 
         public void Dispose()
