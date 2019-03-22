@@ -41,11 +41,7 @@ namespace SharpTerminal
 
             m_tbInput.Select();
 
-            mKnownCmds.Add("/clear");
-            mKnownCmds.Add("/disconnect");
-            mKnownCmds.Add("/quit");
-            mKnownCmds.Add("/reconnect");
-            mKnownCmds.Add("/udpping");
+            KnownCmds_AddDefaultCmds();            
         }        
 
         protected override void OnFormClosed(FormClosedEventArgs e)
@@ -79,11 +75,15 @@ namespace SharpTerminal
 
                         this.Console_Println(label);
                         this.SetStatus(label);
+
+                        KnownCmds_RetrieveRemoteCmds();
                         break;
 
                     case ConnectionState.DISCONNECTED:
                         this.Console_Println("Disconnected " + (ex != null ? ex.Message : " by unknown reason"));
                         this.SetStatus("Disconnected");
+
+                        KnownCmds_ClearRemoteCmds();
                         break;
 
                     default:
@@ -356,11 +356,7 @@ namespace SharpTerminal
                     var responseObj = (JsonObject)response;
 
                     switch((string)responseObj["classname"])
-                    {
-                        case "Location":
-                            Console_Println(responseObj["location"]);
-                            break;
-
+                    {                                           
                         case "ChildItem":
                             Console_Println("Contents of " + responseObj["location"]);
                             {
@@ -370,6 +366,20 @@ namespace SharpTerminal
                                     Console_Println(item["name"]);
                                 }
                             }
+                            break;
+
+                        case "CmdList":
+                            {
+                                var items = (JsonArray)responseObj["cmds"];
+                                foreach (var item in items)
+                                {
+                                    Console_Println(item["name"]);
+                                }
+                            }
+                            break;
+
+                        case "Location":
+                            Console_Println(responseObj["location"]);
                             break;
 
                         default:
@@ -383,5 +393,63 @@ namespace SharpTerminal
                 }                
             }
         }
+
+        //
+        //
+        //
+        //
+        //
+        //
+        #region KnownCmds
+
+        void KnownCmds_AddDefaultCmds()
+        {
+            mKnownCmds.Add("/clear");
+            mKnownCmds.Add("/disconnect");
+            mKnownCmds.Add("/quit");
+            mKnownCmds.Add("/reconnect");
+            mKnownCmds.Add("/udpping");
+        }
+
+        void KnownCmds_RetrieveRemoteCmds()
+        {
+            Console_Println("Requesting remote cmds");
+
+            mRequestManager.DispatchRequest(new []{ "Get-Command"}, new CmdListRetriever(this));
+        }
+
+        void KnownCmds_ClearRemoteCmds()
+        {
+            mKnownCmds = mKnownCmds.Where(x => x.StartsWith("/")).ToList();
+        }
+
+        class CmdListRetriever : IResponseHandler
+        {
+            Console mOwner;
+
+            public CmdListRetriever(Console owner)
+            {
+                mOwner = owner;
+            }
+
+            void IResponseHandler.OnError(string msg, int id)
+            {
+                mOwner.Console_Println("Failed to retrieve command list: " + msg);
+            }
+
+            void IResponseHandler.OnResponse(JsonValue response, int id)
+            {
+                var responseObj = (JsonObject)response;
+                var items = (JsonArray)responseObj["cmds"];
+                foreach (var item in items)
+                {
+                    mOwner.mKnownCmds.Add(item["name"]);
+                }
+
+                mOwner.Console_Println("Received " + items.Count + " remote commands");
+            }
+        }
+        #endregion
+
     }
 }

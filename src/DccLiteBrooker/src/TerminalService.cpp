@@ -134,6 +134,39 @@ class SetLocationCmd : public TerminalCmd
 		}
 };
 
+class GetCommandCmd : public TerminalCmd
+{
+	public:
+		GetCommandCmd(std::string name = "Get-Command") :
+			TerminalCmd(std::move(name))
+		{
+			//empty
+		}
+
+		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
+		{
+			auto item = this->GetParent();
+
+			assert(item->IsFolder());
+
+			auto folder = static_cast<FolderObject*>(item);
+
+			results.AddStringValue("classname", "CmdList");			
+
+			auto dataArray = results.AddArray("cmds");
+
+			auto enumerator = folder->GetEnumerator();
+
+			while (enumerator.MoveNext())
+			{
+				auto item = enumerator.TryGetCurrent();
+
+				auto itemObject = dataArray.AddObject();
+				item->Serialize(itemObject);
+			}			
+		}
+};
+
 class TerminalClient
 {
 	public:
@@ -315,6 +348,9 @@ TerminalService::TerminalService(const ServiceClass &serviceClass, const std::st
 
 	cmdHost->AddCmd(std::make_unique<SetLocationCmd>());
 	cmdHost->AddCmd(std::make_unique<SetLocationCmd>("cd"));
+
+	cmdHost->AddCmd(std::make_unique<GetCommandCmd>());
+	cmdHost->AddCmd(std::make_unique<GetCommandCmd>("gcm"));
 
 	if (!m_clSocket.Open(params["port"].GetInt(), dcclite::Socket::Type::STREAM))
 	{
