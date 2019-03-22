@@ -34,8 +34,8 @@ static ServiceClass terminalService("Terminal",
 class GetChildItemCmd : public TerminalCmd
 {
 	public:
-		GetChildItemCmd():
-			TerminalCmd("Get-ChildItem")
+		GetChildItemCmd(std::string name = "Get-ChildItem"):
+			TerminalCmd(std::move(name))
 		{
 			//empty
 		}
@@ -47,11 +47,28 @@ class GetChildItemCmd : public TerminalCmd
 			{
 				throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
 			}
+			auto folder = static_cast<FolderObject *>(item);
+
+			auto paramsIt = request.FindMember("params");
+			if (paramsIt != request.MemberEnd())
+			{
+				auto locationParam = paramsIt->value[0].GetString();
+				item = folder->TryNavigate(dcclite::Path_t(locationParam));
+				if (!item)
+				{
+					throw TerminalCmdException(fmt::format("Invalid location {}", locationParam), id);
+				}
+
+				if (!item->IsFolder())
+				{
+					throw TerminalCmdException(fmt::format("Location is not a folder {}", locationParam), id);
+				}
+
+				folder = static_cast<FolderObject *>(item);
+			}			
 
 			results.AddStringValue("classname", "ChildItem");
-			results.AddStringValue("location", item->GetPath().string());
-
-			auto folder = static_cast<FolderObject *>(item);
+			results.AddStringValue("location", folder->GetPath().string());
 
 			auto dataArray = results.AddArray("children");
 												
@@ -70,8 +87,8 @@ class GetChildItemCmd : public TerminalCmd
 class SetLocationCmd : public TerminalCmd
 {
 	public:
-		SetLocationCmd() :
-			TerminalCmd("Set-Location")
+		SetLocationCmd(std::string name = "Set-Location") :
+			TerminalCmd(std::move(name))
 		{
 			//empty
 		}
@@ -86,7 +103,7 @@ class SetLocationCmd : public TerminalCmd
 
 			auto folder = static_cast<FolderObject *>(item);
 
-			auto paramsIt = request.FindMember("params");			
+			auto paramsIt = request.FindMember("params");
 			if (paramsIt != request.MemberEnd())
 			{							
 				if (!paramsIt->value.IsArray())
@@ -292,13 +309,12 @@ TerminalService::TerminalService(const ServiceClass &serviceClass, const std::st
 
 	assert(cmdHost);	
 
-	auto getChildItemCmd = cmdHost->AddCmd(std::make_unique<GetChildItemCmd>());
-	auto setLocationCmd = cmdHost->AddCmd(std::make_unique<SetLocationCmd>());
+	cmdHost->AddCmd(std::make_unique<GetChildItemCmd>());
+	cmdHost->AddCmd(std::make_unique<GetChildItemCmd>("dir"));
+	cmdHost->AddCmd(std::make_unique<GetChildItemCmd>("ls"));
 
-	cmdHost->AddAlias("dir", *getChildItemCmd);
-	cmdHost->AddAlias("ls", *getChildItemCmd);
-
-	cmdHost->AddAlias("cd", *setLocationCmd);
+	cmdHost->AddCmd(std::make_unique<SetLocationCmd>());
+	cmdHost->AddCmd(std::make_unique<SetLocationCmd>("cd"));
 
 	if (!m_clSocket.Open(params["port"].GetInt(), dcclite::Socket::Type::STREAM))
 	{
