@@ -26,6 +26,7 @@ namespace SharpTerminal
 
             mConsole = ucConsole;
             ucConsole.RequestManager = mRequestManager;
+            ucTreeView.RequestManager = mRequestManager;
         }
 
         protected override void OnLoad(EventArgs e)

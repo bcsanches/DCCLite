@@ -44,10 +44,16 @@ namespace SharpTerminal
         {
             System.Windows.Forms.StatusStrip statusStrip1;
             this.m_lbStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.ucTreeView = new SharpTerminal.ObjectsTreeViewUserControl();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.ucConsole = new SharpTerminal.ConsoleUserControl();
             statusStrip1 = new System.Windows.Forms.StatusStrip();
             statusStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
+            this.splitContainer2.Panel1.SuspendLayout();
+            this.splitContainer2.Panel2.SuspendLayout();
+            this.splitContainer2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -57,7 +63,7 @@ namespace SharpTerminal
             // 
             statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.m_lbStatus});
-            statusStrip1.Location = new System.Drawing.Point(0, 539);
+            statusStrip1.Location = new System.Drawing.Point(0, 666);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Size = new System.Drawing.Size(784, 22);
             statusStrip1.TabIndex = 5;
@@ -69,6 +75,31 @@ namespace SharpTerminal
             this.m_lbStatus.Size = new System.Drawing.Size(118, 17);
             this.m_lbStatus.Text = "toolStripStatusLabel1";
             // 
+            // splitContainer2
+            // 
+            this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer2.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer2.Name = "splitContainer2";
+            // 
+            // splitContainer2.Panel1
+            // 
+            this.splitContainer2.Panel1.Controls.Add(this.ucTreeView);
+            // 
+            // splitContainer2.Panel2
+            // 
+            this.splitContainer2.Panel2.Controls.Add(this.splitContainer1);
+            this.splitContainer2.Size = new System.Drawing.Size(784, 666);
+            this.splitContainer2.SplitterDistance = 261;
+            this.splitContainer2.TabIndex = 7;
+            // 
+            // ucTreeView
+            // 
+            this.ucTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ucTreeView.Location = new System.Drawing.Point(0, 0);
+            this.ucTreeView.Name = "ucTreeView";
+            this.ucTreeView.Size = new System.Drawing.Size(261, 666);
+            this.ucTreeView.TabIndex = 0;
+            // 
             // splitContainer1
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -79,8 +110,8 @@ namespace SharpTerminal
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.ucConsole);
-            this.splitContainer1.Size = new System.Drawing.Size(784, 539);
-            this.splitContainer1.SplitterDistance = 261;
+            this.splitContainer1.Size = new System.Drawing.Size(519, 666);
+            this.splitContainer1.SplitterDistance = 400;
             this.splitContainer1.TabIndex = 6;
             // 
             // ucConsole
@@ -88,20 +119,24 @@ namespace SharpTerminal
             this.ucConsole.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ucConsole.Location = new System.Drawing.Point(0, 0);
             this.ucConsole.Name = "ucConsole";
-            this.ucConsole.Size = new System.Drawing.Size(784, 274);
+            this.ucConsole.Size = new System.Drawing.Size(519, 262);
             this.ucConsole.TabIndex = 0;
             // 
             // Console
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(784, 561);
-            this.Controls.Add(this.splitContainer1);
+            this.ClientSize = new System.Drawing.Size(784, 688);
+            this.Controls.Add(this.splitContainer2);
             this.Controls.Add(statusStrip1);
             this.Name = "Console";
             this.Text = "Form1";
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
+            this.splitContainer2.Panel1.ResumeLayout(false);
+            this.splitContainer2.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
+            this.splitContainer2.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
@@ -114,6 +149,8 @@ namespace SharpTerminal
         private System.Windows.Forms.ToolStripStatusLabel m_lbStatus;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private ConsoleUserControl ucConsole;
+        private System.Windows.Forms.SplitContainer splitContainer2;
+        private ObjectsTreeViewUserControl ucTreeView;
     }
 }
 
