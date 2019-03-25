@@ -25,7 +25,7 @@ namespace dcclite
 
 class TerminalCmdHost;
 
-class Brooker
+class Broker
 {
 	private:	
 		dcclite::FolderObject m_clRoot;
@@ -38,7 +38,7 @@ class Brooker
 		void LoadConfig();
 
 	public:
-		Brooker(std::filesystem::path projectPath);
+		Broker(std::filesystem::path projectPath);
 
 		void Update(const dcclite::Clock &clock);
 };

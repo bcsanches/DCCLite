@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Brooker", "src\DccLiteBrooker\DccLiteBrooker.vcxproj", "{A843EB21-2EB3-4BF7-AE24-E310A82EF4E8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Broker", "Project\DccLiteBroker.vcxproj", "{A843EB21-2EB3-4BF7-AE24-E310A82EF4E8}"
 	ProjectSection(ProjectDependencies) = postProject
 		{260F028D-1029-4332-831B-AD7DD20EBA4A} = {260F028D-1029-4332-831B-AD7DD20EBA4A}
 	EndProjectSection

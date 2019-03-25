@@ -8,7 +8,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "Brooker.h"
+#include "Broker.h"
 
 #include <iostream>
 #include <fstream>
@@ -43,7 +43,7 @@ static std::unique_ptr<Service> CreateService(const rapidjson::Value &data, cons
 	throw std::runtime_error(fmt::format("error: unknown service type {}", className));
 }
 
-Brooker::Brooker(std::filesystem::path projectPath):
+Broker::Broker(std::filesystem::path projectPath):
 	m_clRoot("root"),
 	m_clProject(std::move(projectPath))
 {	
@@ -55,9 +55,9 @@ Brooker::Brooker(std::filesystem::path projectPath):
 	this->LoadConfig();
 }
 
-void Brooker::LoadConfig()
+void Broker::LoadConfig()
 {
-	const auto configFileName = m_clProject.GetFilePath("brooker.config.json");
+	const auto configFileName = m_clProject.GetFilePath("broker.config.json");
 	std::ifstream configFile(configFileName);
 
 	if (!configFile)
@@ -90,7 +90,7 @@ void Brooker::LoadConfig()
 	}
 }
 
-void Brooker::Update(const dcclite::Clock &clock)
+void Broker::Update(const dcclite::Clock &clock)
 {
 	auto enumerator = m_pServices->GetEnumerator();
 

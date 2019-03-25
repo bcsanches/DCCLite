@@ -13,7 +13,7 @@
 #include <signal.h>
 #include <stdexcept>
 
-#include "Brooker.h"
+#include "Broker.h"
 
 #include "Clock.h"
 #include "ConsoleUtils.h"
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 
 	try
 	{ 
-		Brooker brooker{ (argc == 1) ? "MyRailroad" : argv[1] };
+		Broker broker{ (argc == 1) ? "MyRailroad" : argv[1] };
 
 		dcclite::Clock clock;
 		
@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 				continue;
 			}			
 
-			brooker.Update(clock);
+			broker.Update(clock);
 		}			
 	}	
 	catch (std::exception &ex)

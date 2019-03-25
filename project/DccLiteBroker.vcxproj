@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -19,47 +19,47 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Brooker.h" />
-    <ClInclude Include="src\DccLiteService.h" />
-    <ClInclude Include="src\Decoder.h" />
-    <ClInclude Include="src\Device.h" />
-    <ClInclude Include="src\OutputDecoder.h" />
-    <ClInclude Include="src\Project.h" />
-    <ClInclude Include="src\Service.h" />
-    <ClInclude Include="src\TerminalCmd.h" />
-    <ClInclude Include="src\TerminalService.h" />
+    <ClInclude Include="..\src\DccLiteBroker\Broker.h" />
+    <ClInclude Include="..\src\DccLiteBroker\DccLiteService.h" />
+    <ClInclude Include="..\src\DccLiteBroker\Decoder.h" />
+    <ClInclude Include="..\src\DccLiteBroker\Device.h" />
+    <ClInclude Include="..\src\DccLiteBroker\OutputDecoder.h" />
+    <ClInclude Include="..\src\DccLiteBroker\Project.h" />
+    <ClInclude Include="..\src\DccLiteBroker\Service.h" />
+    <ClInclude Include="..\src\DccLiteBroker\TerminalCmd.h" />
+    <ClInclude Include="..\src\DccLiteBroker\TerminalService.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Brooker.cpp" />
-    <ClCompile Include="src\DccLiteService.cpp" />
-    <ClCompile Include="src\Decoder.cpp" />
-    <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\Device.cpp" />
-    <ClCompile Include="src\OutputDecoder.cpp" />
-    <ClCompile Include="src\Project.cpp" />
-    <ClCompile Include="src\Service.cpp" />
-    <ClCompile Include="src\TerminalCmd.cpp" />
-    <ClCompile Include="src\TerminalService.cpp" />
+    <ClCompile Include="..\src\DccLiteBroker\Broker.cpp" />
+    <ClCompile Include="..\src\DccLiteBroker\DccLiteService.cpp" />
+    <ClCompile Include="..\src\DccLiteBroker\Decoder.cpp" />
+    <ClCompile Include="..\src\DccLiteBroker\main.cpp" />
+    <ClCompile Include="..\src\DccLiteBroker\Device.cpp" />
+    <ClCompile Include="..\src\DccLiteBroker\OutputDecoder.cpp" />
+    <ClCompile Include="..\src\DccLiteBroker\Project.cpp" />
+    <ClCompile Include="..\src\DccLiteBroker\Service.cpp" />
+    <ClCompile Include="..\src\DccLiteBroker\TerminalCmd.cpp" />
+    <ClCompile Include="..\src\DccLiteBroker\TerminalService.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Project\Common.vcxproj">
+    <ProjectReference Include="Common.vcxproj">
       <Project>{260f028d-1029-4332-831b-ad7dd20eba4a}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\LiteDecoder\EmbeddedLib.vcxproj">
+    <ProjectReference Include="..\src\LiteDecoder\EmbeddedLib.vcxproj">
       <Project>{e8505ec4-3adb-4c8c-8770-ca51bf0e7d94}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\data\EFMR\brooker.config.json" />
+    <None Include="..\..\data\EFMR\broker.config.json" />
     <None Include="..\..\data\EFMR\RelayStagingA.decoders.json" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{A843EB21-2EB3-4BF7-AE24-E310A82EF4E8}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>DccLiteBrooker</RootNamespace>
+    <RootNamespace>DccLiteBroker</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
-    <ProjectName>Brooker</ProjectName>
+    <ProjectName>Broker</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -115,7 +115,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(PLOG_HOME)\include;$(SolutionDir)src\Common\include\;$(IncludePath)</IncludePath>
-    <LibraryPath>$(BOOST_HOME)\stage\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)\bin\</OutDir>
     <IntDir>$(SolutionDir)\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
