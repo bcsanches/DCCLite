@@ -22,7 +22,7 @@ namespace SharpTerminal
 
             public void OnError(string msg, int id)
             {
-                throw new NotImplementedException();
+                MessageBox.Show("Failed to retrieve nodes: ", msg);
             }
 
             public void OnResponse(JsonValue response, int id)
@@ -73,6 +73,7 @@ namespace SharpTerminal
                     mTreeView.Nodes.Clear();
 
                     var root = mTreeView.Nodes.Add("root");
+                    root.Name = "/";
 
                     RequestTreeNodesChildren("/", root);                    
                 }
@@ -148,7 +149,7 @@ namespace SharpTerminal
         private void mTreeView_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
             if(e.Node.Tag == this)
-            {
+            {                
                 var path = GetTreePath(e.Node);
 
                 e.Node.Nodes.Clear();

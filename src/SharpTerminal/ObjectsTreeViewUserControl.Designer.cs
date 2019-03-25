@@ -34,8 +34,11 @@
             // mTreeView
             // 
             this.mTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.mTreeView.FullRowSelect = true;
+            this.mTreeView.HideSelection = false;
             this.mTreeView.Location = new System.Drawing.Point(0, 0);
             this.mTreeView.Name = "mTreeView";
+            this.mTreeView.PathSeparator = "/";
             this.mTreeView.Size = new System.Drawing.Size(150, 359);
             this.mTreeView.TabIndex = 0;
             this.mTreeView.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.mTreeView_BeforeExpand);
