@@ -227,6 +227,8 @@ namespace dcclite
 
 		auto obj = m_itCurrent->second.get();
 
-		return (obj->IsShortcut()) ? static_cast<Shortcut *>(obj)->TryResolve() : obj;		
+		return obj;
+
+		//return (obj->IsShortcut()) ? static_cast<Shortcut *>(obj)->TryResolve() : obj;		
 	}	
 }

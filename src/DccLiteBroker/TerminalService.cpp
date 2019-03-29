@@ -342,15 +342,21 @@ TerminalService::TerminalService(const ServiceClass &serviceClass, const std::st
 
 	assert(cmdHost);	
 
-	cmdHost->AddCmd(std::make_unique<GetChildItemCmd>());
-	cmdHost->AddCmd(std::make_unique<GetChildItemCmd>("dir"));
-	cmdHost->AddCmd(std::make_unique<GetChildItemCmd>("ls"));
+	{
+		auto getChildItemCmd = cmdHost->AddCmd(std::make_unique<GetChildItemCmd>());
+		cmdHost->AddAlias("dir", *getChildItemCmd);
+		cmdHost->AddAlias("ls", *getChildItemCmd);
+	}	
 
-	cmdHost->AddCmd(std::make_unique<SetLocationCmd>());
-	cmdHost->AddCmd(std::make_unique<SetLocationCmd>("cd"));
+	{
+		auto setLocationCmd = cmdHost->AddCmd(std::make_unique<SetLocationCmd>());
+		cmdHost->AddAlias("cd", *setLocationCmd);
+	}	
 
-	cmdHost->AddCmd(std::make_unique<GetCommandCmd>());
-	cmdHost->AddCmd(std::make_unique<GetCommandCmd>("gcm"));
+	{
+		auto getCommandCmd = cmdHost->AddCmd(std::make_unique<GetCommandCmd>());
+		cmdHost->AddAlias("gcm", *getCommandCmd);
+	}	
 
 	if (!m_clSocket.Open(params["port"].GetInt(), dcclite::Socket::Type::STREAM))
 	{
