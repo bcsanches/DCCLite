@@ -31,6 +31,21 @@ class OutputDecoder : public Decoder
 			return dcclite::DecoderTypes::DEC_OUTPUT;
 		}
 
+		void Activate()
+		{
+			m_fRequestedState = true;
+		}
+
+		void Deactivate()
+		{
+			m_fRequestedState = false;
+		}
+
+		void ToggleState()
+		{
+			m_fRequestedState = !m_fRequestedState;
+		}
+
 		//
 		//IObject
 		//
@@ -57,4 +72,7 @@ class OutputDecoder : public Decoder
 		bool m_fInvertedOperation = false;
 		bool m_fIgnoreSavedState = false;
 		bool m_fActivateOnPowerUp = false;
+
+		bool m_fCurrentState = false;
+		bool m_fRequestedState = false;
 };

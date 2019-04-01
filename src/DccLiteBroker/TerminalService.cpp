@@ -21,7 +21,9 @@
 
 #include <rapidjson/document.h>
 
+#include "DccLiteService.h"
 #include "NetMessenger.h"
+#include "OutputDecoder.h"
 #include "SpecialFolders.h"
 #include "TerminalCmd.h"
 
@@ -180,17 +182,43 @@ class ActivateItemCmd : public TerminalCmd
 		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
 		{
 			auto paramsIt = request.FindMember("params");
-			if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.MemberCount() != 2))
+			if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() != 2))
 			{
 				throw TerminalCmdException("Usage: Activate-Item <dccSystem> <decoder>", id);
 			}
 
 			auto dccSystemName = paramsIt->value[0].GetString();
-			auto decoderId = paramsIt->value[1].GetString();			
+			auto decoderId = paramsIt->value[1].GetString();	
+
+			auto &root = static_cast<FolderObject &>(context.GetItem()->GetRoot());
+
+			ObjectPath path = { SpecialFolders::GetPath(SpecialFolders::ServicesFolderId) };
+			path.append(dccSystemName);
+			
+			auto *service = dynamic_cast<DccLiteService *>(root.TryNavigate(path));
+			if (service == nullptr)
+			{
+				throw TerminalCmdException(fmt::format("DCC System {} not found", dccSystemName), id);
+			}
+
+			auto *decoder = service->TryFindDecoder(decoderId);
+			if (decoder == nullptr)
+			{
+				throw TerminalCmdException(fmt::format("Decoder {} not found on DCC System {}", decoderId, dccSystemName), id);
+			}
+
+			auto *outputDecoder = dynamic_cast<OutputDecoder *>(decoder);
+			if (outputDecoder == nullptr)
+			{
+				throw TerminalCmdException(fmt::format("Decoder {} on DCC System {} is not an output type", decoderId, dccSystemName), id);
+			}
+
+			outputDecoder->Activate();
+
+			results.AddStringValue("classname", "string");
+			results.AddStringValue("msg", "OK");
 		}
 };
-
-
 
 class TerminalClient
 {
@@ -382,6 +410,10 @@ TerminalService::TerminalService(const ServiceClass &serviceClass, const std::st
 		auto getCommandCmd = cmdHost->AddCmd(std::make_unique<GetCommandCmd>());
 		cmdHost->AddAlias("gcm", *getCommandCmd);
 	}	
+
+	{
+		auto activateItemCmd = cmdHost->AddCmd(std::make_unique<ActivateItemCmd>());
+	}
 
 	if (!m_clSocket.Open(params["port"].GetInt(), dcclite::Socket::Type::STREAM))
 	{

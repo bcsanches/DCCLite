@@ -164,6 +164,8 @@ namespace dcclite
 				//empty
 			}
 
+			IObject(const IObject &rhs) = delete;
+
 			inline std::string_view GetName() const noexcept { return m_strName; }
 
 			virtual bool IsShortcut() const noexcept { return false; }

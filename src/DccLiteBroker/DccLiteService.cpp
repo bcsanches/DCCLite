@@ -268,3 +268,10 @@ void DccLiteService::Device_UnregisterSession(const dcclite::Guid &sessionToken)
 {
 	m_pSessions->RemoveChild(dcclite::GuidToString(sessionToken));
 }
+
+Decoder *DccLiteService::TryFindDecoder(std::string_view id)
+{
+	auto *decoder = m_pAddresses->TryResolveChild(id);
+
+	return static_cast<Decoder *>(decoder ? decoder : m_pDecoders->TryResolveChild(id));
+}

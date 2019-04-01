@@ -66,6 +66,8 @@ class DccLiteService : public Service
 			//nothing
 		}
 
+		Decoder *TryFindDecoder(std::string_view id);
+
 	private:
 		void OnNet_Hello(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);
 		void OnNet_Ping(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);
