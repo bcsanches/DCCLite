@@ -22,6 +22,7 @@
 #include "Log.h"
 
 #include "TerminalCmd.h"
+#include "SpecialFolders.h"
 
 #include "DccLiteService.h"
 
@@ -50,7 +51,10 @@ Broker::Broker(std::filesystem::path projectPath):
 	m_clRoot.AddChild(std::make_unique<TerminalCmdHost>());
 
 	using namespace dcclite;
-	m_pServices = static_cast<FolderObject*>(m_clRoot.AddChild(std::make_unique<FolderObject>("services")));
+
+	m_pServices = static_cast<FolderObject*>(m_clRoot.AddChild(
+		std::make_unique<FolderObject>(SpecialFolders::GetName(SpecialFolders::ServicesFolderId)))
+	);
 
 	this->LoadConfig();
 }

@@ -19,9 +19,6 @@
     <ClInclude Include="..\src\DccLiteBroker\DccLiteService.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\Service.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\DccLiteBroker\TerminalService.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -41,6 +38,10 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\src\DccLiteBroker\Broker.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\DccLiteBroker\Service.h" />
+    <ClInclude Include="..\src\DccLiteBroker\SpecialFolders.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
@@ -73,6 +74,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\src\DccLiteBroker\Broker.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DccLiteBroker\SpecialFolders.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

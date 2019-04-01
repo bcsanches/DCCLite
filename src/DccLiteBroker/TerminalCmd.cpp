@@ -15,6 +15,8 @@
 #include <map>
 #include <sstream>
 
+#include "SpecialFolders.h"
+
 static TerminalCmdHost *g_CmdHost = nullptr;
 
 void TerminalContext::SetLocation(const dcclite::Path_t &newLocation)
@@ -35,7 +37,7 @@ dcclite::IObject *TerminalContext::GetItem() const
 }
 
 TerminalCmdHost::TerminalCmdHost():
-	FolderObject("CmdHost")
+	FolderObject(SpecialFolders::GetName(SpecialFolders::CmdHostFolderId))
 {
 	g_CmdHost = this;
 }

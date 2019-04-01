@@ -22,6 +22,7 @@
 #include <rapidjson/document.h>
 
 #include "NetMessenger.h"
+#include "SpecialFolders.h"
 #include "TerminalCmd.h"
 
 using namespace dcclite;
@@ -166,6 +167,30 @@ class GetCommandCmd : public TerminalCmd
 			}			
 		}
 };
+
+class ActivateItemCmd : public TerminalCmd
+{
+	public:
+		ActivateItemCmd(std::string name = "Activate-Item") :
+			TerminalCmd(std::move(name))
+		{
+			//empty
+		}
+
+		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
+		{
+			auto paramsIt = request.FindMember("params");
+			if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.MemberCount() != 2))
+			{
+				throw TerminalCmdException("Usage: Activate-Item <dccSystem> <decoder>", id);
+			}
+
+			auto dccSystemName = paramsIt->value[0].GetString();
+			auto decoderId = paramsIt->value[1].GetString();			
+		}
+};
+
+
 
 class TerminalClient
 {
