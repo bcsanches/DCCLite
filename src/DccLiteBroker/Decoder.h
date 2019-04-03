@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <optional>
 #include <ostream>
 
 #include "ClassInfo.h"
@@ -71,6 +72,12 @@ class Decoder: public dcclite::Object
 
 		typedef dcclite::ClassInfo<Decoder, const Address &, const std::string &, DccLiteService &, const rapidjson::Value &> Class;
 
+		enum class State
+		{
+			INACTIVE = 0,
+			ACTIVE			
+		};
+
 	public:
 		Decoder(
 			const Class &decoderClass, 
@@ -88,6 +95,14 @@ class Decoder: public dcclite::Object
 		virtual void WriteConfig(dcclite::Packet &packet) const;
 
 		virtual dcclite::DecoderTypes GetType() const noexcept = 0;
+
+		virtual bool IsOutputDecoder() const = 0;
+		virtual bool IsInputDecoder() const = 0;
+
+		virtual std::optional<State> GetPendingStateChange() const
+		{
+			return std::nullopt;
+		}
 
 		//
 		//IObject

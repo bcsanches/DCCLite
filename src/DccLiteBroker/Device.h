@@ -32,7 +32,7 @@ class Device: public dcclite::FolderObject
 		{
 			OFFLINE,
 			ONLINE			
-		};
+		};		
 
 	public:
 		Device(std::string name, DccLiteService &dccService, const rapidjson::Value &params, const Project &project);
@@ -111,9 +111,12 @@ class Device: public dcclite::FolderObject
 
 		dcclite::Address	m_RemoteAddress;
 
-		Status				m_eStatus;	
+		Status				m_eStatus;
 
 		dcclite::Clock::TimePoint_t m_Timeout;
+
+		uint64_t			m_uLastReceivedPacketId = 0;
+		uint64_t			m_uOutgoingPacketId = 0;
 
 		struct ConfigInfo
 		{

@@ -170,31 +170,31 @@ class GetCommandCmd : public TerminalCmd
 		}
 };
 
-class ActivateItemCmd : public TerminalCmd
+class DecoderCmdBase : public TerminalCmd
 {
-	public:
-		ActivateItemCmd(std::string name = "Activate-Item") :
+	protected:
+		DecoderCmdBase(std::string name) :
 			TerminalCmd(std::move(name))
 		{
 			//empty
 		}
 
-		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
+		std::tuple<Decoder *, const char *, const char *> FindDecoder(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
 		{
 			auto paramsIt = request.FindMember("params");
 			if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() != 2))
 			{
-				throw TerminalCmdException("Usage: Activate-Item <dccSystem> <decoder>", id);
+				throw TerminalCmdException(fmt::format("Usage: {} <dccSystem> <decoder>", this->GetName()), id);
 			}
 
 			auto dccSystemName = paramsIt->value[0].GetString();
-			auto decoderId = paramsIt->value[1].GetString();	
+			auto decoderId = paramsIt->value[1].GetString();
 
 			auto &root = static_cast<FolderObject &>(context.GetItem()->GetRoot());
 
 			ObjectPath path = { SpecialFolders::GetPath(SpecialFolders::ServicesFolderId) };
 			path.append(dccSystemName);
-			
+
 			auto *service = dynamic_cast<DccLiteService *>(root.TryNavigate(path));
 			if (service == nullptr)
 			{
@@ -207,11 +207,35 @@ class ActivateItemCmd : public TerminalCmd
 				throw TerminalCmdException(fmt::format("Decoder {} not found on DCC System {}", decoderId, dccSystemName), id);
 			}
 
-			auto *outputDecoder = dynamic_cast<OutputDecoder *>(decoder);
+			return std::make_tuple(decoder, dccSystemName, decoderId);
+		}
+
+		OutputDecoder *FindOutputDecoder(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
+		{
+			auto[decoder, dccSystemName, decoderName] = this->FindDecoder(context, id, request);
+
+			auto outputDecoder = dynamic_cast<OutputDecoder *>(decoder);
 			if (outputDecoder == nullptr)
 			{
-				throw TerminalCmdException(fmt::format("Decoder {} on DCC System {} is not an output type", decoderId, dccSystemName), id);
+				throw TerminalCmdException(fmt::format("Decoder {} on DCC System {} is not an output type", decoderName, dccSystemName), id);
 			}
+
+			return outputDecoder;
+		}
+};
+
+class ActivateItemCmd : public DecoderCmdBase
+{
+	public:
+		ActivateItemCmd(std::string name = "Activate-Item") :
+			DecoderCmdBase(std::move(name))
+		{
+			//empty
+		}
+
+		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
+		{			
+			auto outputDecoder = this->FindOutputDecoder(context, id, request);
 
 			outputDecoder->Activate();
 
@@ -219,6 +243,48 @@ class ActivateItemCmd : public TerminalCmd
 			results.AddStringValue("msg", "OK");
 		}
 };
+
+class DeactivateItemCmd : public DecoderCmdBase
+{
+	public:
+		DeactivateItemCmd(std::string name = "Deactivate-Item") :
+			DecoderCmdBase(std::move(name))
+		{
+			//empty
+		}
+
+		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
+		{
+			auto outputDecoder = this->FindOutputDecoder(context, id, request);
+
+			outputDecoder->Deactivate();
+
+			results.AddStringValue("classname", "string");
+			results.AddStringValue("msg", "OK");
+		}
+};
+
+class FlipItemCmd : public DecoderCmdBase
+{
+	public:
+		FlipItemCmd(std::string name = "Flip-Item") :
+			DecoderCmdBase(std::move(name))
+		{
+			//empty
+		}
+
+		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
+		{
+			auto outputDecoder = this->FindOutputDecoder(context, id, request);
+
+			outputDecoder->ToggleState();
+
+			results.AddStringValue("classname", "string");
+			results.AddStringValue("msg", fmt::format("OK: {}", outputDecoder->GetRequestedState() == Decoder::State::ACTIVE ? "Active" : "Inactive"));
+		}
+};
+
+
 
 class TerminalClient
 {
@@ -413,6 +479,14 @@ TerminalService::TerminalService(const ServiceClass &serviceClass, const std::st
 
 	{
 		auto activateItemCmd = cmdHost->AddCmd(std::make_unique<ActivateItemCmd>());
+	}
+
+	{
+		auto deactivateItemCmd = cmdHost->AddCmd(std::make_unique<DeactivateItemCmd>());
+	}
+
+	{
+		auto flipItemCmd = cmdHost->AddCmd(std::make_unique<FlipItemCmd>());
 	}
 
 	if (!m_clSocket.Open(params["port"].GetInt(), dcclite::Socket::Type::STREAM))

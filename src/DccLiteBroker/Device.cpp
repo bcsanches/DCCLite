@@ -15,6 +15,7 @@
 #include <rapidjson/istreamwrapper.h>
 
 #include "Decoder.h"
+#include "OutputDecoder.h"
 #include "DccLiteService.h"
 #include "FmtUtils.h"
 #include "GuidUtils.h"
@@ -97,6 +98,9 @@ void Device::GoOnline(const dcclite::Address remoteAddress)
 	m_RemoteAddress = remoteAddress;
 	m_SessionToken = dcclite::GuidCreate();
 	m_clDccService.Device_RegisterSession(*this, m_SessionToken);
+
+	m_uLastReceivedPacketId = 0;
+	m_uOutgoingPacketId = 0;
 
 	m_eStatus = Status::ONLINE;	
 
@@ -297,48 +301,62 @@ bool Device::CheckTimeout(dcclite::Clock::TimePoint_t time)
 
 void Device::Update(const dcclite::Clock &clock)
 {
-	if (m_eStatus == Status::ONLINE)
+	if (m_eStatus != Status::ONLINE)
+		return;
+	
+	auto time = clock.Now();
+
+	//Did remoted device timedout?
+	if (!this->CheckTimeout(time))
 	{
-		auto time = clock.Now();
+		//yes, ok get out and wait for it to come back
+		return;
+	}		
 
-		if (!this->CheckTimeout(time))
-			return;
-
-		if (m_upConfigState && (m_upConfigState->m_RetryTime < time))
-		{
-			//we havent received ack for some time, wake up the device (timeout keeps counting)
+	//Are we on config state and should retry sending config packets?
+	if (m_upConfigState && (m_upConfigState->m_RetryTime < time))
+	{
+		//we havent received ack for some time, wake up the device (timeout keeps counting)
 			
-			//go thought all the decoders and check what does not have an ACK
-			int pos = 0, packetCount = 0;
-			for(const bool &acked : m_upConfigState->m_vecAcks)
+		//go thought all the decoders and check what does not have an ACK
+		int pos = 0, packetCount = 0;
+		for(const bool &acked : m_upConfigState->m_vecAcks)
+		{
+			if (!acked)
 			{
-				if (!acked)
+				if (pos == 0)
 				{
-					if (pos == 0)
-					{
-						//when config 0 is not received, this could also means that CONFIG_START was not received by tge remote, so we send it again
-						this->SendConfigStartPacket();
-					}
-
-					dcclite::Log::Warn("[{}::Device::Update] retrying config for device {} at {}", this->GetName(), m_vecDecoders[pos]->GetName(), pos);
-					this->SendDecoderConfigPacket(pos);
-
-					++packetCount;
-
-					//too many packets? Wait a little bit
-					if (packetCount == 3)
-						break;
+					//when config 0 is not received, this could also means that CONFIG_START was not received by tge remote, so we send it again
+					this->SendConfigStartPacket();
 				}
 
-				++pos;
-			}		
+				dcclite::Log::Warn("[{}::Device::Update] retrying config for device {} at {}", this->GetName(), m_vecDecoders[pos]->GetName(), pos);
+				this->SendDecoderConfigPacket(pos);
+
+				++packetCount;
+
+				//too many packets? Wait a little bit
+				if (packetCount == 3)
+					break;
+			}
+
+			++pos;
+		}		
 						
-			if (packetCount == 0)
-			{
-				//remote device already acked all decoders, but not acked the config finished, so, send it again
-				dcclite::Log::Warn("[{}::Device::Update] retrying config finished for remote device", this->GetName());
-				this->SendConfigFinishedPacket();
-			}						
-		}
+		if (packetCount == 0)
+		{
+			//remote device already acked all decoders, but not acked the config finished, so, send it again
+			dcclite::Log::Warn("[{}::Device::Update] retrying config finished for remote device", this->GetName());
+			this->SendConfigFinishedPacket();
+		}						
 	}
+	//No config state, so check for any requested state change and notify remote
+	else if (!m_upConfigState)
+	{
+		for (auto *decoder : m_vecDecoders)
+		{
+			auto pendingStateChange = decoder != nullptr ? decoder->GetPendingStateChange() : std::nullopt;
+
+		}
+	}	
 }

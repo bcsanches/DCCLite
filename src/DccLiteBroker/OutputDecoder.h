@@ -33,17 +33,42 @@ class OutputDecoder : public Decoder
 
 		void Activate()
 		{
-			m_fRequestedState = true;
+			m_kRequestedState = State::ACTIVE;
 		}
 
 		void Deactivate()
 		{
-			m_fRequestedState = false;
+			m_kRequestedState = State::INACTIVE;
 		}
 
 		void ToggleState()
 		{
-			m_fRequestedState = !m_fRequestedState;
+			m_kRequestedState = m_kRequestedState == State::ACTIVE ? State::INACTIVE : State::ACTIVE;
+		}
+
+		State GetRequestedState() const
+		{
+			return m_kRequestedState;
+		}
+
+		State GetCurrentState() const
+		{
+			return m_kCurrentState;
+		}
+
+		virtual bool IsOutputDecoder() const
+		{
+			return true;
+		}
+
+		virtual bool IsInputDecoder() const
+		{
+			return false;
+		}
+
+		virtual std::optional<State> GetPendingStateChange() const
+		{
+			return m_kRequestedState != m_kCurrentState ? std::optional{ m_kRequestedState } : std::nullopt;
 		}
 
 		//
@@ -73,6 +98,6 @@ class OutputDecoder : public Decoder
 		bool m_fIgnoreSavedState = false;
 		bool m_fActivateOnPowerUp = false;
 
-		bool m_fCurrentState = false;
-		bool m_fRequestedState = false;
+		State m_kCurrentState = State::INACTIVE;
+		State m_kRequestedState = State::INACTIVE;		
 };
