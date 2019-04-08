@@ -156,6 +156,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\UnitTest\BitPackUnitTest.cpp" />
     <ClCompile Include="..\src\UnitTest\ObjectPathUnitTest.cpp" />
     <ClCompile Include="..\src\UnitTest\ProjectUnitTest.cpp" />
     <ClCompile Include="..\src\UnitTest\UtilUnitTest.cpp" />
