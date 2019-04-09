@@ -14,6 +14,7 @@
 #include <string.h>
 #include <stdint.h>
 
+#include "BitPack.h"
 #include "Guid.h"
 
 namespace dcclite
@@ -29,12 +30,16 @@ namespace dcclite
 		CONFIG_FINISHED,
 		CONFIG_ACK,
 		MSG_PING,
-		MSG_PONG,		
-	};	
+		MSG_PONG,	
+		STATE,
+		STATE_ACK
+	};
 
 	constexpr uint32_t PACKET_ID = 0xBEEFFEED;
 
 	constexpr uint8_t PACKET_MAX_SIZE = 128;
+
+	constexpr uint8_t MAX_DECODERS_STATES_PER_PACKET = 128;
 
 	/**
 	Basic packet format:
@@ -88,12 +93,29 @@ namespace dcclite
 				m_iIndex += sizeof(data);
 			}
 
+			inline void Write64(uint64_t data)
+			{
+				assert(m_iIndex + sizeof(data) < PACKET_MAX_SIZE);
+
+				memcpy(&m_arData[m_iIndex], &data, sizeof(data));
+				m_iIndex += sizeof(data);
+			}
+
 			inline void Write(const Guid &guid) noexcept
 			{
 				assert(m_iIndex + sizeof(guid.m_bId) < PACKET_MAX_SIZE);
 
 				memcpy(&m_arData[m_iIndex], guid.m_bId, sizeof(guid.m_bId));
 				m_iIndex += sizeof(guid.m_bId);				
+			}
+
+			template <size_t BITS>
+			inline void Write(const BitPack<BITS> &bitPack)
+			{
+				assert(m_iIndex + bitPack.GetNumBytes() < PACKET_MAX_SIZE);
+
+				memcpy(&m_arData[m_iIndex], bitPack.GetRaw(), bitPack.GetNumBytes());
+				m_iIndex += bitPack.GetNumBytes();
 			}
 
 			inline Guid ReadGuid()
@@ -106,6 +128,15 @@ namespace dcclite
 				m_iIndex += sizeof(guid.m_bId);
 
 				return guid;
+			}
+
+			template <size_t NBITS>
+			inline void ReadBitPack(dcclite::BitPack<NBITS> &dest)
+			{
+				assert(m_iIndex + sizeof(dest.GetNumBytes()) < PACKET_MAX_SIZE);
+
+				dest.Set(m_arData + m_iIndex);
+				m_iIndex += dest.GetNumBytes();
 			}
 
 			template <typename T>

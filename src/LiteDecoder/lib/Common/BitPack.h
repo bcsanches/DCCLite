@@ -8,9 +8,9 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-
-
 #pragma once
+
+#include <cstring>
 
 namespace dcclite
 {
@@ -67,6 +67,18 @@ namespace dcclite
 			inline size_t size() const
 			{
 				return NBITS;
+			}
+
+			inline const uint8_t *GetRaw() const { return m_bData; }
+
+			inline void Set(void *data)
+			{
+				memcpy(m_bData, data, sizeof(m_bData));
+			}
+
+			inline size_t GetNumBytes() const
+			{
+				return NBITS / 8;
 			}
 	};
 }

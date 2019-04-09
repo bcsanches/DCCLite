@@ -47,5 +47,5 @@ namespace dcclite
 		OUTD_ACTIVATE_ON_POWER_UP = 0x04,
 
 		OUTD_ACTIVE = 0x80
-	};
+	};	
 }

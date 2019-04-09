@@ -14,6 +14,7 @@
 
 #include <rapidjson/istreamwrapper.h>
 
+#include "BitPack.h"
 #include "Decoder.h"
 #include "OutputDecoder.h"
 #include "DccLiteService.h"
@@ -99,8 +100,8 @@ void Device::GoOnline(const dcclite::Address remoteAddress)
 	m_SessionToken = dcclite::GuidCreate();
 	m_clDccService.Device_RegisterSession(*this, m_SessionToken);
 
-	m_uLastReceivedPacketId = 0;
-	m_uOutgoingPacketId = 0;
+	m_uLastOutgoingStatePacketAck = 0;
+	m_uOutgoingStatePacketId = 0;
 
 	m_eStatus = Status::ONLINE;	
 
@@ -200,6 +201,28 @@ void Device::OnPacket_Ping(dcclite::Packet &packet, dcclite::Clock::TimePoint_t 
 	this->RefreshTimeout(time);
 
 	// dcclite::Log::Trace("[{}::Device::OnPacket_Ping] ping", this->GetName());
+}
+
+void Device::OnPacket_StateAck(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteConfigToken)
+{
+	if (!this->CheckSessionConfig(remoteConfigToken, remoteAddress))
+		return;
+
+	this->RefreshTimeout(time);
+
+	const auto sequenceCount = packet.Read<uint64_t>();
+
+	//discard old packets
+	if (sequenceCount < m_uLastOutgoingStatePacketAck)
+		return;
+
+	m_uLastOutgoingStatePacketAck = sequenceCount;
+
+	dcclite::BitPack<dcclite::MAX_DECODERS_STATES_PER_PACKET> changedStates;
+	dcclite::BitPack<dcclite::MAX_DECODERS_STATES_PER_PACKET> states;
+	
+	packet.ReadBitPack(changedStates);
+	packet.ReadBitPack(states);
 }
 
 void Device::OnPacket_ConfigAck(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress)
@@ -353,10 +376,48 @@ void Device::Update(const dcclite::Clock &clock)
 	//No config state, so check for any requested state change and notify remote
 	else if (!m_upConfigState)
 	{
-		for (auto *decoder : m_vecDecoders)
-		{
-			auto pendingStateChange = decoder != nullptr ? decoder->GetPendingStateChange() : std::nullopt;
+		dcclite::BitPack<dcclite::MAX_DECODERS_STATES_PER_PACKET> states;
+		dcclite::BitPack<dcclite::MAX_DECODERS_STATES_PER_PACKET> changedStates;
 
+		bool stateChanged = false;
+
+		const auto numDecoders = std::min(m_vecDecoders.size(), size_t{ dcclite::MAX_DECODERS_STATES_PER_PACKET });
+		for (size_t i = 0; i < numDecoders; ++i)
+		{
+			auto *decoder = m_vecDecoders[i];
+			if (!decoder)
+				continue;
+
+			if (!decoder->IsOutputDecoder())
+			{
+				continue;
+			}
+
+			auto *outputDecoder = static_cast<OutputDecoder *>(decoder);
+
+			auto stateChange = outputDecoder->GetPendingStateChange();
+			if (!stateChange)
+				continue;
+
+			//mark on bit vector that this decoder has a change
+			changedStates.SetBit(i);
+
+			//Send down the decoder state
+			states.SetBitValue(i, stateChange.value() == Decoder::State::ACTIVE);
+			
+			stateChanged = true;
+		}		
+
+		if (stateChanged)
+		{
+			dcclite::Packet pkt;
+			m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::STATE, m_SessionToken, m_ConfigToken);
+
+			pkt.Write64(++m_uOutgoingStatePacketId);
+			pkt.Write(changedStates);
+			pkt.Write(states);
+
+			m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
 		}
 	}	
 }
