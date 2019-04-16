@@ -39,7 +39,7 @@ namespace dcclite
 
 	constexpr uint8_t PACKET_MAX_SIZE = 128;
 
-	constexpr uint8_t MAX_DECODERS_STATES_PER_PACKET = 128;
+	constexpr uint8_t MAX_DECODERS_STATES_PER_PACKET = 64;
 
 	/**
 	Basic packet format:

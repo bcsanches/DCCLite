@@ -220,6 +220,11 @@ static void OnlineTick()
 	g_uTicks = millis() + PING_TICKS;
 }
 
+static void OnStatePacket(dcclite::Packet &packet)
+{
+
+}
+
 const char OnOnlineStateName[] PROGMEM = {"Online"} ;
 #define OnOnlineStateNameStr Console::FlashStr(OnOnlineStateName)
 
@@ -238,6 +243,10 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 			//server does not get it and so, it resends the CONFIG_FINISHED for us to ACK
 			//we simple ignore and ack again to the server, yes
 			SendConfigPacket(packet, dcclite::MsgTypes::CONFIG_FINISHED, 255);
+			break;
+
+		case dcclite::MsgTypes::STATE:
+			OnStatePacket(packet);
 			break;
 
 		default:
