@@ -13,6 +13,7 @@
 #include <stdint.h>
 
 #include "Console.h"
+#include "Decoder.h"
 #include "DecoderManager.h"
 #include "EmbeddedLibDefs.h"
 #include "NetUdp.h"
@@ -39,7 +40,10 @@ static uint16_t g_iSrvPort = 2424;
 static unsigned long g_uTicks = 0;
 static unsigned long g_uTimeoutTicks = 0;
 
+static uint64_t g_uLastStatePacket = 0;
+
 static States g_eState = States::OFFLINE;
+static bool g_fForceStateRefresh = false;
 
 #define PING_TICKS 2500
 
@@ -222,7 +226,34 @@ static void OnlineTick()
 
 static void OnStatePacket(dcclite::Packet &packet)
 {
+	using namespace dcclite;
 
+	auto sequenceNumber = packet.Read<uint64_t>();
+
+	//out of sequence?
+	if (sequenceNumber <= g_uLastStatePacket)
+	{
+		//just drop it
+		return;
+	}
+
+	g_uLastStatePacket = sequenceNumber;
+
+	BitPack<MAX_DECODERS_STATES_PER_PACKET> states;
+	BitPack<MAX_DECODERS_STATES_PER_PACKET> changedStates;
+
+	packet.ReadBitPack(changedStates);
+	packet.ReadBitPack(states);
+
+	for (size_t i = 0; i < changedStates.size(); ++i)
+	{
+		if (!changedStates[i])
+			continue;
+
+		auto *decoder = DecoderManager::TryGet(i);
+
+		g_fForceStateRefresh = decoder->AcceptServerState(states[i] ? DecoderStates::ACTIVE : DecoderStates::INACTIVE);
+	}
 }
 
 const char OnOnlineStateName[] PROGMEM = {"Online"} ;

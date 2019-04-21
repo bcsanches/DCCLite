@@ -30,6 +30,8 @@ class OutputDecoder : public Decoder
 			return dcclite::DecoderTypes::DEC_OUTPUT;
 		};
 
+		bool AcceptServerState(dcclite::DecoderStates state);
+
 	private:
 		void Init();
 };

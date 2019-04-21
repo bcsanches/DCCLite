@@ -70,13 +70,7 @@ class Decoder: public dcclite::Object
 				friend std::ostream& operator<<(std::ostream& os, const Address& address);
 		};
 
-		typedef dcclite::ClassInfo<Decoder, const Address &, const std::string &, DccLiteService &, const rapidjson::Value &> Class;
-
-		enum class State
-		{
-			INACTIVE = 0,
-			ACTIVE			
-		};
+		typedef dcclite::ClassInfo<Decoder, const Address &, const std::string &, DccLiteService &, const rapidjson::Value &> Class;		
 
 	public:
 		Decoder(
@@ -99,7 +93,7 @@ class Decoder: public dcclite::Object
 		virtual bool IsOutputDecoder() const = 0;
 		virtual bool IsInputDecoder() const = 0;
 
-		virtual std::optional<State> GetPendingStateChange() const
+		virtual std::optional<dcclite::DecoderStates> GetPendingStateChange() const
 		{
 			return std::nullopt;
 		}

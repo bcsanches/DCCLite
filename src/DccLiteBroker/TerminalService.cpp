@@ -280,7 +280,7 @@ class FlipItemCmd : public DecoderCmdBase
 			outputDecoder->ToggleState();
 
 			results.AddStringValue("classname", "string");
-			results.AddStringValue("msg", fmt::format("OK: {}", outputDecoder->GetRequestedState() == Decoder::State::ACTIVE ? "Active" : "Inactive"));
+			results.AddStringValue("msg", fmt::format("OK: {}", outputDecoder->GetRequestedState() == dcclite::DecoderStates::ACTIVE ? "Active" : "Inactive"));
 		}
 };
 

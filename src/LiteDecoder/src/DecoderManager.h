@@ -29,4 +29,6 @@ namespace DecoderManager
 
 	void SaveConfig(EpromStream &stream);
 	void LoadConfig(EpromStream &stream);
+
+	Decoder *TryGet(unsigned index);
 }

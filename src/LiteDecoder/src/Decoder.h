@@ -29,6 +29,10 @@ class Decoder
 		Decoder(dcclite::Packet &packet);
 		Decoder(EpromStream &stream) {}
 
+		Decoder(const Decoder &) = delete;
+		Decoder(const Decoder &&) = delete;
+		Decoder &operator=(const Decoder &) = delete;
+
 		virtual dcclite::DecoderTypes GetType() const = 0;
 
 		virtual ~Decoder() = default;
@@ -36,9 +40,7 @@ class Decoder
 		virtual void SaveConfig(EpromStream &stream)
 		{
 			//empty
-		}
+		}		
 
-		Decoder(const Decoder &) = delete;
-		Decoder(const Decoder &&) = delete;
-		Decoder &operator=(const Decoder &) = delete;
+		virtual bool AcceptServerState(dcclite::DecoderStates state) = 0;
 };

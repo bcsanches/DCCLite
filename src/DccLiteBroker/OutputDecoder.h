@@ -33,25 +33,25 @@ class OutputDecoder : public Decoder
 
 		void Activate()
 		{
-			m_kRequestedState = State::ACTIVE;
+			m_kRequestedState = dcclite::DecoderStates::ACTIVE;
 		}
 
 		void Deactivate()
 		{
-			m_kRequestedState = State::INACTIVE;
+			m_kRequestedState = dcclite::DecoderStates::INACTIVE;
 		}
 
 		void ToggleState()
 		{
-			m_kRequestedState = m_kRequestedState == State::ACTIVE ? State::INACTIVE : State::ACTIVE;
+			m_kRequestedState = m_kRequestedState == dcclite::DecoderStates::ACTIVE ? dcclite::DecoderStates::INACTIVE : dcclite::DecoderStates::ACTIVE;
 		}
 
-		State GetRequestedState() const
+		dcclite::DecoderStates GetRequestedState() const
 		{
 			return m_kRequestedState;
 		}
 
-		State GetCurrentState() const
+		dcclite::DecoderStates GetCurrentState() const
 		{
 			return m_kCurrentState;
 		}
@@ -66,7 +66,7 @@ class OutputDecoder : public Decoder
 			return false;
 		}
 
-		virtual std::optional<State> GetPendingStateChange() const
+		virtual std::optional<dcclite::DecoderStates> GetPendingStateChange() const
 		{
 			return m_kRequestedState != m_kCurrentState ? std::optional{ m_kRequestedState } : std::nullopt;
 		}
@@ -98,6 +98,6 @@ class OutputDecoder : public Decoder
 		bool m_fIgnoreSavedState = false;
 		bool m_fActivateOnPowerUp = false;
 
-		State m_kCurrentState = State::INACTIVE;
-		State m_kRequestedState = State::INACTIVE;		
+		dcclite::DecoderStates m_kCurrentState = dcclite::DecoderStates::INACTIVE;
+		dcclite::DecoderStates m_kRequestedState = dcclite::DecoderStates::INACTIVE;
 };

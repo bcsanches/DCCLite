@@ -29,10 +29,10 @@ OutputDecoder::OutputDecoder(dcclite::Packet &packet) :
 
 OutputDecoder::OutputDecoder(EpromStream &stream):
 	Decoder::Decoder(stream)
-{
-	m_uStorageIndex = stream.GetIndex();
-
+{	
 	stream.Get(m_tPin);
+
+	m_uStorageIndex = stream.GetIndex();
 	stream.Get(m_fFlags);
 
 	this->Init();
@@ -60,4 +60,30 @@ void OutputDecoder::Init()
 	m_fFlags |= ((m_fFlags & OUTD_IGNORE_SAVED_STATE) ? (m_fFlags & OUTD_ACTIVATE_ON_POWER_UP) : 0) ? OUTD_ACTIVE : 0;
 
 	digitalWrite(m_tPin, (m_fFlags & OUTD_ACTIVE) ^ (m_fFlags & OUTD_INVERTED_OPERATION));
+}
+
+bool OutputDecoder::AcceptServerState(dcclite::DecoderStates state)
+{
+	using namespace dcclite;
+
+	bool activate = state == dcclite::DecoderStates::ACTIVE;
+	bool currentState = m_fFlags & OUTD_ACTIVE;
+
+	//no state change?
+	if (currentState == activate)
+		return false;
+
+	//Which state should we use?
+	if (activate)
+		m_fFlags |= OUTD_ACTIVE;
+	else
+		m_fFlags &= ~OUTD_ACTIVE;
+
+	//Now set pin state
+	digitalWrite(m_tPin, (m_fFlags & OUTD_ACTIVE) ^ (m_fFlags & OUTD_INVERTED_OPERATION));
+
+	//Store current state on eprom, so we can reload.
+	Storage::UpdateField(m_uStorageIndex, m_fFlags);
+
+	return true;
 }

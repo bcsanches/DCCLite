@@ -403,7 +403,7 @@ void Device::Update(const dcclite::Clock &clock)
 			changedStates.SetBit(i);
 
 			//Send down the decoder state
-			states.SetBitValue(i, stateChange.value() == Decoder::State::ACTIVE);
+			states.SetBitValue(i, stateChange.value() == dcclite::DecoderStates::ACTIVE);
 			
 			stateChanged = true;
 		}		

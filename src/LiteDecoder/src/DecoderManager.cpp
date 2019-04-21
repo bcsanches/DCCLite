@@ -223,3 +223,11 @@ void DecoderManager::LoadConfig(EpromStream &stream)
 	//loaded all decoders, set config token
 	Session::ReplaceConfigToken(configToken);
 }
+
+Decoder *DecoderManager::TryGet(unsigned index)
+{
+	assert(index < MAX_DECODERS);
+
+	return g_pDecoders[index];
+}
+

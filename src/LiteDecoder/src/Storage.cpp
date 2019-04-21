@@ -271,6 +271,10 @@ void Storage::SaveConfig()
     Console::SendLogEx(MODULE_NAME, "sv", ' ', "ok");
 }
 
+void Storage::UpdateField(unsigned int index, unsigned char byte)
+{
+	EEPROM.put(index, byte);
+}
 
 
 EpromStream::EpromStream(unsigned int index):
@@ -449,3 +453,6 @@ LumpWriter::~LumpWriter()
 
 	m_rStream.Seek(currentPos);
 }
+
+
+

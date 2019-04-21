@@ -84,6 +84,8 @@ struct Storage
   static void SaveConfig();
 
   static void Dump();
+
+  static void UpdateField(unsigned int index, unsigned char byte);
 };
 
 #endif

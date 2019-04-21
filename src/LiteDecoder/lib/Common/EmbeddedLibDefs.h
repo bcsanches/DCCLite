@@ -24,6 +24,12 @@ namespace dcclite
 		DEC_INPUT = 2
 	};
 
+	enum class DecoderStates
+	{
+		INACTIVE = 0,
+		ACTIVE
+	};
+
 	/**
 	
 	//https://github.com/DccPlusPlus/BaseStation/wiki/Commands-for-DCCpp-BaseStation
