@@ -34,6 +34,6 @@ namespace DecoderManager
 
 	bool ReceiveServerStates(const dcclite::StatesBitPack_t &changedStates, const dcclite::StatesBitPack_t &states);
 
-	void ProduceStatesDelta(dcclite::StatesBitPack_t &changedStates, dcclite::StatesBitPack_t &states);
+	bool ProduceStatesDelta(dcclite::StatesBitPack_t &changedStates, dcclite::StatesBitPack_t &states);
 	void WriteStates(dcclite::StatesBitPack_t &changedStates, dcclite::StatesBitPack_t &states);
 }
