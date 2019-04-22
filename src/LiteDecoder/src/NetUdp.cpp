@@ -49,7 +49,7 @@ static void UdpCallback(uint16_t dest_port,    	///< Port the packet was sent to
     uint16_t len)
 {
     //Serial.println("Got udp packet");
-    ether.printIp("PKT: ", src_ip);
+    //ether.printIp("PKT: ", src_ip);
     //Serial.println(data);
 
 	if(g_pfnReceiverCallback)
