@@ -35,6 +35,18 @@ class Decoder
 
 		virtual dcclite::DecoderTypes GetType() const = 0;
 
+		//Returns true if decoder is activated (OUTPUT is On or Sensor has detected something)
+		virtual bool IsActive() const = 0;
+
+		/**
+			Returns true if known remote state is not matching the current state
+
+			Output decoders will always return false, as they do not need to sync
+
+			Input decoders may return true or false, depends on the sync
+		*/
+		virtual bool IsSyncRequired() const = 0;
+
 		virtual ~Decoder() = default;
 
 		virtual void SaveConfig(EpromStream &stream)

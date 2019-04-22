@@ -81,10 +81,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\data\EFMR\broker.config.json">
+    <None Include="..\data\EFMR\broker.config.json">
       <Filter>data\EFMR</Filter>
     </None>
-    <None Include="..\..\data\EFMR\RelayStagingA.decoders.json">
+    <None Include="..\data\EFMR\RelayStagingA.decoders.json">
       <Filter>data\EFMR</Filter>
     </None>
   </ItemGroup>

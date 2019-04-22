@@ -13,6 +13,7 @@
 #include <stdint.h>
 
 #include "Console.h"
+#include "Config.h"
 #include "Decoder.h"
 #include "DecoderManager.h"
 #include "EmbeddedLibDefs.h"
@@ -37,22 +38,19 @@ static dcclite::Guid g_ConfigToken;
 static uint8_t g_u8ServerIp[] = { 0x00, 0x00, 0x00, 0x00 };
 static uint16_t g_iSrvPort = 2424;
 
-static unsigned long g_uTicks = 0;
+static unsigned long g_uNextStateThink = 0;
+static unsigned long g_uNextPingThink = 0;
 static unsigned long g_uTimeoutTicks = 0;
 
-static uint64_t g_uLastStatePacket = 0;
+/***
+If my numbers are correct, we can send 1000 packets per second (each ms) and it will take us
+5 millions centuries to overlap those counters. We probably will have a power outage before that ...
+*/
+static uint64_t g_uLastReceivedDecodersStatePacket = 0;
+static uint64_t g_uDecodersStateSequence = 0;
 
 static States g_eState = States::OFFLINE;
 static bool g_fForceStateRefresh = false;
-
-#define PING_TICKS 2500
-
-#ifdef _DEBUG
-#define TIMEOUT 10000
-#else
-#define TIMEOUT 10000
-#endif
-
 
 static void ReceiveCallback(
 	uint8_t src_ip[4],    ///< IP address of the sender
@@ -97,8 +95,8 @@ bool Session::Init()
 
 static void UpdatePingStatus(unsigned long currentTime)
 {
-	g_uTicks = currentTime + PING_TICKS;
-	g_uTimeoutTicks = currentTime + TIMEOUT;
+	g_uNextPingThink = currentTime + Config::g_cfgPingTicks;
+	g_uTimeoutTicks = currentTime + Config::g_cfgTimeoutTicks;
 }
 
 static bool Timeout(unsigned long currentTime)
@@ -143,6 +141,9 @@ static void GotoOnlineState()
 	Console::SendLogEx(MODULE_NAME, "Online");
 
 	g_eState = States::ONLINE;
+	g_fForceStateRefresh = true;
+	g_uLastReceivedDecodersStatePacket = 0;
+	g_uDecodersStateSequence = 0;
 
 	UpdatePingStatus(millis());
 }
@@ -193,7 +194,6 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 		DecoderManager::DestroyAll();
 
 		g_eState = States::CONFIGURING;		
-		g_uTicks = millis() + 1000;		
 	}
 	else
 	{
@@ -213,15 +213,49 @@ static void OnlineTick()
 	if (Timeout(currentTime))
 		return;
 
-	if (g_uTicks > currentTime)
-		return;	
+	using namespace dcclite;
 
-	dcclite::Packet pkt;
-	
-	dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::MSG_PING, g_SessionToken, g_ConfigToken };
+	if (g_uNextPingThink <= currentTime)
+	{
+		Packet pkt;
 
-	NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_iSrvPort);
-	g_uTicks = millis() + PING_TICKS;
+		PacketBuilder builder{ pkt, MsgTypes::MSG_PING, g_SessionToken, g_ConfigToken };
+
+		NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_iSrvPort);
+
+		UpdatePingStatus(currentTime);		
+	}
+
+	if ((g_fForceStateRefresh) || (g_uNextStateThink >= currentTime))
+	{		
+		StatesBitPack_t states;
+		StatesBitPack_t changedStates;
+
+		bool stateChange = g_fForceStateRefresh;
+
+		if (g_fForceStateRefresh)		
+			DecoderManager::WriteStates(changedStates, states);					
+		else
+			//If any delta, set flag so we dispatch the packet
+			g_fForceStateRefresh = DecoderManager::ProduceStatesDelta(changedStates, states);
+
+		if (g_fForceStateRefresh)
+		{
+			dcclite::Packet pkt;
+			PacketBuilder builder{ pkt, MsgTypes::STATE, g_SessionToken, g_ConfigToken };
+
+			pkt.Write64(++g_uDecodersStateSequence);
+			pkt.Write(changedStates);
+			pkt.Write(states);
+
+			NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_iSrvPort);
+			UpdatePingStatus(currentTime);
+
+			g_fForceStateRefresh = false;
+		}
+
+		g_uNextStateThink += currentTime + Config::g_cfgStateTicks;
+	}
 }
 
 static void OnStatePacket(dcclite::Packet &packet)
@@ -231,29 +265,21 @@ static void OnStatePacket(dcclite::Packet &packet)
 	auto sequenceNumber = packet.Read<uint64_t>();
 
 	//out of sequence?
-	if (sequenceNumber <= g_uLastStatePacket)
+	if (sequenceNumber <= g_uLastReceivedDecodersStatePacket)
 	{
 		//just drop it
 		return;
 	}
 
-	g_uLastStatePacket = sequenceNumber;
+	g_uLastReceivedDecodersStatePacket = sequenceNumber;
 
-	BitPack<MAX_DECODERS_STATES_PER_PACKET> states;
-	BitPack<MAX_DECODERS_STATES_PER_PACKET> changedStates;
+	StatesBitPack_t states;
+	StatesBitPack_t changedStates;
 
 	packet.ReadBitPack(changedStates);
 	packet.ReadBitPack(states);
 
-	for (size_t i = 0; i < changedStates.size(); ++i)
-	{
-		if (!changedStates[i])
-			continue;
-
-		auto *decoder = DecoderManager::TryGet(i);
-
-		g_fForceStateRefresh = decoder->AcceptServerState(states[i] ? DecoderStates::ACTIVE : DecoderStates::INACTIVE);
-	}
+	g_fForceStateRefresh = DecoderManager::ReceiveServerStates(changedStates, states);
 }
 
 const char OnOnlineStateName[] PROGMEM = {"Online"} ;
@@ -403,10 +429,14 @@ static void ReceiveCallback(
 
 			GotoOnlineState();
 		}
+
+		//Disabling this, looks like garbage now
+#if 0
 		else if(type == dcclite::MsgTypes::ACCEPTED)
 		{
 			GotoOnlineState();
 		}
+#endif
 		else
 		{
 			OnConfiguringPacket(type, packet);

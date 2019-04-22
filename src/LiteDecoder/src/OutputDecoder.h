@@ -32,6 +32,16 @@ class OutputDecoder : public Decoder
 
 		bool AcceptServerState(dcclite::DecoderStates state);
 
+		virtual bool IsActive() const
+		{
+			return m_fFlags & dcclite::OUTD_ACTIVE;
+		}
+
+		virtual bool IsSyncRequired() const
+		{
+			return false;
+		}
+
 	private:
 		void Init();
 };

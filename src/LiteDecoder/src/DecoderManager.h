@@ -12,6 +12,8 @@
 
 #include "EmbeddedLibDefs.h"
 
+#include "Packet.h"
+
 class Decoder;
 class EpromStream;
 
@@ -30,5 +32,8 @@ namespace DecoderManager
 	void SaveConfig(EpromStream &stream);
 	void LoadConfig(EpromStream &stream);
 
-	Decoder *TryGet(unsigned index);
+	bool ReceiveServerStates(const dcclite::StatesBitPack_t &changedStates, const dcclite::StatesBitPack_t &states);
+
+	void ProduceStatesDelta(dcclite::StatesBitPack_t &changedStates, dcclite::StatesBitPack_t &states);
+	void WriteStates(dcclite::StatesBitPack_t &changedStates, dcclite::StatesBitPack_t &states);
 }

@@ -71,6 +71,11 @@ class OutputDecoder : public Decoder
 			return m_kRequestedState != m_kCurrentState ? std::optional{ m_kRequestedState } : std::nullopt;
 		}
 
+		virtual void SyncRemoteState(dcclite::DecoderStates state)
+		{
+			m_kCurrentState = state;
+		}
+
 		//
 		//IObject
 		//

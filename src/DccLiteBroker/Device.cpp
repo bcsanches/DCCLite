@@ -100,7 +100,7 @@ void Device::GoOnline(const dcclite::Address remoteAddress)
 	m_SessionToken = dcclite::GuidCreate();
 	m_clDccService.Device_RegisterSession(*this, m_SessionToken);
 
-	m_uLastOutgoingStatePacketAck = 0;
+	m_uLastReceivedStatePacketId = 0;
 	m_uOutgoingStatePacketId = 0;
 
 	m_eStatus = Status::ONLINE;	
@@ -203,7 +203,7 @@ void Device::OnPacket_Ping(dcclite::Packet &packet, dcclite::Clock::TimePoint_t 
 	// dcclite::Log::Trace("[{}::Device::OnPacket_Ping] ping", this->GetName());
 }
 
-void Device::OnPacket_StateAck(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteConfigToken)
+void Device::OnPacket_State(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteConfigToken)
 {
 	if (!this->CheckSessionConfig(remoteConfigToken, remoteAddress))
 		return;
@@ -213,16 +213,26 @@ void Device::OnPacket_StateAck(dcclite::Packet &packet, dcclite::Clock::TimePoin
 	const auto sequenceCount = packet.Read<uint64_t>();
 
 	//discard old packets
-	if (sequenceCount < m_uLastOutgoingStatePacketAck)
+	if (sequenceCount < m_uLastReceivedStatePacketId)
 		return;
 
-	m_uLastOutgoingStatePacketAck = sequenceCount;
+	m_uLastReceivedStatePacketId = sequenceCount;
 
-	dcclite::BitPack<dcclite::MAX_DECODERS_STATES_PER_PACKET> changedStates;
-	dcclite::BitPack<dcclite::MAX_DECODERS_STATES_PER_PACKET> states;
+	dcclite::StatesBitPack_t changedStates;
+	dcclite::StatesBitPack_t states;
 	
 	packet.ReadBitPack(changedStates);
 	packet.ReadBitPack(states);
+
+	for (unsigned i = 0; i < changedStates.size(); ++i)
+	{
+		if (!changedStates[i])
+			continue;
+
+		auto state = states[i] ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE;
+
+		m_vecDecoders[i]->SyncRemoteState(state);
+	}
 }
 
 void Device::OnPacket_ConfigAck(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress)

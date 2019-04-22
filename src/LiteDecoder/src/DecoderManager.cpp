@@ -224,10 +224,58 @@ void DecoderManager::LoadConfig(EpromStream &stream)
 	Session::ReplaceConfigToken(configToken);
 }
 
-Decoder *DecoderManager::TryGet(unsigned index)
+bool DecoderManager::ReceiveServerStates(const dcclite::StatesBitPack_t &changedStates, const dcclite::StatesBitPack_t &states)
 {
-	assert(index < MAX_DECODERS);
+	bool stateChanged = false;
+	for (size_t i = 0; (i < changedStates.size()) && (i < MAX_DECODERS); ++i)
+	{
+		if (!changedStates[i])
+			continue;
 
-	return g_pDecoders[index];
+		auto *decoder = g_pDecoders[i];
+
+		stateChanged |= decoder->AcceptServerState(states[i] ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
+	}
+
+	return stateChanged;
+}
+
+bool DecoderManager::ProduceStatesDelta(dcclite::StatesBitPack_t &changedStates, dcclite::StatesBitPack_t &states)
+{
+	changedStates.ClearAll();
+	states.ClearAll();
+
+	bool hasDelta = false;
+
+	for (size_t i = 0; i < MAX_DECODERS; ++i)
+	{
+		if (!g_pDecoders[i])
+			continue;
+
+		if (!g_pDecoders[i]->IsSyncRequired())
+			continue;
+
+		changedStates.SetBit(i);
+		states.SetBitValue(i, g_pDecoders[i]->IsActive());
+
+		hasDelta = true;
+	}
+
+	return hasDelta;
+}
+
+void DecoderManager::WriteStates(dcclite::StatesBitPack_t &changedStates, dcclite::StatesBitPack_t &states)
+{
+	changedStates.ClearAll();
+	states.ClearAll();
+
+	for (size_t i = 0; i < MAX_DECODERS; ++i)
+	{
+		if (!g_pDecoders[i])
+			continue;
+
+		changedStates.SetBit(i);
+		states.SetBitValue(i, g_pDecoders[i]->IsActive());
+	}
 }
 

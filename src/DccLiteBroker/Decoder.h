@@ -98,6 +98,8 @@ class Decoder: public dcclite::Object
 			return std::nullopt;
 		}
 
+		virtual void SyncRemoteState(dcclite::DecoderStates state) = 0;
+
 		//
 		//IObject
 		//

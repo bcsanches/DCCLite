@@ -48,7 +48,7 @@ class Device: public dcclite::FolderObject
 		void OnPacket_ConfigAck(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress);
 		void OnPacket_ConfigFinished(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress);
 		void OnPacket_Ping(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteConfigToken);
-		void OnPacket_StateAck(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteConfigToken);
+		void OnPacket_State(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteConfigToken);
 		
 		inline const dcclite::Guid &GetConfigToken() noexcept
 		{
@@ -112,7 +112,7 @@ class Device: public dcclite::FolderObject
 
 		dcclite::Clock::TimePoint_t m_Timeout;
 
-		uint64_t			m_uLastOutgoingStatePacketAck = 0;
+		uint64_t			m_uLastReceivedStatePacketId = 0;
 		uint64_t			m_uOutgoingStatePacketId = 0;
 
 		struct ConfigInfo

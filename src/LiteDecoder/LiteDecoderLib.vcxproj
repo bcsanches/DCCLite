@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Blinker.cpp" />
+    <ClCompile Include="src\Config.cpp" />
     <ClCompile Include="src\Console.cpp" />
     <ClCompile Include="src\Decoder.cpp" />
     <ClCompile Include="src\DecoderManager.cpp" />
@@ -31,6 +32,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Blinker.h" />
+    <ClInclude Include="src\Config.h" />
     <ClInclude Include="src\Console.h" />
     <ClInclude Include="src\Decoder.h" />
     <ClInclude Include="src\DecoderManager.h" />

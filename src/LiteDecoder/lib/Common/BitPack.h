@@ -64,6 +64,11 @@ namespace dcclite
 				value ? SetBit(index) : ClearBit(index);
 			}
 
+			inline void ClearAll()
+			{
+				memset(m_bData, 0, sizeof(m_bData));
+			}
+
 			inline size_t size() const
 			{
 				return NBITS;

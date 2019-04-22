@@ -52,8 +52,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\data\EFMR\broker.config.json" />
-    <None Include="..\..\data\EFMR\RelayStagingA.decoders.json" />
+    <None Include="..\data\EFMR\broker.config.json" />
+    <None Include="..\data\EFMR\RelayStagingA.decoders.json" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

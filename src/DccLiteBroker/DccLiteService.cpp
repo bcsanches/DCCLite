@@ -147,8 +147,8 @@ void DccLiteService::Update(const dcclite::Clock &clock)
 				this->OnNet_ConfigFinished(clock, sender, pkt);
 				break;
 
-			case dcclite::MsgTypes::STATE_ACK:
-				this->OnNet_StateAck(clock, sender, pkt);
+			case dcclite::MsgTypes::STATE:
+				this->OnNet_State(clock, sender, pkt);
 				break;
 
 			default:
@@ -249,7 +249,7 @@ void DccLiteService::OnNet_ConfigFinished(const dcclite::Clock &clock, const dcc
 
 }
 
-void DccLiteService::OnNet_StateAck(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
+void DccLiteService::OnNet_State(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
 {
 	auto dev = TryFindPacketDestination(packet);
 	if (!dev)
@@ -257,7 +257,7 @@ void DccLiteService::OnNet_StateAck(const dcclite::Clock &clock, const dcclite::
 
 	dcclite::Guid configToken = packet.ReadGuid();
 
-	dev->OnPacket_StateAck(packet, clock.Now(), senderAddress, configToken);
+	dev->OnPacket_State(packet, clock.Now(), senderAddress, configToken);
 }
 
 
