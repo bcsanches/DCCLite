@@ -10,11 +10,11 @@
 
 #pragma once
 
-#include <cstring>
+#include <string.h>
 
 namespace dcclite
 {
-	template<std::size_t NBITS>
+	template<size_t NBITS>
 	class BitPack
 	{
 		private:

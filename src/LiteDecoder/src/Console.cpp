@@ -13,6 +13,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#include <avr/pgmspace.h>
 #include <Arduino.h>
 
 #include "Parser.h"
@@ -31,16 +32,19 @@
 #define HEX 16
 #endif
 
+const char ConsoleModuleName[] PROGMEM = {"[CONSOLE]"} ;
+#define MODULE_NAME Console::FlashStr(ConsoleModuleName)
+
 void Console::Init() 
 {
     Serial.begin(9600);
     Serial.flush();
 
-    Serial.print("LiteDecoder ");
+    Serial.print(F("LiteDecoder "));
     Serial.print(ARDUINO_TYPE);
-    Serial.print(" / ");    
+    Serial.print(F(" / "));    
     Serial.print(VERSION);
-    Serial.print(" / ");
+    Serial.print(F(" / "));
     Serial.print(__DATE__);
     Serial.print(" ");
     Serial.println(__TIME__);    
@@ -84,7 +88,7 @@ int Console::ReadChar()
 
 static void Parse(const char *command)
 {
-	Console::SendLogEx("[CONSOLE]", "in:", ' ', command);
+	Console::SendLogEx(MODULE_NAME, "in:", " ", command);
 
 	if(strncmp(command, "cfg", 3) == 0)
 	{
@@ -95,7 +99,7 @@ static void Parse(const char *command)
 		char nodeName[17];
 		if(parser.GetToken(nodeName, sizeof(nodeName)) != dcclite::TOKEN_ID)
 		{
-			Console::SendLogEx("[CONSOLE]", "NOK", ' ', "node", ' ', "name");
+			Console::SendLogEx(MODULE_NAME, "NOK", " ", "node", " ", "name");
 
 			return;
 		}
@@ -108,7 +112,7 @@ static void Parse(const char *command)
 			int number;
 			if(parser.GetNumber(number) != dcclite::TOKEN_NUMBER)
 			{
-				Console::SendLogEx("[CONSOLE]", "NOK", ' ', "mac");
+				Console::SendLogEx(MODULE_NAME, "NOK", " ", "mac");
 
 				return;
 			}
@@ -122,7 +126,7 @@ static void Parse(const char *command)
 
 			if(parser.GetToken(nullptr, 0) != dcclite::TOKEN_DOT)
 			{				
-				Console::SendLogEx("[CONSOLE]", "NOK", ' ', "mac", ' ', "sep");
+				Console::SendLogEx(MODULE_NAME, "NOK", " ", "mac", " ", "sep");
 
 				return;
 			}
@@ -131,7 +135,7 @@ static void Parse(const char *command)
 		int port;
 		if(parser.GetNumber(port) != dcclite::TOKEN_NUMBER)
 		{
-			Console::SendLogEx("[CONSOLE]", "NOK", ' ', "port");
+			Console::SendLogEx(MODULE_NAME, "NOK", " ", "port");
 
 			return;
 		}
@@ -144,7 +148,7 @@ static void Parse(const char *command)
 			int number;
 			if(parser.GetNumber(number) != dcclite::TOKEN_NUMBER)
 			{
-				Console::SendLogEx("[CONSOLE]", "NOK", ' ', "ip");
+				Console::SendLogEx(MODULE_NAME, "NOK", " ", "ip");
 
 				return;
 			}
@@ -157,7 +161,7 @@ static void Parse(const char *command)
 
 			if(parser.GetToken(nullptr, 0) != dcclite::TOKEN_DOT)
 			{
-				Console::SendLogEx("[CONSOLE]", "NOK", ' ', "ip", ' ', "sep");
+				Console::SendLogEx(MODULE_NAME, "NOK", " ", "ip", " ", "sep");
 
 				return;
 			}
@@ -166,7 +170,7 @@ static void Parse(const char *command)
 		int srvport;
 		if (parser.GetNumber(srvport) != dcclite::TOKEN_NUMBER)
 		{
-			Console::SendLogEx("[CONSOLE]", "NOK", ' ', "srvport");
+			Console::SendLogEx(MODULE_NAME, "NOK", " ", "srvport");
 
 			return;
 		}
@@ -183,7 +187,7 @@ static void Parse(const char *command)
 	}
 	else
 	{
-		Console::SendLogEx("[CONSOLE]", "NOK", ' ', command);
+		Console::SendLogEx(MODULE_NAME, "NOK", ' ', command);
 	}
 }
 
