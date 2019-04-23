@@ -36,6 +36,8 @@ OutputDecoder::OutputDecoder(
 
 	auto activateOnPowerUp = params.FindMember("activateOnPowerUp");
 	m_fActivateOnPowerUp = activateOnPowerUp != params.MemberEnd() ? activateOnPowerUp->value.GetBool() : false;
+
+	m_kCurrentState = m_fIgnoreSavedState && m_fActivateOnPowerUp ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE;
 }
 
 
