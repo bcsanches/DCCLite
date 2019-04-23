@@ -23,7 +23,7 @@ const char StorageModuleName[] PROGMEM = {"NetUdp"} ;
 
 static uint8_t g_u8Mac[] = { 0x00,0x00,0x00,0x00,0x00,0x00 };
 
-#define BUFFER_SIZE (256+128)
+#define BUFFER_SIZE (512)
 
 #ifndef BCS_ARDUINO_EMULATOR
 uint8_t Ethernet::buffer[BUFFER_SIZE];
@@ -140,13 +140,21 @@ bool NetUdp::Init()
 	Console::SendLogEx(MODULE_NAME, "dhcp", ' ', "ok");
 #else
 
-	if(!ether.staticSetup(ip, gw, dns))
+	uint8_t ip[] = {192,168,0,180};
+	uint8_t gw[] = {192,168,0,1};
+	uint8_t dns[] = {0,0,0,0};
+	uint8_t mask[] = {255, 255, 255, 0};
+	if(!ether.staticSetup(ip, gw, dns, mask))
 	{
 		Serial.println("static setup failed");
 	}  
 	Serial.println("static setup ok");
 #endif
 
+
+	ether.printIp("mask : ", ether.netmask);
+	ether.printIp("GW IP: ", ether.gwip);
+ 	ether.printIp("DNS IP: ", ether.dnsip);
 	ether.printIp("IP:  ", ether.myip);	
 	Console::SendLogEx(MODULE_NAME, FSTR_PORT, ':', ' ', g_iSrcPort);
 	//ether.printIp("DNS: ", ether.dnsip);    
@@ -161,7 +169,7 @@ bool NetUdp::Init()
 }
 
 void NetUdp::SendPacket(const uint8_t *data, uint8_t length, const uint8_t *destIp, uint16_t destPort)
-{
+{	
 	ether.sendUdp(reinterpret_cast<const char *>(data), length, g_iSrcPort, destIp, destPort );   
 }
 

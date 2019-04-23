@@ -3,7 +3,7 @@
       "name": "ATrack01",
       "class": "Output",
       "address": "0x10",
-      "pin": 1,
+      "pin": 3,
       "inverted": false,
       "ignoreSavedState": true,
       "activateOnPowerUp": false
@@ -12,96 +12,96 @@
       "name": "ATrack02",
       "class": "Output",
       "address": "0x11",
-      "pin": 3
+      "pin": 4
     },
     {
       "name": "ATrack03",
       "class": "Output",
       "address": "0x12",
-      "pin": 4
+      "pin": 5
     },
     {
       "name": "ATrack04",
       "class": "Output",
       "address": "0x13",
-      "pin": 5
+      "pin": 6
     },
     {
       "name": "ATrack05",
       "class": "Output",
       "address": "0x14",
-      "pin": 6
+      "pin": 7
     },
     {
       "name": "ATrack06",
       "class": "Output",
       "address": "0x15",
-      "pin": 7
+      "pin": 8
     },
     {
       "name": "ATrack07",
       "class": "Output",
       "address": "0x16",
-      "pin": 8
+      "pin": 9
     },
     {
       "name": "ATrack08",
       "class": "Output",
       "address": "0x17",
-      "pin": 9
+      "pin": 10
     },
     {
       "name": "ATrack09",
       "class": "Output",
       "address": "0x18",
-      "pin": 10
+      "pin": 11
     },
     {
       "name": "ATrack10",
       "class": "Output",
       "address": "0x19",
-      "pin": 11
+      "pin": 12
     },
     {
       "name": "ATrack11",
       "class": "Output",
       "address": "0x1A",
-      "pin": 12
+      "pin": 14
     },
     {
       "name": "ATrack12",
       "class": "Output",
       "address": "0x1B",
-      "pin": 14
+      "pin": 15
     },
     {
       "name": "BTrack01",
       "class": "Output",
       "address": "0x1C",
-      "pin": 15
+      "pin": 16
     },
     {
       "name": "BTrack02",
       "class": "Output",
       "address": "0x1D",
-      "pin": 16
+      "pin": 17
     },
     {
       "name": "BTrack03",
       "class": "Output",
       "address": "0x1E",
-      "pin": 17
+      "pin": 18
     },
     {
       "name": "BTrack04",
       "class": "Output",
       "address": "0x1F",
-      "pin": 18
+      "pin": 19
     },
     {
       "name": "BTrack05",
       "class": "Output",
       "address": "0x20",
-      "pin": 19
+      "pin": 20
     }
 ]

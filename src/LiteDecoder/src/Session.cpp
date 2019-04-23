@@ -134,8 +134,7 @@ static void SendConfigPacket(dcclite::Packet &packet, dcclite::MsgTypes msgType,
 	dcclite::PacketBuilder builder{ packet, msgType, g_SessionToken, g_ConfigToken };
 
 	packet.Write8(seq);
-
-	Console::SendLogEx("Sending to ack: ", Console::IpPrinter(g_u8ServerIp));
+	
 	NetUdp::SendPacket(packet.GetData(), packet.GetSize(), g_u8ServerIp, g_iSrvPort);
 }
 
@@ -164,8 +163,8 @@ static void OfflineTick()
 
 	builder.WriteStr(NetUdp::GetNodeName());
 
-	uint8_t destip[4] = { 255, 255, 255, 255 };
-	NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), destip, g_iSrvPort);
+	//uint8_t destip[4] = { 255, 255, 255, 255 };
+	NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_iSrvPort);
 
 	UpdatePingStatus(millis());	
 	g_eState = States::SEARCHING_SERVER;
@@ -205,9 +204,9 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 
 		return;
 	}	
-
+	
 	memcpy(g_u8ServerIp, src_ip, sizeof(g_u8ServerIp));
-	g_iSrvPort = src_port;
+	g_iSrvPort = src_port;	
 }
 
 static void OnlineTick()
