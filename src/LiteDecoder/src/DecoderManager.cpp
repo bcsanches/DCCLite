@@ -56,7 +56,7 @@ Decoder *DecoderManager::Create(const uint8_t slot, dcclite::Packet &packet)
 
 	if (g_pDecoders[slot])
 	{
-		Console::SendLogEx(MODULE_NAME, FSTR_SLOT_IN_USE);
+		Console::SendLogEx(MODULE_NAME, FSTR_SLOT_IN_USE, slot);
 		return nullptr;
 	}		
 

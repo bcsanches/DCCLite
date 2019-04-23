@@ -14,6 +14,7 @@
 
 #include "Console.h"
 #include "Storage.h"
+#include "Strings.h"
 
 //#include <avr/pgmspace.h>
 
@@ -131,7 +132,7 @@ bool NetUdp::Init()
 #if 1
 	if (!ether.dhcpSetup(g_szNodeName, true))
 	{
-		Console::SendLogEx(MODULE_NAME, "dhcp", ' ',  "NOK");
+		Console::SendLogEx(MODULE_NAME, "dhcp", ' ',  "NOK"," ", g_szNodeName);
 
 		return false;
 	}		
@@ -147,7 +148,7 @@ bool NetUdp::Init()
 #endif
 
 	ether.printIp("IP:  ", ether.myip);	
-	Console::SendLogEx(MODULE_NAME, "port", ':', ' ', g_iSrcPort);
+	Console::SendLogEx(MODULE_NAME, FSTR_PORT, ':', ' ', g_iSrcPort);
 	//ether.printIp("DNS: ", ether.dnsip);    
 
 	//ether.parseIp(destip, "192.168.1.101");	
@@ -173,10 +174,10 @@ void NetUdp::Update()
 
 void NetUdp::LogStatus()
 {
-	Console::SendLogEx(MODULE_NAME, "Name", ':', ' ', 
+	Console::SendLogEx(MODULE_NAME, FSTR_NAME, ':', ' ', 
 		g_szNodeName, ' ',
 		Console::Hex(g_u8Mac[0]), '-', Console::Hex(g_u8Mac[1]), '-', Console::Hex(g_u8Mac[2]), '-', Console::Hex(g_u8Mac[3]), '-', Console::Hex(g_u8Mac[4]), '-', Console::Hex(g_u8Mac[5]), ',', ' ',
-		"Port", ':', ' ', g_iSrcPort
+		FSTR_PORT, ':', ' ', g_iSrcPort
 	);
 }
 

@@ -19,3 +19,5 @@
 #define strncpy_P strncpy
 
 inline char pgm_read_byte_near(const char *p) { return *p; }
+
+#define F(x) x

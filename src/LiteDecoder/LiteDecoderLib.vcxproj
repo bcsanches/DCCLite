@@ -29,6 +29,7 @@
     <ClCompile Include="src\OutputDecoder.cpp" />
     <ClCompile Include="src\Session.cpp" />
     <ClCompile Include="src\Storage.cpp" />
+    <ClCompile Include="src\Strings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Blinker.h" />
@@ -42,6 +43,7 @@
     <ClInclude Include="src\OutputDecoder.h" />
     <ClInclude Include="src\Session.h" />
     <ClInclude Include="src\Storage.h" />
+    <ClInclude Include="src\Strings.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Project\ArduinoLib.vcxproj">

@@ -22,6 +22,7 @@
 #include "NetUdp.h"
 #include "Session.h"
 #include "Storage.h"
+#include "Strings.h"
 
 //hack for emulator for avoiding polutating namespace with stupid names
 #ifndef DEC
@@ -34,6 +35,9 @@
 
 const char ConsoleModuleName[] PROGMEM = {"[CONSOLE]"} ;
 #define MODULE_NAME Console::FlashStr(ConsoleModuleName)
+
+const char CmdDumpName[] PROGMEM = {"dump"} ;
+const char CmdHDumpName[] PROGMEM = {"hdump"} ;
 
 void Console::Init() 
 {
@@ -99,7 +103,7 @@ static void Parse(const char *command)
 		char nodeName[17];
 		if(parser.GetToken(nodeName, sizeof(nodeName)) != dcclite::TOKEN_ID)
 		{
-			Console::SendLogEx(MODULE_NAME, "NOK", " ", "node", " ", "name");
+			Console::SendLogEx(MODULE_NAME, "NOK", " ", FSTR_NODE, " ", FSTR_NAME);
 
 			return;
 		}
@@ -135,7 +139,7 @@ static void Parse(const char *command)
 		int port;
 		if(parser.GetNumber(port) != dcclite::TOKEN_NUMBER)
 		{
-			Console::SendLogEx(MODULE_NAME, "NOK", " ", "port");
+			Console::SendLogEx(MODULE_NAME, "NOK", " ", FSTR_PORT);
 
 			return;
 		}
@@ -170,7 +174,7 @@ static void Parse(const char *command)
 		int srvport;
 		if (parser.GetNumber(srvport) != dcclite::TOKEN_NUMBER)
 		{
-			Console::SendLogEx(MODULE_NAME, "NOK", " ", "srvport");
+			Console::SendLogEx(MODULE_NAME, "NOK", " ", FSTR_SRVPORT);
 
 			return;
 		}
@@ -183,6 +187,16 @@ static void Parse(const char *command)
 	else if(strncmp(command, "sv", 2) == 0)
 	{
 		Storage::SaveConfig();
+		Console::SendLn("ok");
+	}
+	else if(strncmp_P(command, CmdDumpName, 4) == 0)
+	{
+		Storage::Dump();
+		Console::SendLn("ok");
+	}
+	else if(strncmp_P(command, CmdHDumpName, 5) == 0)
+	{
+		Storage::DumpHex();
 		Console::SendLn("ok");
 	}
 	else

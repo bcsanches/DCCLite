@@ -20,6 +20,7 @@
 #include "NetUdp.h"
 #include "Packet.h"
 #include "Storage.h"
+#include "Strings.h"
 
 const char StorageModuleName[] PROGMEM = {"Session"} ;
 #define MODULE_NAME Console::FlashStr(StorageModuleName)
@@ -79,6 +80,8 @@ void Session::SaveConfig(EpromStream &stream)
 
 bool Session::Configure(const uint8_t *srvIp, uint16_t srvport)
 {
+	DecoderManager::DestroyAll();
+
 	memcpy(g_u8ServerIp, srvIp, sizeof(g_u8ServerIp));
 
 	g_iSrvPort = srvport;
@@ -118,7 +121,7 @@ static bool IsValidServer(uint8_t src_ip[4], uint16_t src_port)
 {
 	if (memcmp(src_ip, g_u8ServerIp, sizeof(g_u8ServerIp)) || (g_iSrvPort != src_port))
 	{
-		Console::SendLogEx(MODULE_NAME, "unknown", ' ', "ip");
+		Console::SendLogEx(MODULE_NAME, FSTR_UNKNOWN, ' ', "ip");
 		return false;
 	}
 
@@ -132,6 +135,7 @@ static void SendConfigPacket(dcclite::Packet &packet, dcclite::MsgTypes msgType,
 
 	packet.Write8(seq);
 
+	Console::SendLogEx("Sending to ack: ", Console::IpPrinter(g_u8ServerIp));
 	NetUdp::SendPacket(packet.GetData(), packet.GetSize(), g_u8ServerIp, g_iSrvPort);
 }
 
@@ -229,9 +233,7 @@ static void OnlineTick()
 	if ((g_fForceStateRefresh) || (g_uNextStateThink >= currentTime))
 	{		
 		StatesBitPack_t states;
-		StatesBitPack_t changedStates;
-
-		bool stateChange = g_fForceStateRefresh;
+		StatesBitPack_t changedStates;		
 
 		if (g_fForceStateRefresh)		
 			DecoderManager::WriteStates(changedStates, states);					
@@ -319,6 +321,8 @@ static void ConfiguringTick()
 		return;
 }
 
+const char OnConfiguringPacketStateName[] PROGMEM = {"OnConfiguringPacket"} ;
+#define OnConfiguringPacketStateNameStr Console::FlashStr(OnConfiguringPacketStateName)
 
 
 static void HandleConfigPacket(dcclite::Packet &packet)
@@ -327,11 +331,10 @@ static void HandleConfigPacket(dcclite::Packet &packet)
 	
 	auto device = DecoderManager::Create(seq, packet);
 
+	Console::SendLogEx(MODULE_NAME, OnConfiguringPacketStateNameStr, ' ', "Ack", ' ', seq);
+
 	SendConfigPacket(packet, dcclite::MsgTypes::CONFIG_ACK, seq);
 }
-
-const char OnConfiguringPacketStateName[] PROGMEM = {"OnConfiguringPacket"} ;
-#define OnConfiguringPacketStateNameStr Console::FlashStr(OnConfiguringPacketStateName)
 
 void OnConfiguringPacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 {		
@@ -406,7 +409,7 @@ static void ReceiveCallback(
 	dcclite::Guid token = packet.ReadGuid();
 	if (token != g_SessionToken)
 	{
-		Console::SendLogEx(MODULE_NAME, "invalid", ' ', "session", ' ', "id");
+		Console::SendLogEx(MODULE_NAME, "invalid", ' ', FSTR_SESSION, ' ', "id");
 
 		// g_eState = States::OFFLINE;
 		return;

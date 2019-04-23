@@ -84,6 +84,7 @@ struct Storage
   static void SaveConfig();
 
   static void Dump();
+  static void DumpHex();
 
   static void UpdateField(unsigned int index, unsigned char byte);
 };

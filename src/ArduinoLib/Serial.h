@@ -24,6 +24,8 @@ struct ARDUINO_API SerialImpl
 	void print(char value);
 	void println(const char *str);
 
+	void write(char ch);
+
 	int available();
 	int read();
 

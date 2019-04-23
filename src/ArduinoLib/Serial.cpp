@@ -54,6 +54,11 @@ int SerialImpl::read()
 	return m_uPos >= m_strData.length() ? -1 : m_strData[m_uPos++];
 }
 
+void SerialImpl::write(char value)
+{
+	putc(value, stdout);	
+}
+
 void SerialImpl::flush()
 {
 	//empty

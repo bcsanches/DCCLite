@@ -17,6 +17,7 @@
     <ClCompile Include="src\OutputDecoder.cpp" />
     <ClCompile Include="src\Decoder.cpp" />
     <ClCompile Include="src\Config.cpp" />
+    <ClCompile Include="src\Strings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Blinker.h" />
@@ -30,5 +31,6 @@
     <ClInclude Include="src\Decoder.h" />
     <ClInclude Include="src\OutputDecoder.h" />
     <ClInclude Include="src\Config.h" />
+    <ClInclude Include="src\Strings.h" />
   </ItemGroup>
 </Project>
