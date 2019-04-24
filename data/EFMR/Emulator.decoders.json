@@ -1,0 +1,110 @@
+[
+  {
+    "name": "EATrack01",
+    "class": "Output",
+    "address": "0xFF10",
+    "pin": 3,
+    "inverted": false,
+    "ignoreSavedState": true,
+    "activateOnPowerUp": false
+  },
+  {
+    "name": "EATrack02",
+    "class": "Output",
+    "address": "0xFF11",
+    "pin": 4,
+    "inverted": true,
+    "ignoreSavedState": true,
+    "activateOnPowerUp": false
+  },
+  {
+    "name": "EATrack03",
+    "class": "Output",
+    "address": "0xFF12",
+    "pin": 5
+  },
+  {
+    "name": "EATrack04",
+    "class": "Output",
+    "address": "0xFF13",
+    "pin": 6
+  },
+  {
+    "name": "EATrack05",
+    "class": "Output",
+    "address": "0xFF14",
+    "pin": 7
+  },
+  {
+    "name": "EATrack06",
+    "class": "Output",
+    "address": "0xFF15",
+    "pin": 8
+  },
+  {
+    "name": "EATrack07",
+    "class": "Output",
+    "address": "0xFF16",
+    "pin": 9
+  },
+  {
+    "name": "EATrack08",
+    "class": "Output",
+    "address": "0xFF17",
+    "pin": 10
+  },
+  {
+    "name": "EATrack09",
+    "class": "Output",
+    "address": "0xFF18",
+    "pin": 11
+  },
+  {
+    "name": "EATrack10",
+    "class": "Output",
+    "address": "0xFF19",
+    "pin": 12
+  },
+  {
+    "name": "EATrack11",
+    "class": "Output",
+    "address": "0xFF1A",
+    "pin": 14
+  },
+  {
+    "name": "EATrack12",
+    "class": "Output",
+    "address": "0xFF1B",
+    "pin": 15
+  },
+  {
+    "name": "EBTrack01",
+    "class": "Output",
+    "address": "0xFF1C",
+    "pin": 16
+  },
+  {
+    "name": "EBTrack02",
+    "class": "Output",
+    "address": "0xFF1D",
+    "pin": 17
+  },
+  {
+    "name": "EBTrack03",
+    "class": "Output",
+    "address": "0xFF1E",
+    "pin": 18
+  },
+  {
+    "name": "EBTrack04",
+    "class": "Output",
+    "address": "0xFF1F",
+    "pin": 19
+  },
+  {
+    "name": "EBTrack05",
+    "class": "Output",
+    "address": "0xFF20",
+    "pin": 20
+  }
+]

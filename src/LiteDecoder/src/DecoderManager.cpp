@@ -30,6 +30,9 @@ static const char FStrSlotInUse[] PROGMEM = { "Slot already in use" };
 static const char FStrSlotOutOfRange[] PROGMEM = { "Slot out of range" };
 #define FSTR_SLOT_OUT_OF_RANGE Console::FlashStr(FStrSlotOutOfRange)
 
+static const char FStrInvalidDecoderType[] PROGMEM = { "Invalid decoder type" };
+#define FSTR_INVALID_DECODER_TYPE Console::FlashStr(FStrSlotOutOfRange)
+
 static Decoder *Create(const dcclite::DecoderTypes type, dcclite::Packet &packet)
 {
 	switch (type)
@@ -39,7 +42,7 @@ static Decoder *Create(const dcclite::DecoderTypes type, dcclite::Packet &packet
 
 		case dcclite::DecoderTypes::DEC_INPUT:
 		default:
-			Console::SendLogEx(MODULE_NAME, "invalid", ' ', "dec", ' ', "type", ' ', static_cast<int>(type));
+			Console::SendLogEx(MODULE_NAME, FSTR_INVALID_DECODER_TYPE, static_cast<int>(type));
 
 			return nullptr;
 	}
@@ -203,6 +206,8 @@ void DecoderManager::LoadConfig(EpromStream &stream)
 			//should we check?
 			//if(g_pDecoder[slot])
 
+			//Console::SendLogEx(MODULE_NAME, "OUTD: ", i);
+
 			Decoder *decoder = nullptr;
 
 			switch (type)
@@ -231,6 +236,8 @@ bool DecoderManager::ReceiveServerStates(const dcclite::StatesBitPack_t &changed
 	{
 		if (!changedStates[i])
 			continue;
+
+		//Console::SendLogEx(MODULE_NAME, "state", ' ', "for", i, "is",' ', states[i]);
 
 		auto *decoder = g_pDecoders[i];
 

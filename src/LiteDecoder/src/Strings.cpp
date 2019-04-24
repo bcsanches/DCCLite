@@ -2,6 +2,7 @@
 
 const char g_fstrDecoders[] PROGMEM = {"decoders"};
 const char g_fstrInit[] PROGMEM = {"init"} ;
+const char g_fstrInvalid[] PROGMEM = {"init"} ;
 const char g_fstrLump[] PROGMEM = {"lump"} ;
 const char g_fstrName[] PROGMEM = {"name"};
 const char g_fstrNode[] PROGMEM = {"node"};

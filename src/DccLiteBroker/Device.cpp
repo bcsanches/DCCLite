@@ -183,6 +183,8 @@ void Device::AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address
 	}
 	else
 	{
+		dcclite::Log::Info("[{}::Device::AcceptConnection] Accepted connection {} {}", this->GetName(), remoteAddress, m_ConfigToken);
+
 		dcclite::Packet pkt;
 		m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::ACCEPTED, m_SessionToken, m_ConfigToken);
 		m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);		

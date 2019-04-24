@@ -152,7 +152,7 @@ void DccLiteService::Update(const dcclite::Clock &clock)
 				break;
 
 			default:
-				dcclite::Log::Error("Invalid msg type: {}", static_cast<uint8_t>(msgType));
+				dcclite::Log::Error(" msg type: {}", static_cast<uint8_t>(msgType));
 				return;
 		}
 	}	

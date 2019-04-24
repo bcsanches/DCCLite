@@ -31,6 +31,9 @@
     <ClInclude Include="..\src\DccLiteBroker\TerminalService.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\data\EFMR\Emulator.decoders.json">
+      <FileType>Document</FileType>
+    </None>
     <ClCompile Include="..\src\DccLiteBroker\Broker.cpp" />
     <ClCompile Include="..\src\DccLiteBroker\DccLiteService.cpp" />
     <ClCompile Include="..\src\DccLiteBroker\Decoder.cpp" />

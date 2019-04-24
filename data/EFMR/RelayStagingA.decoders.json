@@ -12,7 +12,10 @@
       "name": "ATrack02",
       "class": "Output",
       "address": "0x11",
-      "pin": 4
+      "pin": 4,
+      "inverted": true,
+      "ignoreSavedState": true,
+      "activateOnPowerUp": false      
     },
     {
       "name": "ATrack03",

@@ -12,6 +12,7 @@
 
 #include <stdint.h>
 
+#include "Blinker.h"
 #include "Console.h"
 #include "Config.h"
 #include "Decoder.h"
@@ -153,7 +154,7 @@ static void GotoOnlineState()
 
 static void LogInvalidPacket(const Console::FlashStr &stateName, dcclite::MsgTypes type)
 {
-	Console::SendLogEx(MODULE_NAME, "invalid", ' ', "pkt", ' ', stateName, ' ', static_cast<int>(type));
+	Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', "pkt", ' ', stateName, ' ', static_cast<int>(type));
 }
 
 static void OfflineTick()
@@ -219,14 +220,14 @@ static void OnlineTick()
 	using namespace dcclite;
 
 	if (g_uNextPingThink <= currentTime)
-	{
+	{		
 		Packet pkt;
 
 		PacketBuilder builder{ pkt, MsgTypes::MSG_PING, g_SessionToken, g_ConfigToken };
 
 		NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_iSrvPort);
 
-		UpdatePingStatus(currentTime);		
+		g_uNextPingThink = currentTime + Config::g_cfgPingTicks;
 	}
 
 	if ((g_fForceStateRefresh) || (g_uNextStateThink >= currentTime))
@@ -274,6 +275,8 @@ static void OnStatePacket(dcclite::Packet &packet)
 
 	g_uLastReceivedDecodersStatePacket = sequenceNumber;
 
+	Console::SendLogEx(MODULE_NAME, "state", (int)sequenceNumber);
+
 	StatesBitPack_t states;
 	StatesBitPack_t changedStates;
 
@@ -293,6 +296,8 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 	switch (type)
 	{
 		case dcclite::MsgTypes::MSG_PONG:
+			Blinker::Play(Blinker::Animations::OK);
+			//Console::SendLogEx(MODULE_NAME, "got pong");
 			//nothing to do, already done
 			break;
 
@@ -304,6 +309,7 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 			break;
 
 		case dcclite::MsgTypes::STATE:
+			//Console::SendLogEx(MODULE_NAME, "got state");
 			OnStatePacket(packet);
 			break;
 
@@ -383,7 +389,7 @@ static void ReceiveCallback(
 
 	if (packet.Read<uint32_t>() != dcclite::PACKET_ID)
 	{
-		Console::SendLogEx(MODULE_NAME, "invalid", ' ', "pkt", ' ', "id");
+		Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', "pkt", ' ', "id");
 
 		return;
 	}
@@ -401,14 +407,14 @@ static void ReceiveCallback(
 	//does the packet comes from the known server?
 	if (!IsValidServer(src_ip, src_port))
 	{
-		Console::SendLogEx(MODULE_NAME, "pkt", ' ', "from", ' ', "invalid", ' ', "srv", Console::IpPrinter(src_ip), ':', src_port);
+		Console::SendLogEx(MODULE_NAME, "pkt", ' ', "from", ' ', FSTR_INVALID, ' ', "srv", Console::IpPrinter(src_ip), ':', src_port);
 		return;
 	}
 
 	dcclite::Guid token = packet.ReadGuid();
 	if (token != g_SessionToken)
 	{
-		Console::SendLogEx(MODULE_NAME, "invalid", ' ', FSTR_SESSION, ' ', "id");
+		Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', FSTR_SESSION, ' ', "id");
 
 		// g_eState = States::OFFLINE;
 		return;
@@ -450,7 +456,7 @@ static void ReceiveCallback(
 	//we have been already configured, so validate the config token
 	if (token != g_ConfigToken)
 	{
-		Console::SendLogEx(MODULE_NAME, "invalid", ' ', "cfg", ' ', "id", ',', ' ', "going", ' ', "to", ' ', "offline");
+		Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', "cfg", ' ', "id", ',', ' ', "to", ' ', "offline");
 
 		g_eState = States::OFFLINE;
 		return;

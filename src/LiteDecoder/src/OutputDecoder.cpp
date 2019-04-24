@@ -14,6 +14,7 @@
 #include <EmbeddedLibDefs.h>
 #include <Packet.h>
 
+#include "Console.h"
 #include "Storage.h"
 
 OutputDecoder::OutputDecoder(dcclite::Packet &packet) :
@@ -32,7 +33,7 @@ OutputDecoder::OutputDecoder(EpromStream &stream):
 {	
 	stream.Get(m_tPin);
 
-	m_uStorageIndex = stream.GetIndex();
+	m_uFlagsStorageIndex = stream.GetIndex();
 	stream.Get(m_fFlags);
 
 	this->Init();
@@ -41,25 +42,52 @@ OutputDecoder::OutputDecoder(EpromStream &stream):
 
 void OutputDecoder::SaveConfig(EpromStream &stream)
 {
-	Decoder::SaveConfig(stream);
-
-	m_uStorageIndex = stream.GetIndex();
+	Decoder::SaveConfig(stream);	
 
 	stream.Put(m_tPin);
+
+	m_uFlagsStorageIndex = stream.GetIndex();
 	stream.Put(m_fFlags);
+}
+
+void OutputDecoder::OperatePin()
+{
+	using namespace dcclite;	
+
+	bool active = (m_fFlags & OUTD_ACTIVE);	
+	active = (m_fFlags & OUTD_INVERTED_OPERATION) ? !active : active;	
+
+	digitalWrite(m_tPin,  active ? HIGH : LOW);
+
+	//Store current state on eprom, so we can reload.
+	if(m_uFlagsStorageIndex)
+		Storage::UpdateField(m_uFlagsStorageIndex, m_fFlags);
 }
 
 void OutputDecoder::Init()
 {
 	using namespace dcclite;
 
-	pinMode(m_tPin, OUTPUT);
+	pinMode(m_tPin, OUTPUT);	
 
 	// sets status to 0 (INACTIVE) is bit 1 of iFlag=0, otherwise set to value of bit 2 of iFlag
 	//m_fStatus = bitRead(m_fFlags, 1) ? bitRead(m_fFlags, 2) : 0;
-	m_fFlags |= ((m_fFlags & OUTD_IGNORE_SAVED_STATE) ? (m_fFlags & OUTD_ACTIVATE_ON_POWER_UP) : 0) ? OUTD_ACTIVE : 0;
+	if(m_fFlags & OUTD_IGNORE_SAVED_STATE)
+	{
+		if(m_fFlags & OUTD_ACTIVATE_ON_POWER_UP)
+			m_fFlags |= OUTD_ACTIVE;
+		else
+			m_fFlags &= ~OUTD_ACTIVE;
+	}	
 
-	digitalWrite(m_tPin, (m_fFlags & OUTD_ACTIVE) ^ (m_fFlags & OUTD_INVERTED_OPERATION));
+#if 0
+	Console::SendLogEx("[OutputDecoder]", ' ', "PIN: ", m_tPin);
+	Console::SendLogEx("[OutputDecoder]", ' ', "IGNORE_SAVE: ", m_fFlags & OUTD_IGNORE_SAVED_STATE);
+	Console::SendLogEx("[OutputDecoder]", ' ', "ACTIVATE_ON_POWERUP: ", m_fFlags & OUTD_ACTIVATE_ON_POWER_UP);
+	Console::SendLogEx("[OutputDecoder]", ' ', "ACTIVE: ", m_fFlags & OUTD_ACTIVE);
+#endif
+
+	this->OperatePin();
 }
 
 bool OutputDecoder::AcceptServerState(dcclite::DecoderStates state)
@@ -67,23 +95,31 @@ bool OutputDecoder::AcceptServerState(dcclite::DecoderStates state)
 	using namespace dcclite;
 
 	bool activate = state == dcclite::DecoderStates::ACTIVE;
-	bool currentState = m_fFlags & OUTD_ACTIVE;
+	bool currentState = m_fFlags & OUTD_ACTIVE;	
 
 	//no state change?
 	if (currentState == activate)
+	{
+#if 0
+		Console::SendLogEx("[OutputDecoder]", "got state, but ignored (same)");
+#endif
+
 		return false;
+	}
 
 	//Which state should we use?
 	if (activate)
 		m_fFlags |= OUTD_ACTIVE;
-	else
+	else	
 		m_fFlags &= ~OUTD_ACTIVE;
 
-	//Now set pin state
-	digitalWrite(m_tPin, (m_fFlags & OUTD_ACTIVE) ^ (m_fFlags & OUTD_INVERTED_OPERATION));
+#if 0
+	Console::SendLogEx("[OutputDecoder]", ' ', "FLAGS: ", m_fFlags);
+	Console::SendLogEx("[OutputDecoder]", ' ', "ACTIVE: ", m_fFlags & OUTD_ACTIVE);	
+#endif
 
-	//Store current state on eprom, so we can reload.
-	Storage::UpdateField(m_uStorageIndex, m_fFlags);
+	//Now set pin state
+	this->OperatePin();	
 
 	return true;
 }

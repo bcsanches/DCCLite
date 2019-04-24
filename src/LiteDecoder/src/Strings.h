@@ -8,6 +8,9 @@ extern const char g_fstrDecoders[] PROGMEM;
 extern const char g_fstrInit[] PROGMEM;
 #define FSTR_INIT Console::FlashStr(g_fstrInit)
 
+extern const char g_fstrInvalid[] PROGMEM ;
+#define FSTR_INVALID Console::FlashStr(g_fstrInvalid)
+
 extern const char g_fstrLump[] PROGMEM;
 #define FSTR_LUMP Console::FlashStr(g_fstrLump)
 

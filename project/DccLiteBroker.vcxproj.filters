@@ -87,5 +87,8 @@
     <None Include="..\data\EFMR\RelayStagingA.decoders.json">
       <Filter>data\EFMR</Filter>
     </None>
+    <None Include="..\data\EFMR\Emulator.decoders.json">
+      <Filter>data\EFMR</Filter>
+    </None>
   </ItemGroup>
 </Project>

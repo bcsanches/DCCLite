@@ -17,6 +17,7 @@
 
 #include "Clock.h"
 #include "ConsoleUtils.h"
+#include "Log.h"
 #include "LogUtils.h"
 #include "PathUtils.h"
 #include "TerminalCmd.h"
@@ -48,6 +49,8 @@ int main(int argc, char **argv)
 		Broker broker{ (argc == 1) ? "MyRailroad" : argv[1] };
 
 		dcclite::Clock clock;
+
+		dcclite::Log::Info("Ready, entering main loop");
 		
 		while (!fExitRequested)
 		{

@@ -16,7 +16,7 @@
 #define LOCAL_LED 13
 
 #define SLOW 1000
-#define FAST 300
+#define FAST 100
 #define MAX_FRAMES 3
 
 static unsigned long g_iNextThink = 0;
