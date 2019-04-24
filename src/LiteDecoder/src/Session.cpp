@@ -38,7 +38,7 @@ static dcclite::Guid g_SessionToken;
 static dcclite::Guid g_ConfigToken;
 
 static uint8_t g_u8ServerIp[] = { 0x00, 0x00, 0x00, 0x00 };
-static uint16_t g_iSrvPort = 2424;
+static uint16_t g_uSrvPort = 2424;
 
 static unsigned long g_uNextStateThink = 0;
 static unsigned long g_uNextPingThink = 0;
@@ -66,7 +66,7 @@ void Session::LoadConfig(EpromStream &stream)
 	for (int i = 0; i < 4; ++i)
 		stream.Get(g_u8ServerIp[i]);
 
-	stream.Get(g_iSrvPort);
+	stream.Get(g_uSrvPort);
 
 	Session::LogStatus();
 }
@@ -76,7 +76,7 @@ void Session::SaveConfig(EpromStream &stream)
 	for (int i = 0; i < 4; ++i)
 		stream.Put(g_u8ServerIp[i]);
 
-	stream.Put(g_iSrvPort);
+	stream.Put(g_uSrvPort);
 }
 
 bool Session::Configure(const uint8_t *srvIp, uint16_t srvport)
@@ -85,7 +85,7 @@ bool Session::Configure(const uint8_t *srvIp, uint16_t srvport)
 
 	memcpy(g_u8ServerIp, srvIp, sizeof(g_u8ServerIp));
 
-	g_iSrvPort = srvport;
+	g_uSrvPort = srvport;
 
 	return true;
 }
@@ -120,7 +120,7 @@ static bool Timeout(unsigned long currentTime)
 	
 static bool IsValidServer(uint8_t src_ip[4], uint16_t src_port)
 {
-	if (memcmp(src_ip, g_u8ServerIp, sizeof(g_u8ServerIp)) || (g_iSrvPort != src_port))
+	if (memcmp(src_ip, g_u8ServerIp, sizeof(g_u8ServerIp)) || (g_uSrvPort != src_port))
 	{
 		Console::SendLogEx(MODULE_NAME, FSTR_UNKNOWN, ' ', "ip");
 		return false;
@@ -136,7 +136,7 @@ static void SendConfigPacket(dcclite::Packet &packet, dcclite::MsgTypes msgType,
 
 	packet.Write8(seq);
 	
-	NetUdp::SendPacket(packet.GetData(), packet.GetSize(), g_u8ServerIp, g_iSrvPort);
+	NetUdp::SendPacket(packet.GetData(), packet.GetSize(), g_u8ServerIp, g_uSrvPort);
 }
 
 
@@ -164,8 +164,8 @@ static void OfflineTick()
 
 	builder.WriteStr(NetUdp::GetNodeName());
 
-	//uint8_t destip[4] = { 255, 255, 255, 255 };
-	NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_iSrvPort);
+	uint8_t destip[4] = { 255, 255, 255, 255 };
+	NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), destip, g_uSrvPort);
 
 	UpdatePingStatus(millis());	
 	g_eState = States::SEARCHING_SERVER;
@@ -207,7 +207,7 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 	}	
 	
 	memcpy(g_u8ServerIp, src_ip, sizeof(g_u8ServerIp));
-	g_iSrvPort = src_port;	
+	g_uSrvPort = src_port;	
 }
 
 static void OnlineTick()
@@ -225,7 +225,7 @@ static void OnlineTick()
 
 		PacketBuilder builder{ pkt, MsgTypes::MSG_PING, g_SessionToken, g_ConfigToken };
 
-		NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_iSrvPort);
+		NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
 
 		g_uNextPingThink = currentTime + Config::g_cfgPingTicks;
 	}
@@ -250,7 +250,7 @@ static void OnlineTick()
 			pkt.Write(changedStates);
 			pkt.Write(states);
 
-			NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_iSrvPort);
+			NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
 			UpdatePingStatus(currentTime);
 
 			g_fForceStateRefresh = false;
@@ -334,7 +334,7 @@ static void HandleConfigPacket(dcclite::Packet &packet)
 {	
 	uint8_t seq = packet.Read<uint8_t>();
 	
-	auto device = DecoderManager::Create(seq, packet);
+	DecoderManager::Create(seq, packet);
 
 	Console::SendLogEx(MODULE_NAME, OnConfiguringPacketStateNameStr, ' ', "Ack", ' ', seq);
 
@@ -467,7 +467,7 @@ static void ReceiveCallback(
 
 void Session::LogStatus()
 {
-	Console::SendLogEx(MODULE_NAME, "srv", ':', ' ', Console::IpPrinter(g_u8ServerIp), ':', g_iSrvPort);
+	Console::SendLogEx(MODULE_NAME, "srv", ':', ' ', Console::IpPrinter(g_u8ServerIp), ':', g_uSrvPort);
 }
 
 const dcclite::Guid &Session::GetConfigToken()

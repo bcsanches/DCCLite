@@ -173,6 +173,11 @@ void NetUdp::SendPacket(const uint8_t *data, uint8_t length, const uint8_t *dest
 	ether.sendUdp(reinterpret_cast<const char *>(data), length, g_iSrcPort, destIp, destPort );   
 }
 
+void NetUdp::SendReplyPacket(const uint8_t *data, uint8_t length)
+{	
+	ether.makeUdpReply(reinterpret_cast<const char *>(data), length, g_iSrcPort );   
+}
+
 void NetUdp::Update()
 {
 	ether.packetLoop(ether.packetReceive());

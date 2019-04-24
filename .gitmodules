@@ -10,3 +10,6 @@
 [submodule "contrib/rapidjson"]
 	path = contrib/rapidjson
 	url = https://github.com/Tencent/rapidjson.git
+[submodule "src/LiteDecoder/lib/EtherCard"]
+	path = src/LiteDecoder/lib/EtherCard
+	url = https://github.com/bcsanches/EtherCard.git
