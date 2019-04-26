@@ -23,6 +23,8 @@
 
 EtherCard ether;
 
+uint8_t EtherCard::gwip[IP_LEN];
+uint8_t EtherCard::netmask[IP_LEN];
 uint8_t EtherCard::myip[IP_LEN];   // my ip address
 uint8_t EtherCard::dnsip[IP_LEN];  // dns server
 

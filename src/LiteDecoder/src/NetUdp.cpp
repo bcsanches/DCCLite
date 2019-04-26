@@ -23,7 +23,7 @@ const char StorageModuleName[] PROGMEM = {"NetUdp"} ;
 
 static uint8_t g_u8Mac[] = { 0x00,0x00,0x00,0x00,0x00,0x00 };
 
-#define BUFFER_SIZE (512)
+#define BUFFER_SIZE (256+96)
 
 #ifndef BCS_ARDUINO_EMULATOR
 uint8_t Ethernet::buffer[BUFFER_SIZE];
@@ -171,11 +171,6 @@ bool NetUdp::Init()
 void NetUdp::SendPacket(const uint8_t *data, uint8_t length, const uint8_t *destIp, uint16_t destPort)
 {	
 	ether.sendUdp(reinterpret_cast<const char *>(data), length, g_iSrcPort, destIp, destPort );   
-}
-
-void NetUdp::SendReplyPacket(const uint8_t *data, uint8_t length)
-{	
-	ether.makeUdpReply(reinterpret_cast<const char *>(data), length, g_iSrcPort );   
 }
 
 void NetUdp::Update()

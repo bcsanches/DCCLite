@@ -37,6 +37,8 @@ typedef void(*UdpServerCallback)(
 class ARDUINO_API EtherCard : public Ethernet
 {
 	public:
+		static uint8_t netmask[IP_LEN];
+		static uint8_t gwip[IP_LEN];
 		static uint8_t myip[IP_LEN];    ///< IP address
 		static uint8_t dnsip[IP_LEN];  ///< DNS server IP address
 

@@ -30,8 +30,7 @@ namespace NetUdp
 
 	extern bool Init();
 
-	extern void SendPacket(const uint8_t *data, uint8_t length, const uint8_t *destIp, uint16_t destPort);
-	extern void SendReplyPacket(const uint8_t *data, uint8_t length);
+	extern void SendPacket(const uint8_t *data, uint8_t length, const uint8_t *destIp, uint16_t destPort);	
 
 	extern void SetReceiverCallback(ReceiveCallback_t callback);
 

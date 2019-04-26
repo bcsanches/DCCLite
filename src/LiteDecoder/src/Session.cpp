@@ -29,9 +29,11 @@ const char StorageModuleName[] PROGMEM = {"Session"} ;
 enum class States
 {
 	OFFLINE,
-	SEARCHING_SERVER,
-	ONLINE,
-	CONFIGURING
+	SEARCHING_SERVER,	
+	ARPDISCOVER,
+	CONFIGURING,
+	SYNCING,
+	ONLINE
 };
 
 static dcclite::Guid g_SessionToken;
