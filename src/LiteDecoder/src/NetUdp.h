@@ -17,22 +17,26 @@ class EpromStream;
 
 namespace NetUdp
 {
-	typedef void(*ReceiveCallback_t)(		
+	typedef void(*ReceiveCallback_t)(
+		uint16_t dest_port,    ///< Port the packet was sent to
 		uint8_t src_ip[4],    ///< IP address of the sender
-		uint16_t src_port,    ///< Port the packet was sent from
+		unsigned int src_port,    ///< Port the packet was sent from
 		const char *data,   ///< UDP payload data
-		uint16_t len);        ///< Length of the payload data
+		unsigned int len);
 
 	extern void LoadConfig(EpromStream &stream);
 	extern void SaveConfig(EpromStream &stream);
 
 	extern bool Configure(const char *nodeName, uint16_t port, const uint8_t *mac);
 
-	extern bool Init();
+	extern bool Init(ReceiveCallback_t callback);
+
+	extern void ResolveIp(const uint8_t *ip);
+	extern bool IsIpCached(const uint8_t *ip);
 
 	extern void SendPacket(const uint8_t *data, uint8_t length, const uint8_t *destIp, uint16_t destPort);	
 
-	extern void SetReceiverCallback(ReceiveCallback_t callback);
+	//extern void SetReceiverCallback(ReceiveCallback_t callback);
 
 	extern void Update();
 

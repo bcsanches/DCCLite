@@ -131,6 +131,10 @@ void DccLiteService::Update(const dcclite::Clock &clock)
 
 		switch (msgType)
 		{
+			case dcclite::MsgTypes::DISCOVERY:
+				this->OnNet_Discovery(clock, sender, pkt);
+				break;
+
 			case dcclite::MsgTypes::HELLO:			
 				this->OnNet_Hello(clock, sender, pkt);
 				break;
@@ -166,6 +170,17 @@ void DccLiteService::Update(const dcclite::Clock &clock)
 		dev->Update(clock);
 	}
 #endif
+}
+
+void DccLiteService::OnNet_Discovery(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
+{
+	dcclite::Log::Info("[{}::DccLiteService::OnNet_Hello] received discovery from {}, starting handshake", this->GetName(), senderAddress);
+
+	dcclite::Packet pkt;
+
+	//just send a blank packet, so they know we are here
+	this->Device_PreparePacket(pkt, dcclite::MsgTypes::DISCOVERY, dcclite::Guid{}, dcclite::Guid{});
+	this->Device_SendPacket(senderAddress, pkt);
 }
 
 void DccLiteService::OnNet_Hello(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)

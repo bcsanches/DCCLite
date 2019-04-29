@@ -32,7 +32,7 @@ void setup()
 
 	Storage::LoadConfig();
 
-	g_fNetReady = NetUdp::Init();
+	g_fNetReady = NetUdp::Init(Session::GetReceiverCallback());
 
 	g_uStartTime = millis();
 

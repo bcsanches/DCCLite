@@ -18,6 +18,8 @@
 
 //#include <avr/pgmspace.h>
 
+#define ARP_PATCH 1
+
 const char StorageModuleName[] PROGMEM = {"NetUdp"} ;
 #define MODULE_NAME Console::FlashStr(StorageModuleName)
 
@@ -34,28 +36,12 @@ static uint16_t g_iSrcPort = 4551;
 #define MAX_NODE_NAME 16
 static char g_szNodeName[MAX_NODE_NAME + 1];
 
-static NetUdp::ReceiveCallback_t g_pfnReceiverCallback;
-
 enum States
 {
 	DISCONNECTED,
 	CONNECTING,
 	LOOKING_UP
 };
-
-static void UdpCallback(uint16_t dest_port,    	///< Port the packet was sent to
-    uint8_t src_ip[IP_LEN],    					///< IP address of the sender
-    uint16_t src_port,    						///< Port the packet was sent from
-    const char *data,   						///< UDP payload data
-    uint16_t len)
-{
-    //Serial.println("Got udp packet");
-    //ether.printIp("PKT: ", src_ip);
-    //Serial.println(data);
-
-	if(g_pfnReceiverCallback)
-		g_pfnReceiverCallback(src_ip, src_port, data, len);
-}
 
 //<nodeName> <mac> <port> <srvipv4>		
 
@@ -99,7 +85,7 @@ bool NetUdp::Configure(const char *nodeName, uint16_t port, const uint8_t *mac)
 	return true;
 }
 
-bool NetUdp::Init()
+bool NetUdp::Init(ReceiveCallback_t callback)
 {
 	{	
 		bool validMac = false;
@@ -119,7 +105,7 @@ bool NetUdp::Init()
 			return false;			
 		}
 	}
-
+		
 	if (ether.begin(BUFFER_SIZE, g_u8Mac, 53) == 0)
 	{
 		Console::SendLogEx(MODULE_NAME, "ether", '.', "begin", ' ', "NOK");
@@ -127,7 +113,7 @@ bool NetUdp::Init()
 		return false;
 	}
 
-	Console::SendLogEx(MODULE_NAME, "net", "ok");	
+	Console::SendLogEx(MODULE_NAME, "net", ' ', "begin", ' ', "ok");	
 
 #if 1
 	if (!ether.dhcpSetup(g_szNodeName, true))
@@ -163,13 +149,29 @@ bool NetUdp::Init()
 
 	Console::SendLogEx(MODULE_NAME, "setup", ' ', "ok");
 
-	ether.udpServerListenOnPort(UdpCallback, g_iSrcPort);
+	ether.udpServerListenOnPort(callback, g_iSrcPort);
 
 	return true;
 }
 
+void NetUdp::ResolveIp(const uint8_t *ip)
+{
+#if ARP_PATCH
+	ether.clientResolveIp(ip);
+#endif
+}
+	
+bool NetUdp::IsIpCached(const uint8_t *ip)
+{
+#if ARP_PATCH
+	return !ether.clientWaitIp(ip);
+#else
+	return true;
+#endif
+}
+
 void NetUdp::SendPacket(const uint8_t *data, uint8_t length, const uint8_t *destIp, uint16_t destPort)
-{	
+{		
 	ether.sendUdp(reinterpret_cast<const char *>(data), length, g_iSrcPort, destIp, destPort );   
 }
 
@@ -187,11 +189,6 @@ void NetUdp::LogStatus()
 		Console::Hex(g_u8Mac[0]), '-', Console::Hex(g_u8Mac[1]), '-', Console::Hex(g_u8Mac[2]), '-', Console::Hex(g_u8Mac[3]), '-', Console::Hex(g_u8Mac[4]), '-', Console::Hex(g_u8Mac[5]), ',', ' ',
 		FSTR_PORT, ':', ' ', g_iSrcPort
 	);
-}
-
-void NetUdp::SetReceiverCallback(ReceiveCallback_t callback)
-{
-	g_pfnReceiverCallback = callback;
 }
 
 const char *NetUdp::GetNodeName() noexcept

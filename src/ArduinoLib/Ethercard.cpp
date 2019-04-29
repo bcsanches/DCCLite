@@ -79,6 +79,16 @@ bool EtherCard::dhcpSetup(const char *hname, bool fromRam)
 	return true;
 }
 
+void EtherCard::clientResolveIp(const uint8_t *ip)
+{
+	//no arping here...
+}
+
+bool EtherCard::clientWaitIp(const uint8_t *ip)
+{
+	return true;
+}
+
 void EtherCard::udpServerListenOnPort(UdpServerCallback callback, uint16_t port)
 {
 	if (g_Socket.IsOpen())

@@ -30,9 +30,9 @@ class ARDUINO_API Ethernet
 typedef void(*UdpServerCallback)(
 	uint16_t dest_port,    ///< Port the packet was sent to
 	uint8_t src_ip[IP_LEN],    ///< IP address of the sender
-	uint16_t src_port,    ///< Port the packet was sent from
+	unsigned int src_port,    ///< Port the packet was sent from
 	const char *data,   ///< UDP payload data
-	uint16_t len);        ///< Length of the payload data
+	unsigned int len);        ///< Length of the payload data
 
 class ARDUINO_API EtherCard : public Ethernet
 {
@@ -54,6 +54,9 @@ class ARDUINO_API EtherCard : public Ethernet
 
 		static void printIp(const uint8_t *buf);
 		static void printIp(const char* msg, const uint8_t *buf);
+
+		static void clientResolveIp(const uint8_t *ip);
+		static bool clientWaitIp(const uint8_t *ip);
 };
 
 ARDUINO_API extern EtherCard ether;

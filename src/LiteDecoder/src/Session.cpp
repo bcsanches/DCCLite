@@ -26,7 +26,7 @@
 const char StorageModuleName[] PROGMEM = {"Session"} ;
 #define MODULE_NAME Console::FlashStr(StorageModuleName)
 
-enum class States
+enum class ConnectionStates: uint8_t
 {
 	OFFLINE,
 	SEARCHING_SERVER,	
@@ -43,8 +43,6 @@ static uint8_t g_u8ServerIp[] = { 0x00, 0x00, 0x00, 0x00 };
 static uint16_t g_uSrvPort = 2424;
 
 static unsigned long g_uNextStateThink = 0;
-static unsigned long g_uNextPingThink = 0;
-static unsigned long g_uTimeoutTicks = 0;
 
 /***
 If my numbers are correct, we can send 1000 packets per second (each ms) and it will take us
@@ -53,15 +51,17 @@ If my numbers are correct, we can send 1000 packets per second (each ms) and it 
 static uint64_t g_uLastReceivedDecodersStatePacket = 0;
 static uint64_t g_uDecodersStateSequence = 0;
 
-static States g_eState = States::OFFLINE;
+static ConnectionStates g_eConnectionState = ConnectionStates::OFFLINE;
 static bool g_fForceStateRefresh = false;
 
-static void ReceiveCallback(
-	uint8_t src_ip[4],    ///< IP address of the sender
-	uint16_t src_port,    ///< Port the packet was sent from
-	const char *data,   ///< UDP payload data
-	uint16_t len);
 
+
+
+//
+//
+// CONFIGURATION
+//
+//
 
 void Session::LoadConfig(EpromStream &stream)
 {
@@ -94,30 +94,72 @@ bool Session::Configure(const uint8_t *srvIp, uint16_t srvport)
 
 bool Session::Init()
 {
-	NetUdp::SetReceiverCallback(ReceiveCallback);
+	//NetUdp::SetReceiverCallback(ReceiveCallback);
 
 	return true;
 }
 
-static void UpdatePingStatus(unsigned long currentTime)
-{
-	g_uNextPingThink = currentTime + Config::g_cfgPingTicks;
-	g_uTimeoutTicks = currentTime + Config::g_cfgTimeoutTicks;
-}
+//
+//
+// PING HANDLING
+//
+//
 
-static bool Timeout(unsigned long currentTime)
+namespace PingManager
 {
-	if (currentTime >= g_uTimeoutTicks)
+	static unsigned long g_uNextPingThink = 0;
+	static unsigned long g_uTimeoutTicks = 0;
+
+	static void Reset(unsigned long currentTime)
 	{
-		//Server is dead?
-		Console::SendLogEx(MODULE_NAME, "srv", ' ',  "timeout");
-
-		g_eState = States::OFFLINE;
-
-		return true;
+		g_uNextPingThink = currentTime + Config::g_cfgPingTicks;
+		g_uTimeoutTicks = currentTime + Config::g_cfgTimeoutTicks;
 	}
 
-	return false;
+	static bool CheckTimeout(unsigned long currentTime)
+	{
+		if (currentTime >= g_uTimeoutTicks)
+		{
+			//Server is dead?
+			Console::SendLogEx(MODULE_NAME, "srv", ' ',  "timeout");
+
+			g_eConnectionState = ConnectionStates::OFFLINE;
+
+			return true;
+		}
+
+		return false;
+	}
+
+	static void Launch(unsigned long currentTime)
+	{
+		if (g_uNextPingThink <= currentTime)
+		{		
+			//Console::SendLogEx(MODULE_NAME, "PING");
+			Blinker::Play(Blinker::Animations::ERROR);
+
+			dcclite::Packet pkt;
+
+			dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::MSG_PING, g_SessionToken, g_ConfigToken };
+
+			NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
+
+			g_uNextPingThink = currentTime + Config::g_cfgPingTicks;
+		}
+	}
+}
+
+
+
+//
+//
+// MISC
+//
+//
+
+static void LogInvalidPacket(const Console::FlashStr &stateName, dcclite::MsgTypes type)
+{
+	Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', "pkt", ' ', stateName, ' ', static_cast<int>(type));
 }
 	
 static bool IsValidServer(uint8_t src_ip[4], uint16_t src_port)
@@ -131,6 +173,56 @@ static bool IsValidServer(uint8_t src_ip[4], uint16_t src_port)
 	return true;
 }
 
+void Session::LogStatus()
+{
+	Console::SendLogEx(MODULE_NAME, "srv", ':', ' ', Console::IpPrinter(g_u8ServerIp), ':', g_uSrvPort);
+}
+
+const dcclite::Guid &Session::GetConfigToken()
+{
+	return g_ConfigToken;
+}
+
+void Session::ReplaceConfigToken(const dcclite::Guid &configToken)
+{
+	g_ConfigToken = configToken;
+}
+
+//
+//
+// OFFLINE STATE
+//
+//
+
+static void OfflineTick()
+{	
+	Console::SendLogEx(MODULE_NAME, "Broadcast");
+
+	dcclite::Packet pkt;
+	dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::DISCOVERY, g_SessionToken, g_ConfigToken };
+
+	builder.WriteStr(NetUdp::GetNodeName());
+
+	uint8_t destip[4] = { 255, 255, 255, 255 };
+	NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), destip, g_uSrvPort);
+
+	PingManager::Reset(millis());
+	
+	g_eConnectionState = ConnectionStates::SEARCHING_SERVER;
+}
+
+static void GotoOnlineState()
+{
+	Console::SendLogEx(MODULE_NAME, "Online");
+
+	g_eConnectionState = ConnectionStates::ONLINE;
+	g_fForceStateRefresh = true;
+	g_uLastReceivedDecodersStatePacket = 0;
+	g_uDecodersStateSequence = 0;
+
+	PingManager::Reset(millis());	
+}
+
 static void SendConfigPacket(dcclite::Packet &packet, dcclite::MsgTypes msgType, uint8_t seq)
 {
 	packet.Reset();
@@ -141,41 +233,9 @@ static void SendConfigPacket(dcclite::Packet &packet, dcclite::MsgTypes msgType,
 	NetUdp::SendPacket(packet.GetData(), packet.GetSize(), g_u8ServerIp, g_uSrvPort);
 }
 
-
-static void GotoOnlineState()
-{
-	Console::SendLogEx(MODULE_NAME, "Online");
-
-	g_eState = States::ONLINE;
-	g_fForceStateRefresh = true;
-	g_uLastReceivedDecodersStatePacket = 0;
-	g_uDecodersStateSequence = 0;
-
-	UpdatePingStatus(millis());
-}
-
-static void LogInvalidPacket(const Console::FlashStr &stateName, dcclite::MsgTypes type)
-{
-	Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', "pkt", ' ', stateName, ' ', static_cast<int>(type));
-}
-
-static void OfflineTick()
-{
-	dcclite::Packet pkt;
-	dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::HELLO, g_SessionToken, g_ConfigToken };
-
-	builder.WriteStr(NetUdp::GetNodeName());
-
-	uint8_t destip[4] = { 255, 255, 255, 255 };
-	NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), destip, g_uSrvPort);
-
-	UpdatePingStatus(millis());	
-	g_eState = States::SEARCHING_SERVER;
-}
-
 static void SearchingServerTick()
 {
-	if (!Timeout(millis()))
+	if(!PingManager::CheckTimeout(millis()))	
 		return;
 
 	OfflineTick();
@@ -184,9 +244,59 @@ static void SearchingServerTick()
 const char OnSearchingServerPacketStateName[] PROGMEM = {"OnSearchingServerPacket"} ;
 #define OnSearchingServerPacketStateNameStr Console::FlashStr(OnSearchingServerPacketStateName)
 
+static void SendHelloPacket()
+{
+	dcclite::Packet pkt;
+	dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::HELLO, g_SessionToken, g_ConfigToken };
+
+	builder.WriteStr(NetUdp::GetNodeName());
+
+	NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
+
+	PingManager::Reset(millis());
+}
+
+static bool ArpTick()
+{
+	if(NetUdp::IsIpCached(g_u8ServerIp))
+	{
+		Console::SendLogEx(MODULE_NAME, "ARP DONE");
+		g_eConnectionState = ConnectionStates::SEARCHING_SERVER;
+
+		SendHelloPacket();
+
+		return true;
+	}
+	else
+	{
+		PingManager::CheckTimeout(millis());
+	}
+
+	return false;
+}
+
 static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclite::MsgTypes type, dcclite::Packet &packet)
 {	
-	if (type == dcclite::MsgTypes::ACCEPTED)
+	if(type == dcclite::MsgTypes::DISCOVERY)
+	{		
+		memcpy(g_u8ServerIp, src_ip, sizeof(g_u8ServerIp));
+		g_uSrvPort = src_port;	
+
+		if(!NetUdp::IsIpCached(g_u8ServerIp))
+		{
+			Console::SendLogEx(MODULE_NAME, "ARPING");
+			g_eConnectionState = ConnectionStates::ARPDISCOVER;
+
+			NetUdp::ResolveIp(src_ip);
+		}
+		else
+		{
+			Console::SendLogEx(MODULE_NAME, "IP", ' ', "CACHED", ' ', Console::IpPrinter(g_u8ServerIp));
+
+			SendHelloPacket();
+		}						
+	}
+	else if (type == dcclite::MsgTypes::ACCEPTED)
 	{
 		g_SessionToken = packet.ReadGuid();
 		g_ConfigToken = packet.ReadGuid();
@@ -199,38 +309,24 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 		
 		DecoderManager::DestroyAll();
 
-		g_eState = States::CONFIGURING;		
+		g_eConnectionState = ConnectionStates::CONFIGURING;		
 	}
 	else
 	{
 		LogInvalidPacket(OnSearchingServerPacketStateNameStr, type);
 
 		return;
-	}	
-	
-	memcpy(g_u8ServerIp, src_ip, sizeof(g_u8ServerIp));
-	g_uSrvPort = src_port;	
+	}		
 }
 
 static void OnlineTick()
 {
 	auto currentTime = millis();
 
-	if (Timeout(currentTime))
+	if (PingManager::CheckTimeout(millis()))
 		return;
 
-	using namespace dcclite;
-
-	if (g_uNextPingThink <= currentTime)
-	{		
-		Packet pkt;
-
-		PacketBuilder builder{ pkt, MsgTypes::MSG_PING, g_SessionToken, g_ConfigToken };
-
-		NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
-
-		g_uNextPingThink = currentTime + Config::g_cfgPingTicks;
-	}
+	using namespace dcclite;	
 
 	if ((g_fForceStateRefresh) || (g_uNextStateThink >= currentTime))
 	{		
@@ -253,13 +349,15 @@ static void OnlineTick()
 			pkt.Write(states);
 
 			NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
-			UpdatePingStatus(currentTime);
+			PingManager::Reset(currentTime);			
 
 			g_fForceStateRefresh = false;
 		}
 
 		g_uNextStateThink += currentTime + Config::g_cfgStateTicks;
 	}
+	
+	PingManager::Launch(currentTime);
 }
 
 static void OnStatePacket(dcclite::Packet &packet)
@@ -293,7 +391,7 @@ const char OnOnlineStateName[] PROGMEM = {"Online"} ;
 
 static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 {		
-	UpdatePingStatus(millis());	
+	PingManager::Reset(millis());	
 	
 	switch (type)
 	{
@@ -324,7 +422,7 @@ static void ConfiguringTick()
 {
 	auto currentTime = millis();
 
-	if (Timeout(currentTime))
+	if(PingManager::CheckTimeout(currentTime))	
 		return;
 }
 
@@ -348,7 +446,7 @@ void OnConfiguringPacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 	switch (type)
 	{
 		case dcclite::MsgTypes::CONFIG_DEV:
-			UpdatePingStatus(millis());
+			PingManager::Reset(millis());			
 			HandleConfigPacket(packet);
 			break;		
 
@@ -361,32 +459,43 @@ void OnConfiguringPacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 
 void Session::Update()
 {
-	switch (g_eState)
+	switch (g_eConnectionState)
 	{
-		case States::OFFLINE:
+		case ConnectionStates::OFFLINE:
 			OfflineTick();
 			break;
 
-		case States::SEARCHING_SERVER:
+		case ConnectionStates::ARPDISCOVER:
+			ArpTick();
+			break;
+
+		case ConnectionStates::SEARCHING_SERVER:
 			SearchingServerTick();
 			break;
 
-		case States::ONLINE:
+		case ConnectionStates::ONLINE:
 			OnlineTick();
 			break;
 
-		case States::CONFIGURING:
+		case ConnectionStates::CONFIGURING:
 			ConfiguringTick();
 			break;
 	}
 }
 
 static void ReceiveCallback(
+	uint16_t destPort,
 	uint8_t src_ip[4],    ///< IP address of the sender
-	uint16_t src_port,    ///< Port the packet was sent from
+	unsigned int src_port,    ///< Port the packet was sent from
 	const char *data,   ///< UDP payload data
-	uint16_t len)
+	unsigned int len)
 {
+	if(g_eConnectionState == ConnectionStates::ARPDISCOVER)
+	{
+		//On this state, nothing todo
+		return;
+	}
+
 	dcclite::Packet packet{ reinterpret_cast<const uint8_t*>(data), static_cast<uint8_t>(len) };
 
 	if (packet.Read<uint32_t>() != dcclite::PACKET_ID)
@@ -398,7 +507,7 @@ static void ReceiveCallback(
 	
 	dcclite::MsgTypes type = packet.Read<dcclite::MsgTypes>();	
 
-	if (g_eState == States::SEARCHING_SERVER)
+	if (g_eConnectionState == ConnectionStates::SEARCHING_SERVER)
 	{
 		//this state is special, we skip several checks
 		OnSearchingServerPacket(src_ip, src_port, type, packet);
@@ -425,7 +534,7 @@ static void ReceiveCallback(
 	token = packet.ReadGuid();
 
 	//if we are on config state, config_token is not set yet, so we ignore if for now and handle config packets
-	if (g_eState == States::CONFIGURING)
+	if (g_eConnectionState == ConnectionStates::CONFIGURING)
 	{		
 		if (type == dcclite::MsgTypes::CONFIG_FINISHED)
 		{			
@@ -460,24 +569,15 @@ static void ReceiveCallback(
 	{
 		Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', "cfg", ' ', "id", ',', ' ', "to", ' ', "offline");
 
-		g_eState = States::OFFLINE;
+		g_eConnectionState = ConnectionStates::OFFLINE;
 		return;
 	}
 
 	OnOnlinePacket(type, packet);	
 }
 
-void Session::LogStatus()
-{
-	Console::SendLogEx(MODULE_NAME, "srv", ':', ' ', Console::IpPrinter(g_u8ServerIp), ':', g_uSrvPort);
-}
 
-const dcclite::Guid &Session::GetConfigToken()
+NetUdp::ReceiveCallback_t Session::GetReceiverCallback()
 {
-	return g_ConfigToken;
-}
-
-void Session::ReplaceConfigToken(const dcclite::Guid &configToken)
-{
-	g_ConfigToken = configToken;
+	return ReceiveCallback;
 }

@@ -202,7 +202,7 @@ void Device::OnPacket_Ping(dcclite::Packet &packet, dcclite::Clock::TimePoint_t 
 
 	this->RefreshTimeout(time);
 
-	// dcclite::Log::Trace("[{}::Device::OnPacket_Ping] ping", this->GetName());
+	dcclite::Log::Trace("[{}::Device::OnPacket_Ping] ping", this->GetName());
 }
 
 void Device::OnPacket_State(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteConfigToken)

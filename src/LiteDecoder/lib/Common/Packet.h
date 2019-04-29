@@ -23,6 +23,7 @@ namespace dcclite
 	{
 		RESERVED0,
 
+		DISCOVERY,
 		HELLO,				
 		ACCEPTED,
 		CONFIG_START,
@@ -31,8 +32,7 @@ namespace dcclite
 		CONFIG_ACK,
 		MSG_PING,
 		MSG_PONG,	
-		STATE,
-		STATE_ACK
+		STATE
 	};
 
 	constexpr uint32_t PACKET_ID = 0xBEEFFEED;

@@ -12,6 +12,8 @@
 
 #include <stdint.h>
 
+#include "NetUdp.h"
+
 class EpromStream;
 
 namespace dcclite
@@ -36,4 +38,6 @@ namespace Session
 
 	//This is to be only called by DecoderManager when loading its data
 	extern void ReplaceConfigToken(const dcclite::Guid &configToken);
+
+	extern NetUdp::ReceiveCallback_t GetReceiverCallback();
 }
