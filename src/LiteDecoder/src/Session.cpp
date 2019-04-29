@@ -142,6 +142,9 @@ namespace PingManager
 
 			dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::MSG_PING, g_SessionToken, g_ConfigToken };
 
+			//Send three times... stupid network...
+			NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
+			NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
 			NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
 
 			g_uNextPingThink = currentTime + Config::g_cfgPingTicks;
