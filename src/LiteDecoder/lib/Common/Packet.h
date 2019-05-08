@@ -31,7 +31,7 @@ namespace dcclite
 		CONFIG_FINISHED,
 		CONFIG_ACK,
 		MSG_PING,
-		MSG_PONG,	
+		MSG_PONG,			
 		STATE
 	};
 

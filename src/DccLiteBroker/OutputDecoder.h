@@ -76,6 +76,11 @@ class OutputDecoder : public Decoder
 			m_kCurrentState = state;
 		}
 
+		virtual void InvalidateRemoteState()
+		{
+			m_kCurrentState = m_kCurrentState == dcclite::DecoderStates::ACTIVE ? dcclite::DecoderStates::INACTIVE : dcclite::DecoderStates::ACTIVE;
+		}
+
 		//
 		//IObject
 		//

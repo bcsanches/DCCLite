@@ -85,18 +85,12 @@ class Device: public dcclite::FolderObject
 		void SendDecoderConfigPacket(size_t index) const;
 		void SendConfigStartPacket() const;
 		void SendConfigFinishedPacket() const;
+
+		void ForceSync();
 		
 
 	private:		
-		DccLiteService			&m_clDccService;			
-
-		/**
-		Registered is a device that is stored on config.
-
-		Devices that contact the Brooker, but are not in the config files, are marked as unregistered
-		
-		*/
-		bool					m_fRegistered;
+		DccLiteService			&m_clDccService;					
 
 		std::vector<Decoder *>	m_vecDecoders;
 
@@ -113,7 +107,7 @@ class Device: public dcclite::FolderObject
 		dcclite::Clock::TimePoint_t m_Timeout;
 
 		uint64_t			m_uLastReceivedStatePacketId = 0;
-		uint64_t			m_uOutgoingStatePacketId = 0;
+		uint64_t			m_uOutgoingStatePacketId = 0;		
 
 		struct ConfigInfo
 		{
@@ -126,4 +120,12 @@ class Device: public dcclite::FolderObject
 		};		
 
 		std::unique_ptr<ConfigInfo> m_upConfigState;
+
+		/**
+		Registered is a device that is stored on config.
+
+		Devices that contact the Brooker, but are not in the config files, are marked as unregistered
+
+		*/
+		bool					m_fRegistered;
 };

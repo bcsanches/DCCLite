@@ -104,6 +104,7 @@ void Device::GoOnline(const dcclite::Address remoteAddress)
 	m_uOutgoingStatePacketId = 0;
 
 	m_eStatus = Status::ONLINE;	
+	this->ForceSync();
 
 	dcclite::Log::Info("[{}::Device::GoOnline] Is online", this->GetName());
 }
@@ -148,6 +149,20 @@ void Device::SendConfigStartPacket() const
 	m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::CONFIG_START, m_SessionToken, m_ConfigToken);
 
 	m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
+}
+
+void Device::ForceSync()
+{
+	for (auto decoder : m_vecDecoders)
+	{
+		if (!decoder->IsOutputDecoder())
+		{
+			continue;
+		}
+
+		auto *outputDecoder = static_cast<OutputDecoder *>(decoder);
+		outputDecoder->InvalidateRemoteState();
+	}
 }
 
 void Device::AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken)

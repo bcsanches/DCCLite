@@ -31,8 +31,7 @@ enum class ConnectionStates: uint8_t
 	OFFLINE,
 	SEARCHING_SERVER,	
 	ARPDISCOVER,
-	CONFIGURING,
-	SYNCING,
+	CONFIGURING,	
 	ONLINE
 };
 
@@ -201,6 +200,8 @@ static void OfflineTick()
 {	
 	Console::SendLogEx(MODULE_NAME, "Broadcast");
 
+	//
+	//Just send a broadcast DISCOVERY packet
 	dcclite::Packet pkt;
 	dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::DISCOVERY, g_SessionToken, g_ConfigToken };
 
@@ -209,21 +210,23 @@ static void OfflineTick()
 	uint8_t destip[4] = { 255, 255, 255, 255 };
 	NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), destip, g_uSrvPort);
 
+	//
+	//reset PING 
 	PingManager::Reset(millis());
 	
 	g_eConnectionState = ConnectionStates::SEARCHING_SERVER;
 }
 
-static void GotoOnlineState()
+//
+//
+// CONFIGURING STATE
+//
+//
+
+static void ConfiguringTick()
 {
-	Console::SendLogEx(MODULE_NAME, "Online");
-
-	g_eConnectionState = ConnectionStates::ONLINE;
-	g_fForceStateRefresh = true;
-	g_uLastReceivedDecodersStatePacket = 0;
-	g_uDecodersStateSequence = 0;
-
-	PingManager::Reset(millis());	
+	//Only check for timeout here
+	PingManager::CheckTimeout(millis());
 }
 
 static void SendConfigPacket(dcclite::Packet &packet, dcclite::MsgTypes msgType, uint8_t seq)
@@ -232,15 +235,53 @@ static void SendConfigPacket(dcclite::Packet &packet, dcclite::MsgTypes msgType,
 	dcclite::PacketBuilder builder{ packet, msgType, g_SessionToken, g_ConfigToken };
 
 	packet.Write8(seq);
-	
+
 	NetUdp::SendPacket(packet.GetData(), packet.GetSize(), g_u8ServerIp, g_uSrvPort);
 }
+
+const char OnConfiguringPacketStateName[] PROGMEM = { "OnConfiguringPacket" };
+#define OnConfiguringPacketStateNameStr Console::FlashStr(OnConfiguringPacketStateName)
+
+static void HandleConfigPacket(dcclite::Packet &packet)
+{
+	uint8_t seq = packet.Read<uint8_t>();
+
+	DecoderManager::Create(seq, packet);
+
+	Console::SendLogEx(MODULE_NAME, OnConfiguringPacketStateNameStr, ' ', "Ack", ' ', seq);
+
+	SendConfigPacket(packet, dcclite::MsgTypes::CONFIG_ACK, seq);
+}
+
+void OnConfiguringPacket(dcclite::MsgTypes type, dcclite::Packet &packet)
+{
+	switch (type)
+	{
+		case dcclite::MsgTypes::CONFIG_DEV:
+			PingManager::Reset(millis());
+			HandleConfigPacket(packet);
+			break;
+
+		default:
+			LogInvalidPacket(OnConfiguringPacketStateNameStr, type);
+			break;
+	}
+}
+
+//
+//
+// SEARCHING SERVER AND ARP STATE
+//
+//
+
 
 static void SearchingServerTick()
 {
 	if(!PingManager::CheckTimeout(millis()))	
 		return;
 
+	//
+	//If had a timeout, so we go to offline state and start again
 	OfflineTick();
 }
 
@@ -261,32 +302,54 @@ static void SendHelloPacket()
 
 static bool ArpTick()
 {
+	//Check if we got an ARP response
 	if(NetUdp::IsIpCached(g_u8ServerIp))
 	{
+		//IP is in cache, go back to SEARCHING SERVER STATE
 		Console::SendLogEx(MODULE_NAME, "ARP DONE");
 		g_eConnectionState = ConnectionStates::SEARCHING_SERVER;
 
+		//Send an Hello to server
 		SendHelloPacket();
 
 		return true;
 	}
 	else
 	{
+		//Is arp timing out?
 		PingManager::CheckTimeout(millis());
 	}
 
 	return false;
 }
 
+static void GotoOnlineState()
+{
+	Console::SendLogEx(MODULE_NAME, "Online");
+
+	g_eConnectionState = ConnectionStates::ONLINE;
+	g_fForceStateRefresh = true;
+	g_uLastReceivedDecodersStatePacket = 0;
+	g_uDecodersStateSequence = 0;
+
+	PingManager::Reset(millis());
+}
+
+
 static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclite::MsgTypes type, dcclite::Packet &packet)
 {	
+	//
+	//Server answered DISCOVERY PACKET
 	if(type == dcclite::MsgTypes::DISCOVERY)
 	{		
+		//Grab server ip and port
 		memcpy(g_u8ServerIp, src_ip, sizeof(g_u8ServerIp));
 		g_uSrvPort = src_port;	
 
+		//Is IP address on ARP CACHE?
 		if(!NetUdp::IsIpCached(g_u8ServerIp))
 		{
+			//Not on ARP cache, so send an ARP request and go to ARPDISCOVER state
 			Console::SendLogEx(MODULE_NAME, "ARPING");
 			g_eConnectionState = ConnectionStates::ARPDISCOVER;
 
@@ -294,13 +357,15 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 		}
 		else
 		{
+			//We already have the server IP on ARP cache, so let it knows we exists
 			Console::SendLogEx(MODULE_NAME, "IP", ' ', "CACHED", ' ', Console::IpPrinter(g_u8ServerIp));
 
 			SendHelloPacket();
 		}						
-	}
+	}	
 	else if (type == dcclite::MsgTypes::ACCEPTED)
 	{
+		//If server accepted the hello, just go to SYNC STATE
 		g_SessionToken = packet.ReadGuid();
 		g_ConfigToken = packet.ReadGuid();
 
@@ -308,8 +373,12 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 	}	
 	else if(type == dcclite::MsgTypes::CONFIG_START)
 	{
+		//If are not configured like server, so we have to update everything
+		
+		//First grab session token
 		g_SessionToken = packet.ReadGuid();
 		
+		//Remove all decoders
 		DecoderManager::DestroyAll();
 
 		g_eConnectionState = ConnectionStates::CONFIGURING;		
@@ -321,6 +390,12 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 		return;
 	}		
 }
+
+//
+//
+// ONLINE STATE
+//
+//
 
 static void OnlineTick()
 {
@@ -410,10 +485,10 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 			//we simple ignore and ack again to the server, yes
 			SendConfigPacket(packet, dcclite::MsgTypes::CONFIG_FINISHED, 255);
 			break;
-
+		
 		case dcclite::MsgTypes::STATE:
 			//Console::SendLogEx(MODULE_NAME, "got state");
-			OnStatePacket(packet);
+			OnStatePacket(packet);			
 			break;
 
 		default:
@@ -421,43 +496,12 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 	}
 }
 
-static void ConfiguringTick()
-{
-	auto currentTime = millis();
 
-	if(PingManager::CheckTimeout(currentTime))	
-		return;
-}
-
-const char OnConfiguringPacketStateName[] PROGMEM = {"OnConfiguringPacket"} ;
-#define OnConfiguringPacketStateNameStr Console::FlashStr(OnConfiguringPacketStateName)
-
-
-static void HandleConfigPacket(dcclite::Packet &packet)
-{	
-	uint8_t seq = packet.Read<uint8_t>();
-	
-	DecoderManager::Create(seq, packet);
-
-	Console::SendLogEx(MODULE_NAME, OnConfiguringPacketStateNameStr, ' ', "Ack", ' ', seq);
-
-	SendConfigPacket(packet, dcclite::MsgTypes::CONFIG_ACK, seq);
-}
-
-void OnConfiguringPacket(dcclite::MsgTypes type, dcclite::Packet &packet)
-{		
-	switch (type)
-	{
-		case dcclite::MsgTypes::CONFIG_DEV:
-			PingManager::Reset(millis());			
-			HandleConfigPacket(packet);
-			break;		
-
-		default:
-			LogInvalidPacket(OnConfiguringPacketStateNameStr, type);
-			break;
-	}
-}
+//
+//
+// SESSION MAIN
+//
+//
 
 
 void Session::Update()
@@ -495,7 +539,7 @@ static void ReceiveCallback(
 {
 	if(g_eConnectionState == ConnectionStates::ARPDISCOVER)
 	{
-		//On this state, nothing todo
+		//On this state, nothing todo, ignore all udp packets
 		return;
 	}
 
