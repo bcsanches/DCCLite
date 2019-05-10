@@ -40,7 +40,7 @@ static Decoder *Create(const dcclite::DecoderTypes type, dcclite::Packet &packet
 		case dcclite::DecoderTypes::DEC_OUTPUT:
 			return new OutputDecoder(packet);
 
-		case dcclite::DecoderTypes::DEC_INPUT:
+		case dcclite::DecoderTypes::DEC_SENSOR:
 		default:
 			Console::SendLogEx(MODULE_NAME, FSTR_INVALID_DECODER_TYPE, static_cast<int>(type));
 
@@ -107,7 +107,7 @@ void DecoderManager::SaveConfig(EpromStream &stream)
 
 	dcclite::DecoderTypes types[] = { 
 		dcclite::DecoderTypes::DEC_OUTPUT , 
-		dcclite::DecoderTypes::DEC_INPUT,
+		dcclite::DecoderTypes::DEC_SENSOR,
 
 		dcclite::DecoderTypes::DEC_NULL
 	};

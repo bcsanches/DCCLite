@@ -21,7 +21,7 @@ namespace dcclite
 	{
 		DEC_NULL = 0,
 		DEC_OUTPUT = 1,
-		DEC_INPUT = 2
+		DEC_SENSOR = 2
 	};
 
 	enum class DecoderStates
@@ -54,4 +54,11 @@ namespace dcclite
 
 		OUTD_ACTIVE = 0x80
 	};	
+
+	enum SensorDecoderFlags : uint8_t
+	{
+		SENSOR_PULL_UP = 0x01,
+
+		SENSOR_ACTIVE = 0x80
+	};
 }

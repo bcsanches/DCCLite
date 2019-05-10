@@ -25,6 +25,7 @@
     <ClInclude Include="..\src\DccLiteBroker\Device.h" />
     <ClInclude Include="..\src\DccLiteBroker\OutputDecoder.h" />
     <ClInclude Include="..\src\DccLiteBroker\Project.h" />
+    <ClInclude Include="..\src\DccLiteBroker\SensorDecoder.h" />
     <ClInclude Include="..\src\DccLiteBroker\Service.h" />
     <ClInclude Include="..\src\DccLiteBroker\SpecialFolders.h" />
     <ClInclude Include="..\src\DccLiteBroker\TerminalCmd.h" />
@@ -41,6 +42,7 @@
     <ClCompile Include="..\src\DccLiteBroker\Device.cpp" />
     <ClCompile Include="..\src\DccLiteBroker\OutputDecoder.cpp" />
     <ClCompile Include="..\src\DccLiteBroker\Project.cpp" />
+    <ClCompile Include="..\src\DccLiteBroker\SensorDecoder.cpp" />
     <ClCompile Include="..\src\DccLiteBroker\Service.cpp" />
     <ClCompile Include="..\src\DccLiteBroker\SpecialFolders.cpp" />
     <ClCompile Include="..\src\DccLiteBroker\TerminalCmd.cpp" />

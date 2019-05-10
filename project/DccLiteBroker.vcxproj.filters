@@ -44,6 +44,9 @@
     <ClInclude Include="..\src\DccLiteBroker\SpecialFolders.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\DccLiteBroker\SensorDecoder.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\DccLiteBroker\main.cpp">
@@ -77,6 +80,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\src\DccLiteBroker\SpecialFolders.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\DccLiteBroker\SensorDecoder.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

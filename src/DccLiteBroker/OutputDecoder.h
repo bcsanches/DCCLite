@@ -83,7 +83,7 @@ class OutputDecoder : public Decoder
 
 		virtual const char *GetTypeName() const noexcept
 		{
-			return "Device";
+			return "OutputDecoder";
 		}
 
 		virtual void Serialize(dcclite::JsonOutputStream_t &stream) const

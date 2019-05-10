@@ -86,7 +86,7 @@ void EtherCard::clientResolveIp(const uint8_t *ip)
 
 bool EtherCard::clientWaitIp(const uint8_t *ip)
 {
-	return true;
+	return false;
 }
 
 void EtherCard::udpServerListenOnPort(UdpServerCallback callback, uint16_t port)
