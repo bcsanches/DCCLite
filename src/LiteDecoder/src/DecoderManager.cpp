@@ -12,6 +12,7 @@
 
 #include "Console.h"
 #include "OutputDecoder.h"
+#include "SensorDecoder.h"
 #include "Session.h"
 #include "Storage.h"
 
@@ -41,6 +42,9 @@ static Decoder *Create(const dcclite::DecoderTypes type, dcclite::Packet &packet
 			return new OutputDecoder(packet);
 
 		case dcclite::DecoderTypes::DEC_SENSOR:
+			return new SensorDecoder(packet);
+			break;
+
 		default:
 			Console::SendLogEx(MODULE_NAME, FSTR_INVALID_DECODER_TYPE, static_cast<int>(type));
 
@@ -216,6 +220,10 @@ void DecoderManager::LoadConfig(EpromStream &stream)
 					decoder = new OutputDecoder(stream);
 					break;
 
+				case dcclite::DecoderTypes::DEC_SENSOR:
+					decoder = new SensorDecoder(stream);
+					break;
+
 				default:
 					//should we check?
 					break;
@@ -284,5 +292,20 @@ void DecoderManager::WriteStates(dcclite::StatesBitPack_t &changedStates, dcclit
 		changedStates.SetBit(i);
 		states.SetBitValue(i, g_pDecoders[i]->IsActive());
 	}
+}
+
+bool DecoderManager::Update(const unsigned long ticks)
+{
+	bool stateChanged = false;
+
+	for (size_t i = 0; i < MAX_DECODERS; ++i)
+	{
+		if (!g_pDecoders[i])
+			continue;
+
+		stateChanged |= g_pDecoders[i]->Update(ticks);
+	}
+
+	return stateChanged;
 }
 

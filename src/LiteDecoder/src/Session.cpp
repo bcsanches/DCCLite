@@ -196,7 +196,7 @@ void Session::ReplaceConfigToken(const dcclite::Guid &configToken)
 //
 //
 
-static void OfflineTick()
+static void OfflineTick(const unsigned long ticks)
 {	
 	Console::SendLogEx(MODULE_NAME, "Broadcast");
 
@@ -212,7 +212,7 @@ static void OfflineTick()
 
 	//
 	//reset PING 
-	PingManager::Reset(millis());
+	PingManager::Reset(ticks);
 	
 	g_eConnectionState = ConnectionStates::SEARCHING_SERVER;
 }
@@ -275,14 +275,14 @@ void OnConfiguringPacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 //
 
 
-static void SearchingServerTick()
+static void SearchingServerTick(const unsigned long ticks)
 {
-	if(!PingManager::CheckTimeout(millis()))	
+	if(!PingManager::CheckTimeout(ticks))	
 		return;
 
 	//
 	//If had a timeout, so we go to offline state and start again
-	OfflineTick();
+	OfflineTick(ticks);
 }
 
 const char OnSearchingServerPacketStateName[] PROGMEM = {"OnSearchingServerPacket"} ;
@@ -300,7 +300,7 @@ static void SendHelloPacket()
 	PingManager::Reset(millis());
 }
 
-static bool ArpTick()
+static bool ArpTick(const unsigned long ticks)
 {
 	//Check if we got an ARP response
 	if(NetUdp::IsIpCached(g_u8ServerIp))
@@ -317,13 +317,13 @@ static bool ArpTick()
 	else
 	{
 		//Is arp timing out?
-		PingManager::CheckTimeout(millis());
+		PingManager::CheckTimeout(ticks);
 	}
 
 	return false;
 }
 
-static void GotoOnlineState()
+static void GotoOnlineState(const unsigned long ticks)
 {
 	Console::SendLogEx(MODULE_NAME, "Online");
 
@@ -332,7 +332,7 @@ static void GotoOnlineState()
 	g_uLastReceivedDecodersStatePacket = 0;
 	g_uDecodersStateSequence = 0;
 
-	PingManager::Reset(millis());
+	PingManager::Reset(ticks);
 }
 
 
@@ -369,7 +369,7 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 		g_SessionToken = packet.ReadGuid();
 		g_ConfigToken = packet.ReadGuid();
 
-		GotoOnlineState();
+		GotoOnlineState(millis());
 	}	
 	else if(type == dcclite::MsgTypes::CONFIG_START)
 	{
@@ -397,16 +397,14 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 //
 //
 
-static void OnlineTick()
-{
-	auto currentTime = millis();
-
-	if (PingManager::CheckTimeout(millis()))
+static void OnlineTick(const unsigned long ticks, const bool stateChangeDetectedHint)
+{	
+	if (PingManager::CheckTimeout(ticks))
 		return;
 
 	using namespace dcclite;	
 
-	if ((g_fForceStateRefresh) || (g_uNextStateThink >= currentTime))
+	if (stateChangeDetectedHint || g_fForceStateRefresh || (g_uNextStateThink >= ticks))
 	{		
 		StatesBitPack_t states;
 		StatesBitPack_t changedStates;		
@@ -427,15 +425,15 @@ static void OnlineTick()
 			pkt.Write(states);
 
 			NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
-			PingManager::Reset(currentTime);			
+			PingManager::Reset(ticks);
 
 			g_fForceStateRefresh = false;
 		}
 
-		g_uNextStateThink += currentTime + Config::g_cfgStateTicks;
+		g_uNextStateThink += ticks + Config::g_cfgStateTicks;
 	}
 	
-	PingManager::Launch(currentTime);
+	PingManager::Launch(ticks);
 }
 
 static void OnStatePacket(dcclite::Packet &packet)
@@ -461,7 +459,10 @@ static void OnStatePacket(dcclite::Packet &packet)
 	packet.ReadBitPack(changedStates);
 	packet.ReadBitPack(states);
 
-	g_fForceStateRefresh = DecoderManager::ReceiveServerStates(changedStates, states);
+	DecoderManager::ReceiveServerStates(changedStates, states);
+
+	//force a readback
+	g_fForceStateRefresh = true;
 }
 
 const char OnOnlineStateName[] PROGMEM = {"Online"} ;
@@ -504,24 +505,24 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 //
 
 
-void Session::Update()
+void Session::Update(const unsigned long ticks, const bool stateChangeDetectedHint)
 {
 	switch (g_eConnectionState)
 	{
 		case ConnectionStates::OFFLINE:
-			OfflineTick();
+			OfflineTick(ticks);
 			break;
 
 		case ConnectionStates::ARPDISCOVER:
-			ArpTick();
+			ArpTick(ticks);
 			break;
 
 		case ConnectionStates::SEARCHING_SERVER:
-			SearchingServerTick();
+			SearchingServerTick(ticks);
 			break;
 
 		case ConnectionStates::ONLINE:
-			OnlineTick();
+			OnlineTick(ticks, stateChangeDetectedHint);
 			break;
 
 		case ConnectionStates::CONFIGURING:
@@ -593,7 +594,7 @@ static void ReceiveCallback(
 
 			Storage::SaveConfig();
 
-			GotoOnlineState();
+			GotoOnlineState(millis());
 		}
 
 		//Disabling this, looks like garbage now

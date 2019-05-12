@@ -106,5 +106,20 @@
     "class": "Output",
     "address": "0xFF20",
     "pin": 20
+  },
+  
+  {
+    "name": "EATrack01Sensor",
+    "class": "Sensor",
+    "address": "0xFF21",
+    "pin": 21,
+    "pullup": true
+  },
+  {
+    "name": "EATrack02Sensor",
+    "class": "Sensor",
+    "address": "0xFF22",
+    "pin": 22,
+    "pullup":  true
   }
 ]

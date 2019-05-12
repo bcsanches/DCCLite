@@ -13,6 +13,7 @@
 #include "main.h"
 #include "Blinker.h"
 #include "Console.h"
+#include "DecoderManager.h"
 #include "NetUdp.h"
 #include "Session.h"
 #include "Storage.h"
@@ -66,10 +67,11 @@ void loop()
 
 	Console::Update();
 	Blinker::Update();
+	const bool stateChangeDetected = DecoderManager::Update(currentTime);
 
 	if (g_fNetReady)
 	{
 		NetUdp::Update();
-		Session::Update();
+		Session::Update(currentTime, stateChangeDetected);
 	}
 }

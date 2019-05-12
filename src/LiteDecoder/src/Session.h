@@ -30,7 +30,7 @@ namespace Session
 
 	extern bool Configure(const uint8_t *srvIp, uint16_t srvport);
 
-	extern void Update();
+	extern void Update(const unsigned long ticks, const bool stateChangeDetectedHint);
 
 	extern void LogStatus();
 

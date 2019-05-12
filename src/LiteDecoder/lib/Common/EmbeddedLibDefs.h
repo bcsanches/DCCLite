@@ -57,8 +57,10 @@ namespace dcclite
 
 	enum SensorDecoderFlags : uint8_t
 	{
-		SENSOR_PULL_UP = 0x01,
+		SNRD_PULL_UP = 0x01,
 
-		SENSOR_ACTIVE = 0x80
+		SNRD_COOLDOWN = 0x20,
+		SNRD_REMOTE_ACTIVE = 0x40,
+		SNRD_ACTIVE = 0x80
 	};
 }

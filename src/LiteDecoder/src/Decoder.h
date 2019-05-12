@@ -35,6 +35,13 @@ class Decoder
 
 		virtual dcclite::DecoderTypes GetType() const = 0;
 
+		//Calls update on every decoder.
+		//Returns true if any state changed
+		virtual bool Update(const unsigned long ticks)
+		{
+			return false;
+		}
+
 		//Returns true if decoder is activated (OUTPUT is On or Sensor has detected something)
 		virtual bool IsActive() const = 0;
 

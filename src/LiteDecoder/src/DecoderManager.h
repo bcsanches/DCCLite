@@ -36,4 +36,6 @@ namespace DecoderManager
 
 	bool ProduceStatesDelta(dcclite::StatesBitPack_t &changedStates, dcclite::StatesBitPack_t &states);
 	void WriteStates(dcclite::StatesBitPack_t &changedStates, dcclite::StatesBitPack_t &states);
+
+	bool Update(const unsigned long ticks);
 }

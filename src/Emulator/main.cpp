@@ -135,11 +135,11 @@ int main(int, char **)
 #if 1
 	//format: cfg <nodeName> <mac> <port> <srvipv4>	<srvport>	
 	//ArduinoLib::SetSerialInput("/cfg RelayStagingA 206.174.184.251.21.20 7202 192.168.0.20 8989;");
-	ArduinoLib::SetSerialInput("/cfg Emulator 206.174.184.251.21.20 7202 192.168.0.20 8989;");
+	//ArduinoLib::SetSerialInput("/cfg Emulator 206.174.184.251.21.20 7202 192.168.0.20 8989;");
 
 	ArduinoLib::Tick();
 
-	ArduinoLib::SetSerialInput("/sv;");
+	//ArduinoLib::SetSerialInput("/sv;");
 #endif
 
 	dcclite::Clock clock;
