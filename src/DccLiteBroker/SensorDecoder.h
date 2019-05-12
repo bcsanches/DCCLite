@@ -41,9 +41,11 @@ class SensorDecoder : public Decoder
 			return true;
 		}
 
-		virtual void SyncRemoteState(dcclite::DecoderStates state)
+		virtual void SyncRemoteState(dcclite::DecoderStates state);
+
+		inline dcclite::DecoderStates GetRemoteState() const
 		{
-			m_kCurrentState = state;
+			return m_kRemoteState;
 		}
 
 		//
@@ -69,5 +71,5 @@ class SensorDecoder : public Decoder
 
 		bool m_fPullUp = false;
 
-		dcclite::DecoderStates m_kCurrentState = dcclite::DecoderStates::INACTIVE;
+		dcclite::DecoderStates m_kRemoteState = dcclite::DecoderStates::INACTIVE;
 };

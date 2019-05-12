@@ -10,6 +10,7 @@
 
 #include "SensorDecoder.h"
 
+#include <Log.h>
 #include <Packet.h>
 
 static Decoder::Class sensorDecoder("Sensor",
@@ -38,4 +39,16 @@ void SensorDecoder::WriteConfig(dcclite::Packet &packet) const
 	packet.Write8(
 		(m_fPullUp ? dcclite::SensorDecoderFlags::SNRD_PULL_UP : 0)
 	);
+}
+
+void SensorDecoder::SyncRemoteState(dcclite::DecoderStates state)
+{	
+	if (m_kRemoteState != state)
+	{
+		dcclite::Log::Debug("[SensorDecoder::SyncRemoteState] changed: {}", state == dcclite::DecoderStates::ACTIVE ? "ACTIVE" : "INACTIVE");
+	}
+
+	dcclite::Log::Debug("[SensorDecoder::SyncRemoteState] SYNC");
+
+	m_kRemoteState = state;	
 }

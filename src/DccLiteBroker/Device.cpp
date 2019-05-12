@@ -16,12 +16,13 @@
 
 #include "BitPack.h"
 #include "Decoder.h"
-#include "OutputDecoder.h"
 #include "DccLiteService.h"
 #include "FmtUtils.h"
 #include "GuidUtils.h"
 #include "Log.h"
+#include "OutputDecoder.h"
 #include "Project.h"
+#include "SensorDecoder.h"
 
 using namespace std::chrono_literals;
 
@@ -217,7 +218,7 @@ void Device::OnPacket_Ping(dcclite::Packet &packet, dcclite::Clock::TimePoint_t 
 
 	this->RefreshTimeout(time);
 
-	//dcclite::Log::Trace("[{}::Device::OnPacket_Ping] ping", this->GetName());
+	dcclite::Log::Trace("[{}::Device::OnPacket_Ping] ping", this->GetName());
 }
 
 void Device::OnPacket_State(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteConfigToken)
@@ -241,6 +242,8 @@ void Device::OnPacket_State(dcclite::Packet &packet, dcclite::Clock::TimePoint_t
 	packet.ReadBitPack(changedStates);
 	packet.ReadBitPack(states);
 
+	bool stateRefresh = false;
+
 	for (unsigned i = 0; i < changedStates.size(); ++i)
 	{
 		if (!changedStates[i])
@@ -249,6 +252,16 @@ void Device::OnPacket_State(dcclite::Packet &packet, dcclite::Clock::TimePoint_t
 		auto state = states[i] ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE;
 
 		m_vecDecoders[i]->SyncRemoteState(state);
+
+		if (m_vecDecoders[i]->IsInputDecoder())
+		{
+			stateRefresh = true;
+		}
+	}
+
+	if (stateRefresh)
+	{
+		this->SendStateDelta(true);
 	}
 }
 
@@ -349,6 +362,69 @@ bool Device::CheckTimeout(dcclite::Clock::TimePoint_t time)
 	return true;
 }
 
+void Device::SendStateDelta(const bool sendSensorsState)
+{
+	dcclite::BitPack<dcclite::MAX_DECODERS_STATES_PER_PACKET> states;
+	dcclite::BitPack<dcclite::MAX_DECODERS_STATES_PER_PACKET> changedStates;
+
+	bool stateChanged = false;	
+
+	const auto numDecoders = std::min(m_vecDecoders.size(), size_t{ dcclite::MAX_DECODERS_STATES_PER_PACKET });
+	for (size_t i = 0; i < numDecoders; ++i)
+	{
+		auto* decoder = m_vecDecoders[i];
+		if (!decoder)
+			continue;
+
+		dcclite::DecoderStates state;
+
+		if (decoder->IsOutputDecoder())
+		{			
+			auto* outputDecoder = static_cast<OutputDecoder*>(decoder);
+
+			auto stateChange = outputDecoder->GetPendingStateChange();			
+			if (!stateChange)
+				continue;
+
+			//dcclite::Log::Debug("SendStateDelta: change for {}", outputDecoder->GetName());
+
+			state = stateChange.value();
+		}
+		else if ((sendSensorsState) && (decoder->IsInputDecoder()))
+		{
+			auto *inputDecoder = static_cast<SensorDecoder *>(decoder);
+
+			state = inputDecoder->GetRemoteState();
+
+			//dcclite::Log::Debug("SendStateDelta: change for {}", inputDecoder->GetName());
+		}
+		else
+		{
+			continue;
+		}
+		
+		//mark on bit vector that this decoder has a change
+		changedStates.SetBit(i);
+
+		//Send down the decoder state
+		states.SetBitValue(i, state == dcclite::DecoderStates::ACTIVE);
+
+		stateChanged = true;
+	}
+
+	if (stateChanged)
+	{
+		dcclite::Packet pkt;
+		m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::STATE, m_SessionToken, m_ConfigToken);
+
+		pkt.Write64(++m_uOutgoingStatePacketId);
+		pkt.Write(changedStates);
+		pkt.Write(states);
+
+		m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
+	}
+}
+
 void Device::Update(const dcclite::Clock &clock)
 {
 	if (m_eStatus != Status::ONLINE)
@@ -403,48 +479,6 @@ void Device::Update(const dcclite::Clock &clock)
 	//No config state, so check for any requested state change and notify remote
 	else if (!m_upConfigState)
 	{
-		dcclite::BitPack<dcclite::MAX_DECODERS_STATES_PER_PACKET> states;
-		dcclite::BitPack<dcclite::MAX_DECODERS_STATES_PER_PACKET> changedStates;
-
-		bool stateChanged = false;
-
-		const auto numDecoders = std::min(m_vecDecoders.size(), size_t{ dcclite::MAX_DECODERS_STATES_PER_PACKET });
-		for (size_t i = 0; i < numDecoders; ++i)
-		{
-			auto *decoder = m_vecDecoders[i];
-			if (!decoder)
-				continue;
-
-			if (!decoder->IsOutputDecoder())
-			{
-				continue;
-			}
-
-			auto *outputDecoder = static_cast<OutputDecoder *>(decoder);
-
-			auto stateChange = outputDecoder->GetPendingStateChange();
-			if (!stateChange)
-				continue;
-
-			//mark on bit vector that this decoder has a change
-			changedStates.SetBit(i);
-
-			//Send down the decoder state
-			states.SetBitValue(i, stateChange.value() == dcclite::DecoderStates::ACTIVE);
-			
-			stateChanged = true;
-		}		
-
-		if (stateChanged)
-		{
-			dcclite::Packet pkt;
-			m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::STATE, m_SessionToken, m_ConfigToken);
-
-			pkt.Write64(++m_uOutgoingStatePacketId);
-			pkt.Write(changedStates);
-			pkt.Write(states);
-
-			m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
-		}
+		this->SendStateDelta(false);
 	}	
 }

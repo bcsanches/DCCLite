@@ -134,7 +134,7 @@ namespace PingManager
 	{
 		if (g_uNextPingThink <= currentTime)
 		{		
-			//Console::SendLogEx(MODULE_NAME, "PING");
+			Console::SendLogEx(MODULE_NAME, "PING");
 			Blinker::Play(Blinker::Animations::ERROR);
 
 			dcclite::Packet pkt;
@@ -404,10 +404,15 @@ static void OnlineTick(const unsigned long ticks, const bool stateChangeDetected
 
 	using namespace dcclite;	
 
-	if (stateChangeDetectedHint || g_fForceStateRefresh || (g_uNextStateThink >= ticks))
+	if (stateChangeDetectedHint || g_fForceStateRefresh || (g_uNextStateThink <= ticks))
 	{		
 		StatesBitPack_t states;
 		StatesBitPack_t changedStates;		
+
+#if 0
+		if(g_fForceStateRefresh)
+			Console::SendLogEx("SESSION", "State FORCE");
+#endif
 
 		if (g_fForceStateRefresh)		
 			DecoderManager::WriteStates(changedStates, states);					
@@ -424,13 +429,12 @@ static void OnlineTick(const unsigned long ticks, const bool stateChangeDetected
 			pkt.Write(changedStates);
 			pkt.Write(states);
 
-			NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
-			PingManager::Reset(ticks);
+			NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);			
 
 			g_fForceStateRefresh = false;
 		}
 
-		g_uNextStateThink += ticks + Config::g_cfgStateTicks;
+		g_uNextStateThink = ticks + Config::g_cfgStateTicks;
 	}
 	
 	PingManager::Launch(ticks);
@@ -459,10 +463,7 @@ static void OnStatePacket(dcclite::Packet &packet)
 	packet.ReadBitPack(changedStates);
 	packet.ReadBitPack(states);
 
-	DecoderManager::ReceiveServerStates(changedStates, states);
-
-	//force a readback
-	g_fForceStateRefresh = true;
+	g_fForceStateRefresh = DecoderManager::ReceiveServerStates(changedStates, states);	
 }
 
 const char OnOnlineStateName[] PROGMEM = {"Online"} ;
@@ -476,7 +477,7 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 	{
 		case dcclite::MsgTypes::MSG_PONG:
 			Blinker::Play(Blinker::Animations::OK);
-			//Console::SendLogEx(MODULE_NAME, "got pong");
+			Console::SendLogEx(MODULE_NAME, "PONG");
 			//nothing to do, already done
 			break;
 

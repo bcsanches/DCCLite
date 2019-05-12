@@ -111,15 +111,8 @@
   {
     "name": "ATrack01Sensor",
     "class": "Sensor",
-    "address": "0x21",
-    "pin": 21,
-    "pullup": true
-  },
-  {
-    "name": "ATrack02Sensor",
-    "class": "Sensor",
     "address": "0x22",
     "pin": 22,
-    "pullup":  true
+    "pullup": true
   }
 ]

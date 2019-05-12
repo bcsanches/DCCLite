@@ -171,7 +171,12 @@ bool NetUdp::IsIpCached(const uint8_t *ip)
 }
 
 void NetUdp::SendPacket(const uint8_t *data, uint8_t length, const uint8_t *destIp, uint16_t destPort)
-{		
+{	
+	if((destIp[0] != 255) && (destIp[1] != 255) && (destIp[2] != 255) && (destIp[3] != 255) && ether.clientWaitIp(destIp))	
+	{
+		Console::SendLogEx(MODULE_NAME, "ARP", ' ', "NOK", ' ', Console::IpPrinter(destIp));
+	}
+
 	ether.sendUdp(reinterpret_cast<const char *>(data), length, g_iSrcPort, destIp, destPort );   
 }
 

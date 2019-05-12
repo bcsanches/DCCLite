@@ -87,6 +87,8 @@ class Device: public dcclite::FolderObject
 		void SendConfigFinishedPacket() const;
 
 		void ForceSync();
+
+		void SendStateDelta(const bool sendSensorsState);
 		
 
 	private:		
