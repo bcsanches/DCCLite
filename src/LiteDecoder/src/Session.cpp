@@ -463,6 +463,15 @@ static void OnStatePacket(dcclite::Packet &packet)
 	packet.ReadBitPack(changedStates);
 	packet.ReadBitPack(states);
 
+	/*
+	
+	Updates all decoders, if any output decoder state is received, we will force a state refresh to server
+
+	The refresh is required because the state here maybe does not change, but server has not ACK that we 
+	have this state, so we send back a state pack to the server, so it knows what is going on here.
+
+	*/	
+
 	g_fForceStateRefresh = DecoderManager::ReceiveServerStates(changedStates, states);	
 }
 

@@ -248,8 +248,10 @@ bool DecoderManager::ReceiveServerStates(const dcclite::StatesBitPack_t &changed
 		//Console::SendLogEx(MODULE_NAME, "state", ' ', "for", i, "is",' ', states[i]);
 
 		auto *decoder = g_pDecoders[i];
+		decoder->AcceptServerState(states[i] ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
 
-		stateChanged |= decoder->AcceptServerState(states[i] ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
+		if (decoder->GetType() == dcclite::DecoderTypes::DEC_OUTPUT)
+			stateChanged = true;
 	}
 
 	return stateChanged;

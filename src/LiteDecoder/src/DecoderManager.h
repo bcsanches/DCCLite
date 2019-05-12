@@ -32,6 +32,11 @@ namespace DecoderManager
 	void SaveConfig(EpromStream &stream);
 	void LoadConfig(EpromStream &stream);
 
+	/**
+	Updates all decoders with the bitpack.
+
+	Returns true if a state for any output decoder was processed.	
+	*/
 	bool ReceiveServerStates(const dcclite::StatesBitPack_t &changedStates, const dcclite::StatesBitPack_t &states);
 
 	bool ProduceStatesDelta(dcclite::StatesBitPack_t &changedStates, dcclite::StatesBitPack_t &states);

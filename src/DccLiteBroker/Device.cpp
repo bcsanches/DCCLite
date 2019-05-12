@@ -253,6 +253,13 @@ void Device::OnPacket_State(dcclite::Packet &packet, dcclite::Clock::TimePoint_t
 
 		m_vecDecoders[i]->SyncRemoteState(state);
 
+		/**
+
+		The remote device sends the state of any input (sensors)
+
+		So if we received any of this, we send back to the client our current state so it can ACK our current state		
+		*/
+
 		if (m_vecDecoders[i]->IsInputDecoder())
 		{
 			stateRefresh = true;
