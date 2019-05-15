@@ -2,6 +2,12 @@
 
 #include <avr/pgmspace.h>
 
+extern const char g_fstrArp[] PROGMEM;
+#define FSTR_ARP Console::FlashStr(g_fstrArp)
+
+extern const char g_fstrBroadcast[] PROGMEM;
+#define FSTR_BROADCAST Console::FlashStr(g_fstrBroadcast)
+
 extern const char g_fstrDecoders[] PROGMEM;
 #define FSTR_DECODERS Console::FlashStr(g_fstrDecoders)
 
@@ -21,7 +27,16 @@ extern const char g_fstrNode[] PROGMEM;
 #define FSTR_NODE Console::FlashStr(g_fstrNode)
 
 extern const char g_fstrNo[] PROGMEM;
-#define FSTR_NO Console::FlashStr(g_fstrInit)
+#define FSTR_NO Console::FlashStr(g_fstrNo)
+
+extern const char g_fstrNok[] PROGMEM;
+#define FSTR_NOK Console::FlashStr(g_fstrNok)
+
+extern const char g_fstrOk[] PROGMEM;
+#define FSTR_OK Console::FlashStr(g_fstrOk)
+
+extern const char g_fstrSetup[] PROGMEM;
+#define FSTR_SETUP Console::FlashStr(g_fstrSetup)
 
 extern const char g_fstrPort[] PROGMEM;
 #define FSTR_PORT Console::FlashStr(g_fstrPort)
@@ -34,6 +49,9 @@ extern const char g_fstrSrvport[] PROGMEM;
 
 extern const char g_fstrSession[] PROGMEM;
 #define FSTR_SESSION Console::FlashStr(g_fstrSession)
+
+extern const char g_fstrTimeout[] PROGMEM;
+#define FSTR_TIMEOUT Console::FlashStr(g_fstrTimeout)
 
 extern const char g_fstrUnknown[] PROGMEM;
 #define FSTR_UNKNOWN Console::FlashStr(g_fstrUnknown)

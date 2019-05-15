@@ -141,7 +141,7 @@ bool Storage::LoadConfig()
 		}
     }
 
-    Console::SendLogEx(MODULE_NAME, "ok");
+    Console::SendLogEx(MODULE_NAME, FSTR_OK);
 
     return true;
 }
@@ -179,7 +179,7 @@ void Storage::SaveConfig()
 		LumpWriter endLump(stream, EndStorageId, false);
 	}
 
-    Console::SendLogEx(MODULE_NAME, "sv", ' ', "ok");
+    Console::SendLogEx(MODULE_NAME, "sv", ' ', FSTR_OK);
 }
 
 void Storage::UpdateField(unsigned int index, unsigned char byte)

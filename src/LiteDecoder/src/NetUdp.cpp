@@ -108,22 +108,22 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 		
 	if (ether.begin(BUFFER_SIZE, g_u8Mac, 53) == 0)
 	{
-		Console::SendLogEx(MODULE_NAME, "ether", '.', "begin", ' ', "NOK");
+		Console::SendLogEx(MODULE_NAME, "ether", '.', "begin", ' ', FSTR_NOK);
 
 		return false;
 	}
 
-	Console::SendLogEx(MODULE_NAME, "net", ' ', "begin", ' ', "ok");	
+	Console::SendLogEx(MODULE_NAME, "net", ' ', "begin", ' ', FSTR_OK);
 
 #if 1
 	if (!ether.dhcpSetup(g_szNodeName, true))
 	{
-		Console::SendLogEx(MODULE_NAME, "dhcp", ' ',  "NOK"," ", g_szNodeName);
+		Console::SendLogEx(MODULE_NAME, "dhcp", ' ', FSTR_NOK," ", g_szNodeName);
 
 		return false;
 	}		
 
-	Console::SendLogEx(MODULE_NAME, "dhcp", ' ', "ok");
+	Console::SendLogEx(MODULE_NAME, "dhcp", ' ', FSTR_OK);
 #else
 
 	uint8_t ip[] = {192,168,0,180};
@@ -147,7 +147,7 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 
 	//ether.parseIp(destip, "192.168.1.101");	
 
-	Console::SendLogEx(MODULE_NAME, "setup", ' ', "ok");
+	Console::SendLogEx(MODULE_NAME, FSTR_SETUP, ' ', FSTR_OK);
 
 	ether.udpServerListenOnPort(callback, g_iSrcPort);
 
@@ -174,7 +174,7 @@ void NetUdp::SendPacket(const uint8_t *data, uint8_t length, const uint8_t *dest
 {	
 	if((destIp[0] != 255) && (destIp[1] != 255) && (destIp[2] != 255) && (destIp[3] != 255) && ether.clientWaitIp(destIp))	
 	{
-		Console::SendLogEx(MODULE_NAME, "ARP", ' ', "NOK", ' ', Console::IpPrinter(destIp));
+		Console::SendLogEx(MODULE_NAME, FSTR_ARP, ' ', FSTR_NOK, ' ', Console::IpPrinter(destIp), FSTR_INVALID);
 	}
 
 	ether.sendUdp(reinterpret_cast<const char *>(data), length, g_iSrcPort, destIp, destPort );   

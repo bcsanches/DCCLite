@@ -17,6 +17,7 @@
 #include "NetUdp.h"
 #include "Session.h"
 #include "Storage.h"
+#include "Strings.h"
 
 static unsigned long g_uStartTime = 0;
 static unsigned long g_uFrameCount = 0;
@@ -41,7 +42,7 @@ void setup()
 
 	Session::Init();
 
-	Console::SendLogEx("setup", "done");
+	Console::SendLogEx(FSTR_SETUP, " ", FSTR_OK);
 }
 
 void loop() 

@@ -18,6 +18,9 @@
 #include "Console.h"
 #include "Storage.h"
 
+const char SensorModuleName[] PROGMEM = {"SensorDecoder"} ;
+#define MODULE_NAME Console::FlashStr(SensorModuleName)
+
 SensorDecoder::SensorDecoder(dcclite::Packet& packet) :
 	Decoder::Decoder(packet)
 {
@@ -115,13 +118,13 @@ bool SensorDecoder::Update(const unsigned long ticks)
 		{
 			m_fFlags |= dcclite::SNRD_ACTIVE;			
 
-			Console::SendLogEx("[SENSOR_DECODER]", "LOCAL", ' ', "ACTIVATED");
+			Console::SendLogEx(MODULE_NAME, ' ', "ACTIVATED");
 		}
 		else
 		{
 			m_fFlags &= ~dcclite::SNRD_ACTIVE;			
 
-			Console::SendLogEx("[SENSOR_DECODER]", "LOCAL", ' ', "INACTIVATED");
+			Console::SendLogEx(MODULE_NAME, ' ', "INACTIVATED");
 
 		}
 

@@ -36,8 +36,12 @@
 const char ConsoleModuleName[] PROGMEM = {"[CONSOLE]"} ;
 #define MODULE_NAME Console::FlashStr(ConsoleModuleName)
 
+const char CmdCfgName[] PROGMEM = {"cfg"} ;
 const char CmdDumpName[] PROGMEM = {"dump"} ;
 const char CmdHDumpName[] PROGMEM = {"hdump"} ;
+const char CmdMemName[] PROGMEM = {"mem"} ;
+
+extern int __heap_start, *__brkval;
 
 void Console::Init() 
 {
@@ -94,7 +98,7 @@ static void Parse(const char *command)
 {
 	Console::SendLogEx(MODULE_NAME, "in:", " ", command);
 
-	if(strncmp(command, "cfg", 3) == 0)
+	if(strncmp_P(command, CmdCfgName, 3) == 0)
 	{
 		//format: cfg <nodeName> <mac> <port> <srvipv4>	<srvport>	
 
@@ -103,7 +107,7 @@ static void Parse(const char *command)
 		char nodeName[17];
 		if(parser.GetToken(nodeName, sizeof(nodeName)) != dcclite::TOKEN_ID)
 		{
-			Console::SendLogEx(MODULE_NAME, "NOK", " ", FSTR_NODE, " ", FSTR_NAME);
+			Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_NODE, " ", FSTR_NAME);
 
 			return;
 		}
@@ -116,7 +120,7 @@ static void Parse(const char *command)
 			int number;
 			if(parser.GetNumber(number) != dcclite::TOKEN_NUMBER)
 			{
-				Console::SendLogEx(MODULE_NAME, "NOK", " ", "mac");
+				Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", "mac");
 
 				return;
 			}
@@ -130,7 +134,7 @@ static void Parse(const char *command)
 
 			if(parser.GetToken(nullptr, 0) != dcclite::TOKEN_DOT)
 			{				
-				Console::SendLogEx(MODULE_NAME, "NOK", " ", "mac", " ", "sep");
+				Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", "mac", " ", "sep");
 
 				return;
 			}
@@ -139,7 +143,7 @@ static void Parse(const char *command)
 		int port;
 		if(parser.GetNumber(port) != dcclite::TOKEN_NUMBER)
 		{
-			Console::SendLogEx(MODULE_NAME, "NOK", " ", FSTR_PORT);
+			Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_PORT);
 
 			return;
 		}
@@ -152,7 +156,7 @@ static void Parse(const char *command)
 			int number;
 			if(parser.GetNumber(number) != dcclite::TOKEN_NUMBER)
 			{
-				Console::SendLogEx(MODULE_NAME, "NOK", " ", "ip");
+				Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", "ip");
 
 				return;
 			}
@@ -165,7 +169,7 @@ static void Parse(const char *command)
 
 			if(parser.GetToken(nullptr, 0) != dcclite::TOKEN_DOT)
 			{
-				Console::SendLogEx(MODULE_NAME, "NOK", " ", "ip", " ", "sep");
+				Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", "ip", " ", "sep");
 
 				return;
 			}
@@ -174,7 +178,7 @@ static void Parse(const char *command)
 		int srvport;
 		if (parser.GetNumber(srvport) != dcclite::TOKEN_NUMBER)
 		{
-			Console::SendLogEx(MODULE_NAME, "NOK", " ", FSTR_SRVPORT);
+			Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_SRVPORT);
 
 			return;
 		}
@@ -182,26 +186,33 @@ static void Parse(const char *command)
 		NetUdp::Configure(nodeName, port, mac);
 		Session::Configure(ip, srvport);
 
-		Console::SendLn("ok");
+		Console::SendLogEx(MODULE_NAME, FSTR_OK);
 	}
 	else if(strncmp(command, "sv", 2) == 0)
 	{
 		Storage::SaveConfig();
-		Console::SendLn("ok");
+		Console::SendLogEx(MODULE_NAME, FSTR_OK);
 	}
 	else if(strncmp_P(command, CmdDumpName, 4) == 0)
 	{
 		Storage::Dump();
-		Console::SendLn("ok");
+		Console::SendLogEx(MODULE_NAME, FSTR_OK);
 	}
 	else if(strncmp_P(command, CmdHDumpName, 5) == 0)
 	{
 		Storage::DumpHex();
-		Console::SendLn("ok");
+		Console::SendLogEx(MODULE_NAME, FSTR_OK);
+	}
+	else if(strncmp_P(command, CmdMemName, 3) == 0)
+	{
+		//based on https://github.com/DccPlusPlus/BaseStation/blob/master/DCCpp_Uno/SerialCommand.cpp
+
+		int v; 
+		Console::SendLogEx(MODULE_NAME, (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));		
 	}
 	else
 	{
-		Console::SendLogEx(MODULE_NAME, "NOK", ' ', command);
+		Console::SendLogEx(MODULE_NAME, FSTR_NOK, ' ', command);
 	}
 }
 

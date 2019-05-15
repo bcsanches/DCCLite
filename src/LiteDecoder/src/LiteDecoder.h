@@ -69,8 +69,6 @@
     #error "Unknown ARDUINO_TYPE"
 #endif
 
-#define MOTOR_SHIELD_NAME "none"
-
 #define VERSION "0.0"
 
 #endif

@@ -120,7 +120,7 @@ namespace PingManager
 		if (currentTime >= g_uTimeoutTicks)
 		{
 			//Server is dead?
-			Console::SendLogEx(MODULE_NAME, "srv", ' ',  "timeout");
+			Console::SendLogEx(MODULE_NAME, "srv", ' ',  FSTR_TIMEOUT);
 
 			g_eConnectionState = ConnectionStates::OFFLINE;
 
@@ -198,7 +198,7 @@ void Session::ReplaceConfigToken(const dcclite::Guid &configToken)
 
 static void OfflineTick(const unsigned long ticks)
 {	
-	Console::SendLogEx(MODULE_NAME, "Broadcast");
+	Console::SendLogEx(MODULE_NAME, FSTR_BROADCAST);
 
 	//
 	//Just send a broadcast DISCOVERY packet
@@ -306,7 +306,7 @@ static bool ArpTick(const unsigned long ticks)
 	if(NetUdp::IsIpCached(g_u8ServerIp))
 	{
 		//IP is in cache, go back to SEARCHING SERVER STATE
-		Console::SendLogEx(MODULE_NAME, "ARP DONE");
+		Console::SendLogEx(MODULE_NAME, FSTR_ARP,  FSTR_OK);
 		g_eConnectionState = ConnectionStates::SEARCHING_SERVER;
 
 		//Send an Hello to server
@@ -350,7 +350,7 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 		if(!NetUdp::IsIpCached(g_u8ServerIp))
 		{
 			//Not on ARP cache, so send an ARP request and go to ARPDISCOVER state
-			Console::SendLogEx(MODULE_NAME, "ARPING");
+			Console::SendLogEx(MODULE_NAME, FSTR_ARP, ' ', FSTR_INIT);
 			g_eConnectionState = ConnectionStates::ARPDISCOVER;
 
 			NetUdp::ResolveIp(src_ip);
