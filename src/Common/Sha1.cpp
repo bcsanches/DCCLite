@@ -8,6 +8,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#define _CRT_SECURE_NO_WARNINGS
 
 #include "Sha1.h"
 
@@ -183,13 +184,13 @@ class CryptHashObject : NonCopyable
 		{
 			// Create the hash object
 			NTSTATUS result = ::BCryptCreateHash(
-				provider.Handle(),  // handle to parent
-				&m_hash,            // hash object handle
-				m_hashObj.data(),   // hash object buffer pointer
-				m_hashObj.size(),   // hash object buffer length
-				nullptr,            // no secret
-				0,                  // no secret
-				0                   // no flags
+				provider.Handle(),						// handle to parent
+				&m_hash,								// hash object handle
+				m_hashObj.data(),						// hash object buffer pointer
+				static_cast<DWORD>(m_hashObj.size()),   // hash object buffer length
+				nullptr,								// no secret
+				0,										// no secret
+				0										// no flags
 			);
 			if (!NtSuccess(result))
 				throw CryptException("Can't create crypt hash object.", result);
@@ -207,7 +208,7 @@ class CryptHashObject : NonCopyable
 		// Can be called one or more times.
 		// When finished with input data, call FinishHash().
 		// This method can't be called after FinisHash() is called.
-		void HashData(const void * data, unsigned long length) const
+		void HashData(const void * data, ULONG length) const
 		{
 			// Hash this chunk of data
 			NTSTATUS result = ::BCryptHashData(
@@ -257,8 +258,6 @@ class CryptHashObject : NonCopyable
 		std::vector<BYTE> m_hashObj;		
 };
 
-
-
 //-----------------------------------------------------------------------------
 // Wrapper around C FILE *, for reading binary data from file.
 //-----------------------------------------------------------------------------
@@ -294,7 +293,7 @@ class FileReader : NonCopyable
 
 		// Reads bytes from file to a memory buffer.
 		// Returns the number of bytes actually read.
-		int Read(void * buffer, int bufferSize)
+		size_t Read(void * buffer, size_t bufferSize)
 		{
 			return fread(buffer, 1, bufferSize, m_file);
 		}
@@ -362,10 +361,10 @@ void dcclite::Sha1::ComputeForFile(const std::filesystem::path &fileName)
 	while (!file.EoF())
 	{
 		// Read a chunk of data from file to memory buffer
-		int readBytes = file.Read(buffer.data(), buffer.size());
+		auto readBytes = file.Read(buffer.data(), buffer.size());
 
 		// Hash this chunk of data
-		hasher.HashData(buffer.data(), readBytes);
+		hasher.HashData(buffer.data(), static_cast<ULONG>(readBytes));
 	}
 
 	// Finalize hashing

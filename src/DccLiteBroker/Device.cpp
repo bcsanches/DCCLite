@@ -376,8 +376,8 @@ void Device::SendStateDelta(const bool sendSensorsState)
 
 	bool stateChanged = false;	
 
-	const auto numDecoders = std::min(m_vecDecoders.size(), size_t{ dcclite::MAX_DECODERS_STATES_PER_PACKET });
-	for (size_t i = 0; i < numDecoders; ++i)
+	const unsigned numDecoders = static_cast<unsigned>(std::min(m_vecDecoders.size(), size_t{ dcclite::MAX_DECODERS_STATES_PER_PACKET }));
+	for (unsigned i = 0; i < numDecoders; ++i)
 	{
 		auto* decoder = m_vecDecoders[i];
 		if (!decoder)

@@ -16,3 +16,5 @@ obj/
 src/LiteDecoder/.vscode/
 /lib/
 packages/
+
+build/

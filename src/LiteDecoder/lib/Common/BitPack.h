@@ -21,18 +21,18 @@ namespace dcclite
 			static_assert((NBITS % 8) == 0, "NBITS must be multiple of 8");
 			unsigned char m_bData[NBITS / 8] = { 0 };
 
-			size_t BytePosition(int index) const
+			unsigned BytePosition(const unsigned index) const
 			{
 				return index / 8;
 			}
 
-			size_t Shift(int index) const
+			unsigned Shift(const unsigned index) const
 			{
 				return index % 8;
 			}
 
 		public:
-			bool operator[](int index) const
+			bool operator[](const unsigned index) const
 			{
 				const int bytePos = BytePosition(index);
 
@@ -41,7 +41,7 @@ namespace dcclite
 				return (m_bData[bytePos] >> shift) & 0x01;
 			}
 
-			void SetBit(int index)
+			void SetBit(const unsigned index)
 			{
 				const int bytePos = BytePosition(index);
 
@@ -50,7 +50,7 @@ namespace dcclite
 				m_bData[bytePos] |= 0x01 << shift;
 			}
 
-			void ClearBit(int index)
+			void ClearBit(const unsigned index)
 			{
 				const int bytePos = BytePosition(index);
 
@@ -59,7 +59,7 @@ namespace dcclite
 				m_bData[bytePos] &= ~(0x01 << shift);
 			}
 
-			inline void SetBitValue(int index, bool value)
+			inline void SetBitValue(const unsigned index, bool value)
 			{
 				value ? SetBit(index) : ClearBit(index);
 			}
@@ -69,19 +69,19 @@ namespace dcclite
 				memset(m_bData, 0, sizeof(m_bData));
 			}
 
-			inline size_t size() const
+			inline unsigned size() const
 			{
 				return NBITS;
 			}
 
 			inline const uint8_t *GetRaw() const { return m_bData; }
 
-			inline void Set(void *data)
+			inline void Set(const void *data)
 			{
 				memcpy(m_bData, data, sizeof(m_bData));
 			}
 
-			inline size_t GetNumBytes() const
+			inline unsigned GetNumBytes() const
 			{
 				return NBITS / 8;
 			}
