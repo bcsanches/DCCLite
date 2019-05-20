@@ -47,5 +47,10 @@ add_executable(Broker  ${Broker_SRCS} ${Broker_HDRS})
 target_compile_features(Broker PUBLIC cxx_std_17)
 
 IF(WIN32)
-    TARGET_LINK_LIBRARIES(Broker bcrypt.lib)
+    TARGET_LINK_LIBRARIES(Broker PRIVATE bcrypt.lib PRIVATE fmt-header-only)
+    
+    set_property(TARGET Broker PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+    set_property(TARGET Broker PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "..\\data\\EFMR")
+    
+    
 ENDIF(WIN32)
