@@ -46,7 +46,7 @@ void SerialImpl::println(const char *str)
 
 int SerialImpl::available()
 {
-	return m_strData.length() - m_uPos;
+	return static_cast<int>(m_strData.length() - m_uPos);
 }
 
 int SerialImpl::read()

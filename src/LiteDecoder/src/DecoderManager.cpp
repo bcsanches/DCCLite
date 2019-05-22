@@ -240,7 +240,7 @@ void DecoderManager::LoadConfig(EpromStream &stream)
 bool DecoderManager::ReceiveServerStates(const dcclite::StatesBitPack_t &changedStates, const dcclite::StatesBitPack_t &states)
 {
 	bool stateChanged = false;
-	for (size_t i = 0; (i < changedStates.size()) && (i < MAX_DECODERS); ++i)
+	for (unsigned i = 0; (i < changedStates.size()) && (i < MAX_DECODERS); ++i)
 	{
 		if (!changedStates[i])
 			continue;
@@ -264,7 +264,7 @@ bool DecoderManager::ProduceStatesDelta(dcclite::StatesBitPack_t &changedStates,
 
 	bool hasDelta = false;
 
-	for (size_t i = 0; i < MAX_DECODERS; ++i)
+	for (unsigned i = 0; i < MAX_DECODERS; ++i)
 	{
 		if (!g_pDecoders[i])
 			continue;
@@ -286,7 +286,7 @@ void DecoderManager::WriteStates(dcclite::StatesBitPack_t &changedStates, dcclit
 	changedStates.ClearAll();
 	states.ClearAll();
 
-	for (size_t i = 0; i < MAX_DECODERS; ++i)
+	for (unsigned i = 0; i < MAX_DECODERS; ++i)
 	{
 		if (!g_pDecoders[i])
 			continue;

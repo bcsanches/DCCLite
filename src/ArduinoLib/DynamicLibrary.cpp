@@ -36,7 +36,7 @@ inline void CloseLib(void *handle)
 	FreeLibrary(static_cast<HMODULE>(handle));
 }
 
-#define OpenLib LoadLibrary
+#define OpenLib LoadLibraryW
 inline void *GetLibSymbol(void *handle, const char *name)
 {
 	return GetProcAddress(static_cast<HMODULE>(handle), name);

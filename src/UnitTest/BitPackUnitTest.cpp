@@ -24,7 +24,7 @@ namespace UnitTest
 			template <size_t N>
 			void Compare(const BitPack<N> &pack, bool proof[N])
 			{
-				for (size_t i = 0; i < pack.size(); ++i)
+				for (unsigned i = 0; i < pack.size(); ++i)
 				{
 					Assert::AreEqual(pack[i], proof[i]);
 				}
@@ -36,7 +36,7 @@ namespace UnitTest
 				bool proof[32] = { false };
 				BitPack<32> pack;
 
-				Assert::AreEqual(pack.size(), size_t{ 32 });
+				Assert::AreEqual(pack.size(), unsigned{ 32 });
 
 				pack.SetBit(0);
 				proof[0] = true;
@@ -47,7 +47,7 @@ namespace UnitTest
 				Assert::IsTrue(pack[1]);
 				proof[1] = true;
 
-				for (size_t i = 2; i < pack.size(); ++i)
+				for (unsigned i = 2; i < pack.size(); ++i)
 				{
 					Assert::IsFalse(pack[i]);
 				}
@@ -72,7 +72,7 @@ namespace UnitTest
 				bool proof[32] = { false };
 				BitPack<32> pack;
 
-				for (size_t i = 0; i < pack.size(); i += 2)
+				for (unsigned i = 0; i < pack.size(); i += 2)
 				{
 					proof[i] = true;
 					pack.SetBit(i);					
@@ -81,7 +81,7 @@ namespace UnitTest
 				Compare<32>(pack, proof);
 
 				bool value = false;
-				for (size_t i = 0; i < pack.size(); ++i)
+				for (unsigned i = 0; i < pack.size(); ++i)
 				{
 					proof[i] = value;
 					pack.SetBitValue(i, value);

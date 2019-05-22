@@ -1,3 +1,9 @@
-add_subdirectory(DccLiteBroker)
+add_compile_definitions(SPDLOG_FMT_EXTERNAL)
+
+add_subdirectory(ArduinoLib)
 add_subdirectory(Common)
+add_subdirectory(DccLiteTerminal)
+add_subdirectory(DccLiteBroker)
+add_subdirectory(Emulator)
 add_subdirectory(LiteDecoder)
+add_subdirectory(UnitTest)

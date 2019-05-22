@@ -13,7 +13,7 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-#include "Project.h"
+//#include "Project.h"
 
 namespace UnitTest
 {		

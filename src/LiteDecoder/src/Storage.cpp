@@ -77,7 +77,7 @@ void Storage::DumpHex()
 bool Storage::LoadConfig()
 {
     //Console::SendLog(MODULE_NAME, "init %d", sizeof(STORAGE_MAGIC));		
-	Console::SendLogEx(MODULE_NAME, FSTR_INIT, ' ', strlen_P(StorageMagic));
+	Console::SendLogEx(MODULE_NAME, FSTR_INIT, ' ', static_cast<uint32_t>(strlen_P(StorageMagic)));
 
 	Lump header;
 
@@ -371,7 +371,7 @@ LumpWriter::~LumpWriter()
 
 	//strncpy(header.m_archName, name, sizeof(header.m_archName));
 		
-	header.m_uLength = currentPos - m_uStartIndex - sizeof(Lump);
+	header.m_uLength = currentPos - m_uStartIndex - static_cast<uint16_t>(sizeof(Lump));
 
 #if 0
 	Console::SendLogEx(MODULE_NAME, "m_fNameFromRam: ", m_fNameFromRam);

@@ -67,7 +67,7 @@ class LumpWriter
 		const char *m_pszName;
 		EpromStream &m_rStream;
 
-		uint32_t	m_uStartIndex;
+		uint16_t	m_uStartIndex;
 
 		bool 		m_fNameFromRam;
 

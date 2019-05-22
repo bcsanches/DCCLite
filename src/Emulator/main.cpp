@@ -124,11 +124,7 @@ int main(int, char **)
 
 	dcclite::PathUtils::SetAppName("Emulator");
 
-#ifdef _DEBUG
-	ArduinoLib::Setup("LiteDecoderLib_d.dll", dcclite::LogGetDefault());
-#else
-	ArduinoLib::Setup("LiteDecoderLib.dll");
-#endif
+	ArduinoLib::Setup("LiteDecoderLib.dll", dcclite::LogGetDefault());
 
 	TerminalService terminalService;		
 
