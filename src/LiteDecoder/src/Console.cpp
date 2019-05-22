@@ -207,8 +207,13 @@ static void Parse(const char *command)
 	{
 		//based on https://github.com/DccPlusPlus/BaseStation/blob/master/DCCpp_Uno/SerialCommand.cpp
 
+#ifndef WIN32
 		int v; 
 		Console::SendLogEx(MODULE_NAME, (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));		
+#else
+		Console::SendLogEx(MODULE_NAME, "LOTS LOTS LOTS");
+#endif
+
 	}
 	else
 	{

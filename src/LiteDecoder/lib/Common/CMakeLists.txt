@@ -1,10 +1,10 @@
 
-SET(EmbeddedLib_SRCS
+set(EmbeddedLib_SRCS
 	Misc.cpp
   Parser.cpp
 )
 
-SET(EmbeddedLib_HDRS
+set(EmbeddedLib_HDRS
 	BitPack.h
   EmbeddedLibDefs.h
   Guid.h  

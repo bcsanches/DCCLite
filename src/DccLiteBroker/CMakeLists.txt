@@ -1,20 +1,5 @@
 
-INCLUDE_DIRECTORIES(	
-  ${DCCLite_SOURCE_DIR}/contrib/fmt/include
-  ${DCCLite_SOURCE_DIR}/contrib/JSonCreator/include
-  ${DCCLite_SOURCE_DIR}/contrib/rapidjson/include
-  ${DCCLite_SOURCE_DIR}/contrib/spdlog/include
-  
-  ${DCCLite_SOURCE_DIR}/src/Common
-  ${DCCLite_SOURCE_DIR}/src/LiteDecoder/lib/Common/   
-)
-
-LINK_LIBRARIES(
- Common
- EmbeddedLib
-)
-
-SET(Broker_SRCS
+set(Broker_SRCS
 	Broker.cpp
   DccLiteService.cpp
   Decoder.cpp
@@ -29,7 +14,7 @@ SET(Broker_SRCS
   TerminalService.cpp
 )
 
-SET(Broker_HDRS
+set(Broker_HDRS
 	Broker.h
   DccLiteService.h
   Decoder.h
@@ -44,13 +29,16 @@ SET(Broker_HDRS
 )
 
 add_executable(Broker  ${Broker_SRCS} ${Broker_HDRS})
-target_compile_features(Broker PUBLIC cxx_std_17)
+target_compile_features(Broker PUBLIC cxx_std_17)    
 
-IF(WIN32)
-    TARGET_LINK_LIBRARIES(Broker PRIVATE bcrypt.lib PRIVATE fmt-header-only)
+target_include_directories(Broker PRIVATE ${DCCLite_SOURCE_DIR}/src/Common)
+
+target_link_libraries(Broker PRIVATE Common EmbeddedLib)
+
+if(WIN32)
+    target_link_libraries(Broker PRIVATE bcrypt.lib PRIVATE fmt-header-only)
     
     set_property(TARGET Broker PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
     set_property(TARGET Broker PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "..\\data\\EFMR")
-    
-    
-ENDIF(WIN32)
+      
+endif(WIN32)

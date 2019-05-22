@@ -1,14 +1,5 @@
 
-INCLUDE_DIRECTORIES(	
-  ${DCCLite_SOURCE_DIR}/contrib/fmt/include
-  ${DCCLite_SOURCE_DIR}/contrib/JSonCreator/include
-  ${DCCLite_SOURCE_DIR}/contrib/rapidjson/include
-  ${DCCLite_SOURCE_DIR}/contrib/spdlog/include
-  
-  ${DCCLite_SOURCE_DIR}/src/LiteDecoder/lib/Common
-)
-
-SET(Common_SRCS
+set(Common_SRCS
 	Clock.cpp
   ConsoleUtils.cpp
   GuidUtils.cpp
@@ -21,7 +12,7 @@ SET(Common_SRCS
   Util.cpp
 )
 
-SET(Common_HDRS
+set(Common_HDRS
 	ClassInfo.h
   Clock.h
   ConsoleUtils.h
@@ -41,3 +32,10 @@ SET(Common_HDRS
 add_library(Common  ${Common_SRCS} ${Common_HDRS})
 target_compile_features(Common PUBLIC cxx_std_17)
 
+target_include_directories(Common
+  PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/fmt/include
+          ${DCCLite_SOURCE_DIR}/contrib/JSonCreator/include
+          ${DCCLite_SOURCE_DIR}/contrib/rapidjson/include
+          ${DCCLite_SOURCE_DIR}/contrib/spdlog/include
+          ${DCCLite_SOURCE_DIR}/src/LiteDecoder/lib/Common
+)
