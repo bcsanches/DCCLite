@@ -33,15 +33,25 @@ set_property(TARGET SharpTerminal PROPERTY WIN32_EXECUTABLE TRUE)
 set(CMAKE_CSharp_FLAGS "/langversion:latest")
 
 csharp_set_windows_forms_properties(
+    ConsoleUserControl.cs
+    ConsoleUserControl.Designer.cs
+    ConsoleUserControl.resx
+    
     Form1.cs
     Form1.Designer.cs
     Form1.resx
+    
     Program.cs
+    
     Properties/AssemblyInfo.cs
     Properties/Resources.Designer.cs
     Properties/Resources.resx
     Properties/Settings.Designer.cs
     Properties/Settings.settings
+    
+    ObjectsTreeViewUserControl.cs
+    ObjectsTreeViewUserControl.Designer.cs
+    ObjectsTreeViewUserControl.resx    
 )
 
 set_property(TARGET SharpTerminal PROPERTY VS_DOTNET_REFERENCES
