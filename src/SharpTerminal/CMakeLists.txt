@@ -15,8 +15,7 @@ add_executable(SharpTerminal
   ITerminalClientListener.cs
   ObjectsTreeViewUserControl.cs
   ObjectsTreeViewUserControl.Designer.cs
-  ObjectsTreeViewUserControl.resx
-  packages.config
+  ObjectsTreeViewUserControl.resx  
   Program.cs
   RequestManager.cs
   TerminalClient.cs
@@ -27,7 +26,6 @@ add_executable(SharpTerminal
   Properties/Settings.Designer.cs
   Properties/Settings.settings
 )
-
 
 set_property(TARGET SharpTerminal PROPERTY VS_DOTNET_TARGET_FRAMEWORK_VERSION "v4.7.2")
 set_property(TARGET SharpTerminal PROPERTY WIN32_EXECUTABLE TRUE)
