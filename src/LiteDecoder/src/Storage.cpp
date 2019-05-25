@@ -77,7 +77,7 @@ void Storage::DumpHex()
 bool Storage::LoadConfig()
 {
     //Console::SendLog(MODULE_NAME, "init %d", sizeof(STORAGE_MAGIC));		
-	Console::SendLogEx(MODULE_NAME, FSTR_INIT, ' ', static_cast<uint32_t>(strlen_P(StorageMagic)));
+	Console::SendLogEx(MODULE_NAME, FSTR_INIT, ' ', static_cast<unsigned>(strlen_P(StorageMagic)));
 
 	Lump header;
 
