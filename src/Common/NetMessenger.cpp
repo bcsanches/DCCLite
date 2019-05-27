@@ -12,10 +12,12 @@
 
 namespace dcclite
 {
-	NetMessenger::NetMessenger(Socket &&socket) :
-		m_clSocket(std::move(socket))
+	NetMessenger::NetMessenger(Socket &&socket, const char *separator) :
+		m_clSocket(std::move(socket)),
+		m_pszSeparator(separator)
 	{
-		//empty
+		if (!separator)
+			throw new std::logic_error("[NetMessenger] separator cannot be null");
 	}
 
 	std::tuple<Socket::Status, std::string> NetMessenger::Poll()
@@ -31,7 +33,7 @@ namespace dcclite
 		{
 			m_strIncomingMessage.append(tmpBuffer, size);
 			
-			for (auto pos = m_strIncomingMessage.find("\r\n"); pos != std::string::npos; pos = m_strIncomingMessage.find("\r\n"))
+			for (auto pos = m_strIncomingMessage.find(m_pszSeparator); pos != std::string::npos; pos = m_strIncomingMessage.find(m_pszSeparator))
 			{								
 				m_lstMessages.emplace_back(m_strIncomingMessage.substr(0, pos));
 

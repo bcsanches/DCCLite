@@ -21,8 +21,13 @@ namespace dcclite
 	class NetMessenger
 	{
 		public:
-			NetMessenger(Socket &&socket);
+			NetMessenger(Socket &&socket, const char *separator = "\r\n");
+			NetMessenger(NetMessenger&& rhs) = default;
 
+			NetMessenger &operator=(NetMessenger&& rhs) = default;
+
+			NetMessenger(const NetMessenger &rhs) = delete;			
+			const NetMessenger operator=(const NetMessenger& rhs) = delete;			
 
 			std::tuple<Socket::Status, std::string> Poll();
 
@@ -33,6 +38,8 @@ namespace dcclite
 
 		private:
 			Socket m_clSocket;
+
+			const char *m_pszSeparator;
 
 			std::deque<std::string> m_lstMessages;
 

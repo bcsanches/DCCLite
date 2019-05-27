@@ -379,11 +379,17 @@ namespace dcclite
 			result = WSAGetLastError();
 			switch (result)
 			{
+				case WSAECONNRESET:
+					return std::make_pair(Status::DISCONNECTED, 0);
+
 				case WSAEWOULDBLOCK:
 					return std::make_pair(Status::WOULD_BLOCK, 0);
 
 				case WSAEMSGSIZE:
 					throw std::runtime_error("receive overflow");
+
+				default:
+					throw std::runtime_error(fmt::format("unknown socket error: {}", result));
 			}
 		}
 

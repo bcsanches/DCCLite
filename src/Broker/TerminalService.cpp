@@ -289,11 +289,11 @@ class FlipItemCmd : public DecoderCmdBase
 class TerminalClient
 {
 	public:
-		TerminalClient(TerminalService &owner, Address address, Socket &&socket);
+		TerminalClient(TerminalService &owner, const Address address, Socket &&socket);
 		TerminalClient(const TerminalClient &client) = delete;
-		TerminalClient(TerminalClient &&other);
+		TerminalClient(TerminalClient &&other) noexcept;
 
-		TerminalClient &operator=(TerminalClient &&other)
+		TerminalClient &operator=(TerminalClient &&other) noexcept
 		{
 			if (this != &other)
 			{
@@ -316,7 +316,7 @@ class TerminalClient
 		const Address	m_clAddress;
 };
 
-TerminalClient::TerminalClient(TerminalService &owner, Address address, Socket &&socket) :
+TerminalClient::TerminalClient(TerminalService &owner, const Address address, Socket &&socket) :
 	m_rclOwner(owner),
 	m_clAddress(address),
 	m_clMessenger(std::move(socket)),
@@ -325,7 +325,7 @@ TerminalClient::TerminalClient(TerminalService &owner, Address address, Socket &
 	m_clContext.SetLocation(owner.GetPath());
 }
 
-TerminalClient::TerminalClient(TerminalClient &&other) :
+TerminalClient::TerminalClient(TerminalClient &&other) noexcept:
 	m_rclOwner(other.m_rclOwner),
 	m_clAddress(std::move(other.m_clAddress)),
 	m_clMessenger(std::move(other.m_clMessenger)),
@@ -512,7 +512,7 @@ void TerminalService::Update(const dcclite::Clock &clock)
 
 	if (status == Socket::Status::OK)
 	{
-		dcclite::Log::Info("[TermnialService] Client connected {}", address.GetIpString());
+		dcclite::Log::Info("[TerminalService] Client connected {}", address.GetIpString());
 
 		m_vecClients.emplace_back(*this, address, std::move(socket));
 	}
@@ -523,7 +523,7 @@ void TerminalService::Update(const dcclite::Clock &clock)
 
 		if (!client.Update())
 		{
-			dcclite::Log::Info("[TermnialService] Client disconnected");			
+			dcclite::Log::Info("[TerminalService] Client disconnected");			
 
 			m_vecClients.erase(m_vecClients.begin() + i);
 		}

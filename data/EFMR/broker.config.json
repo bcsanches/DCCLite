@@ -25,6 +25,10 @@
       "class": "Terminal",
       "name": "terminal",
       "port": 4190
+    },
+    {
+      "class": "DccppService",
+      "name": "dccpp"
     }
   ]
 }
