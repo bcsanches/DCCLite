@@ -17,10 +17,11 @@
 
 #include <rapidjson/document.h>
 
+class Broker;
 class Project;
 class Service;
 
-typedef dcclite::ClassInfo<Service, const std::string&, const rapidjson::Value &, const Project &> ServiceClass;
+typedef dcclite::ClassInfo<Service, const std::string&, Broker &, const rapidjson::Value &, const Project &> ServiceClass;
 
 namespace dcclite
 {
@@ -29,19 +30,24 @@ namespace dcclite
 
 class Service: public dcclite::FolderObject
 {
-	private:		
-		const ServiceClass &m_rclServiceClass;
+	public:
+		virtual void Initialize() {};
 
+		virtual ~Service() {}
+
+		virtual void Update(const dcclite::Clock& clock) { ; }
+	
 	protected:
-		Service(const ServiceClass &serviceClass, std::string name, const rapidjson::Value &params, const Project &project):
+		Service(const ServiceClass &serviceClass, std::string name, Broker &broker, const rapidjson::Value &params, const Project &project):
 			FolderObject(std::move(name)),
-			m_rclServiceClass(serviceClass)
+			m_rclServiceClass(serviceClass),
+			m_rclBroker(broker)
 		{
 			//empty
 		}
 
 		Service(const Service &) = delete;
-		Service(Service &&) = delete;
+		Service(Service &&) = delete;		
 
 		virtual const char *GetTypeName() const noexcept
 		{
@@ -53,12 +59,11 @@ class Service: public dcclite::FolderObject
 			FolderObject::Serialize(stream);
 
 			//nothing
-		}
+		}	
 
-	public:
-		virtual ~Service() {}		
+	protected:
+		const ServiceClass& m_rclServiceClass;
 
-		virtual void Update(const dcclite::Clock &clock) { ; }
-
+		Broker& m_rclBroker;
 };
 

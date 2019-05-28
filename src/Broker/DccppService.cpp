@@ -2,13 +2,15 @@
 
 #include <Log.h>
 
+#include "Broker.h"
+#include "DccLiteService.h"
 #include "NetMessenger.h"
 
 using namespace dcclite;
 
 static ServiceClass dccppService("DccppService",
-	[](const ServiceClass& serviceClass, const std::string& name, const rapidjson::Value& params, const Project& project) ->
-	std::unique_ptr<Service> { return std::make_unique<DccppService>(serviceClass, name, params, project); }
+	[](const ServiceClass& serviceClass, const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project) ->
+	std::unique_ptr<Service> { return std::make_unique<DccppService>(serviceClass, name, broker, params, project); }
 );
 
 class DccppClient
@@ -97,8 +99,9 @@ bool DccppClient::Update()
 }
 
 
-DccppService::DccppService(const ServiceClass& serviceClass, const std::string& name, const rapidjson::Value& params, const Project& project):
-	Service(serviceClass, name, params, project)
+DccppService::DccppService(const ServiceClass& serviceClass, const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
+	Service(serviceClass, name, broker, params, project),
+	m_strDccServiceName(params["system"].GetString())
 {
 	int port = 2560;
 
@@ -115,6 +118,14 @@ DccppService::DccppService(const ServiceClass& serviceClass, const std::string& 
 	{
 		throw std::runtime_error("[TerminalService] Cannot put socket on listen mode");
 	}
+}
+
+void DccppService::Initialize()
+{
+	m_pclDccService = static_cast<DccLiteService *>(m_rclBroker.TryFindService(m_strDccServiceName));
+
+	if (!m_pclDccService)
+		throw std::runtime_error(fmt::format("[DccppService::Initialize] Cannot find dcc service: {}", m_strDccServiceName));
 }
 
 void DccppService::Update(const dcclite::Clock& clock)

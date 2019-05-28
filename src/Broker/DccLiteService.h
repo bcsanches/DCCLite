@@ -26,7 +26,7 @@ class Device;
 class DccLiteService : public Service
 {
 	public:
-		DccLiteService(const ServiceClass &serviceClass, const std::string &name, const rapidjson::Value &params, const Project &project);
+		DccLiteService(const ServiceClass &serviceClass, const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
 		virtual ~DccLiteService();
 

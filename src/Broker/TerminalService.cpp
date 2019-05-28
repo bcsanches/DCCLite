@@ -30,8 +30,8 @@
 using namespace dcclite;
 
 static ServiceClass terminalService("Terminal",
-	[](const ServiceClass &serviceClass, const std::string &name, const rapidjson::Value &params, const Project &project) -> 
-	std::unique_ptr<Service> { return std::make_unique<TerminalService>(serviceClass, name, params, project); }
+	[](const ServiceClass &serviceClass, const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) -> 
+	std::unique_ptr<Service> { return std::make_unique<TerminalService>(serviceClass, name, broker, params, project); }
 );
 
 class GetChildItemCmd : public TerminalCmd
@@ -454,8 +454,8 @@ bool TerminalClient::Update()
 	return true;
 }
 
-TerminalService::TerminalService(const ServiceClass &serviceClass, const std::string &name, const rapidjson::Value &params, const Project &project) :
-	Service(serviceClass, name, params, project)	
+TerminalService::TerminalService(const ServiceClass &serviceClass, const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :
+	Service(serviceClass, name, broker, params, project)	
 {	
 	auto cmdHost = TerminalCmdHost::Instance();
 

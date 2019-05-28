@@ -20,12 +20,12 @@
 #include "Packet.h"
 
 static ServiceClass dccLiteService("DccLite", 
-	[](const ServiceClass &serviceClass, const std::string &name, const rapidjson::Value &params, const Project &project) ->
-	std::unique_ptr<Service> { return std::make_unique<DccLiteService>(serviceClass, name, params, project); }
+	[](const ServiceClass &serviceClass, const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) ->
+	std::unique_ptr<Service> { return std::make_unique<DccLiteService>(serviceClass, name, broker, params, project); }
 );
 
-DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::string &name, const rapidjson::Value &params, const Project &project) :
-	Service(serviceClass, name, params, project)	
+DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :
+	Service(serviceClass, name, broker, params, project)	
 {
 	m_pDecoders = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("decoders")));
 	m_pAddresses = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("addresses")));
@@ -296,7 +296,9 @@ void DccLiteService::Device_RegisterSession(Device &dev, const dcclite::Guid &se
 
 void DccLiteService::Device_UnregisterSession(const dcclite::Guid &sessionToken)
 {
-	m_pSessions->RemoveChild(dcclite::GuidToString(sessionToken));
+	auto strGuid = dcclite::GuidToString(sessionToken);
+
+	m_pSessions->RemoveChild(strGuid);
 }
 
 Decoder *DccLiteService::TryFindDecoder(std::string_view id)

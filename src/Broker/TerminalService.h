@@ -26,7 +26,7 @@ class TerminalService : public Service
 		std::vector<TerminalClient> m_vecClients;
 
 	public:
-		TerminalService(const ServiceClass &serviceClass, const std::string &name, const rapidjson::Value &params, const Project &project);
+		TerminalService(const ServiceClass &serviceClass, const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
 		virtual ~TerminalService();
 

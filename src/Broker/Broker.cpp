@@ -29,14 +29,14 @@
 //fucking header leak
 #undef GetObject
 
-static std::unique_ptr<Service> CreateService(const rapidjson::Value &data, const Project &project)
+static std::unique_ptr<Service> CreateService(Broker &broker, const rapidjson::Value &data, const Project &project)
 {
 	const char *className = data["class"].GetString();
 	const char *name = data["name"].GetString();
 
 	dcclite::Log::Info("Creating DccLite Service: {}", name);
 	
-	if (auto output = ServiceClass::TryProduce(className, name, data, project))
+	if (auto output = ServiceClass::TryProduce(className, name,  broker, data, project))
 	{
 		return output;	
 	}
@@ -88,9 +88,16 @@ void Broker::LoadConfig()
 	
 	for(auto &serviceData : services.GetArray())	
 	{		
-		auto service = CreateService(serviceData, m_clProject);			
+		auto service = CreateService(*this, serviceData, m_clProject);			
 
 		m_pServices->AddChild(std::move(service));
+	}
+
+	auto enumerator = m_pServices->GetEnumerator();
+
+	while (enumerator.MoveNext())
+	{
+		enumerator.TryGetCurrent<Service>()->Initialize();
 	}
 }
 
@@ -102,4 +109,9 @@ void Broker::Update(const dcclite::Clock &clock)
 	{
 		enumerator.TryGetCurrent<Service>()->Update(clock);
 	}	
+}
+
+Service* Broker::TryFindService(std::string_view name)
+{
+	return static_cast<Service *>(m_pServices->TryGetChild(name));
 }

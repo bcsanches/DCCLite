@@ -17,17 +17,26 @@
 
 #include "Service.h"
 
+class DccLiteService;
 class DccppClient;
 
 class DccppService: public Service
-{
+{	
+	public:
+		DccppService(const ServiceClass& serviceClass, const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project);
+
+		virtual void Update(const dcclite::Clock& clock) override;
+
+		virtual void Initialize();
+
 	private:
+		std::string		m_strDccServiceName;
+		DccLiteService *m_pclDccService = nullptr;
+
+		//
+		//Network communication
+		//
 		dcclite::Socket m_clSocket;
 
 		std::vector<DccppClient> m_vecClients;
-
-	public:
-		DccppService(const ServiceClass& serviceClass, const std::string& name, const rapidjson::Value& params, const Project& project);
-
-		virtual void Update(const dcclite::Clock& clock) override;
 };
