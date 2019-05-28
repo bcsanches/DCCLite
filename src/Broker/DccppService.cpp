@@ -5,6 +5,7 @@
 #include "Broker.h"
 #include "DccLiteService.h"
 #include "NetMessenger.h"
+#include "OutputDecoder.h"
 
 using namespace dcclite;
 
@@ -16,7 +17,7 @@ static ServiceClass dccppService("DccppService",
 class DccppClient
 {
 	public:
-		DccppClient(DccppService& owner, const Address address, Socket&& socket);
+		DccppClient(DccLiteService &dccLite, const Address address, Socket&& socket);
 		DccppClient(const DccppClient& client) = delete;
 		DccppClient(DccppClient&& other) noexcept;
 
@@ -34,13 +35,13 @@ class DccppClient
 	
 	private:
 		NetMessenger m_clMessenger;
-		DccppService& m_rclOwner;		
+		DccLiteService &m_rclSystem;		
 
 		const Address	m_clAddress;
 };
 
-DccppClient::DccppClient(DccppService& owner, const Address address, Socket&& socket) :
-	m_rclOwner(owner),
+DccppClient::DccppClient(DccLiteService &system, const Address address, Socket&& socket) :
+	m_rclSystem(system),
 	m_clAddress(address),
 	m_clMessenger(std::move(socket), ">")
 {
@@ -48,7 +49,7 @@ DccppClient::DccppClient(DccppService& owner, const Address address, Socket&& so
 }
 
 DccppClient::DccppClient(DccppClient&& other) noexcept:
-	m_rclOwner(other.m_rclOwner),
+	m_rclSystem(other.m_rclSystem),
 	m_clAddress(std::move(other.m_clAddress)),
 	m_clMessenger(std::move(other.m_clMessenger))
 {
@@ -81,8 +82,30 @@ bool DccppClient::Update()
 					m_clMessenger.Send(m_clAddress, "<H 100 1>");
 			}
 			else if (msg.compare("<s") == 0)
-			{
-				m_clMessenger.Send(m_clAddress, "<p0><iDCC++ DccLite><N1: Ethernet><H 100 0><X><X>");				
+			{				
+				std::stringstream response;
+				response << "<p0><iDCC++ DccLite><N1: Ethernet><H 100 0><X>";
+
+				auto outputDecoders = m_rclSystem.FindAllOutputDecoders();
+				if (!outputDecoders.empty())
+				{
+					for (auto dec : outputDecoders)
+					{
+						response << 
+							"<Y" << 
+							dec->GetAddress().GetAddress() << 
+							' ' << 
+							(dec->GetCurrentState() == dcclite::DecoderStates::ACTIVE ? 1 : 0) << 
+							'>'
+						;
+					}
+				}
+				else
+				{
+					response << "<X>";
+				}					
+
+				m_clMessenger.Send(m_clAddress, response.str());
 			}	
 			else if (msg.compare("<S") == 0)
 			{
@@ -103,6 +126,7 @@ DccppService::DccppService(const ServiceClass& serviceClass, const std::string& 
 	Service(serviceClass, name, broker, params, project),
 	m_strDccServiceName(params["system"].GetString())
 {
+	//standard port used by DCC++
 	int port = 2560;
 
 	auto it = params.FindMember("port");
@@ -136,7 +160,9 @@ void DccppService::Update(const dcclite::Clock& clock)
 	{
 		dcclite::Log::Info("[DccppService] Client connected {}", address.GetIpString());
 
-		m_vecClients.emplace_back(*this, address, std::move(socket));
+		assert(m_pclDccService);
+
+		m_vecClients.emplace_back(*m_pclDccService, address, std::move(socket));
 	}
 
 	for (size_t i = 0; i < m_vecClients.size(); ++i)

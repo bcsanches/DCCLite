@@ -14,6 +14,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "Decoder.h"
 #include "Guid.h"
@@ -22,6 +23,7 @@
 #include "Socket.h"
 
 class Device;
+class OutputDecoder;
 
 class DccLiteService : public Service
 {
@@ -66,7 +68,14 @@ class DccLiteService : public Service
 			//nothing
 		}
 
+		//
+		//DECODERS Management
+		//
+		//
+
 		Decoder *TryFindDecoder(std::string_view id);
+
+		std::vector<OutputDecoder*> FindAllOutputDecoders();
 
 	private:
 		void OnNet_Discovery(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);

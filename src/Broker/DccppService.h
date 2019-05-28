@@ -19,6 +19,7 @@
 
 class DccLiteService;
 class DccppClient;
+class OutputDecoder;
 
 class DccppService: public Service
 {	
@@ -27,7 +28,7 @@ class DccppService: public Service
 
 		virtual void Update(const dcclite::Clock& clock) override;
 
-		virtual void Initialize();
+		virtual void Initialize();		
 
 	private:
 		std::string		m_strDccServiceName;

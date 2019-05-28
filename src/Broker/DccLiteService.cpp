@@ -17,6 +17,7 @@
 #include "Device.h"
 #include "FmtUtils.h"
 #include "GuidUtils.h"
+#include "OutputDecoder.h"
 #include "Packet.h"
 
 static ServiceClass dccLiteService("DccLite", 
@@ -109,7 +110,7 @@ void DccLiteService::Update(const dcclite::Clock &clock)
 
 		//dcclite::Log::Info("[DccLiteService::Update] got data");
 
-		if (size >= dcclite::PACKET_MAX_SIZE)
+		if (size > dcclite::PACKET_MAX_SIZE)
 		{
 			dcclite::Log::Error("[DccLiteService::Update] packet size too big, truncating");
 
@@ -174,7 +175,7 @@ void DccLiteService::Update(const dcclite::Clock &clock)
 
 void DccLiteService::OnNet_Discovery(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
 {
-	dcclite::Log::Info("[{}::DccLiteService::OnNet_Hello] received discovery from {}, starting handshake", this->GetName(), senderAddress);
+	dcclite::Log::Info("[{}::DccLiteService::OnNet_Hello] received discovery from {}, sending reply", this->GetName(), senderAddress);
 
 	dcclite::Packet pkt;
 
@@ -295,10 +296,8 @@ void DccLiteService::Device_RegisterSession(Device &dev, const dcclite::Guid &se
 }
 
 void DccLiteService::Device_UnregisterSession(const dcclite::Guid &sessionToken)
-{
-	auto strGuid = dcclite::GuidToString(sessionToken);
-
-	m_pSessions->RemoveChild(strGuid);
+{	
+	m_pSessions->RemoveChild(dcclite::GuidToString(sessionToken));
 }
 
 Decoder *DccLiteService::TryFindDecoder(std::string_view id)
@@ -306,4 +305,23 @@ Decoder *DccLiteService::TryFindDecoder(std::string_view id)
 	auto *decoder = m_pAddresses->TryResolveChild(id);
 
 	return static_cast<Decoder *>(decoder ? decoder : m_pDecoders->TryResolveChild(id));
+}
+
+std::vector<OutputDecoder*> DccLiteService::FindAllOutputDecoders()
+{
+	std::vector<OutputDecoder*> vecDecoders;
+
+	auto enumerator = m_pDecoders->GetEnumerator();
+
+	while (enumerator.MoveNext())
+	{
+		auto decoder = dynamic_cast<OutputDecoder *>(enumerator.TryGetCurrent());
+
+		if (!decoder)
+			continue;
+
+		vecDecoders.push_back(decoder);
+	}
+
+	return vecDecoders;
 }
