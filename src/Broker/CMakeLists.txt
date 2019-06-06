@@ -5,11 +5,11 @@ set(Broker_SRCS
   DccppService.cpp
   Decoder.cpp
   Device.cpp
-  main.cpp
-  OutputDecoder.cpp
+  main.cpp  
   Project.cpp
   SensorDecoder.cpp  
   Service.cpp
+  SimpleOutputDecoder.cpp
   SpecialFolders.cpp
   TerminalCmd.cpp
   TerminalService.cpp
@@ -25,6 +25,7 @@ set(Broker_HDRS
   Project.h
   SensorDecoder.h
   Service.h
+  SimpleOutputDecoder.h
   SpecialFolders.h
   TerminalCmd.h
   TerminalService.h

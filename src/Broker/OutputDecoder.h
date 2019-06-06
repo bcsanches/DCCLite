@@ -17,14 +17,18 @@
 class OutputDecoder : public Decoder
 {
 	public:
-		OutputDecoder(const Class &decoderClass,
-			const Address &address,
-			const std::string &name,
-			DccLiteService &owner,
-			const rapidjson::Value &params
-		);
+		OutputDecoder(const Class& decoderClass,
+			const Address& address,
+			const std::string& name,
+			DccLiteService& owner,
+			const rapidjson::Value& params
+		) :
+			Decoder(decoderClass, address, name, owner, params)
+		{
+			//empty
+		}
 
-		virtual void WriteConfig(dcclite::Packet &packet) const;
+		virtual void WriteConfig(dcclite::Packet& packet) const = 0;
 
 		virtual dcclite::DecoderTypes GetType() const noexcept
 		{
@@ -86,28 +90,17 @@ class OutputDecoder : public Decoder
 		//
 		//
 
-		virtual const char *GetTypeName() const noexcept
+		virtual const char* GetTypeName() const noexcept
 		{
 			return "OutputDecoder";
 		}
 
-		virtual void Serialize(dcclite::JsonOutputStream_t &stream) const
+		virtual void Serialize(dcclite::JsonOutputStream_t& stream) const
 		{
-			Decoder::Serialize(stream);
+			Decoder::Serialize(stream);			
+		}	
 
-			stream.AddIntValue ("pin", m_iPin);
-			stream.AddBool("invertedOperation", m_fInvertedOperation);
-			stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
-			stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
-		}
-
-	private:
-		dcclite::PinType_t m_iPin;
-
-		bool m_fInvertedOperation = false;
-		bool m_fIgnoreSavedState = false;
-		bool m_fActivateOnPowerUp = false;
-
+	private:		
 		dcclite::DecoderStates m_kCurrentState = dcclite::DecoderStates::INACTIVE;
 		dcclite::DecoderStates m_kRequestedState = dcclite::DecoderStates::INACTIVE;
-};
+	};

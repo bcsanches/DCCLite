@@ -8,26 +8,26 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "OutputDecoder.h"
+#include "SimpleOutputDecoder.h"
 
 #include "Packet.h"
 
-static Decoder::Class outputDecoder("Output",
+static Decoder::Class simpleOutputDecoder("Output",
 	[](const Decoder::Class &decoderClass, const Decoder::Address &address, const std::string &name, DccLiteService &owner, const rapidjson::Value &params)
-		-> std::unique_ptr<Decoder> { return std::make_unique<OutputDecoder>(decoderClass, address, name, owner, params); }
+		-> std::unique_ptr<Decoder> { return std::make_unique<SimpleOutputDecoder>(decoderClass, address, name, owner, params); }
 );
 
 
-OutputDecoder::OutputDecoder(
+SimpleOutputDecoder::SimpleOutputDecoder(
 	const Class &decoderClass,
 	const Address &address,
 	const std::string &name,
 	DccLiteService &owner,
 	const rapidjson::Value &params
 ) :
-	Decoder(decoderClass, address, name, owner, params),
+	OutputDecoder(decoderClass, address, name, owner, params),
 	m_iPin(params["pin"].GetInt())
-{
+{	
 	auto inverted = params.FindMember("inverted");	
 	m_fInvertedOperation = inverted != params.MemberEnd() ? inverted->value.GetBool() : false;
 
@@ -37,13 +37,13 @@ OutputDecoder::OutputDecoder(
 	auto activateOnPowerUp = params.FindMember("activateOnPowerUp");
 	m_fActivateOnPowerUp = activateOnPowerUp != params.MemberEnd() ? activateOnPowerUp->value.GetBool() : false;
 
-	m_kCurrentState = m_fIgnoreSavedState && m_fActivateOnPowerUp ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE;
+	this->SyncRemoteState(m_fIgnoreSavedState && m_fActivateOnPowerUp ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
 }
 
 
-void OutputDecoder::WriteConfig(dcclite::Packet &packet) const
+void SimpleOutputDecoder::WriteConfig(dcclite::Packet &packet) const
 {
-	Decoder::WriteConfig(packet);
+	Decoder::WriteConfig(packet);	
 
 	packet.Write8(m_iPin);
 	packet.Write8(
