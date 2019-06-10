@@ -103,4 +103,4 @@ class OutputDecoder : public Decoder
 	private:		
 		dcclite::DecoderStates m_kCurrentState = dcclite::DecoderStates::INACTIVE;
 		dcclite::DecoderStates m_kRequestedState = dcclite::DecoderStates::INACTIVE;
-	};
+};

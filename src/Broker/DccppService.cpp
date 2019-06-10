@@ -6,41 +6,43 @@
 #include "DccLiteService.h"
 #include "NetMessenger.h"
 #include "OutputDecoder.h"
+#include "SensorDecoder.h"
+#include "Parser.h"
 
 using namespace dcclite;
 
 static ServiceClass dccppService("DccppService",
-	[](const ServiceClass& serviceClass, const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project) ->
+	[](const ServiceClass& serviceClass, const std::string& name, Broker& broker, const rapidjson::Value& params, const Project& project) ->
 	std::unique_ptr<Service> { return std::make_unique<DccppService>(serviceClass, name, broker, params, project); }
 );
 
 class DccppClient
 {
-	public:
-		DccppClient(DccLiteService &dccLite, const Address address, Socket&& socket);
-		DccppClient(const DccppClient& client) = delete;
-		DccppClient(DccppClient&& other) noexcept;
+public:
+	DccppClient(DccLiteService& dccLite, const Address address, Socket&& socket);
+	DccppClient(const DccppClient& client) = delete;
+	DccppClient(DccppClient&& other) noexcept;
 
-		DccppClient& operator=(DccppClient&& other) noexcept
+	DccppClient& operator=(DccppClient&& other) noexcept
+	{
+		if (this != &other)
 		{
-			if (this != &other)
-			{
-				m_clMessenger = std::move(other.m_clMessenger);
-			}
-
-			return *this;
+			m_clMessenger = std::move(other.m_clMessenger);
 		}
 
-		bool Update();
-	
-	private:
-		NetMessenger m_clMessenger;
-		DccLiteService &m_rclSystem;		
+		return *this;
+	}
 
-		const Address	m_clAddress;
+	bool Update();
+
+private:
+	NetMessenger m_clMessenger;
+	DccLiteService& m_rclSystem;
+
+	const Address	m_clAddress;
 };
 
-DccppClient::DccppClient(DccLiteService &system, const Address address, Socket&& socket) :
+DccppClient::DccppClient(DccLiteService& system, const Address address, Socket&& socket) :
 	m_rclSystem(system),
 	m_clAddress(address),
 	m_clMessenger(std::move(socket), ">")
@@ -48,7 +50,7 @@ DccppClient::DccppClient(DccLiteService &system, const Address address, Socket&&
 	//empty
 }
 
-DccppClient::DccppClient(DccppClient&& other) noexcept:
+DccppClient::DccppClient(DccppClient&& other) noexcept :
 	m_rclSystem(other.m_rclSystem),
 	m_clAddress(std::move(other.m_clAddress)),
 	m_clMessenger(std::move(other.m_clMessenger))
@@ -71,50 +73,151 @@ bool DccppClient::Update()
 		if (status == Socket::Status::OK)
 		{
 			std::string response;
-			
-			dcclite::Log::Trace("[DccppClient] Received {}", msg);									
 
-			if (msg.compare(0, 2, "<T") == 0)
+			dcclite::Log::Trace("[DccppClient] Received {}", msg);
+
+			dcclite::Parser parser(msg.c_str());
+
+			char token[128];
+			if (parser.GetToken(token, sizeof(token)) != TOKEN_CMD_START)
 			{
-				if(msg.compare("<T 100 0"))
-					m_clMessenger.Send(m_clAddress, "<H 100 1>");
-				else if(msg.compare("<T 100 1"))
-					m_clMessenger.Send(m_clAddress, "<H 100 1>");
-			}
-			else if (msg.compare("<s") == 0)
-			{				
-				std::stringstream response;
-				response << "<p0><iDCC++ DccLite><N1: Ethernet><H 100 0><X>";
+				Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_CMD_START: {}", msg);
 
-				auto outputDecoders = m_rclSystem.FindAllOutputDecoders();
-				if (!outputDecoders.empty())
+				m_clMessenger.Send(m_clAddress, "<X>");
+			}
+
+			char cmd[4];
+			if (parser.GetToken(cmd, sizeof(cmd)) != TOKEN_ID)
+			{
+				Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_ID for cmd identification: {}", msg);
+
+				m_clMessenger.Send(m_clAddress, "<X>");
+			}
+
+			switch (cmd[0])
+			{
+				case 's':
 				{
-					for (auto dec : outputDecoders)
+					std::stringstream response;
+					response << "<p0><iDCC++ DccLite><N1: Ethernet><H 100 0><X>";
+
+					auto outputDecoders = m_rclSystem.FindAllOutputDecoders();
+					if (!outputDecoders.empty())
 					{
-						response << 
-							"<Y" << 
-							dec->GetAddress().GetAddress() << 
-							' ' << 
-							(dec->GetCurrentState() == dcclite::DecoderStates::ACTIVE ? 1 : 0) << 
-							'>'
-						;
+						for (auto dec : outputDecoders)
+						{
+							response <<
+								"<Y" <<
+								dec->GetAddress().GetAddress() <<
+								' ' <<
+								(dec->GetCurrentState() == dcclite::DecoderStates::ACTIVE ? 1 : 0) <<
+								'>'
+								;
+						}
 					}
-				}
-				else
-				{
-					response << "<X>";
-				}					
+					else
+					{
+						response << "<X>";
+					}
 
-				m_clMessenger.Send(m_clAddress, response.str());
-			}	
-			else if (msg.compare("<S") == 0)
-			{
-				m_clMessenger.Send(m_clAddress, "<X>");
-			}
-			else
-			{
-				m_clMessenger.Send(m_clAddress, "<X>");
-			}
+					m_clMessenger.Send(m_clAddress, response.str());
+				}
+				break;
+
+				case 'S':					
+					if (parser.GetToken(token, sizeof(token)) != TOKEN_EOF)
+					{
+						Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_EOF for: {}", msg);
+
+						m_clMessenger.Send(m_clAddress, "<X>");
+					}
+					else
+					{
+						std::stringstream response;
+
+						auto sensorDecoders = m_rclSystem.FindAllSensorDecoders();
+						if (!sensorDecoders.empty())
+						{
+							for (auto dec : sensorDecoders)
+							{
+								response <<
+									"<Q" <<
+									dec->GetAddress().GetAddress() <<
+									' ' <<
+									dec->GetPin() <<
+									' ' <<
+									dec->HasPullUp() <<
+									'>';
+							}
+						}
+						else
+						{
+							response << "<X>";
+						}
+
+						m_clMessenger.Send(m_clAddress, response.str());
+					}															
+					break;
+
+				case 'Z':
+					{
+						int id;
+						if (parser.GetNumber(id) != TOKEN_NUMBER)
+						{
+							Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER for device id: {}", msg);
+
+							m_clMessenger.Send(m_clAddress, "<X>");
+						}
+
+						int direction;
+						if (parser.GetNumber(direction) != TOKEN_NUMBER)
+						{
+							Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER for device state: {}", msg);
+
+							m_clMessenger.Send(m_clAddress, "<X>");
+						}
+
+						auto *dec = m_rclSystem.TryFindDecoder(Decoder::Address(id));
+						if (!dec)
+						{
+							Log::Error("[DccppClient::Update] Error decoder {} not found", id);
+
+							m_clMessenger.Send(m_clAddress, "<X>");
+						}
+
+						if (!dec->IsOutputDecoder())
+						{
+							Log::Error("[DccppClient::Update] Error decoder {} - {} is not an output type", id, dec->GetName());
+
+							m_clMessenger.Send(m_clAddress, "<X>");
+						}
+
+						auto* outputDecoder = static_cast<OutputDecoder*>(dec);
+
+						std::stringstream response;
+						response << "<Y" << id << ' ';
+						
+						if (direction)
+						{
+							outputDecoder->Activate();
+							response << '1';
+						}
+						else
+						{
+							outputDecoder->Deactivate();
+							response << '0';
+						}
+						response << '>';
+
+						m_clMessenger.Send(m_clAddress, response.str());
+					}
+					break;
+
+				default:
+					Log::Error("[DccppClient::Update] Unknown cmd {}, msg>: {}", cmd, msg);
+					m_clMessenger.Send(m_clAddress, "<X>");
+					break;
+			}		
 		}
 	}
 

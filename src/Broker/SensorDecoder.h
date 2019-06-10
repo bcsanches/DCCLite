@@ -48,6 +48,16 @@ class SensorDecoder : public Decoder
 			return m_kRemoteState;
 		}
 
+		inline dcclite::PinType_t GetPin() const
+		{
+			return m_iPin;
+		}
+
+		inline bool HasPullUp() const
+		{
+			return m_fPullUp;
+		}
+
 		//
 		//IObject
 		//

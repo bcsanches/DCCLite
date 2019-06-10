@@ -24,6 +24,7 @@
 
 class Device;
 class OutputDecoder;
+class SensorDecoder;
 
 class DccLiteService : public Service
 {
@@ -73,9 +74,11 @@ class DccLiteService : public Service
 		//
 		//
 
-		Decoder *TryFindDecoder(std::string_view id);
+		Decoder* TryFindDecoder(const Decoder::Address address) const;
+		Decoder *TryFindDecoder(std::string_view id) const;
 
 		std::vector<OutputDecoder*> FindAllOutputDecoders();
+		std::vector<SensorDecoder*> FindAllSensorDecoders();
 
 	private:
 		void OnNet_Discovery(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);

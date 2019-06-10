@@ -18,6 +18,7 @@
 #include "FmtUtils.h"
 #include "GuidUtils.h"
 #include "OutputDecoder.h"
+#include "SensorDecoder.h"
 #include "Packet.h"
 
 static ServiceClass dccLiteService("DccLite", 
@@ -300,7 +301,12 @@ void DccLiteService::Device_UnregisterSession(const dcclite::Guid &sessionToken)
 	m_pSessions->RemoveChild(dcclite::GuidToString(sessionToken));
 }
 
-Decoder *DccLiteService::TryFindDecoder(std::string_view id)
+Decoder* DccLiteService::TryFindDecoder(const Decoder::Address address) const
+{
+	return this->TryFindDecoder(address.ToString());
+}
+
+Decoder *DccLiteService::TryFindDecoder(std::string_view id) const
 {
 	auto *decoder = m_pAddresses->TryResolveChild(id);
 
@@ -316,6 +322,25 @@ std::vector<OutputDecoder*> DccLiteService::FindAllOutputDecoders()
 	while (enumerator.MoveNext())
 	{
 		auto decoder = dynamic_cast<OutputDecoder *>(enumerator.TryGetCurrent());
+
+		if (!decoder)
+			continue;
+
+		vecDecoders.push_back(decoder);
+	}
+
+	return vecDecoders;
+}
+
+std::vector<SensorDecoder*> DccLiteService::FindAllSensorDecoders()
+{
+	std::vector<SensorDecoder*> vecDecoders;
+
+	auto enumerator = m_pDecoders->GetEnumerator();
+
+	while (enumerator.MoveNext())
+	{
+		auto decoder = dynamic_cast<SensorDecoder *>(enumerator.TryGetCurrent());
 
 		if (!decoder)
 			continue;
