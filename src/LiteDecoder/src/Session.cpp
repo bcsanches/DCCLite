@@ -23,6 +23,8 @@
 #include "Storage.h"
 #include "Strings.h"
 
+//testar: https://github.com/ntruchsess/arduino_uip
+
 const char StorageModuleName[] PROGMEM = {"Session"} ;
 #define MODULE_NAME Console::FlashStr(StorageModuleName)
 
@@ -108,9 +110,11 @@ namespace PingManager
 {
 	static unsigned long g_uNextPingThink = 0;
 	static unsigned long g_uTimeoutTicks = 0;
+	static unsigned long g_uPingTicks = 4500;
 
 	static void Reset(unsigned long currentTime)
 	{
+		g_uPingTicks = Config::g_cfgPingTicks;
 		g_uNextPingThink = currentTime + Config::g_cfgPingTicks;
 		g_uTimeoutTicks = currentTime + Config::g_cfgTimeoutTicks;
 	}
@@ -143,10 +147,13 @@ namespace PingManager
 
 			//Send three times... stupid network...
 			NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
-			NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
-			NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
+			//NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
+			//NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
 
-			g_uNextPingThink = currentTime + Config::g_cfgPingTicks;
+			g_uNextPingThink = currentTime + g_uPingTicks;			
+			g_uPingTicks /= 2;
+
+			g_uPingTicks = 500 > g_uPingTicks ? 500 : g_uPingTicks;
 		}
 	}
 }
