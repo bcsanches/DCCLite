@@ -10,18 +10,17 @@
 
 #include "SensorDecoder.h"
 
-#include <Log.h>
 #include <Packet.h>
 
 static Decoder::Class sensorDecoder("Sensor",
-	[](const Decoder::Class &decoderClass, const Decoder::Address &address, const std::string &name, DccLiteService &owner, const rapidjson::Value &params)
+	[](const Decoder::Class &decoderClass, const Decoder::Address &address, const std::string &name, IDccDecoderServices &owner, const rapidjson::Value &params)
 	-> std::unique_ptr<Decoder> { return std::make_unique<SensorDecoder>(decoderClass, address, name, owner, params); }
 );
 
 SensorDecoder::SensorDecoder(const Class &decoderClass,
 	const Address &address,
 	const std::string &name,
-	DccLiteService &owner,
+	IDccDecoderServices &owner,
 	const rapidjson::Value &params
 ):
 	Decoder(decoderClass, address, name, owner, params),
@@ -39,16 +38,4 @@ void SensorDecoder::WriteConfig(dcclite::Packet &packet) const
 	packet.Write8(
 		(m_fPullUp ? dcclite::SensorDecoderFlags::SNRD_PULL_UP : 0)
 	);
-}
-
-void SensorDecoder::SyncRemoteState(dcclite::DecoderStates state)
-{	
-	if (m_kRemoteState != state)
-	{
-		dcclite::Log::Debug("[SensorDecoder::SyncRemoteState] changed: {}", state == dcclite::DecoderStates::ACTIVE ? "ACTIVE" : "INACTIVE");
-	}
-
-	dcclite::Log::Debug("[SensorDecoder::SyncRemoteState] SYNC");
-
-	m_kRemoteState = state;	
 }

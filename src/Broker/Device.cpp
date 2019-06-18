@@ -29,7 +29,12 @@ using namespace std::chrono_literals;
 static auto constexpr TIMEOUT = 10s;
 static auto constexpr CONFIG_RETRY_TIME = 300ms;
 
-Device::Device(std::string name, DccLiteService &dccService, const rapidjson::Value &params, const Project &project) :
+inline void PreparePacket(dcclite::Packet& packet, dcclite::MsgTypes msgType, const dcclite::Guid& sessionToken, const dcclite::Guid& configToken)
+{
+	dcclite::PacketBuilder builder{ packet, msgType, sessionToken, configToken };
+}
+
+Device::Device(std::string name, IDccDeviceServices &dccService, const rapidjson::Value &params, const Project &project) :
 	FolderObject(std::move(name)),
 	m_clDccService(dccService),
 	m_eStatus(Status::OFFLINE),
@@ -64,7 +69,7 @@ Device::Device(std::string name, DccLiteService &dccService, const rapidjson::Va
 		auto className = element["class"].GetString();
 		Decoder::Address address{ element["address"] };
 
-		auto &decoder = m_clDccService.Create(className, address, decoderName, element);
+		auto &decoder = m_clDccService.Device_CreateDecoder(className, address, decoderName, element);
 
 		m_vecDecoders.push_back(&decoder);
 
@@ -75,7 +80,7 @@ Device::Device(std::string name, DccLiteService &dccService, const rapidjson::Va
 }
 
 
-Device::Device(std::string name, DccLiteService &dccService):
+Device::Device(std::string name, IDccDeviceServices &dccService):
 	FolderObject(std::move(name)),
 	m_clDccService(dccService),
 	m_eStatus(Status::OFFLINE),
@@ -114,7 +119,7 @@ void Device::GoOffline()
 {
 	m_eStatus = Status::OFFLINE;	
 
-	m_clDccService.Device_UnregisterSession(m_SessionToken);
+	m_clDccService.Device_UnregisterSession(*this, m_SessionToken);
 	m_SessionToken = dcclite::Guid{};
 	m_upConfigState.reset();
 
@@ -125,7 +130,7 @@ void Device::SendDecoderConfigPacket(size_t index) const
 {
 	dcclite::Packet pkt;
 
-	m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::CONFIG_DEV, m_SessionToken, m_ConfigToken);
+	PreparePacket(pkt, dcclite::MsgTypes::CONFIG_DEV, m_SessionToken, m_ConfigToken);
 	pkt.Write8(static_cast<uint8_t>(index));
 
 	m_vecDecoders[index]->WriteConfig(pkt);
@@ -137,7 +142,7 @@ void Device::SendConfigFinishedPacket() const
 {
 	dcclite::Packet pkt;
 
-	m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::CONFIG_FINISHED, m_SessionToken, m_ConfigToken);
+	PreparePacket(pkt, dcclite::MsgTypes::CONFIG_FINISHED, m_SessionToken, m_ConfigToken);
 	pkt.Write8(static_cast<uint8_t>(m_vecDecoders.size()));
 
 	m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
@@ -147,7 +152,7 @@ void Device::SendConfigStartPacket() const
 {
 	dcclite::Packet pkt;
 
-	m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::CONFIG_START, m_SessionToken, m_ConfigToken);
+	PreparePacket(pkt, dcclite::MsgTypes::CONFIG_START, m_SessionToken, m_ConfigToken);
 
 	m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
 }
@@ -202,7 +207,7 @@ void Device::AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address
 		dcclite::Log::Info("[{}::Device::AcceptConnection] Accepted connection {} {}", this->GetName(), remoteAddress, m_ConfigToken);
 
 		dcclite::Packet pkt;
-		m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::ACCEPTED, m_SessionToken, m_ConfigToken);
+		PreparePacket(pkt, dcclite::MsgTypes::ACCEPTED, m_SessionToken, m_ConfigToken);
 		m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);		
 	}	
 }
@@ -213,7 +218,7 @@ void Device::OnPacket_Ping(dcclite::Packet &packet, dcclite::Clock::TimePoint_t 
 		return;
 
 	dcclite::Packet pkt;
-	m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::MSG_PONG, m_SessionToken, m_ConfigToken);
+	PreparePacket(pkt, dcclite::MsgTypes::MSG_PONG, m_SessionToken, m_ConfigToken);
 	m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);	
 
 	this->RefreshTimeout(time);
@@ -422,7 +427,7 @@ void Device::SendStateDelta(const bool sendSensorsState)
 	if (stateChanged)
 	{
 		dcclite::Packet pkt;
-		m_clDccService.Device_PreparePacket(pkt, dcclite::MsgTypes::STATE, m_SessionToken, m_ConfigToken);
+		PreparePacket(pkt, dcclite::MsgTypes::STATE, m_SessionToken, m_ConfigToken);
 
 		pkt.Write64(++m_uOutgoingStatePacketId);
 		pkt.Write(changedStates);

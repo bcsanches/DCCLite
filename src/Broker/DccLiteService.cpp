@@ -50,7 +50,7 @@ DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::stri
 	{
 		auto nodeName = device["name"].GetString();
 
-		m_pDevices->AddChild(std::make_unique<Device>(nodeName, *this, device, project));
+		m_pDevices->AddChild(std::make_unique<Device>(nodeName, *static_cast<IDccDeviceServices *>(this), device, project));
 	}
 }
 
@@ -59,7 +59,7 @@ DccLiteService::~DccLiteService()
 	//empty
 }
 
-Decoder &DccLiteService::Create(
+Decoder &DccLiteService::Device_CreateDecoder(
 	const std::string &className,
 	Decoder::Address address,
 	const std::string &name,
@@ -181,7 +181,8 @@ void DccLiteService::OnNet_Discovery(const dcclite::Clock &clock, const dcclite:
 	dcclite::Packet pkt;
 
 	//just send a blank packet, so they know we are here
-	this->Device_PreparePacket(pkt, dcclite::MsgTypes::DISCOVERY, dcclite::Guid{}, dcclite::Guid{});
+	dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::DISCOVERY, dcclite::Guid{}, dcclite::Guid{} };
+	
 	this->Device_SendPacket(senderAddress, pkt);
 }
 
@@ -189,11 +190,10 @@ void DccLiteService::OnNet_Hello(const dcclite::Clock &clock, const dcclite::Add
 {
 	auto remoteSessionToken = packet.ReadGuid();
 	auto remoteConfigToken = packet.ReadGuid();
-
-	char name[256];
-	
+		
 	dcclite::PacketReader reader(packet);
 
+	char name[256];
 	reader.ReadStr(name, sizeof(name));
 
 	dcclite::Log::Info("[{}::DccLiteService::OnNet_Hello] received hello from {}, starting handshake", this->GetName(), name);
@@ -205,7 +205,7 @@ void DccLiteService::OnNet_Hello(const dcclite::Clock &clock, const dcclite::Add
 		//no device, create a temp one
 		dcclite::Log::Warn("[{}::DccLiteService::OnNet_Hello] {} is not on config", this->GetName(), name);
 
-		dev = static_cast<Device*>(m_pDevices->AddChild(std::make_unique<Device>(name, *this)));
+		dev = static_cast<Device*>(m_pDevices->AddChild(std::make_unique<Device>(name, *static_cast<IDccDeviceServices *>(this))));
 	}	
 
 	dev->AcceptConnection(clock.Now(), senderAddress, remoteSessionToken, remoteConfigToken);	
@@ -277,12 +277,6 @@ void DccLiteService::OnNet_State(const dcclite::Clock &clock, const dcclite::Add
 	dev->OnPacket_State(packet, clock.Now(), senderAddress, configToken);
 }
 
-
-void DccLiteService::Device_PreparePacket(dcclite::Packet &packet, dcclite::MsgTypes msgType, const dcclite::Guid &sessionToken, const dcclite::Guid &configToken)
-{
-	dcclite::PacketBuilder builder{ packet, msgType, sessionToken, configToken };
-}
-
 void DccLiteService::Device_SendPacket(const dcclite::Address destination, const dcclite::Packet &packet)
 {
 	if (!m_clSocket.Send(destination, packet.GetData(), packet.GetSize()))
@@ -294,11 +288,21 @@ void DccLiteService::Device_SendPacket(const dcclite::Address destination, const
 void DccLiteService::Device_RegisterSession(Device &dev, const dcclite::Guid &sessionToken)
 {
 	m_pSessions->AddChild(std::make_unique<dcclite::Shortcut>(dcclite::GuidToString(sessionToken), dev));
+
+	for (auto listener : m_vecListeners)
+	{
+		listener->OnDeviceConnected(dev);
+	}
 }
 
-void DccLiteService::Device_UnregisterSession(const dcclite::Guid &sessionToken)
+void DccLiteService::Device_UnregisterSession(Device& dev, const dcclite::Guid &sessionToken)
 {	
 	m_pSessions->RemoveChild(dcclite::GuidToString(sessionToken));
+
+	for (auto listener : m_vecListeners)
+	{
+		listener->OnDeviceDisconnected(dev);
+	}
 }
 
 Decoder* DccLiteService::TryFindDecoder(const Decoder::Address address) const
@@ -349,4 +353,22 @@ std::vector<SensorDecoder*> DccLiteService::FindAllSensorDecoders()
 	}
 
 	return vecDecoders;
+}
+
+void DccLiteService::AddListener(IDccLiteServiceListener &listener)
+{
+	m_vecListeners.push_back(&listener);
+}
+
+void DccLiteService::RemoveListener(IDccLiteServiceListener &listener)
+{
+	m_vecListeners.erase(std::remove(m_vecListeners.begin(), m_vecListeners.end(), &listener), m_vecListeners.end());	
+}
+
+void DccLiteService::Decoder_OnStateChanged(Decoder& decoder)
+{
+	for (auto listener : m_vecListeners)
+	{
+		listener->OnDecoderStateChange(decoder);
+	}
 }

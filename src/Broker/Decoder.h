@@ -21,7 +21,7 @@
 
 #include <fmt/format.h>
 
-class DccLiteService;
+class IDccDecoderServices;
 class Node;
 
 namespace dcclite
@@ -70,14 +70,14 @@ class Decoder: public dcclite::Object
 				friend std::ostream& operator<<(std::ostream& os, const Address& address);
 		};
 
-		typedef dcclite::ClassInfo<Decoder, const Address &, const std::string &, DccLiteService &, const rapidjson::Value &> Class;		
+		typedef dcclite::ClassInfo<Decoder, const Address &, const std::string &, IDccDecoderServices &, const rapidjson::Value &> Class;
 
 	public:
 		Decoder(
 			const Class &decoderClass, 
 			const Address &address, 
 			std::string name,
-			DccLiteService &owner,
+			IDccDecoderServices &owner,
 			const rapidjson::Value &params
 		);
 
@@ -98,7 +98,17 @@ class Decoder: public dcclite::Object
 			return std::nullopt;
 		}
 
-		virtual void SyncRemoteState(dcclite::DecoderStates state) = 0;
+		void SyncRemoteState(dcclite::DecoderStates state);
+
+		inline dcclite::DecoderStates GetRemoteState() const
+		{
+			return m_kRemoteState;
+		}
+
+		void InvalidateRemoteState()
+		{
+			m_kRemoteState = m_kRemoteState == dcclite::DecoderStates::ACTIVE ? dcclite::DecoderStates::INACTIVE : dcclite::DecoderStates::ACTIVE;
+		}
 
 		//
 		//IObject
@@ -115,12 +125,14 @@ class Decoder: public dcclite::Object
 			Object::Serialize(stream);
 
 			stream.AddIntValue("address", m_iAddress.GetAddress());
-		}
+		}	
 
 	private:
 		Address m_iAddress;		
 
-		DccLiteService &m_rclManager;
+		IDccDecoderServices &m_rclManager;
+
+		dcclite::DecoderStates m_kRemoteState = dcclite::DecoderStates::INACTIVE;
 };
 
 inline std::ostream &operator<<(std::ostream& os, const Decoder::Address &address)

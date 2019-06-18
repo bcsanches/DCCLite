@@ -16,30 +16,38 @@ static ServiceClass dccppService("DccppService",
 	std::unique_ptr<Service> { return std::make_unique<DccppService>(serviceClass, name, broker, params, project); }
 );
 
-class DccppClient
+class DccppClient: private IDccLiteServiceListener
 {
-public:
-	DccppClient(DccLiteService& dccLite, const Address address, Socket&& socket);
-	DccppClient(const DccppClient& client) = delete;
-	DccppClient(DccppClient&& other) noexcept;
+	public:
+		DccppClient(DccLiteService& dccLite, const Address address, Socket&& socket);
+		DccppClient(const DccppClient& client) = delete;
+		DccppClient(DccppClient&& other) noexcept;
 
-	DccppClient& operator=(DccppClient&& other) noexcept
-	{
-		if (this != &other)
+		~DccppClient();
+
+		DccppClient& operator=(DccppClient&& other) noexcept
 		{
-			m_clMessenger = std::move(other.m_clMessenger);
+			if (this != &other)
+			{
+				m_clMessenger = std::move(other.m_clMessenger);
+			}
+
+			return *this;
 		}
 
-		return *this;
-	}
+		bool Update();
 
-	bool Update();
+	private:
+		void OnDeviceConnected(Device& device) override;
+		void OnDeviceDisconnected(Device& device) override;
 
-private:
-	NetMessenger m_clMessenger;
-	DccLiteService& m_rclSystem;
+		void OnDecoderStateChange(Decoder& decoder) override;
 
-	const Address	m_clAddress;
+	private:
+		NetMessenger m_clMessenger;
+		DccLiteService& m_rclSystem;
+
+		const Address	m_clAddress;
 };
 
 DccppClient::DccppClient(DccLiteService& system, const Address address, Socket&& socket) :
@@ -47,7 +55,7 @@ DccppClient::DccppClient(DccLiteService& system, const Address address, Socket&&
 	m_clAddress(address),
 	m_clMessenger(std::move(socket), ">")
 {
-	//empty
+	m_rclSystem.AddListener(*this);
 }
 
 DccppClient::DccppClient(DccppClient&& other) noexcept :
@@ -56,6 +64,51 @@ DccppClient::DccppClient(DccppClient&& other) noexcept :
 	m_clMessenger(std::move(other.m_clMessenger))
 {
 	//empty
+}
+
+DccppClient::~DccppClient()
+{
+	m_rclSystem.RemoveListener(*this);
+}
+
+void DccppClient::OnDeviceConnected(Device& device)
+{
+	//ignore
+}
+
+void DccppClient::OnDeviceDisconnected(Device& device)
+{
+	//ignore
+}
+
+void DccppClient::OnDecoderStateChange(Decoder& decoder)
+{
+	if (decoder.IsInputDecoder())
+	{
+		std::stringstream msg;
+
+		if (decoder.GetRemoteState() == DecoderStates::ACTIVE)
+		{
+			//from HIGH to LOW
+			msg << "<Q ";
+		}
+		else
+		{
+			msg << "<q ";
+		}
+		
+		msg << decoder.GetAddress() << '>';
+
+		m_clMessenger.Send(m_clAddress, msg.str());
+	}
+	else
+	{
+		std::stringstream msg;
+
+		msg << "<Y " << decoder.GetAddress() << ' ' << (decoder.GetRemoteState() == DecoderStates::ACTIVE ? 1 : 0) << '>';
+
+		m_clMessenger.Send(m_clAddress, msg.str());
+	}
 }
 
 bool DccppClient::Update()
@@ -110,7 +163,7 @@ bool DccppClient::Update()
 								"<Y" <<
 								dec->GetAddress().GetAddress() <<
 								' ' <<
-								(dec->GetCurrentState() == dcclite::DecoderStates::ACTIVE ? 1 : 0) <<
+								(dec->GetRemoteState() == dcclite::DecoderStates::ACTIVE ? 1 : 0) <<
 								'>'
 								;
 						}

@@ -21,7 +21,7 @@
 
 #include <rapidjson/document.h>
 
-class DccLiteService;
+class IDccDeviceServices;
 class Decoder;
 class Project;
 
@@ -35,8 +35,8 @@ class Device: public dcclite::FolderObject
 		};		
 
 	public:
-		Device(std::string name, DccLiteService &dccService, const rapidjson::Value &params, const Project &project);
-		Device(std::string name, DccLiteService &dccService);
+		Device(std::string name, IDccDeviceServices &dccService, const rapidjson::Value &params, const Project &project);
+		Device(std::string name, IDccDeviceServices &dccService);
 
 		Device(const Device &) = delete;
 		Device(Device &&) = delete;
@@ -92,7 +92,7 @@ class Device: public dcclite::FolderObject
 		
 
 	private:		
-		DccLiteService			&m_clDccService;					
+		IDccDeviceServices		&m_clDccService;
 
 		std::vector<Decoder *>	m_vecDecoders;
 

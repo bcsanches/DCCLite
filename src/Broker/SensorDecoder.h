@@ -20,7 +20,7 @@ class SensorDecoder : public Decoder
 		SensorDecoder(const Class &decoderClass,
 			const Address &address,
 			const std::string &name,
-			DccLiteService &owner,
+			IDccDecoderServices &owner,
 			const rapidjson::Value &params
 		);
 
@@ -39,14 +39,7 @@ class SensorDecoder : public Decoder
 		virtual bool IsInputDecoder() const
 		{
 			return true;
-		}
-
-		virtual void SyncRemoteState(dcclite::DecoderStates state);
-
-		inline dcclite::DecoderStates GetRemoteState() const
-		{
-			return m_kRemoteState;
-		}
+		}						
 
 		inline dcclite::PinType_t GetPin() const
 		{
@@ -74,12 +67,10 @@ class SensorDecoder : public Decoder
 
 			stream.AddIntValue("pin", m_iPin);
 			stream.AddBool("pullup", m_fPullUp);			
-		}
+		}	
 
 	private:
 		dcclite::PinType_t m_iPin = dcclite::NULL_PIN;
 
-		bool m_fPullUp = false;
-
-		dcclite::DecoderStates m_kRemoteState = dcclite::DecoderStates::INACTIVE;
+		bool m_fPullUp = false;		
 };

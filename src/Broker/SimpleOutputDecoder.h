@@ -20,7 +20,7 @@ class SimpleOutputDecoder : public OutputDecoder
 		SimpleOutputDecoder(const Class &decoderClass,
 			const Address &address,
 			const std::string &name,
-			DccLiteService &owner,
+			IDccDecoderServices &owner,
 			const rapidjson::Value &params
 		);
 

@@ -20,7 +20,7 @@ class OutputDecoder : public Decoder
 		OutputDecoder(const Class& decoderClass,
 			const Address& address,
 			const std::string& name,
-			DccLiteService& owner,
+			IDccDecoderServices& owner,
 			const rapidjson::Value& params
 		) :
 			Decoder(decoderClass, address, name, owner, params)
@@ -30,7 +30,7 @@ class OutputDecoder : public Decoder
 
 		virtual void WriteConfig(dcclite::Packet& packet) const = 0;
 
-		virtual dcclite::DecoderTypes GetType() const noexcept
+		dcclite::DecoderTypes GetType() const noexcept override
 		{
 			return dcclite::DecoderTypes::DEC_OUTPUT;
 		}
@@ -54,36 +54,21 @@ class OutputDecoder : public Decoder
 		{
 			return m_kRequestedState;
 		}
-
-		dcclite::DecoderStates GetCurrentState() const
-		{
-			return m_kCurrentState;
-		}
-
-		virtual bool IsOutputDecoder() const
+		
+		bool IsOutputDecoder() const override
 		{
 			return true;
 		}
 
-		virtual bool IsInputDecoder() const
+		bool IsInputDecoder() const override
 		{
 			return false;
 		}
 
-		virtual std::optional<dcclite::DecoderStates> GetPendingStateChange() const
+		std::optional<dcclite::DecoderStates> GetPendingStateChange() const override
 		{
-			return m_kRequestedState != m_kCurrentState ? std::optional{ m_kRequestedState } : std::nullopt;
-		}
-
-		virtual void SyncRemoteState(dcclite::DecoderStates state)
-		{
-			m_kCurrentState = state;
-		}
-
-		virtual void InvalidateRemoteState()
-		{
-			m_kCurrentState = m_kCurrentState == dcclite::DecoderStates::ACTIVE ? dcclite::DecoderStates::INACTIVE : dcclite::DecoderStates::ACTIVE;
-		}
+			return m_kRequestedState != this->GetRemoteState() ? std::optional{ m_kRequestedState } : std::nullopt;
+		}				
 
 		//
 		//IObject
@@ -98,9 +83,8 @@ class OutputDecoder : public Decoder
 		virtual void Serialize(dcclite::JsonOutputStream_t& stream) const
 		{
 			Decoder::Serialize(stream);			
-		}	
+		}		
 
-	private:		
-		dcclite::DecoderStates m_kCurrentState = dcclite::DecoderStates::INACTIVE;
+	private:				
 		dcclite::DecoderStates m_kRequestedState = dcclite::DecoderStates::INACTIVE;
 };

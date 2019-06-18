@@ -8,8 +8,11 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
+#include <Log.h>
+
 #include "Decoder.h"
 
+#include "DccLiteService.h"
 #include "Packet.h"
 #include "Parser.h"
 
@@ -33,7 +36,7 @@ Decoder::Address::Address(const rapidjson::Value &value)
 	}
 }
 
-Decoder::Decoder(const Class &decoderClass, const Address &address, std::string name, DccLiteService &owner, const rapidjson::Value &params):
+Decoder::Decoder(const Class &decoderClass, const Address &address, std::string name, IDccDecoderServices &owner, const rapidjson::Value &params):
 	Object(std::move(name)),
 	m_iAddress(address),	
 	m_rclManager(owner)
@@ -51,4 +54,16 @@ void Decoder::WriteConfig(dcclite::Packet &packet) const
 void Decoder::Address::WriteConfig(dcclite::Packet &packet) const
 {
 	packet.Write16(m_iAddress);
+}
+
+void Decoder::SyncRemoteState(dcclite::DecoderStates state)
+{
+	if (state != m_kRemoteState)
+	{
+		m_kRemoteState = state;
+
+		dcclite::Log::Debug("[Decoder::SyncRemoteState] {} changed: {}", this->GetName(), state == dcclite::DecoderStates::ACTIVE ? "ACTIVE" : "INACTIVE");
+
+		m_rclManager.Decoder_OnStateChanged(*this);
+	}	
 }

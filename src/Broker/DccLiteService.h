@@ -26,31 +26,45 @@ class Device;
 class OutputDecoder;
 class SensorDecoder;
 
-class DccLiteService : public Service
+class IDccLiteServiceListener
+{
+	public:
+		virtual void OnDeviceConnected(Device& device) = 0;
+		virtual void OnDeviceDisconnected(Device& device) = 0;
+
+		virtual void OnDecoderStateChange(Decoder& decoder) = 0;
+};
+
+class IDccDecoderServices
+{
+	public:
+		virtual void Decoder_OnStateChanged(Decoder& decoder) = 0;
+};
+
+class IDccDeviceServices
+{
+	public:
+		virtual Decoder& Device_CreateDecoder(
+			const std::string& className,
+			Decoder::Address address,
+			const std::string& name,
+			const rapidjson::Value& params
+		) = 0;
+		
+		virtual void Device_SendPacket(const dcclite::Address destination, const dcclite::Packet& packet) = 0;
+
+		virtual void Device_RegisterSession(Device& dev, const dcclite::Guid& configToken) = 0;
+		virtual void Device_UnregisterSession(Device& dev, const dcclite::Guid& sessionToken) = 0;
+};
+
+class DccLiteService : public Service, private IDccDeviceServices, private IDccDecoderServices
 {
 	public:
 		DccLiteService(const ServiceClass &serviceClass, const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
 		virtual ~DccLiteService();
-
-		Decoder &Create(
-			const std::string &className,
-			Decoder::Address address,
-			const std::string &name,
-			const rapidjson::Value &params
-		);
-
-		virtual void Update(const dcclite::Clock &clock) override;		
-
-		//
-		// To be used only by Devices
-		//
-		//
-		void Device_PreparePacket(dcclite::Packet &packet, dcclite::MsgTypes msgType, const dcclite::Guid &sessionToken, const dcclite::Guid &configToken);
-		void Device_SendPacket(const dcclite::Address destination, const dcclite::Packet &packet);
-
-		void Device_RegisterSession(Device &dev, const dcclite::Guid &configToken);
-		void Device_UnregisterSession(const dcclite::Guid &sessionToken);
+		
+		virtual void Update(const dcclite::Clock &clock) override;				
 
 		//
 		//IObject
@@ -68,6 +82,9 @@ class DccLiteService : public Service
 
 			//nothing
 		}
+
+		void AddListener(IDccLiteServiceListener &listener);
+		void RemoveListener(IDccLiteServiceListener &listener);
 
 		//
 		//DECODERS Management
@@ -95,12 +112,39 @@ class DccLiteService : public Service
 		Device *DccLiteService::TryFindPacketDestination(dcclite::Packet &packet);		
 
 	private:
+		//
+		// To be used only by Devices
+		//
+		//		
+		void Device_SendPacket(const dcclite::Address destination, const dcclite::Packet& packet) override;
+
+		void Device_RegisterSession(Device& dev, const dcclite::Guid& configToken) override;
+		void Device_UnregisterSession(Device& dev, const dcclite::Guid& sessionToken) override;
+
+		Decoder& Device_CreateDecoder(
+			const std::string& className,
+			Decoder::Address address,
+			const std::string& name,
+			const rapidjson::Value& params
+		) override;
+
+		//
+		//
+		// To be used only by Decoders
+		//
+		//
+
+		void Decoder_OnStateChanged(Decoder& decoder) override;
+
+	private:
 		dcclite::Socket m_clSocket;		
 
 		FolderObject *m_pDecoders;
 		FolderObject *m_pAddresses;
 		FolderObject *m_pDevices;
 		FolderObject *m_pSessions;
+
+		std::vector<IDccLiteServiceListener *> m_vecListeners;
 };
 
 
