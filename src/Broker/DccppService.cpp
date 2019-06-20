@@ -3,6 +3,7 @@
 #include <Log.h>
 
 #include "Broker.h"
+#include "Decoder.h"
 #include "DccLiteService.h"
 #include "NetMessenger.h"
 #include "OutputDecoder.h"
@@ -81,34 +82,27 @@ void DccppClient::OnDeviceDisconnected(Device& device)
 	//ignore
 }
 
-void DccppClient::OnDecoderStateChange(Decoder& decoder)
+static inline std::string CreateOutputDecoderResponse(const OutputDecoder& decoder)
 {
+	return fmt::format("<Y {} {}>", decoder.GetAddress(), (decoder.GetRemoteState() == DecoderStates::ACTIVE ? 1 : 0));
+}
+
+static inline std::string CreateDecoderResponse(const Decoder& decoder)
+{	
 	if (decoder.IsInputDecoder())
 	{
-		std::stringstream msg;
-
-		if (decoder.GetRemoteState() == DecoderStates::ACTIVE)
-		{
-			//from HIGH to LOW
-			msg << "<Q ";
-		}
-		else
-		{
-			msg << "<q ";
-		}
-		
-		msg << decoder.GetAddress() << '>';
-
-		m_clMessenger.Send(m_clAddress, msg.str());
+		return fmt::format("<{} {}>", decoder.GetRemoteState() == DecoderStates::ACTIVE ? 'Q' : 'q', decoder.GetAddress());		
 	}
 	else
 	{
-		std::stringstream msg;
-
-		msg << "<Y " << decoder.GetAddress() << ' ' << (decoder.GetRemoteState() == DecoderStates::ACTIVE ? 1 : 0) << '>';
-
-		m_clMessenger.Send(m_clAddress, msg.str());
+		return CreateOutputDecoderResponse(static_cast<const OutputDecoder&>(decoder));
 	}
+
+}
+
+void DccppClient::OnDecoderStateChange(Decoder& decoder)
+{
+	m_clMessenger.Send(m_clAddress, CreateDecoderResponse(decoder));	
 }
 
 bool DccppClient::Update()
@@ -136,7 +130,7 @@ bool DccppClient::Update()
 			{
 				Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_CMD_START: {}", msg);
 
-				m_clMessenger.Send(m_clAddress, "<X>");
+				goto ERROR_RESPONSE;
 			}
 
 			char cmd[4];
@@ -144,7 +138,7 @@ bool DccppClient::Update()
 			{
 				Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_ID for cmd identification: {}", msg);
 
-				m_clMessenger.Send(m_clAddress, "<X>");
+				goto ERROR_RESPONSE;
 			}
 
 			switch (cmd[0])
@@ -159,13 +153,7 @@ bool DccppClient::Update()
 					{
 						for (auto dec : outputDecoders)
 						{
-							response <<
-								"<Y" <<
-								dec->GetAddress().GetAddress() <<
-								' ' <<
-								(dec->GetRemoteState() == dcclite::DecoderStates::ACTIVE ? 1 : 0) <<
-								'>'
-								;
+							response << CreateOutputDecoderResponse(*dec);							
 						}
 					}
 					else
@@ -182,7 +170,7 @@ bool DccppClient::Update()
 					{
 						Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_EOF for: {}", msg);
 
-						m_clMessenger.Send(m_clAddress, "<X>");
+						goto ERROR_RESPONSE;
 					}
 					else
 					{
@@ -219,7 +207,7 @@ bool DccppClient::Update()
 						{
 							Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER for device id: {}", msg);
 
-							m_clMessenger.Send(m_clAddress, "<X>");
+							goto ERROR_RESPONSE;
 						}
 
 						int direction;
@@ -227,7 +215,7 @@ bool DccppClient::Update()
 						{
 							Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER for device state: {}", msg);
 
-							m_clMessenger.Send(m_clAddress, "<X>");
+							goto ERROR_RESPONSE;
 						}
 
 						auto *dec = m_rclSystem.TryFindDecoder(Decoder::Address(id));
@@ -235,34 +223,31 @@ bool DccppClient::Update()
 						{
 							Log::Error("[DccppClient::Update] Error decoder {} not found", id);
 
-							m_clMessenger.Send(m_clAddress, "<X>");
+							goto ERROR_RESPONSE;
 						}
 
 						if (!dec->IsOutputDecoder())
 						{
 							Log::Error("[DccppClient::Update] Error decoder {} - {} is not an output type", id, dec->GetName());
 
-							m_clMessenger.Send(m_clAddress, "<X>");
+							goto ERROR_RESPONSE;
 						}
 
 						auto* outputDecoder = static_cast<OutputDecoder*>(dec);
 
-						std::stringstream response;
-						response << "<Y" << id << ' ';
-						
-						if (direction)
+						auto newState = direction ? DecoderStates::ACTIVE : DecoderStates::INACTIVE;
+
+						//if no state change pending and remote state is the requested one
+						if (!outputDecoder->GetPendingStateChange() && outputDecoder->GetRemoteState() == newState)
 						{
-							outputDecoder->Activate();
-							response << '1';
+							//we force an output, because we should not have a incoming state, so tell JMRI that we are on requested state
+							m_clMessenger.Send(m_clAddress, CreateOutputDecoderResponse(*outputDecoder));
 						}
 						else
 						{
-							outputDecoder->Deactivate();
-							response << '0';
-						}
-						response << '>';
-
-						m_clMessenger.Send(m_clAddress, response.str());
+							//now we set the new state and later, the decoder will update it and send a response to JMRI
+							outputDecoder->SetState(newState);
+						}						
 					}
 					break;
 
@@ -274,6 +259,10 @@ bool DccppClient::Update()
 		}
 	}
 
+	return true;
+
+ERROR_RESPONSE:
+	m_clMessenger.Send(m_clAddress, "<X>");
 	return true;
 }
 

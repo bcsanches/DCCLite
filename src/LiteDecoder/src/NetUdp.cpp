@@ -116,11 +116,13 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 	Console::SendLogEx(MODULE_NAME, "net", ' ', "begin", ' ', FSTR_OK);
 
 #if 1
-	if (!ether.dhcpSetup(g_szNodeName, true))
+	for(int i = 0; !ether.dhcpSetup(g_szNodeName, true); ++i )
 	{
 		Console::SendLogEx(MODULE_NAME, "dhcp", ' ', FSTR_NOK," ", g_szNodeName);
 
-		return false;
+		//return false;
+		if(i == 10)
+			return false;
 	}		
 
 	Console::SendLogEx(MODULE_NAME, "dhcp", ' ', FSTR_OK);

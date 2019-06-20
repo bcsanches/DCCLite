@@ -45,6 +45,11 @@ class OutputDecoder : public Decoder
 			m_kRequestedState = dcclite::DecoderStates::INACTIVE;
 		}
 
+		void SetState(const dcclite::DecoderStates newState)
+		{
+			m_kRequestedState = newState;
+		}
+
 		void ToggleState()
 		{
 			m_kRequestedState = m_kRequestedState == dcclite::DecoderStates::ACTIVE ? dcclite::DecoderStates::INACTIVE : dcclite::DecoderStates::ACTIVE;
