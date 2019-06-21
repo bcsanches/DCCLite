@@ -34,6 +34,7 @@ class Decoder
 		Decoder &operator=(const Decoder &) = delete;
 
 		virtual dcclite::DecoderTypes GetType() const = 0;
+		virtual bool IsOutputDecoder() const = 0;
 
 		//Calls update on every decoder.
 		//Returns true if any state changed

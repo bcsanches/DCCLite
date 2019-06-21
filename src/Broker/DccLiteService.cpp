@@ -18,8 +18,9 @@
 #include "FmtUtils.h"
 #include "GuidUtils.h"
 #include "OutputDecoder.h"
-#include "SensorDecoder.h"
 #include "Packet.h"
+#include "SensorDecoder.h"
+#include "TurnoutDecoder.h"
 
 static ServiceClass dccLiteService("DccLite", 
 	[](const ServiceClass &serviceClass, const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) ->
@@ -330,6 +331,9 @@ std::vector<OutputDecoder*> DccLiteService::FindAllOutputDecoders()
 		if (!decoder)
 			continue;
 
+		if (decoder->IsTurnoutDecoder())
+			continue;
+
 		vecDecoders.push_back(decoder);
 	}
 
@@ -354,6 +358,26 @@ std::vector<SensorDecoder*> DccLiteService::FindAllSensorDecoders()
 
 	return vecDecoders;
 }
+
+std::vector<TurnoutDecoder *> DccLiteService::FindAllTurnoutDecoders()
+{
+	std::vector<TurnoutDecoder *> vecDecoders;
+
+	auto enumerator = m_pDecoders->GetEnumerator();
+
+	while (enumerator.MoveNext())
+	{
+		auto decoder = dynamic_cast<TurnoutDecoder *>(enumerator.TryGetCurrent());
+
+		if (!decoder)
+			continue;
+
+		vecDecoders.push_back(decoder);
+	}
+
+	return vecDecoders;
+}
+
 
 void DccLiteService::AddListener(IDccLiteServiceListener &listener)
 {

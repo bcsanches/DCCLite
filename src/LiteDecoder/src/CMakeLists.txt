@@ -9,6 +9,7 @@ set(LiteDecoderLib_SRCS
   NetUdp.cpp
   OutputDecoder.cpp
   SensorDecoder.cpp
+  ServoTurnoutDecoder.cpp
   Session.cpp
   Storage.cpp
   Strings.cpp
@@ -25,6 +26,7 @@ set(LiteDecoderLib_HDRS
   NetUdp.h
   OutputDecoder.h
   SensorDecoder.h
+  ServoTurnoutDecoder.h
   Session.h
   Storage.h
   Strings.h

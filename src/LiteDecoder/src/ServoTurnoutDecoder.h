@@ -12,47 +12,48 @@
 
 #include "Decoder.h"
 
-class SensorDecoder : public Decoder
-{
-	private:		
-		Pin_t		m_tPin = null_pin;
-		uint8_t		m_fFlags = 0;
+#include <Arduino.h> 
+#include <Servo.h>
 
-		unsigned long m_uCoolDownTicks = 0;
+class ServoTurnoutDecoder : public Decoder
+{
+	private:
+		Servo		m_clServo;
+		uint16_t	m_uFlagsStorageIndex = 0;		
+		Pin_t		m_tPin = null_pin;
+		uint8_t		m_fFlags = 0;		
 
 	public:
-		SensorDecoder(dcclite::Packet& packet);
-		SensorDecoder(EpromStream& stream);
-
-		virtual bool Update(const unsigned long ticks);
+		ServoTurnoutDecoder(dcclite::Packet& packet);
+		ServoTurnoutDecoder(EpromStream& stream);
+		~ServoTurnoutDecoder();
 
 		virtual void SaveConfig(EpromStream& stream);
 
 		virtual dcclite::DecoderTypes GetType() const
 		{
-			return dcclite::DecoderTypes::DEC_SENSOR;
+			return dcclite::DecoderTypes::DEC_SERVO_TURNOUT;
 		};
 
 		bool IsOutputDecoder() const override
 		{
-			return false;
+			return true;
 		}
 
 		bool AcceptServerState(dcclite::DecoderStates state);
 
 		virtual bool IsActive() const
 		{
-			return m_fFlags & dcclite::SNRD_ACTIVE;
+			return m_fFlags & dcclite::OUTD_ACTIVE;
 		}
 
 		virtual bool IsSyncRequired() const
 		{
-			bool active = this->IsActive();
-			bool remoteActive = m_fFlags & dcclite::SNRD_REMOTE_ACTIVE;
-
-			return active != remoteActive;
+			return false;
 		}
 
 	private:
-		void Init();		
+		void Init();
+
+		void OperatePin();
 };

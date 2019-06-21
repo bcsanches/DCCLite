@@ -18,9 +18,9 @@
 #include "Storage.h"
 
 OutputDecoder::OutputDecoder(dcclite::Packet &packet) :
-	Decoder::Decoder(packet)
-{
-	m_tPin = packet.Read<Pin_t>();
+	Decoder::Decoder{ packet },
+	m_clPin{ packet.Read<Pin_t>(), dcclite::Pin::MODE_OUTPUT }
+{	
 	m_fFlags = packet.Read<uint8_t>();	
 
 	using namespace dcclite;
@@ -31,7 +31,10 @@ OutputDecoder::OutputDecoder(dcclite::Packet &packet) :
 OutputDecoder::OutputDecoder(EpromStream &stream):
 	Decoder::Decoder(stream)
 {	
-	stream.Get(m_tPin);
+	unsigned char pin;
+	stream.Get(pin);
+
+	m_clPin.Attach(pin, dcclite::Pin::MODE_OUTPUT);
 
 	m_uFlagsStorageIndex = stream.GetIndex();
 	stream.Get(m_fFlags);
@@ -44,7 +47,7 @@ void OutputDecoder::SaveConfig(EpromStream &stream)
 {
 	Decoder::SaveConfig(stream);	
 
-	stream.Put(m_tPin);
+	stream.Put(m_clPin.Num());
 
 	m_uFlagsStorageIndex = stream.GetIndex();
 	stream.Put(m_fFlags);
@@ -57,7 +60,7 @@ void OutputDecoder::OperatePin()
 	bool active = (m_fFlags & OUTD_ACTIVE);	
 	active = (m_fFlags & OUTD_INVERTED_OPERATION) ? !active : active;	
 
-	digitalWrite(m_tPin,  active ? HIGH : LOW);
+	m_clPin.DigitalWrite(active);	
 
 	//Store current state on eprom, so we can reload.
 	if(m_uFlagsStorageIndex)
@@ -67,9 +70,7 @@ void OutputDecoder::OperatePin()
 void OutputDecoder::Init()
 {
 	using namespace dcclite;
-
-	pinMode(m_tPin, OUTPUT);	
-
+	
 	// sets status to 0 (INACTIVE) is bit 1 of iFlag=0, otherwise set to value of bit 2 of iFlag
 	//m_fStatus = bitRead(m_fFlags, 1) ? bitRead(m_fFlags, 2) : 0;
 	if(m_fFlags & OUTD_IGNORE_SAVED_STATE)

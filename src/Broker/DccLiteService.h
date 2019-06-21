@@ -25,6 +25,7 @@
 class Device;
 class OutputDecoder;
 class SensorDecoder;
+class TurnoutDecoder;
 
 class IDccLiteServiceListener
 {
@@ -94,8 +95,12 @@ class DccLiteService : public Service, private IDccDeviceServices, private IDccD
 		Decoder* TryFindDecoder(const Decoder::Address address) const;
 		Decoder *TryFindDecoder(std::string_view id) const;
 
+		//This returns only pure outputs, turnouts are ignored
 		std::vector<OutputDecoder*> FindAllOutputDecoders();
+
 		std::vector<SensorDecoder*> FindAllSensorDecoders();
+
+		std::vector<TurnoutDecoder*> FindAllTurnoutDecoders();
 
 	private:
 		void OnNet_Discovery(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);

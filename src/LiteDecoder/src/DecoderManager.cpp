@@ -13,6 +13,7 @@
 #include "Console.h"
 #include "OutputDecoder.h"
 #include "SensorDecoder.h"
+#include "ServoTurnoutDecoder.h"
 #include "Session.h"
 #include "Storage.h"
 
@@ -43,7 +44,9 @@ static Decoder *Create(const dcclite::DecoderTypes type, dcclite::Packet &packet
 
 		case dcclite::DecoderTypes::DEC_SENSOR:
 			return new SensorDecoder(packet);
-			break;
+
+		case dcclite::DecoderTypes::DEC_SERVO_TURNOUT:
+			return new ServoTurnoutDecoder(packet);
 
 		default:
 			Console::SendLogEx(MODULE_NAME, FSTR_INVALID_DECODER_TYPE, static_cast<int>(type));
@@ -112,6 +115,7 @@ void DecoderManager::SaveConfig(EpromStream &stream)
 	dcclite::DecoderTypes types[] = { 
 		dcclite::DecoderTypes::DEC_OUTPUT , 
 		dcclite::DecoderTypes::DEC_SENSOR,
+		dcclite::DecoderTypes::DEC_SERVO_TURNOUT,
 
 		dcclite::DecoderTypes::DEC_NULL
 	};
@@ -218,10 +222,17 @@ void DecoderManager::LoadConfig(EpromStream &stream)
 			{
 				case dcclite::DecoderTypes::DEC_OUTPUT:
 					decoder = new OutputDecoder(stream);
+					Console::Send('O');
 					break;
 
 				case dcclite::DecoderTypes::DEC_SENSOR:
 					decoder = new SensorDecoder(stream);
+					Console::Send('S');
+					break;
+
+				case dcclite::DecoderTypes::DEC_SERVO_TURNOUT:
+					decoder = new ServoTurnoutDecoder(stream);
+					Console::Send('T');
 					break;
 
 				default:
@@ -229,12 +240,14 @@ void DecoderManager::LoadConfig(EpromStream &stream)
 					break;
 			}
 
-			g_pDecoders[slot] = decoder;
+			g_pDecoders[slot] = decoder;			
 		}
 	}
 
 	//loaded all decoders, set config token
 	Session::ReplaceConfigToken(configToken);
+
+	Console::SendLn("");
 }
 
 bool DecoderManager::ReceiveServerStates(const dcclite::StatesBitPack_t &changedStates, const dcclite::StatesBitPack_t &states)
@@ -250,7 +263,7 @@ bool DecoderManager::ReceiveServerStates(const dcclite::StatesBitPack_t &changed
 		auto *decoder = g_pDecoders[i];
 		decoder->AcceptServerState(states[i] ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
 
-		if (decoder->GetType() == dcclite::DecoderTypes::DEC_OUTPUT)
+		if (decoder->IsOutputDecoder())
 			stateChanged = true;
 	}
 

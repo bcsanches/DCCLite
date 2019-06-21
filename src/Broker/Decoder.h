@@ -93,6 +93,11 @@ class Decoder: public dcclite::Object
 		virtual bool IsOutputDecoder() const = 0;
 		virtual bool IsInputDecoder() const = 0;
 
+		virtual bool IsTurnoutDecoder() const
+		{
+			return false;
+		}
+
 		virtual std::optional<dcclite::DecoderStates> GetPendingStateChange() const
 		{
 			return std::nullopt;

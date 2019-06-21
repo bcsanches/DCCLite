@@ -121,5 +121,12 @@
     "address": "0xFF22",
     "pin": 22,
     "pullup":  true
+  }            ,
+  {
+    "name":"EAServo01",
+    "class":"ServoTurnout",
+    "address":"0xFF23",
+    "pin": 23,
+    "inverted":true
   }
 ]

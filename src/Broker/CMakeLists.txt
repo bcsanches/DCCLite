@@ -13,6 +13,7 @@ set(Broker_SRCS
   SpecialFolders.cpp
   TerminalCmd.cpp
   TerminalService.cpp
+  TurnoutDecoder.cpp
 )
 
 set(Broker_HDRS
@@ -29,6 +30,7 @@ set(Broker_HDRS
   SpecialFolders.h
   TerminalCmd.h
   TerminalService.h
+  TurnoutDecoder.h
 )
 
 add_executable(Broker  ${Broker_SRCS} ${Broker_HDRS})

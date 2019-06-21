@@ -17,6 +17,7 @@ set(ArduinoLib_HDRS
   EEPROMLib.h
   Ethercard.h
   Serial.h
+  Servo.h
   avr/pgmspace.h
 )
 

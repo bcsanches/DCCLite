@@ -12,18 +12,25 @@
 
 #include "Decoder.h"
 
+#include "Pin.h"
+
 class OutputDecoder : public Decoder
 {	
 	private:
-		uint16_t	m_uFlagsStorageIndex = 0;
-		Pin_t		m_tPin = null_pin;
-		uint8_t		m_fFlags = 0;
+		uint16_t		m_uFlagsStorageIndex = 0;
+		dcclite::Pin	m_clPin;
+		uint8_t			m_fFlags = 0;
 
 	public:
 		OutputDecoder(dcclite::Packet &packet);
 		OutputDecoder(EpromStream &stream);
 
 		virtual void SaveConfig(EpromStream &stream);
+
+		bool IsOutputDecoder() const override
+		{
+			return true;
+		}
 
 		virtual dcclite::DecoderTypes GetType() const 
 		{

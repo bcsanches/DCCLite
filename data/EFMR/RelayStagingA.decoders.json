@@ -114,5 +114,13 @@
     "address": "0x22",
     "pin": 22,
     "pullup": true
+  },
+  
+  {
+    "name":"AServo01",
+    "class":"ServoTurnout",
+    "address":"0x23",
+    "pin": 23,
+    "inverted": true
   }
 ]

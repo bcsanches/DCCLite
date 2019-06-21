@@ -12,6 +12,12 @@
 
 #include <stdint.h>
 
+#ifndef WIN32
+#define assert(x)
+#else
+#include <assert.h>
+#endif
+
 namespace dcclite
 {
 	typedef char PinType_t;
@@ -21,7 +27,8 @@ namespace dcclite
 	{
 		DEC_NULL = 0,
 		DEC_OUTPUT = 1,
-		DEC_SENSOR = 2
+		DEC_SENSOR = 2,
+		DEC_SERVO_TURNOUT = 3
 	};
 
 	enum class DecoderStates
@@ -54,6 +61,15 @@ namespace dcclite
 
 		OUTD_ACTIVE = 0x80
 	};	
+
+	enum ServoTurnoutDecoderFlags : uint8_t
+	{
+		SRVT_INVERTED_OPERATION = 0x01,
+		SRVT_IGNORE_SAVED_STATE = 0x02,
+		SRVT_ACTIVATE_ON_POWER_UP = 0x04,
+
+		SRVT_ACTIVE = 0x80
+	};
 
 	enum SensorDecoderFlags : uint8_t
 	{

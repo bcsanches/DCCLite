@@ -135,32 +135,32 @@ namespace Console
 
 	template <typename... Args>
 	inline void SendLogEx(const char *module, Args... args)
-	{
-		Console::Send("<LOG");
-		Console::Send(' ');
+	{		
+		Console::Send('[');
 		Console::Send(module);
+		Console::Send(']');
 
 		Console::Send(' ');
 
 		detail::DoSendLog(args...);
 
-		Console::SendLn(">");
+		Console::SendLn(" ");
 	}
 
 	template <typename... Args>
 	inline void SendLogEx(const FlashStr &module, Args... args)
 	{
-		Console::Send("<LOG");
-		Console::Send(' ');
+		Console::Send('[');
 
 		detail::formatter<FlashStr> ffstr;
 		ffstr.format(module);		
 
+		Console::Send(']');
 		Console::Send(' ');
 
 		detail::DoSendLog(args...);
 
-		Console::SendLn(">");
+		Console::SendLn(" ");
 	}	
 
 	extern int Available();

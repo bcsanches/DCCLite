@@ -7,8 +7,10 @@
 #include "DccLiteService.h"
 #include "NetMessenger.h"
 #include "OutputDecoder.h"
-#include "SensorDecoder.h"
 #include "Parser.h"
+#include "SensorDecoder.h"
+#include "TurnoutDecoder.h"
+
 
 using namespace dcclite;
 
@@ -82,9 +84,21 @@ void DccppClient::OnDeviceDisconnected(Device& device)
 	//ignore
 }
 
+static inline std::string CreateTurnoutDecoderResponse(const TurnoutDecoder& decoder)
+{
+	return fmt::format("<H{} {}>", decoder.GetAddress(), (decoder.GetRemoteState() == DecoderStates::ACTIVE ? 1 : 0));
+}
+
 static inline std::string CreateOutputDecoderResponse(const OutputDecoder& decoder)
 {
-	return fmt::format("<Y {} {}>", decoder.GetAddress(), (decoder.GetRemoteState() == DecoderStates::ACTIVE ? 1 : 0));
+	if (decoder.IsTurnoutDecoder())
+	{
+		return CreateTurnoutDecoderResponse(static_cast<const TurnoutDecoder&>(decoder));
+	}
+	else
+	{
+		return fmt::format("<Y {} {}>", decoder.GetAddress(), (decoder.GetRemoteState() == DecoderStates::ACTIVE ? 1 : 0));
+	}
 }
 
 static inline std::string CreateDecoderResponse(const Decoder& decoder)
@@ -92,13 +106,13 @@ static inline std::string CreateDecoderResponse(const Decoder& decoder)
 	if (decoder.IsInputDecoder())
 	{
 		return fmt::format("<{} {}>", decoder.GetRemoteState() == DecoderStates::ACTIVE ? 'Q' : 'q', decoder.GetAddress());		
-	}
+	}	
 	else
 	{
 		return CreateOutputDecoderResponse(static_cast<const OutputDecoder&>(decoder));
 	}
-
 }
+
 
 void DccppClient::OnDecoderStateChange(Decoder& decoder)
 {
@@ -146,7 +160,20 @@ bool DccppClient::Update()
 				case 's':
 				{
 					std::stringstream response;
-					response << "<p0><iDCC++ DccLite><N1: Ethernet><H 100 0><X>";
+					response << "<p0><iDCC++ DccLite><N1: Ethernet><H 100 0>";
+
+					auto turnoutDecoders = m_rclSystem.FindAllTurnoutDecoders();
+					if (!turnoutDecoders.empty())
+					{
+						for (auto turnout : turnoutDecoders)
+						{
+							response << CreateTurnoutDecoderResponse(*turnout);
+						}
+					}
+					else
+					{
+						response << "<X>";
+					}
 
 					auto outputDecoders = m_rclSystem.FindAllOutputDecoders();
 					if (!outputDecoders.empty())
@@ -200,6 +227,7 @@ bool DccppClient::Update()
 					}															
 					break;
 
+				case 'T':
 				case 'Z':
 					{
 						int id;
@@ -253,7 +281,7 @@ bool DccppClient::Update()
 
 				default:
 					Log::Error("[DccppClient::Update] Unknown cmd {}, msg>: {}", cmd, msg);
-					m_clMessenger.Send(m_clAddress, "<X>");
+					goto ERROR_RESPONSE;
 					break;
 			}		
 		}

@@ -64,7 +64,7 @@ void Console::Send(const char *str)
     Serial.print(str);
 }
 
-void Console::SendLn(const char *str)
+void Console:: SendLn(const char *str)
 {
     Serial.println(str);
 }
