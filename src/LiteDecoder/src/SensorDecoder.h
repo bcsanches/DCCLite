@@ -15,7 +15,7 @@
 class SensorDecoder : public Decoder
 {
 	private:		
-		Pin_t		m_tPin = null_pin;
+		Pin_t		m_tPin = dcclite::NULL_PIN;
 		uint8_t		m_fFlags = 0;
 
 		unsigned long m_uCoolDownTicks = 0;

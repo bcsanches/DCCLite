@@ -26,6 +26,12 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(const Class& decoderClass,
 	TurnoutDecoder(decoderClass, address, name, owner, params),
 	m_iPin(params["pin"].GetInt())
 {
+	auto powerPin = params.FindMember("powerPin");
+	m_iPowerPin = powerPin != params.MemberEnd() ? powerPin->value.GetInt() : dcclite::NULL_PIN;
+
+	auto frogPin = params.FindMember("frogPin");
+	m_iFrogPin = frogPin != params.MemberEnd() ? frogPin->value.GetInt() : dcclite::NULL_PIN;
+
 	auto inverted = params.FindMember("inverted");
 	m_fInvertedOperation = inverted != params.MemberEnd() ? inverted->value.GetBool() : false;
 
@@ -34,6 +40,9 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(const Class& decoderClass,
 
 	auto activateOnPowerUp = params.FindMember("activateOnPowerUp");
 	m_fActivateOnPowerUp = activateOnPowerUp != params.MemberEnd() ? activateOnPowerUp->value.GetBool() : false;
+
+	auto invertedFrog = params.FindMember("invertedFrog");
+	m_fInvertedFrog = invertedFrog != params.MemberEnd() ? invertedFrog->value.GetBool() : false;
 
 	this->SyncRemoteState(m_fIgnoreSavedState && m_fActivateOnPowerUp ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
 }
@@ -47,6 +56,10 @@ void ServoTurnoutDecoder::WriteConfig(dcclite::Packet& packet) const
 	packet.Write8(
 		(m_fInvertedOperation ? dcclite::ServoTurnoutDecoderFlags::SRVT_INVERTED_OPERATION : 0) |
 		(m_fIgnoreSavedState ? dcclite::ServoTurnoutDecoderFlags::SRVT_IGNORE_SAVED_STATE : 0) |
-		(m_fActivateOnPowerUp ? dcclite::ServoTurnoutDecoderFlags::SRVT_ACTIVATE_ON_POWER_UP : 0)
+		(m_fActivateOnPowerUp ? dcclite::ServoTurnoutDecoderFlags::SRVT_ACTIVATE_ON_POWER_UP : 0) |
+		(m_fInvertedFrog ? dcclite::ServoTurnoutDecoderFlags::SRVT_INVERTED_OPERATION : 0)
 	);
+
+	packet.Write8(m_iPowerPin);
+	packet.Write8(m_iFrogPin);
 }

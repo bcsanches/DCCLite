@@ -66,7 +66,7 @@ void ServoTurnoutDecoder::OperatePin()
 	if (m_uFlagsStorageIndex)
 		Storage::UpdateField(m_uFlagsStorageIndex, m_fFlags);
 
-#if 1
+#if 0
 	Console::SendLogEx("[ServoTurnout]", ' ', "PIN: ", m_tPin);
 	Console::SendLogEx("[ServoTurnout]", ' ', "IGNORE_SAVE: ", m_fFlags & SRVT_IGNORE_SAVED_STATE);
 	Console::SendLogEx("[ServoTurnout]", ' ', "ACTIVATE_ON_POWERUP: ", m_fFlags & SRVT_ACTIVATE_ON_POWER_UP);
@@ -91,7 +91,7 @@ void ServoTurnoutDecoder::Init()
 			m_fFlags &= ~SRVT_ACTIVE;
 	}
 
-#if 1
+#if 0
 	Console::SendLogEx("[ServoTurnout]", ' ', "PIN: ", m_tPin);
 	Console::SendLogEx("[ServoTurnout]", ' ', "IGNORE_SAVE: ", m_fFlags & SRVT_IGNORE_SAVED_STATE);
 	Console::SendLogEx("[ServoTurnout]", ' ', "ACTIVATE_ON_POWERUP: ", m_fFlags & SRVT_ACTIVATE_ON_POWER_UP);

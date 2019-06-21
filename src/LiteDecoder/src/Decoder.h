@@ -14,8 +14,6 @@
 
 typedef unsigned char Pin_t;
 
-constexpr Pin_t null_pin = 255;
-
 class EpromStream;
 
 namespace dcclite

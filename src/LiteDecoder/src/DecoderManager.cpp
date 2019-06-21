@@ -190,6 +190,9 @@ void DecoderManager::LoadConfig(EpromStream &stream)
 		configToken.m_bId[i] = byte;
 	}
 
+	Console::SendLogEx(MODULE_NAME, 'O', ' ', (int)sizeof(OutputDecoder), ' ', 'S', ' ', (int)sizeof(SensorDecoder), ' ', 'T', ' ', (int)sizeof(ServoTurnoutDecoder));
+
+	uint16_t usedMem = 0;
 	for (;;)
 	{
 		uint8_t byte;
@@ -222,16 +225,22 @@ void DecoderManager::LoadConfig(EpromStream &stream)
 			{
 				case dcclite::DecoderTypes::DEC_OUTPUT:
 					decoder = new OutputDecoder(stream);
+
+					usedMem += sizeof(OutputDecoder);
 					Console::Send('O');
 					break;
 
 				case dcclite::DecoderTypes::DEC_SENSOR:
 					decoder = new SensorDecoder(stream);
+
+					usedMem += sizeof(SensorDecoder);
 					Console::Send('S');
 					break;
 
 				case dcclite::DecoderTypes::DEC_SERVO_TURNOUT:
 					decoder = new ServoTurnoutDecoder(stream);
+
+					usedMem += sizeof(ServoTurnoutDecoder);
 					Console::Send('T');
 					break;
 
@@ -248,6 +257,7 @@ void DecoderManager::LoadConfig(EpromStream &stream)
 	Session::ReplaceConfigToken(configToken);
 
 	Console::SendLn("");
+	Console::SendLogEx(MODULE_NAME, usedMem);
 }
 
 bool DecoderManager::ReceiveServerStates(const dcclite::StatesBitPack_t &changedStates, const dcclite::StatesBitPack_t &states)

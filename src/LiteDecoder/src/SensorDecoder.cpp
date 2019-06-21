@@ -118,14 +118,13 @@ bool SensorDecoder::Update(const unsigned long ticks)
 		{
 			m_fFlags |= dcclite::SNRD_ACTIVE;			
 
-			Console::SendLogEx(MODULE_NAME, ' ', "ACTIVATED");
+			//Console::SendLogEx(MODULE_NAME, ' ', "ACTIVATED");
 		}
 		else
 		{
 			m_fFlags &= ~dcclite::SNRD_ACTIVE;			
 
-			Console::SendLogEx(MODULE_NAME, ' ', "INACTIVATED");
-
+			//Console::SendLogEx(MODULE_NAME, ' ', "INACTIVATED");
 		}
 
 		//state changed

@@ -15,13 +15,18 @@
 #include <Arduino.h> 
 #include <Servo.h>
 
+#include "Pin.h"
+
 class ServoTurnoutDecoder : public Decoder
 {
 	private:
 		Servo		m_clServo;
 		uint16_t	m_uFlagsStorageIndex = 0;		
-		Pin_t		m_tPin = null_pin;
+		Pin_t		m_tPin = dcclite::NULL_PIN;
 		uint8_t		m_fFlags = 0;		
+
+		dcclite::Pin m_clFrogPin;
+		dcclite::Pin m_clPowerPin;
 
 	public:
 		ServoTurnoutDecoder(dcclite::Packet& packet);

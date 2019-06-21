@@ -54,16 +54,27 @@ class ServoTurnoutDecoder : public TurnoutDecoder
 			OutputDecoder::Serialize(stream);
 
 			stream.AddIntValue("pin", m_iPin);
+
+			if (m_iPowerPin != dcclite::NULL_PIN)
+				stream.AddIntValue("powerPin", m_iPowerPin);
+
+			if (m_iFrogPin != dcclite::NULL_PIN)
+				stream.AddIntValue("frogPin", m_iFrogPin);
+
 			stream.AddBool("invertedOperation", m_fInvertedOperation);
 			stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
 			stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
+			stream.AddBool("invertedFrog", m_fInvertedFrog);
 		}
 
 	private:
-		dcclite::PinType_t m_iPin;
-
+		dcclite::PinType_t	m_iPin = dcclite::NULL_PIN;
+		dcclite::PinType_t	m_iPowerPin = dcclite::NULL_PIN;
+		dcclite::PinType_t	m_iFrogPin = dcclite::NULL_PIN;
 
 		bool m_fInvertedOperation = false;
 		bool m_fIgnoreSavedState = false;
 		bool m_fActivateOnPowerUp = false;
+
+		bool m_fInvertedFrog = false;		
 };
