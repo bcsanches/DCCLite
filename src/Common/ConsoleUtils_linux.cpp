@@ -8,20 +8,4 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#pragma once
-
-#ifdef _WIN64
-#define DCCLITE64
-#elif defined _WIN32
-#define DCCLITE32
-#elif defined __linux__
-	#if defined __x86_64__
-		#define DCCLITE64	
-	#else
-		#define DCCLITE32
-	#endif
-#endif
-
-#if (!defined DCCLITE64) && (!defined DCCLITE32)
-#error "plataform not defined"
-#endif
+#include "ConsoleUtils.h"

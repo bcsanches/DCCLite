@@ -1,32 +1,43 @@
 
+if(WIN32)
+	set(CommonPlatSrcs 
+		ConsoleUtils_win.cpp
+		GuidUtils_win.cpp
+	)
+else(WIN32)
+	set(CommonPlatSrcs 
+		ConsoleUtils_linux.cpp
+		GuidUtils_linux.cpp
+	)
+endif(WIN32)
+
 set(Common_SRCS
-	Clock.cpp
-  ConsoleUtils.cpp
-  GuidUtils.cpp
-  LogUtils.cpp
-  NetMessenger.cpp
-  Object.cpp
-  PathUtils.cpp
-  Sha1.cpp
-  Socket.cpp
-  Util.cpp
+	${CommonPlatSrcs}
+	Clock.cpp	
+	LogUtils.cpp
+	NetMessenger.cpp
+	Object.cpp
+	PathUtils.cpp
+	Sha1.cpp
+	Socket.cpp
+	Util.cpp
 )
 
 set(Common_HDRS
 	ClassInfo.h
-  Clock.h
-  ConsoleUtils.h
-  defs.h
-  FmtUtils.h
-  GuidUtils.h
-  Log.h
-  LogUtils.h
-  NetMessenger.h
-  Object.h
-  PathUtils.h
-  Sha1.h
-  Socket.h  
-  Util.h
+	Clock.h
+	ConsoleUtils.h
+	defs.h
+	FmtUtils.h
+	GuidUtils.h
+	Log.h
+	LogUtils.h
+	NetMessenger.h
+	Object.h
+	PathUtils.h
+	Sha1.h
+	Socket.h  
+	Util.h
 )
 
 add_library(Common  ${Common_SRCS} ${Common_HDRS})
