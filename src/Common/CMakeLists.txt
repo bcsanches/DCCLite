@@ -3,11 +3,13 @@ if(WIN32)
 	set(CommonPlatSrcs 
 		ConsoleUtils_win.cpp
 		GuidUtils_win.cpp
+		Sha1_win.cpp
 	)
 else(WIN32)
 	set(CommonPlatSrcs 
 		ConsoleUtils_linux.cpp
 		GuidUtils_linux.cpp
+		Sha1_linux.cpp
 	)
 endif(WIN32)
 
@@ -17,8 +19,7 @@ set(Common_SRCS
 	LogUtils.cpp
 	NetMessenger.cpp
 	Object.cpp
-	PathUtils.cpp
-	Sha1.cpp
+	PathUtils.cpp	
 	Socket.cpp
 	Util.cpp
 )
@@ -28,6 +29,7 @@ set(Common_HDRS
 	Clock.h
 	ConsoleUtils.h
 	defs.h
+	FileSystem.h
 	FmtUtils.h
 	GuidUtils.h
 	Log.h

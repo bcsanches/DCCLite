@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cassert>
 #include <map>
 #include <string>
@@ -289,7 +290,7 @@ namespace dcclite
 	{
 		public:
 			typedef std::map<std::string_view, std::unique_ptr<IObject>> Container_t;
-			typename typedef Container_t::iterator Iterator_t;
+			typedef Container_t::iterator Iterator_t;
 
 			class FolderEnumerator
 			{

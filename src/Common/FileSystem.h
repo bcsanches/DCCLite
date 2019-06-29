@@ -10,13 +10,15 @@
 
 #pragma once
 
-#include <string>
+#ifdef WIN32
+#include <filesystem>
+#else
+#include <experimental/filesystem>
 
-#include "FileSystem.h"
-
-namespace dcclite::PathUtils
+namespace std
 {
-	extern void SetAppName(std::string_view name);	
-
-	extern std::filesystem::path GetAppFolder();
+	//evil hack?
+	namespace filesystem = std::experimental::filesystem;
 }
+
+#endif

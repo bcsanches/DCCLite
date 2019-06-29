@@ -10,8 +10,6 @@
 
 #include "PathUtils.h"
 
-#include <filesystem>
-
 static std::string g_strAppName;
 
 void dcclite::PathUtils::SetAppName(std::string_view name)
@@ -19,9 +17,7 @@ void dcclite::PathUtils::SetAppName(std::string_view name)
 	g_strAppName = name;
 }
 
-#ifndef WIN32
-#error "implement me"
-#endif
+#ifdef WIN32
 
 #include "Shlobj.h"
 
@@ -43,3 +39,27 @@ std::filesystem::path dcclite::PathUtils::GetAppFolder()
 
 	return result;
 }
+
+#else
+
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
+
+std::filesystem::path dcclite::PathUtils::GetAppFolder()
+{
+	const char* homedir;
+
+	if ((homedir = getenv("HOME")) == nullptr) 
+	{		
+		throw std::runtime_error("error: dcclite::GetAppFolder failed to call getenv(\"HOME\")");
+	}
+
+	std::filesystem::path result(homedir);
+	result.append(".dcclite");
+	result.append(g_strAppName);	
+
+	return result;
+}
+
+#endif
