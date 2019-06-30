@@ -38,11 +38,15 @@
 
 static const dcclite::Socket::Handler_t NULL_SOCKET = INVALID_SOCKET;
 
+typedef int socklen_t;
+
 #elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
 
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <fcntl.h>
+
+static const dcclite::Socket::Handler_t NULL_SOCKET = -1;
 
 #endif
 
@@ -134,7 +138,7 @@ namespace dcclite
 
 		m_hHandle = socket(AF_INET, intType, intProto);		
 
-		if (m_hHandle == INVALID_SOCKET)
+		if (m_hHandle == NULL_SOCKET)
 		{
 			LogGetDefault()->error("Failed to create socket.");
 			return false;
@@ -145,7 +149,7 @@ namespace dcclite
 		int nonBlocking = 1;
 		if (fcntl(m_hHandle, F_SETFL, O_NONBLOCK, nonBlocking) == -1)
 		{
-			BOOST_LOG_TRIVIAL(error) << "Failed to set socket to non-blocking mode.";
+			LogGetDefault()->error("Failed to set socket to non-blocking mode.");			
 			return false;
 		}
 
@@ -178,6 +182,8 @@ namespace dcclite
 			return false;
 		}
 
+		#else
+		#error "plataform"
 		#endif
 
 		sockaddr_in address;
@@ -202,7 +208,7 @@ namespace dcclite
 			return;
 
 #if PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
-		close(m_iHandle);
+		close(m_hHandle);
 #elif PLATFORM == PLATFORM_WINDOWS
 		closesocket(m_hHandle);
 #endif
@@ -223,7 +229,11 @@ namespace dcclite
 
 		auto rc = connect(m_hHandle, reinterpret_cast<const sockaddr *>(&addr), sizeof(addr));
 
+#if PLATFORM == PLATFORM_WINDOWS
 		if ((rc == SOCKET_ERROR) && (WSAGetLastError() != WSAEWOULDBLOCK))
+#elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+		if((rc < 0) && (errno != EINPROGRESS))
+#endif
 		{			
 			LogGetDefault()->error("Unknown connect error");			
 
@@ -238,8 +248,13 @@ namespace dcclite
 	{		
 		fd_set set;
 
+#if PLATFORM == PLATFORM_WINDOWS
 		set.fd_array[0] = this->m_hHandle;
 		set.fd_count = 1;
+#elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+		FD_ZERO(&set);
+		FD_SET(this->m_hHandle, &set);
+#endif
 
 		timeval tval = { 0 };
 
@@ -251,8 +266,13 @@ namespace dcclite
 			return Status::OK;
 
 		//rc == 0, this means that socket is not ready, but it can have failed, so try again and check error state
+#if PLATFORM == PLATFORM_WINDOWS
 		set.fd_array[0] = this->m_hHandle;
 		set.fd_count = 1;
+#elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+		FD_ZERO(&set);
+		FD_SET(this->m_hHandle, &set);
+#endif		
 
 		rc = select(0, nullptr, nullptr, &set, &tval);
 		if (rc < 0)
@@ -271,7 +291,8 @@ namespace dcclite
 	std::tuple<Socket::Status, Socket, Address> Socket::TryAccept()
 	{
 		sockaddr_in addr;
-		int addrSize = sizeof(addr);
+
+		socklen_t addrSize = sizeof(addr);
 
 		auto s = accept(m_hHandle, (sockaddr*)&addr, &addrSize);
 
@@ -318,9 +339,6 @@ namespace dcclite
 
 	std::tuple<Socket::Status, size_t> Socket::Receive(Address &sender, void *data, size_t size)
 	{	
-#if PLATFORM == PLATFORM_WINDOWS
-		typedef int socklen_t;
-#endif
 		assert(m_hHandle != NULL_SOCKET);
 
 		sockaddr_in from;
@@ -338,6 +356,7 @@ namespace dcclite
 		if (result == 0)
 			return std::make_tuple(Status::DISCONNECTED, 0);
 
+#if PLATFORM == PLATFORM_WINDOWS
 		if (result == SOCKET_ERROR)
 		{
 			result = WSAGetLastError();
@@ -347,9 +366,24 @@ namespace dcclite
 					return std::make_tuple(Status::WOULD_BLOCK, 0);
 
 				case WSAEMSGSIZE:
+				default:
 					throw std::runtime_error("receive overflow");					
 			}
 		}
+#elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+		if (result < 0)
+		{
+			switch (errno)
+			{
+				//case EAGAIN:
+				case EWOULDBLOCK:
+					return std::make_tuple(Status::WOULD_BLOCK, 0);
+
+				default:
+					throw std::runtime_error("receive overflow");
+			}
+		}
+#endif
 
 		unsigned int from_address = ntohl(from.sin_addr.s_addr);
 
@@ -374,6 +408,7 @@ namespace dcclite
 		if (result == 0)
 			return std::make_tuple(Status::DISCONNECTED, 0);
 
+#if PLATFORM == PLATFORM_WINDOWS
 		if (result == SOCKET_ERROR)
 		{
 			result = WSAGetLastError();
@@ -392,6 +427,22 @@ namespace dcclite
 					throw std::runtime_error(fmt::format("unknown socket error: {}", result));
 			}
 		}
+#elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+		if (result < 0)
+		{
+			switch (errno)
+			{
+				case ENOTCONN:
+					return std::make_pair(Status::DISCONNECTED, 0);
+
+				case EWOULDBLOCK:
+					return std::make_pair(Status::WOULD_BLOCK, 0);
+
+				default:
+					throw std::runtime_error(fmt::format("unknown socket error: {}", result));
+			}
+		}
+#endif
 
 		return std::make_tuple(Status::OK, result);
 	}

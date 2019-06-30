@@ -13,7 +13,10 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/sinks/msvc_sink.h>
+
+#ifdef WIN32
+	#include <spdlog/sinks/msvc_sink.h>
+#endif
 
 namespace dcclite
 {
@@ -26,7 +29,11 @@ namespace dcclite
 		std::vector<spdlog::sink_ptr> sinks;
 		sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
 		sinks.push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(fileName, true));
+
+#ifdef WIN32
 		sinks.push_back(std::make_shared<spdlog::sinks::msvc_sink_mt>());
+#endif
+
 		auto combined_logger = std::make_shared<spdlog::logger>("dcclite", begin(sinks), end(sinks));
 		//register it if you need to access it globally
 		spdlog::register_logger(combined_logger);		

@@ -8,15 +8,4 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#pragma once
-
-#include <string>
-
-#include "FileSystem.h"
-
-namespace dcclite::PathUtils
-{
-	extern void SetAppName(std::string_view name);	
-
-	extern std::filesystem::path GetAppFolder();
-}
+#include "ConsoleUtils.h"

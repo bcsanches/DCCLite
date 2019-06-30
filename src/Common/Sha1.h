@@ -10,7 +10,9 @@
 
 #pragma once
 
-#include <filesystem>
+#include <cstring>
+
+#include "FileSystem.h"
 
 namespace dcclite
 {

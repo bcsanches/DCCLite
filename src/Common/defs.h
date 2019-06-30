@@ -14,6 +14,12 @@
 #define DCCLITE64
 #elif defined _WIN32
 #define DCCLITE32
+#elif defined __linux__
+	#if defined __x86_64__
+		#define DCCLITE64	
+	#else
+		#define DCCLITE32
+	#endif
 #endif
 
 #if (!defined DCCLITE64) && (!defined DCCLITE32)
