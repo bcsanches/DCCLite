@@ -182,7 +182,7 @@ bool ServoTurnoutDecoder::Update(const unsigned long ticks)
 
 	if((m_uNextThink <= ticks) && (m_clPowerPin))
 	{
-		m_clPowerPin.DigitalWrite(Pin::VLOW);
+		m_clPowerPin.DigitalWrite(Pin::VHIGH);
 	}
 
 	return false;
