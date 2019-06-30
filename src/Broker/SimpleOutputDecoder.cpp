@@ -26,7 +26,7 @@ SimpleOutputDecoder::SimpleOutputDecoder(
 	const rapidjson::Value &params
 ) :
 	OutputDecoder(decoderClass, address, name, owner, params),
-	m_iPin(params["pin"].GetInt())
+	m_clPin(params["pin"].GetInt())
 {	
 	auto inverted = params.FindMember("inverted");	
 	m_fInvertedOperation = inverted != params.MemberEnd() ? inverted->value.GetBool() : false;
@@ -45,7 +45,7 @@ void SimpleOutputDecoder::WriteConfig(dcclite::Packet &packet) const
 {
 	Decoder::WriteConfig(packet);	
 
-	packet.Write8(m_iPin);
+	packet.Write8(m_clPin.Raw());
 	packet.Write8(
 		(m_fInvertedOperation ? dcclite::OutputDecoderFlags::OUTD_INVERTED_OPERATION : 0) |
 		(m_fIgnoreSavedState ? dcclite::OutputDecoderFlags::OUTD_IGNORE_SAVED_STATE : 0) |

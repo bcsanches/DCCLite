@@ -20,13 +20,20 @@
 class ServoTurnoutDecoder : public Decoder
 {
 	private:
-		Servo		m_clServo;
-		uint16_t	m_uFlagsStorageIndex = 0;		
-		Pin_t		m_tPin = dcclite::NULL_PIN;
-		uint8_t		m_fFlags = 0;		
+		Servo			m_clServo;
 
-		dcclite::Pin m_clFrogPin;
-		dcclite::Pin m_clPowerPin;
+		unsigned long 	m_uNextThink = 0;
+
+
+		uint16_t			m_uFlagsStorageIndex = 0;		
+		dcclite::BasicPin	m_clPin;
+		uint8_t				m_fFlags = 0;		
+
+		Pin			m_clPowerPin;
+		Pin			m_clFrogPin;		
+
+		uint8_t		m_uRange;
+		uint8_t		m_uTicks;
 
 	public:
 		ServoTurnoutDecoder(dcclite::Packet& packet);
@@ -57,8 +64,10 @@ class ServoTurnoutDecoder : public Decoder
 			return false;
 		}
 
+		bool Update(const unsigned long ticks) override;
+
 	private:
-		void Init();
+		void Init(const dcclite::PinType_t powerPin, const dcclite::PinType_t frogPin);
 
 		void OperatePin();
 };

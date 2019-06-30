@@ -5,12 +5,13 @@ set(EmbeddedLib_SRCS
 )
 
 set(EmbeddedLib_HDRS
+  BasicPin.h
 	BitPack.h
   EmbeddedLibDefs.h
   Guid.h  
   Misc.h
   Packet.h
-  Parser.h
+  Parser.h  
 )
 
 add_library(EmbeddedLib  ${EmbeddedLib_SRCS} ${EmbeddedLib_HDRS})

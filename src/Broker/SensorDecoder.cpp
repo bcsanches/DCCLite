@@ -24,7 +24,7 @@ SensorDecoder::SensorDecoder(const Class &decoderClass,
 	const rapidjson::Value &params
 ):
 	Decoder(decoderClass, address, name, owner, params),
-	m_iPin(params["pin"].GetInt())
+	m_clPin(params["pin"].GetInt())
 {
 	auto pullup = params.FindMember("pullup");
 	m_fPullUp = pullup != params.MemberEnd() ? pullup->value.GetBool() : false;
@@ -34,7 +34,7 @@ void SensorDecoder::WriteConfig(dcclite::Packet &packet) const
 {
 	Decoder::WriteConfig(packet);
 
-	packet.Write8(m_iPin);
+	packet.Write8(m_clPin.Raw());
 	packet.Write8(
 		(m_fPullUp ? dcclite::SensorDecoderFlags::SNRD_PULL_UP : 0)
 	);

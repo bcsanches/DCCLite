@@ -24,13 +24,13 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(const Class& decoderClass,
 	const rapidjson::Value& params
 ) :
 	TurnoutDecoder(decoderClass, address, name, owner, params),
-	m_iPin(params["pin"].GetInt())
+	m_clPin(params["pin"].GetInt())
 {
 	auto powerPin = params.FindMember("powerPin");
-	m_iPowerPin = powerPin != params.MemberEnd() ? powerPin->value.GetInt() : dcclite::NULL_PIN;
+	m_clPowerPin = powerPin != params.MemberEnd() ? dcclite::BasicPin{ static_cast<dcclite::PinType_t>(powerPin->value.GetInt()) } : dcclite::BasicPin{};
 
 	auto frogPin = params.FindMember("frogPin");
-	m_iFrogPin = frogPin != params.MemberEnd() ? frogPin->value.GetInt() : dcclite::NULL_PIN;
+	m_clFrogPin = frogPin != params.MemberEnd() ? dcclite::BasicPin{ static_cast<dcclite::PinType_t>(frogPin->value.GetInt()) } : dcclite::BasicPin{};
 
 	auto inverted = params.FindMember("inverted");
 	m_fInvertedOperation = inverted != params.MemberEnd() ? inverted->value.GetBool() : false;
@@ -44,6 +44,12 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(const Class& decoderClass,
 	auto invertedFrog = params.FindMember("invertedFrog");
 	m_fInvertedFrog = invertedFrog != params.MemberEnd() ? invertedFrog->value.GetBool() : false;
 
+	auto range = params.FindMember("range");
+	m_uRange = range != params.MemberEnd() ? range->value.GetUint() : m_uRange;
+
+	auto operationTime = params.FindMember("operationTime");
+	m_tOperationTime = operationTime != params.MemberEnd() ? std::chrono::milliseconds{ operationTime->value.GetUint() } : m_tOperationTime;
+
 	this->SyncRemoteState(m_fIgnoreSavedState && m_fActivateOnPowerUp ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
 }
 
@@ -51,7 +57,7 @@ void ServoTurnoutDecoder::WriteConfig(dcclite::Packet& packet) const
 {
 	Decoder::WriteConfig(packet);
 
-	packet.Write8(m_iPin);	
+	packet.Write8(m_clPin.Raw());	
 
 	packet.Write8(
 		(m_fInvertedOperation ? dcclite::ServoTurnoutDecoderFlags::SRVT_INVERTED_OPERATION : 0) |
@@ -60,6 +66,10 @@ void ServoTurnoutDecoder::WriteConfig(dcclite::Packet& packet) const
 		(m_fInvertedFrog ? dcclite::ServoTurnoutDecoderFlags::SRVT_INVERTED_OPERATION : 0)
 	);
 
-	packet.Write8(m_iPowerPin);
-	packet.Write8(m_iFrogPin);
+	packet.Write8(m_clPowerPin.Raw());
+	packet.Write8(m_clFrogPin.Raw());
+	packet.Write8(m_uRange);
+
+	auto ticks = m_tOperationTime.count() / m_uRange;
+	packet.Write8(ticks > 255 ? 255 : static_cast<uint8_t>(ticks));
 }

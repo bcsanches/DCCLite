@@ -18,7 +18,7 @@ class OutputDecoder : public Decoder
 {	
 	private:
 		uint16_t		m_uFlagsStorageIndex = 0;
-		dcclite::Pin	m_clPin;
+		Pin				m_clPin;
 		uint8_t			m_fFlags = 0;
 
 	public:

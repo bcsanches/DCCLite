@@ -24,23 +24,25 @@ const char SensorModuleName[] PROGMEM = {"SensorDecoder"} ;
 SensorDecoder::SensorDecoder(dcclite::Packet& packet) :
 	Decoder::Decoder(packet)
 {
-	m_tPin = packet.Read<Pin_t>();
-
+	const auto pin = packet.Read<dcclite::PinType_t>();
+	
 	//only read pull up flag, the others are internal
 	m_fFlags = packet.Read<uint8_t>() & dcclite::SNRD_PULL_UP;
 
 	using namespace dcclite;
 
-	this->Init();
+	this->Init(pin);
 }
 
 SensorDecoder::SensorDecoder(EpromStream& stream) :
 	Decoder::Decoder(stream)
 {
-	stream.Get(m_tPin);	
+	dcclite::PinType_t pin;
+
+	stream.Get(pin);	
 	stream.Get(m_fFlags);
 
-	this->Init();
+	this->Init(pin);
 }
 
 
@@ -48,15 +50,15 @@ void SensorDecoder::SaveConfig(EpromStream& stream)
 {
 	Decoder::SaveConfig(stream);
 
-	stream.Put(m_tPin);	
+	stream.Put(m_clPin.Raw());	
 	stream.Put(m_fFlags);
 }
 
-void SensorDecoder::Init()
+void SensorDecoder::Init(const dcclite::PinType_t pin)
 {
 	using namespace dcclite;	
 
-	pinMode(m_tPin, m_fFlags & SNRD_PULL_UP ? INPUT_PULLUP : INPUT);
+	m_clPin.Attach(pin, m_fFlags & SNRD_PULL_UP ? Pin::MODE_INPUT_PULLUP : Pin::MODE_INPUT);	
 }
 
 bool SensorDecoder::AcceptServerState(dcclite::DecoderStates state)
@@ -102,9 +104,8 @@ bool SensorDecoder::Update(const unsigned long ticks)
 	//disable cooldown anyway
 	m_fFlags &= ~dcclite::SNRD_COOLDOWN;
 
-	int state = digitalRead(m_tPin);
-
-	int previousState = m_fFlags & dcclite::SNRD_ACTIVE ? LOW : HIGH;
+	auto state = m_clPin.DigitalRead();	
+	int previousState = m_fFlags & dcclite::SNRD_ACTIVE ? Pin::VLOW : Pin::VHIGH;
 
 	//no state change?
 	if (state == previousState)
@@ -114,7 +115,7 @@ bool SensorDecoder::Update(const unsigned long ticks)
 	
 	if (coolDown)
 	{		
-		if (state == LOW)
+		if (state == Pin::VLOW)
 		{
 			m_fFlags |= dcclite::SNRD_ACTIVE;			
 

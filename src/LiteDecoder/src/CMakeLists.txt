@@ -25,6 +25,7 @@ set(LiteDecoderLib_HDRS
   main.h
   NetUdp.h
   OutputDecoder.h
+  Pin.h
   SensorDecoder.h
   ServoTurnoutDecoder.h
   Session.h

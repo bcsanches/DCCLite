@@ -12,7 +12,7 @@
 
 #include "Decoder.h"
 
-#include "EmbeddedLibDefs.h"
+#include "BasicPin.h"
 
 class SensorDecoder : public Decoder
 {
@@ -43,7 +43,7 @@ class SensorDecoder : public Decoder
 
 		inline dcclite::PinType_t GetPin() const
 		{
-			return m_iPin;
+			return m_clPin.Raw();
 		}
 
 		inline bool HasPullUp() const
@@ -65,12 +65,12 @@ class SensorDecoder : public Decoder
 		{
 			Decoder::Serialize(stream);
 
-			stream.AddIntValue("pin", m_iPin);
+			stream.AddIntValue("pin", m_clPin.Raw());
 			stream.AddBool("pullup", m_fPullUp);			
 		}	
 
 	private:
-		dcclite::PinType_t m_iPin = dcclite::NULL_PIN;
+		dcclite::BasicPin m_clPin;
 
 		bool m_fPullUp = false;		
 };

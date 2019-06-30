@@ -13,6 +13,7 @@
 #include "OutputDecoder.h"
 
 #include "EmbeddedLibDefs.h"
+#include "BasicPin.h"
 
 class SimpleOutputDecoder : public OutputDecoder
 {
@@ -45,14 +46,14 @@ class SimpleOutputDecoder : public OutputDecoder
 		{
 			OutputDecoder::Serialize(stream);
 
-			stream.AddIntValue ("pin", m_iPin);
+			stream.AddIntValue ("pin", m_clPin.Raw());
 			stream.AddBool("invertedOperation", m_fInvertedOperation);
 			stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
 			stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
 		}
 
 	private:
-		dcclite::PinType_t m_iPin;
+		dcclite::BasicPin m_clPin;
 
 		bool m_fInvertedOperation = false;
 		bool m_fIgnoreSavedState = false;

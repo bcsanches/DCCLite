@@ -11,12 +11,13 @@
 #pragma once
 
 #include "Decoder.h"
+#include "Pin.h"
 
 class SensorDecoder : public Decoder
 {
 	private:		
-		Pin_t		m_tPin = dcclite::NULL_PIN;
-		uint8_t		m_fFlags = 0;
+		Pin				m_clPin;
+		uint8_t			m_fFlags = 0;
 
 		unsigned long m_uCoolDownTicks = 0;
 
@@ -54,5 +55,5 @@ class SensorDecoder : public Decoder
 		}
 
 	private:
-		void Init();		
+		void Init(const dcclite::PinType_t pin);
 };

@@ -19,9 +19,8 @@
 #endif
 
 namespace dcclite
-{
-	typedef char PinType_t;
-	constexpr char NULL_PIN = -1;
+{		
+	constexpr unsigned char SERVO_DEFAULT_RANGE = 20;
 
 	enum class DecoderTypes : uint8_t
 	{

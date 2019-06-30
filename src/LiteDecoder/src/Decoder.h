@@ -12,8 +12,6 @@
 
 #include "EmbeddedLibDefs.h"
 
-typedef unsigned char Pin_t;
-
 class EpromStream;
 
 namespace dcclite

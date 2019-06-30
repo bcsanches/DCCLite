@@ -19,7 +19,7 @@
 
 OutputDecoder::OutputDecoder(dcclite::Packet &packet) :
 	Decoder::Decoder{ packet },
-	m_clPin{ packet.Read<Pin_t>(), dcclite::Pin::MODE_OUTPUT }
+	m_clPin{ packet.Read<dcclite::PinType_t>(), Pin::MODE_OUTPUT }
 {	
 	m_fFlags = packet.Read<uint8_t>();	
 
@@ -31,10 +31,10 @@ OutputDecoder::OutputDecoder(dcclite::Packet &packet) :
 OutputDecoder::OutputDecoder(EpromStream &stream):
 	Decoder::Decoder(stream)
 {	
-	unsigned char pin;
+	dcclite::PinType_t pin;
 	stream.Get(pin);
 
-	m_clPin.Attach(pin, dcclite::Pin::MODE_OUTPUT);
+	m_clPin.Attach(pin, Pin::MODE_OUTPUT);
 
 	m_uFlagsStorageIndex = stream.GetIndex();
 	stream.Get(m_fFlags);
@@ -47,7 +47,7 @@ void OutputDecoder::SaveConfig(EpromStream &stream)
 {
 	Decoder::SaveConfig(stream);	
 
-	stream.Put(m_clPin.Num());
+	stream.Put(m_clPin.Raw());
 
 	m_uFlagsStorageIndex = stream.GetIndex();
 	stream.Put(m_fFlags);
@@ -60,7 +60,7 @@ void OutputDecoder::OperatePin()
 	bool active = (m_fFlags & OUTD_ACTIVE);	
 	active = (m_fFlags & OUTD_INVERTED_OPERATION) ? !active : active;	
 
-	m_clPin.DigitalWrite(active);	
+	m_clPin.DigitalWrite(active ? Pin::VHIGH : Pin::VLOW);	
 
 	//Store current state on eprom, so we can reload.
 	if(m_uFlagsStorageIndex)

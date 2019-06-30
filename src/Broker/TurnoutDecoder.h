@@ -10,6 +10,9 @@
 
 #pragma once
 
+#include <chrono>
+
+#include "BasicPin.h"
 #include "OutputDecoder.h"
 
 class TurnoutDecoder : public OutputDecoder
@@ -34,43 +37,46 @@ class TurnoutDecoder : public OutputDecoder
 
 class ServoTurnoutDecoder : public TurnoutDecoder
 {
-	public:
-		ServoTurnoutDecoder(const Class& decoderClass,
-			const Address& address,
-			const std::string& name,
-			IDccDecoderServices& owner,
-			const rapidjson::Value& params
-		);
+public:
+	ServoTurnoutDecoder(const Class& decoderClass,
+		const Address& address,
+		const std::string& name,
+		IDccDecoderServices& owner,
+		const rapidjson::Value& params
+	);
 
-		virtual void WriteConfig(dcclite::Packet& packet) const;
+	virtual void WriteConfig(dcclite::Packet& packet) const;
 
-		dcclite::DecoderTypes GetType() const noexcept override
-		{
-			return dcclite::DecoderTypes::DEC_SERVO_TURNOUT;
-		}
+	dcclite::DecoderTypes GetType() const noexcept override
+	{
+		return dcclite::DecoderTypes::DEC_SERVO_TURNOUT;
+	}
 
-		void Serialize(dcclite::JsonOutputStream_t& stream) const override
-		{
-			OutputDecoder::Serialize(stream);
+	void Serialize(dcclite::JsonOutputStream_t& stream) const override
+	{
+		OutputDecoder::Serialize(stream);
 
-			stream.AddIntValue("pin", m_iPin);
+		stream.AddIntValue("pin", m_clPin.Raw());
 
-			if (m_iPowerPin != dcclite::NULL_PIN)
-				stream.AddIntValue("powerPin", m_iPowerPin);
+		if (m_clPowerPin)
+			stream.AddIntValue("powerPin", m_clPowerPin.Raw());
 
-			if (m_iFrogPin != dcclite::NULL_PIN)
-				stream.AddIntValue("frogPin", m_iFrogPin);
+		if (m_clFrogPin)
+			stream.AddIntValue("frogPin", m_clFrogPin.Raw());
 
-			stream.AddBool("invertedOperation", m_fInvertedOperation);
-			stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
-			stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
-			stream.AddBool("invertedFrog", m_fInvertedFrog);
-		}
+		stream.AddBool("invertedOperation", m_fInvertedOperation);
+		stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
+		stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
+		stream.AddBool("invertedFrog", m_fInvertedFrog);
+	}
 
 	private:
-		dcclite::PinType_t	m_iPin = dcclite::NULL_PIN;
-		dcclite::PinType_t	m_iPowerPin = dcclite::NULL_PIN;
-		dcclite::PinType_t	m_iFrogPin = dcclite::NULL_PIN;
+		dcclite::BasicPin	m_clPin;
+		dcclite::BasicPin	m_clPowerPin;
+		dcclite::BasicPin	m_clFrogPin;
+
+		std::uint8_t				m_uRange = dcclite::SERVO_DEFAULT_RANGE;
+		std::chrono::milliseconds	m_tOperationTime = std::chrono::milliseconds{1000};
 
 		bool m_fInvertedOperation = false;
 		bool m_fIgnoreSavedState = false;
