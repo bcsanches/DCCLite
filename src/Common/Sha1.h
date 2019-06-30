@@ -24,7 +24,7 @@ namespace dcclite
 
 		std::string ToString() const;
 
-		void ComputeForFile(const std::filesystem::path &fileName);
+		void ComputeForFile(const fs::path &fileName);
 		bool TryLoadFromString(std::string_view str);
 
 		inline bool operator!=(const Sha1 &rhs) const

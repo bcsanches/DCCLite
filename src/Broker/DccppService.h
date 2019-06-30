@@ -26,9 +26,9 @@ class DccppService: public Service
 	public:
 		DccppService(const ServiceClass& serviceClass, const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project);
 
-		virtual void Update(const dcclite::Clock& clock) override;
+		void Update(const dcclite::Clock& clock) override;
 
-		virtual void Initialize();		
+		void Initialize() override;
 
 	private:
 		std::string		m_strDccServiceName;

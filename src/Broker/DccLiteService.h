@@ -72,12 +72,12 @@ class DccLiteService : public Service, private IDccDeviceServices, private IDccD
 		//
 		//
 
-		virtual const char *GetTypeName() const noexcept
+		const char *GetTypeName() const noexcept override
 		{
 			return "DccLiteService";
 		}
 
-		virtual void Serialize(dcclite::JsonOutputStream_t &stream) const
+		void Serialize(dcclite::JsonOutputStream_t &stream) const override
 		{
 			Service::Serialize(stream);
 
@@ -114,7 +114,7 @@ class DccLiteService : public Service, private IDccDeviceServices, private IDccD
 
 		Device *TryFindDeviceSession(const dcclite::Guid &guid);
 
-		Device *DccLiteService::TryFindPacketDestination(dcclite::Packet &packet);		
+		Device *TryFindPacketDestination(dcclite::Packet &packet);		
 
 	private:
 		//

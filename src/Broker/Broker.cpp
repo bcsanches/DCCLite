@@ -44,7 +44,7 @@ static std::unique_ptr<Service> CreateService(Broker &broker, const rapidjson::V
 	throw std::runtime_error(fmt::format("error: unknown service type {}", className));
 }
 
-Broker::Broker(std::filesystem::path projectPath):
+Broker::Broker(dcclite::fs::path projectPath):
 	m_clRoot("root"),
 	m_clProject(std::move(projectPath))
 {	

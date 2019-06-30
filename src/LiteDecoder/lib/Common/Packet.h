@@ -132,7 +132,7 @@ namespace dcclite
 				return guid;
 			}
 
-			template <unsigned NBITS>
+			template <size_t NBITS>
 			inline void ReadBitPack(dcclite::BitPack<NBITS> &dest)
 			{
 				assert(m_iIndex + sizeof(dest.GetNumBytes()) < PACKET_MAX_SIZE);

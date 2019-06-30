@@ -29,7 +29,7 @@ class TerminalCmdHost;
 class Broker
 {
 	public:
-		Broker(std::filesystem::path projectPath);
+		Broker(dcclite::fs::path projectPath);
 
 		void Update(const dcclite::Clock& clock);
 

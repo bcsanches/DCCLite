@@ -15,10 +15,10 @@
 #else
 #include <experimental/filesystem>
 
-namespace std
+namespace dcclite
 {
 	//evil hack?
-	namespace filesystem = std::experimental::filesystem;
+	namespace fs = std::experimental::filesystem;
 }
 
 #endif

@@ -28,7 +28,7 @@ class OutputDecoder : public Decoder
 			//empty
 		}
 
-		virtual void WriteConfig(dcclite::Packet& packet) const = 0;
+		void WriteConfig(dcclite::Packet& packet) const override = 0;
 
 		dcclite::DecoderTypes GetType() const noexcept override
 		{
@@ -80,12 +80,12 @@ class OutputDecoder : public Decoder
 		//
 		//
 
-		virtual const char* GetTypeName() const noexcept
+		const char* GetTypeName() const noexcept override
 		{
 			return "OutputDecoder";
 		}
 
-		virtual void Serialize(dcclite::JsonOutputStream_t& stream) const
+		void Serialize(dcclite::JsonOutputStream_t& stream) const override
 		{
 			Decoder::Serialize(stream);			
 		}		

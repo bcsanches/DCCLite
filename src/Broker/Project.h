@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include <filesystem>
+#include <FileSystem.h>
 
 #include "Guid.h"
 #include "Sha1.h"
@@ -18,22 +18,22 @@
 class Project
 {
 	public:
-		Project(std::filesystem::path path) :
+		Project(dcclite::fs::path path) :
 			m_pthRoot(std::move(path))
 		{
 			//empty
 		}
 
-		std::filesystem::path GetFilePath(const std::string_view fileName) const
+		dcclite::fs::path GetFilePath(const std::string_view fileName) const
 		{
-			std::filesystem::path path(m_pthRoot);
+			dcclite::fs::path path(m_pthRoot);
 
 			path.append(fileName);
 
 			return path.string();
 		}
 
-		std::filesystem::path GetAppFilePath(const std::string_view fileName) const;
+		dcclite::fs::path GetAppFilePath(const std::string_view fileName) const;
 
 		dcclite::Guid GetFileToken(const std::string_view fileName) const;
 
@@ -43,6 +43,6 @@ class Project
 		}
 
 	private:
-		const std::filesystem::path m_pthRoot;
+		const dcclite::fs::path m_pthRoot;
 		std::string m_strName;
 };

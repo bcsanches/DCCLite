@@ -46,7 +46,7 @@ std::filesystem::path dcclite::PathUtils::GetAppFolder()
 #include <sys/types.h>
 #include <pwd.h>
 
-std::filesystem::path dcclite::PathUtils::GetAppFolder()
+dcclite::fs::path dcclite::PathUtils::GetAppFolder()
 {
 	const char* homedir;
 
@@ -55,7 +55,7 @@ std::filesystem::path dcclite::PathUtils::GetAppFolder()
 		throw std::runtime_error("error: dcclite::GetAppFolder failed to call getenv(\"HOME\")");
 	}
 
-	std::filesystem::path result(homedir);
+	fs::path result(homedir);
 	result.append(".dcclite");
 	result.append(g_strAppName);	
 

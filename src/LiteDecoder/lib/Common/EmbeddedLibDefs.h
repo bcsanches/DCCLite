@@ -12,7 +12,7 @@
 
 #include <stdint.h>
 
-#ifndef WIN32
+#if (!defined WIN32) && (!defined __linux__)
 #define assert(x)
 #else
 #include <assert.h>

@@ -25,7 +25,7 @@
 #include "Log.h"
 
 
-std::filesystem::path Project::GetAppFilePath(const std::string_view fileName) const
+dcclite::fs::path Project::GetAppFilePath(const std::string_view fileName) const
 {
 	auto cacheFilePath = dcclite::PathUtils::GetAppFolder();
 
@@ -104,11 +104,11 @@ SKIP_LOAD:
 
 			token = dcclite::GuidCreate();
 			
-			std::filesystem::path filePath = stateFilePath;
+			dcclite::fs::path filePath = stateFilePath;
 			filePath.remove_filename();
 
 			std::error_code ec;
-			std::filesystem::create_directories(filePath, ec);
+			dcclite::fs::create_directories(filePath, ec);
 
 			if (ec)
 			{

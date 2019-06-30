@@ -12,6 +12,7 @@
 
 #include <assert.h>
 #include <memory>
+#include <string.h>
 
 namespace dcclite
 {

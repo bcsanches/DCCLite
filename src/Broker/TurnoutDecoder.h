@@ -45,7 +45,7 @@ public:
 		const rapidjson::Value& params
 	);
 
-	virtual void WriteConfig(dcclite::Packet& packet) const;
+	void WriteConfig(dcclite::Packet& packet) const override;
 
 	dcclite::DecoderTypes GetType() const noexcept override
 	{
