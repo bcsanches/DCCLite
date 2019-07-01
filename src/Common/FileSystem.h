@@ -11,7 +11,14 @@
 #pragma once
 
 #ifdef WIN32
+
 #include <filesystem>
+
+namespace dcclite
+{
+	namespace fs = std::filesystem;
+}
+
 #else
 #include <experimental/filesystem>
 

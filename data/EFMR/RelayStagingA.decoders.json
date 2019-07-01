@@ -122,6 +122,7 @@
     "address":"0x23",
     "pin": 23,
     "inverted": true,
-    "powerPin":24
+    "powerPin":24,
+    "frogPin":25
   }
 ]

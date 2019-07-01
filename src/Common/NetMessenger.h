@@ -39,7 +39,8 @@ namespace dcclite
 		private:
 			Socket m_clSocket;
 
-			const char *m_pszSeparator;
+			const char			*m_pszSeparator;
+			size_t		m_szSeparatorLength;
 
 			std::deque<std::string> m_lstMessages;
 

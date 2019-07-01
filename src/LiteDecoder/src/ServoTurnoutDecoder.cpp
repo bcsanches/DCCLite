@@ -88,6 +88,12 @@ void ServoTurnoutDecoder::OperatePin()
 	}
 
 	m_clServo.write(active ? dcclite::SERVO_DEFAULT_RANGE : 0);
+
+	if (m_clFrogPin)
+	{
+		m_clFrogPin.DigitalWrite(active ? Pin::VHIGH : Pin::VLOW);
+	}
+
 	//m_clServo.writeMicroseconds(active ? 0 : 1300); 
 	//Console::SendLogEx("ServoTurnoutDecoder", "Operate Pin", active ? 90 : 0);
 

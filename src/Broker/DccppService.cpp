@@ -212,7 +212,7 @@ bool DccppClient::Update()
 									"<Q" <<
 									dec->GetAddress().GetAddress() <<
 									' ' <<
-									dec->GetPin() <<
+									static_cast<unsigned int>(dec->GetPin()) <<
 									' ' <<
 									dec->HasPullUp() <<
 									'>';

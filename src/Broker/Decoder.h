@@ -35,7 +35,7 @@ class Decoder: public dcclite::Object
 		class Address
 		{
 			public:
-				inline Address(int address) :
+				inline Address(uint16_t address) :
 					m_iAddress(address)
 				{
 					//empty
@@ -65,7 +65,7 @@ class Decoder: public dcclite::Object
 				void WriteConfig(dcclite::Packet &packet) const;
 
 			private:
-				int16_t m_iAddress;
+				uint16_t m_iAddress;
 
 				friend std::ostream& operator<<(std::ostream& os, const Address& address);
 		};

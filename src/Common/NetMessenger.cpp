@@ -14,7 +14,8 @@ namespace dcclite
 {
 	NetMessenger::NetMessenger(Socket &&socket, const char *separator) :
 		m_clSocket(std::move(socket)),
-		m_pszSeparator(separator)
+		m_pszSeparator(separator),
+		m_szSeparatorLength(strlen(separator))
 	{
 		if (!separator)
 			throw new std::logic_error("[NetMessenger] separator cannot be null");
@@ -37,7 +38,7 @@ namespace dcclite
 			{								
 				m_lstMessages.emplace_back(m_strIncomingMessage.substr(0, pos));
 
-				m_strIncomingMessage.erase(0, pos+2);
+				m_strIncomingMessage.erase(0, pos + m_szSeparatorLength);
 			}
 		}
 
