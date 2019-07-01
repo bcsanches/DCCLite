@@ -56,7 +56,7 @@ class ServoTurnoutDecoder : public Decoder
 
 		virtual bool IsActive() const
 		{
-			return m_fFlags & dcclite::OUTD_ACTIVE;
+			return m_fFlags & dcclite::SRVT_ACTIVE;
 		}
 
 		virtual bool IsSyncRequired() const
