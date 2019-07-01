@@ -70,4 +70,7 @@ class ServoTurnoutDecoder : public Decoder
 		void Init(const dcclite::PinType_t powerPin, const dcclite::PinType_t frogPin);
 
 		void OperatePin();
+
+		void TurnOnPower();
+		void TurnOffPower();
 };

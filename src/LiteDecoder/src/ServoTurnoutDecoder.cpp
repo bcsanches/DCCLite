@@ -55,6 +55,8 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(EpromStream& stream) :
 ServoTurnoutDecoder::~ServoTurnoutDecoder()
 {
 	m_clServo.detach();
+
+	this->TurnOffPower();
 }
 
 
@@ -74,6 +76,28 @@ void ServoTurnoutDecoder::SaveConfig(EpromStream& stream)
 	stream.Put(m_uTicks);
 }
 
+void ServoTurnoutDecoder::TurnOnPower()
+{
+	if (!m_clPowerPin)
+		return;
+
+	
+	m_clPowerPin.DigitalWrite(Pin::VLOW);
+
+	m_uNextThink = millis() + 500;
+	m_fFlags |= dcclite::SRVT_POWER_ON;
+}
+
+void ServoTurnoutDecoder::TurnOffPower()
+{
+	if (!m_clPowerPin)
+		return;
+
+	m_clPowerPin.DigitalWrite(Pin::VHIGH);
+
+	m_fFlags &= ~dcclite::SRVT_POWER_ON;
+}
+
 void ServoTurnoutDecoder::OperatePin()
 {
 	using namespace dcclite;	
@@ -81,11 +105,7 @@ void ServoTurnoutDecoder::OperatePin()
 	bool active = (m_fFlags & SRVT_ACTIVE);
 	active = (m_fFlags & SRVT_INVERTED_OPERATION) ? !active : active;
 
-	if(m_clPowerPin)
-	{
-		m_clPowerPin.DigitalWrite(Pin::VLOW);
-		m_uNextThink = millis() + 500;
-	}
+	this->TurnOnPower();
 
 	m_clServo.write(active ? dcclite::SERVO_DEFAULT_RANGE : 0);
 
@@ -184,11 +204,13 @@ bool ServoTurnoutDecoder::AcceptServerState(dcclite::DecoderStates state)
 
 bool ServoTurnoutDecoder::Update(const unsigned long ticks)
 {
+	using namespace dcclite;
+
 	Decoder::Update(ticks);
 
-	if((m_uNextThink <= ticks) && (m_clPowerPin))
+	if((m_fFlags & SRVT_POWER_ON) && (m_uNextThink <= ticks))
 	{
-		m_clPowerPin.DigitalWrite(Pin::VHIGH);
+		this->TurnOffPower();
 	}
 
 	return false;

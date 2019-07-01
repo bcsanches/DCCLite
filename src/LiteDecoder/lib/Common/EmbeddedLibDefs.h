@@ -67,7 +67,8 @@ namespace dcclite
 		SRVT_IGNORE_SAVED_STATE = 0x02,
 		SRVT_ACTIVATE_ON_POWER_UP = 0x04,
 		SRVT_INVERTED_FROG = 0x08,
-
+		
+		SRVT_POWER_ON = 0x40,
 		SRVT_ACTIVE = 0x80
 	};
 
