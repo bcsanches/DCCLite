@@ -35,6 +35,17 @@ class ServoTurnoutDecoder : public Decoder
 		uint8_t		m_uRange;
 		uint8_t		m_uTicks;
 
+		enum class States: uint8_t
+		{
+			CLOSED,
+			CLOSING,
+			THROWN,
+			THROWNING
+		};
+
+		States	m_kState;
+		uint8_t m_uServoPos;
+
 	public:
 		ServoTurnoutDecoder(dcclite::Packet& packet);
 		ServoTurnoutDecoder(EpromStream& stream);
@@ -52,11 +63,11 @@ class ServoTurnoutDecoder : public Decoder
 			return true;
 		}
 
-		bool AcceptServerState(dcclite::DecoderStates state);
+		bool AcceptServerState(const dcclite::DecoderStates decoderState);
 
 		virtual bool IsActive() const
 		{
-			return m_fFlags & dcclite::SRVT_ACTIVE;
+			return this->State2DecoderState() == dcclite::DecoderStates::ACTIVE;
 		}
 
 		virtual bool IsSyncRequired() const
@@ -68,9 +79,31 @@ class ServoTurnoutDecoder : public Decoder
 
 	private:
 		void Init(const dcclite::PinType_t powerPin, const dcclite::PinType_t frogPin);
-
-		void OperatePin();
-
-		void TurnOnPower();
+		
+		void TurnOnPower(const unsigned long ticks);
 		void TurnOffPower();
+
+		States GetState() const;
+		void SetState(const States newState);
+
+		inline States GetStateGoal() const
+		{
+			const auto state = this->GetState();
+
+			if (state == States::CLOSING)
+				return States::CLOSED;
+			
+			if (state == States::THROWNING)
+				return States::THROWN;
+
+			return state;
+		}				
+
+		void OperateThrown(const unsigned long ticks);
+		void OperateClose(const unsigned long ticks);
+
+		States DecoderState2State(dcclite::DecoderStates state) const;
+		dcclite::DecoderStates State2DecoderState() const;
+
+		bool StateUpdate(const uint8_t desiredPosition, const States desiredState, const int moveDirection, const unsigned long ticks);
 };

@@ -14,11 +14,18 @@
 #include "Packet.h"
 #include "Storage.h"
 
+constexpr unsigned char SERVO_CLOSED_ANGLE = 0;
+constexpr unsigned char SERVO_THROWN_ANGLE = dcclite::SERVO_DEFAULT_RANGE;
+constexpr auto POWER_OFF_TICKS = 500;
+constexpr auto POWER_WAIT_TICKS = 200;
+
 ServoTurnoutDecoder::ServoTurnoutDecoder(dcclite::Packet& packet) :
 	Decoder::Decoder(packet),
 	m_clPin{packet.Read<dcclite::PinType_t>()}
 {	
 	m_fFlags = packet.Read<uint8_t>();
+
+	m_kState = States::CLOSED;
 
 	auto powerPin = packet.Read<dcclite::PinType_t>();	
 	auto frogPin = packet.Read<dcclite::PinType_t>();
@@ -39,6 +46,8 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(EpromStream& stream) :
 
 	m_uFlagsStorageIndex = stream.GetIndex();
 	stream.Get(m_fFlags);
+
+	m_kState = States::CLOSED;
 
 	dcclite::PinType_t powerPin;
 	stream.Get(powerPin);
@@ -76,16 +85,15 @@ void ServoTurnoutDecoder::SaveConfig(EpromStream& stream)
 	stream.Put(m_uTicks);
 }
 
-void ServoTurnoutDecoder::TurnOnPower()
+void ServoTurnoutDecoder::TurnOnPower(const unsigned long ticks)
 {
 	if (!m_clPowerPin)
 		return;
-
 	
-	m_clPowerPin.DigitalWrite(Pin::VLOW);
-
-	m_uNextThink = millis() + 500;
+	m_clPowerPin.DigitalWrite(Pin::VLOW);	
 	m_fFlags |= dcclite::SRVT_POWER_ON;
+
+	m_uNextThink = ticks + POWER_WAIT_TICKS;
 }
 
 void ServoTurnoutDecoder::TurnOffPower()
@@ -94,41 +102,9 @@ void ServoTurnoutDecoder::TurnOffPower()
 		return;
 
 	m_clPowerPin.DigitalWrite(Pin::VHIGH);
-
 	m_fFlags &= ~dcclite::SRVT_POWER_ON;
-}
 
-void ServoTurnoutDecoder::OperatePin()
-{
-	using namespace dcclite;	
-
-	bool active = (m_fFlags & SRVT_ACTIVE);
-	active = (m_fFlags & SRVT_INVERTED_OPERATION) ? !active : active;
-
-	this->TurnOnPower();
-
-	m_clServo.write(active ? dcclite::SERVO_DEFAULT_RANGE : 0);
-
-	if (m_clFrogPin)
-	{
-		const bool activateFrog = m_fFlags & SRVT_INVERTED_FROG ? !active : active;
-		m_clFrogPin.DigitalWrite(activateFrog ? Pin::VHIGH : Pin::VLOW);
-	}
-
-	//m_clServo.writeMicroseconds(active ? 0 : 1300); 
-	//Console::SendLogEx("ServoTurnoutDecoder", "Operate Pin", active ? 90 : 0);
-
-	//Store current state on eprom, so we can reload.
-	if (m_uFlagsStorageIndex)
-		Storage::UpdateField(m_uFlagsStorageIndex, m_fFlags);
-
-#if 0
-	Console::SendLogEx("[ServoTurnout]", ' ', "PIN: ", m_tPin);
-	Console::SendLogEx("[ServoTurnout]", ' ', "IGNORE_SAVE: ", m_fFlags & SRVT_IGNORE_SAVED_STATE);
-	Console::SendLogEx("[ServoTurnout]", ' ', "ACTIVATE_ON_POWERUP: ", m_fFlags & SRVT_ACTIVATE_ON_POWER_UP);
-	Console::SendLogEx("[ServoTurnout]", ' ', "ACTIVE: ", m_fFlags & SRVT_ACTIVE);
-	Console::SendLogEx("[ServoTurnout]", ' ', "INVERTED: ", m_fFlags & SRVT_INVERTED_OPERATION);
-#endif
+	//Console::SendLogEx("SERVO", "POWEROFF");
 }
 
 void ServoTurnoutDecoder::Init(const dcclite::PinType_t powerPin, const dcclite::PinType_t frogPin)
@@ -140,7 +116,8 @@ void ServoTurnoutDecoder::Init(const dcclite::PinType_t powerPin, const dcclite:
 	if(!dcclite::IsPinNull(powerPin))
 	{
 		m_clPowerPin.Attach(powerPin, Pin::MODE_OUTPUT);
-		m_clPowerPin.DigitalWrite(Pin::VHIGH);
+		
+		this->TurnOffPower();
 	}
 	
 	if(!dcclite::IsPinNull(frogPin))
@@ -148,14 +125,28 @@ void ServoTurnoutDecoder::Init(const dcclite::PinType_t powerPin, const dcclite:
 		m_clFrogPin.Attach(frogPin, Pin::MODE_OUTPUT);		
 	}
 
+	States desiredState = this->GetStateGoal();
+
 	// sets status to 0 (INACTIVE) is bit 1 of iFlag=0, otherwise set to value of bit 2 of iFlag
 	//m_fStatus = bitRead(m_fFlags, 1) ? bitRead(m_fFlags, 2) : 0;
 	if (m_fFlags & SRVT_IGNORE_SAVED_STATE)
+	{		
+		desiredState = (m_fFlags & SRVT_ACTIVATE_ON_POWER_UP) ? States::THROWN : States::CLOSED;
+		if (m_fFlags & SRVT_INVERTED_OPERATION)
+		{
+			desiredState = desiredState == States::THROWN ? States::CLOSED : States::THROWN;
+		}
+	}	
+	
+	if (desiredState == States::THROWN)
 	{
-		if (m_fFlags & SRVT_ACTIVATE_ON_POWER_UP)
-			m_fFlags |= SRVT_ACTIVE;
-		else
-			m_fFlags &= ~SRVT_ACTIVE;
+		m_uServoPos = SERVO_THROWN_ANGLE;
+		this->OperateThrown(millis());
+	}
+	else
+	{
+		m_uServoPos = SERVO_CLOSED_ANGLE;
+		this->OperateClose(millis());
 	}
 
 #if 0
@@ -164,20 +155,44 @@ void ServoTurnoutDecoder::Init(const dcclite::PinType_t powerPin, const dcclite:
 	Console::SendLogEx("[ServoTurnout]", ' ', "ACTIVATE_ON_POWERUP: ", m_fFlags & SRVT_ACTIVATE_ON_POWER_UP);
 	Console::SendLogEx("[ServoTurnout]", ' ', "ACTIVE: ", m_fFlags & SRVT_ACTIVE);
 	Console::SendLogEx("[ServoTurnout]", ' ', "INVERTED: ", m_fFlags & SRVT_INVERTED_OPERATION);
-#endif
-
-	this->OperatePin();
+#endif	
 }
 
-bool ServoTurnoutDecoder::AcceptServerState(dcclite::DecoderStates state)
+dcclite::DecoderStates ServoTurnoutDecoder::State2DecoderState() const
+{
+	auto state = this->GetState();
+
+	if (state == States::CLOSING)
+	{
+		state = States::THROWN;
+	}
+	else if (state == States::THROWNING)
+	{
+		state = States::CLOSED;
+	}
+
+	bool active = state == States::THROWN;
+	active = m_fFlags & dcclite::SRVT_INVERTED_OPERATION ? !active : active;
+
+	return active ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE;
+}
+
+ServoTurnoutDecoder::States ServoTurnoutDecoder::DecoderState2State(dcclite::DecoderStates state) const
+{
+	bool activate = state == dcclite::DecoderStates::ACTIVE;
+	activate = m_fFlags & dcclite::SRVT_INVERTED_OPERATION ? !activate : activate;
+
+	return activate ? States::THROWN : States::CLOSED;
+}
+
+bool ServoTurnoutDecoder::AcceptServerState(const dcclite::DecoderStates decoderState)
 {
 	using namespace dcclite;
 
-	bool activate = state == dcclite::DecoderStates::ACTIVE;
-	bool currentState = m_fFlags & SRVT_ACTIVE;
+	auto requestedState = this->DecoderState2State(decoderState);
 
 	//no state change?
-	if (currentState == activate)
+	if (requestedState == this->GetStateGoal())
 	{
 #if 0
 		Console::SendLogEx("[OutputDecoder]", "got state, but ignored (same)");
@@ -186,21 +201,52 @@ bool ServoTurnoutDecoder::AcceptServerState(dcclite::DecoderStates state)
 		return false;
 	}
 
-	//Which state should we use?
-	if (activate)
-		m_fFlags |= SRVT_ACTIVE;
+	if (requestedState == States::THROWN)
+		this->OperateThrown(millis());
 	else
-		m_fFlags &= ~SRVT_ACTIVE;
-
-#if 0
-	Console::SendLogEx("[OutputDecoder]", ' ', "FLAGS: ", m_fFlags);
-	Console::SendLogEx("[OutputDecoder]", ' ', "ACTIVE: ", m_fFlags & OUTD_ACTIVE);
-#endif
-
-	//Now set pin state
-	this->OperatePin();
+		this->OperateClose(millis());
 
 	return true;
+}
+
+bool ServoTurnoutDecoder::StateUpdate(const uint8_t desiredPosition, const States desiredState, const int moveDirection, const unsigned long ticks)
+{
+	//first check desired position, we may reach it right on initial state
+	if (m_uServoPos == desiredPosition)
+	{
+		//make sure we are in position, on init state we may not, so we write it again
+		m_clServo.write(m_uServoPos);
+
+		m_uNextThink = ticks + POWER_OFF_TICKS;
+
+		this->SetState(desiredState);
+
+		if (m_clFrogPin)
+		{
+			bool activateFrog = desiredState == States::THROWN;
+			activateFrog = m_fFlags & dcclite::SRVT_INVERTED_FROG ? !activateFrog : activateFrog;
+
+			m_clFrogPin.DigitalWrite(activateFrog ? Pin::VHIGH : Pin::VLOW);
+		}
+
+		//Store current state on eprom, so we can reload.
+		if (m_uFlagsStorageIndex)
+			Storage::UpdateField(m_uFlagsStorageIndex, m_fFlags);
+
+		//state changed
+		return true;
+	}
+	else if (ticks >= m_uNextThink)
+	{
+		m_uServoPos += moveDirection;
+
+		m_uNextThink = ticks + m_uTicks;
+		m_clServo.write(m_uServoPos);		
+
+		//Console::SendLogEx("[SERVO]", "m_uServoPos", m_uServoPos);
+	}	
+
+	return false;
 }
 
 bool ServoTurnoutDecoder::Update(const unsigned long ticks)
@@ -209,10 +255,47 @@ bool ServoTurnoutDecoder::Update(const unsigned long ticks)
 
 	Decoder::Update(ticks);
 
-	if((m_fFlags & SRVT_POWER_ON) && (m_uNextThink <= ticks))
-	{
-		this->TurnOffPower();
-	}
+	const auto state = this->GetState();
 
-	return false;
+	if ((state == States::CLOSED) || (state == States::THROWN))
+	{
+		if ((m_fFlags & SRVT_POWER_ON) && (m_uNextThink <= ticks))
+		{
+			this->TurnOffPower();
+		}
+
+		return false;
+	}
+	else if (state == States::CLOSING)
+	{
+		return this->StateUpdate(SERVO_CLOSED_ANGLE, States::CLOSED, -1, ticks);
+	}
+	else
+	{
+		return this->StateUpdate(SERVO_THROWN_ANGLE, States::THROWN, 1, ticks);
+	}		
+}
+
+ServoTurnoutDecoder::States ServoTurnoutDecoder::GetState() const
+{
+	return m_kState;
+}
+
+void ServoTurnoutDecoder::SetState(const States newState)
+{
+	m_kState = newState;	
+}
+
+void ServoTurnoutDecoder::OperateThrown(const unsigned long ticks)
+{
+	this->TurnOnPower(ticks);
+
+	this->SetState(States::THROWNING);
+}
+
+void ServoTurnoutDecoder::OperateClose(const unsigned long ticks)
+{
+	this->TurnOnPower(ticks);
+
+	this->SetState(States::CLOSING);
 }

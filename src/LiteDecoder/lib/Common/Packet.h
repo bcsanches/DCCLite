@@ -70,7 +70,7 @@ namespace dcclite
 
 			Packet(Packet &&) = delete;
 
-			Packet &operator=(const Packet &) = delete;			
+			Packet &operator=(const Packet &) = delete;					
 
 			inline void Write8(uint8_t byte) noexcept
 			{

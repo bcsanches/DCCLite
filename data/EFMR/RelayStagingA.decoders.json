@@ -123,6 +123,7 @@
     "pin": 23,
     "inverted": true,
     "powerPin":24,
-    "frogPin":25
+    "frogPin":25,
+    "operationTime":3000
   }
 ]

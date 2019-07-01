@@ -32,6 +32,11 @@ namespace dcclite
 			}
 
 		public:
+			bool operator==(const BitPack<NBITS>& rhs) const
+			{
+				return memcmp(m_bData, rhs.m_bData, sizeof(m_bData)) == 0;
+			}
+
 			bool operator[](const unsigned index) const
 			{
 				const int bytePos = BytePosition(index);

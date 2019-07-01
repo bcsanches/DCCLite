@@ -45,10 +45,10 @@ class Device: public dcclite::FolderObject
 
 		void AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken);
 
-		void OnPacket_ConfigAck(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress);
-		void OnPacket_ConfigFinished(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress);
-		void OnPacket_Ping(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteConfigToken);
-		void OnPacket_State(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteConfigToken);
+		void OnPacket_ConfigAck(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::Address remoteAddress);
+		void OnPacket_ConfigFinished(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::Address remoteAddress);
+		void OnPacket_Ping(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::Address remoteAddress, const dcclite::Guid remoteConfigToken);
+		void OnPacket_State(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::Address remoteAddress, const dcclite::Guid remoteConfigToken);
 		
 		inline const dcclite::Guid &GetConfigToken() noexcept
 		{
@@ -73,22 +73,22 @@ class Device: public dcclite::FolderObject
 		virtual void Serialize(dcclite::JsonOutputStream_t &stream) const;
 
 	private:
-		bool CheckSessionConfig(dcclite::Guid remoteConfigToken, dcclite::Address remoteAddress);
-		bool CheckSession(dcclite::Address remoteAddress);
+		bool CheckSessionConfig(const dcclite::Guid remoteConfigToken, const dcclite::Address remoteAddress);
+		bool CheckSession(const dcclite::Address remoteAddress);
 
 		void GoOnline(const dcclite::Address remoteAddress);
 		void GoOffline();
 
-		void RefreshTimeout(dcclite::Clock::TimePoint_t time);
-		bool CheckTimeout(dcclite::Clock::TimePoint_t time);
+		void RefreshTimeout(const dcclite::Clock::TimePoint_t time);
+		bool CheckTimeout(const dcclite::Clock::TimePoint_t time);
 
-		void SendDecoderConfigPacket(size_t index) const;
+		void SendDecoderConfigPacket(const size_t index) const;
 		void SendConfigStartPacket() const;
 		void SendConfigFinishedPacket() const;
 
 		void ForceSync();
 
-		void SendStateDelta(const bool sendSensorsState);
+		void SendStateDelta(const bool sendSensorsState, const dcclite::Clock::TimePoint_t time);
 		
 
 	private:		
@@ -110,6 +110,9 @@ class Device: public dcclite::FolderObject
 
 		uint64_t			m_uLastReceivedStatePacketId = 0;
 		uint64_t			m_uOutgoingStatePacketId = 0;		
+
+		dcclite::Clock::TimePoint_t m_tLastStateSentTime;
+		dcclite::StatesBitPack_t	m_tLastStateSent;
 
 		struct ConfigInfo
 		{

@@ -28,6 +28,7 @@ using namespace std::chrono_literals;
 
 static auto constexpr TIMEOUT = 10s;
 static auto constexpr CONFIG_RETRY_TIME = 300ms;
+static auto constexpr STATE_TIMEOUT = 250ms;
 
 inline void PreparePacket(dcclite::Packet& packet, dcclite::MsgTypes msgType, const dcclite::Guid& sessionToken, const dcclite::Guid& configToken)
 {
@@ -109,6 +110,9 @@ void Device::GoOnline(const dcclite::Address remoteAddress)
 	m_uLastReceivedStatePacketId = 0;
 	m_uOutgoingStatePacketId = 0;
 
+	m_tLastStateSent.ClearAll();
+	m_tLastStateSentTime -= STATE_TIMEOUT;
+
 	m_eStatus = Status::ONLINE;	
 	this->ForceSync();
 
@@ -126,7 +130,7 @@ void Device::GoOffline()
 	dcclite::Log::Warn("[{}::Device::GoOffline] Is OFFLINE", this->GetName());
 }
 
-void Device::SendDecoderConfigPacket(size_t index) const
+void Device::SendDecoderConfigPacket(const size_t index) const
 {
 	dcclite::Packet pkt;
 
@@ -171,7 +175,7 @@ void Device::ForceSync()
 	}
 }
 
-void Device::AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken)
+void Device::AcceptConnection(const dcclite::Clock::TimePoint_t time, const dcclite::Address remoteAddress, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken)
 {
 	if (m_eStatus == Status::ONLINE)
 	{
@@ -273,7 +277,7 @@ void Device::OnPacket_State(dcclite::Packet &packet, dcclite::Clock::TimePoint_t
 
 	if (stateRefresh)
 	{
-		this->SendStateDelta(true);
+		this->SendStateDelta(true, time);
 	}
 }
 
@@ -374,7 +378,7 @@ bool Device::CheckTimeout(dcclite::Clock::TimePoint_t time)
 	return true;
 }
 
-void Device::SendStateDelta(const bool sendSensorsState)
+void Device::SendStateDelta(const bool sendSensorsState, const dcclite::Clock::TimePoint_t time)
 {
 	dcclite::BitPack<dcclite::MAX_DECODERS_STATES_PER_PACKET> states;
 	dcclite::BitPack<dcclite::MAX_DECODERS_STATES_PER_PACKET> changedStates;
@@ -426,6 +430,9 @@ void Device::SendStateDelta(const bool sendSensorsState)
 
 	if (stateChanged)
 	{
+		if ((m_tLastStateSent == states) && ((time - m_tLastStateSentTime) < STATE_TIMEOUT))
+			return;
+
 		dcclite::Packet pkt;
 		PreparePacket(pkt, dcclite::MsgTypes::STATE, m_SessionToken, m_ConfigToken);
 
@@ -434,6 +441,9 @@ void Device::SendStateDelta(const bool sendSensorsState)
 		pkt.Write(states);
 
 		m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
+
+		m_tLastStateSentTime = time;
+		m_tLastStateSent = states;
 	}
 }
 
@@ -490,7 +500,7 @@ void Device::Update(const dcclite::Clock &clock)
 	}
 	//No config state, so check for any requested state change and notify remote
 	else if (!m_upConfigState)
-	{
-		this->SendStateDelta(false);
+	{		
+		this->SendStateDelta(false, time);
 	}	
 }

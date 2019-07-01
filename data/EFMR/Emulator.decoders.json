@@ -127,7 +127,9 @@
     "class":"ServoTurnout",
     "address":"0xFF23",
     "pin": 23,
-    "inverted":true,
-    "powerPin":24
+    "inverted":false,
+    "powerPin":24,
+    "frogPin":25,
+    "operationTime":5000
   }
 ]
