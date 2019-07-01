@@ -111,7 +111,8 @@ void ServoTurnoutDecoder::OperatePin()
 
 	if (m_clFrogPin)
 	{
-		m_clFrogPin.DigitalWrite(active ? Pin::VHIGH : Pin::VLOW);
+		const bool activateFrog = m_fFlags & SRVT_INVERTED_FROG ? !active : active;
+		m_clFrogPin.DigitalWrite(activateFrog ? Pin::VHIGH : Pin::VLOW);
 	}
 
 	//m_clServo.writeMicroseconds(active ? 0 : 1300); 
