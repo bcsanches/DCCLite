@@ -25,7 +25,7 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(dcclite::Packet& packet) :
 {	
 	m_fFlags = packet.Read<uint8_t>();
 
-	m_kState = States::CLOSED;
+	this->SetState(States::CLOSED);	
 
 	auto powerPin = packet.Read<dcclite::PinType_t>();	
 	auto frogPin = packet.Read<dcclite::PinType_t>();
@@ -45,9 +45,7 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(EpromStream& stream) :
 	m_clPin = dcclite::BasicPin{ pin };
 
 	m_uFlagsStorageIndex = stream.GetIndex();
-	stream.Get(m_fFlags);
-
-	m_kState = States::CLOSED;
+	stream.Get(m_fFlags);	
 
 	dcclite::PinType_t powerPin;
 	stream.Get(powerPin);
@@ -109,9 +107,7 @@ void ServoTurnoutDecoder::TurnOffPower()
 
 void ServoTurnoutDecoder::Init(const dcclite::PinType_t powerPin, const dcclite::PinType_t frogPin)
 {
-	using namespace dcclite;
-	
-	m_clServo.attach(m_clPin.Raw());
+	using namespace dcclite;	
 	
 	if(!dcclite::IsPinNull(powerPin))
 	{
@@ -124,6 +120,9 @@ void ServoTurnoutDecoder::Init(const dcclite::PinType_t powerPin, const dcclite:
 	{
 		m_clFrogPin.Attach(frogPin, Pin::MODE_OUTPUT);		
 	}
+
+	//attach servo pin after power so we keep power off
+	m_clServo.attach(m_clPin.Raw());
 
 	States desiredState = this->GetStateGoal();
 
@@ -148,6 +147,7 @@ void ServoTurnoutDecoder::Init(const dcclite::PinType_t powerPin, const dcclite:
 		m_uServoPos = SERVO_CLOSED_ANGLE;
 		this->OperateClose(millis());
 	}
+	m_clServo.write(m_uServoPos);
 
 #if 0
 	Console::SendLogEx("[ServoTurnout]", ' ', "PIN: ", m_tPin);
@@ -278,12 +278,17 @@ bool ServoTurnoutDecoder::Update(const unsigned long ticks)
 
 ServoTurnoutDecoder::States ServoTurnoutDecoder::GetState() const
 {
-	return m_kState;
+	uint8_t value = (m_fFlags & dcclite::SRVT_STATE_BITS);
+
+	return static_cast<States>(value);
 }
 
 void ServoTurnoutDecoder::SetState(const States newState)
 {
-	m_kState = newState;	
+	uint8_t bits = static_cast<uint8_t>(newState) & dcclite::SRVT_STATE_BITS;
+
+	m_fFlags &= ~dcclite::SRVT_STATE_BITS;
+	m_fFlags |= bits;	
 }
 
 void ServoTurnoutDecoder::OperateThrown(const unsigned long ticks)

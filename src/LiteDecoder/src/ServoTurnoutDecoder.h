@@ -42,8 +42,7 @@ class ServoTurnoutDecoder : public Decoder
 			THROWN,
 			THROWNING
 		};
-
-		States	m_kState;
+		
 		uint8_t m_uServoPos;
 
 	public:

@@ -59,16 +59,18 @@ namespace dcclite
 		OUTD_ACTIVATE_ON_POWER_UP = 0x04,
 
 		OUTD_ACTIVE = 0x80
-	};	
+	};		
 
 	enum ServoTurnoutDecoderFlags : uint8_t
 	{
-		SRVT_INVERTED_OPERATION = 0x01,
-		SRVT_IGNORE_SAVED_STATE = 0x02,
-		SRVT_ACTIVATE_ON_POWER_UP = 0x04,
-		SRVT_INVERTED_FROG = 0x08,
+		SRVT_STATE_BITS = 0x03,
+
+		SRVT_INVERTED_OPERATION = 0x04,
+		SRVT_IGNORE_SAVED_STATE = 0x08,
+		SRVT_ACTIVATE_ON_POWER_UP = 0x10,
+		SRVT_INVERTED_FROG = 0x20,
 		
-		SRVT_POWER_ON = 0x80
+		SRVT_POWER_ON = 0x40
 	};
 
 	enum SensorDecoderFlags : uint8_t
