@@ -105,10 +105,7 @@ namespace dcclite
 	class ObjectPath
 	{		
 		public:
-			ObjectPath() noexcept
-			{
-				//empty
-			}
+			ObjectPath() noexcept = default;
 
 			ObjectPath(const ObjectPath &rhs) = default;				
 			ObjectPath(ObjectPath &&rhs) = default;
@@ -160,10 +157,7 @@ namespace dcclite
 				//empty
 			}
 
-			virtual ~IObject()
-			{
-				//empty
-			}
+			virtual ~IObject() = default;
 
 			IObject(const IObject &rhs) = delete;
 
@@ -275,12 +269,12 @@ namespace dcclite
 
 			virtual bool IsShortcut() const noexcept { return true; }
 
-			virtual const char *GetTypeName() const noexcept
+			const char *GetTypeName() const noexcept override
 			{
 				return "dcclite::Shortcut";
 			}
 
-			virtual void Serialize(JsonOutputStream_t &stream) const;
+			void Serialize(JsonOutputStream_t &stream) const override;
 
 		private:
 			IObject &m_rTarget;			

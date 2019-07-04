@@ -63,9 +63,9 @@ class DccLiteService : public Service, private IDccDeviceServices, private IDccD
 	public:
 		DccLiteService(const ServiceClass &serviceClass, const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
-		virtual ~DccLiteService();
+		~DccLiteService() override;
 		
-		virtual void Update(const dcclite::Clock &clock) override;				
+		void Update(const dcclite::Clock &clock) override;				
 
 		//
 		//IObject

@@ -62,4 +62,4 @@ namespace dcclite
 				return nullptr;
 			}
 	};
-}
+} //end of namespace dcclite

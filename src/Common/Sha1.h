@@ -32,5 +32,5 @@ namespace dcclite
 			return memcmp(mData, rhs.mData, sizeof(mData)) != 0;
 		}
 	};		
-}
+} //end of namespace dcclite
 	
