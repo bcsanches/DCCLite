@@ -10,6 +10,8 @@
 
 #include "NetMessenger.h"
 
+#include <string.h>
+
 namespace dcclite
 {
 	NetMessenger::NetMessenger(Socket &&socket, const char *separator) :

@@ -48,4 +48,9 @@ if(WIN32)
     set_property(TARGET Broker PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
     set_property(TARGET Broker PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "..\\data\\EFMR")
       
+else(WIN32)
+
+  target_link_libraries(Broker PRIVATE stdc++fs PRIVATE fmt)
+
 endif(WIN32)
+
