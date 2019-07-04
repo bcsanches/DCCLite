@@ -235,4 +235,4 @@ namespace dcclite
 		private:
 			Packet &m_Packet;
 	};
-}
+} //end of namespace dcclite

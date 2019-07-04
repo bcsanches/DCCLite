@@ -43,5 +43,5 @@ namespace dcclite
 			}
 	};
 
-}
+} //end of namespace dcclite
 

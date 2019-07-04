@@ -81,4 +81,4 @@ namespace dcclite
 		SNRD_REMOTE_ACTIVE = 0x40,
 		SNRD_ACTIVE = 0x80
 	};
-}
+} //end of namespace dcclite

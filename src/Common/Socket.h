@@ -150,5 +150,5 @@ namespace dcclite
 
 			static inline size_t g_iCount = 0;
 	};
-}
+} //end of namespace dcclite
 

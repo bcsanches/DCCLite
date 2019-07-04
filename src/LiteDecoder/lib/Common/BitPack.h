@@ -91,4 +91,4 @@ namespace dcclite
 				return NBITS / 8;
 			}
 	};
-}
+} //end of namespace dcclite

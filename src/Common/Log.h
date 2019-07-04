@@ -53,5 +53,5 @@ namespace dcclite
 		{
 			LogGetDefault()->critical(fmt, args...);
 		}
-	}	
-}
+	} //end of namespace Log
+} //end of namespace dcclite

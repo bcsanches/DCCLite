@@ -120,12 +120,12 @@ class Decoder: public dcclite::Object
 		//
 		//
 
-		virtual const char *GetTypeName() const noexcept
+		const char *GetTypeName() const noexcept override
 		{
 			return "Decoder";
 		}
 
-		virtual void Serialize(dcclite::JsonOutputStream_t &stream) const
+		void Serialize(dcclite::JsonOutputStream_t &stream) const override
 		{
 			Object::Serialize(stream);
 
@@ -161,5 +161,5 @@ namespace fmt
 			return format_to(ctx.out(), "{}", a.GetAddress());
 		}
 	};
-}
+} //end of namespace fmt
 
