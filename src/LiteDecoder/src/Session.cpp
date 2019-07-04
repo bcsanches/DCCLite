@@ -299,8 +299,10 @@ static void SendHelloPacket()
 {
 	dcclite::Packet pkt;
 	dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::HELLO, g_SessionToken, g_ConfigToken };
-
+	
 	builder.WriteStr(NetUdp::GetNodeName());
+
+	pkt.Write16(dcclite::PROTOCOL_VERSION);
 
 	NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
 

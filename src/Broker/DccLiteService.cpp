@@ -192,10 +192,24 @@ void DccLiteService::OnNet_Hello(const dcclite::Clock &clock, const dcclite::Add
 	auto remoteSessionToken = packet.ReadGuid();
 	auto remoteConfigToken = packet.ReadGuid();
 		
-	dcclite::PacketReader reader(packet);
+	dcclite::PacketReader reader(packet);	
 
 	char name[256];
 	reader.ReadStr(name, sizeof(name));
+
+	const auto procotolVersion = packet.Read<std::uint16_t>();
+	if (procotolVersion != dcclite::PROTOCOL_VERSION)
+	{
+		dcclite::Log::Error("[{}::DccLiteService::OnNet_Hello] Hello from {} - {} with invalid protocol version {}, expected {}, ignoring", 
+			this->GetName(), 
+			name, 
+			senderAddress,
+			procotolVersion,
+			dcclite::PROTOCOL_VERSION
+		);
+
+		return;
+	}
 
 	dcclite::Log::Info("[{}::DccLiteService::OnNet_Hello] received hello from {}, starting handshake", this->GetName(), name);
 

@@ -20,7 +20,7 @@
 
 namespace dcclite
 {		
-	constexpr unsigned char SERVO_DEFAULT_RANGE = 20;
+	constexpr unsigned char SERVO_DEFAULT_RANGE = 15;
 
 	enum class DecoderTypes : uint8_t
 	{

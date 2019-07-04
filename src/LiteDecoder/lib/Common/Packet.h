@@ -41,6 +41,8 @@ namespace dcclite
 
 	constexpr uint8_t MAX_DECODERS_STATES_PER_PACKET = 64;
 
+	constexpr uint16_t PROTOCOL_VERSION = 1;
+
 	typedef BitPack<MAX_DECODERS_STATES_PER_PACKET> StatesBitPack_t;
 
 	/**
