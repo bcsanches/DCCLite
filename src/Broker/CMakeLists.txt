@@ -36,7 +36,10 @@ set(Broker_HDRS
 add_executable(Broker  ${Broker_SRCS} ${Broker_HDRS})
 target_compile_features(Broker PUBLIC cxx_std_17)    
 
-target_include_directories(Broker PRIVATE ${DCCLite_SOURCE_DIR}/src/Common)
+target_include_directories(Broker 
+	PRIVATE ${DCCLite_SOURCE_DIR}/src/Common 
+	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/JsonCreator/include/
+)
 
 target_link_libraries(Broker PRIVATE Common EmbeddedLib)
 
