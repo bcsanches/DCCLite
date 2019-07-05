@@ -9,3 +9,9 @@
 // defined by the Mozilla Public License, v. 2.0.
 
 #include "ConsoleUtils.h"
+
+bool dcclite::ConsoleTryMakeNice()
+{
+	//nothing to do, it is already nice
+	return true;
+}

@@ -53,7 +53,7 @@ if(WIN32)
       
 else(WIN32)
 
-  target_link_libraries(Broker PRIVATE stdc++fs PRIVATE fmt)
+  target_link_libraries(Broker PRIVATE stdc++fs PRIVATE fmt PRIVATE uuid )
 
 endif(WIN32)
 
