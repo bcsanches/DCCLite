@@ -51,12 +51,3 @@ dcclite::Guid dcclite::GuidCreate()
 	return guid;
 }
 
-std::string dcclite::GuidToString(const dcclite::Guid &g)
-{
-	return fmt::format("{}", g);
-}
-
-bool dcclite::TryGuidLoadFromString(dcclite::Guid &dest, std::string_view str)
-{
-	return TryHexStrToBinary(dest.m_bId, sizeof(dest.m_bId), str);	
-}

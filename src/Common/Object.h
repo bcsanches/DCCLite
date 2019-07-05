@@ -267,7 +267,7 @@ namespace dcclite
 				return &m_rTarget;
 			}
 
-			virtual bool IsShortcut() const noexcept { return true; }
+			bool IsShortcut() const noexcept override { return true; }
 
 			const char *GetTypeName() const noexcept override
 			{

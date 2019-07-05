@@ -307,41 +307,7 @@ class FileReader : NonCopyable
 		FILE * m_file;
 };
 
-dcclite::Sha1::Sha1()
-{
-	memset(mData, 0, sizeof(mData));
-}
 
-std::string dcclite::Sha1::ToString() const
-{
-	//
-	// Get the hash digest string from hash value buffer.
-	//
-
-	// Each byte --> 2 hex chars
-	std::string hashDigest;
-	hashDigest.resize(sizeof(mData) * 2);
-
-	// Upper-case hex digits
-	static const char hexDigits[] = "0123456789ABCDEF";
-
-	// Index to current character in destination string
-	size_t currChar = 0;
-
-	// For each byte in the hash value buffer
-	for (size_t i = 0; i < sizeof(mData); ++i)
-	{
-		// high nibble
-		hashDigest[currChar] = hexDigits[(mData[i] & 0xF0) >> 4];
-		++currChar;
-
-		// low nibble
-		hashDigest[currChar] = hexDigits[(mData[i] & 0x0F)];
-		++currChar;
-	}
-
-	return hashDigest;
-}
 
 void dcclite::Sha1::ComputeForFile(const std::filesystem::path &fileName)
 {
@@ -372,10 +338,5 @@ void dcclite::Sha1::ComputeForFile(const std::filesystem::path &fileName)
 }
 
 
-
-bool dcclite::Sha1::TryLoadFromString(std::string_view str)
-{	
-	return TryHexStrToBinary(mData, sizeof(mData), str);	
-}
 
 

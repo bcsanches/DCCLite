@@ -16,9 +16,11 @@ endif(WIN32)
 set(Common_SRCS
 	${CommonPlatSrcs}
 	Clock.cpp	
+	GuidUtils.cpp
 	LogUtils.cpp
 	NetMessenger.cpp
 	Object.cpp
+	Sha1.cpp
 	PathUtils.cpp	
 	Socket.cpp
 	Util.cpp
