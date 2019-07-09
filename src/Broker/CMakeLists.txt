@@ -40,19 +40,31 @@ target_include_directories(Broker
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/Common 	
 )
 
-target_link_libraries(Broker PRIVATE Common EmbeddedLib)
-
 #set_target_properties( Broker PROPERTIES RUNTIME_OUTPUT_DIRECTORY bin/ )
 
 if(WIN32)
-    target_link_libraries(Broker PRIVATE bcrypt.lib PRIVATE fmt)
+    target_link_libraries(Broker 
+		PRIVATE Common 
+		PRIVATE EmbeddedLib 
+		PRIVATE bcrypt.lib 
+		PRIVATE fmt
+	)
     
     set_property(TARGET Broker PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
     set_property(TARGET Broker PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "..\\data\\EFMR")
       
 else(WIN32)
 
-  target_link_libraries(Broker PRIVATE stdc++fs PRIVATE fmt PRIVATE uuid )
+	find_package(OpenSSL REQUIRED)
+
+	target_link_libraries(Broker 
+		OpenSSL::Crypto
+		Common 
+		EmbeddedLib
+		stdc++fs 
+		fmt 
+		uuid 		
+	)
 
 endif(WIN32)
 

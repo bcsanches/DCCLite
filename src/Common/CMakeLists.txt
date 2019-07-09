@@ -5,6 +5,7 @@ if(WIN32)
 		GuidUtils_win.cpp
 		Sha1_win.cpp
 	)
+
 else(WIN32)
 	set(CommonPlatSrcs 
 		ConsoleUtils_linux.cpp
@@ -26,7 +27,7 @@ set(Common_SRCS
 	Util.cpp
 )
 
-set(Common_HDRS
+set(Common_HDRS	
 	ClassInfo.h
 	Clock.h
 	ConsoleUtils.h

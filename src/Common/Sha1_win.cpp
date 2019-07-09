@@ -44,23 +44,6 @@ inline bool NtSuccess(NTSTATUS status)
 	return (status >= 0);
 }
 
-
-
-//-----------------------------------------------------------------------------
-// Class defining private copy constructor and operator=, to ban copies.
-//-----------------------------------------------------------------------------
-class NonCopyable
-{
-	protected:
-		NonCopyable() {}
-		~NonCopyable() {}
-	private:
-		NonCopyable(const NonCopyable&);
-		const NonCopyable& operator=(const NonCopyable&);
-};
-
-
-
 //-----------------------------------------------------------------------------
 // Error occurred during cryptographic processing.
 //-----------------------------------------------------------------------------
@@ -104,7 +87,7 @@ class CryptException :
 //-----------------------------------------------------------------------------
 // RAII wrapper to crypt algorithm provider
 //-----------------------------------------------------------------------------
-class CryptAlgorithmProvider : NonCopyable
+class CryptAlgorithmProvider : dcclite::detail::NonCopyable
 {
 	public:
 
@@ -174,7 +157,7 @@ class CryptAlgorithmProvider : NonCopyable
 //-----------------------------------------------------------------------------
 // Crypt Hash object, used to hash data.
 //-----------------------------------------------------------------------------
-class CryptHashObject : NonCopyable
+class CryptHashObject : dcclite::detail::NonCopyable
 {
 	public:
 
@@ -258,83 +241,33 @@ class CryptHashObject : NonCopyable
 		std::vector<BYTE> m_hashObj;		
 };
 
-//-----------------------------------------------------------------------------
-// Wrapper around C FILE *, for reading binary data from file.
-//-----------------------------------------------------------------------------
-class FileReader : NonCopyable
+class HasherWrapper: public dcclite::detail::NonCopyable
 {
 	public:
-
-		// Opens the specified file.
-		explicit FileReader(const char *filename)
+		HasherWrapper():
+			mHasher{mProvider}
 		{
-			m_file = fopen(filename, "rb");
-			if (!m_file)
-			{
-				throw std::runtime_error("Can't open file for reading.");
-			}
+			//empty
 		}
 
-
-		// Closes the file.
-		~FileReader()
+		void Compute(const void* data, size_t length)
 		{
-			if (m_file != nullptr)
-				fclose(m_file);
+			mHasher.HashData(data, length);
 		}
 
-
-		// End Of File reached?
-		bool EoF() const
+		void Finalize(unsigned char hash[dcclite::SHA1_LENGTH])
 		{
-			return feof(m_file) ? true : false;
+			mHasher.FinishData(hash);
 		}
 
-
-		// Reads bytes from file to a memory buffer.
-		// Returns the number of bytes actually read.
-		size_t Read(void * buffer, size_t bufferSize)
-		{
-			return fread(buffer, 1, bufferSize, m_file);
-		}
-
-
-		//
-		// IMPLEMENTATION
-		//
 	private:
-		// Raw C file handle
-		FILE * m_file;
+		CryptAlgorithmProvider	mProvider;
+		CryptHashObject			mHasher;
 };
-
-
 
 void dcclite::Sha1::ComputeForFile(const std::filesystem::path &fileName)
 {
-	// Create the algorithm provider for SHA-1 hashing
-	CryptAlgorithmProvider sha1;
-
-	// Create the hash object for the particular hashing
-	CryptHashObject hasher(sha1);
-
-	// Object to read data from file
-	FileReader file(fileName.string().c_str());
-
-	// Read buffer
-	std::vector<BYTE> buffer(4 * 1024);   // 4 KB buffer
-
-	// Reading loop
-	while (!file.EoF())
-	{
-		// Read a chunk of data from file to memory buffer
-		auto readBytes = file.Read(buffer.data(), buffer.size());
-
-		// Hash this chunk of data
-		hasher.HashData(buffer.data(), static_cast<ULONG>(readBytes));
-	}
-
-	// Finalize hashing
-	hasher.FinishHash(mData);	
+	ComputeForFile<HasherWrapper>(fileName);
 }
 
 

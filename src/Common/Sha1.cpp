@@ -21,20 +21,6 @@
 // Copyright 2011, by Giovanni Dicanio <giovanni.dicanio@gmail.com>
 //
 ///////////////////////////////////////////////////////////////////////////////
-dcclite::Sha1::Sha1()
-{
-	memset(mData, 0, sizeof(mData));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// SHA1.cpp : Console App to hash files using SHA-1.
-//
-//            Version 1.0 -- 2011, October 29th
-//
-// Copyright 2011, by Giovanni Dicanio <giovanni.dicanio@gmail.com>
-//
-///////////////////////////////////////////////////////////////////////////////
 std::string dcclite::Sha1::ToString() const
 {
 	//

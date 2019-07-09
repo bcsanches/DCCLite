@@ -10,8 +10,39 @@
 
 #include "ConsoleUtils.h"
 
-bool dcclite::ConsoleTryMakeNice()
+#include <signal.h>
+
+static dcclite::ConsoleEventCallback_t g_Callback = nullptr;
+
+static void SignalHandler(int s) 
 {
-	//nothing to do, it is already nice
-	return true;
+	switch (s)
+	{
+		case SIGINT:
+		case SIGKILL:
+		case SIGQUIT:
+		case SIGSTOP:
+		case SIGTERM:
+		case SIGABRT:		
+		case SIGPWR:
+			g_Callback(dcclite::ConsoleEvent::CLOSE);
+	}	
 }
+
+namespace dcclite
+{
+	bool ConsoleTryMakeNice()
+	{
+		//nothing to do, it is already nice
+		return true;
+	}
+
+	void ConsoleInstallEventHandler(ConsoleEventCallback_t callback)
+	{
+		g_Callback = callback;
+
+		signal(SIGINT, SignalHandler);		
+	}
+}
+
+
