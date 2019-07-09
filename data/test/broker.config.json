@@ -7,8 +7,17 @@
       "port": 8989,
       "devices": [
         {
-          "name": "HadesEntA",
-          "class": "ArduinoMega"
+          "name": "RelayStagingA",
+          "class": "ArduinoLeonard"
+        },
+        {
+          "id": "0x0129",
+          "name": "ArduinoPanelStaging",
+          "class": "ArduinoUno"
+        },
+        {          
+          "name": "Emulator",
+          "class": "ArduinoUno"
         }
       ]
     },
