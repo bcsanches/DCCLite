@@ -4,5 +4,7 @@ compiler:
   - gcc
 
 script:
-    - cmake
+    - mkdir build
+    - cd build
+    - cmake ../
     - cmake --build
