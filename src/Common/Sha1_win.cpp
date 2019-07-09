@@ -8,8 +8,6 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#define _CRT_SECURE_NO_WARNINGS
-
 #include "Sha1.h"
 
 #include <stdio.h>      // C file management
@@ -252,7 +250,7 @@ class HasherWrapper: public dcclite::detail::NonCopyable
 
 		void Compute(const void* data, size_t length)
 		{
-			mHasher.HashData(data, length);
+			mHasher.HashData(data, static_cast<ULONG>(length));
 		}
 
 		void Finalize(unsigned char hash[dcclite::SHA1_LENGTH])

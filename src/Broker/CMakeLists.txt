@@ -49,6 +49,8 @@ if(WIN32)
 		PRIVATE bcrypt.lib 
 		PRIVATE fmt
 	)
+
+	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
     
     set_property(TARGET Broker PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
     set_property(TARGET Broker PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "..\\data\\EFMR")
