@@ -257,7 +257,7 @@ class HasherWrapper: public dcclite::detail::NonCopyable
 
 		void Finalize(unsigned char hash[dcclite::SHA1_LENGTH])
 		{
-			mHasher.FinishData(hash);
+			mHasher.FinishHash(hash);
 		}
 
 	private:

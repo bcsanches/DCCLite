@@ -45,6 +45,12 @@ set(Common_HDRS
 	Util.h
 )
 
+if(WIN32)
+
+	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+
+endif(WIN32)
+
 add_library(Common  ${Common_SRCS} ${Common_HDRS})
 target_compile_features(Common PUBLIC cxx_std_17)     
 
