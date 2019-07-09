@@ -23,8 +23,6 @@ static unsigned long g_uStartTime = 0;
 static unsigned long g_uFrameCount = 0;
 static float g_uFps = 0;
 
-const int onboardLedPin = 13;
-
 bool g_fNetReady = false;
 
 void setup()

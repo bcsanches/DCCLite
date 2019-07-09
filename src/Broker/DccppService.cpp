@@ -26,7 +26,7 @@ class DccppClient: private IDccLiteServiceListener
 		DccppClient(const DccppClient& client) = delete;
 		DccppClient(DccppClient&& other) noexcept;
 
-		~DccppClient();
+		~DccppClient() override;
 
 		DccppClient& operator=(DccppClient&& other) noexcept
 		{
@@ -53,18 +53,18 @@ class DccppClient: private IDccLiteServiceListener
 		const Address	m_clAddress;
 };
 
-DccppClient::DccppClient(DccLiteService& system, const Address address, Socket&& socket) :
+DccppClient::DccppClient(DccLiteService& system, const Address address, Socket&& socket) :	
+	m_clMessenger(std::move(socket), ">"),
 	m_rclSystem(system),
-	m_clAddress(address),
-	m_clMessenger(std::move(socket), ">")
+	m_clAddress(address)
 {
 	m_rclSystem.AddListener(*this);
 }
 
-DccppClient::DccppClient(DccppClient&& other) noexcept :
+DccppClient::DccppClient(DccppClient&& other) noexcept :	
+	m_clMessenger(std::move(other.m_clMessenger)),
 	m_rclSystem(other.m_rclSystem),
-	m_clAddress(std::move(other.m_clAddress)),
-	m_clMessenger(std::move(other.m_clMessenger))
+	m_clAddress(std::move(other.m_clAddress))
 {
 	//empty
 }

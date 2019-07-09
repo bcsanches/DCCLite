@@ -34,6 +34,11 @@ class IDccLiteServiceListener
 		virtual void OnDeviceDisconnected(Device& device) = 0;
 
 		virtual void OnDecoderStateChange(Decoder& decoder) = 0;
+
+		virtual ~IDccLiteServiceListener() 
+		{
+			//empty
+		}
 };
 
 class IDccDecoderServices

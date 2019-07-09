@@ -199,7 +199,7 @@ void Device::AcceptConnection(const dcclite::Clock::TimePoint_t time, const dccl
 		
 		this->SendConfigStartPacket();
 
-		for(size_t i = 0, sz = m_vecDecoders.size(); i < m_vecDecoders.size(); ++i)		
+		for(size_t i = 0, sz = m_vecDecoders.size(); i < sz; ++i)		
 		{
 			this->SendDecoderConfigPacket(i);
 		}		

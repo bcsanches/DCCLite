@@ -316,20 +316,20 @@ class TerminalClient
 		const Address	m_clAddress;
 };
 
-TerminalClient::TerminalClient(TerminalService &owner, const Address address, Socket &&socket) :
-	m_rclOwner(owner),
-	m_clAddress(address),
+TerminalClient::TerminalClient(TerminalService &owner, const Address address, Socket &&socket) :	
 	m_clMessenger(std::move(socket)),
-	m_clContext(static_cast<dcclite::FolderObject &>(owner.GetRoot()))
+	m_rclOwner(owner),	
+	m_clContext(static_cast<dcclite::FolderObject &>(owner.GetRoot())),
+	m_clAddress(address)
 {
 	m_clContext.SetLocation(owner.GetPath());
 }
 
-TerminalClient::TerminalClient(TerminalClient &&other) noexcept:
-	m_rclOwner(other.m_rclOwner),
-	m_clAddress(std::move(other.m_clAddress)),
+TerminalClient::TerminalClient(TerminalClient &&other) noexcept:		
 	m_clMessenger(std::move(other.m_clMessenger)),
-	m_clContext(std::move(other.m_clContext))
+	m_rclOwner(other.m_rclOwner),	
+	m_clContext(std::move(other.m_clContext)),
+	m_clAddress(std::move(other.m_clAddress))
 {
 	//empty
 }
@@ -478,15 +478,15 @@ TerminalService::TerminalService(const ServiceClass &serviceClass, const std::st
 	}	
 
 	{
-		auto activateItemCmd = cmdHost->AddCmd(std::make_unique<ActivateItemCmd>());
+		cmdHost->AddCmd(std::make_unique<ActivateItemCmd>());
 	}
 
 	{
-		auto deactivateItemCmd = cmdHost->AddCmd(std::make_unique<DeactivateItemCmd>());
+		cmdHost->AddCmd(std::make_unique<DeactivateItemCmd>());
 	}
 
 	{
-		auto flipItemCmd = cmdHost->AddCmd(std::make_unique<FlipItemCmd>());
+		cmdHost->AddCmd(std::make_unique<FlipItemCmd>());
 	}
 
 	if (!m_clSocket.Open(params["port"].GetInt(), dcclite::Socket::Type::STREAM))
