@@ -85,21 +85,26 @@ void ServoTurnoutDecoder::SaveConfig(EpromStream& stream)
 
 void ServoTurnoutDecoder::TurnOnPower(const unsigned long ticks)
 {
-	if (!m_clPowerPin)
-		return;
-	
-	m_clPowerPin.DigitalWrite(Pin::VLOW);	
-	m_fFlags |= dcclite::SRVT_POWER_ON;
+	if (m_clPowerPin)		
+	{
+		m_clPowerPin.DigitalWrite(Pin::VLOW);
+	}
 
+	m_clServo.attach(m_clPin.Raw());
+		
+	m_fFlags |= dcclite::SRVT_POWER_ON;
 	m_uNextThink = ticks + POWER_WAIT_TICKS;
 }
 
 void ServoTurnoutDecoder::TurnOffPower()
 {
-	if (!m_clPowerPin)
-		return;
+	if (m_clPowerPin)		
+	{
+		m_clPowerPin.DigitalWrite(Pin::VHIGH);
+	}
 
-	m_clPowerPin.DigitalWrite(Pin::VHIGH);
+	m_clServo.detach();
+	
 	m_fFlags &= ~dcclite::SRVT_POWER_ON;
 
 	//Console::SendLogEx("SERVO", "POWEROFF");
@@ -120,10 +125,7 @@ void ServoTurnoutDecoder::Init(const dcclite::PinType_t powerPin, const dcclite:
 	{
 		m_clFrogPin.Attach(frogPin, Pin::MODE_OUTPUT);		
 	}
-
-	//attach servo pin after power so we keep power off
-	m_clServo.attach(m_clPin.Raw());
-
+		
 	States desiredState = this->GetStateGoal();
 
 	// sets status to 0 (INACTIVE) is bit 1 of iFlag=0, otherwise set to value of bit 2 of iFlag
@@ -147,6 +149,8 @@ void ServoTurnoutDecoder::Init(const dcclite::PinType_t powerPin, const dcclite:
 		m_uServoPos = SERVO_CLOSED_ANGLE;
 		this->OperateClose(millis());
 	}
+
+	m_clServo.attach(m_clPin.Raw());
 	m_clServo.write(m_uServoPos);
 
 #if 0
