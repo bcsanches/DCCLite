@@ -10,6 +10,11 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - g++-7
+    env:
+      - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+
+before_install:
+    - eval "${MATRIX_EVAL}"
 
 # the install step will take care of deploying a newer cmake version
 install:    
