@@ -105,7 +105,7 @@ namespace dcclite
 	class ObjectPath
 	{		
 		public:
-			ObjectPath() noexcept = default;
+			ObjectPath() = default;
 
 			ObjectPath(const ObjectPath &rhs) = default;				
 			ObjectPath(ObjectPath &&rhs) = default;
