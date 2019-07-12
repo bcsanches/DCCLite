@@ -37,12 +37,12 @@ static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 
 int main(int argc, char **argv)
 {		
-	dcclite::LogInit("DccLiteBrooker_%N.log");
+	dcclite::LogInit("DccLiteBroker_%N.log");
 
 	dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
 	dcclite::ConsoleTryMakeNice();
 
-	dcclite::PathUtils::SetAppName("Brooker");
+	dcclite::PathUtils::SetAppName("Broker");
 
 	try
 	{ 

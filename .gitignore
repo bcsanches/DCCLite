@@ -1,14 +1,14 @@
 # Add any directories, files, or patterns you don't want to be tracked by version control
 .vs/
-DccLiteBrooker/DccLiteBrooker.vcxproj.user
-DccLiteBrooker/Debug/
-DccLiteBrooker/x64/
+DccLiteBroker/DccLiteBroker.vcxproj.user
+DccLiteBroker/Debug/
+DccLiteBroker/x64/
 x64/
 bin/
 Common/Debug/
 Common/Win32/Debug/Common.idb
 Common/Win32/
-DccLiteBrooker/Win32/
+DccLiteBroker/Win32/
 DccLiteTerminal/Debug/
 DccLiteTerminal/Win32/Debug/
 Common/obj/
