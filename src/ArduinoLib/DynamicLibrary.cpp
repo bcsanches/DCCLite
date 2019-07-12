@@ -11,19 +11,24 @@
 #include "DynamicLibrary.h"
 
 #include <iostream>
-#include <filesystem>
 
 #include <fmt/format.h>
 
+#include "FileSystem.h"
+
 //based on https://github.com/bcsanches/phobos3d/blob/master/src/Base/DynamicLibrary.cpp
 
-#ifdef PH_LINUX
+#ifndef WIN32
 #include <dlfcn.h>
-#define CloseLib dlclose
 
 inline void *OpenLib(const char *name)
 {
 	return dlopen(name, RTLD_LAZY);
+}
+
+inline void CloseLib(void* handle)
+{
+	dlclose(handle);
 }
 
 #define GetLibSymbol dlsym
@@ -59,7 +64,7 @@ void DynamicLibrary::Load(const std::string_view name)
 {
 	m_strName = name;
 
-	std::filesystem::path path(name);	
+	dcclite::fs::path path(name);	
 
 #ifdef PH_LINUX
 	Path path(tmp);
@@ -93,10 +98,11 @@ void *DynamicLibrary::GetSymbol(const char *name)
 
 void DynamicLibrary::RaiseException(const char *module, const char *dll)
 {
-#if defined PH_LINUX
-	String_t ret = dlerror();
+#ifndef WIN32
+	auto errorMsg = dlerror();
 
-	PH_RAISE(NATIVE_API_FAILED_EXCEPTION, module, ret);
+	std::string ret = fmt::format("DynamicLibrary[{}] {} not found item {}", module, errorMsg, dll);
+
 #elif defined WIN32
 	LPVOID lpMsgBuf;
 	FormatMessage(
@@ -115,7 +121,7 @@ void DynamicLibrary::RaiseException(const char *module, const char *dll)
 
 	// Free the buffer.
 	LocalFree(lpMsgBuf);
+#endif
 		
 	throw std::logic_error(ret);
-#endif
 }

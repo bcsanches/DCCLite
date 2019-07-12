@@ -10,8 +10,12 @@
 
 #pragma once
 
-#ifdef ARDUINOLIB_EXPORTS  
-#define ARDUINO_API __declspec(dllexport)   
-#else  
-#define ARDUINO_API __declspec(dllimport)   
+#ifdef WIN32
+	#ifdef ARDUINOLIB_EXPORTS  
+	#define ARDUINO_API __declspec(dllexport)   
+	#else  
+	#define ARDUINO_API __declspec(dllimport)   
+	#endif
+#else
+	#define ARDUINO_API
 #endif

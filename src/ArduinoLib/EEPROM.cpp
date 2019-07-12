@@ -12,13 +12,13 @@
 
 #include <atomic>
 #include <condition_variable>
-#include <filesystem>
 #include <thread>
 #include <mutex>
 
 #include <spdlog/logger.h>
 
 #include "EEPROMLib.h"
+#include "FileSystem.h"
 #include "PathUtils.h"
 
 #include <Log.h>
@@ -104,7 +104,7 @@ namespace ArduinoLib::detail
 
 	static bool TrySaveRomState()
 	{				
-		std::filesystem::remove(g_strRomBackup);
+		dcclite::fs::remove(g_strRomBackup);
 
 		FILE *fp = fopen(g_strRomTempFileName.c_str(), "wb");
 		if (fp == nullptr)
@@ -116,10 +116,10 @@ namespace ArduinoLib::detail
 
 		std::error_code ec;
 		
-		std::filesystem::rename(g_strRomFileName, g_strRomBackup, ec);
-		std::filesystem::rename(g_strRomTempFileName, g_strRomFileName, ec);
+		dcclite::fs::rename(g_strRomFileName, g_strRomBackup, ec);
+		dcclite::fs::rename(g_strRomTempFileName, g_strRomFileName, ec);
 
-		std::filesystem::remove(g_strRomBackup);
+		dcclite::fs::remove(g_strRomBackup);
 
 		return true;
 	}
@@ -211,14 +211,14 @@ namespace ArduinoLib::detail
 	{
 		dcclite::Log::Info("TryLoadRomState: trying to load Rom {}", g_strRomFileName);
 
-		if (std::filesystem::exists(g_strRomBackup) && std::filesystem::exists(g_strRomTempFileName))
+		if (dcclite::fs::exists(g_strRomBackup) && dcclite::fs::exists(g_strRomTempFileName))
 		{
 			dcclite::Log::Warn("TryLoadRomState: found backup {}, restoring it", g_strRomTempFileName);
 
-			std::filesystem::remove(g_strRomFileName);
+			dcclite::fs::remove(g_strRomFileName);
 			
-			std::filesystem::rename(g_strRomTempFileName, g_strRomFileName);
-			std::filesystem::remove(g_strRomBackup);
+			dcclite::fs::rename(g_strRomTempFileName, g_strRomFileName);
+			dcclite::fs::remove(g_strRomBackup);
 
 			dcclite::Log::Warn("TryLoadRomState: backup ready");
 		}
@@ -265,9 +265,9 @@ namespace ArduinoLib::detail
 
 		auto appPath = dcclite::PathUtils::GetAppFolder();
 		appPath.append("Emulator");
-		std::filesystem::create_directories(appPath);
+		dcclite::fs::create_directories(appPath);
 
-		g_strRomFileName = (appPath / std::filesystem::path(moduleName).replace_extension(".rom")).string();
+		g_strRomFileName = (appPath / dcclite::fs::path(moduleName).replace_extension(".rom")).string();
 
 		g_strRomTempFileName = g_strRomFileName;
 		g_strRomTempFileName += ".tmp";

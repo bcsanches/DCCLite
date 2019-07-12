@@ -132,8 +132,8 @@ namespace ArduinoLib
 
 		g_strModuleName = std::move(moduleName);
 
-		g_pfnSetup = static_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("setup"));
-		g_pfnLoop = static_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("loop"));		
+		g_pfnSetup = reinterpret_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("setup"));
+		g_pfnLoop = reinterpret_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("loop"));
 
 		g_Clock = dcclite::Clock();
 
