@@ -37,8 +37,7 @@ add_executable(Broker  ${Broker_SRCS} ${Broker_HDRS})
 target_compile_features(Broker PUBLIC cxx_std_17)    
 
 target_include_directories(Broker 
-	PRIVATE ${DCCLite_SOURCE_DIR}/src/Common 	
-	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/JsonCreator/include
+	PRIVATE ${DCCLite_SOURCE_DIR}/src/Common	
 )
 
 #set_target_properties( Broker PROPERTIES RUNTIME_OUTPUT_DIRECTORY bin/ )
