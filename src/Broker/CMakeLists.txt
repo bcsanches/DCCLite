@@ -38,6 +38,7 @@ target_compile_features(Broker PUBLIC cxx_std_17)
 
 target_include_directories(Broker 
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/Common 	
+	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/JsonCreator/include
 )
 
 #set_target_properties( Broker PROPERTIES RUNTIME_OUTPUT_DIRECTORY bin/ )
