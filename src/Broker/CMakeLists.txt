@@ -61,6 +61,7 @@ else(WIN32)
 
 	target_link_libraries(Broker 
 		OpenSSL::Crypto
+		OpenSSL::SSL
 		Common 
 		EmbeddedLib
 		stdc++fs 
