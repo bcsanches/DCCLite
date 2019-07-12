@@ -56,7 +56,7 @@ target_compile_features(Common PUBLIC cxx_std_17)
 
 target_include_directories(Common
   PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/fmt/include
-  PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/JSonCreator/include
+  PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/JsonCreator/include
           ${DCCLite_SOURCE_DIR}/contrib/rapidjson/include
           ${DCCLite_SOURCE_DIR}/contrib/spdlog/include
           ${DCCLite_SOURCE_DIR}/src/LiteDecoder/lib/Common
