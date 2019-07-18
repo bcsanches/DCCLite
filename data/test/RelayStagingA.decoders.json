@@ -117,13 +117,14 @@
   },
   
   {
-    "name":"AServo01",
+    "name":"HLXIntT01",
     "class":"ServoTurnout",
-    "address":"0x23",
-    "pin": 23,
+    "address":"0100",
+    "pin": 2,
     "inverted": true,
-    "powerPin":24,
-    "frogPin":25,
-    "operationTime":3000
+    "powerPin":22,
+    "frogPin":24,
+    "invertedFrog":false,
+    "operationTime":1000
   }
 ]
