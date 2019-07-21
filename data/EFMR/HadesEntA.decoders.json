@@ -18,27 +18,30 @@
     "inverted": false,
     "powerPin":26,
     "frogPin":28,
-    "operationTime":3000
+    "invertedFrog":true,
+    "operationTime":300
   },
   {
     "name":"HDSEntAT02",
     "class":"ServoTurnout",
     "address":"0002",
     "pin": 4,
-    "inverted": false,
+    "inverted": true,
     "powerPin":30,
     "frogPin":32,
-    "operationTime":3000
+    "invertedFrog":false,
+    "operationTime":300
   },
   {
     "name":"HDSEntAT03",
     "class":"ServoTurnout",
     "address":"0003",
     "pin": 5,
-    "inverted": false,
+    "inverted": true,
     "powerPin":34,
     "frogPin":36,
-    "operationTime":3000
+    "invertedFrog":false,
+    "operationTime":300
   },
   {
     "name":"HDSEntAT04",

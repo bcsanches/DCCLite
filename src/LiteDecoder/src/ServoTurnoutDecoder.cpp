@@ -14,8 +14,6 @@
 #include "Packet.h"
 #include "Storage.h"
 
-constexpr unsigned char SERVO_CLOSED_ANGLE = 0;
-constexpr unsigned char SERVO_THROWN_ANGLE = dcclite::SERVO_DEFAULT_RANGE;
 constexpr auto POWER_OFF_TICKS = 500;
 constexpr auto POWER_WAIT_TICKS = 200;
 
@@ -141,12 +139,12 @@ void ServoTurnoutDecoder::Init(const dcclite::PinType_t powerPin, const dcclite:
 	
 	if (desiredState == States::THROWN)
 	{
-		m_uServoPos = SERVO_THROWN_ANGLE;
+		m_uServoPos = m_uRange;
 		this->OperateThrown(millis());
 	}
 	else
 	{
-		m_uServoPos = SERVO_CLOSED_ANGLE;
+		m_uServoPos = 0;
 		this->OperateClose(millis());
 	}
 
@@ -272,11 +270,11 @@ bool ServoTurnoutDecoder::Update(const unsigned long ticks)
 	}
 	else if (state == States::CLOSING)
 	{
-		return this->StateUpdate(SERVO_CLOSED_ANGLE, States::CLOSED, -1, ticks);
+		return this->StateUpdate(0, States::CLOSED, -1, ticks);
 	}
 	else
 	{
-		return this->StateUpdate(SERVO_THROWN_ANGLE, States::THROWN, 1, ticks);
+		return this->StateUpdate(m_uRange, States::THROWN, 1, ticks);
 	}		
 }
 
