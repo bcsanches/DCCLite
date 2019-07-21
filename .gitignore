@@ -18,3 +18,4 @@ src/LiteDecoder/.vscode/
 packages/
 
 build/
+src/LiteDecoder/.pio/
