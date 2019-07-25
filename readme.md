@@ -1,3 +1,5 @@
+[![Travis Build Status](https://travis-ci.org/bcsanches/DCCLite.svg?branch=master)](https://travis-ci.org/bcsanches/DCCLite)  
+
 What's DccLite
 --------------
 
@@ -8,10 +10,10 @@ Dependencies
 
 This code needs the following libraries to be built:
 
-[Fmt][3]
-[JsonCreator][2]
-[RapidJson][1]
-[spdlog][4]
+- [Fmt][3]
+- [JsonCreator][2]
+- [RapidJson][1]
+- [spdlog][4]
 
 License
 -------
