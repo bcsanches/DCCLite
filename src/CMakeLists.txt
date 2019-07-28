@@ -5,6 +5,7 @@ add_subdirectory(Common)
 add_subdirectory(Terminal)
 add_subdirectory(Broker)
 add_subdirectory(Emulator)
+add_subdirectory(Launcher)
 add_subdirectory(LiteDecoder)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")

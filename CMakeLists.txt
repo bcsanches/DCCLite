@@ -10,3 +10,7 @@ add_subdirectory(src)
 add_subdirectory(contrib)
  
 set_property(TARGET fmt PROPERTY FOLDER "contrib")
+
+include(InstallRequiredSystemLibraries)
+
+install(TARGETS Broker Launcher)

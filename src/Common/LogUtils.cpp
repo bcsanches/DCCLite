@@ -16,6 +16,8 @@
 
 #ifdef WIN32
 	#include <spdlog/sinks/msvc_sink.h>
+
+	#include "PathUtils.h"
 #endif
 
 namespace dcclite
@@ -26,9 +28,16 @@ namespace dcclite
 	{
 		//auto console = spdlog::stdout_color_mt("console");
 
+#ifdef WIN32
+		auto logPath = dcclite::PathUtils::GetAppFolder().string();
+		logPath.append(fileName);
+#else
+		dcclite::fs::path logPath{ fileName };
+#endif
+
 		std::vector<spdlog::sink_ptr> sinks;
 		sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
-		sinks.push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(fileName, true));
+		sinks.push_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(logPath, true));
 
 #ifdef WIN32
 		sinks.push_back(std::make_shared<spdlog::sinks::msvc_sink_mt>());
