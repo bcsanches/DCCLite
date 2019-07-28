@@ -11,6 +11,24 @@ target_include_directories(Launcher
     ${DCCLite_SOURCE_DIR}/src/Common    
 )
 
-target_link_libraries(Launcher PRIVATE Common fmt)
+
+if(WIN32)
+    target_link_libraries(Launcher 
+		PRIVATE Common 		
+		PRIVATE fmt
+	)
+
+	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+              
+else(WIN32)
+	
+	target_link_libraries(Launcher 		
+		Common 		
+		stdc++fs 
+		fmt 		
+	)
+
+endif(WIN32)
+
 
 

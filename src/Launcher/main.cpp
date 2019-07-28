@@ -25,9 +25,9 @@ using namespace dcclite;
 using namespace std::chrono_literals;
 
 #ifdef WIN32
-constexpr char* gBrokerExecutableName = "Broker.exe";
+static const char *gBrokerExecutableName = "Broker.exe";
 #else
-constexpr char* gBrokerExecutableName = "Broker";
+static const char *gBrokerExecutableName = "Broker";
 #endif
 
 
@@ -77,7 +77,7 @@ class Process
 			}
 		}
 
-		bool IsRunning()
+		bool IsRunning() const
 		{
 			auto r = WaitForSingleObject(mInfo.hProcess, 0);
 			switch (r)
@@ -105,11 +105,55 @@ class Process
 
 #else
 
+#include <sys/types.h>
+#include <signal.h>
 #include <unistd.h>
 
 class Process
 {
+	public:
+		Process(int argc, char** argv)
+		{				
+			m_pid = fork();
 
+			if (m_pid == -1)
+			{
+				throw std::runtime_error(fmt::format("[LAUNCHER] fork failed: {}", errno));
+			}
+
+			if (m_pid != 0)
+			{
+				//we are the parent
+
+				return;
+			}
+
+			std::vector<const char *> newArgs;
+			newArgs.reserve(argc + 1);
+
+			newArgs.push_back(gBrokerExecutableName);
+			
+			for (int i = 0; i < argc; ++i)
+				newArgs.push_back(argv[i]);
+
+			newArgs.push_back(nullptr);
+
+			if (execv(gBrokerExecutableName, const_cast<char **>(&newArgs[0])) == -1)
+			{
+				throw std::runtime_error(fmt::format("[LAUNCHER] execv failed: {}", errno));
+			}
+
+			//never reached
+		}
+
+		bool IsRunning() const
+		{
+			//send a blank signal to see if process is still there
+			return kill(m_pid, 0) == 0;
+		}
+
+	private:
+		pid_t m_pid;
 };
 
 #endif
