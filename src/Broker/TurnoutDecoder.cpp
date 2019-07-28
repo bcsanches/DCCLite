@@ -73,3 +73,4 @@ void ServoTurnoutDecoder::WriteConfig(dcclite::Packet& packet) const
 	auto ticks = m_tOperationTime.count() / m_uRange;
 	packet.Write8(ticks > 255 ? 255 : static_cast<uint8_t>(ticks));
 }
+
