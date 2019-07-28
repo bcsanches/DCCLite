@@ -17,6 +17,7 @@
 #include "ConsoleUtils.h"
 #include "FileSystem.h"
 #include "LogUtils.h"
+#include "PathUtils.h"
 
 #include "NetMessenger.h"
 
@@ -161,11 +162,15 @@ class Process
 
 int main(int argc, char **argv)
 {
+	dcclite::PathUtils::InitAppFolders("Launcher");
+
 	LogInit("launcher.log");
 
 	auto log = LogGetDefault();
 
+#ifdef _DEBUG
 	ConsoleTryMakeNice();
+#endif
 
 	log->info("[LAUNCHER] Looking for Broker main file");	
 
@@ -181,8 +186,15 @@ int main(int argc, char **argv)
 		Process broker{ argc, argv };
 
 		//wait for the process to go stable
-		while (broker.IsRunning())
+		for(;;)
 		{
+			if (!broker.IsRunning())
+			{
+				log->critical("[LAUNCHER] Broker process appears to be dead");
+
+				return -1;
+			}
+
 			std::this_thread::sleep_for(1000ms);
 
 			log->info("[LAUNCHER] Trying to connect to Broker");
@@ -218,7 +230,9 @@ int main(int argc, char **argv)
 	catch (std::exception& ex)
 	{
 		log->critical(ex.what());
-	}
+
+		return -1;
+	}	
 
 	log->info("[LAUNCHER] Broker is running, launcher exiting...");
 

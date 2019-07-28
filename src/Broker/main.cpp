@@ -36,16 +36,17 @@ static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 }
 
 int main(int argc, char **argv)
-{		
-	dcclite::LogInit("DccLiteBroker_%N.log");
-
-	dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
-	dcclite::ConsoleTryMakeNice();
-
-	dcclite::PathUtils::SetAppName("Broker");
-
+{				
 	try
 	{ 
+		dcclite::PathUtils::InitAppFolders("Broker");
+
+		dcclite::LogInit("DccLiteBroker_%N.log");
+
+		dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
+
+		dcclite::ConsoleTryMakeNice();
+
 		Broker broker{ (argc == 1) ? "MyRailroad" : argv[1] };
 
 		dcclite::Clock clock;

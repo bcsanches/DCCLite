@@ -16,7 +16,7 @@
 
 namespace dcclite::PathUtils
 {
-	extern void SetAppName(std::string_view name);	
+	extern void InitAppFolders(std::string_view name);	
 
 	extern fs::path GetAppFolder();
 }

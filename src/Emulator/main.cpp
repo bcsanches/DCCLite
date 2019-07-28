@@ -122,7 +122,7 @@ int main(int, char **)
 
 	dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
 
-	dcclite::PathUtils::SetAppName("Emulator");
+	dcclite::PathUtils::InitAppFolders("Emulator");
 
 	ArduinoLib::Setup("LiteDecoderLib.dll", dcclite::LogGetDefault());
 

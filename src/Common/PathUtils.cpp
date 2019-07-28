@@ -10,11 +10,24 @@
 
 #include "PathUtils.h"
 
+#include <fmt/format.h>
+
 static std::string g_strAppName;
 
-void dcclite::PathUtils::SetAppName(std::string_view name)
+void dcclite::PathUtils::InitAppFolders(std::string_view name)
 {
 	g_strAppName = name;
+
+	//invoke it to make sure it exists
+	auto path = GetAppFolder();
+
+	std::error_code ec;
+	dcclite::fs::create_directories(path, ec);
+
+	if (ec)
+	{
+		throw std::runtime_error(fmt::format("Cannot create app path {}, system error: {}", path.string(), ec.message()));				
+	}	
 }
 
 #ifdef WIN32

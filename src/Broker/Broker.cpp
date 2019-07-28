@@ -66,7 +66,7 @@ void Broker::LoadConfig()
 
 	if (!configFile)
 	{
-		throw std::runtime_error("error: cannot open config file");		
+		throw std::runtime_error(fmt::format("error: cannot open config file {}", configFileName.string()));
 	}
 
 	dcclite::Log::Debug("Loaded config {}", configFileName.string());
