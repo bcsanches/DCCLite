@@ -134,7 +134,7 @@ class Process
 
 			newArgs.push_back(gBrokerExecutableName);
 			
-			for (int i = 0; i < argc; ++i)
+			for (int i = 1; i < argc; ++i)
 				newArgs.push_back(argv[i]);
 
 			newArgs.push_back(nullptr);
