@@ -258,7 +258,7 @@ namespace dcclite
 
 		timeval tval = { 0 };
 
-		int rc = select(0, nullptr, &set, nullptr, &tval);
+		int rc = select(FD_SETSIZE, nullptr, &set, nullptr, &tval);
 		if (rc < 0)
 			throw std::runtime_error("select (write test) failed for GetConnectionProgress");
 
@@ -274,7 +274,7 @@ namespace dcclite
 		FD_SET(this->m_hHandle, &set);
 #endif		
 
-		rc = select(0, nullptr, nullptr, &set, &tval);
+		rc = select(FD_SETSIZE, nullptr, nullptr, &set, &tval);
 		if (rc < 0)
 			throw std::runtime_error("select (error test) failed for GetConnectionProgress");
 
