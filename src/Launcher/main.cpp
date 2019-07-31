@@ -39,11 +39,11 @@ static const char *gBrokerExecutableName = "Broker";
 class Process
 {
 	public:
-		Process(int argc, char** argv)
+		Process(const fs::path& brokerPath, int argc, char** argv)
 		{
 			std::stringstream cmdLine;
 
-			cmdLine << "./" << gBrokerExecutableName << ' ';
+			cmdLine << "./" << brokerPath << ' ';
 
 			for (int i = 1; i < argc; ++i)
 			{
@@ -113,7 +113,7 @@ class Process
 class Process
 {
 	public:
-		Process(int argc, char** argv)
+		Process(const fs::path &brokerPath, int argc, char** argv)
 		{				
 			m_pid = fork();
 
@@ -139,7 +139,7 @@ class Process
 
 			newArgs.push_back(nullptr);
 
-			if (execv(gBrokerExecutableName, const_cast<char **>(&newArgs[0])) == -1)
+			if (execv(brokerPath.string().c_str(), const_cast<char **>(&newArgs[0])) == -1)
 			{
 				throw std::runtime_error(fmt::format("[LAUNCHER] execv failed: {}", errno));
 			}
@@ -168,22 +168,35 @@ int main(int argc, char **argv)
 
 	auto log = LogGetDefault();
 
+	fs::path brokerPath = fs::path{ gBrokerExecutableName };
+
 #ifdef _DEBUG
 	ConsoleTryMakeNice();
 #endif
 
-	log->info("[LAUNCHER] Looking for Broker main file");	
+	log->info("[LAUNCHER] Looking for Broker main file at {}", fs::current_path().string());	
 
-	if (!fs::exists(gBrokerExecutableName))
+	if (!fs::exists(brokerPath))
 	{
-		log->critical("[LAUNCHER] Broker executable {} not found, cannot continue", gBrokerExecutableName);
+		log->warn("[LAUNCHER] Broker executable {} not found at running path", brokerPath.string());
 
-		return -1;
+		brokerPath = fs::path{ argv[0] };
+
+		brokerPath.replace_filename(gBrokerExecutableName);
+
+		if (!fs::exists(brokerPath))
+		{
+			log->critical("[LAUNCHER] Broker executable {} not found, cannot continue", brokerPath.string());
+
+			return -1;
+		}
 	}
+
+	log->info("[LAUNCHER] Broker executable found at {}", brokerPath.string());
 
 	try
 	{
-		Process broker{ argc, argv };
+		Process broker{ brokerPath, argc, argv };
 
 		//wait for the process to go stable
 		for(;;)
