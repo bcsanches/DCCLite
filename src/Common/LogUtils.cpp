@@ -41,9 +41,7 @@ namespace dcclite
 
 #ifdef WIN32
 		sinks.push_back(std::make_shared<spdlog::sinks::msvc_sink_mt>());
-#endif
-
-		printf("entered 1");
+#endif		
 		auto combined_logger = std::make_shared<spdlog::logger>("dcclite", begin(sinks), end(sinks));
 
 		//register it if you need to access it globally
