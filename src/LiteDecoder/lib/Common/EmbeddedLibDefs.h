@@ -36,6 +36,11 @@ namespace dcclite
 		ACTIVE
 	};
 
+	inline const char *DecoderStateName(const DecoderStates state)
+	{
+		return state == DecoderStates::ACTIVE ? "ACTIVE" : "INACTIVE";
+	}
+
 	/**
 	
 	//https://github.com/DccPlusPlus/BaseStation/wiki/Commands-for-DCCpp-BaseStation

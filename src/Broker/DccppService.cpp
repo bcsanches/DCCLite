@@ -135,7 +135,7 @@ bool DccppClient::Update()
 		{
 			std::string response;
 
-			dcclite::Log::Trace("[DccppClient] Received {}", msg);
+			dcclite::Log::Debug("[DccppClient] Received {}", msg);
 
 			dcclite::Parser parser(msg.c_str());
 

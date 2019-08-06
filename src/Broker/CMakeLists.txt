@@ -6,6 +6,7 @@ set(Broker_SRCS
   Decoder.cpp
   Device.cpp
   main.cpp  
+  OutputDecoder.cpp
   Project.cpp
   SensorDecoder.cpp  
   Service.cpp

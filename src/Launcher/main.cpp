@@ -43,7 +43,7 @@ class Process
 		{
 			std::stringstream cmdLine;
 
-			cmdLine << "./" << brokerPath << ' ';
+			cmdLine << brokerPath << ' ';
 
 			for (int i = 1; i < argc; ++i)
 			{

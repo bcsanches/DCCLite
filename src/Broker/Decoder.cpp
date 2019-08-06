@@ -62,7 +62,7 @@ void Decoder::SyncRemoteState(dcclite::DecoderStates state)
 	{
 		m_kRemoteState = state;
 
-		dcclite::Log::Debug("[Decoder::SyncRemoteState] {} changed: {}", this->GetName(), state == dcclite::DecoderStates::ACTIVE ? "ACTIVE" : "INACTIVE");
+		dcclite::Log::Info("[{}::SyncRemoteState] changed: {}", this->GetName(), dcclite::DecoderStateName(state));
 
 		m_rclManager.Decoder_OnStateChanged(*this);
 	}	

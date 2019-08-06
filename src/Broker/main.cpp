@@ -24,6 +24,9 @@
 
 #include <spdlog/logger.h>
 
+#define BUILD_NUM "0.1.0"
+
+
 static bool fExitRequested = false;
 
 //static TerminalCmd g_ShutdownCmd{ "shutdown" };
@@ -43,6 +46,12 @@ int main(int argc, char **argv)
 
 		dcclite::LogInit("DccLiteBroker_%N.log");
 
+#ifndef DEBUG
+		dcclite::LogGetDefault()->set_level(spdlog::level::info);
+#endif
+
+		dcclite::Log::Info("DCClite {} {}", BUILD_NUM, __DATE__);
+
 		dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
 
 		dcclite::ConsoleTryMakeNice();
@@ -51,7 +60,7 @@ int main(int argc, char **argv)
 
 		dcclite::Clock clock;
 
-		dcclite::Log::Info("Ready, entering main loop");
+		dcclite::Log::Info("Ready, main loop...");
 		
 		while (!fExitRequested)
 		{

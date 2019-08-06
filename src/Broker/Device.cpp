@@ -227,7 +227,7 @@ void Device::OnPacket_Ping(dcclite::Packet &packet, dcclite::Clock::TimePoint_t 
 
 	this->RefreshTimeout(time);
 
-	dcclite::Log::Trace("[{}::Device::OnPacket_Ping] ping", this->GetName());
+	dcclite::Log::Debug("[{}::Device::OnPacket_Ping] ping", this->GetName());
 }
 
 void Device::OnPacket_State(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteConfigToken)
@@ -302,7 +302,7 @@ void Device::OnPacket_ConfigAck(dcclite::Packet &packet, dcclite::Clock::TimePoi
 
 	m_upConfigState->m_RetryTime = time + CONFIG_RETRY_TIME;
 
-	dcclite::Log::Trace("[{}::Device::OnPacket_ConfigAck] Config ACK {}", this->GetName(), seq);
+	dcclite::Log::Info("[{}::Device::OnPacket_ConfigAck] Config ACK {}", this->GetName(), seq);
 
 	if (m_upConfigState->m_uSeqCount == m_upConfigState->m_vecAcks.size())
 	{
@@ -318,7 +318,7 @@ void Device::OnPacket_ConfigFinished(dcclite::Packet &packet, dcclite::Clock::Ti
 		return;
 
 	m_upConfigState.reset();
-	dcclite::Log::Trace("[{}::Device::OnPacket_ConfigFinished] Config Finished, device is ready", this->GetName());
+	dcclite::Log::Info("[{}::Device::OnPacket_ConfigFinished] Config Finished, device is ready", this->GetName());
 
 	RefreshTimeout(time);
 }
