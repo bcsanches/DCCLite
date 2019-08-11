@@ -32,7 +32,8 @@ namespace dcclite
 		CONFIG_ACK,
 		MSG_PING,
 		MSG_PONG,			
-		STATE
+		STATE,
+		SYNC
 	};
 
 	constexpr uint32_t PACKET_ID = 0xBEEFFEED;
@@ -41,7 +42,7 @@ namespace dcclite
 
 	constexpr uint8_t MAX_DECODERS_STATES_PER_PACKET = 64;
 
-	constexpr uint16_t PROTOCOL_VERSION = 1;
+	constexpr uint16_t PROTOCOL_VERSION = 2;
 
 	typedef BitPack<MAX_DECODERS_STATES_PER_PACKET> StatesBitPack_t;
 

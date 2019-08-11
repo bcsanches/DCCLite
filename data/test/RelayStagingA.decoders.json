@@ -5,7 +5,7 @@
     "address": "0x10",
     "pin": 3,
     "inverted": false,
-    "ignoreSavedState": true,
+    "ignoreSavedState": false,
     "activateOnPowerUp": false
   },
   {

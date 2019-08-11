@@ -108,12 +108,7 @@ class Decoder: public dcclite::Object
 		inline dcclite::DecoderStates GetRemoteState() const
 		{
 			return m_kRemoteState;
-		}
-
-		void InvalidateRemoteState()
-		{
-			m_kRemoteState = m_kRemoteState == dcclite::DecoderStates::ACTIVE ? dcclite::DecoderStates::INACTIVE : dcclite::DecoderStates::ACTIVE;
-		}
+		}		
 
 		//
 		//IObject

@@ -114,6 +114,7 @@ class DccLiteService : public Service, private IDccDeviceServices, private IDccD
 		void OnNet_ConfigAck(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);
 		void OnNet_ConfigFinished(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);
 		void OnNet_State(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);
+		void OnNet_Sync(const dcclite::Clock& clock, const dcclite::Address& senderAddress, dcclite::Packet& packet);
 
 		Device *TryFindDeviceByName(std::string_view name);
 

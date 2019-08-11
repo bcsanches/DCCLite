@@ -158,6 +158,10 @@ void DccLiteService::Update(const dcclite::Clock &clock)
 				this->OnNet_State(clock, sender, pkt);
 				break;
 
+			case dcclite::MsgTypes::SYNC:
+				this->OnNet_Sync(clock, sender, pkt);
+				break;
+
 			default:
 				dcclite::Log::Error(" msg type: {}", static_cast<uint8_t>(msgType));
 				return;
@@ -290,6 +294,17 @@ void DccLiteService::OnNet_State(const dcclite::Clock &clock, const dcclite::Add
 	dcclite::Guid configToken = packet.ReadGuid();
 
 	dev->OnPacket_State(packet, clock.Now(), senderAddress, configToken);
+}
+
+void DccLiteService::OnNet_Sync(const dcclite::Clock& clock, const dcclite::Address& senderAddress, dcclite::Packet& packet)
+{
+	auto dev = TryFindPacketDestination(packet);
+	if (!dev)
+		return;
+
+	dcclite::Guid configToken = packet.ReadGuid();
+
+	dev->OnPacket_Sync(packet, clock.Now(), senderAddress, configToken);
 }
 
 void DccLiteService::Device_SendPacket(const dcclite::Address destination, const dcclite::Packet &packet)

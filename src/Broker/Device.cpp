@@ -30,6 +30,8 @@ static auto constexpr TIMEOUT = 10s;
 static auto constexpr CONFIG_RETRY_TIME = 300ms;
 static auto constexpr STATE_TIMEOUT = 250ms;
 
+static auto constexpr SYNC_TIMEOUT = 250ms;
+
 inline void PreparePacket(dcclite::Packet& packet, dcclite::MsgTypes msgType, const dcclite::Guid& sessionToken, const dcclite::Guid& configToken)
 {
 	dcclite::PacketBuilder builder{ packet, msgType, sessionToken, configToken };
@@ -47,15 +49,15 @@ Device::Device(std::string name, IDccDeviceServices &dccService, const rapidjson
 	std::ifstream configFile(deviceConfigFilePath);
 	if (!configFile)
 	{
-		dcclite::Log::Error("Device cannot find {}", deviceConfigFilePath.string());
+		dcclite::Log::Error("[Device::Device] cannot find {}", deviceConfigFilePath.string());
 
 		return;
 	}
 
 	m_ConfigToken = project.GetFileToken(deviceConfigFileName);	
 
-	dcclite::Log::Trace("Device {} config token {}", this->GetName(), m_ConfigToken);
-	dcclite::Log::Trace("Device {} reading config {}", this->GetName(), deviceConfigFilePath.string());
+	dcclite::Log::Trace("[Device::Device] {} config token {}", this->GetName(), m_ConfigToken);
+	dcclite::Log::Trace("[Device::Device] {} reading config {}", this->GetName(), deviceConfigFilePath.string());
 
 	rapidjson::IStreamWrapper isw(configFile);
 	rapidjson::Document decodersData;
@@ -77,7 +79,7 @@ Device::Device(std::string name, IDccDeviceServices &dccService, const rapidjson
 		this->AddChild(std::make_unique<dcclite::Shortcut>(std::string(decoder.GetName()), decoder));
 	}
 
-	dcclite::Log::Trace("Device {} ready.", this->GetName());
+	dcclite::Log::Trace("[Device::Device] {} ready.", this->GetName());
 }
 
 
@@ -85,6 +87,7 @@ Device::Device(std::string name, IDccDeviceServices &dccService):
 	FolderObject(std::move(name)),
 	m_clDccService(dccService),
 	m_eStatus(Status::OFFLINE),
+	m_fPendingSync(true),
 	m_fRegistered(false)
 {
 	//empty
@@ -113,8 +116,9 @@ void Device::GoOnline(const dcclite::Address remoteAddress)
 	m_tLastStateSent.ClearAll();
 	m_tLastStateSentTime -= STATE_TIMEOUT;
 
-	m_eStatus = Status::ONLINE;	
-	this->ForceSync();
+	m_eStatus = Status::ONLINE;		
+	m_fPendingSync = true;
+	m_SyncTimeout = {};
 
 	dcclite::Log::Info("[{}::Device::GoOnline] Is online", this->GetName());
 }
@@ -159,20 +163,6 @@ void Device::SendConfigStartPacket() const
 	PreparePacket(pkt, dcclite::MsgTypes::CONFIG_START, m_SessionToken, m_ConfigToken);
 
 	m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
-}
-
-void Device::ForceSync()
-{
-	for (auto decoder : m_vecDecoders)
-	{
-		if (!decoder->IsOutputDecoder())
-		{
-			continue;
-		}
-
-		auto *outputDecoder = static_cast<OutputDecoder *>(decoder);
-		outputDecoder->InvalidateRemoteState();
-	}
 }
 
 void Device::AcceptConnection(const dcclite::Clock::TimePoint_t time, const dcclite::Address remoteAddress, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken)
@@ -230,8 +220,48 @@ void Device::OnPacket_Ping(dcclite::Packet &packet, dcclite::Clock::TimePoint_t 
 	dcclite::Log::Debug("[{}::Device::OnPacket_Ping] ping", this->GetName());
 }
 
+void Device::OnPacket_Sync(dcclite::Packet& packet, const dcclite::Clock::TimePoint_t time, const dcclite::Address remoteAddress, const dcclite::Guid remoteConfigToken)
+{
+	if (!this->CheckSessionConfig(remoteConfigToken, remoteAddress))
+		return;	
+
+	dcclite::StatesBitPack_t changedStates;
+	dcclite::StatesBitPack_t states;
+
+	packet.ReadBitPack(changedStates);
+	packet.ReadBitPack(states);
+
+	for (unsigned i = 0; i < changedStates.size(); ++i)
+	{
+		if (!changedStates[i])
+			continue;
+
+		auto state = states[i] ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE;
+		m_vecDecoders[i]->SyncRemoteState(state);
+
+		if (m_vecDecoders[i]->IsOutputDecoder())
+		{
+			auto* outputDecoder = static_cast<OutputDecoder*>(m_vecDecoders[i]);
+
+			//if after a sync, the requested state changes, we toggle it, so they are synced
+			//Hack?
+			if (outputDecoder->GetPendingStateChange())
+			{
+				outputDecoder->ToggleState("OnPacket_Sync");
+			}
+		}
+	}
+
+	dcclite::Log::Info("[{}::Device::OnPacket_Sync] Sync OK", this->GetName());
+	m_fPendingSync = false;
+}
+
 void Device::OnPacket_State(dcclite::Packet &packet, dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteConfigToken)
 {
+	//if out of sync, ignore states
+	if (m_fPendingSync)
+		return;
+
 	if (!this->CheckSessionConfig(remoteConfigToken, remoteAddress))
 		return;
 
@@ -447,6 +477,25 @@ void Device::SendStateDelta(const bool sendSensorsState, const dcclite::Clock::T
 	}
 }
 
+void Device::SendSyncRequest(const dcclite::Clock::TimePoint_t &ticks)
+{
+	assert(m_eStatus == Status::ONLINE);
+	assert(!m_upConfigState);
+
+	//too soon?
+	if (m_SyncTimeout > ticks)
+		return;
+
+	dcclite::Log::Info("[{}::Device::SendSyncRequest] request sent", this->GetName());
+
+	dcclite::Packet pkt;
+	PreparePacket(pkt, dcclite::MsgTypes::SYNC, m_SessionToken, m_ConfigToken);
+
+	m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
+
+	m_SyncTimeout = ticks + SYNC_TIMEOUT;
+}
+
 void Device::Update(const dcclite::Clock &clock)
 {
 	if (m_eStatus != Status::ONLINE)
@@ -501,6 +550,13 @@ void Device::Update(const dcclite::Clock &clock)
 	//No config state, so check for any requested state change and notify remote
 	else if (!m_upConfigState)
 	{		
-		this->SendStateDelta(false, time);
+		if (m_fPendingSync)
+		{
+			this->SendSyncRequest(time);
+		}
+		else
+		{
+			this->SendStateDelta(false, time);
+		}		
 	}	
 }

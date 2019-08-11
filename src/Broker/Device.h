@@ -49,6 +49,7 @@ class Device: public dcclite::FolderObject
 		void OnPacket_ConfigFinished(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::Address remoteAddress);
 		void OnPacket_Ping(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::Address remoteAddress, const dcclite::Guid remoteConfigToken);
 		void OnPacket_State(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::Address remoteAddress, const dcclite::Guid remoteConfigToken);
+		void OnPacket_Sync(dcclite::Packet& packet, const dcclite::Clock::TimePoint_t time, const dcclite::Address remoteAddress, const dcclite::Guid remoteConfigToken);
 		
 		inline const dcclite::Guid &GetConfigToken() noexcept
 		{
@@ -86,9 +87,9 @@ class Device: public dcclite::FolderObject
 		void SendConfigStartPacket() const;
 		void SendConfigFinishedPacket() const;
 
-		void ForceSync();
-
 		void SendStateDelta(const bool sendSensorsState, const dcclite::Clock::TimePoint_t time);
+
+		void SendSyncRequest(const dcclite::Clock::TimePoint_t &ticks);
 		
 
 	private:		
@@ -107,6 +108,7 @@ class Device: public dcclite::FolderObject
 		Status				m_eStatus;
 
 		dcclite::Clock::TimePoint_t m_Timeout;
+		dcclite::Clock::TimePoint_t m_SyncTimeout;
 
 		uint64_t			m_uLastReceivedStatePacketId = 0;
 		uint64_t			m_uOutgoingStatePacketId = 0;		
@@ -131,6 +133,8 @@ class Device: public dcclite::FolderObject
 
 		Devices that contact the Broker, but are not in the config files, are marked as unregistered
 
-		*/
+		*/				
 		bool					m_fRegistered;
+
+		bool					m_fPendingSync = true;
 };

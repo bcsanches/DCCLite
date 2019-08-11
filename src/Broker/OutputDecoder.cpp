@@ -12,11 +12,16 @@
 
 #include <Log.h>
 
-void OutputDecoder::SetState(dcclite::DecoderStates newState)
+void OutputDecoder::SetState(dcclite::DecoderStates newState, const char *requester)
 {
 	if (m_kRequestedState != newState)
 	{
-		dcclite::Log::Info("[{}::SetState] requested change from {} to {}", this->GetName(), dcclite::DecoderStateName(m_kRequestedState), dcclite::DecoderStateName(newState));
+		dcclite::Log::Info("[{}::OutputDecoder::SetState] requested change from {} to {} by {}", 
+			this->GetName(), 
+			dcclite::DecoderStateName(m_kRequestedState), 
+			dcclite::DecoderStateName(newState), 
+			requester
+		);
 
 		m_kRequestedState = newState;
 	}	

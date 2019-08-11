@@ -237,7 +237,7 @@ class ActivateItemCmd : public DecoderCmdBase
 		{			
 			auto outputDecoder = this->FindOutputDecoder(context, id, request);
 
-			outputDecoder->Activate();
+			outputDecoder->Activate("ActivateItemCmd");
 
 			results.AddStringValue("classname", "string");
 			results.AddStringValue("msg", "OK");
@@ -257,7 +257,7 @@ class DeactivateItemCmd : public DecoderCmdBase
 		{
 			auto outputDecoder = this->FindOutputDecoder(context, id, request);
 
-			outputDecoder->Deactivate();
+			outputDecoder->Deactivate("DeactivateItemCmd");
 
 			results.AddStringValue("classname", "string");
 			results.AddStringValue("msg", "OK");
@@ -277,7 +277,7 @@ class FlipItemCmd : public DecoderCmdBase
 		{
 			auto outputDecoder = this->FindOutputDecoder(context, id, request);
 
-			outputDecoder->ToggleState();
+			outputDecoder->ToggleState("FlipItemCmd");
 
 			results.AddStringValue("classname", "string");
 			results.AddStringValue("msg", fmt::format("OK: {}", dcclite::DecoderStateName(outputDecoder->GetRequestedState())));

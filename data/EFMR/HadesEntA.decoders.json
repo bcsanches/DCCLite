@@ -120,5 +120,73 @@
     "invertedFrog":true,
     "operationTime":300,
     "range":45
+  },
+
+  {
+    "name": "HDSEntATrk01",
+    "class": "Output",
+    "address": "0011",
+    "pin": 54,
+    "inverted": true
+  },
+  {
+    "name": "HDSEntATrk02",
+    "class": "Output",
+    "address": "0012",
+    "pin": 55
+  },
+  {
+    "name": "HDSEntATrk03",
+    "class": "Output",
+    "address": "0013",
+    "pin": 56
+  },
+  {
+    "name": "HDSEntATrk04",
+    "class": "Output",
+    "address": "0014",
+    "pin": 57
+  },
+  {
+    "name": "HDSEntATrk05",
+    "class": "Output",
+    "address": "0015",
+    "pin": 58
+  },
+  {
+    "name": "HDSEntATrk06",
+    "class": "Output",
+    "address": "0016",
+    "pin": 59
+  },
+  {
+    "name": "HDSEntATrk07",
+    "class": "Output",
+    "address": "0017",
+    "pin": 60
+  },
+  {
+    "name": "HDSEntATrk08",
+    "class": "Output",
+    "address": "0018",
+    "pin": 61
+  },
+  {
+    "name": "HDSEntATrk09",
+    "class": "Output",
+    "address": "0019",
+    "pin": 62
+  },
+  {
+    "name": "HDSEntATrk10",
+    "class": "Output",
+    "address": "0020",
+    "pin": 63
+  },
+  {
+    "name": "HDSEntATrk11",
+    "class": "Output",
+    "address": "0021",
+    "pin": 64
   }
 ]

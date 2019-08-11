@@ -484,6 +484,24 @@ static void OnStatePacket(dcclite::Packet &packet)
 	g_fForceStateRefresh = DecoderManager::ReceiveServerStates(changedStates, states);	
 }
 
+static void OnSyncPacket(dcclite::Packet &packet)
+{
+	using namespace dcclite;
+
+	StatesBitPack_t states;
+	StatesBitPack_t changedStates;
+
+	DecoderManager::WriteStates(changedStates, states);					
+			
+	dcclite::Packet pkt;
+	PacketBuilder builder{ pkt, MsgTypes::SYNC, g_SessionToken, g_ConfigToken };
+			
+	pkt.Write(changedStates);
+	pkt.Write(states);
+
+	NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
+}
+
 const char OnOnlineStateName[] PROGMEM = {"Online"} ;
 #define OnOnlineStateNameStr Console::FlashStr(OnOnlineStateName)
 
@@ -509,6 +527,10 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 		case dcclite::MsgTypes::STATE:
 			//Console::SendLogEx(MODULE_NAME, "got state");
 			OnStatePacket(packet);			
+			break;
+
+		case dcclite::MsgTypes::SYNC:
+			OnSyncPacket(packet);
 			break;
 
 		default:
@@ -648,3 +670,4 @@ NetUdp::ReceiveCallback_t Session::GetReceiverCallback()
 {
 	return ReceiveCallback;
 }
+ 

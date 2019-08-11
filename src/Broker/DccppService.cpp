@@ -274,7 +274,7 @@ bool DccppClient::Update()
 						else
 						{
 							//now we set the new state and later, the decoder will update it and send a response to JMRI
-							outputDecoder->SetState(newState);
+							outputDecoder->SetState(newState, "DccppClient");
 						}						
 					}
 					break;
