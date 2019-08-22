@@ -489,7 +489,8 @@ TerminalService::TerminalService(const ServiceClass &serviceClass, const std::st
 		cmdHost->AddCmd(std::make_unique<FlipItemCmd>());
 	}
 
-	if (!m_clSocket.Open(params["port"].GetInt(), dcclite::Socket::Type::STREAM))
+	const auto port = params["port"].GetInt();
+	if (!m_clSocket.Open(port, dcclite::Socket::Type::STREAM))
 	{
 		throw std::runtime_error("[TerminalService] Cannot open socket");
 	}
@@ -498,6 +499,8 @@ TerminalService::TerminalService(const ServiceClass &serviceClass, const std::st
 	{
 		throw std::runtime_error("[TerminalService] Cannot put socket on listen mode");
 	}
+
+	dcclite::Log::Info("[TerminalService] Started, listening on port {}", port);
 }
 
 

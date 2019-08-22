@@ -157,6 +157,11 @@ bool DccppClient::Update()
 
 			switch (cmd[0])
 			{
+				case 'c':
+					//current
+					m_clMessenger.Send(m_clAddress, "<a 0>");
+					break;
+
 				case 's':
 				{
 					std::stringstream response;
@@ -192,7 +197,8 @@ bool DccppClient::Update()
 				}
 				break;
 
-				case 'S':					
+				case 'S':	
+				case 'Q':
 					if (parser.GetToken(token, sizeof(token)) != TOKEN_EOF)
 					{
 						Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_EOF for: {}", msg);
@@ -308,13 +314,15 @@ DccppService::DccppService(const ServiceClass& serviceClass, const std::string& 
 
 	if (!m_clSocket.Open(port, dcclite::Socket::Type::STREAM))
 	{
-		throw std::runtime_error("[TerminalService] Cannot open socket");
+		throw std::runtime_error("[DccppService] Cannot open socket");
 	}
 
 	if (!m_clSocket.Listen())
 	{
-		throw std::runtime_error("[TerminalService] Cannot put socket on listen mode");
+		throw std::runtime_error("[DccppService] Cannot put socket on listen mode");
 	}
+
+	dcclite::Log::Info("[DccppService] Started, listening on port {}", port);
 }
 
 void DccppService::Initialize()
