@@ -1,2 +1,5 @@
 add_subdirectory(fmt)
-add_subdirectory(wxWidgets)
+
+if(${GUI_TOOLS})
+  add_subdirectory(wxWidgets)
+endif()

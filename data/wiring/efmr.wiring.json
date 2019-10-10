@@ -1,0 +1,36 @@
+{
+  "name": "EFMR Wiring",
+
+  "networks": [
+    "Loconet",
+    "DC 5V Positive",
+    "DC 5V Ground",
+    "DC 12V Positive",
+    "DC 12V Ground",
+    "DCC Red",
+    "DCC Black"
+  ],
+  "deviceTypes": [
+    {
+      "id": 1,
+      "name": "booster",
+      "models": [
+        {          
+          "name": "DB150"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Loconet Panel",
+      "models": [
+        {
+          "name": "UP5"
+        },
+        {
+          "name": "UR92"
+        }
+      ]
+    }
+  ]  
+}
