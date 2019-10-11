@@ -1,6 +1,5 @@
 {
   "name": "EFMR Wiring",
-
   "networks": [
     "Loconet",
     "DC 5V Positive",
@@ -15,7 +14,7 @@
       "id": 1,
       "name": "booster",
       "models": [
-        {          
+        {
           "name": "DB150"
         }
       ]
@@ -32,5 +31,5 @@
         }
       ]
     }
-  ]  
+  ]
 }

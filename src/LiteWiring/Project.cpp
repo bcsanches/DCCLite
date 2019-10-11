@@ -3,20 +3,24 @@
 #include <fmt/format.h>
 #include <fstream>
 
+#include <JsonCreator/StringWriter.h>
+#include <JsonCreator/Object.h>
+
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
 
 #include "Cable.h"
 #include "Device.h"
 
-void Project::Load(const std::string &fileName)
-{
+void Project::Load(std::string fileName)
+{	
 	std::ifstream dataFile(fileName.c_str());
+	m_strFileName = std::move(fileName);
 
 	if (!dataFile)
 	{
-		throw std::runtime_error(fmt::format("error: cannot open config file {}", fileName));
-	}
+		throw std::runtime_error(fmt::format("error: cannot open config file {}", m_strFileName));
+	}	
 
 	rapidjson::IStreamWrapper isw(dataFile);
 	rapidjson::Document data;
@@ -24,44 +28,54 @@ void Project::Load(const std::string &fileName)
 
 	this->Clear();
 
+	m_strName = data["name"].GetString();
+
 	try
 	{
-		const auto& networksData = data["networks"];
-		if (!networksData.IsArray())
+		auto memberIt = data.FindMember("networks");
+		if (memberIt != data.MemberEnd())
 		{
-			throw std::runtime_error("error: [Project::Load] invalid config, expected networks array");
-		}
+			const auto& networksData = memberIt->value;
+			if (!networksData.IsArray())
+			{
+				throw std::runtime_error("error: [Project::Load] invalid config, expected networks array");
+			}
 
-		IntId_t id = 1;
-		for (auto& networkData : networksData.GetArray())
-		{
-			const char *name = networkData.GetString();
+			IntId_t id = 1;
+			for (auto& networkData : networksData.GetArray())
+			{
+				const char* name = networkData.GetString();
 
-			m_mapNetworkTypes.insert(
-				std::make_pair(
-					id,
-					std::make_unique<NetworkType>(*this, id, name)
-				)
-			);
+				m_mapNetworkTypes.insert(
+					std::make_pair(
+						id,
+						std::make_unique<NetworkType>(*this, id, name)
+					)
+				);
 
-			++id;
-		}
-
-		const auto& deviceTypesData = data["deviceTypes"];
-		if (!deviceTypesData.IsArray())
-		{
-			throw std::runtime_error("error: [Project::Load] invalid config, expected networks array");
+				++id;
+			}
 		}
 		
-		for (auto& deviceTypeData : deviceTypesData.GetArray())
+		memberIt = data.FindMember("deviceTypes");
+		if (memberIt != data.MemberEnd())
 		{
-			auto devType = std::make_unique<DeviceType>(*this, deviceTypeData);
-			m_mapDeviceTypes.insert(
-				std::make_pair(
-					devType->GetId(),
-					std::move(devType)
-				)
-			);
+			const auto& deviceTypesData = memberIt->value;
+			if (!deviceTypesData.IsArray())
+			{
+				throw std::runtime_error("error: [Project::Load] invalid config, expected networks array");
+			}
+
+			for (auto& deviceTypeData : deviceTypesData.GetArray())
+			{
+				auto devType = std::make_unique<DeviceType>(*this, deviceTypeData);
+				m_mapDeviceTypes.insert(
+					std::make_pair(
+						devType->GetId(),
+						std::move(devType)
+					)
+				);
+			}
 		}
 	}
 	catch(...)
@@ -72,8 +86,48 @@ void Project::Load(const std::string &fileName)
 	}
 }
 
-void Project::Clear()
+void Project::Save()
 {
+	if (!this->HasName())
+	{
+		throw std::logic_error("Cannot save project without a file name, use save as ...");
+	}
+
+	std::ofstream outputFile(m_strFileName, std::ios_base::trunc);
+
+	JsonCreator::StringWriter responseWriter;
+	{
+		auto object = JsonCreator::MakeObject(responseWriter);
+		object.AddStringValue("name", m_strName);
+
+		if(!m_mapNetworkTypes.empty())
+		{		
+			auto& networkArray = object.AddArray("networks");
+
+			for(const auto & networkIt : m_mapNetworkTypes)
+			{
+				networkArray.AddString(networkIt.second->GetName().c_str());
+			}
+		}
+
+		if (!m_mapDeviceTypes.empty())
+		{
+			auto& deviceTypesArray = object.AddArray("deviceTypes");
+
+			for (const auto& devTypeIt : m_mapDeviceTypes)
+			{
+				auto& devTypeObj = deviceTypesArray.AddObject();
+
+				devTypeIt.second->Save(devTypeObj);
+			}
+		}
+	}
+
+	outputFile << responseWriter.GetString();
+}
+
+void Project::Clear()
+{	
 	m_mapDevices.clear();
 	m_mapDeviceTypes.clear();
 	m_mapNetworkTypes.clear();

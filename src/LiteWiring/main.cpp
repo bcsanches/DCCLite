@@ -21,11 +21,15 @@ class MainFrame : public wxFrame
 
 	private:
 		void OnOpen(wxCommandEvent& event);
+		void OnSave(wxCommandEvent& event);
 		void OnExit(wxCommandEvent& event);
 		void OnAbout(wxCommandEvent& event);
 
 	private:
 		Project m_clProject;
+
+		wxMenuItem* m_pclSaveMenu = nullptr;
+		wxMenuItem* m_pclSaveAsMenu = nullptr;
 };
 
 enum
@@ -51,8 +55,15 @@ MainFrame::MainFrame()
 		"Create new project");	
 	menuFile->Append(wxID_OPEN, "&Open...\tCtrl-O",
 		"Open existing project");
+	m_pclSaveMenu = menuFile->Append(wxID_SAVE, "&Save...\tCtrl-S",
+		"Save current project");
+	m_pclSaveAsMenu = menuFile->Append(wxID_SAVEAS, "&Save as...\tCtrl-Shift-S",
+		"Save current project as new file name");
 	menuFile->AppendSeparator();
 	menuFile->Append(wxID_EXIT);
+
+	m_pclSaveMenu->Enable(false);
+	m_pclSaveAsMenu->Enable(false);
 
 	wxMenu* menuHelp = new wxMenu;
 	menuHelp->Append(wxID_ABOUT);
@@ -67,6 +78,7 @@ MainFrame::MainFrame()
 	SetStatusText("Welcome to LiteWiring!");
 
 	Bind(wxEVT_MENU, &MainFrame::OnOpen, this, wxID_OPEN);
+	Bind(wxEVT_MENU, &MainFrame::OnSave, this, wxID_SAVE);
 	Bind(wxEVT_MENU, &MainFrame::OnAbout, this, wxID_ABOUT);
 	Bind(wxEVT_MENU, &MainFrame::OnExit, this, wxID_EXIT);
 }
@@ -91,10 +103,29 @@ void MainFrame::OnOpen(wxCommandEvent& event)
 	if (!path)
 		return;
 	
-	auto strPath = path.ToStdString();
-	m_clProject.Load(path.ToStdString());
+	const auto strPath = path.ToStdString();
+	try
+	{		
+		m_clProject.Load(strPath);
 
-	SetStatusText(fmt::format("Loaded {}", strPath));
+		SetStatusText(fmt::format("Loaded {}", strPath));
+
+		m_pclSaveMenu->Enable(true);
+	}
+	catch (std::exception& ex)
+	{
+		wxMessageBox(
+			fmt::format("Loading {} failed, error: {}", strPath, ex.what()), 
+			"Error", 
+			wxOK | wxICON_ERROR, 
+			this
+		);
+	}	
+}
+
+void MainFrame::OnSave(wxCommandEvent& event)
+{
+	m_clProject.Save();
 }
 
 void MainFrame::OnExit(wxCommandEvent& event)

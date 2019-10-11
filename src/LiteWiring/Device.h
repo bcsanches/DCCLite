@@ -3,12 +3,17 @@
 #include <map>
 #include <string>
 
+#include <JsonCreator/Object.h>
+#include <JsonCreator/StringWriter.h>
+
 #include <rapidjson/document.h>
 
 #include "LiteWiring.h"
 #include "ProjectItem.h"
 
 class DeviceType;
+
+typedef JsonCreator::Object<JsonCreator::StringWriter> JsonOutputStream_t;
 
 class DeviceModel
 {
@@ -18,6 +23,11 @@ class DeviceModel
 			m_rclType(owner)
 		{
 			//empty
+		}
+
+		const std::string& GetName() const
+		{
+			return m_strName;
 		}
 
 	private:	
@@ -35,6 +45,8 @@ class DeviceType: public NamedProjectItem
 		}	
 
 		DeviceType(Project& project, const rapidjson::Value& params);
+
+		void Save(JsonOutputStream_t &stream);
 
 	private:
 		std::map<IntId_t, std::unique_ptr<DeviceModel>> m_mapModels;

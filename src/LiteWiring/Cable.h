@@ -9,9 +9,9 @@
 class Cable : public NamedProjectItem
 {
 	public:
-		Cable(Project& project, IntId_t id, std::string name, const DevicePort& source, const DevicePort& sink);
+		Cable(Project& project, IntId_t id, std::string name, const DevicePort& source, const DevicePort *sink);
 
 	private:
-		const DevicePort&m_rclSource;
-		const DevicePort& m_rclSink;
+		const DevicePort	&m_rclSource;
+		const DevicePort	*m_pclSink;
 };

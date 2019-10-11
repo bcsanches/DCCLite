@@ -13,12 +13,21 @@ class Project
 	public:
 		~Project() = default;
 
-		void Load(const std::string &fileName);
+		void Load(std::string fileName);
+		void Save();
+
+		bool HasName() const
+		{
+			return !m_strFileName.empty();
+		}
 
 	private:
 		void Clear();
 
 	private:
+		std::string m_strFileName;
+		std::string m_strName;
+
 		std::map<IntId_t, std::unique_ptr<Device>> m_mapDevices;
 		std::map<IntId_t, std::unique_ptr<DeviceType>> m_mapDeviceTypes;
 		std::map<IntId_t, std::unique_ptr<NetworkType>> m_mapNetworkTypes;

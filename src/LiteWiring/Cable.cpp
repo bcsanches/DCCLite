@@ -2,18 +2,18 @@
 
 #include <fmt/format.h>
 
-Cable::Cable(Project& project, IntId_t id, std::string name, const DevicePort& source, const DevicePort& sink):
+Cable::Cable(Project& project, IntId_t id, std::string name, const DevicePort& source, const DevicePort *sink):
 	NamedProjectItem(project, id, std::move(name)),
 	m_rclSource(source),
-	m_rclSink(sink)
+	m_pclSink(sink)
 {
-	if (m_rclSource.GetNetworkType() != m_rclSink.GetNetworkType())
+	if (m_pclSink && (m_rclSource.GetNetworkType() != m_pclSink->GetNetworkType()))
 	{
 		throw std::logic_error(
 			fmt::format("Cannot create cable {}, incompatible network types for ports: {} vs {}",
 				this->GetName(),
 				m_rclSource.GetNetworkType().GetName(),
-				m_rclSink.GetNetworkType().GetName()
+				m_pclSink->GetNetworkType().GetName()
 			)
 		);
 	}

@@ -5,7 +5,11 @@
 DeviceType::DeviceType(Project& project, const rapidjson::Value& params):
 	NamedProjectItem(project, params["id"].GetInt(), params["name"].GetString())
 {
-	auto& modelsData = params["models"];
+	auto& memberIt = params.FindMember("models");
+	if (memberIt == params.MemberEnd())
+		return;
+
+	auto& modelsData = memberIt->value;
 	if (!modelsData.IsArray())
 	{
 		throw std::runtime_error("error: [DeviceType] expected models array");
@@ -24,5 +28,22 @@ DeviceType::DeviceType(Project& project, const rapidjson::Value& params):
 		);
 
 		++id;
+	}
+}
+
+void DeviceType::Save(JsonOutputStream_t& stream)
+{
+	stream.AddIntValue("id", this->GetId());
+	stream.AddStringValue("name", this->GetName());
+
+	if (m_mapModels.empty())
+		return;
+
+	auto modelsArray = stream.AddArray("models");
+
+	for (auto& modelIt : m_mapModels)
+	{
+		auto obj = modelsArray.AddObject();
+		obj.AddStringValue("name", modelIt.second->GetName());
 	}
 }
