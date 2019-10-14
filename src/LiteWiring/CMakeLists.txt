@@ -36,10 +36,11 @@ if(WIN32)
 	)
 
 	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-  add_compile_definitions(WXUSINGDLL)
+	add_compile_definitions(WXUSINGDLL)
     
   set_property(TARGET LiteWiring PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
   set_property(TARGET LiteWiring PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "..\\data\\EFMR")
+  set_property(TARGET LiteWiring PROPERTY VS_DEBUGGER_ENVIRONMENT "PATH=${LIBRARY_OUTPUT_DIRECTORY_DEBUG};%PATH%")
       
 else(WIN32)
 
