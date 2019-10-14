@@ -5,6 +5,8 @@
 #include <wx/wx.h>
 #endif
 
+#include <wx/treebook.h>
+
 #include "Project.h"
 #include "fmt/format.h"
 
@@ -30,6 +32,8 @@ class MainFrame : public wxFrame
 
 		wxMenuItem* m_pclSaveMenu = nullptr;
 		wxMenuItem* m_pclSaveAsMenu = nullptr;
+
+		wxTreebook *m_pclBook = nullptr;
 };
 
 enum
@@ -76,6 +80,22 @@ MainFrame::MainFrame()
 
 	CreateStatusBar();
 	SetStatusText("Welcome to LiteWiring!");
+
+	m_pclBook = new wxTreebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBK_DEFAULT);
+
+	auto *p = new wxPanel();
+	p->SetBackgroundColour(*wxRED);
+	
+	new wxStaticText(p, wxID_ANY,
+		"This page intentionally left blank",
+		wxPoint(10, 10));
+
+	m_pclBook->AddPage(p, "Devices");
+	m_pclBook->AddPage(new wxPanel(), "Cables");
+	m_pclBook->AddPage(new wxPanel(), "Config");
+
+	m_pclBook->AddSubPage(new wxPanel(), "Networks");
+	m_pclBook->AddSubPage(new wxPanel(), "Device Types");
 
 	Bind(wxEVT_MENU, &MainFrame::OnOpen, this, wxID_OPEN);
 	Bind(wxEVT_MENU, &MainFrame::OnSave, this, wxID_SAVE);
