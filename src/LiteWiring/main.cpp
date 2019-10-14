@@ -30,10 +30,11 @@ class MainFrame : public wxFrame
 	private:
 		Project m_clProject;
 
-		wxMenuItem* m_pclSaveMenu = nullptr;
-		wxMenuItem* m_pclSaveAsMenu = nullptr;
-
-		wxTreebook *m_pclBook = nullptr;
+		wxMenuItem *m_pclSaveMenu = nullptr;
+		wxMenuItem *m_pclSaveAsMenu = nullptr;
+		
+		wxBoxSizer	*m_pclSizerFrame = nullptr;
+		wxTreebook	*m_pclBook = nullptr;
 };
 
 enum
@@ -79,28 +80,40 @@ MainFrame::MainFrame()
 	SetMenuBar(menuBar);
 
 	CreateStatusBar();
-	SetStatusText("Welcome to LiteWiring!");
-
+	SetStatusText("Welcome to LiteWiring!");	
+	
 	m_pclBook = new wxTreebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBK_DEFAULT);
 
-	auto *p = new wxPanel();
+	auto *p = new wxPanel(m_pclBook);
 	p->SetBackgroundColour(*wxRED);
-	
+
 	new wxStaticText(p, wxID_ANY,
 		"This page intentionally left blank",
 		wxPoint(10, 10));
 
-	m_pclBook->AddPage(p, "Devices");
-	m_pclBook->AddPage(new wxPanel(), "Cables");
-	m_pclBook->AddPage(new wxPanel(), "Config");
+	m_pclBook->AddPage(p, "Devices                             ");
+	m_pclBook->AddPage(new wxPanel(m_pclBook), "Cables");
+	m_pclBook->AddPage(new wxPanel(m_pclBook), "Config");
 
-	m_pclBook->AddSubPage(new wxPanel(), "Networks");
-	m_pclBook->AddSubPage(new wxPanel(), "Device Types");
+	m_pclBook->AddSubPage(new wxPanel(m_pclBook), "Networks");
+	m_pclBook->AddSubPage(new wxPanel(m_pclBook), "Device Types");
+
+	m_pclBook->ExpandNode(2);
+
+	m_pclSizerFrame = new wxBoxSizer(wxVERTICAL);
+	m_pclSizerFrame->Insert(0, m_pclBook, wxSizerFlags(5).Expand());
+
+	m_pclSizerFrame->Show(m_pclBook);
+	m_pclSizerFrame->Layout();
+		
+	this->SetSizerAndFit(m_pclSizerFrame);
 
 	Bind(wxEVT_MENU, &MainFrame::OnOpen, this, wxID_OPEN);
 	Bind(wxEVT_MENU, &MainFrame::OnSave, this, wxID_SAVE);
 	Bind(wxEVT_MENU, &MainFrame::OnAbout, this, wxID_ABOUT);
 	Bind(wxEVT_MENU, &MainFrame::OnExit, this, wxID_EXIT);
+
+	this->SetSize(800, 600);
 }
 
 void MainFrame::OnOpen(wxCommandEvent& event)
