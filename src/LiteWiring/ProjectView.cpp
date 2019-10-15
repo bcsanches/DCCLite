@@ -20,12 +20,14 @@ ProjectView::ProjectView(wxWindow *parent):
 	m_clNetworksNodeId = m_pclTreeView->AppendItem(m_clConfigNodeId, "Networks");
 	m_clDeviceTypesNodeId = m_pclTreeView->AppendItem(m_clConfigNodeId, "Device Types");
 
-	auto *p = new wxPanel(this);
-	p->SetBackgroundColour(*wxRED);
+	auto *panel = new wxPanel(this);
+	panel->SetBackgroundColour(*wxRED);
 
-	this->SplitVertically(m_pclTreeView, p, 0);
+	this->SplitVertically(m_pclTreeView, panel, 0);
 
 	m_pclTreeView->ExpandAll();
+
+	Bind(wxEVT_TREE_SEL_CHANGED, &ProjectView::OnSelChanged, this, m_pclTreeView->GetId());
 }
 
 void ProjectView::SetProject(Project *project)
@@ -60,4 +62,9 @@ void ProjectView::SetProject(Project *project)
 			}
 		}
 	}
+}
+
+void ProjectView::OnSelChanged(wxTreeEvent &event)
+{
+	//todo
 }

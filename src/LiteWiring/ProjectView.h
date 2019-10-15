@@ -13,6 +13,9 @@ class ProjectView: wxSplitterWindow
 		void SetProject(Project *project);
 
 	private:
+		void OnSelChanged(wxTreeEvent &event);
+
+	private:
 		//
 		// GUI Stuff
 		//
