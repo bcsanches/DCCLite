@@ -5,6 +5,7 @@ set(LiteWiring_SRCS
   main.cpp    
   Project.cpp
   ProjectItem.cpp
+  ProjectView.cpp
 )
 
 set(LiteWiring_HEADERS
@@ -13,6 +14,7 @@ set(LiteWiring_HEADERS
   LiteWiring.h
   Project.h
   ProjectItem.h
+  ProjectView.h
 )
 
 add_executable(LiteWiring WIN32 ${LiteWiring_SRCS} ${LiteWiring_HEADERS})

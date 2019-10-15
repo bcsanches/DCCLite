@@ -1,6 +1,26 @@
 #pragma once
 
+#include <vector>
+
 class Project;
+
+namespace detail
+{
+	template <typename T, typename Y>
+	std::vector<const T *> FillVector(const Y &map)
+	{
+		std::vector<const T *> vec;
+
+		vec.reserve(map.size());
+
+		for (auto it = map.cbegin(), end = map.cend(); it != end; ++it)
+		{
+			vec.push_back(it->second.get());
+		}
+
+		return vec;
+	}
+}
 
 class ProjectItem
 {

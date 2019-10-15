@@ -48,6 +48,11 @@ class DeviceType: public NamedProjectItem
 
 		void Save(JsonOutputStream_t &stream);
 
+		std::vector<const DeviceModel *> GetDeviceModels() const
+		{
+			return detail::FillVector<DeviceModel>(m_mapModels);
+		}
+
 	private:
 		std::map<IntId_t, std::unique_ptr<DeviceModel>> m_mapModels;
 };

@@ -3,6 +3,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "Device.h"
 #include "LiteWiring.h"
@@ -20,6 +21,10 @@ class Project
 		{
 			return !m_strFileName.empty();
 		}
+
+		std::vector<const Device *> GetDevices() const;
+		std::vector<const DeviceType *> GetDeviceTypes() const;
+		std::vector<const NetworkType *> GetNetworkTypes() const;
 
 	private:
 		void Clear();

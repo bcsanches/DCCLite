@@ -133,6 +133,21 @@ void Project::Clear()
 	m_mapNetworkTypes.clear();
 }
 
+std::vector<const Device *> Project::GetDevices() const
+{
+	return detail::FillVector<Device>(m_mapDevices);
+}
+
+std::vector<const DeviceType *> Project::GetDeviceTypes() const
+{
+	return detail::FillVector<DeviceType>(m_mapDeviceTypes);
+}
+
+std::vector<const NetworkType *> Project::GetNetworkTypes() const
+{
+	return detail::FillVector<NetworkType>(m_mapNetworkTypes);
+}
+
 #if 0
 void Test()
 {

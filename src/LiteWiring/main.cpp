@@ -5,9 +5,9 @@
 #include <wx/wx.h>
 #endif
 
-#include <wx/treebook.h>
-
 #include "Project.h"
+#include "ProjectView.h"
+
 #include "fmt/format.h"
 
 class LiteApp : public wxApp
@@ -33,8 +33,7 @@ class MainFrame : public wxFrame
 		wxMenuItem *m_pclSaveMenu = nullptr;
 		wxMenuItem *m_pclSaveAsMenu = nullptr;
 		
-		wxBoxSizer	*m_pclSizerFrame = nullptr;
-		wxTreebook	*m_pclBook = nullptr;
+		ProjectView *m_pclProjectView = nullptr;
 };
 
 enum
@@ -82,32 +81,8 @@ MainFrame::MainFrame()
 	CreateStatusBar();
 	SetStatusText("Welcome to LiteWiring!");	
 	
-	m_pclBook = new wxTreebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBK_DEFAULT);
-
-	auto *p = new wxPanel(m_pclBook);
-	p->SetBackgroundColour(*wxRED);
-
-	new wxStaticText(p, wxID_ANY,
-		"This page intentionally left blank",
-		wxPoint(10, 10));
-
-	m_pclBook->AddPage(p, "Devices                             ");
-	m_pclBook->AddPage(new wxPanel(m_pclBook), "Cables");
-	m_pclBook->AddPage(new wxPanel(m_pclBook), "Config");
-
-	m_pclBook->AddSubPage(new wxPanel(m_pclBook), "Networks");
-	m_pclBook->AddSubPage(new wxPanel(m_pclBook), "Device Types");
-
-	m_pclBook->ExpandNode(2);
-
-	m_pclSizerFrame = new wxBoxSizer(wxVERTICAL);
-	m_pclSizerFrame->Insert(0, m_pclBook, wxSizerFlags(5).Expand());
-
-	m_pclSizerFrame->Show(m_pclBook);
-	m_pclSizerFrame->Layout();
-		
-	this->SetSizerAndFit(m_pclSizerFrame);
-
+	m_pclProjectView = new ProjectView(this);	
+	
 	Bind(wxEVT_MENU, &MainFrame::OnOpen, this, wxID_OPEN);
 	Bind(wxEVT_MENU, &MainFrame::OnSave, this, wxID_SAVE);
 	Bind(wxEVT_MENU, &MainFrame::OnAbout, this, wxID_ABOUT);
@@ -144,6 +119,8 @@ void MainFrame::OnOpen(wxCommandEvent& event)
 		SetStatusText(fmt::format("Loaded {}", strPath));
 
 		m_pclSaveMenu->Enable(true);
+
+		m_pclProjectView->SetProject(&m_clProject);
 	}
 	catch (std::exception& ex)
 	{
