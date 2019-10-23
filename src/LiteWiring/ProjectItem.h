@@ -43,9 +43,8 @@ class ProjectItem
 class NamedProjectItem: public ProjectItem
 {
 	protected:
-		NamedProjectItem(Project& project, const IntId_t id, std::string name):
-			ProjectItem(project),
-			m_Id(id),
+		NamedProjectItem(Project& project, std::string name):
+			ProjectItem(project),			
 			m_strName(std::move(name))
 		{
 			//empty
@@ -56,27 +55,21 @@ class NamedProjectItem: public ProjectItem
 			return this == &rhs;
 		}
 
-	public:
-		const IntId_t GetId() const
-		{
-			return m_Id;
-		}
-
+	public:		
 		const std::string& GetName() const
 		{
 			return m_strName;
 		}
 
-	private:
-		const IntId_t	m_Id;
+	private:	
 		std::string		m_strName;
 };
 
 class NetworkType: public NamedProjectItem
 {
 	public:
-		NetworkType(Project& project, const IntId_t id, std::string name):
-			NamedProjectItem(project, id, std::move(name))
+		NetworkType(Project& project, std::string name):
+			NamedProjectItem(project, std::move(name))
 		{
 			//empty
 		}

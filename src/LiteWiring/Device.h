@@ -3,17 +3,12 @@
 #include <map>
 #include <string>
 
-#include <JsonCreator/Object.h>
-#include <JsonCreator/StringWriter.h>
-
 #include <rapidjson/document.h>
 
 #include "LiteWiring.h"
 #include "ProjectItem.h"
 
 class DeviceType;
-
-typedef JsonCreator::Object<JsonCreator::StringWriter> JsonOutputStream_t;
 
 class DeviceModel
 {
@@ -38,23 +33,21 @@ class DeviceModel
 class DeviceType: public NamedProjectItem
 {
 	public:
-		DeviceType(Project& project, const IntId_t id, std::string name) :
-			NamedProjectItem(project, id, std::move(name))
+		DeviceType(Project& project, std::string name) :
+			NamedProjectItem(project, std::move(name))
 		{
 			//empty
-		}	
-
-		DeviceType(Project& project, const rapidjson::Value& params);
-
-		void Save(JsonOutputStream_t &stream);
+		}			
 
 		std::vector<const DeviceModel *> GetDeviceModels() const
 		{
 			return detail::FillVector<DeviceModel>(m_mapModels);
 		}
 
+		bool TryAddModel(std::string_view name);
+
 	private:
-		std::map<IntId_t, std::unique_ptr<DeviceModel>> m_mapModels;
+		std::map<std::string, std::unique_ptr<DeviceModel>> m_mapModels;
 };
 
 
@@ -82,8 +75,8 @@ class DevicePort
 class Device: public NamedProjectItem
 {	
 	public:
-		Device(Project& project, const IntId_t id, std::string name, const DeviceModel& model) :
-			NamedProjectItem(project, id, std::move(name)),
+		Device(Project& project, std::string name, const DeviceModel& model) :
+			NamedProjectItem(project, std::move(name)),
 			m_pclModel(&model)
 		{
 			//empty

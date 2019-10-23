@@ -22,6 +22,8 @@ class Project
 			return !m_strFileName.empty();
 		}
 
+		DeviceType *TryAddDeviceType(std::string_view name);
+
 		std::vector<const Device *> GetDevices() const;
 		std::vector<const DeviceType *> GetDeviceTypes() const;
 		std::vector<const NetworkType *> GetNetworkTypes() const;
@@ -33,8 +35,8 @@ class Project
 		std::string m_strFileName;
 		std::string m_strName;
 
-		std::map<IntId_t, std::unique_ptr<Device>> m_mapDevices;
-		std::map<IntId_t, std::unique_ptr<DeviceType>> m_mapDeviceTypes;
-		std::map<IntId_t, std::unique_ptr<NetworkType>> m_mapNetworkTypes;
+		std::map<std::string, std::unique_ptr<Device>> m_mapDevices;
+		std::map<std::string, std::unique_ptr<DeviceType>> m_mapDeviceTypes;
+		std::map<std::string, std::unique_ptr<NetworkType>> m_mapNetworkTypes;
 	
 };

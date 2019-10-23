@@ -31,5 +31,13 @@
         }
       ]
     }
+  ],
+  "devices": [
+    {
+      "id": 1,
+      "name": "Main Booster",
+      "type": "booster",
+      "model": "DB150"
+    }
   ]
 }

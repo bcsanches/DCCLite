@@ -19,3 +19,5 @@ packages/
 
 build/
 src/LiteDecoder/.pio/
+/build_clang
+check-cppcheck-build-dir/

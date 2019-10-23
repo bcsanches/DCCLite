@@ -40,20 +40,17 @@ void Project::Load(std::string fileName)
 			{
 				throw std::runtime_error("error: [Project::Load] invalid config, expected networks array");
 			}
-
-			IntId_t id = 1;
+			
 			for (auto& networkData : networksData.GetArray())
 			{
 				const char* name = networkData.GetString();
 
 				m_mapNetworkTypes.insert(
 					std::make_pair(
-						id,
-						std::make_unique<NetworkType>(*this, id, name)
+						std::string{name},
+						std::make_unique<NetworkType>(*this, name)
 					)
 				);
-
-				++id;
 			}
 		}
 		
@@ -67,15 +64,49 @@ void Project::Load(std::string fileName)
 			}
 
 			for (auto& deviceTypeData : deviceTypesData.GetArray())
-			{
-				auto devType = std::make_unique<DeviceType>(*this, deviceTypeData);
-				m_mapDeviceTypes.insert(
-					std::make_pair(
-						devType->GetId(),
-						std::move(devType)
-					)
-				);
+			{	
+				auto devName = deviceTypeData["name"].GetString();
+
+				auto devType = this->TryAddDeviceType(devName);
+				if (devType == nullptr)
+				{				
+					throw std::runtime_error(fmt::format("error: [Project::Load] Device type {} already exists", devName));
+				}
+				
+				auto &modelsIt = deviceTypeData.FindMember("models");
+				if (modelsIt == deviceTypeData.MemberEnd())
+				{
+					continue;
+				}					
+
+				auto &modelsData = memberIt->value;
+				if (!modelsData.IsArray())
+				{
+					throw std::runtime_error(fmt::format("error: [DeviceType::{}] expected models array", devName));
+				}
+
+				for (auto &modelData : modelsData.GetArray())
+				{
+					const char *name = modelData["name"].GetString();
+
+					if (!devType->TryAddModel(name))
+					{
+						throw std::runtime_error(fmt::format("error: [DeviceType::{}] device model {} already exists", devName, name));
+					}
+				}				
 			}
+		}
+
+		memberIt = data.FindMember("devices");
+		if (memberIt != data.MemberEnd())
+		{
+			const auto &devicesData = memberIt->value;
+			if (!devicesData.IsArray())
+			{
+				throw std::runtime_error("error: [Project::Load] invalid config, expected devices array");
+			}
+
+
 		}
 	}
 	catch(...)
@@ -118,7 +149,18 @@ void Project::Save()
 			{
 				auto& devTypeObj = deviceTypesArray.AddObject();
 
-				devTypeIt.second->Save(devTypeObj);
+				devTypeObj.AddStringValue("name", devTypeIt.second->GetName());
+
+				const auto models = devTypeIt.second->GetDeviceModels();
+				if(models.empty())
+					continue;
+
+				auto modelsOutputStream = devTypeObj.AddArray("models");
+				for(auto devModel : models)
+				{
+					auto modelOutputObj = modelsOutputStream.AddObject();
+					modelOutputObj.AddStringValue("name", devModel->GetName());
+				}				
 			}
 		}
 	}
@@ -146,6 +188,23 @@ std::vector<const DeviceType *> Project::GetDeviceTypes() const
 std::vector<const NetworkType *> Project::GetNetworkTypes() const
 {
 	return detail::FillVector<NetworkType>(m_mapNetworkTypes);
+}
+
+DeviceType *Project::TryAddDeviceType(std::string_view name)
+{
+	std::string tmpName(name);
+	if (m_mapDeviceTypes.find(tmpName) != m_mapDeviceTypes.end())
+	{
+		return nullptr;
+	}
+
+	auto devType = std::make_unique<DeviceType>(*this, tmpName);
+
+	auto *p = devType.get();
+
+	m_mapDeviceTypes.insert(std::make_pair(std::move(tmpName), std::move(devType)));
+
+	return p;
 }
 
 #if 0

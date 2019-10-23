@@ -12,6 +12,7 @@ class Cable : public NamedProjectItem
 		Cable(Project& project, IntId_t id, std::string name, const DevicePort& source, const DevicePort *sink);
 
 	private:
+		IntId_t				m_tId;
 		const DevicePort	&m_rclSource;
 		const DevicePort	*m_pclSink;
 };

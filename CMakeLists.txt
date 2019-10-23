@@ -3,6 +3,8 @@ project (DCCLite)
 
 option(GUI_TOOLS "Build GUI tools (LitePanel and LiteWiring")
 
+
+set( CMAKE_EXPORT_COMPILE_COMMANDS on)
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin )
 set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib )
 
@@ -16,3 +18,5 @@ set_property(TARGET fmt PROPERTY FOLDER "contrib")
 include(InstallRequiredSystemLibraries)
 
 install(TARGETS Broker Launcher)
+
+

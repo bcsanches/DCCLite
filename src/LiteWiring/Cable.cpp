@@ -3,7 +3,8 @@
 #include <fmt/format.h>
 
 Cable::Cable(Project& project, IntId_t id, std::string name, const DevicePort& source, const DevicePort *sink):
-	NamedProjectItem(project, id, std::move(name)),
+	NamedProjectItem(project, std::move(name)),
+	m_tId(id),
 	m_rclSource(source),
 	m_pclSink(sink)
 {
