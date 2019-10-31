@@ -56,9 +56,7 @@ class Process
 			ZeroMemory(&si, sizeof(si));
 			si.cb = sizeof(si);
 
-			ZeroMemory(&mInfo, sizeof(mInfo));
-
-			auto log = LogGetDefault();
+			ZeroMemory(&mInfo, sizeof(mInfo));		
 
 			// Start the child process. 
 			if (!CreateProcess(
@@ -113,10 +111,9 @@ class Process
 class Process
 {
 	public:
-		Process(const fs::path &brokerPath, int argc, char** argv)
-		{				
-			m_pid = fork();
-
+		Process(const fs::path &brokerPath, int argc, char** argv):
+			m_pid(fork())
+		{							
 			if (m_pid == -1)
 			{
 				throw std::runtime_error(fmt::format("[LAUNCHER] fork failed: {}", errno));

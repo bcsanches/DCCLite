@@ -83,7 +83,7 @@ TerminalCmdHost *TerminalCmdHost::Instance()
 
 
 TerminalCmd::TerminalCmd(std::string name):
-	IObject(name)
+	IObject(std::move(name))
 {
 	//empty
 }

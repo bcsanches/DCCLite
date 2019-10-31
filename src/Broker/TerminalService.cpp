@@ -79,7 +79,7 @@ class GetChildItemCmd : public TerminalCmd
 
 			while (enumerator.MoveNext())
 			{
-				auto item = enumerator.TryGetCurrent();
+				item = enumerator.TryGetCurrent();
 
 				auto itemObject = dataArray.AddObject();
 				item->Serialize(itemObject);				
@@ -162,10 +162,10 @@ class GetCommandCmd : public TerminalCmd
 
 			while (enumerator.MoveNext())
 			{
-				auto item = enumerator.TryGetCurrent();
+				auto cmd = enumerator.TryGetCurrent();
 
 				auto itemObject = dataArray.AddObject();
-				item->Serialize(itemObject);
+				cmd->Serialize(itemObject);
 			}			
 		}
 };
@@ -179,7 +179,7 @@ class DecoderCmdBase : public TerminalCmd
 			//empty
 		}
 
-		std::tuple<Decoder *, const char *, const char *> FindDecoder(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
+		std::tuple<Decoder *, const char *, const char *> FindDecoder(const TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
 		{
 			auto paramsIt = request.FindMember("params");
 			if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() != 2))
@@ -413,8 +413,8 @@ bool TerminalClient::Update()
 				auto cmd = cmdHost->TryFindCmd(methodName);
 				if (cmd == nullptr)
 				{
-					throw TerminalCmdException(fmt::format("Invalid cmd name: {}", methodName), id);
 					dcclite::Log::Error("Invalid cmd: {}", methodName);
+					throw TerminalCmdException(fmt::format("Invalid cmd name: {}", methodName), id);					
 
 					continue;
 				}
