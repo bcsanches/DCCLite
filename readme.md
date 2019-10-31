@@ -5,6 +5,12 @@ What's DccLite
 
 DccLite is an open source software for controlling a model railroad. It is loosely based on [DCC++][6], but it does not implement a full command station like it. This software is aimed for those who need to control model railroad accessories, like turnouts, lights, read input from sensors, etc.
 
+User Documentation
+------------------
+
+If you would like to know more, please visit our (working in progress) wiki at: [DCCLite Wiki](https://github.com/bcsanches/DCCLite/wiki)
+
+
 Dependencies
 ------------
 
