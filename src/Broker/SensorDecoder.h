@@ -24,19 +24,19 @@ class SensorDecoder : public Decoder
 			const rapidjson::Value &params
 		);
 
-		virtual void WriteConfig(dcclite::Packet &packet) const;
+		void WriteConfig(dcclite::Packet &packet) const override;
 
-		virtual dcclite::DecoderTypes GetType() const noexcept
+		dcclite::DecoderTypes GetType() const noexcept override
 		{
 			return dcclite::DecoderTypes::DEC_SENSOR;
 		}
 
-		virtual bool IsOutputDecoder() const
+		bool IsOutputDecoder() const override
 		{
 			return false;
 		}
 
-		virtual bool IsInputDecoder() const
+		bool IsInputDecoder() const override
 		{
 			return true;
 		}						

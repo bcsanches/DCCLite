@@ -132,9 +132,7 @@ bool DccppClient::Update()
 			return true;
 
 		if (status == Socket::Status::OK)
-		{
-			std::string response;
-
+		{			
 			dcclite::Log::Debug("[DccppClient] Received {}", msg);
 
 			dcclite::Parser parser(msg.c_str());

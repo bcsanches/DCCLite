@@ -18,7 +18,7 @@
 class Project
 {
 	public:
-		Project(dcclite::fs::path path) :
+		explicit Project(dcclite::fs::path path)  :
 			m_pthRoot(std::move(path))
 		{
 			//empty

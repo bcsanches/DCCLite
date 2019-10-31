@@ -36,11 +36,9 @@ dcclite::fs::path Project::GetAppFilePath(const std::string_view fileName) const
 }
 
 dcclite::Guid Project::GetFileToken(const std::string_view fileName) const
-{
-	auto filePath = this->GetFilePath(fileName);		
-
+{	
 	dcclite::Sha1 currentFileHash;
-	currentFileHash.ComputeForFile(filePath);
+	currentFileHash.ComputeForFile(this->GetFilePath(fileName));
 
 	//dcclite::Log::Trace("hash {} -> {}", filePath.string(), currentFileHash.ToString());
 
@@ -116,17 +114,17 @@ SKIP_LOAD:
 			}
 			else
 			{
-				std::ofstream stateFile(stateFilePath, std::ios_base::trunc);
+				std::ofstream newStateFile(stateFilePath, std::ios_base::trunc);
 
 				JsonCreator::StringWriter responseWriter;
 				{
 					auto object = JsonCreator::MakeObject(responseWriter);
 
 					object.AddStringValue("token", fmt::format("{}", token));
-					object.AddStringValue("sha1", fmt::format("{}", currentFileHash.ToString()));
+					object.AddStringValue("sha1", currentFileHash.ToString());
 				}
 							
-				stateFile << responseWriter.GetString();
+				newStateFile << responseWriter.GetString();
 
 				dcclite::Log::Info("Stored {} state data on {}", fileName, stateFilePath.string());
 			}

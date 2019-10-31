@@ -74,7 +74,7 @@ class TerminalCmd;
 class TerminalContext
 {
 	public:		
-		TerminalContext(dcclite::FolderObject &root):
+		explicit TerminalContext(dcclite::FolderObject &root):
 			m_rclRoot(root)
 		{
 			//empty

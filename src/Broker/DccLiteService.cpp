@@ -268,7 +268,9 @@ void DccLiteService::OnNet_ConfigAck(const dcclite::Clock &clock, const dcclite:
 	if (!dev)
 		return;
 
-	dcclite::Guid configToken = packet.ReadGuid();
+	//read config token, so we skip the token bytes
+	//config token can be ignored here, as it is invalid for now
+	packet.ReadGuid();
 
 	dev->OnPacket_ConfigAck(packet, clock.Now(), senderAddress);
 }
@@ -279,7 +281,9 @@ void DccLiteService::OnNet_ConfigFinished(const dcclite::Clock &clock, const dcc
 	if (!dev)
 		return;
 
-	dcclite::Guid configToken = packet.ReadGuid();
+	//read config token, so we skip the token bytes
+	//config token can be ignored here, as it is invalid for now
+	packet.ReadGuid();
 
 	dev->OnPacket_ConfigFinished(packet, clock.Now(), senderAddress);
 

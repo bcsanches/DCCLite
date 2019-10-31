@@ -35,13 +35,13 @@ class Decoder: public dcclite::Object
 		class Address
 		{
 			public:
-				inline Address(uint16_t address) :
+				inline explicit Address(uint16_t address) :
 					m_iAddress(address)
 				{
 					//empty
 				}
 
-				Address(const rapidjson::Value &value);
+				explicit Address(const rapidjson::Value &value);
 
 				Address() = default;
 				Address(const Address &) = default;
