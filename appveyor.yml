@@ -1,0 +1,15 @@
+version: 2.2.{build}
+
+branches:
+   only:
+     - master     
+
+environment:
+  matrix:
+    - PLATFORM: x64
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      BUILD_SCRIPT: build_ci_win.bat
+
+
+build_script:
+  - cmd: Scripts\%BUILD_SCRIPT%

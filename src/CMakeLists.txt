@@ -14,6 +14,9 @@ if (${GUI_TOOLS})
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-	add_subdirectory(SharpTerminal)
+	if(${GUI_SHARP_TOOLS})
+		add_subdirectory(SharpTerminal)
+	endif()
+
 	add_subdirectory(UnitTest)
 endif()

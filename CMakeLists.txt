@@ -1,7 +1,8 @@
 cmake_minimum_required (VERSION 3.14)
 project (DCCLite)
 
-option(GUI_TOOLS "Build GUI tools (LitePanel and LiteWiring")
+option(GUI_TOOLS "Build GUI tools (LitePanel and LiteWiring)")
+option(GUI_SHARP_TOOLS "Build C# GUI tools - SharpTerminal")
 
 
 set( CMAKE_EXPORT_COMPILE_COMMANDS on)
