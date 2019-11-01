@@ -1,4 +1,7 @@
-[![Travis Build Status](https://travis-ci.org/bcsanches/DCCLite.svg?branch=master)](https://travis-ci.org/bcsanches/DCCLite)  
+| Build | Status (github) |
+|-------|-----------------|
+| MSVC  | [![Build status](https://ci.appveyor.com/api/projects/status/vk4a1wgr532h5nlc/branch/master?svg=true)](https://ci.appveyor.com/project/bcsanches/dcclite/branch/master)|
+| Linux | [![Travis Build Status](https://travis-ci.org/bcsanches/DCCLite.svg?branch=master)](https://travis-ci.org/bcsanches/DCCLite)  |
 
 What's DccLite
 --------------
