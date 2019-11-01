@@ -1,6 +1,9 @@
 @echo off
 SETLOCAL
 
+git submodule update --init
+git submodule update --init --recursive
+
 set GENERATOR="Visual Studio 16 2019"
 set PLATFORM=x64
 set CONFIGURATION=Debug
