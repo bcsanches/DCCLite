@@ -8,7 +8,7 @@ environment:
   matrix:
     - PLATFORM: x64
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      BUILD_SCRIPT: build_ci_win.bat
+      BUILD_SCRIPT: build_ci_win.cmd
 
 
 build_script:
