@@ -8,6 +8,9 @@ extern const char g_fstrArp[] PROGMEM;
 extern const char g_fstrBroadcast[] PROGMEM;
 #define FSTR_BROADCAST Console::FlashStr(g_fstrBroadcast)
 
+extern const char g_fstrDisconnect[] PROGMEM;
+#define FSTR_DISCONNECT Console::FlashStr(g_fstrDisconnect)
+
 extern const char g_fstrDecoders[] PROGMEM;
 #define FSTR_DECODERS Console::FlashStr(g_fstrDecoders)
 
@@ -31,6 +34,9 @@ extern const char g_fstrNo[] PROGMEM;
 
 extern const char g_fstrNok[] PROGMEM;
 #define FSTR_NOK Console::FlashStr(g_fstrNok)
+
+extern const char g_fstrOffline[] PROGMEM;
+#define FSTR_OFFLINE Console::FlashStr(g_fstrOffline)
 
 extern const char g_fstrOk[] PROGMEM;
 #define FSTR_OK Console::FlashStr(g_fstrOk)

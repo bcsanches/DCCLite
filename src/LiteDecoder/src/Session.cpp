@@ -567,7 +567,6 @@ void Session::Update(const unsigned long ticks, const bool stateChangeDetectedHi
 			break;
 
 		case ConnectionStates::CONFIGURING:
-			ConfiguringTick();
 			break;
 	}
 }
@@ -620,6 +619,14 @@ static void ReceiveCallback(
 		return;
 	}
 
+	if(type == dcclite::MsgTypes::DISCONNECT)
+	{
+		Console::SendLogEx(MODULE_NAME, FSTR_DISCONNECT, ' ', FSTR_OFFLINE);
+
+		g_eConnectionState = ConnectionStates::OFFLINE;
+		return;
+	}
+
 	token = packet.ReadGuid();
 
 	//if we are on config state, config_token is not set yet, so we ignore if for now and handle config packets
@@ -656,7 +663,7 @@ static void ReceiveCallback(
 	//we have been already configured, so validate the config token
 	if (token != g_ConfigToken)
 	{
-		Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', "cfg", ' ', "id", ',', ' ', "to", ' ', "offline");
+		Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', "cfg", ' ', "id", ',', ' ', "to", ' ', FSTR_OFFLINE);
 
 		g_eConnectionState = ConnectionStates::OFFLINE;
 		return;
