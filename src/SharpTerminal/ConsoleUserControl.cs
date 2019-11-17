@@ -199,17 +199,22 @@ namespace SharpTerminal
             if (string.IsNullOrWhiteSpace(input))
                 return;
 
-            var vargs = input.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var cmds = input.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            
+            foreach(var cmd in cmds)
+            {
+                var vargs = cmd.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-            //local command?
-            if (input[0] == '/')
-            {
-                ProcessLocalCmd(vargs);
-            }
-            else
-            {
-                ProcessRemoteCmd(vargs);
-            }
+                //local command?
+                if (input[0] == '/')
+                {
+                    ProcessLocalCmd(vargs);
+                }
+                else
+                {
+                    ProcessRemoteCmd(vargs);
+                }
+            }            
         }
 
         private void m_btnClear_Click(object sender, EventArgs e)

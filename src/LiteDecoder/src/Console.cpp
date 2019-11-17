@@ -227,13 +227,11 @@ static void Parse(const char *command)
 void Console::Update()
 {
 	static char command[MAX_COMMAND_LENGTH + 1];
-    static int pos = 0;
-
-	char c;
+    static int pos = 0;	
 
     while(Console::Available() > 0)
     {
-        c = Console::ReadChar();		
+        char c = Console::ReadChar();		
 
         if(c == '/')
         {

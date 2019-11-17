@@ -41,8 +41,8 @@
     "powerPin":34,
     "frogPin":36,
     "invertedFrog":false,
-    "operationTime":300,
-    "range":30
+    "operationTime":500,
+    "range":45
   },
   {
     "name":"HDSEntAT04",
@@ -127,66 +127,87 @@
     "class": "Output",
     "address": "0011",
     "pin": 54,
-    "inverted": true
+    "inverted": false,
+    "ignoreSavedState": true
   },
   {
     "name": "HDSEntATrk02",
     "class": "Output",
     "address": "0012",
-    "pin": 55
+    "pin": 55,
+    "inverted":true,
+    "ignoreSavedState": true
   },
   {
     "name": "HDSEntATrk03",
     "class": "Output",
     "address": "0013",
-    "pin": 56
+    "pin": 56,
+    "inverted":true,
+    "ignoreSavedState": true 
   },
   {
     "name": "HDSEntATrk04",
     "class": "Output",
     "address": "0014",
-    "pin": 57
+    "pin": 57,
+    "inverted":true,
+    "ignoreSavedState": true
   },
   {
     "name": "HDSEntATrk05",
     "class": "Output",
     "address": "0015",
-    "pin": 58
+    "pin": 58,
+    "inverted":true,
+    "ignoreSavedState": true
   },
   {
     "name": "HDSEntATrk06",
     "class": "Output",
     "address": "0016",
-    "pin": 59
+    "pin": 59,
+    "inverted":true,
+    "ignoreSavedState": true
   },
   {
     "name": "HDSEntATrk07",
     "class": "Output",
     "address": "0017",
-    "pin": 60
+    "pin": 60,
+    "inverted":true,
+    "ignoreSavedState": true
   },
   {
     "name": "HDSEntATrk08",
     "class": "Output",
     "address": "0018",
-    "pin": 61
+    "pin": 61,
+    "inverted":true,
+    "ignoreSavedState": true
   },
   {
     "name": "HDSEntATrk09",
     "class": "Output",
     "address": "0019",
-    "pin": 62
+    "pin": 62,
+    "inverted":true,
+    "ignoreSavedState": true
   },
   {
     "name": "HDSEntATrk10",
     "class": "Output",
     "address": "0020",
-    "pin": 63
+    "pin": 63,
+    "inverted":true,
+    "ignoreSavedState": true
   },
   {
     "name": "HDSEntATrk11",
     "class": "Output",
     "address": "0021",
-    "pin": 64
+    "pin": 64,
+    "inverted":true,
+    "ignoreSavedState": true
   }
 ]

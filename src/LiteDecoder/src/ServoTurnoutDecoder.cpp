@@ -174,7 +174,7 @@ dcclite::DecoderStates ServoTurnoutDecoder::State2DecoderState() const
 	}
 
 	bool active = state == States::THROWN;
-	active = m_fFlags & dcclite::SRVT_INVERTED_OPERATION ? !active : active;
+	active = (m_fFlags & dcclite::SRVT_INVERTED_OPERATION) ? !active : active;
 
 	return active ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE;
 }
@@ -182,7 +182,7 @@ dcclite::DecoderStates ServoTurnoutDecoder::State2DecoderState() const
 ServoTurnoutDecoder::States ServoTurnoutDecoder::DecoderState2State(dcclite::DecoderStates state) const
 {
 	bool activate = state == dcclite::DecoderStates::ACTIVE;
-	activate = m_fFlags & dcclite::SRVT_INVERTED_OPERATION ? !activate : activate;
+	activate = (m_fFlags & dcclite::SRVT_INVERTED_OPERATION) ? !activate : activate;
 
 	return activate ? States::THROWN : States::CLOSED;
 }
@@ -226,7 +226,7 @@ bool ServoTurnoutDecoder::StateUpdate(const uint8_t desiredPosition, const State
 		if (m_clFrogPin)
 		{
 			bool activateFrog = desiredState == States::THROWN;
-			activateFrog = m_fFlags & dcclite::SRVT_INVERTED_FROG ? !activateFrog : activateFrog;
+			activateFrog = (m_fFlags & dcclite::SRVT_INVERTED_FROG) ? !activateFrog : activateFrog;
 
 			m_clFrogPin.DigitalWrite(activateFrog ? Pin::VHIGH : Pin::VLOW);
 		}

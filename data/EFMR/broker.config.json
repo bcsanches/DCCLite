@@ -9,6 +9,10 @@
         {
           "name": "HadesEntA",
           "class": "ArduinoMega"
+        },
+        {
+          "name": "HadesExtC",
+          "class": "ArduinoMega"
         }
       ]
     },

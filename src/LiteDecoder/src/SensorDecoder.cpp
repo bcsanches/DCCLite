@@ -58,7 +58,7 @@ void SensorDecoder::Init(const dcclite::PinType_t pin)
 {
 	using namespace dcclite;	
 
-	m_clPin.Attach(pin, m_fFlags & SNRD_PULL_UP ? Pin::MODE_INPUT_PULLUP : Pin::MODE_INPUT);	
+	m_clPin.Attach(pin, (m_fFlags & SNRD_PULL_UP) ? Pin::MODE_INPUT_PULLUP : Pin::MODE_INPUT);	
 }
 
 bool SensorDecoder::AcceptServerState(dcclite::DecoderStates state)
@@ -105,7 +105,7 @@ bool SensorDecoder::Update(const unsigned long ticks)
 	m_fFlags &= ~dcclite::SNRD_COOLDOWN;
 
 	auto state = m_clPin.DigitalRead();	
-	int previousState = m_fFlags & dcclite::SNRD_ACTIVE ? Pin::VLOW : Pin::VHIGH;
+	int previousState = (m_fFlags & dcclite::SNRD_ACTIVE) ? Pin::VLOW : Pin::VHIGH;
 
 	//no state change?
 	if (state == previousState)

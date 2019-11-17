@@ -230,10 +230,10 @@ static void OfflineTick(const unsigned long ticks)
 //
 //
 
-static void ConfiguringTick()
+static void ConfiguringTick(const unsigned long ticks)
 {
 	//Only check for timeout here
-	PingManager::CheckTimeout(millis());
+	PingManager::CheckTimeout(ticks);
 }
 
 static void SendConfigPacket(dcclite::Packet &packet, dcclite::MsgTypes msgType, uint8_t seq)
@@ -567,6 +567,7 @@ void Session::Update(const unsigned long ticks, const bool stateChangeDetectedHi
 			break;
 
 		case ConnectionStates::CONFIGURING:
+			ConfiguringTick(ticks);
 			break;
 	}
 }
