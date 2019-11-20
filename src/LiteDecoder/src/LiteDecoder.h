@@ -69,6 +69,4 @@
     #error "Unknown ARDUINO_TYPE"
 #endif
 
-#define VERSION "0.0"
-
 #endif

@@ -24,7 +24,7 @@
 
 #include <spdlog/logger.h>
 
-constexpr auto BUILD_NUM = "0.2.1";
+constexpr auto BUILD_NUM = "0.2.2";
 
 
 static bool fExitRequested = false;
