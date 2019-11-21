@@ -45,11 +45,7 @@ class Device: public dcclite::FolderObject
 
 		void AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken);
 
-		void OnPacket_ConfigAck(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::Address remoteAddress);
-		void OnPacket_ConfigFinished(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::Address remoteAddress);
-		void OnPacket_Ping(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::Address remoteAddress, const dcclite::Guid remoteConfigToken);
-		void OnPacket_State(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::Address remoteAddress, const dcclite::Guid remoteConfigToken);
-		void OnPacket_Sync(dcclite::Packet& packet, const dcclite::Clock::TimePoint_t time, const dcclite::Address remoteAddress, const dcclite::Guid remoteConfigToken);
+		void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::Address remoteAddress, const dcclite::Guid remoteConfigToken);		
 		
 		inline const dcclite::Guid &GetConfigToken() noexcept
 		{
@@ -77,19 +73,15 @@ class Device: public dcclite::FolderObject
 		bool CheckSessionConfig(const dcclite::Guid remoteConfigToken, const dcclite::Address remoteAddress);
 		bool CheckSession(const dcclite::Address remoteAddress);
 
-		void GoOnline(const dcclite::Address remoteAddress);
 		void GoOffline();
 
 		void RefreshTimeout(const dcclite::Clock::TimePoint_t time);
-		bool CheckTimeout(const dcclite::Clock::TimePoint_t time);
-
-		void SendDecoderConfigPacket(const size_t index) const;
-		void SendConfigStartPacket() const;
-		void SendConfigFinishedPacket() const;
-
-		void SendStateDelta(const bool sendSensorsState, const dcclite::Clock::TimePoint_t time);
-
-		void SendSyncRequest(const dcclite::Clock::TimePoint_t &ticks);
+		bool CheckTimeout(const dcclite::Clock::TimePoint_t time);				
+		
+		void ClearState();
+		void GotoSyncState();
+		void GotoOnlineState();
+		void GotoConfigState(const dcclite::Clock::TimePoint_t time);
 		
 
 	private:		
@@ -107,26 +99,119 @@ class Device: public dcclite::FolderObject
 
 		Status				m_eStatus;
 
-		dcclite::Clock::TimePoint_t m_Timeout;
-		dcclite::Clock::TimePoint_t m_SyncTimeout;
+		dcclite::Clock::TimePoint_t m_Timeout;					
 
-		uint64_t			m_uLastReceivedStatePacketId = 0;
-		uint64_t			m_uOutgoingStatePacketId = 0;		
+		struct State
+		{
+			virtual void OnPacket(
+				Device &self,
+				dcclite::Packet &packet, 
+				const dcclite::Clock::TimePoint_t time, 
+				const dcclite::MsgTypes msgType, 
+				const dcclite::Address remoteAddress, 
+				const dcclite::Guid remoteConfigToken
+			);
 
-		dcclite::Clock::TimePoint_t m_tLastStateSentTime;
-		dcclite::StatesBitPack_t	m_tLastStateSent;
+			virtual void Update(Device &self, const dcclite::Clock::TimePoint_t time) = 0;
+			virtual const char *GetName() const = 0;				
+		};
 
-		struct ConfigInfo
+		struct ConfigState: State
 		{
 			std::vector<bool>	m_vecAcks;
 
 			dcclite::Clock::TimePoint_t m_RetryTime;
 
-			uint8_t				m_uSeqCount = { 0 };			
+			uint8_t				m_uSeqCount = { 0 };
 			bool				m_fAckReceived = { false };
-		};		
 
-		std::unique_ptr<ConfigInfo> m_upConfigState;
+			ConfigState(Device &self, const dcclite::Clock::TimePoint_t time);			
+
+			void OnPacket(
+				Device &self,
+				dcclite::Packet &packet,
+				const dcclite::Clock::TimePoint_t time,
+				const dcclite::MsgTypes msgType,
+				const dcclite::Address remoteAddress,
+				const dcclite::Guid remoteConfigToken
+			) override;
+
+			void Update(Device &self, const dcclite::Clock::TimePoint_t time) override;
+
+			const char *GetName() const override { return "ConfigState"; }
+
+			private:				
+				void SendDecoderConfigPacket(const Device &self, const size_t index) const;
+				void SendConfigStartPacket(const Device &self) const;
+				void SendConfigFinishedPacket(const Device &self) const;
+
+				void OnPacket_ConfigAck(
+					Device &self,
+					dcclite::Packet &packet,
+					const dcclite::Clock::TimePoint_t time,
+					const dcclite::MsgTypes msgType,
+					const dcclite::Address remoteAddress,
+					const dcclite::Guid remoteConfigToken
+				);
+
+				void OnPacket_ConfigFinished(
+					Device &self,
+					dcclite::Packet &packet,
+					const dcclite::Clock::TimePoint_t time,
+					const dcclite::MsgTypes msgType,
+					const dcclite::Address remoteAddress,
+					const dcclite::Guid remoteConfigToken
+				);
+		};			
+
+		struct SyncState: State
+		{
+			dcclite::Clock::TimePoint_t m_SyncTimeout;
+
+			void OnPacket(
+				Device &self,
+				dcclite::Packet &packet,
+				const dcclite::Clock::TimePoint_t time,
+				const dcclite::MsgTypes msgType,
+				const dcclite::Address remoteAddress,
+				const dcclite::Guid remoteConfigToken
+			) override;
+
+			void Update(Device &self, const dcclite::Clock::TimePoint_t time) override;
+
+			const char *GetName() const override { return "SyncState"; }
+		};
+
+		struct OnlineState: State
+		{			
+			OnlineState();
+
+			void OnPacket(
+				Device &self,
+				dcclite::Packet &packet,
+				const dcclite::Clock::TimePoint_t time,
+				const dcclite::MsgTypes msgType,
+				const dcclite::Address remoteAddress,
+				const dcclite::Guid remoteConfigToken
+			) override;
+
+			void Update(Device &self, const dcclite::Clock::TimePoint_t time) override;
+
+			const char *GetName() const override { return "OnlineState"; }
+
+			private:
+				void SendStateDelta(Device &self, const bool sendSensorsState, const dcclite::Clock::TimePoint_t time);
+
+				dcclite::Clock::TimePoint_t m_tLastStateSentTime;
+				dcclite::StatesBitPack_t	m_tLastStateSent;
+
+				uint64_t			m_uLastReceivedStatePacketId = 0;
+
+				uint64_t			m_uOutgoingStatePacketId = 0;
+		};
+		
+
+		std::unique_ptr<State> m_upState;
 
 		/**
 		Registered is a device that is stored on config.
@@ -134,7 +219,5 @@ class Device: public dcclite::FolderObject
 		Devices that contact the Broker, but are not in the config files, are marked as unregistered
 
 		*/				
-		bool					m_fRegistered;
-
-		bool					m_fPendingSync = true;
+		bool					m_fRegistered;		
 };

@@ -47,6 +47,54 @@ namespace dcclite
 
 	typedef BitPack<MAX_DECODERS_STATES_PER_PACKET> StatesBitPack_t;
 
+	inline const char *MsgName(const MsgTypes type)
+	{
+		switch (type)
+		{
+			case MsgTypes::RESERVED0:
+				return "reserved0";
+
+			case MsgTypes::DISCOVERY:
+				return "discovery";
+
+			case MsgTypes::HELLO:
+				return "hello";
+
+			case MsgTypes::ACCEPTED:
+				return "accepted";
+
+			case MsgTypes::CONFIG_START:
+				return "config_start";
+
+			case MsgTypes::CONFIG_DEV:
+				return "config_dev";
+
+			case MsgTypes::CONFIG_FINISHED:
+				return "config_finished";
+
+			case MsgTypes::CONFIG_ACK:
+				return "config_ack";
+
+			case MsgTypes::MSG_PING:
+				return "msg_ping";
+
+			case MsgTypes::MSG_PONG:
+				return "msg_pong";
+
+			case MsgTypes::STATE:
+				return "state";
+
+			case MsgTypes::SYNC:
+				return "sync";
+
+			case MsgTypes::DISCONNECT:
+				return "disconnect";
+
+			default:
+				return nullptr;
+		}
+	}
+
 	/**
 	Basic packet format:
 

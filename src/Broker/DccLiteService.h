@@ -109,12 +109,9 @@ class DccLiteService : public Service, private IDccDeviceServices, private IDccD
 
 	private:
 		void OnNet_Discovery(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);
-		void OnNet_Hello(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);
-		void OnNet_Ping(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);
-		void OnNet_ConfigAck(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);
-		void OnNet_ConfigFinished(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);
-		void OnNet_State(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);
-		void OnNet_Sync(const dcclite::Clock& clock, const dcclite::Address& senderAddress, dcclite::Packet& packet);
+		void OnNet_Hello(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);		
+
+		void OnNet_Packet(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType);
 
 		Device *TryFindDeviceByName(std::string_view name);
 

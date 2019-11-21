@@ -142,29 +142,9 @@ void DccLiteService::Update(const dcclite::Clock &clock)
 				this->OnNet_Hello(clock, sender, pkt);
 				break;
 
-			case dcclite::MsgTypes::MSG_PING:
-				this->OnNet_Ping(clock, sender, pkt);
-				break;
-
-			case dcclite::MsgTypes::CONFIG_ACK:
-				this->OnNet_ConfigAck(clock, sender, pkt);
-				break;
-
-			case dcclite::MsgTypes::CONFIG_FINISHED:
-				this->OnNet_ConfigFinished(clock, sender, pkt);
-				break;
-
-			case dcclite::MsgTypes::STATE:
-				this->OnNet_State(clock, sender, pkt);
-				break;
-
-			case dcclite::MsgTypes::SYNC:
-				this->OnNet_Sync(clock, sender, pkt);
-				break;
-
 			default:
-				dcclite::Log::Error(" msg type: {}", static_cast<uint8_t>(msgType));
-				return;
+				this->OnNet_Packet(clock, sender, pkt, msgType);
+				break;
 		}
 	}	
 
@@ -245,71 +225,21 @@ Device *DccLiteService::TryFindPacketDestination(dcclite::Packet &packet)
 	return dev;
 }
 
-void DccLiteService::OnNet_Ping(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
-{	
+void DccLiteService::OnNet_Packet(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType)
+{
 	auto dev = TryFindPacketDestination(packet);
 	if (!dev)
 	{
-		dcclite::Log::Warn("[{}::DccLiteService::OnNet_Hello] Received ping from unkown device", this->GetName());
+		dcclite::Log::Warn("[{}::DccLiteService::OnNet_Packet] Received packet from unkown device", this->GetName());
 
 		return;
-	}		
+	}
 
 	dcclite::Guid configToken = packet.ReadGuid();
 
-	dev->OnPacket_Ping(packet, clock.Now(), senderAddress, configToken);
+	dev->OnPacket(packet, clock.Now(), msgType, senderAddress, configToken);
 }
 
-void DccLiteService::OnNet_ConfigAck(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
-{
-	//dcclite::Log::Trace("[{}::DccLiteService::OnNet_Hello] Received ping, sending pong...", this->GetName());	
-
-	auto dev = TryFindPacketDestination(packet);
-	if (!dev)
-		return;
-
-	//read config token, so we skip the token bytes
-	//config token can be ignored here, as it is invalid for now
-	packet.ReadGuid();
-
-	dev->OnPacket_ConfigAck(packet, clock.Now(), senderAddress);
-}
-
-void DccLiteService::OnNet_ConfigFinished(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
-{
-	auto dev = TryFindPacketDestination(packet);
-	if (!dev)
-		return;
-
-	//read config token, so we skip the token bytes
-	//config token can be ignored here, as it is invalid for now
-	packet.ReadGuid();
-
-	dev->OnPacket_ConfigFinished(packet, clock.Now(), senderAddress);
-
-}
-
-void DccLiteService::OnNet_State(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
-{
-	auto dev = TryFindPacketDestination(packet);
-	if (!dev)
-		return;
-
-	dcclite::Guid configToken = packet.ReadGuid();
-
-	dev->OnPacket_State(packet, clock.Now(), senderAddress, configToken);
-}
-
-void DccLiteService::OnNet_Sync(const dcclite::Clock& clock, const dcclite::Address& senderAddress, dcclite::Packet& packet)
-{
-	auto dev = TryFindPacketDestination(packet);
-	if (!dev)
-		return;
-
-	dcclite::Guid configToken = packet.ReadGuid();
-
-	dev->OnPacket_Sync(packet, clock.Now(), senderAddress, configToken);
-}
 
 void DccLiteService::Device_SendPacket(const dcclite::Address destination, const dcclite::Packet &packet)
 {
