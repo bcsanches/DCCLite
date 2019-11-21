@@ -11,6 +11,7 @@
 #pragma once
 
 #include <string>
+#include <variant>
 #include <vector>
 
 #include "Clock.h"
@@ -114,7 +115,7 @@ class Device: public dcclite::FolderObject
 
 			virtual void Update(Device &self, const dcclite::Clock::TimePoint_t time) = 0;
 			virtual const char *GetName() const = 0;				
-		};
+		};		
 
 		struct ConfigState: State
 		{
@@ -209,9 +210,11 @@ class Device: public dcclite::FolderObject
 
 				uint64_t			m_uOutgoingStatePacketId = 0;
 		};
-		
 
-		std::unique_ptr<State> m_upState;
+		struct NullState {};
+		
+		std::variant< NullState, ConfigState, SyncState, OnlineState> m_vState;
+		State *m_pclCurrentState = nullptr;
 
 		/**
 		Registered is a device that is stored on config.

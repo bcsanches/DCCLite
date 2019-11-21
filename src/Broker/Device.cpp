@@ -658,7 +658,7 @@ bool Device::CheckTimeout(dcclite::Clock::TimePoint_t time)
 
 void Device::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::Address remoteAddress, const dcclite::Guid remoteConfigToken)
 {
-	if (!m_upState)
+	if (!m_pclCurrentState)
 	{
 		dcclite::Log::Error("[{}::Device::OnPacket] Cannot process packet on Offline mode, packet: {}", this->GetName(), dcclite::MsgName(msgType));
 
@@ -667,7 +667,7 @@ void Device::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t
 
 	this->RefreshTimeout(time);
 
-	m_upState->OnPacket(*this, packet, time, msgType, remoteAddress, remoteConfigToken);
+	m_pclCurrentState->OnPacket(*this, packet, time, msgType, remoteAddress, remoteConfigToken);
 }
 
 void Device::Update(const dcclite::Clock &clock)
@@ -684,19 +684,21 @@ void Device::Update(const dcclite::Clock &clock)
 		return;
 	}		
 
-	m_upState->Update(*this, time);
+	m_pclCurrentState->Update(*this, time);
 }
 
 void Device::ClearState()
 {
-	m_upState.reset();
+	m_pclCurrentState = nullptr;
 }
 
 void Device::GotoSyncState()
 {
 	this->ClearState();
 
-	m_upState = std::make_unique<SyncState>();
+	m_vState = SyncState{};
+	m_pclCurrentState = std::get_if<SyncState>(&m_vState);
+	
 	dcclite::Log::Trace("[{}::Device::GotoSyncState] Entered", this->GetName());
 }
 
@@ -704,7 +706,9 @@ void Device::GotoOnlineState()
 {
 	this->ClearState();
 
-	m_upState = std::make_unique<OnlineState>();	
+	m_vState = OnlineState{};
+	m_pclCurrentState = std::get_if<OnlineState>(&m_vState);
+	
 	dcclite::Log::Trace("[{}::Device::GotoOnlineState] Entered", this->GetName());
 }
 
@@ -712,7 +716,8 @@ void Device::GotoConfigState(const dcclite::Clock::TimePoint_t time)
 {
 	this->ClearState();
 
-	m_upState = std::make_unique<ConfigState>(*this, time);	
+	m_vState = ConfigState{*this, time};
+	m_pclCurrentState = std::get_if<ConfigState>(&m_vState);	
 
 	dcclite::Log::Trace("[{}::Device::GotoConfigState] Entered", this->GetName());
 }
