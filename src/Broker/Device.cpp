@@ -689,6 +689,7 @@ void Device::Update(const dcclite::Clock &clock)
 
 void Device::ClearState()
 {
+	m_vState = NullState{};
 	m_pclCurrentState = nullptr;
 }
 
