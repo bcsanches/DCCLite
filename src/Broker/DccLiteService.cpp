@@ -60,6 +60,12 @@ DccLiteService::~DccLiteService()
 	//empty
 }
 
+void DccLiteService::Device_DestroyDecoder(Decoder &dec)
+{
+	m_pAddresses->RemoveChild(dec.GetAddress().ToString());
+	m_pDecoders->RemoveChild(dec.GetName());
+}
+
 Decoder &DccLiteService::Device_CreateDecoder(
 	const std::string &className,
 	Decoder::Address address,
@@ -204,7 +210,7 @@ void DccLiteService::OnNet_Hello(const dcclite::Clock &clock, const dcclite::Add
 		//no device, create a temp one
 		dcclite::Log::Warn("[{}::DccLiteService::OnNet_Hello] {} is not on config", this->GetName(), name);
 
-		dev = static_cast<Device*>(m_pDevices->AddChild(std::make_unique<Device>(name, *static_cast<IDccDeviceServices *>(this))));
+		dev = static_cast<Device*>(m_pDevices->AddChild(std::make_unique<Device>(name, *static_cast<IDccDeviceServices *>(this), m_rclProject)));
 	}	
 
 	dev->AcceptConnection(clock.Now(), senderAddress, remoteSessionToken, remoteConfigToken);	

@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "Clock.h"
+#include "FileSystem.h"
 #include "Guid.h"
 #include "Object.h"
 #include "Packet.h"
@@ -37,7 +38,7 @@ class Device: public dcclite::FolderObject
 
 	public:
 		Device(std::string name, IDccDeviceServices &dccService, const rapidjson::Value &params, const Project &project);
-		Device(std::string name, IDccDeviceServices &dccService);
+		Device(std::string name, IDccDeviceServices &dccService, const Project &project);
 
 		Device(const Device &) = delete;
 		Device(Device &&) = delete;
@@ -75,6 +76,7 @@ class Device: public dcclite::FolderObject
 		bool CheckSession(const dcclite::Address remoteAddress);
 
 		void GoOffline();
+		void Disconnect();
 
 		void RefreshTimeout(const dcclite::Clock::TimePoint_t time);
 		bool CheckTimeout(const dcclite::Clock::TimePoint_t time);				
@@ -83,6 +85,9 @@ class Device: public dcclite::FolderObject
 		void GotoSyncState();
 		void GotoOnlineState();
 		void GotoConfigState(const dcclite::Clock::TimePoint_t time);
+
+		bool Load();
+		void Unload();
 		
 
 	private:		
@@ -92,12 +97,23 @@ class Device: public dcclite::FolderObject
 
 		//
 		//
+		//Storage data
+		const std::string		m_strConfigFileName;
+		const dcclite::fs::path m_pathConfigFile;
+
+		const Project			&m_rclProject;
+
+		//
+		//
 		//Remote Device Info		
 		dcclite::Guid		m_ConfigToken;
 		dcclite::Guid		m_SessionToken;
 
 		dcclite::Address	m_RemoteAddress;
 
+		//
+		//
+		//Connection status
 		Status				m_eStatus;
 
 		dcclite::Clock::TimePoint_t m_Timeout;					
@@ -211,6 +227,10 @@ class Device: public dcclite::FolderObject
 				uint64_t			m_uOutgoingStatePacketId = 0;
 		};
 
+
+		//
+		//
+		//Connection state
 		struct NullState {};
 		
 		std::variant< NullState, ConfigState, SyncState, OnlineState> m_vState;

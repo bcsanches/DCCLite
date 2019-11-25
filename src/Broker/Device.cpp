@@ -240,11 +240,11 @@ void Device::SyncState::OnPacket(
 	const dcclite::Address remoteAddress,
 	const dcclite::Guid remoteConfigToken
 )
-{
-	//FIXME: this msg is useless with the sync protocol, change clients to stop sending this
+{	
+	//we simple ignore state msgs as the device client does not keeps waiting for sync messages
 	if (msgType == dcclite::MsgTypes::STATE)
 	{
-		dcclite::Log::Warn("[{}::Device::SyncState::OnPacket] FIXME change client to stop sending STATE msg on sync state", self.GetName());
+		//dcclite::Log::Warn("[{}::Device::SyncState::OnPacket] FIXME change client to stop sending STATE msg on sync state", self.GetName());
 		return;
 	}
 
@@ -485,30 +485,83 @@ Device::Device(std::string name, IDccDeviceServices &dccService, const rapidjson
 	FolderObject(std::move(name)),
 	m_clDccService(dccService),
 	m_eStatus(Status::OFFLINE),
-	m_fRegistered(true)
-{	
-	const std::string deviceConfigFileName(std::string(this->GetName()) + ".decoders.json");
+	m_fRegistered(true),
+	m_strConfigFileName(std::string(this->GetName()) + ".decoders.json"),
+	m_pathConfigFile(project.GetFilePath(m_strConfigFileName)),
+	m_rclProject(project)
+{				
+	this->Load();
+}
 
-	const auto deviceConfigFilePath = project.GetFilePath(deviceConfigFileName);
-	std::ifstream configFile(deviceConfigFilePath);
-	if (!configFile)
+
+Device::Device(std::string name, IDccDeviceServices &dccService, const Project &project):
+	FolderObject(std::move(name)),
+	m_clDccService(dccService),
+	m_eStatus(Status::OFFLINE),	
+	m_fRegistered(false),
+	m_rclProject(project)
+{
+	//empty
+}
+
+void Device::Unload()
+{
+	//clear the token
+	m_ConfigToken = {};
+
+	for (auto dec : m_vecDecoders)
 	{
-		dcclite::Log::Error("[Device::Device] cannot find {}", deviceConfigFilePath.string());
+		this->RemoveChild(dec->GetName());
 
-		return;
+		m_clDccService.Device_DestroyDecoder(*dec);
 	}
 
-	m_ConfigToken = project.GetFileToken(deviceConfigFileName);	
+	m_vecDecoders.clear();
+}
 
+bool Device::Load()
+{
+	std::ifstream configFile(m_pathConfigFile);
+	if (!configFile)
+	{
+		dcclite::Log::Error("[Device::Device] cannot find {}", m_pathConfigFile.string());
+
+		return false;
+	}
+
+	auto storedConfigToken = m_rclProject.GetFileToken(m_strConfigFileName);
+	
+	if (storedConfigToken == m_ConfigToken)
+	{
+		dcclite::Log::Warn("[{}::Device::Load] Stored config token is the same loaded token, ignoring load request", this->GetName());
+
+		return false;
+	}
+
+	dcclite::Log::Trace("[Device::Device] {} stored config token {}", this->GetName(), storedConfigToken);
 	dcclite::Log::Trace("[Device::Device] {} config token {}", this->GetName(), m_ConfigToken);
-	dcclite::Log::Trace("[Device::Device] {} reading config {}", this->GetName(), deviceConfigFilePath.string());
+	dcclite::Log::Trace("[Device::Device] {} reading config {}", this->GetName(), m_pathConfigFile.string());
 
 	rapidjson::IStreamWrapper isw(configFile);
 	rapidjson::Document decodersData;
-	decodersData.ParseStream(isw);	
+	decodersData.ParseStream(isw);
 
 	if (!decodersData.IsArray())
 		throw std::runtime_error("error: invalid config, expected decoders array inside Node");
+
+	//
+	//
+	//At this point, we did everything we could trying to check the data on disk
+	//So now, unload what we have and proceed loading new data	
+
+	//Disconnect remote device
+	this->Disconnect();
+
+	//Unload all decoders
+	//we clear the current config token, because if anything fails after this point and user rollback file to a previous version
+	//we want to make sure the previous file is loaded, if we did not clear the token, it may get ignored
+	//also this indicates that we have an inconsistent state	
+	this->Unload();
 
 	for (auto &element : decodersData.GetArray())
 	{
@@ -523,17 +576,11 @@ Device::Device(std::string name, IDccDeviceServices &dccService, const rapidjson
 		this->AddChild(std::make_unique<dcclite::Shortcut>(std::string(decoder.GetName()), decoder));
 	}
 
+	//if this point is reached, data is load, so store new token
+	m_ConfigToken = storedConfigToken;
 	dcclite::Log::Trace("[Device::Device] {} ready.", this->GetName());
-}
 
-
-Device::Device(std::string name, IDccDeviceServices &dccService):
-	FolderObject(std::move(name)),
-	m_clDccService(dccService),
-	m_eStatus(Status::OFFLINE),	
-	m_fRegistered(false)
-{
-	//empty
+	return true;
 }
 
 void Device::Serialize(dcclite::JsonOutputStream_t &stream) const
@@ -545,6 +592,21 @@ void Device::Serialize(dcclite::JsonOutputStream_t &stream) const
 	stream.AddStringValue("sessionToken", dcclite::GuidToString(m_SessionToken));
 	stream.AddStringValue("remoteAddress", m_RemoteAddress.GetIpString());
 	stream.AddBool("isOnline", this->IsOnline());
+}
+
+void Device::Disconnect()
+{
+	if (m_eStatus != Status::ONLINE)
+		return;	
+	
+	dcclite::Packet pkt;
+	PreparePacket(pkt, dcclite::MsgTypes::DISCONNECT, m_SessionToken, m_ConfigToken);
+		
+	m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
+
+	dcclite::Log::Warn("[{}::Device::Disconnect] Sent disconnect packet", this->GetName());	
+
+	this->GoOffline();
 }
 
 void Device::GoOffline()

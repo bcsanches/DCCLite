@@ -56,11 +56,13 @@ class IDccDeviceServices
 			const std::string& name,
 			const rapidjson::Value& params
 		) = 0;
+
+		virtual void Device_DestroyDecoder(Decoder &) = 0;
 		
 		virtual void Device_SendPacket(const dcclite::Address destination, const dcclite::Packet& packet) = 0;
 
 		virtual void Device_RegisterSession(Device& dev, const dcclite::Guid& configToken) = 0;
-		virtual void Device_UnregisterSession(Device& dev, const dcclite::Guid& sessionToken) = 0;
+		virtual void Device_UnregisterSession(Device& dev, const dcclite::Guid& sessionToken) = 0;		
 };
 
 class DccLiteService : public Service, private IDccDeviceServices, private IDccDecoderServices
@@ -135,6 +137,8 @@ class DccLiteService : public Service, private IDccDeviceServices, private IDccD
 			const std::string& name,
 			const rapidjson::Value& params
 		) override;
+
+		void Device_DestroyDecoder(Decoder &dec);
 
 		//
 		//

@@ -41,7 +41,8 @@ class Service: public dcclite::FolderObject
 		Service(const ServiceClass &serviceClass, std::string name, Broker &broker, const rapidjson::Value &params, const Project &project):
 			FolderObject(std::move(name)),
 			m_rclServiceClass(serviceClass),
-			m_rclBroker(broker)
+			m_rclBroker(broker),
+			m_rclProject(project)
 		{
 			//empty
 		}
@@ -65,5 +66,7 @@ class Service: public dcclite::FolderObject
 		const ServiceClass& m_rclServiceClass;
 
 		Broker& m_rclBroker;
+
+		const Project &m_rclProject;
 };
 
