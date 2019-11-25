@@ -35,9 +35,16 @@ class Broker
 
 		Service *TryFindService(std::string_view name);
 
+		TerminalCmdHost *GetTerminalCmdHost()
+		{
+			return m_pclTerminalCmdHost;
+		}
+
 	private:	
-		dcclite::FolderObject m_clRoot;
-		dcclite::FolderObject *m_pServices;
+		dcclite::FolderObject	m_clRoot;
+		dcclite::FolderObject	*m_pServices;
+
+		TerminalCmdHost			*m_pclTerminalCmdHost = nullptr;
 
 		Project m_clProject;
 

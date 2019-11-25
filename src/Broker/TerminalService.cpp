@@ -21,6 +21,7 @@
 
 #include <rapidjson/document.h>
 
+#include "Broker.h"
 #include "DccLiteService.h"
 #include "NetMessenger.h"
 #include "OutputDecoder.h"
@@ -289,7 +290,7 @@ class FlipItemCmd : public DecoderCmdBase
 class TerminalClient
 {
 	public:
-		TerminalClient(TerminalService &owner, const Address address, Socket &&socket);
+		TerminalClient(TerminalService &owner, TerminalCmdHost &cmdHost, const Address address, Socket &&socket);
 		TerminalClient(const TerminalClient &client) = delete;
 		TerminalClient(TerminalClient &&other) noexcept;
 
@@ -312,13 +313,15 @@ class TerminalClient
 		NetMessenger m_clMessenger;
 		TerminalService &m_rclOwner;
 		TerminalContext m_clContext;
+		TerminalCmdHost &m_rclCmdHost;
 
 		const Address	m_clAddress;
 };
 
-TerminalClient::TerminalClient(TerminalService &owner, const Address address, Socket &&socket) :	
+TerminalClient::TerminalClient(TerminalService &owner, TerminalCmdHost &cmdHost, const Address address, Socket &&socket) :	
 	m_clMessenger(std::move(socket)),
 	m_rclOwner(owner),	
+	m_rclCmdHost(cmdHost),
 	m_clContext(static_cast<dcclite::FolderObject &>(owner.GetRoot())),
 	m_clAddress(address)
 {
@@ -329,6 +332,7 @@ TerminalClient::TerminalClient(TerminalClient &&other) noexcept:
 	m_clMessenger(std::move(other.m_clMessenger)),
 	m_rclOwner(other.m_rclOwner),	
 	m_clContext(std::move(other.m_clContext)),
+	m_rclCmdHost(other.m_rclCmdHost),
 	m_clAddress(std::move(other.m_clAddress))
 {
 	//empty
@@ -405,12 +409,9 @@ bool TerminalClient::Update()
 					throw TerminalCmdException(fmt::format("No method id in: {}", msg), -1);
 				}				
 
-				int id = idKey->value.GetInt();
+				int id = idKey->value.GetInt();								
 
-				auto cmdHost = TerminalCmdHost::Instance();
-				assert(cmdHost);
-
-				auto cmd = cmdHost->TryFindCmd(methodName);
+				auto cmd = m_rclCmdHost.TryFindCmd(methodName);
 				if (cmd == nullptr)
 				{
 					dcclite::Log::Error("Invalid cmd: {}", methodName);
@@ -457,7 +458,7 @@ bool TerminalClient::Update()
 TerminalService::TerminalService(const ServiceClass &serviceClass, const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :
 	Service(serviceClass, name, broker, params, project)	
 {	
-	auto cmdHost = TerminalCmdHost::Instance();
+	auto cmdHost = broker.GetTerminalCmdHost();
 
 	assert(cmdHost);	
 
@@ -517,7 +518,7 @@ void TerminalService::Update(const dcclite::Clock &clock)
 	{
 		dcclite::Log::Info("[TerminalService] Client connected {}", address.GetIpString());
 
-		m_vecClients.emplace_back(*this, address, std::move(socket));
+		m_vecClients.emplace_back(*this, *m_rclBroker.GetTerminalCmdHost(), address, std::move(socket));
 	}
 
 	for (size_t i = 0; i < m_vecClients.size(); ++i)

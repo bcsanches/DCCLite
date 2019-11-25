@@ -71,6 +71,13 @@ Responses:
 typedef int CmdId_t;
 class TerminalCmd;
 
+
+/**
+
+The terminal context is a little helper to store the cmd current location, last acessed object etc
+
+
+*/
 class TerminalContext
 {
 	public:		
@@ -132,6 +139,11 @@ class TerminalCmdException: public std::exception
 		std::string m_strWhat;
 };
 
+
+/**
+	The cmd host is responsbible for storing the registered cmds
+
+*/
 class TerminalCmdHost: public dcclite::FolderObject
 {
 	public:		
@@ -147,11 +159,15 @@ class TerminalCmdHost: public dcclite::FolderObject
 		virtual const char *GetTypeName() const noexcept
 		{
 			return "TerminalCmdHost";
-		}
-
-		static TerminalCmdHost *Instance();
+		}		
 };
 
+
+/**
+
+A cmd that can be invoked thought terminals
+
+*/
 class TerminalCmd: public dcclite::IObject
 {
 	public:

@@ -17,8 +17,6 @@
 
 #include "SpecialFolders.h"
 
-static TerminalCmdHost *g_CmdHost = nullptr;
-
 void TerminalContext::SetLocation(const dcclite::Path_t &newLocation)
 {
 #if 1
@@ -39,12 +37,12 @@ dcclite::IObject *TerminalContext::GetItem() const
 TerminalCmdHost::TerminalCmdHost():
 	FolderObject(SpecialFolders::GetName(SpecialFolders::CmdHostFolderId))
 {
-	g_CmdHost = this;
+	//empty
 }
 
 TerminalCmdHost::~TerminalCmdHost()
 {
-	g_CmdHost = nullptr;
+	//empty
 }
 
 dcclite::IObject *TerminalCmdHost::AddChild(std::unique_ptr<IObject> obj)
@@ -75,12 +73,6 @@ TerminalCmd *TerminalCmdHost::TryFindCmd(std::string_view name)
 {
 	return static_cast<TerminalCmd *>(this->TryResolveChild(name));
 }
-
-TerminalCmdHost *TerminalCmdHost::Instance()
-{
-	return g_CmdHost;
-}
-
 
 TerminalCmd::TerminalCmd(std::string name):
 	IObject(std::move(name))

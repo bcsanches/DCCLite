@@ -48,7 +48,13 @@ Broker::Broker(dcclite::fs::path projectPath):
 	m_clRoot("root"),
 	m_clProject(std::move(projectPath))
 {	
-	m_clRoot.AddChild(std::make_unique<TerminalCmdHost>());
+	{
+		auto cmdHost = std::make_unique<TerminalCmdHost>();
+		m_pclTerminalCmdHost = cmdHost.get();
+
+		m_clRoot.AddChild(std::move(cmdHost));
+	}
+	
 
 	using namespace dcclite;
 
