@@ -511,7 +511,9 @@ void Device::Unload()
 
 	for (auto dec : m_vecDecoders)
 	{
-		this->RemoveChild(dec->GetName());
+		const auto decoderName = dec->GetName();
+
+		this->RemoveChild(decoderName);
 
 		m_clDccService.Device_DestroyDecoder(*dec);
 	}
