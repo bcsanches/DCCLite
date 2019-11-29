@@ -17,6 +17,7 @@
 
 #include "Clock.h"
 #include "ConsoleUtils.h"
+#include "FileWatcher.h"
 #include "Log.h"
 #include "LogUtils.h"
 #include "PathUtils.h"
@@ -70,6 +71,7 @@ int main(int argc, char **argv)
 				continue;
 			}			
 
+			FileWatcher::PumpEvents();
 			broker.Update(clock);
 		}			
 	}	

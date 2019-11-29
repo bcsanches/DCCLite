@@ -17,6 +17,7 @@
 #include "BitPack.h"
 #include "Decoder.h"
 #include "DccLiteService.h"
+#include "FileWatcher.h"
 #include "FmtUtils.h"
 #include "GuidUtils.h"
 #include "Log.h"
@@ -490,6 +491,21 @@ Device::Device(std::string name, IDccDeviceServices &dccService, const rapidjson
 	m_pathConfigFile(project.GetFilePath(m_strConfigFileName)),
 	m_rclProject(project)
 {				
+	FileWatcher::WatchFile(m_pathConfigFile, FileWatcher::FW_MODIFIED, [this](const FileWatcher::Event &ev)
+	{
+		dcclite::Log::Info("[{}::Device::FileWatcher::Reload] Attempting to reload config: {}", this->GetName(), ev.m_strFileName);
+
+		try
+		{			
+			this->Load();
+		}
+		catch (const std::exception &ex)
+		{
+			dcclite::Log::Error("[{}::Device::FileWatcher::Reload] Reload failed: {}", this->GetName(), ex.what());
+		}
+		
+	});
+
 	this->Load();
 }
 
@@ -504,16 +520,20 @@ Device::Device(std::string name, IDccDeviceServices &dccService, const Project &
 	//empty
 }
 
+Device::~Device()
+{
+	if(!m_pathConfigFile.empty())
+		FileWatcher::UnwatchFile(m_pathConfigFile);
+}
+
 void Device::Unload()
 {
 	//clear the token
 	m_ConfigToken = {};
 
 	for (auto dec : m_vecDecoders)
-	{
-		const auto decoderName = dec->GetName();
-
-		this->RemoveChild(decoderName);
+	{				
+		this->RemoveChild(dec->GetName());
 
 		m_clDccService.Device_DestroyDecoder(*dec);
 	}

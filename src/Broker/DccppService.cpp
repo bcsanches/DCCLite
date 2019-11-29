@@ -64,7 +64,7 @@ DccppClient::DccppClient(DccLiteService& system, const Address address, Socket&&
 DccppClient::DccppClient(DccppClient&& other) noexcept :	
 	m_clMessenger(std::move(other.m_clMessenger)),
 	m_rclSystem(other.m_rclSystem),
-	m_clAddress(std::move(other.m_clAddress))
+	m_clAddress(other.m_clAddress)
 {
 	//empty
 }

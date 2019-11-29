@@ -42,6 +42,11 @@ class Project
 			m_strName = name;
 		}
 
+		inline const dcclite::fs::path &GetRoot() const
+		{
+			return m_pthRoot;
+		}
+
 	private:
 		const dcclite::fs::path m_pthRoot;
 		std::string m_strName;

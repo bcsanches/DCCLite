@@ -43,6 +43,8 @@ class Device: public dcclite::FolderObject
 		Device(const Device &) = delete;
 		Device(Device &&) = delete;
 
+		~Device();
+
 		void Update(const dcclite::Clock &clock);
 
 		void AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken);

@@ -15,6 +15,7 @@ add_subdirectory(src)
 add_subdirectory(contrib)
  
 set_property(TARGET fmt PROPERTY FOLDER "contrib")
+set_property(TARGET lfwatch PROPERTY FOLDER "contrib")
 
 include(InstallRequiredSystemLibraries)
 
