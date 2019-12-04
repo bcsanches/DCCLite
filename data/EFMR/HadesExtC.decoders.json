@@ -102,7 +102,7 @@
     "class": "ServoTurnout",
     "address": "0031",
     "pin": 11,
-    "inverted": false,
+    "inverted": true,
     "powerPin": 40,
     "frogPin": 41,
     "invertedFrog": false,
