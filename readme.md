@@ -24,6 +24,19 @@ This code needs the following libraries to be built:
 - [RapidJson][1]
 - [spdlog][4]
 
+DCC++
+-------
+Why not use DCC++?
+
+Until the current date (December 2019) DCC++ does not have an easy or standard way to serve multiples Arduinos for a large model railroad. Right now, only for controlling my model railroad staging yard I need four Arduinos for turnouts.
+
+So, DCC++ does not allow me:
+- Have multiple Arduinos working together on the same layout / network
+- Allow simple configuration throught config files and without needing to use serial port commands
+- Configure and use Servos on Turnouts
+
+On the other side, this project is not aimed as a replacement for DCC++, but also as a independent system for controlling model railroad devices. It does not include code or support for controlling trains, like DCC++.
+
 License
 -------
 
