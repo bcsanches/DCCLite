@@ -13,6 +13,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>
+#include <string.h>
 
 #include "Misc.h"
 
@@ -167,6 +168,18 @@ namespace dcclite
 		return TOKEN_EOF;
 	}
 
+	inline int NumChar2Num(const char digit)
+	{
+		return (digit >= '0' && digit <= '9') ? digit - '0' : 0;
+	}
+
+	inline int Char2Num(const char digit)
+	{
+		return (digit >= 'a') && (digit <= 'f') ? (digit - 'a') + 10 : 
+			(digit >= 'A') && (digit <= 'F') ? (digit - 'A') + 10 : 
+			NumChar2Num(digit);
+	}
+
 	Tokens Parser::GetNumber(int &dest)
 	{
 		char buffer[9];
@@ -175,7 +188,18 @@ namespace dcclite
 		if ((token != TOKEN_NUMBER) && (token != TOKEN_HEX_NUMBER))
 			return token;
 
+#if 1				
+		dest = 0;
+		auto base = token == TOKEN_HEX_NUMBER ? 16 : 10;		
+		
+		for (unsigned i = 0; buffer[i]; ++i)
+		{
+			dest = (dest * base) + Char2Num(buffer[i]);
+		}
+		
+#else
 		sscanf(buffer, (token == TOKEN_HEX_NUMBER) ? "%x" : "%d", &dest);		
+#endif
 
 		return TOKEN_NUMBER;
 	}

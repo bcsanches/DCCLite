@@ -8,13 +8,13 @@ add_subdirectory(Emulator)
 add_subdirectory(Launcher)
 add_subdirectory(LiteDecoder)
 
-if (${GUI_TOOLS})
+if (${DCCLITE_GUI_TOOLS})
   add_subdirectory(LitePanel)
   add_subdirectory(LiteWiring)
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-	if(${GUI_SHARP_TOOLS})
+	if(${DCCLITE_GUI_SHARP_TOOLS})
 		add_subdirectory(SharpTerminal)
 	endif()
 

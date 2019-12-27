@@ -22,8 +22,8 @@ namespace dcclite
 class Decoder
 {	
 	public:
-		Decoder(dcclite::Packet &packet);
-		Decoder(EpromStream &stream) {}
+		explicit Decoder(dcclite::Packet &packet);
+		explicit Decoder(EpromStream &stream) {}
 
 		Decoder(const Decoder &) = delete;
 		Decoder(const Decoder &&) = delete;

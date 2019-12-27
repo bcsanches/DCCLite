@@ -22,8 +22,8 @@ class OutputDecoder : public Decoder
 		uint8_t			m_fFlags = 0;
 
 	public:
-		OutputDecoder(dcclite::Packet &packet);
-		OutputDecoder(EpromStream &stream);
+		explicit OutputDecoder(dcclite::Packet &packet);
+		explicit OutputDecoder(EpromStream &stream);
 
 		virtual void SaveConfig(EpromStream &stream);
 

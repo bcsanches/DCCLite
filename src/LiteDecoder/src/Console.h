@@ -31,14 +31,14 @@ namespace Console
 	{
 		unsigned int num;
 
-		Hex(unsigned int n) :num{ n } {}
+		explicit Hex(unsigned int n) :num{ n } {}
 	};
 
 	struct IpPrinter
 	{
 		const unsigned char *srcIp;
 
-		IpPrinter(const unsigned char src_ip[4]) : srcIp(src_ip) {}
+		explicit IpPrinter(const unsigned char src_ip[4]) : srcIp(src_ip) {}
 	};
 
 	struct FlashStr

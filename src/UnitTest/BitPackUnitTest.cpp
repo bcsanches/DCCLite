@@ -8,91 +8,83 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "CppUnitTest.h"
+#include <gtest/gtest.h>
 
 #include "BitPack.h"
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+using namespace dcclite;
 
-namespace UnitTest
+
+template <size_t N>
+void Compare(const BitPack<N> &pack, bool proof[N])
 {
-	using namespace dcclite;
-
-	TEST_CLASS(BitPackUnitTest)
+	for (unsigned i = 0; i < pack.size(); ++i)
 	{
-		private:
-			template <size_t N>
-			void Compare(const BitPack<N> &pack, bool proof[N])
-			{
-				for (unsigned i = 0; i < pack.size(); ++i)
-				{
-					Assert::AreEqual(pack[i], proof[i]);
-				}
-			}
+		ASSERT_EQ(pack[i], proof[i]);
+	}
+}
 
-		public:
-			TEST_METHOD(Basic)
-			{
-				bool proof[32] = { false };
-				BitPack<32> pack;
+		
+TEST(BitPack, Basic)
+{
+	bool proof[32] = { false };
+	BitPack<32> pack;
 
-				Assert::AreEqual(pack.size(), unsigned{ 32 });
+	ASSERT_EQ(pack.size(), unsigned{ 32 });
 
-				pack.SetBit(0);
-				proof[0] = true;
+	pack.SetBit(0);
+	proof[0] = true;
 
-				Assert::IsTrue(pack[0]);
+	ASSERT_TRUE(pack[0]);
 
-				pack.SetBit(1);
-				Assert::IsTrue(pack[1]);
-				proof[1] = true;
+	pack.SetBit(1);
+	ASSERT_TRUE(pack[1]);
+	proof[1] = true;
 
-				for (unsigned i = 2; i < pack.size(); ++i)
-				{
-					Assert::IsFalse(pack[i]);
-				}
+	for (unsigned i = 2; i < pack.size(); ++i)
+	{
+		ASSERT_FALSE(pack[i]);
+	}
 
-				pack.SetBit(8);
-				proof[8] = true;
+	pack.SetBit(8);
+	proof[8] = true;
 
-				pack.SetBit(10);
-				proof[10] = true;
+	pack.SetBit(10);
+	proof[10] = true;
 
-				pack.SetBit(15);
-				proof[15] = true;
+	pack.SetBit(15);
+	proof[15] = true;
 
-				pack.SetBit(31);
-				proof[31] = true;
+	pack.SetBit(31);
+	proof[31] = true;
 
-				Compare<32>(pack, proof);				
-			}
+	Compare<32>(pack, proof);				
+}
 
-			TEST_METHOD(Alternate)
-			{
-				bool proof[32] = { false };
-				BitPack<32> pack;
+TEST(BitPack, Alternate)
+{
+	bool proof[32] = { false };
+	BitPack<32> pack;
 
-				for (unsigned i = 0; i < pack.size(); i += 2)
-				{
-					proof[i] = true;
-					pack.SetBit(i);					
-				}
+	for (unsigned i = 0; i < pack.size(); i += 2)
+	{
+		proof[i] = true;
+		pack.SetBit(i);					
+	}
 
-				Compare<32>(pack, proof);
+	Compare<32>(pack, proof);
 
-				bool value = false;
-				for (unsigned i = 0; i < pack.size(); ++i)
-				{
-					proof[i] = value;
-					pack.SetBitValue(i, value);
+	bool value = false;
+	for (unsigned i = 0; i < pack.size(); ++i)
+	{
+		proof[i] = value;
+		pack.SetBitValue(i, value);
 
-					value = !value;
-				}
+		value = !value;
+	}
 
-				Assert::IsFalse(proof[0]);
-				Assert::IsTrue(proof[1]);
+	ASSERT_FALSE(proof[0]);
+	ASSERT_TRUE(proof[1]);
 
-				Compare<32>(pack, proof);
-			}
-	};
+	Compare<32>(pack, proof);
 }

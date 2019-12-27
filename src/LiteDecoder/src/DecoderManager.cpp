@@ -19,7 +19,11 @@
 
 #include <Packet.h>
 
+#ifdef ARDUINO_AVR_MEGA2560
 #define MAX_DECODERS 32
+#else
+#define MAX_DECODERS 16
+#endif
 
 static Decoder *g_pDecoders[MAX_DECODERS] = { 0 };
 

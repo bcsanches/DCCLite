@@ -39,7 +39,7 @@ namespace dcclite
 			unsigned int m_iLastKnowPos;
 
 		public:
-			Parser(const char *cmd);
+			explicit Parser(const char *cmd);
 
 			Tokens GetToken(char *dest, unsigned int destSize);
 			Tokens GetNumber(int &dest);

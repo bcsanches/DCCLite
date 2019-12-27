@@ -8,82 +8,72 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "CppUnitTest.h"
+#include <gtest/gtest.h>
 
 #include "Object.h"
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+using namespace dcclite;
 
-
-namespace UnitTestx
+	
+TEST(ObjectPath, Empty)
 {
-	using namespace dcclite;
-
-	TEST_CLASS(ObjectPathUnitTest)
-	{
-		public:			
-
-			TEST_METHOD(Empty)
-			{
-				ObjectPath path;
+	ObjectPath path;
 				
-				Assert::IsTrue(path.begin() == path.end());
-			}
+	ASSERT_TRUE(path.begin() == path.end());
+}
 
-			TEST_METHOD(SingleName)
-			{
-				ObjectPath path("test");
+TEST(ObjectPath, SingleName)
+{
+	ObjectPath path("test");
 
-				auto it = path.begin();
-				Assert::AreEqual(it.ToString(), std::string("test"));
+	auto it = path.begin();
+	ASSERT_EQ(it.ToString(), std::string("test"));
 
-				++it;
-				Assert::IsTrue(it == path.end());
-			}
+	++it;
+	ASSERT_TRUE(it == path.end());
+}
 
-			TEST_METHOD(Root)
-			{
-				ObjectPath root("/");
+TEST(ObjectPath, Root)
+{
+	ObjectPath root("/");
 
-				auto it = root.begin();
-				Assert::AreEqual(it.ToString(), std::string(1, '/'));
+	auto it = root.begin();
+	ASSERT_EQ(it.ToString(), std::string(1, '/'));
 
-				++it;
-				Assert::IsTrue(it == root.end());
-			}
+	++it;
+	ASSERT_TRUE(it == root.end());
+}
 
-			TEST_METHOD(RootWithSubFolder)
-			{
-				ObjectPath root("/abc/def");
+TEST(ObjectPath, RootWithSubFolder)
+{
+	ObjectPath root("/abc/def");
 
-				auto it = root.begin();
-				Assert::AreEqual(it.ToString(), std::string(1, '/'));
+	auto it = root.begin();
+	ASSERT_EQ(it.ToString(), std::string(1, '/'));
 
-				++it;
-				Assert::AreEqual(it.ToString(), std::string("abc"));
+	++it;
+	ASSERT_EQ(it.ToString(), std::string("abc"));
 
-				++it;
-				Assert::AreEqual(it.ToString(), std::string("def"));
+	++it;
+	ASSERT_EQ(it.ToString(), std::string("def"));
 
-				++it;
+	++it;
 
-				Assert::IsTrue(it == root.end());
+	ASSERT_TRUE(it == root.end());
 
-			}
+}
 
-			TEST_METHOD(RelativeWithSubFolder)
-			{
-				ObjectPath root("abc/def");
+TEST(ObjectPath, RelativeWithSubFolder)
+{
+	ObjectPath root("abc/def");
 
-				auto it = root.begin();
-				Assert::AreEqual(it.ToString(), std::string("abc"));
+	auto it = root.begin();
+	ASSERT_EQ(it.ToString(), std::string("abc"));
 
-				++it;
-				Assert::AreEqual(it.ToString(), std::string("def"));
+	++it;
+	ASSERT_EQ(it.ToString(), std::string("def"));
 
-				++it;
+	++it;
 
-				Assert::IsTrue(it == root.end());
-			}
-	};
+	ASSERT_TRUE(it == root.end());
 }

@@ -16,7 +16,7 @@
 class EpromStream
 {
   private:
-    EpromStream(unsigned int index);
+    explicit EpromStream(unsigned int index);
 
     friend struct Storage;
 	friend class LumpWriter;
