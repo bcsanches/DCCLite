@@ -19,7 +19,7 @@
     "powerPin":26,
     "frogPin":28,
     "invertedFrog":true,
-    "operationTime":300
+    "operationTime":1000
   },
   {
     "name":"HDSEntAT02",
@@ -30,7 +30,7 @@
     "powerPin":30,
     "frogPin":32,
     "invertedFrog":false,
-    "operationTime":300
+    "operationTime":1000
   },
   {
     "name":"HDSEntAT03",
@@ -52,7 +52,7 @@
     "inverted": false,
     "powerPin":23,
     "frogPin":25,
-    "operationTime":300
+    "operationTime":1000
   },
   {
     "name":"HDSEntAT05",
@@ -63,7 +63,7 @@
     "powerPin":27,
     "frogPin":29,
     "invertedFrog":true,
-    "operationTime":300
+    "operationTime":1000
   },
   {
     "name":"HDSEntAT06",
@@ -74,7 +74,7 @@
     "powerPin":31,
     "frogPin":33,
     "invertedFrog":true,
-    "operationTime":300
+    "operationTime":1000
   },
   {
     "name":"HDSEntAT07",
@@ -85,7 +85,7 @@
     "powerPin":35,
     "frogPin":37,
     "invertedFrog":true,
-    "operationTime":300
+    "operationTime":1000
   },
   {
     "name":"HDSEntAT08",
@@ -96,7 +96,7 @@
     "powerPin":38,
     "frogPin":39,
     "invertedFrog":true,
-    "operationTime":300
+    "operationTime":1000
   },
   {
     "name":"HDSEntAT09",
@@ -107,7 +107,7 @@
     "powerPin":40,
     "frogPin":41,
     "invertedFrog":true,
-    "operationTime":300
+    "operationTime":1000
   },
   {
     "name":"HDSEntAT10",
@@ -118,7 +118,7 @@
     "powerPin":42,
     "frogPin":43,
     "invertedFrog":true,
-    "operationTime":300,
+    "operationTime":1000,
     "range":45
   },
 
