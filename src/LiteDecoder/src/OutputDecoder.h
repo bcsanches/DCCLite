@@ -25,26 +25,26 @@ class OutputDecoder : public Decoder
 		explicit OutputDecoder(dcclite::Packet &packet);
 		explicit OutputDecoder(EpromStream &stream);
 
-		virtual void SaveConfig(EpromStream &stream);
+		void SaveConfig(EpromStream &stream) override;
 
 		bool IsOutputDecoder() const override
 		{
 			return true;
 		}
 
-		virtual dcclite::DecoderTypes GetType() const 
+		dcclite::DecoderTypes GetType() const override
 		{
 			return dcclite::DecoderTypes::DEC_OUTPUT;
 		};
 
-		bool AcceptServerState(dcclite::DecoderStates state);
+		bool AcceptServerState(dcclite::DecoderStates state) override;
 
-		virtual bool IsActive() const
+		bool IsActive() const override
 		{
 			return m_fFlags & dcclite::OUTD_ACTIVE;
 		}
 
-		virtual bool IsSyncRequired() const
+		bool IsSyncRequired() const override
 		{
 			return false;
 		}

@@ -50,9 +50,9 @@ class ServoTurnoutDecoder : public Decoder
 		explicit ServoTurnoutDecoder(EpromStream& stream);
 		~ServoTurnoutDecoder();
 
-		virtual void SaveConfig(EpromStream& stream);
+		void SaveConfig(EpromStream& stream) override;
 
-		virtual dcclite::DecoderTypes GetType() const
+		dcclite::DecoderTypes GetType() const override
 		{
 			return dcclite::DecoderTypes::DEC_SERVO_TURNOUT;
 		};
@@ -64,12 +64,12 @@ class ServoTurnoutDecoder : public Decoder
 
 		bool AcceptServerState(const dcclite::DecoderStates decoderState);
 
-		virtual bool IsActive() const
+		bool IsActive() const override
 		{
 			return this->State2DecoderState() == dcclite::DecoderStates::ACTIVE;
 		}
 
-		virtual bool IsSyncRequired() const
+		bool IsSyncRequired() const override
 		{
 			return false;
 		}

@@ -25,11 +25,11 @@ class SensorDecoder : public Decoder
 		explicit SensorDecoder(dcclite::Packet& packet);
 		explicit SensorDecoder(EpromStream& stream);
 
-		virtual bool Update(const unsigned long ticks);
+		bool Update(const unsigned long ticks) override;
 
-		virtual void SaveConfig(EpromStream& stream);
+		void SaveConfig(EpromStream& stream) override;
 
-		virtual dcclite::DecoderTypes GetType() const
+		dcclite::DecoderTypes GetType() const override
 		{
 			return dcclite::DecoderTypes::DEC_SENSOR;
 		};
@@ -39,14 +39,14 @@ class SensorDecoder : public Decoder
 			return false;
 		}
 
-		bool AcceptServerState(dcclite::DecoderStates state);
+		bool AcceptServerState(dcclite::DecoderStates state) override;
 
-		virtual bool IsActive() const
+		bool IsActive() const override
 		{
 			return m_fFlags & dcclite::SNRD_ACTIVE;
 		}
 
-		virtual bool IsSyncRequired() const
+		bool IsSyncRequired() const override
 		{
 			bool active = this->IsActive();
 			bool remoteActive = m_fFlags & dcclite::SNRD_REMOTE_ACTIVE;
