@@ -8,18 +8,18 @@
     "powerPin": 22,
     "frogPin": 24,
     "invertedFrog": false,
-    "operationTime": 300
+    "operationTime": 1000
   },
   {
     "name": "HDSExtCT10",
     "class": "ServoTurnout",
     "address": "0023",
     "pin": 3,
-    "inverted": false,
+    "inverted": true,
     "powerPin": 26,
     "frogPin": 28,
-    "invertedFrog": false,
-    "operationTime": 300
+    "invertedFrog": true,
+    "operationTime": 1000
   },
   {
     "name": "HDSExtCT09",
@@ -30,28 +30,31 @@
     "powerPin": 30,
     "frogPin": 32,
     "invertedFrog": false,
-    "operationTime": 300
+    "range":25,
+    "operationTime": 1000
   },
   {
     "name": "HDSExtCT08",
     "class": "ServoTurnout",
     "address": "0025",
     "pin": 5,
-    "inverted": false,
+    "inverted": true,
     "powerPin": 34,
     "frogPin": 36,
     "invertedFrog": false,
-    "operationTime": 500
+    "range":30,
+    "operationTime": 1000
   },
   {
     "name": "HDSExtCT07",
     "class": "ServoTurnout",
     "address": "0026",
     "pin": 6,
-    "inverted": false,
+    "inverted": true,
     "powerPin": 23,
     "frogPin": 25,
-    "operationTime": 300
+    "invertedFrog": true,
+    "operationTime": 1000
   },
   {
     "name": "HDSExtCT06",
@@ -62,7 +65,7 @@
     "powerPin": 27,
     "frogPin": 29,
     "invertedFrog": false,
-    "operationTime": 300
+    "operationTime": 1000
   },
   {
     "name": "HDSExtCT05",
@@ -73,7 +76,8 @@
     "powerPin": 31,
     "frogPin": 33,
     "invertedFrog": false,
-    "operationTime": 300
+    "operationTime": 1000,
+    "range":30
   },
   {
     "name": "HDSExtCT04",
@@ -84,18 +88,18 @@
     "powerPin": 35,
     "frogPin": 37,
     "invertedFrog": false,
-    "operationTime": 300
+    "operationTime": 1000
   },
   {
     "name": "HDSExtCT03",
     "class": "ServoTurnout",
     "address": "0030",
     "pin": 10,
-    "inverted": false,
+    "inverted": true,
     "powerPin": 38,
     "frogPin": 39,
     "invertedFrog": false,
-    "operationTime": 300
+    "operationTime": 1000
   },
   {
     "name": "HDSExtCT02",
@@ -106,7 +110,7 @@
     "powerPin": 40,
     "frogPin": 41,
     "invertedFrog": false,
-    "operationTime": 300
+    "operationTime": 1000
   },
   {
     "name": "HDSExtCT01",
@@ -117,6 +121,6 @@
     "powerPin": 42,
     "frogPin": 43,
     "invertedFrog": false,
-    "operationTime": 300
+    "operationTime": 1000
   }
 ]

@@ -551,7 +551,7 @@ bool Device::Load()
 	
 	if (storedConfigToken == m_ConfigToken)
 	{
-		dcclite::Log::Warn("[{}::Device::Load] Stored config token is the same loaded token, ignoring load request", this->GetName());
+		dcclite::Log::Info("[{}::Device::Load] Stored config token is the same loaded token, ignoring load request", this->GetName());
 
 		return false;
 	}

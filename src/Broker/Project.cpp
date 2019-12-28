@@ -64,21 +64,21 @@ dcclite::Guid Project::GetFileToken(const std::string_view fileName) const
 			auto tokenData = stateData.FindMember("token");
 			if ((tokenData == stateData.MemberEnd()) || (!tokenData->value.IsString()))
 			{
-				dcclite::Log::Error("project state file does not contain token");
+				dcclite::Log::Error("[Project::GetFileToken] {} project state file does not contain token", stateFilePath.string());
 				goto SKIP_LOAD;
 			}
 
 			//read tokenStr
 			if (!dcclite::TryGuidLoadFromString(token, tokenData->value.GetString()))
 			{
-				dcclite::Log::Error("project error parsing stored token");
+				dcclite::Log::Error("[Project::GetFileToken] {} project error parsing stored token", stateFilePath.string());
 				goto SKIP_LOAD;
 			}	
 
 			auto hashData = stateData.FindMember("sha1");
 			if ((hashData == stateData.MemberEnd()) || (!hashData->value.IsString()))
 			{
-				dcclite::Log::Error("Project state file does not contain hash");
+				dcclite::Log::Error("[Project::GetFileToken] {} Project state file does not contain hash", stateFilePath.string());
 
 				goto SKIP_LOAD;
 			}
@@ -86,19 +86,19 @@ dcclite::Guid Project::GetFileToken(const std::string_view fileName) const
 			//read hash
 			if (!storedHash.TryLoadFromString(hashData->value.GetString()))
 			{
-				dcclite::Log::Error("Project error parsing hash");
+				dcclite::Log::Error("[Project::GetFileToken] {} Project error parsing hash", stateFilePath.string());
 				goto SKIP_LOAD;
 			}			
 		}
 		else
 		{
-			dcclite::Log::Info("Project state file for {} not found", fileName);
+			dcclite::Log::Info("[Project::GetFileToken] Project state file for {} not found", fileName);
 		}
 
 SKIP_LOAD:
 		if (storedHash != currentFileHash)
 		{
-			dcclite::Log::Info("Project config file {} modified", fileName);
+			dcclite::Log::Info("[Project::GetFileToken] Project config file {} modified", fileName);
 
 			token = dcclite::GuidCreate();
 			
@@ -110,7 +110,7 @@ SKIP_LOAD:
 
 			if (ec)
 			{
-				dcclite::Log::Error("Cannot create app path for storing state for {}, system error: {}", fileName, ec.message());				
+				dcclite::Log::Error("[Project::GetFileToken] Cannot create app path for storing state for {}, system error: {}", fileName, ec.message());				
 			}
 			else
 			{
@@ -126,7 +126,7 @@ SKIP_LOAD:
 							
 				newStateFile << responseWriter.GetString();
 
-				dcclite::Log::Info("Stored {} state data on {}", fileName, stateFilePath.string());
+				dcclite::Log::Info("[Project::GetFileToken] Stored {} state data on {}", fileName, stateFilePath.string());
 			}
 		}
 	}	

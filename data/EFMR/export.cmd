@@ -1,0 +1,1 @@
+copy * F:\skydrive\bcsanches\SkyDrive\Documentos\user\ferreomodelismo\maquete2\automacao\dcclite\EFMR\
