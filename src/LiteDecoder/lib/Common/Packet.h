@@ -259,7 +259,7 @@ namespace dcclite
 	class PacketReader
 	{
 		public:
-			inline PacketReader(Packet &pkt):
+			inline explicit PacketReader(Packet &pkt):
 				m_Packet(pkt)
 			{
 				//empty

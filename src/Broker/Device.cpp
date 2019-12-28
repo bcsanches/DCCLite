@@ -34,10 +34,14 @@ static auto constexpr STATE_TIMEOUT = 250ms;
 static auto constexpr SYNC_TIMEOUT = 250ms;
 
 
-inline void PreparePacket(dcclite::Packet &packet, dcclite::MsgTypes msgType, const dcclite::Guid &sessionToken, const dcclite::Guid &configToken)
+class DevicePacket: public dcclite::Packet
 {
-	dcclite::PacketBuilder builder{ packet, msgType, sessionToken, configToken };
-}
+	public:
+		DevicePacket(dcclite::MsgTypes msgType, const dcclite::Guid &sessionToken, const dcclite::Guid &configToken)
+		{
+			dcclite::PacketBuilder builder{ *this, msgType, sessionToken, configToken };
+		}
+};
 
 //
 //
@@ -78,9 +82,7 @@ Device::ConfigState::ConfigState(Device &self, const dcclite::Clock::TimePoint_t
 
 void Device::ConfigState::SendDecoderConfigPacket(const Device &self, const size_t index) const
 {
-	dcclite::Packet pkt;
-
-	PreparePacket(pkt, dcclite::MsgTypes::CONFIG_DEV, self.m_SessionToken, self.m_ConfigToken);
+	DevicePacket pkt{ dcclite::MsgTypes::CONFIG_DEV, self.m_SessionToken, self.m_ConfigToken };
 	pkt.Write8(static_cast<uint8_t>(index));
 
 	self.m_vecDecoders[index]->WriteConfig(pkt);
@@ -90,9 +92,8 @@ void Device::ConfigState::SendDecoderConfigPacket(const Device &self, const size
 
 void Device::ConfigState::SendConfigFinishedPacket(const Device &self) const
 {
-	dcclite::Packet pkt;
-
-	PreparePacket(pkt, dcclite::MsgTypes::CONFIG_FINISHED, self.m_SessionToken, self.m_ConfigToken);
+	DevicePacket pkt{ dcclite::MsgTypes::CONFIG_FINISHED, self.m_SessionToken, self.m_ConfigToken };
+	
 	pkt.Write8(static_cast<uint8_t>(self.m_vecDecoders.size()));
 
 	self.m_clDccService.Device_SendPacket(self.m_RemoteAddress, pkt);
@@ -100,10 +101,8 @@ void Device::ConfigState::SendConfigFinishedPacket(const Device &self) const
 
 void Device::ConfigState::SendConfigStartPacket(const Device &self) const
 {
-	dcclite::Packet pkt;
-
-	PreparePacket(pkt, dcclite::MsgTypes::CONFIG_START, self.m_SessionToken, self.m_ConfigToken);
-
+	DevicePacket pkt { dcclite::MsgTypes::CONFIG_START, self.m_SessionToken, self.m_ConfigToken};
+	
 	self.m_clDccService.Device_SendPacket(self.m_RemoteAddress, pkt);
 }
 
@@ -301,8 +300,7 @@ void Device::SyncState::Update(Device &self, const dcclite::Clock::TimePoint_t t
 
 	dcclite::Log::Info("[{}::Device::SyncState::Update] request sent", self.GetName());
 
-	dcclite::Packet pkt;
-	PreparePacket(pkt, dcclite::MsgTypes::SYNC, self.m_SessionToken, self.m_ConfigToken);
+	DevicePacket pkt{ dcclite::MsgTypes::SYNC, self.m_SessionToken, self.m_ConfigToken};
 
 	self.m_clDccService.Device_SendPacket(self.m_RemoteAddress, pkt);
 
@@ -376,8 +374,7 @@ void Device::OnlineState::SendStateDelta(Device &self, const bool sendSensorsSta
 		if ((m_tLastStateSent == states) && ((time - m_tLastStateSentTime) < STATE_TIMEOUT))
 			return;
 
-		dcclite::Packet pkt;
-		PreparePacket(pkt, dcclite::MsgTypes::STATE, self.m_SessionToken, self.m_ConfigToken);
+		DevicePacket pkt{dcclite::MsgTypes::STATE, self.m_SessionToken, self.m_ConfigToken};
 
 		pkt.Write64(++m_uOutgoingStatePacketId);
 		pkt.Write(changedStates);
@@ -408,8 +405,7 @@ void Device::OnlineState::OnPacket(
 		if (!self.CheckSessionConfig(remoteConfigToken, remoteAddress))
 			return;
 
-		dcclite::Packet pkt;
-		PreparePacket(pkt, dcclite::MsgTypes::MSG_PONG, self.m_SessionToken, self.m_ConfigToken);
+		DevicePacket pkt{dcclite::MsgTypes::MSG_PONG, self.m_SessionToken, self.m_ConfigToken};
 		self.m_clDccService.Device_SendPacket(self.m_RemoteAddress, pkt);
 
 		self.RefreshTimeout(time);
@@ -533,7 +529,7 @@ void Device::Unload()
 
 	for (auto dec : m_vecDecoders)
 	{				
-		this->RemoveChild(dec->GetName());
+		auto shortcut = this->RemoveChild(dec->GetName());
 
 		m_clDccService.Device_DestroyDecoder(*dec);
 	}
@@ -621,8 +617,7 @@ void Device::Disconnect()
 	if (m_eStatus != Status::ONLINE)
 		return;	
 	
-	dcclite::Packet pkt;
-	PreparePacket(pkt, dcclite::MsgTypes::DISCONNECT, m_SessionToken, m_ConfigToken);
+	DevicePacket pkt{dcclite::MsgTypes::DISCONNECT, m_SessionToken, m_ConfigToken};
 		
 	m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
 
@@ -678,8 +673,7 @@ void Device::AcceptConnection(const dcclite::Clock::TimePoint_t time, const dccl
 		dcclite::Log::Info("[{}::Device::AcceptConnection] Accepted connection {} {}", this->GetName(), remoteAddress, m_ConfigToken);
 
 		//tell device that connection was accepted
-		dcclite::Packet pkt;
-		PreparePacket(pkt, dcclite::MsgTypes::ACCEPTED, m_SessionToken, m_ConfigToken);
+		DevicePacket pkt{dcclite::MsgTypes::ACCEPTED, m_SessionToken, m_ConfigToken};
 		m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);				
 
 		//now sync it

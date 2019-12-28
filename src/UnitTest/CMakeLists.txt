@@ -2,23 +2,26 @@
 set(UnitTest_SRCS
 	BitPackUnitTest.cpp
   ObjectPathUnitTest.cpp
+  ParserUnitTest.cpp
   ProjectUnitTest.cpp
-  stdafx.cpp
   UtilUnitTest.cpp
 )
 
 set(UnitTest_HDRS
-	stdafx.h
-  targetver.h  
+
 )
+
+# GTest
+enable_testing()
 
 #add_compile_definitions(ARDUINOLIB_EXPORTS)
 #add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 
-add_library(UnitTest SHARED ${UnitTest_SRCS} ${UnitTest_HDRS})
+#add_library(UnitTest SHARED ${UnitTest_SRCS} ${UnitTest_HDRS})
+add_executable(UnitTest ${UnitTest_SRCS} ${UnitTest_HDRS})
 target_compile_features(ArduinoLib PUBLIC cxx_std_17)    
 
-target_include_directories(UnitTest PRIVATE ${DCCLite_SOURCE_DIR}/src/Common)
+target_include_directories(UnitTest PRIVATE ${DCCLite_SOURCE_DIR}/src/Common ${GTEST_INCLUDE_DIRS})
 
-target_link_libraries(UnitTest PUBLIC Common fmt)
+target_link_libraries(UnitTest PUBLIC Common EmbeddedLib fmt gtest_main)
 

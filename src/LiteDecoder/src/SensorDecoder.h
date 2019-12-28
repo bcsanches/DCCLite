@@ -22,8 +22,8 @@ class SensorDecoder : public Decoder
 		unsigned long m_uCoolDownTicks = 0;
 
 	public:
-		SensorDecoder(dcclite::Packet& packet);
-		SensorDecoder(EpromStream& stream);
+		explicit SensorDecoder(dcclite::Packet& packet);
+		explicit SensorDecoder(EpromStream& stream);
 
 		virtual bool Update(const unsigned long ticks);
 

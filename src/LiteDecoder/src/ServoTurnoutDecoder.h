@@ -46,8 +46,8 @@ class ServoTurnoutDecoder : public Decoder
 		uint8_t m_uServoPos;
 
 	public:
-		ServoTurnoutDecoder(dcclite::Packet& packet);
-		ServoTurnoutDecoder(EpromStream& stream);
+		explicit ServoTurnoutDecoder(dcclite::Packet& packet);
+		explicit ServoTurnoutDecoder(EpromStream& stream);
 		~ServoTurnoutDecoder();
 
 		virtual void SaveConfig(EpromStream& stream);

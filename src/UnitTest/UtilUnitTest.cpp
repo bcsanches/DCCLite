@@ -8,29 +8,18 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "CppUnitTest.h"
+#include <gtest/gtest.h>
 
 #include "Util.h"
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+using namespace dcclite;
 
-
-namespace UnitTest
-{
-	using namespace dcclite;
-
-	TEST_CLASS(dccliteStringTrim)
-	{
-		public:
-
-			TEST_METHOD(Basic)
-			{				
-				Assert::IsTrue(StrTrim("test").compare("test") == 0);
-				Assert::IsTrue(StrTrim("   test").compare("test") == 0);
-				Assert::IsTrue(StrTrim("   test    ").compare("test") == 0);
-				Assert::IsTrue(StrTrim("test   ").compare("test") == 0);
-				Assert::IsTrue(StrTrim("   ").compare("") == 0);
-				Assert::IsTrue(StrTrim("").compare("") == 0);
-			}
-	};
+TEST(Util, dccliteStringTrim)
+{					
+	ASSERT_TRUE(StrTrim("test").compare("test") == 0);
+	ASSERT_TRUE(StrTrim("   test").compare("test") == 0);
+	ASSERT_TRUE(StrTrim("   test    ").compare("test") == 0);
+	ASSERT_TRUE(StrTrim("test   ").compare("test") == 0);
+	ASSERT_TRUE(StrTrim("   ").compare("") == 0);
+	ASSERT_TRUE(StrTrim("").compare("") == 0);			
 }

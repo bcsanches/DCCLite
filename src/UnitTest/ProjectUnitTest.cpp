@@ -8,23 +8,10 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "stdafx.h"
-#include "CppUnitTest.h"
+#include <gtest/gtest.h>
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-//#include "Project.h"
-
-namespace UnitTest
-{		
-	TEST_CLASS(ProjectUnitTest)
-	{
-	public:
-		
-		TEST_METHOD(TestMethod1)
-		{
-			// TODO: Your test code here
-		}
-
-	};
+TEST(Project, TestMethod1)
+{
+	// TODO: Your test code here
 }
