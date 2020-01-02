@@ -11,7 +11,7 @@ DccLite is an open source software for controlling a model railroad. It is loose
 User Documentation
 ------------------
 
-If you would like to know more, please visit our (working in progress) wiki at: [DCCLite Documentation](https://github.com/bcsanches/DCCLite/blob/master/docs/intro.md)
+If you would like to know more, please visit our (working in progress) wiki at: [DCCLite Documentation](https://github.com/bcsanches/DCCLite/wiki)
 
 
 Dependencies
