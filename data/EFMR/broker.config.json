@@ -3,7 +3,7 @@
   "services": [
     {
       "class": "DccLite",
-      "name": "Dcc1",
+      "name": "Dcc0",
       "port": 8989,
       "devices": [
         {
@@ -24,7 +24,7 @@
     {
       "class": "DccppService",
       "name": "dccpp",
-      "system":"Dcc1"
+      "system":"Dcc0"
     }
   ]
 }

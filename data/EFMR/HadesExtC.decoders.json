@@ -1,8 +1,8 @@
 [
   {
-    "name": "HDSExtCT11",
+    "name": "STC_T11",
     "class": "ServoTurnout",
-    "address": "0022",
+    "address": "1761",
     "pin": 2,
     "inverted": false,
     "powerPin": 22,
@@ -11,9 +11,9 @@
     "operationTime": 1000
   },
   {
-    "name": "HDSExtCT10",
+    "name": "STC_T10",
     "class": "ServoTurnout",
-    "address": "0023",
+    "address": "1760",
     "pin": 3,
     "inverted": true,
     "powerPin": 26,
@@ -22,9 +22,9 @@
     "operationTime": 1000
   },
   {
-    "name": "HDSExtCT09",
+    "name": "STC_T09",
     "class": "ServoTurnout",
-    "address": "0024",
+    "address": "1759",
     "pin": 4,
     "inverted": false,
     "powerPin": 30,
@@ -34,9 +34,9 @@
     "operationTime": 1000
   },
   {
-    "name": "HDSExtCT08",
+    "name": "STC_T08",
     "class": "ServoTurnout",
-    "address": "0025",
+    "address": "1758",
     "pin": 5,
     "inverted": true,
     "powerPin": 34,
@@ -46,9 +46,9 @@
     "operationTime": 1000
   },
   {
-    "name": "HDSExtCT07",
+    "name": "STC_T07",
     "class": "ServoTurnout",
-    "address": "0026",
+    "address": "1757",
     "pin": 6,
     "inverted": true,
     "powerPin": 23,
@@ -57,9 +57,9 @@
     "operationTime": 1000
   },
   {
-    "name": "HDSExtCT06",
+    "name": "STC_T06",
     "class": "ServoTurnout",
-    "address": "0027",
+    "address": "1756",
     "pin": 7,
     "inverted": false,
     "powerPin": 27,
@@ -68,9 +68,9 @@
     "operationTime": 1000
   },
   {
-    "name": "HDSExtCT05",
+    "name": "STC_T05",
     "class": "ServoTurnout",
-    "address": "0028",
+    "address": "1755",
     "pin": 8,
     "inverted": false,
     "powerPin": 31,
@@ -80,9 +80,9 @@
     "range":30
   },
   {
-    "name": "HDSExtCT04",
+    "name": "STC_T04",
     "class": "ServoTurnout",
-    "address": "0029",
+    "address": "1754",
     "pin": 9,
     "inverted": false,
     "powerPin": 35,
@@ -91,9 +91,9 @@
     "operationTime": 1000
   },
   {
-    "name": "HDSExtCT03",
+    "name": "STC_T03",
     "class": "ServoTurnout",
-    "address": "0030",
+    "address": "1753",
     "pin": 10,
     "inverted": true,
     "powerPin": 38,
@@ -102,9 +102,9 @@
     "operationTime": 1000
   },
   {
-    "name": "HDSExtCT02",
+    "name": "STC_T02",
     "class": "ServoTurnout",
-    "address": "0031",
+    "address": "1752",
     "pin": 11,
     "inverted": true,
     "powerPin": 40,
@@ -113,9 +113,9 @@
     "operationTime": 1000
   },
   {
-    "name": "HDSExtCT01",
+    "name": "STC_T01",
     "class": "ServoTurnout",
-    "address": "0032",
+    "address": "1751",
     "pin": 12,
     "inverted": true,
     "powerPin": 42,

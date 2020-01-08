@@ -2,7 +2,7 @@
   {
     "name":"HLXIntT01",
     "class":"ServoTurnout",
-    "address":"0100",
+    "address":"1800",
     "pin": 2,
     "inverted": false,
     "powerPin":22,
@@ -11,9 +11,9 @@
     "operationTime":1000
   },
   {
-    "name":"HDSEntAT01",
+    "name":"STA_T01",
     "class":"ServoTurnout",
-    "address":"0001",
+    "address":"1700",
     "pin": 3,
     "inverted": false,
     "powerPin":26,
@@ -22,9 +22,9 @@
     "operationTime":1000
   },
   {
-    "name":"HDSEntAT02",
+    "name":"STA_T02",
     "class":"ServoTurnout",
-    "address":"0002",
+    "address":"1701",
     "pin": 4,
     "inverted": true,
     "powerPin":30,
@@ -33,9 +33,9 @@
     "operationTime":1000
   },
   {
-    "name":"HDSEntAT03",
+    "name":"STA_T03",
     "class":"ServoTurnout",
-    "address":"0003",
+    "address":"1702",
     "pin": 5,
     "inverted": true,
     "powerPin":34,
@@ -45,9 +45,9 @@
     "range":45
   },
   {
-    "name":"HDSEntAT04",
+    "name":"STA_T04",
     "class":"ServoTurnout",
-    "address":"0004",
+    "address":"1703",
     "pin": 6,
     "inverted": false,
     "powerPin":23,
@@ -55,9 +55,9 @@
     "operationTime":1000
   },
   {
-    "name":"HDSEntAT05",
+    "name":"STA_T05",
     "class":"ServoTurnout",
-    "address":"0005",
+    "address":"1704",
     "pin": 7,
     "inverted": true,
     "powerPin":27,
@@ -66,9 +66,9 @@
     "operationTime":1000
   },
   {
-    "name":"HDSEntAT06",
+    "name":"STA_T06",
     "class":"ServoTurnout",
-    "address":"0006",
+    "address":"1705",
     "pin": 8,
     "inverted": true,
     "powerPin":31,
@@ -77,9 +77,9 @@
     "operationTime":1000
   },
   {
-    "name":"HDSEntAT07",
+    "name":"STA_T07",
     "class":"ServoTurnout",
-    "address":"0007",
+    "address":"1706",
     "pin": 9,
     "inverted": true,
     "powerPin":35,
@@ -88,9 +88,9 @@
     "operationTime":1000
   },
   {
-    "name":"HDSEntAT08",
+    "name":"STA_T08",
     "class":"ServoTurnout",
-    "address":"0008",
+    "address":"1707",
     "pin": 10,
     "inverted": true,
     "powerPin":38,
@@ -99,9 +99,9 @@
     "operationTime":1000
   },
   {
-    "name":"HDSEntAT09",
+    "name":"STA_T09",
     "class":"ServoTurnout",
-    "address":"0009",
+    "address":"1708",
     "pin": 11,
     "inverted": true,
     "powerPin":40,
@@ -110,9 +110,9 @@
     "operationTime":1000
   },
   {
-    "name":"HDSEntAT10",
+    "name":"STA_T10",
     "class":"ServoTurnout",
-    "address":"0010",
+    "address":"1709",
     "pin": 12,
     "inverted": true,
     "powerPin":42,
@@ -123,89 +123,89 @@
   },
 
   {
-    "name": "HDSEntATrk01",
+    "name": "STA_P01",
     "class": "Output",
-    "address": "0011",
+    "address": "1710",
     "pin": 54,
     "inverted": false,
     "ignoreSavedState": true
   },
   {
-    "name": "HDSEntATrk02",
+    "name": "STA_P02",
     "class": "Output",
-    "address": "0012",
+    "address": "1711",
     "pin": 55,
     "inverted":true,
     "ignoreSavedState": true
   },
   {
-    "name": "HDSEntATrk03",
+    "name": "STA_P03",
     "class": "Output",
-    "address": "0013",
+    "address": "1712",
     "pin": 56,
     "inverted":true,
     "ignoreSavedState": true 
   },
   {
-    "name": "HDSEntATrk04",
+    "name": "STA_P04",
     "class": "Output",
-    "address": "0014",
+    "address": "1713",
     "pin": 57,
     "inverted":true,
     "ignoreSavedState": true
   },
   {
-    "name": "HDSEntATrk05",
+    "name": "STA_P05",
     "class": "Output",
-    "address": "0015",
+    "address": "1714",
     "pin": 58,
     "inverted":true,
     "ignoreSavedState": true
   },
   {
-    "name": "HDSEntATrk06",
+    "name": "STA_P06",
     "class": "Output",
-    "address": "0016",
+    "address": "1715",
     "pin": 59,
     "inverted":true,
     "ignoreSavedState": true
   },
   {
-    "name": "HDSEntATrk07",
+    "name": "STA_P07",
     "class": "Output",
-    "address": "0017",
+    "address": "1716",
     "pin": 60,
     "inverted":true,
     "ignoreSavedState": true
   },
   {
-    "name": "HDSEntATrk08",
+    "name": "STA_P08",
     "class": "Output",
-    "address": "0018",
+    "address": "1717",
     "pin": 61,
     "inverted":true,
     "ignoreSavedState": true
   },
   {
-    "name": "HDSEntATrk09",
+    "name": "STA_P09",
     "class": "Output",
-    "address": "0019",
+    "address": "1718",
     "pin": 62,
     "inverted":true,
     "ignoreSavedState": true
   },
   {
-    "name": "HDSEntATrk10",
+    "name": "STA_P10",
     "class": "Output",
-    "address": "0020",
+    "address": "1719",
     "pin": 63,
     "inverted":true,
     "ignoreSavedState": true
   },
   {
-    "name": "HDSEntATrk11",
+    "name": "STA_P11",
     "class": "Output",
-    "address": "0021",
+    "address": "1720",
     "pin": 64,
     "inverted":true,
     "ignoreSavedState": true

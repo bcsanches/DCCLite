@@ -163,7 +163,7 @@ bool DccppClient::Update()
 				case 's':
 				{
 					std::stringstream response;
-					response << "<p0><iDCC++ DccLite><N1: Ethernet><H 100 0>";
+					response << "<p0><iDCC++ DccLite><N1: Ethernet>";
 
 					auto turnoutDecoders = m_rclSystem.FindAllTurnoutDecoders();
 					if (!turnoutDecoders.empty())
