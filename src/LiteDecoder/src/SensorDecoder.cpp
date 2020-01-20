@@ -26,8 +26,8 @@ SensorDecoder::SensorDecoder(dcclite::Packet& packet) :
 {
 	const auto pin = packet.Read<dcclite::PinType_t>();
 	
-	//only read pull up flag, the others are internal
-	m_fFlags = packet.Read<uint8_t>() & dcclite::SNRD_PULL_UP;
+	//only read pull up and inverted flag, the others are internal
+	m_fFlags = packet.Read<uint8_t>() & (dcclite::SNRD_PULL_UP | dcclite::SNRD_INVERTED);
 
 	using namespace dcclite;
 
@@ -82,14 +82,6 @@ bool SensorDecoder::AcceptServerState(dcclite::DecoderStates state)
 
 bool SensorDecoder::Update(const unsigned long ticks)
 {
-	#if 0
-	{
-	int state = digitalRead(m_tPin);
-	Console::SendLogEx("SENSOR", ' ', state);
-	return;
-	}
-	#endif
-
 	bool coolDown = m_fFlags & dcclite::SNRD_COOLDOWN;	
 
 	//if on cooldown state and not finished yet
@@ -104,8 +96,8 @@ bool SensorDecoder::Update(const unsigned long ticks)
 	//disable cooldown anyway
 	m_fFlags &= ~dcclite::SNRD_COOLDOWN;
 
-	auto state = m_clPin.DigitalRead();	
-	int previousState = (m_fFlags & dcclite::SNRD_ACTIVE) ? Pin::VLOW : Pin::VHIGH;
+	auto state = m_clPin.DigitalRead();		
+	int previousState = this->ExpectedPinState();
 
 	//no state change?
 	if (state == previousState)
@@ -114,20 +106,12 @@ bool SensorDecoder::Update(const unsigned long ticks)
 	}
 	
 	if (coolDown)
-	{		
-		if (state == Pin::VLOW)
-		{
-			m_fFlags |= dcclite::SNRD_ACTIVE;			
-
-			//Console::SendLogEx(MODULE_NAME, ' ', "ACTIVATED");
-		}
+	{				
+		if(m_fFlags & dcclite::SNRD_ACTIVE)
+			m_fFlags &= ~dcclite::SNRD_ACTIVE;
 		else
-		{
-			m_fFlags &= ~dcclite::SNRD_ACTIVE;			
-
-			//Console::SendLogEx(MODULE_NAME, ' ', "INACTIVATED");
-		}
-
+			m_fFlags |= dcclite::SNRD_ACTIVE;
+		
 		//state changed
 		return true;
 	}

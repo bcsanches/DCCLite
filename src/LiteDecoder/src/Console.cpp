@@ -51,7 +51,7 @@ void Console::Init()
     Serial.print(F("LiteDecoder "));
     Serial.print(ARDUINO_TYPE);
     Serial.print(F(" / "));    
-    Serial.print(F("0.2.2"));
+    Serial.print(F("0.2.3"));
     Serial.print(F(" / "));
     Serial.print(__DATE__);
     Serial.print(" ");

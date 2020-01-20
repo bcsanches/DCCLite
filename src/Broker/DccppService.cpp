@@ -155,6 +155,11 @@ bool DccppClient::Update()
 
 			switch (cmd[0])
 			{
+				case '#':
+					//max slots, have no idea why and how it is used
+					m_clMessenger.Send(m_clAddress, "<# 0>");
+					break;
+
 				case 'c':
 					//current
 					m_clMessenger.Send(m_clAddress, "<a 0>");

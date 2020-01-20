@@ -28,6 +28,9 @@ SensorDecoder::SensorDecoder(const Class &decoderClass,
 {
 	auto pullup = params.FindMember("pullup");
 	m_fPullUp = pullup != params.MemberEnd() ? pullup->value.GetBool() : false;
+
+	auto inverted = params.FindMember("inverted");
+	m_fInverted = inverted != params.MemberEnd() ? inverted->value.GetBool() : false;
 }
 
 void SensorDecoder::WriteConfig(dcclite::Packet &packet) const
@@ -36,6 +39,7 @@ void SensorDecoder::WriteConfig(dcclite::Packet &packet) const
 
 	packet.Write8(m_clPin.Raw());
 	packet.Write8(
-		(m_fPullUp ? dcclite::SensorDecoderFlags::SNRD_PULL_UP : 0)
+		(m_fPullUp ? dcclite::SensorDecoderFlags::SNRD_PULL_UP : 0) |
+		(m_fInverted ? dcclite::SensorDecoderFlags::SNRD_INVERTED : 0)
 	);
 }

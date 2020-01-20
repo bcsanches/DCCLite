@@ -1,5 +1,12 @@
 [
   {
+    "name":"SensorTest",
+    "class":"Sensor",
+    "pin":5,
+    "address":"0x96",
+    "inverted":false
+  },
+  {
     "name": "ATrack01",
     "class": "Output",
     "address": "0x10",
@@ -16,13 +23,7 @@
     "inverted": true,
     "ignoreSavedState": true,
     "activateOnPowerUp": false
-  },
-  {
-    "name": "ATrack03",
-    "class": "Output",
-    "address": "0x12",
-    "pin": 5
-  },
+  },  
   {
     "name": "ATrack04",
     "class": "Output",

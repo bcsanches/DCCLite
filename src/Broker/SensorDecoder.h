@@ -66,11 +66,13 @@ class SensorDecoder : public Decoder
 			Decoder::Serialize(stream);
 
 			stream.AddIntValue("pin", m_clPin.Raw());
-			stream.AddBool("pullup", m_fPullUp);			
+			stream.AddBool("pullup", m_fPullUp);	
+			stream.AddBool("inverted", m_fInverted);
 		}	
 
 	private:
 		dcclite::BasicPin m_clPin;
 
 		bool m_fPullUp = false;		
+		bool m_fInverted = false;
 };

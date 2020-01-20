@@ -122,5 +122,37 @@
     "frogPin": 43,
     "invertedFrog": false,
     "operationTime": 1000
+  },
+  {
+    "name": "STC_HR12",
+    "class": "Output",
+    "address": "1762",
+    "pin": 54,
+    "inverted": false,
+    "ignoreSavedState": false
+  },
+  {
+    "name": "STC_HG12",
+    "class": "Output",
+    "address": "1763",
+    "pin": 55,
+    "inverted": false,
+    "ignoreSavedState": false
+  },  
+  {
+    "name": "STC_HR11",
+    "class": "Output",
+    "address": "1764",
+    "pin": 56,
+    "inverted": false,
+    "ignoreSavedState": false
+  },
+  {
+    "name": "STC_HG11",
+    "class": "Output",
+    "address": "1765",
+    "pin": 57,
+    "inverted": false,
+    "ignoreSavedState": false
   }
 ]
