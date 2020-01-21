@@ -83,6 +83,7 @@ namespace dcclite
 		SNRD_PULL_UP = 0x01,
 		SNRD_INVERTED = 0x02,
 
+		SNRD_DELAY = 0x10,
 		SNRD_COOLDOWN = 0x20,
 		SNRD_REMOTE_ACTIVE = 0x40,
 		SNRD_ACTIVE = 0x80

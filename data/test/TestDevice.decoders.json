@@ -4,8 +4,10 @@
     "class":"Sensor",
     "pin":5,
     "address":"0x96",
-    "inverted":false
-  },
+    "inverted":false,
+    "activateDelay":0,
+    "deactivateDelay":0
+  },  
   {
     "name": "ATrack01",
     "class": "Output",

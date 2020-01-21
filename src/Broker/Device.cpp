@@ -134,7 +134,7 @@ void Device::ConfigState::OnPacket_ConfigAck(
 
 	m_RetryTime = time + CONFIG_RETRY_TIME;
 
-	dcclite::Log::Info("[{}::Device::OnPacket_ConfigAck] Config ACK {}", self.GetName(), seq);
+	dcclite::Log::Info("[{}::Device::OnPacket_ConfigAck] Config ACK {} - {}", self.GetName(), seq, self.m_vecDecoders[seq]->GetName());
 
 	if (m_uSeqCount == m_vecAcks.size())
 	{

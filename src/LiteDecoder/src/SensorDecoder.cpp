@@ -28,6 +28,8 @@ SensorDecoder::SensorDecoder(dcclite::Packet& packet) :
 	
 	//only read pull up and inverted flag, the others are internal
 	m_fFlags = packet.Read<uint8_t>() & (dcclite::SNRD_PULL_UP | dcclite::SNRD_INVERTED);
+	m_uActivateDelay = packet.Read<uint8_t>();
+	m_uDeactivateDelay = packet.Read<uint8_t>();
 
 	using namespace dcclite;
 
@@ -41,6 +43,8 @@ SensorDecoder::SensorDecoder(EpromStream& stream) :
 
 	stream.Get(pin);	
 	stream.Get(m_fFlags);
+	stream.Get(m_uActivateDelay);
+	stream.Get(m_uDeactivateDelay);
 
 	this->Init(pin);
 }
@@ -52,6 +56,8 @@ void SensorDecoder::SaveConfig(EpromStream& stream)
 
 	stream.Put(m_clPin.Raw());	
 	stream.Put(m_fFlags);
+	stream.Put(m_uActivateDelay);
+	stream.Put(m_uDeactivateDelay);
 }
 
 void SensorDecoder::Init(const dcclite::PinType_t pin)
@@ -82,40 +88,33 @@ bool SensorDecoder::AcceptServerState(dcclite::DecoderStates state)
 
 bool SensorDecoder::Update(const unsigned long ticks)
 {
-	bool coolDown = m_fFlags & dcclite::SNRD_COOLDOWN;	
+	const bool coolDown = m_fFlags & dcclite::SNRD_COOLDOWN;	
+	const bool delay = m_fFlags & dcclite::SNRD_DELAY;
 
 	//if on cooldown state and not finished yet
-	if (coolDown && (ticks < m_uCoolDownTicks))
+	if ((coolDown || delay) && (ticks < m_uCoolDownTicks))
 	{
 		//Console::SendLogEx("[SENSOR_DECODER]", "LOCAL", ' ', "COOLDOWN", ' ', "ABORT");
 
 		//wait...
 		return false;
-	}
+	}		
 
-	//disable cooldown anyway
-	m_fFlags &= ~dcclite::SNRD_COOLDOWN;
+	//disable cooldown and delay anyway
+	m_fFlags &= ~(dcclite::SNRD_COOLDOWN | dcclite::SNRD_DELAY);
 
-	auto state = m_clPin.DigitalRead();		
-	int previousState = this->ExpectedPinState();
+	bool state = m_clPin.DigitalRead() == Pin::VHIGH;		
+	state = (m_fFlags & dcclite::SNRD_INVERTED) ? !state : state;
+
+	bool previousState = m_fFlags & dcclite::SNRD_ACTIVE;
 
 	//no state change?
 	if (state == previousState)
 	{		
 		return false;
 	}
-	
-	if (coolDown)
-	{				
-		if(m_fFlags & dcclite::SNRD_ACTIVE)
-			m_fFlags &= ~dcclite::SNRD_ACTIVE;
-		else
-			m_fFlags |= dcclite::SNRD_ACTIVE;
-		
-		//state changed
-		return true;
-	}
-	else
+
+	if((!coolDown) && (!delay))
 	{
 		//are we starting a state change?
 		m_fFlags |= dcclite::SNRD_COOLDOWN;
@@ -125,5 +124,31 @@ bool SensorDecoder::Update(const unsigned long ticks)
 		//Console::SendLogEx("[SENSOR_DECODER]", "LOCAL", ' ', "COOLDOWN");
 
 		return false;
-	}	
+	}
+		
+	if (coolDown)
+	{	
+		//do we have to wait for a state change?
+		const long delayTicks = ((m_fFlags & dcclite::SNRD_ACTIVE) ? m_uDeactivateDelay : m_uActivateDelay) * 1000;
+		if(delayTicks)
+		{
+			//ok, prepare for wait and get out
+			m_uCoolDownTicks = ticks + delayTicks;
+			m_fFlags |= dcclite::SNRD_DELAY;
+
+#if 0
+			Console::SendLogEx("[SENSOR_DECODER]", "DELAY", ' ', delayTicks);
+#endif
+
+			return false;
+		}
+	}		
+
+	//we finished delay and cooldown, register the state change
+	if(m_fFlags & dcclite::SNRD_ACTIVE)
+		m_fFlags &= ~dcclite::SNRD_ACTIVE;
+	else
+		m_fFlags |= dcclite::SNRD_ACTIVE;
+
+	return true;		
 }

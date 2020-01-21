@@ -1,19 +1,19 @@
 [
   {
-    "name": "EATrack01",
-    "class": "Output",
-    "address": "0xFF10",
-    "pin": 3,
-    "inverted": false,
-    "ignoreSavedState": true,
-    "activateOnPowerUp": false
+    "name":"SensorTestEmul",
+    "class":"Sensor",
+    "pin":5,
+    "address":"0xF96",
+    "inverted":false,
+    "activateDelay":1,
+    "deactivateDelay":7
   },
   {
-    "name": "EATrack02",
+    "name": "SensorOutput",
     "class": "Output",
     "address": "0xFF11",
-    "pin": 4,
-    "inverted": true,
+    "pin": 5,
+    "inverted": false,
     "ignoreSavedState": true,
     "activateOnPowerUp": false
   },

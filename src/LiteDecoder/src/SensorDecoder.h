@@ -18,6 +18,8 @@ class SensorDecoder : public Decoder
 	private:		
 		Pin				m_clPin;
 		uint8_t			m_fFlags = 0;
+		uint8_t			m_uActivateDelay = 0;
+		uint8_t			m_uDeactivateDelay = 0;
 
 		unsigned long m_uCoolDownTicks = 0;
 
@@ -55,13 +57,5 @@ class SensorDecoder : public Decoder
 		}
 
 	private:
-		void Init(const dcclite::PinType_t pin);
-
-		inline Pin::Voltage ExpectedPinState() const
-		{
-			if(m_fFlags & dcclite::SNRD_INVERTED)
-				return m_fFlags & dcclite::SNRD_ACTIVE ? Pin::VLOW : Pin::VHIGH;
-			else
-				return m_fFlags & dcclite::SNRD_ACTIVE ? Pin::VHIGH : Pin::VLOW;			
-		}
+		void Init(const dcclite::PinType_t pin);		
 };

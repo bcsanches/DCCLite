@@ -31,6 +31,13 @@ SensorDecoder::SensorDecoder(const Class &decoderClass,
 
 	auto inverted = params.FindMember("inverted");
 	m_fInverted = inverted != params.MemberEnd() ? inverted->value.GetBool() : false;
+
+	auto activateDelay = params.FindMember("activateDelay");
+	m_uActivateDelay = activateDelay != params.MemberEnd() ? activateDelay->value.GetInt() : 0;
+
+	auto deactivateDelay = params.FindMember("deactivateDelay");
+	m_uDeactivateDelay = deactivateDelay != params.MemberEnd() ? deactivateDelay->value.GetInt() : 0;
+
 }
 
 void SensorDecoder::WriteConfig(dcclite::Packet &packet) const
@@ -42,4 +49,6 @@ void SensorDecoder::WriteConfig(dcclite::Packet &packet) const
 		(m_fPullUp ? dcclite::SensorDecoderFlags::SNRD_PULL_UP : 0) |
 		(m_fInverted ? dcclite::SensorDecoderFlags::SNRD_INVERTED : 0)
 	);
+	packet.Write8(m_uActivateDelay);
+	packet.Write8(m_uDeactivateDelay);
 }

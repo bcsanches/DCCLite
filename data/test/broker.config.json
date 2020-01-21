@@ -7,7 +7,7 @@
       "port": 8989,
       "devices": [
         {
-          "name": "RelayStagingA",
+          "name": "TestDevice",
           "class": "ArduinoLeonard"
         },
         {
