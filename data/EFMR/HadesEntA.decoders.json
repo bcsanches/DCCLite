@@ -41,7 +41,7 @@
     "powerPin":34,
     "frogPin":36,
     "invertedFrog":false,
-    "operationTime":500,
+    "operationTime":1000,
     "range":45
   },
   {

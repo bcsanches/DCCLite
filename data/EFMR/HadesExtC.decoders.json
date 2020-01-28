@@ -154,5 +154,21 @@
     "pin": 57,
     "inverted": false,
     "ignoreSavedState": false
+  },
+  {
+    "name": "STC_HR10",
+    "class": "Output",
+    "address": "1766",
+    "pin": 58,
+    "inverted": false,
+    "ignoreSavedState": false
+  },
+  {
+    "name": "STC_HG10",
+    "class": "Output",
+    "address": "1767",
+    "pin": 59,
+    "inverted": false,
+    "ignoreSavedState": false
   }
 ]
