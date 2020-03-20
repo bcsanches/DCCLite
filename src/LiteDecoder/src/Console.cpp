@@ -33,7 +33,7 @@
 #define HEX 16
 #endif
 
-const char ConsoleModuleName[] PROGMEM = {"[CONSOLE]"} ;
+const char ConsoleModuleName[] PROGMEM = {"CONSOLE"} ;
 #define MODULE_NAME Console::FlashStr(ConsoleModuleName)
 
 const char CmdCfgName[] PROGMEM = {"cfg"} ;
@@ -146,35 +146,9 @@ static void Parse(const char *command)
 			Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_PORT);
 
 			return;
-		}
+		}		
 
-		//Console::SendLog("[CONSOLE]", "port: %d", port);
-
-		uint8_t ip[4];
-		for(int i = 0;i < 4; ++i)
-		{
-			int number;
-			if(parser.GetNumber(number) != dcclite::TOKEN_NUMBER)
-			{
-				Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", "ip");
-
-				return;
-			}
-			ip[i] = number; 		
-
-			//Console::SendLog("[CONSOLE]", "ip: %d", number);
-
-			if(i == 3)
-				break;
-
-			if(parser.GetToken(nullptr, 0) != dcclite::TOKEN_DOT)
-			{
-				Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", "ip", " ", "sep");
-
-				return;
-			}
-		}
-
+		uint8_t ip[4] = {0};		
 		int srvport;
 		if (parser.GetNumber(srvport) != dcclite::TOKEN_NUMBER)
 		{
@@ -184,15 +158,13 @@ static void Parse(const char *command)
 		}
 
 		NetUdp::Configure(nodeName, port, mac);
-		Session::Configure(ip, srvport);
+		Session::Configure(ip, srvport);		
 
 		Console::SendLogEx(MODULE_NAME, FSTR_OK);
-	}
-	else if(strncmp(command, "sv", 2) == 0)
-	{
+
 		Storage::SaveConfig();
 		Console::SendLogEx(MODULE_NAME, FSTR_OK);
-	}
+	}	
 	else if(strncmp_P(command, CmdDumpName, 4) == 0)
 	{
 		Storage::Dump();

@@ -18,15 +18,12 @@
     "activateOnPowerUp": false
   },  
   {
-    "name":"HLXIntT01",
+    "name":"ServoTest",
     "class":"ServoTurnout",
     "address":"0100",
     "pin": 2,
-    "inverted": true,
-    "powerPin":22,
-    "frogPin":24,
-    "invertedFrog":false,
-    "operationTime":100,
+    "inverted": false,    
+    "operationTime":3000,
     "range":15
   }
 ]
