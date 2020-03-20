@@ -539,10 +539,11 @@ void Device::Unload()
 
 bool Device::Load()
 {
+	dcclite::Log::Info("[Device::Load] Loading {}", m_pathConfigFile.string());
 	std::ifstream configFile(m_pathConfigFile);
 	if (!configFile)
 	{
-		dcclite::Log::Error("[Device::Device] cannot find {}", m_pathConfigFile.string());
+		dcclite::Log::Error("[Device::Load] cannot find {}", m_pathConfigFile.string());
 
 		return false;
 	}

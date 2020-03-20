@@ -1,0 +1,26 @@
+{
+  "name": "MyRailroad",
+  "services": [
+    {
+      "class": "DccLite",
+      "name": "Dcc0",
+      "port": 8989,
+      "devices": [
+        {
+          "name": "TestDevice",
+          "class": "ArduinoLeonard"
+        }
+      ]
+    },
+    {
+      "class": "Terminal",
+      "name": "terminal",
+      "port": 4190
+    },
+    {
+      "class": "DccppService",
+      "name": "dccpp",
+      "system":"Dcc0"
+    }
+  ]
+}

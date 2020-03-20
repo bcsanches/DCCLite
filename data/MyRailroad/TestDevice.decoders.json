@@ -1,0 +1,32 @@
+[
+  {
+    "name":"SensorTest",
+    "class":"Sensor",
+    "pin":5,
+    "address":"0x96",
+    "inverted":false,
+    "activateDelay":0,
+    "deactivateDelay":0
+  },  
+  {
+    "name": "ATrack01",
+    "class": "Output",
+    "address": "0x10",
+    "pin": 3,
+    "inverted": false,
+    "ignoreSavedState": false,
+    "activateOnPowerUp": false
+  },  
+  {
+    "name":"HLXIntT01",
+    "class":"ServoTurnout",
+    "address":"0100",
+    "pin": 2,
+    "inverted": true,
+    "powerPin":22,
+    "frogPin":24,
+    "invertedFrog":false,
+    "operationTime":100,
+    "range":15
+  }
+]
