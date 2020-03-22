@@ -15,6 +15,7 @@ endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	if(${DCCLITE_GUI_SHARP_TOOLS})
+        add_subdirectory(SharpDude)
 		add_subdirectory(SharpTerminal)
 	endif()
 

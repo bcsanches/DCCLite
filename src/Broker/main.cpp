@@ -25,8 +25,7 @@
 
 #include <spdlog/logger.h>
 
-constexpr auto BUILD_NUM = "0.3.0";
-
+constexpr auto BUILD_NUM = DCCLITE_VERSION;
 
 static bool fExitRequested = false;
 

@@ -4,6 +4,7 @@
     "class":"Sensor",
     "pin":5,
     "address":"0x96",
+    "pullup":true,
     "inverted":false,
     "activateDelay":0,
     "deactivateDelay":0

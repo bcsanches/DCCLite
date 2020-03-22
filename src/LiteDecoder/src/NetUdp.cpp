@@ -105,8 +105,12 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 			return false;			
 		}
 	}
-		
+
+#ifdef ARDUINO_AVR_MEGA2560	
 	if (ether.begin(BUFFER_SIZE, g_u8Mac, 53) == 0)
+#else
+	if (ether.begin(BUFFER_SIZE, g_u8Mac, 10) == 0)
+#endif
 	{
 		Console::SendLogEx(MODULE_NAME, "ether", '.', "begin", ' ', FSTR_NOK);
 
