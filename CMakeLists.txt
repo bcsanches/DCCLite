@@ -62,6 +62,14 @@ set_property(TARGET lfwatch PROPERTY FOLDER "contrib")
 
 include(InstallRequiredSystemLibraries)
 
-install(TARGETS Broker Launcher)
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+	if(${DCCLITE_GUI_SHARP_TOOLS})
+        install(TARGETS Broker Launcher SharpDude SharpTerminal)
+    else()
+        install(TARGETS Broker Launcher)
+    endif()
+else()
+    install(TARGETS Broker Launcher)
+endif()
 
 

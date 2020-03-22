@@ -18,6 +18,10 @@
 #include <assert.h>
 #endif
 
+#ifndef DCCLITE_VERSION
+#define DCCLITE_VERSION "0.3.1"
+#endif
+
 namespace dcclite
 {		
 	constexpr unsigned char SERVO_DEFAULT_RANGE = 15;

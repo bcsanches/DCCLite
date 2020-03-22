@@ -18,6 +18,7 @@
 
 #include "Parser.h"
 
+#include "EmbeddedLibDefs.h"
 #include "LiteDecoder.h"
 #include "NetUdp.h"
 #include "Session.h"
@@ -51,7 +52,7 @@ void Console::Init()
     Serial.print(F("LiteDecoder "));
     Serial.print(ARDUINO_TYPE);
     Serial.print(F(" / "));    
-    Serial.print(F("0.2.3"));
+    Serial.print(F(DCCLITE_VERSION));
     Serial.print(F(" / "));
     Serial.print(__DATE__);
     Serial.print(" ");
