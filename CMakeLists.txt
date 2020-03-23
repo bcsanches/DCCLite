@@ -72,4 +72,6 @@ else()
     install(TARGETS Broker Launcher)
 endif()
 
-
+INSTALL(FILES data/MyRailroad/broker.config.json DESTINATION bin/MyRailroad/ )
+INSTALL(FILES data/MyRailroad/TestDevice.decoders.json DESTINATION bin/MyRailroad/ )
+INSTALL(FILES data/MyRailroad/TestDeviceConfig.txt DESTINATION bin/MyRailroad/ )
