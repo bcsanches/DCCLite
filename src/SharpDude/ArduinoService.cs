@@ -21,19 +21,26 @@ namespace SharpDude
         string BoardName { get; }
         string AvrDudeName { get; }
 
+        string Programmer { get; }
+
+        int BaudRate { get; }
+
         string ImageName { get; }
 
         string Version { get; }
     }
     class Arduino: IArduino
     {
-        public Arduino(string boardName, string avrDudeName, string imageName, string version)
+        public Arduino(string boardName, string avrDudeName, string programmer, int baudRate, string imageName, string version)
         {
             if (string.IsNullOrWhiteSpace(boardName))
                 throw new ArgumentNullException(nameof(boardName));
 
             if (string.IsNullOrWhiteSpace(avrDudeName))
                 throw new ArgumentNullException(nameof(avrDudeName));
+
+            if (string.IsNullOrWhiteSpace(programmer))
+                throw new ArgumentNullException(nameof(programmer));
 
             if (string.IsNullOrWhiteSpace(imageName))
                 throw new ArgumentNullException(nameof(imageName));
@@ -43,6 +50,8 @@ namespace SharpDude
 
             BoardName = boardName;
             AvrDudeName = avrDudeName;
+            Programmer = programmer;
+            BaudRate = baudRate;
             ImageName = imageName;
             Version = version;
         }
@@ -55,6 +64,10 @@ namespace SharpDude
         public string BoardName { get; }
         public string AvrDudeName { get; }
 
+        public string Programmer { get; }
+
+        public int BaudRate { get; }
+
         public string ImageName { get; }
 
         public string Version { get; }
@@ -64,23 +77,28 @@ namespace SharpDude
     {
         struct BoardInfo
         {
-            public BoardInfo(string name, string avrDudeName, string devPath)
+            public BoardInfo(string name, string avrDudeName, string programmer, int baudRate, string devPath)
             {
                 Name = name;
                 AvrDudeName = avrDudeName;
+                Programmer = programmer;
+                BaudRate = baudRate;
                 DevelopmentPath = devPath;
             }        
 
             public readonly string Name;
             public readonly string AvrDudeName;
+            public readonly string Programmer;
+            public readonly int BaudRate;
 
             public readonly string DevelopmentPath;
         }
 
         private static BoardInfo[] gBoards = 
         {
-            new BoardInfo("mega2560", "atmega2560", @"megaatmega2560\firmware.hex"),
-            new BoardInfo("uno", "atmega328p", @"uno\firmware.hex")
+            new BoardInfo("mega2560", "atmega2560", "wiring", 115200, @"megaatmega2560\firmware.hex"),
+            new BoardInfo("uno", "atmega328p", "arduino", 115200, @"uno\firmware.hex"),
+            new BoardInfo("leonardo", "atmega32u4", "avr109", 57600, @"leonardo\firmware.hex")
         };
 
         static private void DevelopmentFix()
@@ -126,14 +144,16 @@ namespace SharpDude
 
                 var arduinoName = parts[0];
 
-                BoardInfo? boardInfo = gBoards.Where(x => x.Name == arduinoName).FirstOrDefault();
-                if (boardInfo == null)
+                BoardInfo? tmp = gBoards.Where(x => x.Name == arduinoName).FirstOrDefault();
+                if (tmp == null)
                     continue;
+
+                BoardInfo boardInfo = (BoardInfo)tmp;
 
                 string version = parts[1] + '.' + parts[2] + '.' + parts[3];
 
 
-                arduinoList.Add(new Arduino(boardInfo?.Name, boardInfo?.AvrDudeName, imgFileLocation, version));
+                arduinoList.Add(new Arduino(boardInfo.Name, boardInfo.AvrDudeName, boardInfo.Programmer, boardInfo.BaudRate, imgFileLocation, version));
             }
 
             return arduinoList.ToArray();

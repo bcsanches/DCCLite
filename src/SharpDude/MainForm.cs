@@ -77,16 +77,22 @@ namespace SharpDude
 
         private void btnBurn_Click(object sender, EventArgs e)
         {
-            btnBurn.Enabled = false;
-            tbOutput.Text = string.Empty;
+            btnBurn.Enabled = false;            
 
             var boardInfo = cbArduinoTypes.SelectedItem as IArduino;
+
+            var port = cbComPorts.SelectedItem as string;
+            if (port == null)
+                port = cbComPorts.Text;
+
+            if (string.IsNullOrEmpty(port))
+                port = "COM1";
 
             // ./avrdude -v -p atmega2560 -C "..\etc\avrdude.conf" -c wiring -b 115200 -D -P "COM4" -U flash:w:"F:\develop\bcs\DCCLite\src\LiteDecoder\.pio\build\megaatmega2560\firmware.hex":i
             string command =
                 "-v -p " + boardInfo.AvrDudeName +
                 " -C \"" + mAvrDude.GetConfPath() + "\"" + 
-                " -c wiring -b 115200 -D -P " + cbComPorts.SelectedItem.ToString() +
+                " -c " + boardInfo.Programmer + " -b " + boardInfo.BaudRate + " -D -P " + port +
                 " -U flash:w:\"" + boardInfo.ImageName + "\":i"
             ;
 
@@ -105,7 +111,12 @@ namespace SharpDude
 
             mAvrDudeProcess.OutputDataReceived += MAvrDudeProcess_OutputDataReceived;
             mAvrDudeProcess.ErrorDataReceived += MAvrDudeProcess_OutputDataReceived;
-            
+
+            tbOutput.Text = mAvrDude.GetName();
+            tbOutput.AppendText("\r\n");
+            tbOutput.AppendText(command);
+            tbOutput.AppendText("\r\n\r\n");
+
             mAvrDudeProcess.Start();
             
             //mAvrDudeProcess.BeginOutputReadLine();
@@ -155,7 +166,7 @@ namespace SharpDude
 
         private void UpdateBurnButtonState()
         {            
-            btnBurn.Enabled = (cbArduinoTypes.SelectedItem != null) && (cbComPorts.SelectedItem != null) && (mAvrDudeProcess == null);
+            btnBurn.Enabled = (cbArduinoTypes.SelectedItem != null) && (mAvrDudeProcess == null);
         }
     }
 }
