@@ -15,6 +15,7 @@ namespace SharpDude
     {
         IAvrDude mAvrDude;
         System.Diagnostics.Process mAvrDudeProcess;
+        string[] mComPorts;
 
         //https://saezndaree.wordpress.com/2009/03/29/how-to-redirect-the-consoles-output-to-a-textbox-in-c/
         public MainForm()
@@ -34,10 +35,7 @@ namespace SharpDude
                 tbAvrDude.Text = ex.Message;                
             }
 
-            string[] ports = SerialPort.GetPortNames();
-            cbComPorts.Items.AddRange(ports);
-
-            cbComPorts.SelectedIndex = 0;
+            this.LoadPorts();
 
             var boards = ArduinoService.GetAvailableConfigs();
             
@@ -51,6 +49,33 @@ namespace SharpDude
             }
 
             UpdateBurnButtonState();
+        }
+
+        private void LoadPorts()
+        {
+            cbComPorts.SuspendLayout();
+
+            var previousPort = cbComPorts.SelectedItem;
+
+            mComPorts = SerialPort.GetPortNames();
+
+            cbComPorts.Items.Clear();
+            cbComPorts.Items.AddRange(mComPorts);
+
+            cbComPorts.SelectedIndex = 0;
+            if (previousPort != null)
+            {
+                foreach(var port in mComPorts)
+                {
+                    if (port == previousPort)
+                    {
+                        cbComPorts.SelectedItem = port;
+                        break;
+                    }                        
+                }
+            }
+
+            cbComPorts.ResumeLayout();
         }
 
         private void btnExit_Click(object sender, EventArgs e)
@@ -75,52 +100,144 @@ namespace SharpDude
             this.UpdateBurnButtonState();
         }
 
-        private void btnBurn_Click(object sender, EventArgs e)
+        private async Task TouchSerialPort(string portName)
+        {
+            try
+            {
+                using (SerialPort port = new SerialPort())
+                {
+                    port.PortName = portName;
+                    port.BaudRate = 1200;
+                    port.DtrEnable = false;
+
+                    port.Open();
+                }
+            }    
+            catch(Exception )
+            {
+                //if the board is reset, the connection to port is lost and we cannot close / dispose it without errors
+                //so just swallow the exception and let it go...
+            }
+
+            //Do not know why, but pio does, so we do...
+            await Task.Delay(400);            
+        }
+
+        private async Task<string> WaitNewPort(string prevPort)
+        {
+            string newPort = null;            
+
+            for(long timeout = 0; (timeout < 5000) && (newPort == null); timeout += 250)
+            {            
+                string[] currentPorts = SerialPort.GetPortNames();
+
+                foreach(var p in currentPorts)
+                {
+                    if (mComPorts.Any(x => x == p))
+                        continue;
+
+                    newPort = p;
+                    break;
+                }
+
+                if (newPort != null)
+                    break;
+                    
+                await Task.Delay(250);
+            }
+
+            if(newPort == null)
+            {
+                newPort = prevPort;
+            }
+
+#if false
+            //try it
+            using (SerialPort port = new SerialPort())
+            {
+                port.PortName = newPort;
+                port.BaudRate = 9600;
+                port.DataBits = 8;
+                port.Parity = Parity.None;
+                port.StopBits = StopBits.One;
+                port.RtsEnable = false;
+                port.DtrEnable = false;
+
+                port.Open();
+                port.Close();
+            }          
+#endif
+
+            return newPort;
+        }
+
+        private async Task JustWaitAsync()
+        {
+            await Task.Delay(5000);
+        }
+
+        private async void btnBurn_Click(object sender, EventArgs e)
         {
             btnBurn.Enabled = false;            
 
             var boardInfo = cbArduinoTypes.SelectedItem as IArduino;
 
+            //Allow user to type a port not detected...
             var port = cbComPorts.SelectedItem as string;
-            if (port == null)
-                port = cbComPorts.Text;
 
-            if (string.IsNullOrEmpty(port))
-                port = "COM1";
+            tbOutput.Text = string.Empty;
 
-            // ./avrdude -v -p atmega2560 -C "..\etc\avrdude.conf" -c wiring -b 115200 -D -P "COM4" -U flash:w:"F:\develop\bcs\DCCLite\src\LiteDecoder\.pio\build\megaatmega2560\firmware.hex":i
-            string command =
-                "-v -p " + boardInfo.AvrDudeName +
-                " -C \"" + mAvrDude.GetConfPath() + "\"" + 
-                " -c " + boardInfo.Programmer + " -b " + boardInfo.BaudRate + " -D -P " + port +
-                " -U flash:w:\"" + boardInfo.ImageName + "\":i"
-            ;
+            try
+            {
+                if (boardInfo.RequiresReset)
+                {
+                    this.AppendMessage("Touching com port " + port);
+                    await this.TouchSerialPort(port);
 
-            var process = new System.Diagnostics.Process();
-            process.EnableRaisingEvents = true;
-            process.Exited += new EventHandler(AvrDudeProcess_Exited);
-            process.StartInfo.FileName = mAvrDude.GetName();
-            process.StartInfo.WorkingDirectory = System.IO.Path.GetDirectoryName(mAvrDude.GetName());
-            process.StartInfo.Arguments = command;
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-            process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                    this.AppendMessage("Waiting for new COM port");
+                    port = await this.WaitNewPort(port);
 
-            mAvrDudeProcess = process;
+                    this.AppendMessage("Using new port: " + port);
+                }
 
-            mAvrDudeProcess.OutputDataReceived += MAvrDudeProcess_OutputDataReceived;
-            mAvrDudeProcess.ErrorDataReceived += MAvrDudeProcess_OutputDataReceived;
+                // ./avrdude -v -p atmega2560 -C "..\etc\avrdude.conf" -c wiring -b 115200 -D -P "COM4" -U flash:w:"F:\develop\bcs\DCCLite\src\LiteDecoder\.pio\build\megaatmega2560\firmware.hex":i
+                string command =
+                    "-v -p " + boardInfo.AvrDudeName +
+                    " -C \"" + mAvrDude.GetConfPath() + "\"" +
+                    " -c " + boardInfo.Programmer + " -b " + boardInfo.BaudRate + " -D -P " + port +
+                    " -U flash:w:\"" + boardInfo.ImageName + "\":i"
+                ;
 
-            tbOutput.Text = mAvrDude.GetName();
-            tbOutput.AppendText("\r\n");
-            tbOutput.AppendText(command);
-            tbOutput.AppendText("\r\n\r\n");
+                var process = new System.Diagnostics.Process();
+                process.EnableRaisingEvents = true;
+                process.Exited += new EventHandler(AvrDudeProcess_Exited);
+                process.StartInfo.FileName = mAvrDude.GetName();
+                process.StartInfo.WorkingDirectory = System.IO.Path.GetDirectoryName(mAvrDude.GetName());
+                process.StartInfo.Arguments = command;
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardOutput = true;
+                process.StartInfo.RedirectStandardError = true;
+                process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
 
-            mAvrDudeProcess.Start();
-            
-            //mAvrDudeProcess.BeginOutputReadLine();
-            mAvrDudeProcess.BeginErrorReadLine();
+                mAvrDudeProcess = process;
+
+                mAvrDudeProcess.OutputDataReceived += MAvrDudeProcess_OutputDataReceived;
+                mAvrDudeProcess.ErrorDataReceived += MAvrDudeProcess_OutputDataReceived;
+
+                this.AppendMessage(mAvrDude.GetName());
+                this.AppendMessage(command);
+                
+                mAvrDudeProcess.Start();
+
+                //mAvrDudeProcess.BeginOutputReadLine();
+                mAvrDudeProcess.BeginErrorReadLine();
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message, "Burn failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                mAvrDudeProcess = null;
+                btnBurn.Enabled = true;
+            }
         }
 
         private void MAvrDudeProcess_OutputDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
@@ -128,13 +245,18 @@ namespace SharpDude
             if (e.Data == null)
                 return;
 
-            if(tbOutput.InvokeRequired)
+            this.AppendMessage(e.Data);            
+        }
+
+        private void AppendMessage(string message)
+        {
+            if (tbOutput.InvokeRequired)
             {
-                tbOutput.Invoke(new Action(() => this.MAvrDudeProcess_OutputDataReceived(sender, e)));
+                tbOutput.Invoke(new Action(() => this.AppendMessage(message)));
             }
             else
             {
-                tbOutput.AppendText(e.Data);
+                tbOutput.AppendText(message);
                 tbOutput.AppendText("\r\n");
 
                 tbOutput.SelectionStart = tbOutput.Text.Length;
@@ -166,7 +288,7 @@ namespace SharpDude
 
         private void UpdateBurnButtonState()
         {            
-            btnBurn.Enabled = (cbArduinoTypes.SelectedItem != null) && (mAvrDudeProcess == null);
+            btnBurn.Enabled = (cbArduinoTypes.SelectedItem != null) && (cbComPorts.SelectedItem != null) && (mAvrDudeProcess == null);
         }
     }
 }
