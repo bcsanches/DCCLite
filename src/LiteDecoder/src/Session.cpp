@@ -26,7 +26,7 @@
 //testar: https://github.com/ntruchsess/arduino_uip
 
 const char StorageModuleName[] PROGMEM = {"Session"} ;
-#define MODULE_NAME Console::FlashStr(StorageModuleName)
+#define MODULE_NAME Console::FlashStr(StorageModuleName), __LINE__, ' '
 
 enum class ConnectionStates: uint8_t
 {
@@ -205,7 +205,7 @@ void Session::ReplaceConfigToken(const dcclite::Guid &configToken)
 
 static void OfflineTick(const unsigned long ticks)
 {	
-	Console::SendLogEx(MODULE_NAME, FSTR_BROADCAST);
+	Console::SendLogEx(MODULE_NAME, FSTR_BROADCAST, ':', g_uSrvPort);
 
 	//
 	//Just send a broadcast DISCOVERY packet
@@ -332,9 +332,12 @@ static bool ArpTick(const unsigned long ticks)
 	return false;
 }
 
-static void GotoOnlineState(const unsigned long ticks)
+const char OnOnlineStateName[] PROGMEM = {"Online"} ;
+#define OnOnlineStateNameStr Console::FlashStr(OnOnlineStateName)
+
+static void GotoOnlineState(const unsigned long ticks, int callerLine)
 {
-	Console::SendLogEx(MODULE_NAME, "Online");
+	Console::SendLogEx(MODULE_NAME, OnOnlineStateNameStr, ' ', __LINE__, ' ', callerLine);
 
 	g_eConnectionState = ConnectionStates::ONLINE;
 	g_fForceStateRefresh = true;
@@ -378,7 +381,7 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 		g_SessionToken = packet.ReadGuid();
 		g_ConfigToken = packet.ReadGuid();
 
-		GotoOnlineState(millis());
+		GotoOnlineState(millis(), __LINE__);
 	}	
 	else if(type == dcclite::MsgTypes::CONFIG_START)
 	{
@@ -416,7 +419,7 @@ static void OnlineTick(const unsigned long ticks, const bool stateChangeDetected
 	if (stateChangeDetectedHint || g_fForceStateRefresh || (g_uNextStateThink <= ticks))
 	{		
 		StatesBitPack_t states;
-		StatesBitPack_t changedStates;		
+		StatesBitPack_t changedStates;						
 
 #if 0
 		if(g_fForceStateRefresh)
@@ -501,9 +504,6 @@ static void OnSyncPacket(dcclite::Packet &packet)
 
 	NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
 }
-
-const char OnOnlineStateName[] PROGMEM = {"Online"} ;
-#define OnOnlineStateNameStr Console::FlashStr(OnOnlineStateName)
 
 static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 {		
@@ -643,7 +643,7 @@ static void ReceiveCallback(
 
 			Storage::SaveConfig();
 
-			GotoOnlineState(millis());
+			GotoOnlineState(millis(), __LINE__);
 		}
 
 		//Disabling this, looks like garbage now

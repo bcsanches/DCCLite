@@ -36,11 +36,13 @@ DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::stri
 	m_pSessions = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("sessions")));
 
 	auto port = params["port"].GetInt();
-
+	
 	if (!m_clSocket.Open(port, dcclite::Socket::Type::DATAGRAM))
 	{
 		throw std::runtime_error("[DccLiteService] error: cannot open socket");
 	}
+
+	dcclite::Log::Info("[DccLiteService::DccLiteService] Listening on port {}", port);
 
 	const rapidjson::Value &devicesData = params["devices"];
 

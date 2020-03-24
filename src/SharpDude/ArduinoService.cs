@@ -129,8 +129,12 @@ namespace SharpDude
                     continue;
 
                 var devDest = System.IO.Path.Combine(myExeLocation, "dcclite.firmware." + board.Name + ".vx.x.x.hex");
-                if (!System.IO.File.Exists(devDest))
-                    System.IO.File.Copy(devImgPath, devDest);
+
+                //If exists, delete, so we make sure latest version is used
+                if (System.IO.File.Exists(devDest))
+                    System.IO.File.Delete(devDest);
+                    
+                System.IO.File.Copy(devImgPath, devDest);
             }
         }
 
