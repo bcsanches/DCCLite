@@ -113,6 +113,29 @@ static inline std::string CreateDecoderResponse(const Decoder& decoder)
 	}
 }
 
+static inline std::string CreateSensorStateRespnse(const std::vector<SensorDecoder *> &sensorDecoders)
+{
+	std::stringstream response;
+	
+	if (!sensorDecoders.empty())
+	{
+		for (auto dec : sensorDecoders)
+		{
+
+			response <<
+				"<" << (dec->GetRemoteState() == DecoderStates::ACTIVE ? 'Q' : 'q') <<
+				dec->GetAddress().GetAddress() <<
+				'>';
+		}
+	}
+	else
+	{
+		response << "<X>";
+	}
+
+	return response.str();
+}
+
 
 void DccppClient::OnDecoderStateChange(Decoder& decoder)
 {
@@ -200,8 +223,7 @@ bool DccppClient::Update()
 				}
 				break;
 
-				case 'S':	
-				case 'Q':
+				case 'S':					
 					if (parser.GetToken(token, sizeof(token)) != TOKEN_EOF)
 					{
 						Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_EOF for: {}", msg);
@@ -233,7 +255,26 @@ bool DccppClient::Update()
 						}
 
 						m_clMessenger.Send(m_clAddress, response.str());
+
+						//DCCPP by default seems to do not request this, so we send so it has sensors states at load
+						m_clMessenger.Send(m_clAddress, CreateSensorStateRespnse(sensorDecoders));
 					}															
+					break;
+
+				case 'Q':
+					if (parser.GetToken(token, sizeof(token)) != TOKEN_EOF)
+					{
+						Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_EOF for: {}", msg);
+
+						goto ERROR_RESPONSE;
+					}
+					else
+					{
+						std::stringstream response;
+
+						auto sensorDecoders = m_rclSystem.FindAllSensorDecoders();
+						m_clMessenger.Send(m_clAddress, CreateSensorStateRespnse(sensorDecoders));						
+					}
 					break;
 
 				case 'T':

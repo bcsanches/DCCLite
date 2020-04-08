@@ -170,5 +170,25 @@
     "pin": 59,
     "inverted": false,
     "ignoreSavedState": false
-  }
+  },
+  {
+    "name":"STC_DYT1",
+    "class":"Sensor",
+    "pin":14,
+    "address":"1768",
+    "pullup":false,
+    "inverted":true,
+    "activateDelay":0,
+    "deactivateDelay":0
+  },
+  {
+    "name":"STC_DMT01",
+    "class":"Sensor",
+    "pin":15,
+    "address":"1769",
+    "pullup":false,
+    "inverted":true,
+    "activateDelay":0,
+    "deactivateDelay":0
+  }  
 ]

@@ -5,7 +5,7 @@
     "pin":5,
     "address":"0x96",
     "pullup":true,
-    "inverted":false,
+    "inverted":true,
     "activateDelay":0,
     "deactivateDelay":0
   },  
