@@ -11,6 +11,14 @@
           "class": "ArduinoMega"
         },
         {
+          "name": "HadesExtA",
+          "class": "ArduinoMega"
+        },
+        {
+          "name": "HadesEntC",
+          "class": "ArduinoMega"
+        },
+        {
           "name": "HadesExtC",
           "class": "ArduinoMega"
         }
@@ -25,6 +33,20 @@
       "class": "DccppService",
       "name": "dccpp",
       "system":"Dcc0"
+    },
+    {
+        "class": "LiteManagerService",
+        "name":"manager",
+        "system":"Dcc0",
+        "sectors":
+        [
+            {
+                "name":"Staging",
+                "prefix":"ST",
+                "begin":1700,
+                "end":1850
+            }                    
+        ]
     }
   ]
 }

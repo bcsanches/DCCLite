@@ -47,7 +47,7 @@ DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::stri
 	const rapidjson::Value &devicesData = params["devices"];
 
 	if (!devicesData.IsArray())
-		throw std::runtime_error("error: invalid config, expected devices array inside DccLiteService");
+		throw std::runtime_error(fmt::format("error: invalid config {}, expected devices array inside DccLiteService", name));
 
 	for (auto &device : devicesData.GetArray())
 	{

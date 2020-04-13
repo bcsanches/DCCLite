@@ -1,6 +1,6 @@
 [
   {
-    "name": "STC_T11",
+    "name": "STC_T18",
     "class": "ServoTurnout",
     "address": "1761",
     "pin": 2,
@@ -11,7 +11,7 @@
     "operationTime": 1000
   },
   {
-    "name": "STC_T10",
+    "name": "STC_T17",
     "class": "ServoTurnout",
     "address": "1760",
     "pin": 3,
@@ -22,7 +22,7 @@
     "operationTime": 1000
   },
   {
-    "name": "STC_T09",
+    "name": "STC_T16",
     "class": "ServoTurnout",
     "address": "1759",
     "pin": 4,
@@ -34,7 +34,7 @@
     "operationTime": 1000
   },
   {
-    "name": "STC_T08",
+    "name": "STC_T15",
     "class": "ServoTurnout",
     "address": "1758",
     "pin": 5,
@@ -46,7 +46,7 @@
     "operationTime": 1000
   },
   {
-    "name": "STC_T07",
+    "name": "STC_T14",
     "class": "ServoTurnout",
     "address": "1757",
     "pin": 6,
@@ -57,7 +57,7 @@
     "operationTime": 1000
   },
   {
-    "name": "STC_T06",
+    "name": "STC_T13",
     "class": "ServoTurnout",
     "address": "1756",
     "pin": 7,
@@ -68,7 +68,7 @@
     "operationTime": 1000
   },
   {
-    "name": "STC_T05",
+    "name": "STC_T12",
     "class": "ServoTurnout",
     "address": "1755",
     "pin": 8,
@@ -80,7 +80,7 @@
     "range":30
   },
   {
-    "name": "STC_T04",
+    "name": "STC_T11",
     "class": "ServoTurnout",
     "address": "1754",
     "pin": 9,
@@ -91,7 +91,7 @@
     "operationTime": 1000
   },
   {
-    "name": "STC_T03",
+    "name": "STC_T10",
     "class": "ServoTurnout",
     "address": "1753",
     "pin": 10,
@@ -102,7 +102,7 @@
     "operationTime": 1000
   },
   {
-    "name": "STC_T02",
+    "name": "STC_T09",
     "class": "ServoTurnout",
     "address": "1752",
     "pin": 11,
@@ -113,7 +113,7 @@
     "operationTime": 1000
   },
   {
-    "name": "STC_T01",
+    "name": "STC_T08",
     "class": "ServoTurnout",
     "address": "1751",
     "pin": 12,
@@ -190,5 +190,5 @@
     "inverted":true,
     "activateDelay":0,
     "deactivateDelay":0
-  }  
+  } 
 ]

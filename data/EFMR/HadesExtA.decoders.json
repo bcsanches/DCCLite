@@ -1,0 +1,68 @@
+[     
+  {
+    "name":"STA_T11",
+    "class":"ServoTurnout",
+    "address":"1721",
+    "pin": 3,
+    "inverted": false,
+    "powerPin":26,
+    "frogPin":28,
+    "invertedFrog":true,
+    "operationTime":1000
+  },
+  {
+    "name":"STA_T12",
+    "class":"ServoTurnout",
+    "address":"1722",
+    "pin": 4,
+    "inverted": true,
+    "powerPin":30,
+    "frogPin":32,
+    "invertedFrog":false,
+    "operationTime":1000
+  },
+  {
+    "name":"STA_T13",
+    "class":"ServoTurnout",
+    "address":"1723",
+    "pin": 5,
+    "inverted": true,
+    "powerPin":34,
+    "frogPin":36,
+    "invertedFrog":false,
+    "operationTime":1000,
+    "range":45
+  },
+  {
+    "name":"STA_T14",
+    "class":"ServoTurnout",
+    "address":"1724",
+    "pin": 6,
+    "inverted": false,
+    "powerPin":23,
+    "frogPin":25,
+    "operationTime":1000
+  },
+  {
+    "name":"STA_T15",
+    "class":"ServoTurnout",
+    "address":"1725",
+    "pin": 7,
+    "inverted": true,
+    "powerPin":27,
+    "frogPin":29,
+    "invertedFrog":true,
+    "operationTime":1000
+  },
+  {
+    "name":"STA_T16",
+    "class":"ServoTurnout",
+    "address":"1726",
+    "pin": 8,
+    "inverted": true,
+    "powerPin":31,
+    "frogPin":33,
+    "invertedFrog":true,
+    "operationTime":1000
+  }
+]

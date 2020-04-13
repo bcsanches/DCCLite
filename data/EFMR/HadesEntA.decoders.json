@@ -2,7 +2,7 @@
   {
     "name":"HLXIntT01",
     "class":"ServoTurnout",
-    "address":"1800",
+    "address":"1850",
     "pin": 2,
     "inverted": false,
     "powerPin":22,

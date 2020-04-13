@@ -566,7 +566,7 @@ bool Device::Load()
 	decodersData.ParseStream(isw);
 
 	if (!decodersData.IsArray())
-		throw std::runtime_error("error: invalid config, expected decoders array inside Node");
+		throw std::runtime_error(fmt::format("error: invalid config {}, expected decoders array inside Node", this->GetName()));
 
 	//
 	//

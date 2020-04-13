@@ -1,11 +1,12 @@
 
 set(Broker_SRCS
 	Broker.cpp
-  DccLiteService.cpp
+  DccLiteService.cpp  
   DccppService.cpp
   Decoder.cpp
   Device.cpp
   FileWatcher.cpp
+  LiteManagerService.cpp
   main.cpp  
   OutputDecoder.cpp
   Project.cpp
@@ -20,11 +21,12 @@ set(Broker_SRCS
 
 set(Broker_HDRS
 	Broker.h
-  DccLiteService.h
+  DccLiteService.h  
   DccppService.h
   Decoder.h
   Device.h
   FileWatcher.h
+  LiteManagerService.h
   OutputDecoder.h
   Project.h
   SensorDecoder.h

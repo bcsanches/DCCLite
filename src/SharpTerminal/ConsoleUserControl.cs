@@ -157,7 +157,7 @@ namespace SharpTerminal
 
                 case "/disconnect":
                     mRequestManager.Stop();
-                    break;
+                    break;                
 
                 case "/mac":
                     GenerateMac();
@@ -173,6 +173,15 @@ namespace SharpTerminal
 
                 case "/udpping":
                     UdpPing(vargs);
+                    break;
+
+                case "/help":
+                    Console_Println("/clear");
+                    Console_Println("/disconnect");
+                    Console_Println("/mac");
+                    Console_Println("/quit");
+                    Console_Println("/reconnect");
+                    Console_Println("/udping");
                     break;
 
                 default:
