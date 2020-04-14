@@ -4,10 +4,11 @@
     "class": "ServoTurnout",
     "address": "1800",
     "pin": 2,
-    "inverted": false,
+    "inverted": true,
     "powerPin": 67,
     "frogPin": 66,
     "invertedFrog": false,
+    "range":20,
     "operationTime": 1000
   },
   {
@@ -15,7 +16,7 @@
     "class": "ServoTurnout",
     "address": "1801",
     "pin": 3,
-    "inverted": false,
+    "inverted": true,
     "powerPin": 65,
     "frogPin": 64,
     "invertedFrog": false,
