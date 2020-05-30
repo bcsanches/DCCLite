@@ -27,10 +27,11 @@
     "class": "ServoTurnout",
     "address": "1802",
     "pin": 4,
-    "inverted": false,
+    "inverted": true,
     "powerPin": 63,
     "frogPin": 62,
     "invertedFrog": false,
+    "range":30,
     "operationTime": 1000
   },
   {
@@ -38,10 +39,11 @@
     "class": "ServoTurnout",
     "address": "1803",
     "pin": 5,
-    "inverted": false,
+    "inverted": true,
     "powerPin": 61,
     "frogPin": 60,
     "invertedFrog": false,
+    "range":40,
     "operationTime": 1000
   },
   {
@@ -52,7 +54,8 @@
     "inverted": false,
     "powerPin": 59,
     "frogPin": 58,
-    "invertedFrog": false,
+    "invertedFrog": true,
+    "range":15,
     "operationTime": 1000
   },
   {
@@ -60,7 +63,7 @@
     "class": "ServoTurnout",
     "address": "1805",
     "pin": 7,
-    "inverted": false,
+    "inverted": true,
     "powerPin": 57,
     "frogPin": 56,
     "invertedFrog": false,
@@ -71,7 +74,7 @@
     "class": "ServoTurnout",
     "address": "1806",
     "pin": 8,
-    "inverted": false,
+    "inverted": true,
     "powerPin": 55,
     "frogPin": 54,
     "invertedFrog": false,
@@ -81,7 +84,7 @@
     "name": "STC_P01",
     "class": "Output",
     "address": "1807",
-    "pin": 48,
+    "pin": 12,
     "inverted": false,
     "ignoreSavedState": true
   },        
@@ -89,104 +92,104 @@
     "name": "STC_P02",
     "class": "Output",
     "address": "1808",
-    "pin": 46,
-    "inverted": false,
+    "pin": 48,
+    "inverted": true,
     "ignoreSavedState": true
   },  
   {
     "name": "STC_P03",
     "class": "Output",
     "address": "1809",
-    "pin": 44,
-    "inverted": false,
+    "pin": 49,
+    "inverted": true,
     "ignoreSavedState": true
   },  
   {
     "name": "STC_P04",
     "class": "Output",
     "address": "1810",
-    "pin": 42,
-    "inverted": false,
+    "pin": 46,
+    "inverted": true,
     "ignoreSavedState": true
   },  
   {
     "name": "STC_P05",
     "class": "Output",
     "address": "1811",
-    "pin": 40,
-    "inverted": false,
+    "pin": 47,
+    "inverted": true,
     "ignoreSavedState": true
   },  
   {
     "name": "STC_P06",
     "class": "Output",
     "address": "1812",
-    "pin": 38,
-    "inverted": false,
+    "pin": 44,
+    "inverted": true,
     "ignoreSavedState": true
   },  
   {
     "name": "STC_P07",
     "class": "Output",
     "address": "1813",
-    "pin": 36,
-    "inverted": false,
+    "pin": 45,
+    "inverted": true,
     "ignoreSavedState": true
   },  
   {
     "name": "STC_P08",
     "class": "Output",
     "address": "1814",
-    "pin": 34,
-    "inverted": false,
+    "pin": 42,
+    "inverted": true,
     "ignoreSavedState": true
   },  
   {
     "name": "STC_P09",
     "class": "Output",
     "address": "1815",
-    "pin": 49,
-    "inverted": false,
+    "pin": 43,
+    "inverted": true,
     "ignoreSavedState": true
   },  
   {
     "name": "STC_P10",
     "class": "Output",
     "address": "1816",
-    "pin": 47,
-    "inverted": false,
+    "pin": 40,
+    "inverted": true,
     "ignoreSavedState": true
   },  
   {
     "name": "STC_P11",
     "class": "Output",
     "address": "1817",
-    "pin": 45,
-    "inverted": false,
+    "pin": 41,
+    "inverted": true,
     "ignoreSavedState": true
   },  
   {
     "name": "STC_P12",
     "class": "Output",
     "address": "1818",
-    "pin": 43,
-    "inverted": false,
+    "pin": 38,
+    "inverted": true,
     "ignoreSavedState": true
   },  
   {
     "name": "STB_P01",
     "class": "Output",
     "address": "1819",
-    "pin": 41,
-    "inverted": false,
+    "pin": 35,
+    "inverted": true,
     "ignoreSavedState": true
   },  
   {
     "name": "STB_P02",
     "class": "Output",
     "address": "1820",
-    "pin": 39,
-    "inverted": false,
+    "pin": 34,
+    "inverted": true,
     "ignoreSavedState": true
   },  
   {
@@ -194,23 +197,43 @@
     "class": "Output",
     "address": "1821",
     "pin": 37,
-    "inverted": false,
+    "inverted": true,
     "ignoreSavedState": true
   },    
   {
     "name": "STB_P04",
     "class": "Output",
     "address": "1822",
-    "pin": 35,
-    "inverted": false,
+    "pin": 36,
+    "inverted": true,
     "ignoreSavedState": true
   },
   {
     "name": "STB_P05",
     "class": "Output",
     "address": "1823",
-    "pin": 32,
-    "inverted": false,
+    "pin": 39,
+    "inverted": true,
     "ignoreSavedState": true
+  },
+  {
+    "name":"STC_DYT_ENT01",
+    "class":"Sensor",
+    "pin":10,
+    "address":"1824",
+    "pullup":false,
+    "inverted":true,
+    "activateDelay":0,
+    "deactivateDelay":0
+  },
+  {
+    "name":"STC_DYT_ENT02",
+    "class":"Sensor",
+    "pin":11,
+    "address":"1825",
+    "pullup":false,
+    "inverted":true,
+    "activateDelay":0,
+    "deactivateDelay":0
   }
 ]

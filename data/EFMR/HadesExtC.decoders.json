@@ -172,7 +172,7 @@
     "ignoreSavedState": false
   },
   {
-    "name":"STC_DYT1",
+    "name":"STC_DEXT_YT01",
     "class":"Sensor",
     "pin":14,
     "address":"1768",
@@ -182,7 +182,7 @@
     "deactivateDelay":0
   },
   {
-    "name":"STC_DMT01",
+    "name":"STC_DEXT_MT01",
     "class":"Sensor",
     "pin":15,
     "address":"1769",
