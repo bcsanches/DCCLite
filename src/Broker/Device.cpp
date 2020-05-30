@@ -402,9 +402,6 @@ void Device::OnlineState::OnPacket(
 
 	if (msgType == dcclite::MsgTypes::MSG_PING)
 	{
-		if (!self.CheckSessionConfig(remoteConfigToken, remoteAddress))
-			return;
-
 		DevicePacket pkt{dcclite::MsgTypes::MSG_PONG, self.m_SessionToken, self.m_ConfigToken};
 		self.m_clDccService.Device_SendPacket(self.m_RemoteAddress, pkt);
 
@@ -449,9 +446,9 @@ void Device::OnlineState::OnPacket(
 
 		/**
 
-		The remote device sends the state of any input (sensors)
+		The remote device sent the state of any input (sensors)
 
-		So if we received any of this, we send back to the client our current state so it can ACK our current state
+		So if we received any sensor state, we send back to the client our current state so it can ACK our current state
 		*/
 
 		if (self.m_vecDecoders[i]->IsInputDecoder())
