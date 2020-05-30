@@ -325,6 +325,7 @@ void Device::OnlineState::SendStateDelta(Device &self, const bool sendSensorsSta
 	dcclite::BitPack<dcclite::MAX_DECODERS_STATES_PER_PACKET> changedStates;
 
 	bool stateChanged = false;
+	bool sensorDetected = false;
 
 	const unsigned numDecoders = static_cast<unsigned>(std::min(self.m_vecDecoders.size(), size_t{ dcclite::MAX_DECODERS_STATES_PER_PACKET }));
 	for (unsigned i = 0; i < numDecoders; ++i)
@@ -346,27 +347,49 @@ void Device::OnlineState::SendStateDelta(Device &self, const bool sendSensorsSta
 			//dcclite::Log::Debug("SendStateDelta: change for {}", outputDecoder->GetName());
 
 			state = stateChange.value();
+
+			//mark on bit vector that this decoder has a change
+			changedStates.SetBit(i);
+
+			//Send down the decoder state
+			states.SetBitValue(i, state == dcclite::DecoderStates::ACTIVE);
+
+			stateChanged = true;
 		}
-		else if ((sendSensorsState) && (decoder->IsInputDecoder()))
+		else if (decoder->IsInputDecoder())
 		{
-			auto *inputDecoder = static_cast<SensorDecoder *>(decoder);
+			sensorDetected = true;			
+		}				
+	}
 
-			state = inputDecoder->GetRemoteState();
-
-			//dcclite::Log::Debug("SendStateDelta: change for {}", inputDecoder->GetName());
-		}
-		else
-		{
-			continue;
-		}
-
-		//mark on bit vector that this decoder has a change
-		changedStates.SetBit(i);
-
-		//Send down the decoder state
-		states.SetBitValue(i, state == dcclite::DecoderStates::ACTIVE);
-
+	//if we have sensors and any state change on output decoders, we will send the sensors states anyway....
+	//Otherwise, if the caller asked for sending sensorState and we have sensors... send it
+	//We do on two steps, so anytime we send any output change, we also send the sensors state on the same packet
+	if (sensorDetected && (stateChanged || sendSensorsState))
+	{
+		//force it to true for cases where statechanged is false (meaning that no output changed state) 
+		//and sendSensorState is true....
 		stateChanged = true;
+
+		for (unsigned i = 0; i < numDecoders; ++i)
+		{
+			auto *decoder = self.m_vecDecoders[i];
+			if (!decoder)
+				continue;
+
+			dcclite::DecoderStates state;
+
+			if (!decoder->IsInputDecoder())
+				continue;
+
+			state = decoder->GetRemoteState();
+
+			//mark on bit vector that this decoder has a change
+			changedStates.SetBit(i);
+
+			//Send down the decoder state
+			states.SetBitValue(i, state == dcclite::DecoderStates::ACTIVE);
+		}
 	}
 
 	if (stateChanged)
@@ -402,9 +425,6 @@ void Device::OnlineState::OnPacket(
 
 	if (msgType == dcclite::MsgTypes::MSG_PING)
 	{
-		if (!self.CheckSessionConfig(remoteConfigToken, remoteAddress))
-			return;
-
 		DevicePacket pkt{dcclite::MsgTypes::MSG_PONG, self.m_SessionToken, self.m_ConfigToken};
 		self.m_clDccService.Device_SendPacket(self.m_RemoteAddress, pkt);
 
@@ -449,9 +469,9 @@ void Device::OnlineState::OnPacket(
 
 		/**
 
-		The remote device sends the state of any input (sensors)
+		The remote device sent the state of any input (sensors)
 
-		So if we received any of this, we send back to the client our current state so it can ACK our current state
+		So if we received any sensor state, we send back to the client our current state so it can ACK our current state
 		*/
 
 		if (self.m_vecDecoders[i]->IsInputDecoder())
