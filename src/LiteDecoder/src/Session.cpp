@@ -93,13 +93,6 @@ bool Session::Configure(const uint8_t *srvIp, uint16_t srvport)
 	return true;
 }
 
-bool Session::Init()
-{
-	//NetUdp::SetReceiverCallback(ReceiveCallback);
-
-	return true;
-}
-
 //
 //
 // PING HANDLING

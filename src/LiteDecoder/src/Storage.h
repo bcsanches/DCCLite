@@ -79,7 +79,9 @@ class LumpWriter
 
 struct Storage
 {
-  static bool LoadConfig();
+  static int LoadConfig();
+
+  static void LoadDecoders(uint32_t position);
 
   static void SaveConfig();
 

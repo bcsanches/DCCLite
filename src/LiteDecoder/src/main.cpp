@@ -30,15 +30,18 @@ void setup()
 	Console::Init();
 	Blinker::Init();
 
-	Storage::LoadConfig();
+	const int decodersStoragePos = Storage::LoadConfig();
 
 	g_fNetReady = NetUdp::Init(Session::GetReceiverCallback());
 
 	g_uStartTime = millis();
 
-	Blinker::Play(Blinker::Animations::OK);	
+	Blinker::Play(Blinker::Animations::OK);		
 
-	Session::Init();
+	if(decodersStoragePos > 0)
+	{
+		Storage::LoadDecoders(decodersStoragePos);
+	}
 
 	Console::SendLogEx(FSTR_SETUP, " ", FSTR_OK);
 }

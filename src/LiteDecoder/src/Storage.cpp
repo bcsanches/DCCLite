@@ -74,8 +74,27 @@ void Storage::DumpHex()
 	Console::SendLn("");
 }
 
-bool Storage::LoadConfig()
+void Storage::LoadDecoders(uint32_t position)
 {
+	EpromStream stream(position);
+
+	Lump lump;				
+		
+	stream.Get(lump.m_archName, sizeof(lump.m_archName));
+	stream.Get(lump.m_uLength);
+
+	if (strncmp_P(lump.m_archName, DecodersStorageId, strlen_P(DecodersStorageId)) != 0)
+	{
+		Console::SendLogEx(MODULE_NAME, FSTR_UNKNOWN, ' ', FSTR_LUMP, ' ', lump.m_archName);
+
+		return;
+	}
+
+	DecoderManager::LoadConfig(stream);	
+}
+
+int Storage::LoadConfig()
+{	
     //Console::SendLog(MODULE_NAME, "init %d", sizeof(STORAGE_MAGIC));		
 	Console::SendLogEx(MODULE_NAME, 0, FSTR_INIT, ' ', static_cast<unsigned>(strlen_P(StorageMagic)));
 
@@ -88,17 +107,17 @@ bool Storage::LoadConfig()
     stream.Get(header.m_archName, sizeof(header.m_archName));
     stream.Get(header.m_uLength);
 
-	//Console::SendLog(MODULE_NAME, gData.m_archMagic);
+	int decodersStoragePos = 0;
 
     if(strncmp_P(header.m_archName, StorageMagic, strlen_P(StorageMagic)))
     {
         Console::SendLogEx(MODULE_NAME, FSTR_NO, ' ', FSTR_ROM);
 
-        return false;
+        return -1;
     }
     else
     {
-		Lump lump;		
+		Lump lump;				
 
 		for (;;)
 		{
@@ -119,9 +138,10 @@ bool Storage::LoadConfig()
 #if 1
 			else if (strncmp_P(lump.m_archName, DecodersStorageId, strlen_P(DecodersStorageId)) == 0)
 			{
-				Console::SendLogEx(MODULE_NAME, FSTR_DECODERS, ' ', "cfg");
+				decodersStoragePos = stream.GetIndex() - sizeof(Lump);				
+				stream.Skip(lump.m_uLength);
 
-				DecoderManager::LoadConfig(stream);
+				Console::SendLogEx(MODULE_NAME, FSTR_DECODERS, ' ', "cfg", ' ', decodersStoragePos);				
 			}
 #endif
 			else if (strncmp_P(lump.m_archName, EndStorageId, strlen_P(EndStorageId)) == 0)
@@ -143,7 +163,7 @@ bool Storage::LoadConfig()
 
     Console::SendLogEx(MODULE_NAME, FSTR_OK);
 
-    return true;
+    return decodersStoragePos;
 }
 
 void Storage::SaveConfig()
