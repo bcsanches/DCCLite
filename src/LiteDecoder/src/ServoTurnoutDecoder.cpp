@@ -15,7 +15,14 @@
 #include "Storage.h"
 
 constexpr auto POWER_OFF_TICKS = 500;
-constexpr auto POWER_WAIT_TICKS = 200;
+constexpr auto POWER_WAIT_TICKS = 300;
+
+#if 1
+#define SERVO_WRITE(servo, data) servo.write(data)
+#else
+#define SERVO_WRITE(servo, data) Console::SendLogEx("SERVO pos ", data, " line ", __LINE__); servo.write(data)
+#endif
+
 
 ServoTurnoutDecoder::ServoTurnoutDecoder(dcclite::Packet& packet) :
 	Decoder::Decoder(packet),
@@ -83,12 +90,13 @@ void ServoTurnoutDecoder::SaveConfig(EpromStream& stream)
 
 void ServoTurnoutDecoder::TurnOnPower(const unsigned long ticks)
 {
+	m_clServo.attach(m_clPin.Raw());
+	SERVO_WRITE(m_clServo, m_uServoPos);
+
 	if (m_clPowerPin)		
 	{
 		m_clPowerPin.DigitalWrite(Pin::VLOW);
-	}
-
-	m_clServo.attach(m_clPin.Raw());
+	}	
 		
 	m_fFlags |= dcclite::SRVT_POWER_ON;
 	m_uNextThink = ticks + POWER_WAIT_TICKS;
@@ -148,8 +156,8 @@ void ServoTurnoutDecoder::Init(const dcclite::PinType_t powerPin, const dcclite:
 		this->OperateClose(millis());
 	}
 
-	m_clServo.attach(m_clPin.Raw());
-	m_clServo.write(m_uServoPos);
+	m_clServo.attach(m_clPin.Raw());	
+	SERVO_WRITE(m_clServo, m_uServoPos);
 
 #if 0
 	Console::SendLogEx("[ServoTurnout]", ' ', "PIN: ", m_tPin);
@@ -217,7 +225,7 @@ bool ServoTurnoutDecoder::StateUpdate(const uint8_t desiredPosition, const State
 	if (m_uServoPos == desiredPosition)
 	{
 		//make sure we are in position, on init state we may not, so we write it again
-		m_clServo.write(m_uServoPos);
+		SERVO_WRITE(m_clServo, m_uServoPos);
 
 		m_uNextThink = ticks + POWER_OFF_TICKS;
 
@@ -235,6 +243,8 @@ bool ServoTurnoutDecoder::StateUpdate(const uint8_t desiredPosition, const State
 		if (m_uFlagsStorageIndex)
 			Storage::UpdateField(m_uFlagsStorageIndex, m_fFlags);
 
+		//Console::SendLogEx("[SERVO]", "finished", m_uServoPos);
+
 		//state changed
 		return true;
 	}
@@ -243,7 +253,7 @@ bool ServoTurnoutDecoder::StateUpdate(const uint8_t desiredPosition, const State
 		m_uServoPos += moveDirection;
 
 		m_uNextThink = ticks + m_uTicks;
-		m_clServo.write(m_uServoPos);		
+		SERVO_WRITE(m_clServo, m_uServoPos);
 
 		//Console::SendLogEx("[SERVO]", "m_uServoPos", m_uServoPos);
 	}	
