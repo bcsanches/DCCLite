@@ -20,7 +20,7 @@
 #include <Packet.h>
 
 #ifdef ARDUINO_AVR_MEGA2560
-#define MAX_DECODERS 32
+#define MAX_DECODERS 48
 #else
 #define MAX_DECODERS 16
 #endif
