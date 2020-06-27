@@ -85,6 +85,7 @@ namespace dcclite
 		stream.AddStringValue("name", this->GetName());
 		stream.AddBool("isShortcut", this->IsShortcut());
 		stream.AddBool("isFolder", this->IsFolder());
+		stream.AddIntValue("internalId", reinterpret_cast<intptr_t>(this));
 
 		if (m_pParent)
 			stream.AddStringValue("parentName", m_pParent->GetName());
