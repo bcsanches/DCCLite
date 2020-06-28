@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.Design.Serialization;
 using System.Json;
 using System.Text;
 using System.Windows.Forms;
@@ -31,6 +32,29 @@ namespace SharpTerminal
                 var items = (JsonArray)responseObj["children"];
 
                 mOwner.FillTree(mNode, items);                
+            }
+        }
+
+        class ServicesRetriever : IResponseHandler
+        {
+            private ObjectsTreeViewUserControl mOwner;            
+
+            public ServicesRetriever(ObjectsTreeViewUserControl owner)
+            {
+                mOwner = owner;                
+            }
+
+            public void OnError(string msg, int id)
+            {
+                MessageBox.Show("Failed to retrieve services: ", msg);
+            }
+
+            public void OnResponse(JsonValue response, int id)
+            {
+                var responseObj = (JsonObject)response;
+                var items = (JsonArray)responseObj["children"];
+
+                mOwner.FillServices(items);
             }
         }
 
@@ -72,16 +96,43 @@ namespace SharpTerminal
                 {
                     mTreeView.Nodes.Clear();
 
-                    var root = mTreeView.Nodes.Add("root");
-                    root.Name = "/";
+                    var brokerNode = mTreeView.Nodes.Add("Broker");
+                    brokerNode.Name = "Broker";                    
 
-                    RequestTreeNodesChildren("/", root);                    
+                    RequestTreeNodesChildren("/", brokerNode);
+                    mRequestManager.DispatchRequest(
+                        new string[] { "Get-ChildItem", "/services" }, 
+                        new ServicesRetriever(this)
+                    );
                 }
                 else if (args.State == ConnectionState.DISCONNECTED)
                 {
 
                 }
             }            
+        }
+
+        private void FillServices(JsonArray objects)
+        {
+            if (mTreeView.InvokeRequired)
+            {
+                this.Invoke(new MethodInvoker(delegate { this.FillServices(objects); }));
+            }
+            else
+            {
+                mTreeView.SuspendLayout();
+                try
+                {
+                    foreach (var item in objects)
+                    {
+                        var remoteObject = RemoteObjectManager.TryLookup(item);
+                    }
+                }
+                finally
+                {
+                    mTreeView.ResumeLayout();
+                }
+            }
         }
 
         private void FillTree(TreeNode node, JsonArray objects)
@@ -123,22 +174,7 @@ namespace SharpTerminal
         public ObjectsTreeViewUserControl()
         {
             InitializeComponent();
-        }
-
-        private void GetTreePath_r(TreeNode node, StringBuilder strBuilder)
-        {
-            if (node.Parent != null)
-            {
-                GetTreePath_r(node.Parent, strBuilder);
-
-                strBuilder.Append("/");
-                strBuilder.Append(node.Name);
-            }
-            else
-            {
-                //nothing
-            }                
-        }       
+        }         
 
         private void mTreeView_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {

@@ -44,7 +44,7 @@ namespace SharpTerminal
             IsFolder = (flags & Flags.Folder) == Flags.Folder;
         }
 
-        public void UpdateState(JsonValue def)
+        public virtual void UpdateState(JsonValue def)
         {
             //nothing to do
         }

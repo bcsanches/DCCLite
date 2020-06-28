@@ -6,7 +6,7 @@ set(Broker_SRCS
   Decoder.cpp
   Device.cpp
   FileWatcher.cpp
-  LiteManagerService.cpp
+  LocationManagerService.cpp
   main.cpp  
   OutputDecoder.cpp
   Project.cpp
@@ -26,7 +26,7 @@ set(Broker_HDRS
   Decoder.h
   Device.h
   FileWatcher.h
-  LiteManagerService.h
+  LocationManagerService.h
   OutputDecoder.h
   Project.h
   SensorDecoder.h
