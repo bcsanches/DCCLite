@@ -98,13 +98,16 @@ namespace SharpTerminal
                 {
                     foreach (var item in objects)
                     {
-                        TreeNode newNode = node.Nodes.Add(item["name"]);
-                        newNode.Name = newNode.Text;
+                        var remoteObject = RemoteObjectManager.TryLookup(item);
 
-                        if(item["isFolder"])
-                        {
-                            newNode.Tag = this;
-                            newNode.Nodes.Add("dummy");
+                        TreeNode newNode = node.Nodes.Add(remoteObject.Name);
+                        newNode.Name = newNode.Text;
+                        newNode.Tag = remoteObject;
+
+                        if(remoteObject.IsFolder)
+                        {                                                        
+                            var subNode = newNode.Nodes.Add("dummy");
+                            subNode.Tag = this;
                         }                        
                     }
 
@@ -135,29 +138,20 @@ namespace SharpTerminal
             {
                 //nothing
             }                
-        }
-
-        private string GetTreePath(TreeNode node)
-        {
-            var strBuilder = new StringBuilder(128);
-
-            GetTreePath_r(node, strBuilder);
-
-            return strBuilder.ToString();
-        }
+        }       
 
         private void mTreeView_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
-            if(e.Node.Tag == this)
-            {                
-                var path = GetTreePath(e.Node);
+            if((e.Node.Nodes.Count > 0) && (e.Node.Nodes[0].Tag == this))
+            {
+                var remoteObject = (RemoteObject)e.Node.Tag;                
 
                 e.Node.Nodes.Clear();
                 e.Node.Tag = null;
-                RequestTreeNodesChildren(path, e.Node);                
+                RequestTreeNodesChildren(remoteObject.Path, e.Node);
 
                 e.Cancel = true;
-            }
+            }            
         }
     }
 }
