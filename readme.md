@@ -23,6 +23,7 @@ This code needs the following libraries to be built:
 - [JsonCreator][2]
 - [RapidJson][1]
 - [spdlog][4]
+- [lfwatch][7]
 
 DCC++
 -------
@@ -48,3 +49,4 @@ All code is licensed under the [MPLv2 License][5].
 [4]: https://github.com/gabime/spdlog
 [5]: https://choosealicense.com/licenses/mpl-2.0/
 [6]: https://sites.google.com/site/dccppsite/
+[7]: https://github.com/bcsanches/lfwatch
