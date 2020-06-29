@@ -88,6 +88,45 @@ class GetChildItemCmd : public TerminalCmd
 		}
 };
 
+class GetItemCmd: public TerminalCmd
+{
+	public:
+		GetItemCmd(std::string name = "Get-Item"):
+			TerminalCmd(std::move(name))
+		{
+			//empty
+		}
+
+		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
+		{
+			auto item = context.GetItem();
+			if (!item->IsFolder())
+			{
+				throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
+			}
+			auto folder = static_cast<FolderObject *>(item);
+
+			auto paramsIt = request.FindMember("params");
+			if (paramsIt == request.MemberEnd())
+			{
+				throw TerminalCmdException(fmt::format("Usage: {} <path>", this->GetName()), id);
+			}
+
+			auto locationParam = paramsIt->value[0].GetString();
+			item = folder->TryNavigate(dcclite::Path_t(locationParam));
+			if (!item)
+			{
+				throw TerminalCmdException(fmt::format("Invalid location {}", locationParam), id);
+			}			
+
+			results.AddStringValue("classname", "Item");
+			results.AddStringValue("location", item->GetPath().string());
+
+			auto dataObj = results.AddObject("item");			
+			item->Serialize(dataObj);			
+		}
+};
+
 class SetLocationCmd : public TerminalCmd
 {
 	public:
@@ -466,7 +505,11 @@ TerminalService::TerminalService(const ServiceClass &serviceClass, const std::st
 		auto getChildItemCmd = cmdHost->AddCmd(std::make_unique<GetChildItemCmd>());
 		cmdHost->AddAlias("dir", *getChildItemCmd);
 		cmdHost->AddAlias("ls", *getChildItemCmd);
-	}	
+	}
+
+	{
+		cmdHost->AddCmd(std::make_unique<GetItemCmd>());	
+	}
 
 	{
 		auto setLocationCmd = cmdHost->AddCmd(std::make_unique<SetLocationCmd>());

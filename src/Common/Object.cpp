@@ -89,7 +89,10 @@ namespace dcclite
 		stream.AddStringValue("path", this->GetPath().string());
 
 		if (m_pParent)
+		{
 			stream.AddStringValue("parentName", m_pParent->GetName());
+			stream.AddIntValue("parentId", reinterpret_cast<intptr_t>(m_pParent));
+		}			
 	}
 
 	Object::Object(std::string name) :

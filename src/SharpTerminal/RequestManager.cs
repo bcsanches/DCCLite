@@ -11,8 +11,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Json;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SharpTerminal
 {
@@ -34,9 +36,48 @@ namespace SharpTerminal
         void OnError(string msg, int id);
     }
 
-    delegate void ConnectionStateChangedEventHandler(RequestManager sender, ConnectionStateEventArgs args);
+    internal class TaskReponseHandler : IResponseHandler, IDisposable
+    {
+        EventWaitHandle mWaitHandler = new EventWaitHandle(false, EventResetMode.ManualReset);
 
-    class RequestManager: ITerminalClientListener, IDisposable
+        string mErrorMessage;
+        JsonValue mResponse;
+
+        public JsonValue DoTask(RequestManager manager, string []args)
+        {
+            manager.DispatchRequest(args, this);            
+
+            mWaitHandler.WaitOne();            
+
+            if (mErrorMessage != null)
+                throw new Exception(mErrorMessage);            
+
+            return mResponse;
+        }
+
+        public void OnError(string msg, int id)
+        {
+            mErrorMessage = msg;
+
+            mWaitHandler.Set();
+        }
+
+        public void OnResponse(JsonValue response, int id)
+        {
+            mResponse = response;
+
+            mWaitHandler.Set();
+        }
+
+        public void Dispose()
+        {
+            ((IDisposable)mWaitHandler).Dispose();
+        }
+    }
+
+    public delegate void ConnectionStateChangedEventHandler(RequestManager sender, ConnectionStateEventArgs args);
+
+    public class RequestManager: ITerminalClientListener, IDisposable
     {
         struct RequestInfo
         {
@@ -170,6 +211,18 @@ namespace SharpTerminal
 
                 return requestId;
             }            
+        }
+
+        public async Task<JsonValue> RequestAsync(string[] vargs)
+        {
+            using (var handler = new TaskReponseHandler())
+            {
+                var task = new Task<JsonValue>(() => { return handler.DoTask(this, vargs); });
+
+                task.Start();
+
+                return await task;
+            }                           
         }
 
         public void Dispose()

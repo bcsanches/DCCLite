@@ -10,8 +10,8 @@ namespace SharpTerminal
 {   
     public class RemoteLocationManagerService: RemoteObject
     {           
-        public RemoteLocationManagerService(string name, string className, string path, int internalId, Flags flags):
-            base(name, className, path, internalId, flags)
+        public RemoteLocationManagerService(string name, string className, string path, int internalId):
+            base(name, className, path, internalId)
         {
             //empty
         }
