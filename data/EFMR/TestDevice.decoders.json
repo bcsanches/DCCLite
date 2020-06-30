@@ -1,0 +1,30 @@
+[
+  {
+    "name":"SensorTest",
+    "class":"Sensor",
+    "pin":5,
+    "address":"0x96",
+    "pullup":true,
+    "inverted":true,
+    "activateDelay":0,
+    "deactivateDelay":0
+  },  
+  {
+    "name": "TestATrack01",
+    "class": "Output",
+    "address": "0x10",
+    "pin": 3,
+    "inverted": false,
+    "ignoreSavedState": false,
+    "activateOnPowerUp": false
+  },  
+  {
+    "name":"ServoTest",
+    "class":"ServoTurnout",
+    "address":"0100",
+    "pin": 2,
+    "inverted": false,    
+    "operationTime":3000,
+    "range":15
+  }
+]

@@ -1,14 +1,25 @@
-[     
+[
+{
+      "name":"DebugButton",
+      "class":"Sensor",
+      "pin":31,
+      "address":"5000",
+      "pullup":true,
+      "inverted":true,
+      "activateDelay":0,
+      "deactivateDelay":0
+    },      
   {
     "name":"STA_T11",
     "class":"ServoTurnout",
     "address":"1721",
     "pin": 46,
-    "inverted": false,
+    "inverted": true,
     "powerPin":65,
     "frogPin":64,
-    "invertedFrog":true,
-    "operationTime":1000
+    "invertedFrog":false,
+    "operationTime":1000,
+    "range":20
   },
   {
     "name":"STA_T12",
@@ -30,8 +41,7 @@
     "powerPin":61,
     "frogPin":60,
     "invertedFrog":false,
-    "operationTime":1000,
-    "range":45
+    "operationTime":1000    
   },
   {
     "name":"STA_T14",

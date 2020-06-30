@@ -7,6 +7,10 @@
       "port": 8989,
       "devices": [
         {
+            "name":"TestDevice",
+            "class":"ArduinoMega"
+        },
+        {
           "name": "HadesEntA",
           "class": "ArduinoMega"
         },

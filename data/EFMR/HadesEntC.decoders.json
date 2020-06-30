@@ -1,4 +1,4 @@
-[
+[     
   {
     "name": "STC_T01",
     "class": "ServoTurnout",
@@ -8,7 +8,7 @@
     "powerPin": 67,
     "frogPin": 66,
     "invertedFrog": false,
-    "range":20,
+    "range":25,
     "operationTime": 1000
   },
   {
@@ -31,7 +31,7 @@
     "powerPin": 63,
     "frogPin": 62,
     "invertedFrog": false,
-    "range":30,
+    "range":25,
     "operationTime": 1000
   },
   {
