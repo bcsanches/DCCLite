@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections;
+using System.ComponentModel.Design.Serialization;
 using System.Json;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Windows.Forms;
 
@@ -7,33 +10,8 @@ namespace SharpTerminal
 {
     public partial class ObjectsTreeViewUserControl : UserControl
     {
-        RequestManager mRequestManager;
-
-        class ObjectListRetriever : IResponseHandler
-        {
-            private ObjectsTreeViewUserControl mOwner;
-            private TreeNode mNode;
-
-            public ObjectListRetriever(ObjectsTreeViewUserControl owner, TreeNode node)
-            {
-                mOwner = owner;
-                mNode = node;
-            }
-
-            public void OnError(string msg, int id)
-            {
-                MessageBox.Show("Failed to retrieve nodes: ", msg);
-            }
-
-            public void OnResponse(JsonValue response, int id)
-            {
-                var responseObj = (JsonObject)response;
-                var items = (JsonArray)responseObj["children"];
-
-                mOwner.FillTree(mNode, items);                
-            }
-        }
-
+        RequestManager mRequestManager;      
+        
         internal RequestManager RequestManager
         {
             set
@@ -55,12 +33,7 @@ namespace SharpTerminal
             }
         }
 
-        private void RequestTreeNodesChildren(string path, TreeNode parent)
-        {
-            mRequestManager.DispatchRequest(new string[] { "Get-ChildItem", path }, new ObjectListRetriever(this, parent));
-        }
-
-        private void mRequestManager_ConnectionStateChanged(RequestManager sender, ConnectionStateEventArgs args)
+        private async void mRequestManager_ConnectionStateChanged(RequestManager sender, ConnectionStateEventArgs args)
         {
             if(mTreeView.InvokeRequired)
             {
@@ -72,10 +45,27 @@ namespace SharpTerminal
                 {
                     mTreeView.Nodes.Clear();
 
-                    var root = mTreeView.Nodes.Add("root");
-                    root.Name = "/";
+                    var rootFolder = (RemoteFolder) await RemoteObjectManager.GetRemoteObjectAsync("/", mRequestManager);
 
-                    RequestTreeNodesChildren("/", root);                    
+                    var brokerNode = mTreeView.Nodes.Add("Broker");
+                    brokerNode.Name = "Broker";
+                    brokerNode.Tag = rootFolder;
+
+                    var children = await rootFolder.LoadChildrenAsync(mRequestManager);
+                    if (children != null)
+                        FillTree(brokerNode, children);
+
+                    var servicesFolder = (RemoteFolder)await RemoteObjectManager.GetRemoteObjectAsync("/services", mRequestManager);
+                    var services = await servicesFolder.LoadChildrenAsync(mRequestManager);
+                    
+                    foreach(var service in services)
+                    {
+                        if(service.Name == "locationManager")
+                        {
+                            var locationNode = mTreeView.Nodes.Add("locations");
+                            locationNode.Tag = locationNode;
+                        }
+                    }
                 }
                 else if (args.State == ConnectionState.DISCONNECTED)
                 {
@@ -84,80 +74,75 @@ namespace SharpTerminal
             }            
         }
 
-        private void FillTree(TreeNode node, JsonArray objects)
+        private void FillServices(JsonArray objects)
         {
             if (mTreeView.InvokeRequired)
             {
-                this.Invoke(new MethodInvoker(delegate { this.FillTree(node, objects); }));
+                this.Invoke(new MethodInvoker(delegate { this.FillServices(objects); }));
             }
             else
-            {                
+            {
                 mTreeView.SuspendLayout();
-
                 try
                 {
                     foreach (var item in objects)
                     {
-                        TreeNode newNode = node.Nodes.Add(item["name"]);
-                        newNode.Name = newNode.Text;
-
-                        if(item["isFolder"])
-                        {
-                            newNode.Tag = this;
-                            newNode.Nodes.Add("dummy");
-                        }                        
+                        var remoteObject = RemoteObjectManager.LoadObject(item);
                     }
-
-                    node.Expand();
                 }
                 finally
                 {
                     mTreeView.ResumeLayout();
-                }                
+                }
             }
+        }
+
+        private void FillTree(TreeNode node, System.Collections.Generic.IEnumerable<RemoteObject> objects)
+        {           
+            mTreeView.SuspendLayout();
+
+            try
+            {
+                foreach (var remoteObject in objects)
+                {                        
+                    TreeNode newNode = node.Nodes.Add(remoteObject.Name);
+                    newNode.Name = newNode.Text;
+                    newNode.Tag = remoteObject;
+
+                    if(remoteObject is RemoteFolder)
+                    {                                                        
+                        var subNode = newNode.Nodes.Add("dummy");
+                        subNode.Tag = this;
+                    }                        
+                }
+
+                node.Expand();
+            }
+            finally
+            {
+                mTreeView.ResumeLayout();
+            }                            
         }
 
         public ObjectsTreeViewUserControl()
         {
             InitializeComponent();
-        }
+        }                 
 
-        private void GetTreePath_r(TreeNode node, StringBuilder strBuilder)
+        private async void mTreeView_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
-            if (node.Parent != null)
+            if((e.Node.Nodes.Count > 0) && (e.Node.Nodes[0].Tag == this))
             {
-                GetTreePath_r(node.Parent, strBuilder);
-
-                strBuilder.Append("/");
-                strBuilder.Append(node.Name);
-            }
-            else
-            {
-                //nothing
-            }                
-        }
-
-        private string GetTreePath(TreeNode node)
-        {
-            var strBuilder = new StringBuilder(128);
-
-            GetTreePath_r(node, strBuilder);
-
-            return strBuilder.ToString();
-        }
-
-        private void mTreeView_BeforeExpand(object sender, TreeViewCancelEventArgs e)
-        {
-            if(e.Node.Tag == this)
-            {                
-                var path = GetTreePath(e.Node);
+                var remoteFolder = (RemoteFolder)e.Node.Tag;                
 
                 e.Node.Nodes.Clear();
-                e.Node.Tag = null;
-                RequestTreeNodesChildren(path, e.Node);                
 
+                var children = await remoteFolder.LoadChildrenAsync(mRequestManager);
+                if(children != null)
+                    FillTree(e.Node, children);
+                
                 e.Cancel = true;
-            }
+            }            
         }
     }
 }

@@ -15,11 +15,11 @@
 
 #include "Service.h"
 
-class LiteManagerService: public Service
+class LocationManagerService: public Service
 {	
 	public:
-		LiteManagerService(const ServiceClass& serviceClass, const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project);
-		~LiteManagerService() override
+		LocationManagerService(const ServiceClass& serviceClass, const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project);
+		~LocationManagerService() override
 		{
 			//empty
 		}

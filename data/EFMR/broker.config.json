@@ -39,8 +39,8 @@
       "system":"Dcc0"
     },
     {
-        "class": "LiteManagerService",
-        "name":"manager",
+        "class": "LocationManagerService",
+        "name":"locationManager",
         "system":"Dcc0",
         "sectors":
         [

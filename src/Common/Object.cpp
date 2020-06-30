@@ -81,13 +81,18 @@ namespace dcclite
 
 	void IObject::Serialize(JsonOutputStream_t &stream) const
 	{
-		stream.AddStringValue("classname", this->GetTypeName());
+		stream.AddStringValue("className", this->GetTypeName());
 		stream.AddStringValue("name", this->GetName());
 		stream.AddBool("isShortcut", this->IsShortcut());
 		stream.AddBool("isFolder", this->IsFolder());
+		stream.AddIntValue("internalId", reinterpret_cast<intptr_t>(this));
+		stream.AddStringValue("path", this->GetPath().string());
 
 		if (m_pParent)
+		{
 			stream.AddStringValue("parentName", m_pParent->GetName());
+			stream.AddIntValue("parentId", reinterpret_cast<intptr_t>(m_pParent));
+		}			
 	}
 
 	Object::Object(std::string name) :

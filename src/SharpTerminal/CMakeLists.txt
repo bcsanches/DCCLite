@@ -18,6 +18,8 @@ add_executable(SharpTerminal
   ObjectsTreeViewUserControl.resx  
   Program.cs
   RequestManager.cs
+  RemoteLocationManagerService.cs
+  RemoteObject.cs
   TerminalClient.cs
   
   Properties/AssemblyInfo.cs
