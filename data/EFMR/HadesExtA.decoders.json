@@ -26,11 +26,12 @@
     "class":"ServoTurnout",
     "address":"1722",
     "pin": 47,
-    "inverted": true,
+    "inverted": false,
     "powerPin":63,
     "frogPin":62,
-    "invertedFrog":false,
-    "operationTime":1000
+    "invertedFrog":true,
+    "operationTime":1000,
+    "range":20
   },
   {
     "name":"STA_T13",

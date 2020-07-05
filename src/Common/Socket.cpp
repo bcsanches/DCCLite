@@ -57,7 +57,7 @@ static const dcclite::Socket::Handler_t NULL_SOCKET = -1;
 
 namespace dcclite
 {
-	static sockaddr_in MakeAddr(const Address &address)
+	static sockaddr_in MakeAddr(const NetworkAddress &address)
 	{						
 		sockaddr_in addr;
 		addr.sin_family = AF_INET;
@@ -223,7 +223,7 @@ namespace dcclite
 		return listen(m_hHandle, backlog) == 0;
 	}
 
-	bool Socket::StartConnection(const Address &serverAddress)
+	bool Socket::StartConnection(const NetworkAddress &serverAddress)
 	{
 		auto addr = MakeAddr(serverAddress);
 
@@ -288,7 +288,7 @@ namespace dcclite
 		return Status::WOULD_BLOCK;
 	}
 
-	std::tuple<Socket::Status, Socket, Address> Socket::TryAccept()
+	std::tuple<Socket::Status, Socket, NetworkAddress> Socket::TryAccept()
 	{
 		sockaddr_in addr;
 
@@ -298,14 +298,14 @@ namespace dcclite
 
 		if (s == NULL_SOCKET)
 		{
-			return std::make_tuple(Status::WOULD_BLOCK, Socket(), Address());
+			return std::make_tuple(Status::WOULD_BLOCK, Socket(), NetworkAddress());
 		}
 
 		unsigned int from_address = ntohl(addr.sin_addr.s_addr);
 
 		unsigned int from_port = ntohs(addr.sin_port);		
 
-		return std::make_tuple(Status::OK, Socket(s), Address(from_address, from_port));
+		return std::make_tuple(Status::OK, Socket(s), NetworkAddress(from_address, from_port));
 	}
 
 	bool Socket::IsOpen() const
@@ -313,7 +313,7 @@ namespace dcclite
 		return m_hHandle != NULL_SOCKET;
 	}
 
-	bool Socket::Send(const Address &destination, const void *data, size_t size)
+	bool Socket::Send(const NetworkAddress &destination, const void *data, size_t size)
 	{
 		assert(m_hHandle != NULL_SOCKET);
 
@@ -337,7 +337,7 @@ namespace dcclite
 		return true;
 	}
 
-	std::tuple<Socket::Status, size_t> Socket::Receive(Address &sender, void *data, size_t size)
+	std::tuple<Socket::Status, size_t> Socket::Receive(NetworkAddress &sender, void *data, size_t size)
 	{	
 		assert(m_hHandle != NULL_SOCKET);
 
@@ -389,7 +389,7 @@ namespace dcclite
 
 		unsigned int from_port = ntohs(from.sin_port);
 
-		sender = Address(from_address, from_port);
+		sender = NetworkAddress(from_address, from_port);
 
 		return std::make_tuple(Status::OK, result);
 	}

@@ -45,6 +45,56 @@ class DevicePacket: public dcclite::Packet
 
 //
 //
+// DEVICE CONSTRUCTION / DESTRUCTION
+//
+//
+
+Device::Device(std::string name, IDccDeviceServices &dccService, const rapidjson::Value &params, const Project &project):
+	FolderObject(std::move(name)),
+	m_clDccService(dccService),
+	m_eStatus(Status::OFFLINE),
+	m_fRegistered(true),
+	m_strConfigFileName(std::string(this->GetName()) + ".decoders.json"),
+	m_pathConfigFile(project.GetFilePath(m_strConfigFileName)),
+	m_rclProject(project)
+{
+	FileWatcher::WatchFile(m_pathConfigFile, FileWatcher::FW_MODIFIED, [this](const FileWatcher::Event &ev)
+	{
+		dcclite::Log::Info("[{}::Device::FileWatcher::Reload] Attempting to reload config: {}", this->GetName(), ev.m_strFileName);
+
+		try
+		{
+			this->Load();
+		}
+		catch (const std::exception &ex)
+		{
+			dcclite::Log::Error("[{}::Device::FileWatcher::Reload] Reload failed: {}", this->GetName(), ex.what());
+		}
+
+	});
+
+	this->Load();
+}
+
+
+Device::Device(std::string name, IDccDeviceServices &dccService, const Project &project):
+	FolderObject(std::move(name)),
+	m_clDccService(dccService),
+	m_eStatus(Status::OFFLINE),
+	m_fRegistered(false),
+	m_rclProject(project)
+{
+	//empty
+}
+
+Device::~Device()
+{
+	if (!m_pathConfigFile.empty())
+		FileWatcher::UnwatchFile(m_pathConfigFile);
+}
+
+//
+//
 // Base STATE
 //
 //
@@ -54,7 +104,7 @@ void Device::State::OnPacket(
 	dcclite::Packet &packet,
 	const dcclite::Clock::TimePoint_t time,
 	const dcclite::MsgTypes msgType,
-	const dcclite::Address remoteAddress,
+	const dcclite::NetworkAddress remoteAddress,
 	const dcclite::Guid remoteConfigToken
 )
 {
@@ -111,7 +161,7 @@ void Device::ConfigState::OnPacket_ConfigAck(
 	dcclite::Packet &packet,
 	const dcclite::Clock::TimePoint_t time,
 	const dcclite::MsgTypes msgType,
-	const dcclite::Address remoteAddress,
+	const dcclite::NetworkAddress remoteAddress,
 	const dcclite::Guid remoteConfigToken)
 {
 	if (!self.CheckSession(remoteAddress))
@@ -149,7 +199,7 @@ void Device::ConfigState::OnPacket_ConfigFinished(
 	dcclite::Packet &packet,
 	const dcclite::Clock::TimePoint_t time,
 	const dcclite::MsgTypes msgType,
-	const dcclite::Address remoteAddress,
+	const dcclite::NetworkAddress remoteAddress,
 	const dcclite::Guid remoteConfigToken
 )
 {
@@ -166,7 +216,7 @@ void Device::ConfigState::OnPacket(
 	dcclite::Packet &packet,
 	const dcclite::Clock::TimePoint_t time,
 	const dcclite::MsgTypes msgType,
-	const dcclite::Address remoteAddress,
+	const dcclite::NetworkAddress remoteAddress,
 	const dcclite::Guid remoteConfigToken)
 {
 	switch (msgType)
@@ -237,7 +287,7 @@ void Device::SyncState::OnPacket(
 	dcclite::Packet &packet,
 	const dcclite::Clock::TimePoint_t time,
 	const dcclite::MsgTypes msgType,
-	const dcclite::Address remoteAddress,
+	const dcclite::NetworkAddress remoteAddress,
 	const dcclite::Guid remoteConfigToken
 )
 {	
@@ -416,7 +466,7 @@ void Device::OnlineState::OnPacket(
 	dcclite::Packet &packet,
 	const dcclite::Clock::TimePoint_t time,
 	const dcclite::MsgTypes msgType,
-	const dcclite::Address remoteAddress,
+	const dcclite::NetworkAddress remoteAddress,
 	const dcclite::Guid remoteConfigToken
 )
 {
@@ -492,56 +542,6 @@ void Device::OnlineState::Update(Device &self, const dcclite::Clock::TimePoint_t
 }
 
 
-//
-//
-// DEVICE
-//
-//
-
-Device::Device(std::string name, IDccDeviceServices &dccService, const rapidjson::Value &params, const Project &project) :
-	FolderObject(std::move(name)),
-	m_clDccService(dccService),
-	m_eStatus(Status::OFFLINE),
-	m_fRegistered(true),
-	m_strConfigFileName(std::string(this->GetName()) + ".decoders.json"),
-	m_pathConfigFile(project.GetFilePath(m_strConfigFileName)),
-	m_rclProject(project)
-{				
-	FileWatcher::WatchFile(m_pathConfigFile, FileWatcher::FW_MODIFIED, [this](const FileWatcher::Event &ev)
-	{
-		dcclite::Log::Info("[{}::Device::FileWatcher::Reload] Attempting to reload config: {}", this->GetName(), ev.m_strFileName);
-
-		try
-		{			
-			this->Load();
-		}
-		catch (const std::exception &ex)
-		{
-			dcclite::Log::Error("[{}::Device::FileWatcher::Reload] Reload failed: {}", this->GetName(), ex.what());
-		}
-		
-	});
-
-	this->Load();
-}
-
-
-Device::Device(std::string name, IDccDeviceServices &dccService, const Project &project):
-	FolderObject(std::move(name)),
-	m_clDccService(dccService),
-	m_eStatus(Status::OFFLINE),	
-	m_fRegistered(false),
-	m_rclProject(project)
-{
-	//empty
-}
-
-Device::~Device()
-{
-	if(!m_pathConfigFile.empty())
-		FileWatcher::UnwatchFile(m_pathConfigFile);
-}
-
 void Device::Unload()
 {
 	//clear the token
@@ -606,7 +606,7 @@ bool Device::Load()
 	{
 		auto decoderName = element["name"].GetString();
 		auto className = element["class"].GetString();
-		Decoder::Address address{ element["address"] };
+		DccAddress address{ element["address"] };
 
 		auto &decoder = m_clDccService.Device_CreateDecoder(className, address, decoderName, element);
 
@@ -660,7 +660,7 @@ void Device::GoOffline()
 }
 
 
-void Device::AcceptConnection(const dcclite::Clock::TimePoint_t time, const dcclite::Address remoteAddress, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken)
+void Device::AcceptConnection(const dcclite::Clock::TimePoint_t time, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken)
 {
 	if (m_eStatus == Status::ONLINE)
 	{
@@ -702,7 +702,7 @@ void Device::AcceptConnection(const dcclite::Clock::TimePoint_t time, const dccl
 	}	
 }
 
-bool Device::CheckSessionConfig(dcclite::Guid remoteConfigToken, dcclite::Address remoteAddress)
+bool Device::CheckSessionConfig(dcclite::Guid remoteConfigToken, dcclite::NetworkAddress remoteAddress)
 {
 	if (!this->CheckSession(remoteAddress))
 		return false;
@@ -717,7 +717,7 @@ bool Device::CheckSessionConfig(dcclite::Guid remoteConfigToken, dcclite::Addres
 	return true;
 }
 
-bool Device::CheckSession(dcclite::Address remoteAddress)
+bool Device::CheckSession(dcclite::NetworkAddress remoteAddress)
 {
 	if (m_eStatus != Status::ONLINE)
 	{
@@ -755,7 +755,7 @@ bool Device::CheckTimeout(dcclite::Clock::TimePoint_t time)
 	return true;
 }
 
-void Device::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::Address remoteAddress, const dcclite::Guid remoteConfigToken)
+void Device::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteConfigToken)
 {
 	if (!m_pclCurrentState)
 	{

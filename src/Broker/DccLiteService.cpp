@@ -70,7 +70,7 @@ void DccLiteService::Device_DestroyDecoder(Decoder &dec)
 
 Decoder &DccLiteService::Device_CreateDecoder(
 	const std::string &className,
-	Decoder::Address address,
+	DccAddress address,
 	const std::string &name,
 	const rapidjson::Value &params
 )
@@ -103,71 +103,7 @@ Device *DccLiteService::TryFindDeviceSession(const dcclite::Guid &guid)
 	return static_cast<Device *>(m_pSessions->TryResolveChild(dcclite::GuidToString(guid)));
 }
 
-void DccLiteService::Update(const dcclite::Clock &clock)
-{
-	std::uint8_t data[2048];
-
-	dcclite::Address sender;	
-
-	for (;;)
-	{	
-		auto[status, size] = m_clSocket.Receive(sender, data, sizeof(data));
-
-		if (status != dcclite::Socket::Status::OK)
-		{
-			break;
-		}
-
-		//dcclite::Log::Info("[DccLiteService::Update] got data");
-
-		if (size > dcclite::PACKET_MAX_SIZE)
-		{
-			dcclite::Log::Error("[DccLiteService::Update] packet size too big, truncating");
-
-			size = dcclite::PACKET_MAX_SIZE;
-		}
-
-		dcclite::Packet pkt{ data, static_cast<uint8_t>(size) };
-
-		//dcclite::PacketReader reader{ pkt };	
-
-		if (pkt.Read<uint32_t>() != dcclite::PACKET_ID)
-		{
-			dcclite::Log::Warn("[DccLiteService::Update] Invalid packet id");
-
-			return;
-		}
-		
-		auto msgType = static_cast<dcclite::MsgTypes>(pkt.Read<uint8_t>());
-
-		switch (msgType)
-		{
-			case dcclite::MsgTypes::DISCOVERY:
-				this->OnNet_Discovery(clock, sender, pkt);
-				break;
-
-			case dcclite::MsgTypes::HELLO:			
-				this->OnNet_Hello(clock, sender, pkt);
-				break;
-
-			default:
-				this->OnNet_Packet(clock, sender, pkt, msgType);
-				break;
-		}
-	}	
-
-#if 1
-	auto enumerator = this->m_pDevices->GetEnumerator();
-	while (enumerator.MoveNext())
-	{
-		auto dev = enumerator.TryGetCurrent<Device>();
-
-		dev->Update(clock);
-	}
-#endif
-}
-
-void DccLiteService::OnNet_Discovery(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
+void DccLiteService::OnNet_Discovery(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet)
 {
 	dcclite::Log::Info("[{}::DccLiteService::OnNet_Hello] received discovery from {}, sending reply", this->GetName(), senderAddress);
 
@@ -179,7 +115,7 @@ void DccLiteService::OnNet_Discovery(const dcclite::Clock &clock, const dcclite:
 	this->Device_SendPacket(senderAddress, pkt);
 }
 
-void DccLiteService::OnNet_Hello(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet)
+void DccLiteService::OnNet_Hello(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet)
 {
 	auto remoteSessionToken = packet.ReadGuid();
 	auto remoteConfigToken = packet.ReadGuid();
@@ -233,7 +169,7 @@ Device *DccLiteService::TryFindPacketDestination(dcclite::Packet &packet)
 	return dev;
 }
 
-void DccLiteService::OnNet_Packet(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType)
+void DccLiteService::OnNet_Packet(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType)
 {
 	auto dev = TryFindPacketDestination(packet);
 	if (!dev)
@@ -249,7 +185,7 @@ void DccLiteService::OnNet_Packet(const dcclite::Clock &clock, const dcclite::Ad
 }
 
 
-void DccLiteService::Device_SendPacket(const dcclite::Address destination, const dcclite::Packet &packet)
+void DccLiteService::Device_SendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet &packet)
 {
 	if (!m_clSocket.Send(destination, packet.GetData(), packet.GetSize()))
 	{
@@ -277,7 +213,7 @@ void DccLiteService::Device_UnregisterSession(Device& dev, const dcclite::Guid &
 	}
 }
 
-Decoder* DccLiteService::TryFindDecoder(const Decoder::Address address) const
+Decoder* DccLiteService::TryFindDecoder(const DccAddress address) const
 {
 	return this->TryFindDecoder(address.ToString());
 }
@@ -367,3 +303,68 @@ void DccLiteService::Decoder_OnStateChanged(Decoder& decoder)
 		listener->OnDecoderStateChange(decoder);
 	}
 }
+
+void DccLiteService::Update(const dcclite::Clock &clock)
+{
+	std::uint8_t data[2048];
+
+	dcclite::NetworkAddress sender;
+
+	for (;;)
+	{
+		auto [status, size] = m_clSocket.Receive(sender, data, sizeof(data));
+
+		if (status != dcclite::Socket::Status::OK)
+		{
+			break;
+		}
+
+		//dcclite::Log::Info("[DccLiteService::Update] got data");
+
+		if (size > dcclite::PACKET_MAX_SIZE)
+		{
+			dcclite::Log::Error("[DccLiteService::Update] packet size too big, truncating");
+
+			size = dcclite::PACKET_MAX_SIZE;
+		}
+
+		dcclite::Packet pkt{ data, static_cast<uint8_t>(size) };
+
+		//dcclite::PacketReader reader{ pkt };	
+
+		if (pkt.Read<uint32_t>() != dcclite::PACKET_ID)
+		{
+			dcclite::Log::Warn("[DccLiteService::Update] Invalid packet id");
+
+			return;
+		}
+
+		auto msgType = static_cast<dcclite::MsgTypes>(pkt.Read<uint8_t>());
+
+		switch (msgType)
+		{
+			case dcclite::MsgTypes::DISCOVERY:
+				this->OnNet_Discovery(clock, sender, pkt);
+				break;
+
+			case dcclite::MsgTypes::HELLO:
+				this->OnNet_Hello(clock, sender, pkt);
+				break;
+
+			default:
+				this->OnNet_Packet(clock, sender, pkt, msgType);
+				break;
+		}
+	}
+
+#if 1
+	auto enumerator = this->m_pDevices->GetEnumerator();
+	while (enumerator.MoveNext())
+	{
+		auto dev = enumerator.TryGetCurrent<Device>();
+
+		dev->Update(clock);
+	}
+#endif
+}
+

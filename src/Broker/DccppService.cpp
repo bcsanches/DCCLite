@@ -22,7 +22,7 @@ static ServiceClass dccppService("DccppService",
 class DccppClient: private IDccLiteServiceListener
 {
 	public:
-		DccppClient(DccLiteService& dccLite, const Address address, Socket&& socket);
+		DccppClient(DccLiteService& dccLite, const NetworkAddress address, Socket&& socket);
 		DccppClient(const DccppClient& client) = delete;
 		DccppClient(DccppClient&& other) noexcept;
 
@@ -50,10 +50,10 @@ class DccppClient: private IDccLiteServiceListener
 		NetMessenger m_clMessenger;
 		DccLiteService& m_rclSystem;
 
-		const Address	m_clAddress;
+		const NetworkAddress	m_clAddress;
 };
 
-DccppClient::DccppClient(DccLiteService& system, const Address address, Socket&& socket) :	
+DccppClient::DccppClient(DccLiteService& system, const NetworkAddress address, Socket&& socket) :	
 	m_clMessenger(std::move(socket), ">"),
 	m_rclSystem(system),
 	m_clAddress(address)
@@ -296,7 +296,7 @@ bool DccppClient::Update()
 							goto ERROR_RESPONSE;
 						}
 
-						auto *dec = m_rclSystem.TryFindDecoder(Decoder::Address(id));
+						auto *dec = m_rclSystem.TryFindDecoder(DccAddress(id));
 						if (!dec)
 						{
 							Log::Error("[DccppClient::Update] Error decoder {} not found", id);

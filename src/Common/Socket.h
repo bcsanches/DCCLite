@@ -29,33 +29,33 @@ namespace dcclite
 {
 	typedef std::uint_fast16_t Port_t;
 
-	class Address
+	class NetworkAddress
 	{
 		public:
-			Address() :
+			NetworkAddress() :
 				m_uAddress{ 0 },
 				m_uPort{ 0 }
 			{
 				//empty
 			}
 
-			Address(const Address &rhs) = default;			
+			NetworkAddress(const NetworkAddress &rhs) = default;			
 
-			inline Address(std::uint_fast8_t a, std::uint_fast8_t b, std::uint_fast8_t c, std::uint_fast8_t d, Port_t port):
+			inline NetworkAddress(std::uint_fast8_t a, std::uint_fast8_t b, std::uint_fast8_t c, std::uint_fast8_t d, Port_t port):
 				m_uAddress{ (std::uint32_t{ a } << 24) | (std::uint32_t{ b } << 16) | (std::uint32_t{ c } << 8) | std::uint32_t{ d } },
 				m_uPort{ port }
 			{
 				//empty
 			}
 
-			Address(std::uint_fast32_t address, Port_t port) :
+			NetworkAddress(std::uint_fast32_t address, Port_t port) :
 				m_uAddress{ address },
 				m_uPort{ port }
 			{
 				//emtpy
 			}
 
-			Address &operator=(const Address &rhs) = default;			
+			NetworkAddress &operator=(const NetworkAddress &rhs) = default;			
 
 			inline std::uint32_t GetAddress() const { return m_uAddress; }
 
@@ -79,12 +79,12 @@ namespace dcclite
 
 			inline Port_t GetPort() const { return m_uPort; }
 
-			inline bool operator==(const Address &rhs) const noexcept
+			inline bool operator==(const NetworkAddress &rhs) const noexcept
 			{
 				return (m_uAddress == rhs.m_uAddress) && (m_uPort == rhs.m_uPort);
 			}
 
-			inline bool operator!=(const Address &rhs) const noexcept
+			inline bool operator!=(const NetworkAddress &rhs) const noexcept
 			{
 				return (m_uAddress != rhs.m_uAddress) || (m_uPort != rhs.m_uPort);
 			}
@@ -130,19 +130,19 @@ namespace dcclite
 			bool Open(Port_t port, Type type);
 
 			bool Listen(int backlog = 8);
-			bool StartConnection(const Address &server);
+			bool StartConnection(const NetworkAddress &server);
 
 			Status GetConnectionProgress();
 
-			std::tuple<Status, Socket, Address> TryAccept();
+			std::tuple<Status, Socket, NetworkAddress> TryAccept();
 
 			void Close();
 
 			bool IsOpen() const;
 
-			bool Send(const Address &destination, const void *data, size_t size);
+			bool Send(const NetworkAddress &destination, const void *data, size_t size);
 
-			std::tuple<Status, size_t> Receive(Address &sender, void *data, size_t size);
+			std::tuple<Status, size_t> Receive(NetworkAddress &sender, void *data, size_t size);
 			std::tuple<Status, size_t> Receive(void *data, size_t size);
 
 		private:

@@ -16,7 +16,7 @@
 #include "Packet.h"
 #include "Parser.h"
 
-Decoder::Address::Address(const rapidjson::Value &value)
+DccAddress::DccAddress(const rapidjson::Value &value)
 {
 	if (value.IsString())
 	{		
@@ -36,7 +36,7 @@ Decoder::Address::Address(const rapidjson::Value &value)
 	}
 }
 
-Decoder::Decoder(const Class &decoderClass, const Address &address, std::string name, IDccDecoderServices &owner, const rapidjson::Value &params):
+Decoder::Decoder(const Class &decoderClass, const DccAddress &address, std::string name, IDccDecoderServices &owner, const rapidjson::Value &params):
 	Object(std::move(name)),
 	m_iAddress(address),	
 	m_rclManager(owner)
@@ -51,7 +51,7 @@ void Decoder::WriteConfig(dcclite::Packet &packet) const
 	m_iAddress.WriteConfig(packet);
 }
 
-void Decoder::Address::WriteConfig(dcclite::Packet &packet) const
+void DccAddress::WriteConfig(dcclite::Packet &packet) const
 {
 	packet.Write16(m_iAddress);
 }

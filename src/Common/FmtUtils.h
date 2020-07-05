@@ -37,13 +37,13 @@ namespace fmt
 	};
 
 	template <>
-	struct formatter<dcclite::Address>
+	struct formatter<dcclite::NetworkAddress>
 	{
 		template <typename ParseContext>
 		constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
 
 		template <typename FormatContext>
-		auto format(const dcclite::Address &a, FormatContext &ctx)
+		auto format(const dcclite::NetworkAddress &a, FormatContext &ctx)
 		{
 			return format_to(ctx.out(), "{:03d}.{:03d}.{:03d}.{:03d}",
 				a.GetA(),

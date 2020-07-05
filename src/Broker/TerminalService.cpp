@@ -329,7 +329,7 @@ class FlipItemCmd : public DecoderCmdBase
 class TerminalClient
 {
 	public:
-		TerminalClient(TerminalService &owner, TerminalCmdHost &cmdHost, const Address address, Socket &&socket);
+		TerminalClient(TerminalService &owner, TerminalCmdHost &cmdHost, const NetworkAddress address, Socket &&socket);
 		TerminalClient(const TerminalClient &client) = delete;
 		TerminalClient(TerminalClient &&other) noexcept;
 
@@ -354,10 +354,10 @@ class TerminalClient
 		TerminalContext m_clContext;
 		TerminalCmdHost &m_rclCmdHost;
 
-		const Address	m_clAddress;
+		const NetworkAddress	m_clAddress;
 };
 
-TerminalClient::TerminalClient(TerminalService &owner, TerminalCmdHost &cmdHost, const Address address, Socket &&socket) :	
+TerminalClient::TerminalClient(TerminalService &owner, TerminalCmdHost &cmdHost, const NetworkAddress address, Socket &&socket) :	
 	m_clMessenger(std::move(socket)),
 	m_rclOwner(owner),	
 	m_rclCmdHost(cmdHost),

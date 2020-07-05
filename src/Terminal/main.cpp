@@ -35,7 +35,7 @@ int main(int, char **)
 		return -1;
 	}
 
-	if (!socket.StartConnection(Address(127, 0, 0, 1, 4190)))
+	if (!socket.StartConnection(NetworkAddress(127, 0, 0, 1, 4190)))
 	{
 		log->error("Cannot connect to server");
 

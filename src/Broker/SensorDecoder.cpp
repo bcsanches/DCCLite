@@ -13,12 +13,12 @@
 #include <Packet.h>
 
 static Decoder::Class sensorDecoder("Sensor",
-	[](const Decoder::Class &decoderClass, const Decoder::Address &address, const std::string &name, IDccDecoderServices &owner, const rapidjson::Value &params)
+	[](const Decoder::Class &decoderClass, const DccAddress &address, const std::string &name, IDccDecoderServices &owner, const rapidjson::Value &params)
 	-> std::unique_ptr<Decoder> { return std::make_unique<SensorDecoder>(decoderClass, address, name, owner, params); }
 );
 
 SensorDecoder::SensorDecoder(const Class &decoderClass,
-	const Address &address,
+	const DccAddress &address,
 	const std::string &name,
 	IDccDecoderServices &owner,
 	const rapidjson::Value &params
@@ -52,3 +52,4 @@ void SensorDecoder::WriteConfig(dcclite::Packet &packet) const
 	packet.Write8(m_uActivateDelay);
 	packet.Write8(m_uDeactivateDelay);
 }
+

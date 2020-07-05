@@ -29,59 +29,64 @@ namespace dcclite
 	class Packet;
 }
 
-class Decoder: public dcclite::Object
+class DccAddress
 {
 	public:
-		class Address
+		inline explicit DccAddress(uint16_t address):
+			m_iAddress(address)
 		{
-			public:
-				inline explicit Address(uint16_t address) :
-					m_iAddress(address)
-				{
-					//empty
-				}
+			//empty
+		}
 
-				explicit Address(const rapidjson::Value &value);
+		explicit DccAddress(const rapidjson::Value &value);
 
-				Address() = default;
-				Address(const Address &) = default;
-				Address(Address &&) = default;		
+		DccAddress() = default;
+		DccAddress(const DccAddress &) = default;
+		DccAddress(DccAddress &&) = default;
 
-				inline int GetAddress() const
-				{
-					return m_iAddress;
-				}
+		inline int GetAddress() const
+		{
+			return m_iAddress;
+		}
 
-				inline bool operator<(const Address &rhs) const
-				{
-					return m_iAddress < rhs.m_iAddress;
-				}
+		inline bool operator<(const DccAddress &rhs) const
+		{
+			return m_iAddress < rhs.m_iAddress;
+		}
 
-				std::string ToString() const
-				{
-					return fmt::format("{:#05x}", m_iAddress);					
-				}
+		inline bool operator>(const DccAddress &rhs) const
+		{
+			return m_iAddress > rhs.m_iAddress;
+		}
 
-				void WriteConfig(dcclite::Packet &packet) const;
+		std::string ToString() const
+		{
+			return fmt::format("{:#05x}", m_iAddress);
+		}
 
-			private:
-				uint16_t m_iAddress;
+		void WriteConfig(dcclite::Packet &packet) const;
 
-				friend std::ostream& operator<<(std::ostream& os, const Address& address);
-		};
+	private:
+		uint16_t m_iAddress;
 
-		typedef dcclite::ClassInfo<Decoder, const Address &, const std::string &, IDccDecoderServices &, const rapidjson::Value &> Class;
+		friend std::ostream &operator<<(std::ostream &os, const DccAddress &address);
+};
+
+class Decoder: public dcclite::Object
+{
+	public:		
+		typedef dcclite::ClassInfo<Decoder, const DccAddress &, const std::string &, IDccDecoderServices &, const rapidjson::Value &> Class;
 
 	public:
 		Decoder(
 			const Class &decoderClass, 
-			const Address &address, 
+			const DccAddress &address, 
 			std::string name,
 			IDccDecoderServices &owner,
 			const rapidjson::Value &params
 		);
 
-		inline Address GetAddress() const
+		inline DccAddress GetAddress() const
 		{
 			return m_iAddress;
 		}
@@ -128,14 +133,14 @@ class Decoder: public dcclite::Object
 		}	
 
 	private:
-		Address m_iAddress;		
+		DccAddress m_iAddress;		
 
 		IDccDecoderServices &m_rclManager;
 
 		dcclite::DecoderStates m_kRemoteState = dcclite::DecoderStates::INACTIVE;
 };
 
-inline std::ostream &operator<<(std::ostream& os, const Decoder::Address &address)
+inline std::ostream &operator<<(std::ostream& os, const DccAddress &address)
 {
 	os << address.m_iAddress;
 
@@ -145,13 +150,13 @@ inline std::ostream &operator<<(std::ostream& os, const Decoder::Address &addres
 namespace fmt
 {
 	template <>
-	struct formatter<Decoder::Address>
+	struct formatter<DccAddress>
 	{
 		template <typename ParseContext>
 		constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
 
 		template <typename FormatContext>
-		auto format(const Decoder::Address &a, FormatContext& ctx)
+		auto format(const DccAddress &a, FormatContext& ctx)
 		{
 			return format_to(ctx.out(), "{}", a.GetAddress());
 		}

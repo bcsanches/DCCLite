@@ -52,14 +52,14 @@ class IDccDeviceServices
 	public:
 		virtual Decoder& Device_CreateDecoder(
 			const std::string& className,
-			Decoder::Address address,
+			DccAddress address,
 			const std::string& name,
 			const rapidjson::Value& params
 		) = 0;
 
 		virtual void Device_DestroyDecoder(Decoder &) = 0;
 		
-		virtual void Device_SendPacket(const dcclite::Address destination, const dcclite::Packet& packet) = 0;
+		virtual void Device_SendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet& packet) = 0;
 
 		virtual void Device_RegisterSession(Device& dev, const dcclite::Guid& configToken) = 0;
 		virtual void Device_UnregisterSession(Device& dev, const dcclite::Guid& sessionToken) = 0;		
@@ -99,7 +99,7 @@ class DccLiteService : public Service, private IDccDeviceServices, private IDccD
 		//
 		//
 
-		Decoder* TryFindDecoder(const Decoder::Address address) const;
+		Decoder* TryFindDecoder(const DccAddress address) const;
 		Decoder *TryFindDecoder(std::string_view id) const;
 
 		//This returns only pure outputs, turnouts are ignored
@@ -110,10 +110,10 @@ class DccLiteService : public Service, private IDccDeviceServices, private IDccD
 		std::vector<TurnoutDecoder*> FindAllTurnoutDecoders();
 
 	private:
-		void OnNet_Discovery(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);
-		void OnNet_Hello(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet);		
+		void OnNet_Discovery(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet);
+		void OnNet_Hello(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet);		
 
-		void OnNet_Packet(const dcclite::Clock &clock, const dcclite::Address &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType);
+		void OnNet_Packet(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType);
 
 		Device *TryFindDeviceByName(std::string_view name);
 
@@ -126,14 +126,14 @@ class DccLiteService : public Service, private IDccDeviceServices, private IDccD
 		// To be used only by Devices
 		//
 		//		
-		void Device_SendPacket(const dcclite::Address destination, const dcclite::Packet& packet) override;
+		void Device_SendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet& packet) override;
 
 		void Device_RegisterSession(Device& dev, const dcclite::Guid& configToken) override;
 		void Device_UnregisterSession(Device& dev, const dcclite::Guid& sessionToken) override;
 
 		Decoder& Device_CreateDecoder(
 			const std::string& className,
-			Decoder::Address address,
+			DccAddress address,
 			const std::string& name,
 			const rapidjson::Value& params
 		) override;

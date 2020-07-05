@@ -47,9 +47,9 @@ class Device: public dcclite::FolderObject
 
 		void Update(const dcclite::Clock &clock);
 
-		void AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::Address remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken);
+		void AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::NetworkAddress remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken);
 
-		void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::Address remoteAddress, const dcclite::Guid remoteConfigToken);		
+		void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteConfigToken);		
 		
 		inline const dcclite::Guid &GetConfigToken() noexcept
 		{
@@ -74,8 +74,8 @@ class Device: public dcclite::FolderObject
 		virtual void Serialize(dcclite::JsonOutputStream_t &stream) const;
 
 	private:
-		bool CheckSessionConfig(const dcclite::Guid remoteConfigToken, const dcclite::Address remoteAddress);
-		bool CheckSession(const dcclite::Address remoteAddress);
+		bool CheckSessionConfig(const dcclite::Guid remoteConfigToken, const dcclite::NetworkAddress remoteAddress);
+		bool CheckSession(const dcclite::NetworkAddress remoteAddress);
 
 		void GoOffline();
 		void Disconnect();
@@ -111,7 +111,7 @@ class Device: public dcclite::FolderObject
 		dcclite::Guid		m_ConfigToken;
 		dcclite::Guid		m_SessionToken;
 
-		dcclite::Address	m_RemoteAddress;
+		dcclite::NetworkAddress	m_RemoteAddress;
 
 		//
 		//
@@ -127,7 +127,7 @@ class Device: public dcclite::FolderObject
 				dcclite::Packet &packet, 
 				const dcclite::Clock::TimePoint_t time, 
 				const dcclite::MsgTypes msgType, 
-				const dcclite::Address remoteAddress, 
+				const dcclite::NetworkAddress remoteAddress, 
 				const dcclite::Guid remoteConfigToken
 			);
 
@@ -151,7 +151,7 @@ class Device: public dcclite::FolderObject
 				dcclite::Packet &packet,
 				const dcclite::Clock::TimePoint_t time,
 				const dcclite::MsgTypes msgType,
-				const dcclite::Address remoteAddress,
+				const dcclite::NetworkAddress remoteAddress,
 				const dcclite::Guid remoteConfigToken
 			) override;
 
@@ -169,7 +169,7 @@ class Device: public dcclite::FolderObject
 					dcclite::Packet &packet,
 					const dcclite::Clock::TimePoint_t time,
 					const dcclite::MsgTypes msgType,
-					const dcclite::Address remoteAddress,
+					const dcclite::NetworkAddress remoteAddress,
 					const dcclite::Guid remoteConfigToken
 				);
 
@@ -178,7 +178,7 @@ class Device: public dcclite::FolderObject
 					dcclite::Packet &packet,
 					const dcclite::Clock::TimePoint_t time,
 					const dcclite::MsgTypes msgType,
-					const dcclite::Address remoteAddress,
+					const dcclite::NetworkAddress remoteAddress,
 					const dcclite::Guid remoteConfigToken
 				);
 		};			
@@ -192,7 +192,7 @@ class Device: public dcclite::FolderObject
 				dcclite::Packet &packet,
 				const dcclite::Clock::TimePoint_t time,
 				const dcclite::MsgTypes msgType,
-				const dcclite::Address remoteAddress,
+				const dcclite::NetworkAddress remoteAddress,
 				const dcclite::Guid remoteConfigToken
 			) override;
 
@@ -210,7 +210,7 @@ class Device: public dcclite::FolderObject
 				dcclite::Packet &packet,
 				const dcclite::Clock::TimePoint_t time,
 				const dcclite::MsgTypes msgType,
-				const dcclite::Address remoteAddress,
+				const dcclite::NetworkAddress remoteAddress,
 				const dcclite::Guid remoteConfigToken
 			) override;
 

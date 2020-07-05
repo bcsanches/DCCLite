@@ -45,11 +45,59 @@
         "sectors":
         [
             {
+                "name":"Cruzeiro",
+                "prefix":"CZ",
+                "begin":1000,
+                "end":1300
+            },
+            {
+                "name":"Tres Coracoes",
+                "prefix":"TC",
+                "begin":1300,
+                "end":1500
+            },
+            {
+                "name":"Soledade",
+                "prefix":"SL",
+                "begin":1500,
+                "end":1700
+            },
+            {
                 "name":"Staging",
                 "prefix":"ST",
                 "begin":1700,
                 "end":1850
-            }                    
+            },
+            {
+                "name":"Helix",
+                "prefix":"HL",
+                "begin":1850,
+                "end":1900
+            },
+            {
+                "name":"Freitas",
+                "prefix":"FR",
+                "begin":1900,
+                "end":1925                
+            },
+            {
+                "name":"Coronel Fulgencio",
+                "prefix":"CF",
+                "begin":1925,
+                "end":1950
+            },
+            {
+                "name":"Rufino de Almeida",
+                "prefix":"RF",
+                "begin":1950,
+                "end":1975
+            },
+            {
+                "name":"Pereque",
+                "prefix":"PQ",
+                "begin":1975,
+                "end":2000
+            }
         ]
     }
   ]

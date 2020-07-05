@@ -47,7 +47,7 @@ namespace dcclite
 		return this->PollInternalQueue();		
 	}
 
-	bool NetMessenger::Send(const Address &destination, std::string_view msg)
+	bool NetMessenger::Send(const NetworkAddress &destination, std::string_view msg)
 	{
 		if (!m_clSocket.Send(destination, msg.data(), msg.length()))
 			return false;

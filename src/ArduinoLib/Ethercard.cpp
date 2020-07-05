@@ -115,7 +115,7 @@ static bool ShouldDrop()
 
 void EtherCard::sendUdp(const char *data, uint8_t len, uint16_t sport, const uint8_t *dip, uint16_t dport)
 {
-	dcclite::Address adr{ dip[0], dip[1], dip[2], dip[3], dport };
+	dcclite::NetworkAddress adr{ dip[0], dip[1], dip[2], dip[3], dport };
 
 #ifdef DROP
 	if (ShouldDrop())
@@ -132,7 +132,7 @@ uint16_t EtherCard::packetLoop(uint16_t plen)
 
 	for(;;)
 	{
-		dcclite::Address sender;
+		dcclite::NetworkAddress sender;
 		auto[status, size] = g_Socket.Receive(sender, buffer.data(), buffer.size());
 
 		if (status != dcclite::Socket::Status::OK)
