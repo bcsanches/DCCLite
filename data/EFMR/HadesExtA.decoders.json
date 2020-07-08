@@ -38,18 +38,19 @@
     "class":"ServoTurnout",
     "address":"1723",
     "pin": 44,
-    "inverted": true,
-    "powerPin":61,
-    "frogPin":60,
-    "invertedFrog":false,
-    "operationTime":1000    
+    "inverted": false,
+    "powerPin":60,
+    "frogPin":61,
+    "invertedFrog":true,
+    "operationTime":1000,
+    "range":20    
   },
   {
     "name":"STA_T14",
     "class":"ServoTurnout",
     "address":"1724",
     "pin": 45,
-    "inverted": false,
+    "inverted": true,
     "powerPin":59,
     "frogPin":58,
     "operationTime":1000
