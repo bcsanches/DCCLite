@@ -33,9 +33,11 @@ const char StorageModuleName[] PROGMEM = {"Storage"} ;
 
 //#define MODULE_NAME "Storage"
 
+#define LUMP_NAME_SIZE 8
+
 struct Lump
 {
-	char		m_archName[8];
+	char		m_archName[LUMP_NAME_SIZE];
 
 	//size in bytes of the lump data
 	uint16_t 	m_uLength;
@@ -111,7 +113,12 @@ int Storage::LoadConfig()
 
     if(strncmp_P(header.m_archName, StorageMagic, strlen_P(StorageMagic)))
     {
-        Console::SendLogEx(MODULE_NAME, FSTR_NO, ' ', FSTR_ROM);
+		//copy lump header and make sure we put a 0 at the end
+		char name[LUMP_NAME_SIZE+1] = {0};
+		memcpy(name, header.m_archName, LUMP_NAME_SIZE);
+
+		//dump rom first 8 bytes to check what is in
+        Console::SendLogEx(MODULE_NAME, FSTR_NO, ' ', FSTR_ROM, ' ', name);
 
         return -1;
     }
@@ -171,8 +178,9 @@ void Storage::SaveConfig()
 	EpromStream stream(0);
 
 	//clear eprom first bytes, so we make sure only after writing everyting, we put a magic number
-	for(unsigned i = 0;i < sizeof(Lump); ++i)
-		stream.Put(static_cast<uint8_t>(0));
+	{
+		LumpWriter endLump(stream, EndStorageId, false);
+	}
 
 	stream.Seek(0);		
 

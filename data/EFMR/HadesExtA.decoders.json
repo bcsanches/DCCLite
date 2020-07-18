@@ -80,12 +80,14 @@
   {
     "name":"STA_D01C",
     "class":"Sensor",
-    "pin":2,
+    "pin":69,
     "address":"1727",
     "pullup":true,
     "inverted":false,
     "activateDelay":0,
-    "deactivateDelay":0
+    "deactivateDelay":0,
+    "comment":"Sensor final do staging linha 01",
+    "sector":"ST/A"
   },  
   {
     "name":"STA_D02C",
@@ -193,7 +195,7 @@
     "pin":22,
     "address":"1738",
     "pullup":true,
-    "inverted":false,
+    "inverted":true,
     "activateDelay":0,
     "deactivateDelay":0
   },
@@ -400,7 +402,7 @@
   {
     "name":"STA_D11A",
     "class":"Sensor",
-    "pin":69,
+    "pin":68,
     "address":"1799",
     "pullup":true,
     "inverted":true,
