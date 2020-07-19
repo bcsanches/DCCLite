@@ -41,8 +41,8 @@ class DccppClient: private IDccLiteServiceListener
 		bool Update();
 
 	private:
-		void OnDeviceConnected(Device& device) override;
-		void OnDeviceDisconnected(Device& device) override;
+		void OnDeviceConnected(const Device& device) override;
+		void OnDeviceDisconnected(const Device& device) override;
 
 		void OnDecoderStateChange(Decoder& decoder) override;
 
@@ -74,12 +74,12 @@ DccppClient::~DccppClient()
 	m_rclSystem.RemoveListener(*this);
 }
 
-void DccppClient::OnDeviceConnected(Device& device)
+void DccppClient::OnDeviceConnected(const Device& device)
 {
 	//ignore
 }
 
-void DccppClient::OnDeviceDisconnected(Device& device)
+void DccppClient::OnDeviceDisconnected(const Device& device)
 {
 	//ignore
 }

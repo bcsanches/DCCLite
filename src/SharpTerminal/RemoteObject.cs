@@ -111,6 +111,10 @@ namespace SharpTerminal
                     obj = new RemoteShortcut(name, className, path, id, objectDef["target"]);
                     break;
 
+                case "Device":
+                    obj = new RemoteDevice(name, className, path, id);
+                    break;
+
                 default:
                     obj = objectDef["isFolder"] ? new RemoteFolder(name, className, path, id) : new RemoteObject(name, className, path, id);
                     break;

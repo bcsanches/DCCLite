@@ -652,7 +652,7 @@ void Device::GoOffline()
 	m_eStatus = Status::OFFLINE;	
 
 	m_clDccService.Device_UnregisterSession(*this, m_SessionToken);
-	m_SessionToken = dcclite::Guid{};
+	m_SessionToken = dcclite::Guid{};	
 	
 	this->ClearState();
 
@@ -807,7 +807,7 @@ void Device::GotoOnlineState()
 	this->ClearState();
 
 	m_vState = OnlineState{};
-	m_pclCurrentState = std::get_if<OnlineState>(&m_vState);
+	m_pclCurrentState = std::get_if<OnlineState>(&m_vState);	
 	
 	dcclite::Log::Trace("[{}::Device::GotoOnlineState] Entered", this->GetName());
 }

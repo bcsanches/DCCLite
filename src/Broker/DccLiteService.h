@@ -30,8 +30,8 @@ class TurnoutDecoder;
 class IDccLiteServiceListener
 {
 	public:
-		virtual void OnDeviceConnected(Device& device) = 0;
-		virtual void OnDeviceDisconnected(Device& device) = 0;
+		virtual void OnDeviceConnected(const Device& device) = 0;
+		virtual void OnDeviceDisconnected(const Device& device) = 0;
 
 		virtual void OnDecoderStateChange(Decoder& decoder) = 0;
 
@@ -62,7 +62,7 @@ class IDccDeviceServices
 		virtual void Device_SendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet& packet) = 0;
 
 		virtual void Device_RegisterSession(Device& dev, const dcclite::Guid& configToken) = 0;
-		virtual void Device_UnregisterSession(Device& dev, const dcclite::Guid& sessionToken) = 0;		
+		virtual void Device_UnregisterSession(Device& dev, const dcclite::Guid& sessionToken) = 0;				
 };
 
 class DccLiteService : public Service, private IDccDeviceServices, private IDccDecoderServices
@@ -138,7 +138,7 @@ class DccLiteService : public Service, private IDccDeviceServices, private IDccD
 			const rapidjson::Value& params
 		) override;
 
-		void Device_DestroyDecoder(Decoder &dec);
+		void Device_DestroyDecoder(Decoder &dec);		
 
 		//
 		//
