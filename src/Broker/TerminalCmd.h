@@ -103,6 +103,12 @@ class TerminalContext
 			return m_pthLocation;
 		}		
 
+		/**
+
+			returns:
+				The item pointed by the m_pthLocation
+
+		*/
 		dcclite::IObject *GetItem() const;
 
 		TerminalContext &operator=(TerminalContext &rhs) = delete;

@@ -132,7 +132,7 @@ int main(int, char **)
 	//format: cfg <nodeName> <mac> <port> <srvipv4>	<srvport>	
 	//ArduinoLib::SetSerialInput("/cfg RelayStagingA 206.174.184.251.21.20 7202 192.168.0.20 8989;");
 	//ArduinoLib::SetSerialInput("/cfg Emulator 206.174.184.251.21.20 7202 192.168.0.20 8989;");
-	ArduinoLib::SetSerialInput("/cfg TestDevice 206.174.184.251.21.20 7202 0.0.0.0 8989;");
+	//ArduinoLib::SetSerialInput("/cfg TestDevice 242.69.116.44.41.93 7202 8989 a;");
 
 	ArduinoLib::Tick();
 

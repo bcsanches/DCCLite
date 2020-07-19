@@ -4,6 +4,7 @@ const char g_fstrArp[] PROGMEM =		{"ARP"};
 const char g_fstrBroadcast[] PROGMEM = 	{"broadcast"};
 const char g_fstrDecoders[] PROGMEM = 	{"decoders"};
 const char g_fstrDisconnect[] PROGMEM = { "disconnect" };
+const char g_fstrEof[] PROGMEM =		{ "EOF" };
 const char g_fstrInit[] PROGMEM = 		{"init"} ;
 const char g_fstrInvalid[] PROGMEM = 	{"invalid"} ;
 const char g_fstrLump[] PROGMEM = 		{"lump"} ;

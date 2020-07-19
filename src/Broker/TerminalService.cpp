@@ -326,12 +326,14 @@ class FlipItemCmd : public DecoderCmdBase
 
 
 
-class TerminalClient
+class TerminalClient: private IDccLiteServiceListener
 {
 	public:
 		TerminalClient(TerminalService &owner, TerminalCmdHost &cmdHost, const NetworkAddress address, Socket &&socket);
 		TerminalClient(const TerminalClient &client) = delete;
 		TerminalClient(TerminalClient &&other) noexcept;
+
+		virtual ~TerminalClient();
 
 		TerminalClient &operator=(TerminalClient &&other) noexcept
 		{
@@ -344,6 +346,16 @@ class TerminalClient
 		}
 
 		bool Update();
+
+	private:
+		void OnDeviceConnected(const Device &device) override;
+		void OnDeviceDisconnected(const Device &device) override;
+
+		void OnDecoderStateChange(Decoder &decoder) override;
+
+		void RegisterListeners();
+
+		FolderObject *TryGetServicesFolder() const;
 
 	private:
 		static std::string CreateErrorResponse(const std::string &msg, const CmdId_t id);
@@ -365,6 +377,8 @@ TerminalClient::TerminalClient(TerminalService &owner, TerminalCmdHost &cmdHost,
 	m_clAddress(address)
 {
 	m_clContext.SetLocation(owner.GetPath());
+
+	this->RegisterListeners();
 }
 
 TerminalClient::TerminalClient(TerminalClient &&other) noexcept:		
@@ -374,7 +388,74 @@ TerminalClient::TerminalClient(TerminalClient &&other) noexcept:
 	m_rclCmdHost(other.m_rclCmdHost),
 	m_clAddress(std::move(other.m_clAddress))
 {
-	//empty
+	this->RegisterListeners();
+}
+
+TerminalClient::~TerminalClient()
+{
+	auto *servicesFolder = this->TryGetServicesFolder();
+	if (servicesFolder == nullptr)
+		return;
+
+	auto enumerator = servicesFolder->GetEnumerator();
+	while (enumerator.MoveNext())
+	{
+		auto *obj = enumerator.TryGetCurrent();
+		auto *dccService = dynamic_cast<DccLiteService *>(obj);
+		if (dccService == nullptr)
+			continue;
+
+		dccService->RemoveListener(*this);
+	}
+}
+
+FolderObject *TerminalClient::TryGetServicesFolder() const
+{
+	auto item = m_clContext.GetItem();
+	if (!item->IsFolder())
+	{
+		dcclite::Log::Error("[TerminalClient::RegisterListeners] Current location {} is invalid", m_clContext.GetLocation().string());
+
+		return nullptr;
+	}
+	auto folder = static_cast<FolderObject *>(item);
+
+	ObjectPath servicesPath = { SpecialFolders::GetPath(SpecialFolders::ServicesFolderId) };
+	auto *servicesObj = folder->TryNavigate(servicesPath);
+
+	if (servicesObj == nullptr)
+	{
+		dcclite::Log::Error("[TerminalClient::RegisterListeners] Cannot find services folder at {}", servicesPath.string());
+
+		return nullptr;
+	}
+
+	if (!servicesObj->IsFolder())
+	{
+		dcclite::Log::Error("[TerminalClient::RegisterListeners] Services object is not a folder: {}", servicesPath.string());
+
+		return nullptr;
+	}
+
+	return static_cast<FolderObject *>(servicesObj);
+}
+
+void TerminalClient::RegisterListeners()
+{	
+	auto *servicesFolder = this->TryGetServicesFolder();
+	if(servicesFolder == nullptr)
+		return;
+
+	auto enumerator = servicesFolder->GetEnumerator();
+	while (enumerator.MoveNext())
+	{
+		auto *obj = enumerator.TryGetCurrent();
+		auto *dccService = dynamic_cast<DccLiteService *>(obj);
+		if(dccService == nullptr)
+			continue;
+
+		dccService->AddListener(*this);
+	}
 }
 
 std::string TerminalClient::CreateErrorResponse(const std::string &msg, const CmdId_t id)
@@ -397,6 +478,21 @@ std::string TerminalClient::CreateErrorResponse(const std::string &msg, const Cm
 	}
 
 	return std::string(responseWriter.GetString());
+}
+
+void TerminalClient::OnDeviceConnected(const Device &device)
+{
+
+}
+
+void TerminalClient::OnDeviceDisconnected(const Device &device)
+{
+	
+}
+
+void TerminalClient::OnDecoderStateChange(Decoder &decoder)
+{
+
 }
 
 

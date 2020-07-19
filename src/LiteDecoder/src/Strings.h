@@ -14,6 +14,9 @@ extern const char g_fstrDisconnect[] PROGMEM;
 extern const char g_fstrDecoders[] PROGMEM;
 #define FSTR_DECODERS Console::FlashStr(g_fstrDecoders)
 
+extern const char g_fstrEof[] PROGMEM;
+#define FSTR_EOF Console::FlashStr(g_fstrEof)
+
 extern const char g_fstrInit[] PROGMEM;
 #define FSTR_INIT Console::FlashStr(g_fstrInit)
 

@@ -101,7 +101,7 @@ static void Parse(const char *command)
 
 	if(strncmp_P(command, CmdCfgName, 3) == 0)
 	{
-		//format: cfg <nodeName> <mac> <port> <srvipv4>	<srvport>	
+		//format: cfg <nodeName> <mac> <port> <srvport>	
 
 		dcclite::Parser parser(command+3);
 
@@ -156,7 +156,7 @@ static void Parse(const char *command)
 			Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_SRVPORT);
 
 			return;
-		}
+		}		
 
 		NetUdp::Configure(nodeName, port, mac);
 		Session::Configure(ip, srvport);		
