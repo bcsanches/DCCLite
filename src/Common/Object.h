@@ -171,6 +171,8 @@ namespace dcclite
 
 			virtual const char *GetTypeName() const noexcept = 0;
 
+			void SerializeIdentification(JsonOutputStream_t &stream) const;
+
 			virtual void Serialize(JsonOutputStream_t &stream) const;
 
 			inline FolderObject *GetParent() const noexcept
@@ -272,7 +274,7 @@ namespace dcclite
 			const char *GetTypeName() const noexcept override
 			{
 				return "dcclite::Shortcut";
-			}
+			}			
 
 			void Serialize(JsonOutputStream_t &stream) const override;
 

@@ -23,10 +23,14 @@
 
 #include "Broker.h"
 #include "DccLiteService.h"
+#include "Device.h"
 #include "NetMessenger.h"
 #include "OutputDecoder.h"
 #include "SpecialFolders.h"
 #include "TerminalCmd.h"
+
+constexpr auto JSONRPC_KEY = "jsonrpc";
+constexpr auto JSONRPC_VERSION = "2.0";
 
 using namespace dcclite;
 
@@ -355,10 +359,7 @@ class TerminalClient: private IDccLiteServiceListener
 
 		void RegisterListeners();
 
-		FolderObject *TryGetServicesFolder() const;
-
-	private:
-		static std::string CreateErrorResponse(const std::string &msg, const CmdId_t id);
+		FolderObject *TryGetServicesFolder() const;	
 
 	private:
 		NetMessenger m_clMessenger;
@@ -458,36 +459,73 @@ void TerminalClient::RegisterListeners()
 	}
 }
 
-std::string TerminalClient::CreateErrorResponse(const std::string &msg, const CmdId_t id)
+std::string MakeRpcMessage(CmdId_t id, std::string_view *methodName, std::string_view nestedObjName, std::function<void(JsonOutputStream_t &object)> filler)
 {
-	JsonCreator::StringWriter responseWriter;
+	JsonCreator::StringWriter messageWriter;
 
 	{
-		auto responseObj = JsonCreator::MakeObject(responseWriter);
+		auto messageObj = JsonCreator::MakeObject(messageWriter);
 
-		responseObj.AddStringValue("jsonrpc", "2.0");
+		messageObj.AddStringValue(JSONRPC_KEY, JSONRPC_VERSION);
 
 		if (id >= 0)
-			responseObj.AddIntValue("id", id);
-
 		{
-			auto errorObj = responseObj.AddObject("error");
+			messageObj.AddIntValue("id", id);
+		}
 
-			errorObj.AddStringValue("message", msg);
+		if (methodName)
+			messageObj.AddStringValue("method", *methodName);
+
+		if (filler)
+		{
+			auto params = messageObj.AddObject(nestedObjName);
+
+			filler(params);
 		}
 	}
 
-	return std::string(responseWriter.GetString());
+	return messageWriter.GetString();
+
+}
+
+std::string MakeRpcNotificationMessage(CmdId_t id, std::string_view methodName, std::function<void(JsonOutputStream_t &object)> filler)
+{
+	return MakeRpcMessage(id, &methodName, "params", filler);	
+}
+
+static std::string MakeRpcErrorResponse(const CmdId_t id, const std::string &msg)
+{
+	return MakeRpcMessage(id, nullptr, "error", [&, msg](JsonOutputStream_t &params) { params.AddStringValue("message", msg); });
+}
+
+static std::string MakeRpcResultMessage(const CmdId_t id, std::function<void(JsonOutputStream_t &object)> filler)
+{
+	return MakeRpcMessage(id, nullptr, "result", filler);
+}
+
+static std::string CreateDeviceConnectedNotification(const Device &device)
+{
+	auto message = MakeRpcNotificationMessage(
+		-1, 
+		"On-ItemPropertyValueChanged", 
+		[&](JsonOutputStream_t &params)
+		{
+			device.SerializeIdentification(params);
+			params.AddBool("online", device.IsOnline());
+		}
+	);
+
+	return message;
 }
 
 void TerminalClient::OnDeviceConnected(const Device &device)
-{
-
+{	
+	//m_clMessenger.Send(m_clAddress, CreateDeviceConnectedNotification(device));
 }
 
 void TerminalClient::OnDeviceDisconnected(const Device &device)
 {
-	
+	//m_clMessenger.Send(m_clAddress, CreateDeviceConnectedNotification(device));
 }
 
 void TerminalClient::OnDecoderStateChange(Decoder &decoder)
@@ -524,8 +562,8 @@ bool TerminalClient::Update()
 					throw TerminalCmdException(fmt::format("Invalid json: {}", msg), -1);
 				}
 
-				auto jsonrpcKey = doc.FindMember("jsonrpc");
-				if ((jsonrpcKey == doc.MemberEnd()) || (!jsonrpcKey->value.IsString()) || (strcmp(jsonrpcKey->value.GetString(), "2.0")))
+				auto jsonrpcKey = doc.FindMember(JSONRPC_KEY);
+				if ((jsonrpcKey == doc.MemberEnd()) || (!jsonrpcKey->value.IsString()) || (strcmp(jsonrpcKey->value.GetString(), JSONRPC_VERSION)))
 				{
 					throw TerminalCmdException(fmt::format("Invalid rpc version or was not set: {}", msg), -1);
 				}
@@ -555,28 +593,20 @@ bool TerminalClient::Update()
 					continue;
 				}
 
-				JsonCreator::StringWriter responseWriter;
+				response = MakeRpcResultMessage(id, [cmd, this, id, &doc](dcclite::JsonOutputStream_t &resultObj)
 				{
-					auto responseObj = JsonCreator::MakeObject(responseWriter);
-
-					responseObj.AddStringValue("jsonrpc", "2.0");
-					responseObj.AddIntValue("id", id);
-					auto resultObj = responseObj.AddObject("result");
-
 					cmd->Run(m_clContext, resultObj, id, doc);
-				}
-
-				response = responseWriter.GetString();
+				});
 
 				dcclite::Log::Trace("response {}", response);
 			}
 			catch (TerminalCmdException &ex)
 			{
-				response = CreateErrorResponse(ex.what(), ex.GetId());
+				response = MakeRpcErrorResponse(ex.GetId(), ex.what());
 			}
 			catch (std::exception &ex)
 			{
-				response = CreateErrorResponse(ex.what(), -1);
+				response = MakeRpcErrorResponse(-1, ex.what());
 			}
 
 			if (!m_clMessenger.Send(m_clAddress, response))

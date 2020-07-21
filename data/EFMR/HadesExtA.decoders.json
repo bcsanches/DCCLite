@@ -52,7 +52,7 @@
     "pin": 45,
     "inverted": true,
     "powerPin":59,
-    "frogPin":58,
+    "frogPin":58,    
     "operationTime":1000
   },
   {
@@ -63,7 +63,7 @@
     "inverted": true,
     "powerPin":57,
     "frogPin":56,
-    "invertedFrog":true,
+    "invertedFrog":false,
     "operationTime":1000
   },
   {
@@ -71,10 +71,10 @@
     "class":"ServoTurnout",
     "address":"1726",
     "pin": 43,
-    "inverted": true,
+    "inverted": false,
     "powerPin":55,
     "frogPin":54,
-    "invertedFrog":true,
+    "invertedFrog":false,
     "operationTime":1000
   },  
   {
