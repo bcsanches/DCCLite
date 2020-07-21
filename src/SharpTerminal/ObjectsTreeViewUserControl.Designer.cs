@@ -47,8 +47,8 @@
             // 
             // mImageList
             // 
-            this.mImageList.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
-            this.mImageList.ImageSize = new System.Drawing.Size(16, 16);
+            this.mImageList.ColorDepth = System.Windows.Forms.ColorDepth.Depth32Bit;
+            this.mImageList.ImageSize = new System.Drawing.Size(24, 24);
             this.mImageList.TransparentColor = System.Drawing.Color.Transparent;
             // 
             // ObjectsTreeViewUserControl
