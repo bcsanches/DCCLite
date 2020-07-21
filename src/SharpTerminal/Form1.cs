@@ -16,7 +16,7 @@ namespace SharpTerminal
 {
     public partial class Console : Form
     {
-        IConsole mConsole;
+        readonly IConsole mConsole;
 
         private RequestManager mRequestManager = new RequestManager();        
 
@@ -27,6 +27,7 @@ namespace SharpTerminal
             mConsole = ucConsole;
             ucConsole.RequestManager = mRequestManager;
             ucTreeView.RequestManager = mRequestManager;
+            RemoteObjectManager.SetRequestManager(mRequestManager);
         }
 
         protected override void OnLoad(EventArgs e)

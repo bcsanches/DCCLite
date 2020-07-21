@@ -10,15 +10,22 @@ namespace SharpTerminal
 {   
     public class RemoteDevice: RemoteFolder
     {           
-        public RemoteDevice(string name, string className, string path, int internalId):
+        public bool Connected { get; set; }
+
+        public RemoteDevice(string name, string className, string path, int internalId, JsonValue objectDef):
             base(name, className, path, internalId)
         {
-            //empty
+            this.UpdateState(objectDef);
         }
 
-        public override void UpdateState(JsonValue def)
+        public override void UpdateState(JsonValue objectDef)
         {
-            //nothing to do
-        }             
+            Connected = objectDef["connected"];
+        }
+
+        public override string TryGetIconName()
+        {
+            return DefaultIcons.DISCONNECTED_DRIVE_ICON;
+        }
     }
 }

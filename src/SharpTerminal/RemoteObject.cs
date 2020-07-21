@@ -42,7 +42,12 @@ namespace SharpTerminal
         public override int GetHashCode()
         {
             return mInternalId;
-        }        
+        }
+
+        public virtual string TryGetIconName()
+        {
+            return null;
+        }
     }
 
     public class RemoteFolder : RemoteObject
@@ -97,6 +102,40 @@ namespace SharpTerminal
         static Dictionary<int, RemoteObject> gObjects = new Dictionary<int, RemoteObject>();
         static Dictionary<string, RemoteObject> gObjectsByPath = new Dictionary<string, RemoteObject>();
 
+        private static RequestManager mRequestManager;
+
+        public static void SetRequestManager(RequestManager requestManager)
+        {
+            if(mRequestManager != null)
+            {
+                mRequestManager.RpcNotificationArrived -= MRequestManager_RpcNotificationArrived;
+            }
+
+            mRequestManager = requestManager;
+
+            if (mRequestManager == null)
+                throw new ArgumentNullException(nameof(requestManager));
+
+            mRequestManager.RpcNotificationArrived += MRequestManager_RpcNotificationArrived;
+        }
+
+        private static void MRequestManager_RpcNotificationArrived(RequestManager sender, RpcNotificationEventArgs args)
+        {
+            var json = args.Notification;
+
+            if (json["method"] != "On-ItemPropertyValueChanged")
+                return;
+
+            var parameters = json["params"];
+            int id = parameters["internalId"];
+
+            //object not cached?
+            if (!gObjects.TryGetValue(id, out RemoteObject remoteObject))
+                return;
+
+            remoteObject.UpdateState(parameters);
+        }
+
         private static RemoteObject RegisterObject(JsonValue objectDef)
         {
             int id = objectDef["internalId"];
@@ -112,7 +151,7 @@ namespace SharpTerminal
                     break;
 
                 case "Device":
-                    obj = new RemoteDevice(name, className, path, id);
+                    obj = new RemoteDevice(name, className, path, id, objectDef);
                     break;
 
                 default:
@@ -126,14 +165,14 @@ namespace SharpTerminal
             return obj;
         }
 
-        internal static async Task<RemoteObject> GetRemoteObjectAsync(string path, RequestManager requestManager)
+        internal static async Task<RemoteObject> GetRemoteObjectAsync(string path)
         {
             if(gObjectsByPath.TryGetValue(path, out RemoteObject obj))
             {
                 return obj;
             }
 
-            var response = await requestManager.RequestAsync(new string[] { "Get-Item", path });
+            var response = await mRequestManager.RequestAsync(new string[] { "Get-Item", path });
 
             var responseObj = response["item"];
 

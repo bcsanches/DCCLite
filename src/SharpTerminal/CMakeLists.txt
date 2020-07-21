@@ -3,11 +3,15 @@ project(SharpTerminal VERSION 0.1.0 LANGUAGES CSharp)
 
 include(CSharpUtilities)
 
+set(ICON_RESOURCE_CONNECTED_DRIVE "Resources/connected_drive.png")
+set(ICON_RESOURCE_DISCONNECTED_DRIVE "Resources/disconnected_drive.png")
+
 add_executable(SharpTerminal 
   App.config
   ConsoleUserControl.cs
   ConsoleUserControl.Designer.cs
   ConsoleUserControl.resx
+  DefaultIcons.cs
   Form1.cs
   Form1.Designer.cs
   Form1.resx
@@ -28,6 +32,9 @@ add_executable(SharpTerminal
   Properties/Resources.resx
   Properties/Settings.Designer.cs
   Properties/Settings.settings
+
+  ${ICON_RESOURCE_CONNECTED_DRIVE}
+  ${ICON_RESOURCE_DISCONNECTED_DRIVE}
 )
 
 set_property(TARGET SharpTerminal PROPERTY VS_DOTNET_TARGET_FRAMEWORK_VERSION "v4.7.2")

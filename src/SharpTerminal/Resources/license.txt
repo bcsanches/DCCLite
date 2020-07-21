@@ -1,0 +1,3 @@
+connected_drive.png
+disconnected_drive.png
+from https://www.pngguru.com/

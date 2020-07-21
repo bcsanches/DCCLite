@@ -630,7 +630,7 @@ void Device::Serialize(dcclite::JsonOutputStream_t &stream) const
 	stream.AddStringValue("configToken", dcclite::GuidToString(m_ConfigToken));
 	stream.AddStringValue("sessionToken", dcclite::GuidToString(m_SessionToken));
 	stream.AddStringValue("remoteAddress", m_RemoteAddress.GetIpString());
-	stream.AddBool("isOnline", this->IsOnline());
+	stream.AddBool("connected", this->IsOnline());
 }
 
 void Device::Disconnect()

@@ -30,6 +30,16 @@ namespace SharpTerminal
         public Exception Exception { get; private set; }
     }
 
+    public class RpcNotificationEventArgs : EventArgs
+    {
+        public RpcNotificationEventArgs(JsonValue notification)
+        {
+            Notification = notification;            
+        }
+
+        public JsonValue Notification;        
+    }
+
     public interface IResponseHandler
     {
         void OnResponse(JsonValue response, int id);
@@ -76,6 +86,7 @@ namespace SharpTerminal
     }
 
     public delegate void ConnectionStateChangedEventHandler(RequestManager sender, ConnectionStateEventArgs args);
+    public delegate void RpcNotificationArrivedEventHandler(RequestManager sender, RpcNotificationEventArgs args);
 
     public class RequestManager: ITerminalClientListener, IDisposable
     {
@@ -92,13 +103,14 @@ namespace SharpTerminal
             }
         }
 
-        TerminalClient mClient = new TerminalClient();
+        readonly TerminalClient mClient = new TerminalClient();
 
         private int m_iRequestCount = 1;
 
-        Dictionary<int, RequestInfo> mRequests = new Dictionary<int, RequestInfo>();
+        readonly Dictionary<int, RequestInfo> mRequests = new Dictionary<int, RequestInfo>();
 
         public event ConnectionStateChangedEventHandler ConnectionStateChanged;
+        public event RpcNotificationArrivedEventHandler RpcNotificationArrived;
 
         public RequestManager()
         {
@@ -139,12 +151,22 @@ namespace SharpTerminal
         {
             var jsonObject = (JsonObject) JsonObject.Parse(msg);
 
-            int id = int.Parse(jsonObject["id"].ToString());
+            if (!jsonObject.TryGetValue("id", out var idValue))
+            {
+                if(RpcNotificationArrived != null)
+                {
+                    var args = new RpcNotificationEventArgs(jsonObject);
+                    RpcNotificationArrived(this, args);
+                }
+
+                return;
+            }
+            
+            int id = int.Parse(idValue.ToString());
 
             lock(this)
-            {
-                RequestInfo request;
-                if (!mRequests.TryGetValue(id, out request))
+            {                
+                if (!mRequests.TryGetValue(id, out var request))
                 {
                     throw new Exception("Request response " + id + " not found, data: " + msg);
                 }

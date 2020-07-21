@@ -45,7 +45,7 @@ namespace SharpTerminal
                 {
                     mTreeView.Nodes.Clear();
 
-                    var rootFolder = (RemoteFolder) await RemoteObjectManager.GetRemoteObjectAsync("/", mRequestManager);
+                    var rootFolder = (RemoteFolder) await RemoteObjectManager.GetRemoteObjectAsync("/");
 
                     var brokerNode = mTreeView.Nodes.Add("Broker");
                     brokerNode.Name = "Broker";
@@ -55,7 +55,7 @@ namespace SharpTerminal
                     if (children != null)
                         FillTree(brokerNode, children);
 
-                    var servicesFolder = (RemoteFolder)await RemoteObjectManager.GetRemoteObjectAsync("/services", mRequestManager);
+                    var servicesFolder = (RemoteFolder)await RemoteObjectManager.GetRemoteObjectAsync("/services");
                     var services = await servicesFolder.LoadChildrenAsync(mRequestManager);
                     
                     foreach(var service in services)
@@ -109,6 +109,11 @@ namespace SharpTerminal
                     newNode.Name = newNode.Text;
                     newNode.Tag = remoteObject;
 
+                    var iconKey = remoteObject.TryGetIconName();
+
+                    if (iconKey != null)
+                        newNode.ImageKey = iconKey;
+
                     if(remoteObject is RemoteFolder)
                     {                                                        
                         var subNode = newNode.Nodes.Add("dummy");
@@ -127,6 +132,9 @@ namespace SharpTerminal
         public ObjectsTreeViewUserControl()
         {
             InitializeComponent();
+
+            DefaultIcons.LoadIcons(mImageList);
+            mTreeView.ImageList = mImageList;
         }                 
 
         private async void mTreeView_BeforeExpand(object sender, TreeViewCancelEventArgs e)

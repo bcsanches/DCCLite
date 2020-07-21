@@ -28,7 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.mTreeView = new System.Windows.Forms.TreeView();
+            this.mImageList = new System.Windows.Forms.ImageList(this.components);
             this.SuspendLayout();
             // 
             // mTreeView
@@ -42,6 +44,12 @@
             this.mTreeView.Size = new System.Drawing.Size(150, 359);
             this.mTreeView.TabIndex = 0;
             this.mTreeView.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.mTreeView_BeforeExpand);
+            // 
+            // mImageList
+            // 
+            this.mImageList.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
+            this.mImageList.ImageSize = new System.Drawing.Size(16, 16);
+            this.mImageList.TransparentColor = System.Drawing.Color.Transparent;
             // 
             // ObjectsTreeViewUserControl
             // 
@@ -57,5 +65,6 @@
         #endregion
 
         private System.Windows.Forms.TreeView mTreeView;
+        private System.Windows.Forms.ImageList mImageList;
     }
 }

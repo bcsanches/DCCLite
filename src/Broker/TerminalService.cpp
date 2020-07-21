@@ -359,6 +359,8 @@ class TerminalClient: private IDccLiteServiceListener
 
 		void RegisterListeners();
 
+		void SendItemPropertyValueChangedNotification(const IObject &obj);
+
 		FolderObject *TryGetServicesFolder() const;	
 
 	private:
@@ -503,36 +505,35 @@ static std::string MakeRpcResultMessage(const CmdId_t id, std::function<void(Jso
 	return MakeRpcMessage(id, nullptr, "result", filler);
 }
 
-static std::string CreateDeviceConnectedNotification(const Device &device)
-{
-	auto message = MakeRpcNotificationMessage(
-		-1, 
-		"On-ItemPropertyValueChanged", 
-		[&](JsonOutputStream_t &params)
-		{
-			device.SerializeIdentification(params);
-			params.AddBool("online", device.IsOnline());
-		}
+void TerminalClient::SendItemPropertyValueChangedNotification(const IObject &obj)
+{	
+	m_clMessenger.Send(
+		m_clAddress, 
+		MakeRpcNotificationMessage(
+			-1,
+			"On-ItemPropertyValueChanged",
+			[&obj](JsonOutputStream_t &params)
+			{
+				obj.Serialize(params);
+			}
+		)
 	);
-
-	return message;
 }
 
 void TerminalClient::OnDeviceConnected(const Device &device)
 {	
-	//m_clMessenger.Send(m_clAddress, CreateDeviceConnectedNotification(device));
+	SendItemPropertyValueChangedNotification(device);
 }
 
 void TerminalClient::OnDeviceDisconnected(const Device &device)
 {
-	//m_clMessenger.Send(m_clAddress, CreateDeviceConnectedNotification(device));
+	SendItemPropertyValueChangedNotification(device);
 }
 
 void TerminalClient::OnDecoderStateChange(Decoder &decoder)
 {
-
+	SendItemPropertyValueChangedNotification(decoder);	
 }
-
 
 bool TerminalClient::Update()
 {

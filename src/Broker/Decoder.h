@@ -130,6 +130,7 @@ class Decoder: public dcclite::Object
 			Object::Serialize(stream);
 
 			stream.AddIntValue("address", m_iAddress.GetAddress());
+			stream.AddBool("remoteActive", m_kRemoteState == dcclite::DecoderStates::ACTIVE);			
 		}	
 
 	private:
