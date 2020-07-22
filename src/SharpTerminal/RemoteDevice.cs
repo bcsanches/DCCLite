@@ -18,14 +18,16 @@ namespace SharpTerminal
             this.UpdateState(objectDef);
         }
 
-        public override void UpdateState(JsonValue objectDef)
+        protected override void OnUpdateState(JsonValue objectDef)
         {
+            base.OnUpdateState(objectDef);
+
             Connected = objectDef["connected"];
         }
 
         public override string TryGetIconName()
         {
-            return DefaultIcons.DISCONNECTED_DRIVE_ICON;
+            return Connected ? DefaultIcons.CONNECTED_DRIVE_ICON : DefaultIcons.DISCONNECTED_DRIVE_ICON;
         }
     }
 }

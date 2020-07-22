@@ -14,11 +14,6 @@ namespace SharpTerminal
             base(name, className, path, internalId)
         {
             //empty
-        }
-
-        public override void UpdateState(JsonValue def)
-        {
-            //nothing to do
-        }             
+        }           
     }
 }

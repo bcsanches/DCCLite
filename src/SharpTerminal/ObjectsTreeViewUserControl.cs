@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel.Design.Serialization;
 using System.Json;
 using System.Runtime.Serialization;
@@ -10,7 +10,9 @@ namespace SharpTerminal
 {
     public partial class ObjectsTreeViewUserControl : UserControl
     {
-        RequestManager mRequestManager;      
+        RequestManager mRequestManager;
+        readonly Dictionary<int, List<TreeNode>> mObjectsNodes = new Dictionary<int, List<TreeNode>>();
+        
         
         internal RequestManager RequestManager
         {
@@ -31,6 +33,51 @@ namespace SharpTerminal
                     mRequestManager.ConnectionStateChanged += mRequestManager_ConnectionStateChanged;
                 }
             }
+        }
+
+        private void RegisterNode(RemoteObject obj, TreeNode node)
+        {
+            if (this.InvokeRequired)
+                throw new InvalidOperationException("InvokeRequired");
+
+            if (!mObjectsNodes.TryGetValue(obj.InternalId, out var nodes))
+            {
+                nodes = new List<TreeNode>();
+                mObjectsNodes.Add(obj.InternalId, nodes);
+            }
+
+            nodes.Add(node);
+
+            obj.StateChanged += RemoteObject_StateChanged;
+        }
+
+        private void UpdateNodesIcon(RemoteObject remoteObject)
+        {
+            if(this.InvokeRequired)
+            {
+                this.Invoke(new MethodInvoker(delegate { this.UpdateNodesIcon(remoteObject); }));                
+            }
+            else
+            {
+                if (!mObjectsNodes.TryGetValue(remoteObject.InternalId, out var nodes))
+                    return;
+
+                var customIcon = remoteObject.TryGetIconName();
+
+                foreach (var node in nodes)
+                {
+                    node.ImageKey = customIcon;
+                    node.SelectedImageKey = customIcon;
+                }
+            }            
+        }
+
+        private void RemoteObject_StateChanged(RemoteObject sender, EventArgs args)
+        {            
+            if (sender.TryGetIconName() == null)
+                return;                        
+
+            UpdateNodesIcon(sender);                        
         }
 
         private async void mRequestManager_ConnectionStateChanged(RequestManager sender, ConnectionStateEventArgs args)
@@ -63,7 +110,9 @@ namespace SharpTerminal
                         if(service.Name == "locationManager")
                         {
                             var locationNode = mTreeView.Nodes.Add("locations");
-                            locationNode.Tag = locationNode;
+                            locationNode.Tag = service;
+
+                            RegisterNode(service, locationNode);
                         }
                     }
                 }
@@ -127,6 +176,8 @@ namespace SharpTerminal
                         newNode.ImageKey = DefaultIcons.FILE_GEAR_ICON;
                         newNode.SelectedImageKey = DefaultIcons.FILE_GEAR_ICON;
                     }
+
+                    RegisterNode(remoteObject, newNode);
                 }
 
                 node.Expand();

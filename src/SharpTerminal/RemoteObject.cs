@@ -7,14 +7,18 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace SharpTerminal
-{   
+{
+    public delegate void RemoteObjectStateChanged(RemoteObject sender, EventArgs args);
+
     public class RemoteObject
     {        
         public string Name { get; }
         readonly string mClassName;
-        public string Path { get; }             
+        public string Path { get; }
 
-        readonly int mInternalId;        
+        public int InternalId { get; }
+
+        public event RemoteObjectStateChanged StateChanged;
 
         public RemoteObject(string name, string className, string path, int internalId)
         {
@@ -31,17 +35,28 @@ namespace SharpTerminal
             mClassName = className;
             Path = path;
 
-            mInternalId = internalId;
+            InternalId = internalId;
         }
 
-        public virtual void UpdateState(JsonValue def)
+        public void UpdateState(JsonValue def)
         {
-            //nothing to do
+            this.OnUpdateState(def);
+
+            if (StateChanged != null)
+            {
+                var args = new EventArgs();
+                StateChanged(this, args);
+            }
+        }
+
+        protected virtual void OnUpdateState(JsonValue def)
+        {
+            //empty
         }
 
         public override int GetHashCode()
         {
-            return mInternalId;
+            return InternalId;
         }
 
         public virtual string TryGetIconName()
