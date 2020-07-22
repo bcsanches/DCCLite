@@ -112,13 +112,21 @@ namespace SharpTerminal
                     var iconKey = remoteObject.TryGetIconName();
 
                     if (iconKey != null)
+                    {
                         newNode.ImageKey = iconKey;
+                        newNode.SelectedImageKey = iconKey;
+                    }
 
                     if(remoteObject is RemoteFolder)
                     {                                                        
                         var subNode = newNode.Nodes.Add("dummy");
                         subNode.Tag = this;
-                    }                        
+                    }
+                    else if(iconKey == null)
+                    {
+                        newNode.ImageKey = DefaultIcons.FILE_GEAR_ICON;
+                        newNode.SelectedImageKey = DefaultIcons.FILE_GEAR_ICON;
+                    }
                 }
 
                 node.Expand();

@@ -10,11 +10,16 @@ namespace SharpTerminal
 {
     static class DefaultIcons
     {
-        public static string DISCONNECTED_DRIVE_ICON = "disconnected_drive";
         public static string CONNECTED_DRIVE_ICON = "connected_drive";
+        public static string DISCONNECTED_DRIVE_ICON = "disconnected_drive";
+        public static string FILE_GEAR_ICON = "file_gear";
+        public static string FOLDER_ICON = "folder";       
+        
 
         public static void LoadIcons(ImageList imageList)
         {
+            imageList.Images.Add(FOLDER_ICON, Resources.folder);
+            imageList.Images.Add(FILE_GEAR_ICON, Resources.file_gear);
             imageList.Images.Add(CONNECTED_DRIVE_ICON, Resources.connected_drive);
             imageList.Images.Add(DISCONNECTED_DRIVE_ICON, Resources.disconnected_drive);
         }

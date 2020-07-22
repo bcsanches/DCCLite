@@ -5,6 +5,8 @@ include(CSharpUtilities)
 
 set(ICON_RESOURCE_CONNECTED_DRIVE "Resources/connected_drive.png")
 set(ICON_RESOURCE_DISCONNECTED_DRIVE "Resources/disconnected_drive.png")
+set(ICON_RESOURCE_FOLDER "Resources/folder.png")
+set(ICON_RESOURCE_FILE_GEAR "Resources/file_gear.png")
 
 add_executable(SharpTerminal 
   App.config
@@ -35,6 +37,8 @@ add_executable(SharpTerminal
 
   ${ICON_RESOURCE_CONNECTED_DRIVE}
   ${ICON_RESOURCE_DISCONNECTED_DRIVE}
+  ${ICON_RESOURCE_FOLDER}
+  ${ICON_RESOURCE_FILE_GEAR}
 )
 
 set_property(TARGET SharpTerminal PROPERTY VS_DOTNET_TARGET_FRAMEWORK_VERSION "v4.7.2")
