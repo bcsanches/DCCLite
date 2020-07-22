@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace SharpTerminal
 {
-    public delegate void RemoteObjectStateChanged(RemoteObject sender, EventArgs args);
+    public delegate void RemoteObjectStateChanged(RemoteObject sender, EventArgs args);    
 
     public class RemoteObject
     {        
@@ -16,11 +16,13 @@ namespace SharpTerminal
         readonly string mClassName;
         public string Path { get; }
 
-        public int InternalId { get; }
+        public ulong InternalId { get; }
+
+        public ulong ParentInternalId { get; }
 
         public event RemoteObjectStateChanged StateChanged;
 
-        public RemoteObject(string name, string className, string path, int internalId)
+        public RemoteObject(string name, string className, string path, ulong internalId, ulong parentInternalId)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentNullException(nameof(name));
@@ -54,11 +56,6 @@ namespace SharpTerminal
             //empty
         }
 
-        public override int GetHashCode()
-        {
-            return InternalId;
-        }
-
         public virtual string TryGetIconName()
         {
             return null;
@@ -69,8 +66,8 @@ namespace SharpTerminal
     {        
         private Dictionary<string, RemoteObject> mChildren;
 
-        public RemoteFolder(string name, string className, string path, int internalId) :
-            base(name, className, path, internalId)
+        public RemoteFolder(string name, string className, string path, ulong internalId, ulong parentInternalId) :
+            base(name, className, path, internalId, parentInternalId)
         {
             //empty
         }
@@ -95,15 +92,28 @@ namespace SharpTerminal
             }
 
             return mChildren.Select(x => x.Value);
-        }        
+        }
+        
+        internal void OnChildDestroyed(RemoteObject child)
+        {
+            //if children not cached, nothing to do...
+            if (mChildren == null)
+                return;
+
+            mChildren.Remove(child.Name);
+            if(mChildren.Count() == 0)
+            {
+                mChildren = null;
+            }
+        }
     }
 
     public class RemoteShortcut: RemoteObject
     {
         readonly string mTarget;
 
-        public RemoteShortcut(string name, string className, string path, int internalId, string target):
-            base(name, className, path, internalId)
+        public RemoteShortcut(string name, string className, string path, ulong internalId, ulong parentInternalId, string target):
+            base(name, className, path, internalId, parentInternalId)
         {
             if (string.IsNullOrWhiteSpace(target))
                 throw new ArgumentNullException(nameof(target));
@@ -114,10 +124,10 @@ namespace SharpTerminal
 
     static class RemoteObjectManager
     {
-        static Dictionary<int, RemoteObject> gObjects = new Dictionary<int, RemoteObject>();
+        static Dictionary<ulong, RemoteObject> gObjects = new Dictionary<ulong, RemoteObject>();
         static Dictionary<string, RemoteObject> gObjectsByPath = new Dictionary<string, RemoteObject>();
 
-        private static RequestManager mRequestManager;
+        private static RequestManager mRequestManager;        
 
         public static void SetRequestManager(RequestManager requestManager)
         {
@@ -134,43 +144,86 @@ namespace SharpTerminal
             mRequestManager.RpcNotificationArrived += MRequestManager_RpcNotificationArrived;
         }
 
-        private static void MRequestManager_RpcNotificationArrived(RequestManager sender, RpcNotificationEventArgs args)
+        private static RemoteObject TryGetCachedRemoteObjectFromRpc(JsonValue parameters)
         {
-            var json = args.Notification;
-
-            if (json["method"] != "On-ItemPropertyValueChanged")
-                return;
-
-            var parameters = json["params"];
-            int id = parameters["internalId"];
+            ulong id = parameters["internalId"];
 
             //object not cached?
-            if (!gObjects.TryGetValue(id, out RemoteObject remoteObject))
+            gObjects.TryGetValue(id, out RemoteObject remoteObject);                
+
+            return remoteObject;
+        }
+
+        private static void HandleRpcItemPropertyValueChanged(JsonValue parameters)
+        {
+            var remoteObject = TryGetCachedRemoteObjectFromRpc(parameters);
+            if (remoteObject == null)
                 return;
 
             remoteObject.UpdateState(parameters);
         }
 
+        private static void HandleRpcItemDestroyed(JsonValue parameters)
+        {
+            ulong id = parameters["internalId"];
+
+            var remoteObject = TryGetCachedRemoteObjectFromRpc(parameters);
+            if (remoteObject == null)
+                return;
+
+            gObjects.Remove(id);
+            gObjectsByPath.Remove(remoteObject.Path);
+
+            if((remoteObject.ParentInternalId > 0) && (gObjects.TryGetValue(remoteObject.ParentInternalId, out var parentObject)))
+            {
+                var parentFolder = (RemoteFolder)parentObject;
+
+                parentFolder.OnChildDestroyed(remoteObject);
+            }
+        }
+
+        private static void MRequestManager_RpcNotificationArrived(RequestManager sender, RpcNotificationEventArgs args)
+        {
+            var json = args.Notification;
+
+            var parameters = json["params"];            
+
+            switch ((string)json["method"])
+            {
+                case "On-ItemCreated":
+                    break;
+
+                case "On-ItemDestroyed":
+                    HandleRpcItemDestroyed(parameters);
+                    break;
+
+                case "On-ItemPropertyValueChanged":
+                    HandleRpcItemPropertyValueChanged(parameters);
+                    break;
+            }                       
+        }
+
         private static RemoteObject RegisterObject(JsonValue objectDef)
         {
-            int id = objectDef["internalId"];
+            ulong id = objectDef["internalId"];
             string className = objectDef["className"];
             string name = objectDef["name"];
-            string path = objectDef["path"];            
+            string path = objectDef["path"];
+            ulong parentInternalId = objectDef.ContainsKey("parentInternalId") ? (ulong)objectDef["parentInternalId"] : 0;
 
             RemoteObject obj;
             switch (className)
             {
                 case "dcclite::Shortcut":
-                    obj = new RemoteShortcut(name, className, path, id, objectDef["target"]);
+                    obj = new RemoteShortcut(name, className, path, id, parentInternalId, objectDef["target"]);
                     break;
 
                 case "Device":
-                    obj = new RemoteDevice(name, className, path, id, objectDef);
+                    obj = new RemoteDevice(name, className, path, id, parentInternalId, objectDef);
                     break;
 
                 default:
-                    obj = objectDef["isFolder"] ? new RemoteFolder(name, className, path, id) : new RemoteObject(name, className, path, id);
+                    obj = objectDef["isFolder"] ? new RemoteFolder(name, className, path, id, parentInternalId) : new RemoteObject(name, className, path, id, parentInternalId);
                     break;
             }
 
@@ -196,7 +249,7 @@ namespace SharpTerminal
 
         internal static RemoteObject LoadObject(JsonValue objectDef)
         {
-            int id = (int)objectDef["internalId"];
+            ulong id = objectDef["internalId"];
 
             RemoteObject obj;
             if (gObjects.TryGetValue(id, out obj))

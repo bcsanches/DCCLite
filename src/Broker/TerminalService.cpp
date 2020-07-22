@@ -357,6 +357,9 @@ class TerminalClient: private IDccLiteServiceListener
 
 		void OnDecoderStateChange(Decoder &decoder) override;
 
+		void OnItemCreated(const dcclite::IObject &item) override;
+		void OnItemDestroyed(const dcclite::IObject &item) override;
+
 		void RegisterListeners();
 
 		void SendItemPropertyValueChangedNotification(const IObject &obj);
@@ -515,6 +518,36 @@ void TerminalClient::SendItemPropertyValueChangedNotification(const IObject &obj
 			[&obj](JsonOutputStream_t &params)
 			{
 				obj.Serialize(params);
+			}
+		)
+	);
+}
+
+void TerminalClient::OnItemCreated(const dcclite::IObject &item)
+{
+	m_clMessenger.Send(
+		m_clAddress,
+		MakeRpcNotificationMessage(
+			-1,
+			"On-ItemCreated",
+			[&item](JsonOutputStream_t &params)
+			{
+				item.Serialize(params);
+			}
+		)
+	);
+}
+
+void TerminalClient::OnItemDestroyed(const dcclite::IObject &item)
+{
+	m_clMessenger.Send(
+		m_clAddress,
+		MakeRpcNotificationMessage(
+			-1,
+			"On-ItemDestroyed",
+			[&item](JsonOutputStream_t &params)
+			{
+				item.Serialize(params);
 			}
 		)
 	);

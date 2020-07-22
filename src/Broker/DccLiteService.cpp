@@ -62,10 +62,36 @@ DccLiteService::~DccLiteService()
 	//empty
 }
 
+void DccLiteService::NotifyItemCreated(const dcclite::IObject &item) const
+{
+	std::for_each(
+		m_vecListeners.begin(),
+		m_vecListeners.end(),
+		[&item](IDccLiteServiceListener *listener)
+		{
+			listener->OnItemCreated(item);
+		}
+	);
+}
+
+void DccLiteService::NotifyItemDestroyed(const dcclite::IObject &item) const
+{
+	std::for_each(
+		m_vecListeners.begin(),
+		m_vecListeners.end(),
+		[&item](IDccLiteServiceListener *listener)
+		{
+			listener->OnItemDestroyed(item);
+		}
+	);
+}
+
 void DccLiteService::Device_DestroyDecoder(Decoder &dec)
 {
 	m_pAddresses->RemoveChild(dec.GetAddress().ToString());
 	m_pDecoders->RemoveChild(dec.GetName());
+
+	this->NotifyItemDestroyed(dec);
 }
 
 Decoder &DccLiteService::Device_CreateDecoder(
@@ -89,6 +115,8 @@ Decoder &DccLiteService::Device_CreateDecoder(
 
 	m_pDecoders->AddChild(std::move(decoder));
 	m_pAddresses->AddChild(std::make_unique<dcclite::Shortcut>(pDecoder->GetAddress().ToString(), *pDecoder));
+
+	this->NotifyItemCreated(*pDecoder);
 
 	return *pDecoder;
 }
@@ -195,7 +223,9 @@ void DccLiteService::Device_SendPacket(const dcclite::NetworkAddress destination
 
 void DccLiteService::Device_RegisterSession(Device &dev, const dcclite::Guid &sessionToken)
 {
-	m_pSessions->AddChild(std::make_unique<dcclite::Shortcut>(dcclite::GuidToString(sessionToken), dev));
+	auto session = m_pSessions->AddChild(std::make_unique<dcclite::Shortcut>(dcclite::GuidToString(sessionToken), dev));
+
+	this->NotifyItemCreated(*session);
 
 	for (auto listener : m_vecListeners)
 	{
@@ -205,12 +235,14 @@ void DccLiteService::Device_RegisterSession(Device &dev, const dcclite::Guid &se
 
 void DccLiteService::Device_UnregisterSession(Device& dev, const dcclite::Guid &sessionToken)
 {	
-	m_pSessions->RemoveChild(dcclite::GuidToString(sessionToken));
+	auto session = m_pSessions->RemoveChild(dcclite::GuidToString(sessionToken));	
 
 	for (auto listener : m_vecListeners)
 	{
 		listener->OnDeviceDisconnected(dev);
 	}
+
+	this->NotifyItemDestroyed(*session);
 }
 
 Decoder* DccLiteService::TryFindDecoder(const DccAddress address) const

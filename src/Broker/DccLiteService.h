@@ -33,6 +33,9 @@ class IDccLiteServiceListener
 		virtual void OnDeviceConnected(const Device& device) = 0;
 		virtual void OnDeviceDisconnected(const Device& device) = 0;
 
+		virtual void OnItemCreated(const dcclite::IObject &item) = 0;
+		virtual void OnItemDestroyed(const dcclite::IObject &item) = 0;
+
 		virtual void OnDecoderStateChange(Decoder& decoder) = 0;
 
 		virtual ~IDccLiteServiceListener() 
@@ -120,6 +123,9 @@ class DccLiteService : public Service, private IDccDeviceServices, private IDccD
 		Device *TryFindDeviceSession(const dcclite::Guid &guid);
 
 		Device *TryFindPacketDestination(dcclite::Packet &packet);		
+
+		void NotifyItemCreated(const dcclite::IObject &item) const;
+		void NotifyItemDestroyed(const dcclite::IObject &item) const;
 
 	private:
 		//

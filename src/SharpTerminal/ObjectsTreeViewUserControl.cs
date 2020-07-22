@@ -11,7 +11,7 @@ namespace SharpTerminal
     public partial class ObjectsTreeViewUserControl : UserControl
     {
         RequestManager mRequestManager;
-        readonly Dictionary<int, List<TreeNode>> mObjectsNodes = new Dictionary<int, List<TreeNode>>();
+        readonly Dictionary<ulong, List<TreeNode>> mObjectsNodes = new Dictionary<ulong, List<TreeNode>>();
         
         
         internal RequestManager RequestManager
@@ -193,8 +193,8 @@ namespace SharpTerminal
             InitializeComponent();
 
             DefaultIcons.LoadIcons(mImageList);
-            mTreeView.ImageList = mImageList;
-        }                 
+            mTreeView.ImageList = mImageList;            
+        }
 
         private async void mTreeView_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {

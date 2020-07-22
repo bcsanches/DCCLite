@@ -97,7 +97,7 @@ namespace dcclite
 		if (m_pParent)
 		{
 			stream.AddStringValue("parentName", m_pParent->GetName());
-			stream.AddIntValue("parentId", reinterpret_cast<intptr_t>(m_pParent));
+			stream.AddIntValue("parentInternalId", reinterpret_cast<intptr_t>(m_pParent));
 		}			
 	}
 

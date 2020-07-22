@@ -46,6 +46,9 @@ class DccppClient: private IDccLiteServiceListener
 
 		void OnDecoderStateChange(Decoder& decoder) override;
 
+		void OnItemCreated(const dcclite::IObject &item) override;
+		void OnItemDestroyed(const dcclite::IObject &item) override;
+
 	private:
 		NetMessenger m_clMessenger;
 		DccLiteService& m_rclSystem;
@@ -80,6 +83,16 @@ void DccppClient::OnDeviceConnected(const Device& device)
 }
 
 void DccppClient::OnDeviceDisconnected(const Device& device)
+{
+	//ignore
+}
+
+void DccppClient::OnItemCreated(const dcclite::IObject &item)
+{
+	//ignore
+}
+
+void DccppClient::OnItemDestroyed(const dcclite::IObject &item)
 {
 	//ignore
 }
@@ -135,7 +148,6 @@ static inline std::string CreateSensorStateRespnse(const std::vector<SensorDecod
 
 	return response.str();
 }
-
 
 void DccppClient::OnDecoderStateChange(Decoder& decoder)
 {

@@ -12,8 +12,8 @@ namespace SharpTerminal
     {           
         public bool Connected { get; set; }
 
-        public RemoteDevice(string name, string className, string path, int internalId, JsonValue objectDef):
-            base(name, className, path, internalId)
+        public RemoteDevice(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef):
+            base(name, className, path, internalId, parentInternalId)
         {
             this.UpdateState(objectDef);
         }
