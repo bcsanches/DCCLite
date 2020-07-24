@@ -8,12 +8,18 @@ using System.Windows.Forms;
 
 namespace SharpTerminal
 {
+    
     public partial class ObjectsTreeViewUserControl : UserControl
     {
         RequestManager mRequestManager;
         readonly Dictionary<ulong, List<TreeNode>> mObjectsNodes = new Dictionary<ulong, List<TreeNode>>();
-        
-        
+
+        public Panel MainDisplayPanel
+        {
+            get;
+            set;
+        }
+                
         internal RequestManager RequestManager
         {
             set
@@ -293,6 +299,30 @@ namespace SharpTerminal
                 
                 e.Cancel = true;
             }            
+        }
+
+        private void mTreeView_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            if (MainDisplayPanel == null)
+                return;
+
+            if (MainDisplayPanel.Controls.Count > 0)
+            {
+                var control = MainDisplayPanel.Controls[0];
+                MainDisplayPanel.Controls.Remove(control);
+
+                control.Dispose();
+            }
+
+            if (!(e.Node.Tag is RemoteObject remoteObject))
+                return;
+
+            var newControl = remoteObject.CreateControl();
+            if (newControl == null)
+                return;
+
+            MainDisplayPanel.Controls.Add(newControl);
+            newControl.Dock = DockStyle.Fill;
         }
     }
 }

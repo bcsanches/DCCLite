@@ -20,7 +20,7 @@ using namespace dcclite;
 class Location: public Object
 {
 	public:
-	Location(std::string name, std::string prefix, const DccAddress beginAddress, const DccAddress endAddress):
+		Location(std::string name, std::string prefix, const DccAddress beginAddress, const DccAddress endAddress):
 			Object(name),
 			m_strPrefix(std::move(prefix)),
 			m_tBeginAddress(beginAddress),
@@ -40,7 +40,7 @@ class Location: public Object
 
 		const char *GetTypeName() const noexcept override
 		{
-			return "LocationSector";
+			return "Location";
 		}
 
 		void Serialize(JsonOutputStream_t &stream) const override

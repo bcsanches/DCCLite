@@ -72,6 +72,11 @@ namespace SharpTerminal
         {
             return null;
         }
+
+        public virtual Control CreateControl()
+        {
+            return null;
+        }
     }
 
     public class RemoteFolder : RemoteObject
@@ -271,6 +276,10 @@ namespace SharpTerminal
                     obj = new RemoteDevice(name, className, path, id, parentInternalId, objectDef);
                     break;
 
+                case "Location":
+                    obj = new RemoteLocation(name, className, path, id, parentInternalId, objectDef);
+                    break;
+
                 default:
                     obj = objectDef["isFolder"] ? new RemoteFolder(name, className, path, id, parentInternalId) : new RemoteObject(name, className, path, id, parentInternalId);
                     break;
@@ -300,8 +309,7 @@ namespace SharpTerminal
         {
             ulong id = objectDef["internalId"];
 
-            RemoteObject obj;
-            if (gObjects.TryGetValue(id, out obj))
+            if (gObjects.TryGetValue(id, out RemoteObject obj))
             {
                 obj.UpdateState(objectDef);
             }

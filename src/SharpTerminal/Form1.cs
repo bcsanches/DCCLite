@@ -18,7 +18,7 @@ namespace SharpTerminal
     {
         readonly IConsole mConsole;
 
-        private RequestManager mRequestManager = new RequestManager();        
+        private readonly RequestManager mRequestManager = new RequestManager();        
 
         public Console()
         {

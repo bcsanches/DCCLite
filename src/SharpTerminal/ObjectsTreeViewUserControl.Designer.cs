@@ -44,6 +44,7 @@
             this.mTreeView.Size = new System.Drawing.Size(150, 359);
             this.mTreeView.TabIndex = 0;
             this.mTreeView.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.mTreeView_BeforeExpand);
+            this.mTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.mTreeView_AfterSelect);
             // 
             // mImageList
             // 

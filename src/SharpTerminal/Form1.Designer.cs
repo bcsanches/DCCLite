@@ -46,7 +46,7 @@ namespace SharpTerminal
             this.m_lbStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.ucTreeView = new SharpTerminal.ObjectsTreeViewUserControl();
-            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.mInternalPanel = new System.Windows.Forms.SplitContainer();
             this.ucConsole = new SharpTerminal.ConsoleUserControl();
             statusStrip1 = new System.Windows.Forms.StatusStrip();
             statusStrip1.SuspendLayout();
@@ -54,9 +54,9 @@ namespace SharpTerminal
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
-            this.splitContainer1.Panel2.SuspendLayout();
-            this.splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.mInternalPanel)).BeginInit();
+            this.mInternalPanel.Panel2.SuspendLayout();
+            this.mInternalPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // statusStrip1
@@ -87,7 +87,7 @@ namespace SharpTerminal
             // 
             // splitContainer2.Panel2
             // 
-            this.splitContainer2.Panel2.Controls.Add(this.splitContainer1);
+            this.splitContainer2.Panel2.Controls.Add(this.mInternalPanel);
             this.splitContainer2.Size = new System.Drawing.Size(784, 666);
             this.splitContainer2.SplitterDistance = 261;
             this.splitContainer2.TabIndex = 7;
@@ -96,23 +96,24 @@ namespace SharpTerminal
             // 
             this.ucTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ucTreeView.Location = new System.Drawing.Point(0, 0);
+            this.ucTreeView.MainDisplayPanel = this.mInternalPanel.Panel1;
             this.ucTreeView.Name = "ucTreeView";
             this.ucTreeView.Size = new System.Drawing.Size(261, 666);
             this.ucTreeView.TabIndex = 0;
             // 
-            // splitContainer1
+            // mInternalPanel
             // 
-            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer1.Location = new System.Drawing.Point(0, 0);
-            this.splitContainer1.Name = "splitContainer1";
-            this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.mInternalPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.mInternalPanel.Location = new System.Drawing.Point(0, 0);
+            this.mInternalPanel.Name = "mInternalPanel";
+            this.mInternalPanel.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
-            // splitContainer1.Panel2
+            // mInternalPanel.Panel2
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.ucConsole);
-            this.splitContainer1.Size = new System.Drawing.Size(519, 666);
-            this.splitContainer1.SplitterDistance = 400;
-            this.splitContainer1.TabIndex = 6;
+            this.mInternalPanel.Panel2.Controls.Add(this.ucConsole);
+            this.mInternalPanel.Size = new System.Drawing.Size(519, 666);
+            this.mInternalPanel.SplitterDistance = 400;
+            this.mInternalPanel.TabIndex = 6;
             // 
             // ucConsole
             // 
@@ -137,9 +138,9 @@ namespace SharpTerminal
             this.splitContainer2.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
-            this.splitContainer1.Panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
-            this.splitContainer1.ResumeLayout(false);
+            this.mInternalPanel.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.mInternalPanel)).EndInit();
+            this.mInternalPanel.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -147,10 +148,10 @@ namespace SharpTerminal
 
         #endregion
         private System.Windows.Forms.ToolStripStatusLabel m_lbStatus;
-        private System.Windows.Forms.SplitContainer splitContainer1;
+        private System.Windows.Forms.SplitContainer mInternalPanel;
         private ConsoleUserControl ucConsole;
         private System.Windows.Forms.SplitContainer splitContainer2;
-        private ObjectsTreeViewUserControl ucTreeView;
+        private ObjectsTreeViewUserControl ucTreeView;        
     }
 }
 

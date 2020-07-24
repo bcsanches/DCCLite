@@ -25,7 +25,10 @@ add_executable(SharpTerminal
   Program.cs
   RequestManager.cs
   RemoteDevice.cs
-  RemoteLocationManagerService.cs
+  RemoteLocationManager.cs
+  RemoteLocationUserControl.cs
+  RemoteLocationUserControl.Designer.cs
+  RemoteLocationUserControl.resx
   RemoteObject.cs
   TerminalClient.cs
   
@@ -66,6 +69,10 @@ csharp_set_windows_forms_properties(
     ObjectsTreeViewUserControl.cs
     ObjectsTreeViewUserControl.Designer.cs
     ObjectsTreeViewUserControl.resx    
+
+    RemoteLocationUserControl.cs
+    RemoteLocationUserControl.Designer.cs
+    RemoteLocationUserControl.resx
 )
 
 set_property(TARGET SharpTerminal PROPERTY VS_DOTNET_REFERENCES
