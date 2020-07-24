@@ -26,7 +26,7 @@ class Location: public Object
 			m_tBeginAddress(beginAddress),
 			m_tEndAddress(endAddress)
 		{
-			if(m_tBeginAddress > m_tEndAddress)
+			if(m_tBeginAddress >= m_tEndAddress)
 			{
 				throw std::runtime_error(
 					fmt::format("[{}] Sector::Sector begin adress ({}) is greater than end address ({})", 
@@ -36,6 +36,28 @@ class Location: public Object
 					)
 				);
 			}
+
+			m_vecDecoders.resize(m_tEndAddress.GetAddress() - m_tBeginAddress.GetAddress());
+		}
+
+		void RegisterDecoder(Decoder &dec)
+		{
+			assert((dec.GetAddress() >= m_tBeginAddress) && (dec.GetAddress() < m_tEndAddress));
+
+			size_t index = dec.GetAddress().GetAddress() - m_tBeginAddress.GetAddress();
+
+			assert(m_vecDecoders[index] == nullptr);
+
+			m_vecDecoders[index] = &dec;
+		}
+
+		void UnregisterDecoder(Decoder &dec)
+		{
+			size_t index = dec.GetAddress().GetAddress() - m_tBeginAddress.GetAddress();
+
+			assert(m_vecDecoders[index] == &dec);
+
+			m_vecDecoders[index] = nullptr;
 		}
 
 		const char *GetTypeName() const noexcept override
@@ -66,6 +88,8 @@ class Location: public Object
 		std::string m_strPrefix;
 		DccAddress m_tBeginAddress;
 		DccAddress m_tEndAddress;
+
+		std::vector<Decoder *> m_vecDecoders;
 };
 
 LocationManager::LocationManager(std::string name, const rapidjson::Value& params):
@@ -79,9 +103,8 @@ LocationManager::LocationManager(std::string name, const rapidjson::Value& param
 
 	if(!sectorsData.IsArray())
 		throw new std::runtime_error(fmt::format("[{}] LocationManagerService no sectors data array", this->GetName()));
-
-	std::vector<Location *> vecLocations;
-	vecLocations.reserve(sectorsData.GetArray().Size());
+	
+	m_vecIndex.reserve(sectorsData.GetArray().Size());
 
 	for(auto &sectorData : sectorsData.GetArray())
 	{
@@ -92,29 +115,52 @@ LocationManager::LocationManager(std::string name, const rapidjson::Value& param
 
 		auto location = this->AddChild(std::make_unique<Location>(name, prefix, beginAddress, endAddress));
 
-		vecLocations.push_back(static_cast<Location *>(location));
+		m_vecIndex.push_back(static_cast<Location *>(location));
 	}
 
-	if(vecLocations.empty())
+	if(m_vecIndex.empty())
 		return;
 
 
 	//
 	//Validates the locations address for overlapping
-	std::sort(vecLocations.begin(), vecLocations.end(), [](Location *lhs, Location *rhs)
+	std::sort(m_vecIndex.begin(), m_vecIndex.end(), [](Location *lhs, Location *rhs)
 	{
 		return lhs->GetBeginAddress() < rhs->GetBeginAddress();
 	});
 
-	auto *first = vecLocations[0];
-	for (size_t i = 1, sz = vecLocations.size(); i < sz; ++i)
+	auto *first = m_vecIndex[0];
+	for (size_t i = 1, sz = m_vecIndex.size(); i < sz; ++i)
 	{
-		auto *current = vecLocations[i];
+		auto *current = m_vecIndex[i];
 
 		if(first->GetEndAddress() > current->GetBeginAddress())
 			throw std::runtime_error(fmt::format("[LocationManager] Location {} overlaps with {}", first->GetName(), current->GetName()));
 
 		first = current;
 	}
+}
+
+void LocationManager::RegisterDecoder(Decoder &decoder)
+{
+	auto address = decoder.GetAddress();
+
+	for (auto location : m_vecIndex)
+	{
+		//not mapped
+		if(address < location->GetBeginAddress())
+			return;
+
+		if(address >= location->GetEndAddress())
+			continue;
+
+		//found it
+		location->RegisterDecoder(decoder);
+	}
+}
+
+void LocationManager::UnregisterDecoder(Decoder &decoder)
+{
+
 }
 

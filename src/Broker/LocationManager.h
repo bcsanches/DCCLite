@@ -17,6 +17,8 @@
 
 #include <rapidjson/document.h>
 
+class Location;
+
 class LocationManager: public dcclite::FolderObject
 {	
 	public:
@@ -25,4 +27,10 @@ class LocationManager: public dcclite::FolderObject
 		{
 			//empty
 		}
+
+		void RegisterDecoder(Decoder &decoder);
+		void UnregisterDecoder(Decoder &decoder);
+
+	private:
+		std::vector<Location *> m_vecIndex;
 };

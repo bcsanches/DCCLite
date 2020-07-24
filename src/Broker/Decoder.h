@@ -47,6 +47,11 @@ class DccAddress
 		inline int GetAddress() const
 		{
 			return m_iAddress;
+		}		
+
+		inline bool operator>=(const DccAddress &rhs) const
+		{
+			return m_iAddress >= rhs.m_iAddress;
 		}
 
 		inline bool operator<(const DccAddress &rhs) const

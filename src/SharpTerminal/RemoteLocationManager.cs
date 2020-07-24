@@ -31,7 +31,7 @@ namespace SharpTerminal
 
         public override Control CreateControl()
         {
-            return new RemoteLocationUserControl();
+            return new RemoteLocationUserControl(mBeginAddress, mEndAddress);
         }
     }
 }
