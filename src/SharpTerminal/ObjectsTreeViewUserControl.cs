@@ -44,17 +44,17 @@ namespace SharpTerminal
             {
                 nodes = new List<TreeNode>();
                 mObjectsNodes.Add(obj.InternalId, nodes);
+
+                obj.StateChanged += RemoteObject_StateChanged;
+
+                if (obj is RemoteFolder folder)
+                {
+                    folder.ChildAdded += RemoteFolder_ChildAdded;
+                    folder.ChildRemoved += RemoteFolder_ChildRemoved;
+                }
             }
 
-            nodes.Add(node);
-
-            obj.StateChanged += RemoteObject_StateChanged;
-
-            if (obj is RemoteFolder folder)
-            {
-                folder.ChildAdded += RemoteFolder_ChildAdded;
-                folder.ChildRemoved += RemoteFolder_ChildRemoved;
-            }
+            nodes.Add(node);            
         }
 
         private void DeleteTreeNodes_r(TreeNode node)
@@ -66,14 +66,22 @@ namespace SharpTerminal
 
             var remoteObject = (RemoteObject)node.Tag;
 
-            remoteObject.StateChanged -= RemoteObject_StateChanged;
-            if (remoteObject is RemoteFolder folder)
-            {
-                folder.ChildAdded -= RemoteFolder_ChildAdded;
-                folder.ChildRemoved -= RemoteFolder_ChildRemoved;
-            }
+            var nodes = mObjectsNodes[remoteObject.InternalId];
 
-            mObjectsNodes.Remove(remoteObject.InternalId);
+            nodes.Remove(node);
+
+            if(nodes.Count == 0)
+            {
+                remoteObject.StateChanged -= RemoteObject_StateChanged;
+                if (remoteObject is RemoteFolder folder)
+                {
+                    folder.ChildAdded -= RemoteFolder_ChildAdded;
+                    folder.ChildRemoved -= RemoteFolder_ChildRemoved;
+                }
+
+                mObjectsNodes.Remove(remoteObject.InternalId);
+            }
+            
             node.Parent.Nodes.Remove(node);
         }
 
@@ -94,7 +102,10 @@ namespace SharpTerminal
                 return;
             }
 
-            foreach (var node in nodes)
+            //copy it, as the DeleteTreeNodes_r will change it
+            var nodesArray = nodes.ToArray();
+
+            foreach (var node in nodesArray)
                 DeleteTreeNodes_r(node);
         }
 

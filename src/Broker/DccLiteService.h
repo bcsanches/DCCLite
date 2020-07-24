@@ -66,6 +66,9 @@ class IDccDeviceServices
 
 		virtual void Device_RegisterSession(Device& dev, const dcclite::Guid& configToken) = 0;
 		virtual void Device_UnregisterSession(Device& dev, const dcclite::Guid& sessionToken) = 0;				
+
+		virtual void Device_NotifyInternalItemCreated(const dcclite::IObject &item) const = 0;
+		virtual void Device_NotifyInternalItemDestroyed(const dcclite::IObject &item) const = 0;
 };
 
 class DccLiteService : public Service, private IDccDeviceServices, private IDccDecoderServices
@@ -144,7 +147,10 @@ class DccLiteService : public Service, private IDccDeviceServices, private IDccD
 			const rapidjson::Value& params
 		) override;
 
-		void Device_DestroyDecoder(Decoder &dec);		
+		void Device_DestroyDecoder(Decoder &dec) override;
+
+		void Device_NotifyInternalItemCreated(const dcclite::IObject &item) const override;
+		void Device_NotifyInternalItemDestroyed(const dcclite::IObject &item) const override;
 
 		//
 		//

@@ -88,10 +88,14 @@ void DccLiteService::NotifyItemDestroyed(const dcclite::IObject &item) const
 
 void DccLiteService::Device_DestroyDecoder(Decoder &dec)
 {
-	m_pAddresses->RemoveChild(dec.GetAddress().ToString());
-	m_pDecoders->RemoveChild(dec.GetName());
-
+	//send mesage before we destroy it
 	this->NotifyItemDestroyed(dec);
+
+	auto addressName = dec.GetAddress().ToString();
+	this->NotifyItemDestroyed(*(m_pAddresses->TryGetChild(addressName)));
+
+	m_pAddresses->RemoveChild(addressName);
+	m_pDecoders->RemoveChild(dec.GetName());	
 }
 
 Decoder &DccLiteService::Device_CreateDecoder(
@@ -114,11 +118,22 @@ Decoder &DccLiteService::Device_CreateDecoder(
 	auto pDecoder = decoder.get();	
 
 	m_pDecoders->AddChild(std::move(decoder));
-	m_pAddresses->AddChild(std::make_unique<dcclite::Shortcut>(pDecoder->GetAddress().ToString(), *pDecoder));
+	auto addressShortcut = m_pAddresses->AddChild(std::make_unique<dcclite::Shortcut>(pDecoder->GetAddress().ToString(), *pDecoder));
 
-	this->NotifyItemCreated(*pDecoder);
+	this->NotifyItemCreated(*pDecoder);	
+	this->NotifyItemCreated(*addressShortcut);
 
 	return *pDecoder;
+}
+
+void DccLiteService::Device_NotifyInternalItemCreated(const dcclite::IObject &item) const
+{
+	this->NotifyItemCreated(item);
+}
+
+void DccLiteService::Device_NotifyInternalItemDestroyed(const dcclite::IObject &item) const
+{
+	this->NotifyItemDestroyed(item);
 }
 
 Device *DccLiteService::TryFindDeviceByName(std::string_view name)

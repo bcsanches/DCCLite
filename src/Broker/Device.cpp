@@ -548,7 +548,9 @@ void Device::Unload()
 	m_ConfigToken = {};
 
 	for (auto dec : m_vecDecoders)
-	{				
+	{	
+		m_clDccService.Device_NotifyInternalItemDestroyed(*(this->TryGetChild(dec->GetName())));
+
 		auto shortcut = this->RemoveChild(dec->GetName());
 
 		m_clDccService.Device_DestroyDecoder(*dec);
@@ -612,7 +614,8 @@ bool Device::Load()
 
 		m_vecDecoders.push_back(&decoder);
 
-		this->AddChild(std::make_unique<dcclite::Shortcut>(std::string(decoder.GetName()), decoder));
+		auto decShortcut = this->AddChild(std::make_unique<dcclite::Shortcut>(std::string(decoder.GetName()), decoder));
+		m_clDccService.Device_NotifyInternalItemCreated(*decShortcut);
 	}
 
 	//if this point is reached, data is load, so store new token
