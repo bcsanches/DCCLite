@@ -109,7 +109,7 @@ namespace SharpTerminal
 
             while (!token.IsCancellationRequested)
             {
-                int data = 0;
+                int data;
                 try
                 {
                     data = stream.ReadByte();

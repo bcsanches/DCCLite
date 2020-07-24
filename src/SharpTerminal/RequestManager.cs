@@ -99,7 +99,12 @@ namespace SharpTerminal
             public RequestInfo(IResponseHandler handler)
             {
                 mHandler = handler ?? throw new ArgumentNullException(nameof(handler));
+
+#if DEBUG
+                mTime = DateTime.Now + new TimeSpan(1, 0, 3);
+#else
                 mTime = DateTime.Now + new TimeSpan(0, 0, 3);
+#endif
             }
         }
 

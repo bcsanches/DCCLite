@@ -8,7 +8,18 @@ using System.Windows.Forms;
 
 namespace SharpTerminal
 {
-    public delegate void RemoteObjectStateChanged(RemoteObject sender, EventArgs args);    
+    public class RemoteFolderChildEventArgs: EventArgs
+    {
+        public RemoteObject Target { get; }
+
+        public RemoteFolderChildEventArgs(RemoteObject target)
+        {
+            Target = target ?? throw new ArgumentNullException(nameof(target));
+        }
+    }
+
+    public delegate void RemoteObjectStateChanged(RemoteObject sender, EventArgs args);
+    public delegate void RemoteFolderChildEvent(RemoteObject sender, RemoteFolderChildEventArgs args);
 
     public class RemoteObject
     {        
@@ -38,6 +49,7 @@ namespace SharpTerminal
             Path = path;
 
             InternalId = internalId;
+            ParentInternalId = parentInternalId;
         }
 
         public void UpdateState(JsonValue def)
@@ -65,6 +77,9 @@ namespace SharpTerminal
     public class RemoteFolder : RemoteObject
     {        
         private Dictionary<string, RemoteObject> mChildren;
+
+        public event RemoteFolderChildEvent ChildAdded;
+        public event RemoteFolderChildEvent ChildRemoved;
 
         public RemoteFolder(string name, string className, string path, ulong internalId, ulong parentInternalId) :
             base(name, className, path, internalId, parentInternalId)
@@ -100,10 +115,31 @@ namespace SharpTerminal
             if (mChildren == null)
                 return;
 
-            mChildren.Remove(child.Name);
-            if(mChildren.Count() == 0)
+            mChildren.Remove(child.Name);   
+            
+            if(ChildRemoved != null)
             {
-                mChildren = null;
+                var args = new RemoteFolderChildEventArgs(child);
+                ChildRemoved(this, args);
+            }
+        }
+
+        internal void OnChildCreated(JsonValue data)
+        {
+            //Are we tracking children?
+            if (mChildren == null)
+            {
+                //No, so just ignore
+                return;
+            }
+
+            var obj = RemoteObjectManager.LoadObject(data);
+            mChildren.Add(obj.Name, obj);
+
+            if (ChildAdded != null)
+            {
+                var args = new RemoteFolderChildEventArgs(obj);
+                ChildAdded(this, args);
             }
         }
     }
@@ -182,6 +218,18 @@ namespace SharpTerminal
             }
         }
 
+        private static void HandleRpcItemCreated(JsonValue parameters)
+        {
+            ulong parentId = parameters["parentInternalId"];
+
+            if (!gObjects.TryGetValue(parentId, out RemoteObject remoteParent))
+                return;
+
+            var folder = (RemoteFolder)remoteParent;
+
+            folder.OnChildCreated(parameters);
+        }
+
         private static void MRequestManager_RpcNotificationArrived(RequestManager sender, RpcNotificationEventArgs args)
         {
             var json = args.Notification;
@@ -191,8 +239,9 @@ namespace SharpTerminal
             switch ((string)json["method"])
             {
                 case "On-ItemCreated":
+                    HandleRpcItemCreated(parameters);
                     break;
-
+                      
                 case "On-ItemDestroyed":
                     HandleRpcItemDestroyed(parameters);
                     break;

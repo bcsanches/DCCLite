@@ -667,13 +667,14 @@ void Device::AcceptConnection(const dcclite::Clock::TimePoint_t time, const dccl
 		dcclite::Log::Error("[{}::Device::AcceptConnection] Already connected, cannot accept request from {}", this->GetName(), remoteAddress);
 
 		return;
-	}
+	}	
 
 	m_RemoteAddress = remoteAddress;
 	m_SessionToken = dcclite::GuidCreate();
-	m_clDccService.Device_RegisterSession(*this, m_SessionToken);
 
 	m_eStatus = Status::ONLINE;
+
+	m_clDccService.Device_RegisterSession(*this, m_SessionToken);	
 
 	dcclite::Log::Info("[{}::Device::GoOnline] Is connected", this->GetName());
 
