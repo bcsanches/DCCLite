@@ -23,6 +23,7 @@
 #include "Socket.h"
 
 class Device;
+class LocationManager;
 class OutputDecoder;
 class SensorDecoder;
 class TurnoutDecoder;
@@ -167,6 +168,8 @@ class DccLiteService : public Service, private IDccDeviceServices, private IDccD
 		FolderObject *m_pAddresses;
 		FolderObject *m_pDevices;
 		FolderObject *m_pSessions;
+
+		LocationManager *m_pLocations;
 
 		std::vector<IDccLiteServiceListener *> m_vecListeners;
 };

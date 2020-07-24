@@ -9,7 +9,7 @@
 // defined by the Mozilla Public License, v. 2.0.
 
 
-#include "LocationManagerService.h"
+#include "LocationManager.h"
 
 #include <Log.h>
 
@@ -17,15 +17,10 @@
 
 using namespace dcclite;
 
-static ServiceClass locationManagerService("LocationManagerService",
-	[](const ServiceClass& serviceClass, const std::string& name, Broker& broker, const rapidjson::Value& params, const Project& project) ->
-	std::unique_ptr<Service> { return std::make_unique<LocationManagerService>(serviceClass, name, broker, params, project); }
-);
-
-class Sector: public Object
+class Location: public Object
 {
 	public:
-		Sector(std::string name, std::string prefix, const DccAddress beginAddress, const DccAddress endAddress): 
+	Location(std::string name, std::string prefix, const DccAddress beginAddress, const DccAddress endAddress):
 			Object(name),
 			m_strPrefix(std::move(prefix)),
 			m_tBeginAddress(beginAddress),
@@ -57,19 +52,36 @@ class Sector: public Object
 			stream.AddIntValue("end", m_tEndAddress.GetAddress());
 		}
 
+		inline DccAddress GetBeginAddress() const
+		{
+			return m_tBeginAddress;
+		}
+
+		inline DccAddress GetEndAddress() const
+		{
+			return m_tEndAddress;
+		}
+
 	private:	
 		std::string m_strPrefix;
 		DccAddress m_tBeginAddress;
 		DccAddress m_tEndAddress;
 };
 
-LocationManagerService::LocationManagerService(const ServiceClass& serviceClass, const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
-	Service(serviceClass, name, broker, params, project)
+LocationManager::LocationManager(std::string name, const rapidjson::Value& params):
+	FolderObject(std::move(name))
 {
-	const rapidjson::Value &sectorsData = params["sectors"];
+	auto it = params.FindMember("locations");
+	if(it == params.MemberEnd())
+		return;
+
+	const rapidjson::Value &sectorsData = it->value;
 
 	if(!sectorsData.IsArray())
 		throw new std::runtime_error(fmt::format("[{}] LocationManagerService no sectors data array", this->GetName()));
+
+	std::vector<Location *> vecLocations;
+	vecLocations.reserve(sectorsData.GetArray().Size());
 
 	for(auto &sectorData : sectorsData.GetArray())
 	{
@@ -78,16 +90,31 @@ LocationManagerService::LocationManagerService(const ServiceClass& serviceClass,
 		auto beginAddress = DccAddress{static_cast<uint16_t>(sectorData["begin"].GetInt())};
 		auto endAddress = DccAddress{ static_cast<uint16_t>(sectorData["end"].GetInt())};
 
-		this->AddChild(std::make_unique<Sector>(name, prefix, beginAddress, endAddress));
+		auto location = this->AddChild(std::make_unique<Location>(name, prefix, beginAddress, endAddress));
+
+		vecLocations.push_back(static_cast<Location *>(location));
+	}
+
+	if(vecLocations.empty())
+		return;
+
+
+	//
+	//Validates the locations address for overlapping
+	std::sort(vecLocations.begin(), vecLocations.end(), [](Location *lhs, Location *rhs)
+	{
+		return lhs->GetBeginAddress() < rhs->GetBeginAddress();
+	});
+
+	auto *first = vecLocations[0];
+	for (size_t i = 1, sz = vecLocations.size(); i < sz; ++i)
+	{
+		auto *current = vecLocations[i];
+
+		if(first->GetEndAddress() > current->GetBeginAddress())
+			throw std::runtime_error(fmt::format("[LocationManager] Location {} overlaps with {}", first->GetName(), current->GetName()));
+
+		first = current;
 	}
 }
 
-void LocationManagerService::Initialize()
-{
-	//empty
-}
-
-void LocationManagerService::Update(const dcclite::Clock& clock)
-{
-	//tick tock
-}

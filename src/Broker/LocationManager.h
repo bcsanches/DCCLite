@@ -13,20 +13,16 @@
 
 #include <vector>
 
-#include "Service.h"
+#include "Object.h"
 
-class LocationManagerService: public Service
+#include <rapidjson/document.h>
+
+class LocationManager: public dcclite::FolderObject
 {	
 	public:
-		LocationManagerService(const ServiceClass& serviceClass, const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project);
-		~LocationManagerService() override
+		LocationManager(std::string name, const rapidjson::Value& params);
+		~LocationManager() override
 		{
 			//empty
 		}
-
-		void Update(const dcclite::Clock& clock) override;
-
-		void Initialize() override;
-
-	private:		
 };

@@ -17,6 +17,7 @@
 #include "Device.h"
 #include "FmtUtils.h"
 #include "GuidUtils.h"
+#include "LocationManager.h"
 #include "OutputDecoder.h"
 #include "Packet.h"
 #include "SensorDecoder.h"
@@ -34,6 +35,8 @@ DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::stri
 	m_pAddresses = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("addresses")));
 	m_pDevices = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("devices")));	
 	m_pSessions = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("sessions")));
+
+	m_pLocations = static_cast<LocationManager *>(this->AddChild(std::make_unique<LocationManager>("locations", params)));
 
 	auto port = params["port"].GetInt();
 	
