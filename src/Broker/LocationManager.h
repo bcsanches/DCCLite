@@ -17,6 +17,7 @@
 
 #include <rapidjson/document.h>
 
+class Decoder;
 class Location;
 
 class LocationManager: public dcclite::FolderObject
