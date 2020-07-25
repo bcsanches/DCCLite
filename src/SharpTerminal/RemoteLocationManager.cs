@@ -19,10 +19,9 @@ namespace SharpTerminal
 
     public class RemoteLocation: RemoteObject
     {
-        int mBeginAddress;
-        int mEndAddress;
-
-        RemoteObject[] mRemoteObjects;
+        readonly int mBeginAddress;
+        readonly int mEndAddress;
+        readonly RemoteDecoder[] mRemoteDecoders;
 
         public RemoteLocation(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue data) :
             base(name, className, path, internalId, parentInternalId)
@@ -36,7 +35,7 @@ namespace SharpTerminal
             var decoders = data["decoders"];
             var count = decoders.Count;
 
-            mRemoteObjects = new RemoteObject[count];
+            mRemoteDecoders = new RemoteDecoder[count];
 
             for (int i = 0 ;i < count; ++i)
             {
@@ -44,15 +43,15 @@ namespace SharpTerminal
                 if (decInfo == null)
                     continue;
 
-                var remoteDecoder = RemoteObjectManager.LoadObject(decInfo);
+                var remoteObject = RemoteObjectManager.LoadObject(decInfo);                
 
-                mRemoteObjects[i] = remoteDecoder;
+                mRemoteDecoders[i] = remoteObject as RemoteDecoder;
             }
         }
 
         public override Control CreateControl()
         {
-            return new RemoteLocationUserControl(mBeginAddress, mEndAddress);
+            return new RemoteLocationUserControl(mBeginAddress, mEndAddress, mRemoteDecoders);
         }
     }
 }

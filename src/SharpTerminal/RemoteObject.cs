@@ -24,7 +24,7 @@ namespace SharpTerminal
     public class RemoteObject
     {        
         public string Name { get; }
-        readonly string mClassName;
+        public string ClassName { get; }
         public string Path { get; }
 
         public ulong InternalId { get; }
@@ -45,7 +45,7 @@ namespace SharpTerminal
                 throw new ArgumentNullException(nameof(path));
 
             Name = name;
-            mClassName = className;
+            ClassName = className;
             Path = path;
 
             InternalId = internalId;
@@ -270,6 +270,13 @@ namespace SharpTerminal
             {
                 case "dcclite::Shortcut":
                     obj = new RemoteShortcut(name, className, path, id, parentInternalId, objectDef["target"]);
+                    break;
+
+                case "Decoder":
+                case "OutputDecoder":
+                case "SimpleOutputDecoder":
+                case "SensorDecoder":
+                    obj = new RemoteDecoder(name, className, path, id, parentInternalId);
                     break;
 
                 case "Device":

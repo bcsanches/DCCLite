@@ -25,6 +25,7 @@ add_executable(SharpTerminal
   Program.cs
   RequestManager.cs
   RemoteDevice.cs
+  RemoteDecoder.cs
   RemoteLocationManager.cs
   RemoteLocationUserControl.cs
   RemoteLocationUserControl.Designer.cs
