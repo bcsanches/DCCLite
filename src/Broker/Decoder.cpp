@@ -41,7 +41,11 @@ Decoder::Decoder(const Class &decoderClass, const DccAddress &address, std::stri
 	m_iAddress(address),	
 	m_rclManager(owner)
 {
-	//empty
+	auto it = params.FindMember("location");
+	if(it == params.MemberEnd())
+		return;
+
+	m_strLocationHint = it->value.GetString();
 }
 
 

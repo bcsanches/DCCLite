@@ -96,6 +96,11 @@ class Decoder: public dcclite::Object
 			return m_iAddress;
 		}
 
+		inline const std::string &GetLocationHint() const
+		{
+			return m_strLocationHint;
+		}
+
 		virtual void WriteConfig(dcclite::Packet &packet) const;
 
 		virtual dcclite::DecoderTypes GetType() const noexcept = 0;
@@ -144,6 +149,8 @@ class Decoder: public dcclite::Object
 		IDccDecoderServices &m_rclManager;
 
 		dcclite::DecoderStates m_kRemoteState = dcclite::DecoderStates::INACTIVE;
+
+		std::string m_strLocationHint;
 };
 
 inline std::ostream &operator<<(std::ostream& os, const DccAddress &address)

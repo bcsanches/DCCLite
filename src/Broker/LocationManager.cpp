@@ -40,24 +40,27 @@ class Location: public Object
 			m_vecDecoders.resize(m_tEndAddress.GetAddress() - m_tBeginAddress.GetAddress());
 		}
 
-		void RegisterDecoder(Decoder &dec)
+		void RegisterDecoder(const Decoder &dec)
 		{
-			assert((dec.GetAddress() >= m_tBeginAddress) && (dec.GetAddress() < m_tEndAddress));
-
-			size_t index = dec.GetAddress().GetAddress() - m_tBeginAddress.GetAddress();
+			auto index = GetDecoderIndex(dec);
 
 			assert(m_vecDecoders[index] == nullptr);
 
 			m_vecDecoders[index] = &dec;
 		}
 
-		void UnregisterDecoder(Decoder &dec)
+		void UnregisterDecoder(const Decoder &dec)
 		{
-			size_t index = dec.GetAddress().GetAddress() - m_tBeginAddress.GetAddress();
+			auto index = GetDecoderIndex(dec);
 
-			assert(m_vecDecoders[index] == &dec);
+			bool foundIt = m_vecDecoders[index] == &dec;
 
 			m_vecDecoders[index] = nullptr;
+		}
+
+		bool IsDecoderRegistered(const Decoder &dec) const
+		{
+			return m_vecDecoders[GetDecoderIndex(dec)] == &dec;
 		}
 
 		const char *GetTypeName() const noexcept override
@@ -72,6 +75,24 @@ class Location: public Object
 			stream.AddStringValue("prefix", m_strPrefix);
 			stream.AddIntValue("begin", m_tBeginAddress.GetAddress());
 			stream.AddIntValue("end", m_tEndAddress.GetAddress());
+
+			if(m_vecDecoders.empty())
+				return;
+
+			auto outputArray = stream.AddArray("decoders");
+
+			for (auto &dec : m_vecDecoders)
+			{
+				if (dec == nullptr)
+				{
+					outputArray.AddNull();
+				}
+				else
+				{
+					auto obj = outputArray.AddObject();
+					dec->Serialize(obj);
+				}				
+			}
 		}
 
 		inline DccAddress GetBeginAddress() const
@@ -84,12 +105,25 @@ class Location: public Object
 			return m_tEndAddress;
 		}
 
+		inline const std::string &GetPrefix() const
+		{
+			return m_strPrefix;
+		}
+
+	private:
+		inline size_t GetDecoderIndex(const Decoder &dec) const
+		{
+			assert((dec.GetAddress() >= m_tBeginAddress) && (dec.GetAddress() < m_tEndAddress));
+
+			return dec.GetAddress().GetAddress() - m_tBeginAddress.GetAddress();
+		}
+
 	private:	
 		std::string m_strPrefix;
 		DccAddress m_tBeginAddress;
 		DccAddress m_tEndAddress;
 
-		std::vector<Decoder *> m_vecDecoders;
+		std::vector<const Decoder *> m_vecDecoders;
 };
 
 LocationManager::LocationManager(std::string name, const rapidjson::Value& params):
@@ -141,26 +175,74 @@ LocationManager::LocationManager(std::string name, const rapidjson::Value& param
 	}
 }
 
-void LocationManager::RegisterDecoder(Decoder &decoder)
+void LocationManager::RegisterDecoder(const Decoder &decoder)
+{
+	auto address = decoder.GetAddress();
+
+	for (auto location : m_vecIndex)
+	{
+		//not mapped?
+		if(address < location->GetBeginAddress())
+			break;
+
+		if(address >= location->GetEndAddress())
+			continue;
+
+		//found it
+		auto &locationHint = decoder.GetLocationHint();
+		if ((!locationHint.empty()) && (locationHint.compare(location->GetPrefix())) && (locationHint.compare(location->GetName())))
+		{			
+			//loaction hint does not match
+			m_vecMismatches.push_back(std::make_tuple(&decoder, LocationMismatchReason::WRONG_LOCATION_HINT));
+
+			return;
+		}
+
+		location->RegisterDecoder(decoder);
+		return;
+	}
+
+	m_vecMismatches.push_back(std::make_tuple(&decoder, LocationMismatchReason::OUTSIDE_RANGES));
+}
+
+void LocationManager::UnregisterDecoder(const Decoder &decoder)
 {
 	auto address = decoder.GetAddress();
 
 	for (auto location : m_vecIndex)
 	{
 		//not mapped
-		if(address < location->GetBeginAddress())
-			return;
+		if (address < location->GetBeginAddress())
+			break;
 
-		if(address >= location->GetEndAddress())
+		if (address >= location->GetEndAddress())
 			continue;
 
-		//found it
-		location->RegisterDecoder(decoder);
+		if(location->IsDecoderRegistered(decoder))
+		{
+			location->UnregisterDecoder(decoder);
+
+			return;
+		}
+
+		//not mapped
+		break;
 	}
-}
 
-void LocationManager::UnregisterDecoder(Decoder &decoder)
-{
+	//It should be on the mismatches list
+	auto it = std::find_if(m_vecMismatches.begin(), m_vecMismatches.end(), [&decoder](const auto &tuple) {
+		return std::get<0>(tuple) == &decoder;
+	});
 
+	if(it == m_vecMismatches.end())
+	{
+		//Ouch! Something bad happened
+		throw std::runtime_error(fmt::format("[LocationManager::UnregisterDecoder] Decoder {} - {} not found anywhere!!", decoder.GetName(), decoder.GetAddress().GetAddress()));
+	}
+	else
+	{
+		//remove it
+		m_vecMismatches.erase(it);
+	}	
 }
 

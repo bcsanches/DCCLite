@@ -97,6 +97,8 @@ void DccLiteService::Device_DestroyDecoder(Decoder &dec)
 	auto addressName = dec.GetAddress().ToString();
 	this->NotifyItemDestroyed(*(m_pAddresses->TryGetChild(addressName)));
 
+	m_pLocations->UnregisterDecoder(dec);
+
 	m_pAddresses->RemoveChild(addressName);
 	m_pDecoders->RemoveChild(dec.GetName());	
 }
@@ -125,6 +127,8 @@ Decoder &DccLiteService::Device_CreateDecoder(
 
 	this->NotifyItemCreated(*pDecoder);	
 	this->NotifyItemCreated(*addressShortcut);
+
+	m_pLocations->RegisterDecoder(*pDecoder);
 
 	return *pDecoder;
 }

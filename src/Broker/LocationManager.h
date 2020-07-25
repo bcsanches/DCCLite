@@ -20,6 +20,12 @@
 class Decoder;
 class Location;
 
+enum class LocationMismatchReason
+{
+	WRONG_LOCATION_HINT,
+	OUTSIDE_RANGES
+};
+
 class LocationManager: public dcclite::FolderObject
 {	
 	public:
@@ -29,9 +35,11 @@ class LocationManager: public dcclite::FolderObject
 			//empty
 		}
 
-		void RegisterDecoder(Decoder &decoder);
-		void UnregisterDecoder(Decoder &decoder);
+		void RegisterDecoder(const Decoder &decoder);
+		void UnregisterDecoder(const Decoder &decoder);
 
 	private:
 		std::vector<Location *> m_vecIndex;
+
+		std::vector<std::tuple<const Decoder *, LocationMismatchReason>> m_vecMismatches;
 };
