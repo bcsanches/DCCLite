@@ -193,7 +193,11 @@ void LocationManager::RegisterDecoder(const Decoder &decoder)
 		if ((!locationHint.empty()) && (locationHint.compare(location->GetPrefix())) && (locationHint.compare(location->GetName())))
 		{			
 			//loaction hint does not match
-			m_vecMismatches.push_back(std::make_tuple(&decoder, LocationMismatchReason::WRONG_LOCATION_HINT));
+			m_vecMismatches.emplace_back(				
+				&decoder, 
+				LocationMismatchReason::WRONG_LOCATION_HINT,
+				location				
+			);
 
 			return;
 		}
@@ -202,7 +206,11 @@ void LocationManager::RegisterDecoder(const Decoder &decoder)
 		return;
 	}
 
-	m_vecMismatches.push_back(std::make_tuple(&decoder, LocationMismatchReason::OUTSIDE_RANGES));
+	m_vecMismatches.emplace_back(
+		&decoder, 
+		LocationMismatchReason::OUTSIDE_RANGES,
+		nullptr
+	);
 }
 
 void LocationManager::UnregisterDecoder(const Decoder &decoder)
@@ -245,4 +253,45 @@ void LocationManager::UnregisterDecoder(const Decoder &decoder)
 		m_vecMismatches.erase(it);
 	}	
 }
+
+static const char *LocationMismatchReason2String(LocationMismatchReason reason)
+{
+	switch (reason)
+	{
+		case LocationMismatchReason::OUTSIDE_RANGES:
+			return "outside_range";
+
+		case LocationMismatchReason::WRONG_LOCATION_HINT:
+			return "wrong_hint";
+
+		default:
+			assert(0);
+
+			//die! die!
+			return nullptr;
+	}
+}
+
+void LocationManager::Serialize(dcclite::JsonOutputStream_t &stream) const
+{
+	FolderObject::Serialize(stream);
+
+	if(m_vecMismatches.empty())
+		return;
+
+	auto mismatchesArray = stream.AddArray("mismatches");
+	for (auto tuple : m_vecMismatches)
+	{
+		auto obj = mismatchesArray.AddObject();
+		obj.AddStringValue("reason", LocationMismatchReason2String(std::get<1>(tuple)));
+		
+		auto decoderObj = obj.AddObject("decoder");
+		std::get<0>(tuple)->Serialize(decoderObj);
+
+		auto location = std::get<2>(tuple);
+		if(location != nullptr)
+			obj.AddStringValue("location", location->GetName());
+	}
+}
+
 

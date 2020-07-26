@@ -333,7 +333,7 @@ namespace dcclite
 				return "dcclite::FolderObject";
 			}
 
-			virtual void Serialize(JsonOutputStream_t &stream) const
+			void Serialize(JsonOutputStream_t &stream) const override
 			{
 				IObject::Serialize(stream);
 

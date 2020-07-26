@@ -38,8 +38,15 @@ class LocationManager: public dcclite::FolderObject
 		void RegisterDecoder(const Decoder &decoder);
 		void UnregisterDecoder(const Decoder &decoder);
 
+		void Serialize(dcclite::JsonOutputStream_t &stream) const override;
+
+		virtual const char *GetTypeName() const noexcept
+		{
+			return "LocationManager";
+		}
+
 	private:
 		std::vector<Location *> m_vecIndex;
 
-		std::vector<std::tuple<const Decoder *, LocationMismatchReason>> m_vecMismatches;
+		std::vector<std::tuple<const Decoder *, LocationMismatchReason, const Location *>> m_vecMismatches;
 };

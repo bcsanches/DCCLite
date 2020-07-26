@@ -81,5 +81,8 @@ void Decoder::Serialize(dcclite::JsonOutputStream_t &stream) const
 	stream.AddIntValue("address", m_iAddress.GetAddress());
 	stream.AddBool("remoteActive", m_kRemoteState == dcclite::DecoderStates::ACTIVE);
 	stream.AddStringValue("deviceName", m_rclDevice.GetName());
+
+	if(!m_strLocationHint.empty())
+		stream.AddStringValue("locationHint", m_strLocationHint);
 }
 

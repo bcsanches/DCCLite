@@ -7,14 +7,55 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace SharpTerminal
-{   
-    public class RemoteLocationManager: RemoteObject
-    {           
-        public RemoteLocationManager(string name, string className, string path, ulong internalId, ulong parentInternalId):
+{
+    public struct LocationMismatch
+    {
+        public RemoteDecoder Decoder { get; }
+        public String Reason { get; }
+        public String MappedLocation { get; }
+
+        public LocationMismatch(RemoteDecoder decoder, String reason, String mappedLocation)
+        {
+            if (string.IsNullOrWhiteSpace(reason))
+                throw new ArgumentNullException(nameof(reason));
+
+            Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+            Reason = reason;
+            MappedLocation = mappedLocation;
+        }
+    }
+
+    public class RemoteLocationManager: RemoteFolder
+    {
+        readonly LocationMismatch[] mMismatches;
+
+        public RemoteLocationManager(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef):
             base(name, className, path, internalId, parentInternalId)
         {
-            //empty
-        }           
+            if (!objectDef.ContainsKey("mismatches"))
+                return;
+
+            var mismatches = objectDef["mismatches"];
+
+            mMismatches = new LocationMismatch[mismatches.Count];
+
+            int index = 0;
+            foreach (JsonValue item in mismatches)
+            {
+                var remoteDecoder = (RemoteDecoder)RemoteObjectManager.LoadObject(item["decoder"]);
+                var reason = item["reason"];
+
+                String mappedLocation = item.ContainsKey("location") ? item["location"] : null;                
+
+                var mismatch = new LocationMismatch(remoteDecoder, reason, mappedLocation);
+                mMismatches[index++] = mismatch;
+            }
+        }
+
+        public override Control CreateControl()
+        {
+            return new RemoteLocationManagerUserControl(mMismatches);
+        }
     }
 
     public class RemoteLocation: RemoteObject
