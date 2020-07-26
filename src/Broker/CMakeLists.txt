@@ -9,6 +9,7 @@ set(Broker_SRCS
   LocationManager.cpp
   main.cpp  
   OutputDecoder.cpp
+  PinManager.cpp
   Project.cpp
   SensorDecoder.cpp  
   Service.cpp
@@ -28,6 +29,7 @@ set(Broker_HDRS
   FileWatcher.h
   LocationManager.h
   OutputDecoder.h
+  PinManager.h
   Project.h
   SensorDecoder.h
   Service.h
