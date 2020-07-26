@@ -51,7 +51,7 @@ namespace SharpTerminal
 
         public override Control CreateControl()
         {
-            return new RemoteLocationUserControl(mBeginAddress, mEndAddress, mRemoteDecoders);
+            return new RemoteLocationUserControl(this.Name, mBeginAddress, mEndAddress, mRemoteDecoders);
         }
     }
 }

@@ -22,6 +22,7 @@
 #include <fmt/format.h>
 
 class IDccDecoderServices;
+class Device;
 class Node;
 
 namespace dcclite
@@ -80,7 +81,7 @@ class DccAddress
 class Decoder: public dcclite::Object
 {
 	public:		
-		typedef dcclite::ClassInfo<Decoder, const DccAddress &, const std::string &, IDccDecoderServices &, const rapidjson::Value &> Class;
+		typedef dcclite::ClassInfo<Decoder, const DccAddress &, const std::string &, IDccDecoderServices &, Device &, const rapidjson::Value &> Class;
 
 	public:
 		Decoder(
@@ -88,6 +89,7 @@ class Decoder: public dcclite::Object
 			const DccAddress &address, 
 			std::string name,
 			IDccDecoderServices &owner,
+			Device &dev,
 			const rapidjson::Value &params
 		);
 
@@ -135,18 +137,14 @@ class Decoder: public dcclite::Object
 			return "Decoder";
 		}
 
-		void Serialize(dcclite::JsonOutputStream_t &stream) const override
-		{
-			Object::Serialize(stream);
-
-			stream.AddIntValue("address", m_iAddress.GetAddress());
-			stream.AddBool("remoteActive", m_kRemoteState == dcclite::DecoderStates::ACTIVE);			
-		}	
+		void Serialize(dcclite::JsonOutputStream_t &stream) const override;
 
 	private:
 		DccAddress m_iAddress;		
 
 		IDccDecoderServices &m_rclManager;
+
+		Device &m_rclDevice;
 
 		dcclite::DecoderStates m_kRemoteState = dcclite::DecoderStates::INACTIVE;
 

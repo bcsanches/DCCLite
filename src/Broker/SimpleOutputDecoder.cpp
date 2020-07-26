@@ -13,8 +13,8 @@
 #include "Packet.h"
 
 static Decoder::Class simpleOutputDecoder("Output",
-	[](const Decoder::Class &decoderClass, const DccAddress &address, const std::string &name, IDccDecoderServices &owner, const rapidjson::Value &params)
-		-> std::unique_ptr<Decoder> { return std::make_unique<SimpleOutputDecoder>(decoderClass, address, name, owner, params); }
+	[](const Decoder::Class &decoderClass, const DccAddress &address, const std::string &name, IDccDecoderServices &owner, Device &dev, const rapidjson::Value &params)
+		-> std::unique_ptr<Decoder> { return std::make_unique<SimpleOutputDecoder>(decoderClass, address, name, owner, dev, params); }
 );
 
 
@@ -23,9 +23,10 @@ SimpleOutputDecoder::SimpleOutputDecoder(
 	const DccAddress &address,
 	const std::string &name,
 	IDccDecoderServices &owner,
+	Device &dev,
 	const rapidjson::Value &params
 ) :
-	OutputDecoder(decoderClass, address, name, owner, params),
+	OutputDecoder(decoderClass, address, name, owner, dev, params),
 	m_clPin(params["pin"].GetInt())
 {	
 	auto inverted = params.FindMember("inverted");	

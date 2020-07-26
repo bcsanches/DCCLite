@@ -22,9 +22,10 @@ class TurnoutDecoder : public OutputDecoder
 			const DccAddress& address,
 			const std::string& name,
 			IDccDecoderServices& owner,
+			Device &dev,
 			const rapidjson::Value& params
 		):
-			OutputDecoder(decoderClass, address, name, owner, params)
+			OutputDecoder(decoderClass, address, name, owner, dev, params)
 		{
 			//empty
 		}
@@ -33,42 +34,54 @@ class TurnoutDecoder : public OutputDecoder
 		{
 			return true;
 		}
+
+		const char *GetTypeName() const noexcept override
+		{
+			return "TurnoutDecoder";
+		}
 };
 
 class ServoTurnoutDecoder : public TurnoutDecoder
 {
-public:
-	ServoTurnoutDecoder(const Class& decoderClass,
-		const DccAddress& address,
-		const std::string& name,
-		IDccDecoderServices& owner,
-		const rapidjson::Value& params
-	);
+	public:
+		ServoTurnoutDecoder(const Class& decoderClass,
+			const DccAddress& address,
+			const std::string& name,
+			IDccDecoderServices& owner,
+			Device &dev,
+			const rapidjson::Value& params
+		);
 
-	void WriteConfig(dcclite::Packet& packet) const override;
+		void WriteConfig(dcclite::Packet& packet) const override;
 
-	dcclite::DecoderTypes GetType() const noexcept override
-	{
-		return dcclite::DecoderTypes::DEC_SERVO_TURNOUT;
-	}
+		dcclite::DecoderTypes GetType() const noexcept override
+		{
+			return dcclite::DecoderTypes::DEC_SERVO_TURNOUT;
+		}
 
-	void Serialize(dcclite::JsonOutputStream_t& stream) const override
-	{
-		OutputDecoder::Serialize(stream);
+		void Serialize(dcclite::JsonOutputStream_t& stream) const override
+		{
+			OutputDecoder::Serialize(stream);
 
-		stream.AddIntValue("pin", m_clPin.Raw());
+			stream.AddIntValue("pin", m_clPin.Raw());
 
-		if (m_clPowerPin)
-			stream.AddIntValue("powerPin", m_clPowerPin.Raw());
+			if (m_clPowerPin)
+				stream.AddIntValue("powerPin", m_clPowerPin.Raw());
 
-		if (m_clFrogPin)
-			stream.AddIntValue("frogPin", m_clFrogPin.Raw());
+			if (m_clFrogPin)
+				stream.AddIntValue("frogPin", m_clFrogPin.Raw());
 
-		stream.AddBool("invertedOperation", m_fInvertedOperation);
-		stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
-		stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
-		stream.AddBool("invertedFrog", m_fInvertedFrog);
-	}
+			stream.AddBool("invertedOperation", m_fInvertedOperation);
+			stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
+			stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
+			stream.AddBool("invertedFrog", m_fInvertedFrog);
+		}
+
+		const char *GetTypeName() const noexcept override
+		{
+			return "ServoTurnoutDecoder";
+		}
+
 
 	private:
 		dcclite::BasicPin	m_clPin;

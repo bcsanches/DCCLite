@@ -13,17 +13,18 @@
 #include <Packet.h>
 
 static Decoder::Class servoTurnoutDecoder("ServoTurnout",
-	[](const Decoder::Class& decoderClass, const DccAddress& address, const std::string& name, IDccDecoderServices& owner, const rapidjson::Value& params)
-	-> std::unique_ptr<Decoder> { return std::make_unique<ServoTurnoutDecoder>(decoderClass, address, name, owner, params); }
+	[](const Decoder::Class& decoderClass, const DccAddress& address, const std::string& name, IDccDecoderServices& owner, Device &dev, const rapidjson::Value& params)
+	-> std::unique_ptr<Decoder> { return std::make_unique<ServoTurnoutDecoder>(decoderClass, address, name, owner, dev, params); }
 );
 
 ServoTurnoutDecoder::ServoTurnoutDecoder(const Class& decoderClass,
 	const DccAddress& address,
 	const std::string& name,
 	IDccDecoderServices& owner,
+	Device &dev,
 	const rapidjson::Value& params
 ) :
-	TurnoutDecoder(decoderClass, address, name, owner, params),
+	TurnoutDecoder(decoderClass, address, name, owner, dev, params),
 	m_clPin(params["pin"].GetInt())
 {
 	auto powerPin = params.FindMember("powerPin");

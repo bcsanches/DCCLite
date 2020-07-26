@@ -21,9 +21,10 @@ class OutputDecoder : public Decoder
 			const DccAddress& address,
 			const std::string& name,
 			IDccDecoderServices& owner,
+			Device &dev,
 			const rapidjson::Value& params
 		) :
-			Decoder(decoderClass, address, name, owner, params)
+			Decoder(decoderClass, address, name, owner, dev, params)
 		{
 			//empty
 		}

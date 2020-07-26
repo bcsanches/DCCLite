@@ -10,10 +10,12 @@ namespace SharpTerminal
 {   
     public class RemoteDecoder: RemoteObject
     {           
-        public RemoteDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId):
+        public RemoteDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef):
             base(name, className, path, internalId, parentInternalId)
         {
-            //empty
+            DeviceName = objectDef["deviceName"];
         }           
+
+        public string DeviceName { get; }
     }
 }

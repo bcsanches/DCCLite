@@ -104,13 +104,14 @@ void DccLiteService::Device_DestroyDecoder(Decoder &dec)
 }
 
 Decoder &DccLiteService::Device_CreateDecoder(
+	Device &dev,
 	const std::string &className,
 	DccAddress address,
 	const std::string &name,
 	const rapidjson::Value &params
 )
 {
-	auto decoder = Decoder::Class::TryProduce(className.c_str(), address, name, *this, params);
+	auto decoder = Decoder::Class::TryProduce(className.c_str(), address, name, *this, dev, params);
 	if (!decoder)
 	{
 		std::stringstream stream;

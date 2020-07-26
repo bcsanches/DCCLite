@@ -610,7 +610,7 @@ bool Device::Load()
 		auto className = element["class"].GetString();
 		DccAddress address{ element["address"] };
 
-		auto &decoder = m_clDccService.Device_CreateDecoder(className, address, decoderName, element);
+		auto &decoder = m_clDccService.Device_CreateDecoder(*this, className, address, decoderName, element);
 
 		m_vecDecoders.push_back(&decoder);
 

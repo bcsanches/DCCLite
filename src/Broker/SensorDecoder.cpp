@@ -13,17 +13,18 @@
 #include <Packet.h>
 
 static Decoder::Class sensorDecoder("Sensor",
-	[](const Decoder::Class &decoderClass, const DccAddress &address, const std::string &name, IDccDecoderServices &owner, const rapidjson::Value &params)
-	-> std::unique_ptr<Decoder> { return std::make_unique<SensorDecoder>(decoderClass, address, name, owner, params); }
+	[](const Decoder::Class &decoderClass, const DccAddress &address, const std::string &name, IDccDecoderServices &owner, Device &dev, const rapidjson::Value &params)
+	-> std::unique_ptr<Decoder> { return std::make_unique<SensorDecoder>(decoderClass, address, name, owner, dev, params); }
 );
 
 SensorDecoder::SensorDecoder(const Class &decoderClass,
 	const DccAddress &address,
 	const std::string &name,
 	IDccDecoderServices &owner,
+	Device &dev,
 	const rapidjson::Value &params
 ):
-	Decoder(decoderClass, address, name, owner, params),
+	Decoder(decoderClass, address, name, owner, dev, params),
 	m_clPin(params["pin"].GetInt())
 {
 	auto pullup = params.FindMember("pullup");

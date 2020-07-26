@@ -17,7 +17,7 @@ namespace SharpTerminal
             InitializeComponent();
         }
 
-        public RemoteLocationUserControl(int beginAddress, int endAddress, RemoteDecoder[] decoders) :
+        public RemoteLocationUserControl(String name, int beginAddress, int endAddress, RemoteDecoder[] decoders) :
             this()
         {
             int num = endAddress - beginAddress;
@@ -37,7 +37,10 @@ namespace SharpTerminal
 
                 row.Cells[1].Value = decoders[pos].ClassName;
                 row.Cells[2].Value = decoders[pos].Name;
+                row.Cells[3].Value = decoders[pos].DeviceName;
             }
+
+            m_lbTitle.Text += " " + name;
         }
     }
 }

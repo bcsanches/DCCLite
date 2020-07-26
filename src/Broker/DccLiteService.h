@@ -55,6 +55,7 @@ class IDccDeviceServices
 {
 	public:
 		virtual Decoder& Device_CreateDecoder(
+			Device &dev,
 			const std::string& className,
 			DccAddress address,
 			const std::string& name,
@@ -142,6 +143,7 @@ class DccLiteService : public Service, private IDccDeviceServices, private IDccD
 		void Device_UnregisterSession(Device& dev, const dcclite::Guid& sessionToken) override;
 
 		Decoder& Device_CreateDecoder(
+			Device &dev,
 			const std::string& className,
 			DccAddress address,
 			const std::string& name,

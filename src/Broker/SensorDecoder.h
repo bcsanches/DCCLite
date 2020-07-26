@@ -21,6 +21,7 @@ class SensorDecoder : public Decoder
 			const DccAddress &address,
 			const std::string &name,
 			IDccDecoderServices &owner,
+			Device &dev,
 			const rapidjson::Value &params
 		);
 

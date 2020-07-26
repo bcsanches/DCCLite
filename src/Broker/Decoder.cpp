@@ -13,6 +13,7 @@
 #include "Decoder.h"
 
 #include "DccLiteService.h"
+#include "Device.h"
 #include "Packet.h"
 #include "Parser.h"
 
@@ -36,10 +37,11 @@ DccAddress::DccAddress(const rapidjson::Value &value)
 	}
 }
 
-Decoder::Decoder(const Class &decoderClass, const DccAddress &address, std::string name, IDccDecoderServices &owner, const rapidjson::Value &params):
+Decoder::Decoder(const Class &decoderClass, const DccAddress &address, std::string name, IDccDecoderServices &owner, Device &dev, const rapidjson::Value &params):
 	Object(std::move(name)),
 	m_iAddress(address),	
-	m_rclManager(owner)
+	m_rclManager(owner),
+	m_rclDevice(dev)
 {
 	auto it = params.FindMember("location");
 	if(it == params.MemberEnd())
@@ -71,3 +73,13 @@ void Decoder::SyncRemoteState(dcclite::DecoderStates state)
 		m_rclManager.Decoder_OnStateChanged(*this);
 	}	
 }
+
+void Decoder::Serialize(dcclite::JsonOutputStream_t &stream) const
+{
+	Object::Serialize(stream);
+
+	stream.AddIntValue("address", m_iAddress.GetAddress());
+	stream.AddBool("remoteActive", m_kRemoteState == dcclite::DecoderStates::ACTIVE);
+	stream.AddStringValue("deviceName", m_rclDevice.GetName());
+}
+
