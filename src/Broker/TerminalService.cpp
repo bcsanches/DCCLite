@@ -352,13 +352,7 @@ class TerminalClient: private IDccLiteServiceListener
 		bool Update();
 
 	private:
-		void OnDeviceConnected(const Device &device) override;
-		void OnDeviceDisconnected(const Device &device) override;
-
-		void OnDecoderStateChange(Decoder &decoder) override;
-
-		void OnItemCreated(const dcclite::IObject &item) override;
-		void OnItemDestroyed(const dcclite::IObject &item) override;
+		void OnDccLiteEvent(const DccLiteEvent &event) override;
 
 		void RegisterListeners();
 
@@ -523,49 +517,50 @@ void TerminalClient::SendItemPropertyValueChangedNotification(const IObject &obj
 	);
 }
 
-void TerminalClient::OnItemCreated(const dcclite::IObject &item)
+void TerminalClient::OnDccLiteEvent(const DccLiteEvent &event)
 {
-	m_clMessenger.Send(
-		m_clAddress,
-		MakeRpcNotificationMessage(
-			-1,
-			"On-ItemCreated",
-			[&item](JsonOutputStream_t &params)
-			{
-				item.Serialize(params);
-			}
-		)
-	);
-}
+	switch (event.m_tType)
+	{
+		case DccLiteEvent::DECODER_STATE_CHANGE:
+			SendItemPropertyValueChangedNotification(*event.m_stDecoder.m_pclDecoder);
+			break;
 
-void TerminalClient::OnItemDestroyed(const dcclite::IObject &item)
-{
-	m_clMessenger.Send(
-		m_clAddress,
-		MakeRpcNotificationMessage(
-			-1,
-			"On-ItemDestroyed",
-			[&item](JsonOutputStream_t &params)
-			{
-				item.Serialize(params);
-			}
-		)
-	);
-}
+		case DccLiteEvent::DEVICE_CONNECTED:
+			SendItemPropertyValueChangedNotification(*event.m_stDevice.m_pclDevice);
+			break;
 
-void TerminalClient::OnDeviceConnected(const Device &device)
-{	
-	SendItemPropertyValueChangedNotification(device);
-}
+		case DccLiteEvent::DEVICE_DISCONNECTED:
+			SendItemPropertyValueChangedNotification(*event.m_stDevice.m_pclDevice);
+			break;
 
-void TerminalClient::OnDeviceDisconnected(const Device &device)
-{
-	SendItemPropertyValueChangedNotification(device);
-}
+		case DccLiteEvent::ITEM_CREATED:
+			m_clMessenger.Send(
+				m_clAddress,
+				MakeRpcNotificationMessage(
+					-1,
+					"On-ItemCreated",
+					[&event](JsonOutputStream_t &params)
+					{
+						event.m_stItem.m_pclItem->Serialize(params);
+					}
+				)
+			);
+			break;
 
-void TerminalClient::OnDecoderStateChange(Decoder &decoder)
-{
-	SendItemPropertyValueChangedNotification(decoder);	
+		case DccLiteEvent::ITEM_DESTROYED:
+			m_clMessenger.Send(
+				m_clAddress,
+				MakeRpcNotificationMessage(
+					-1,
+					"On-ItemDestroyed",
+					[&event](JsonOutputStream_t &params)
+					{
+						event.m_stItem.m_pclItem->Serialize(params);
+					}
+				)
+			);
+			break;
+	}
 }
 
 bool TerminalClient::Update()

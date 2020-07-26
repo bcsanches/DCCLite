@@ -41,13 +41,7 @@ class DccppClient: private IDccLiteServiceListener
 		bool Update();
 
 	private:
-		void OnDeviceConnected(const Device& device) override;
-		void OnDeviceDisconnected(const Device& device) override;
-
-		void OnDecoderStateChange(Decoder& decoder) override;
-
-		void OnItemCreated(const dcclite::IObject &item) override;
-		void OnItemDestroyed(const dcclite::IObject &item) override;
+		void OnDccLiteEvent(const DccLiteEvent &event) override;
 
 	private:
 		NetMessenger m_clMessenger;
@@ -75,26 +69,6 @@ DccppClient::DccppClient(DccppClient&& other) noexcept :
 DccppClient::~DccppClient()
 {
 	m_rclSystem.RemoveListener(*this);
-}
-
-void DccppClient::OnDeviceConnected(const Device& device)
-{
-	//ignore
-}
-
-void DccppClient::OnDeviceDisconnected(const Device& device)
-{
-	//ignore
-}
-
-void DccppClient::OnItemCreated(const dcclite::IObject &item)
-{
-	//ignore
-}
-
-void DccppClient::OnItemDestroyed(const dcclite::IObject &item)
-{
-	//ignore
 }
 
 static inline std::string CreateTurnoutDecoderResponse(const TurnoutDecoder& decoder)
@@ -149,9 +123,13 @@ static inline std::string CreateSensorStateRespnse(const std::vector<SensorDecod
 	return response.str();
 }
 
-void DccppClient::OnDecoderStateChange(Decoder& decoder)
+void DccppClient::OnDccLiteEvent(const DccLiteEvent &event)
 {
-	m_clMessenger.Send(m_clAddress, CreateDecoderResponse(decoder));	
+	switch (event.m_tType)
+	{
+		case DccLiteEvent::DECODER_STATE_CHANGE:
+			m_clMessenger.Send(m_clAddress, CreateDecoderResponse(*event.m_stDecoder.m_pclDecoder));
+	}
 }
 
 bool DccppClient::Update()

@@ -26,20 +26,53 @@ class Device;
 class LocationManager;
 class OutputDecoder;
 class SensorDecoder;
-class TurnoutDecoder;
+class TurnoutDecoder;;
+
+class DccLiteEvent
+{
+	public:
+		struct DeviceEvent
+		{
+			const Device *m_pclDevice;
+		};
+
+		struct ItemEvent
+		{
+			const dcclite::IObject *m_pclItem;
+		};
+
+		struct DecoderEvent
+		{
+			const Decoder *m_pclDecoder;
+		};		
+
+		enum EventType
+		{
+			DEVICE_CONNECTED,
+			DEVICE_DISCONNECTED,
+
+			ITEM_CREATED,
+			ITEM_DESTROYED,
+
+			DECODER_STATE_CHANGE
+		};
+
+		EventType m_tType;
+
+		union
+		{
+			DeviceEvent		m_stDevice;
+			ItemEvent		m_stItem;
+			DecoderEvent	m_stDecoder;
+		};
+};
 
 class IDccLiteServiceListener
 {
-	public:
-		virtual void OnDeviceConnected(const Device& device) = 0;
-		virtual void OnDeviceDisconnected(const Device& device) = 0;
+	public:	
+		virtual void OnDccLiteEvent(const DccLiteEvent &event) = 0;
 
-		virtual void OnItemCreated(const dcclite::IObject &item) = 0;
-		virtual void OnItemDestroyed(const dcclite::IObject &item) = 0;
-
-		virtual void OnDecoderStateChange(Decoder& decoder) = 0;
-
-		virtual ~IDccLiteServiceListener() 
+		virtual ~IDccLiteServiceListener()
 		{
 			//empty
 		}
@@ -127,7 +160,9 @@ class DccLiteService : public Service, private IDccDeviceServices, private IDccD
 
 		Device *TryFindDeviceSession(const dcclite::Guid &guid);
 
-		Device *TryFindPacketDestination(dcclite::Packet &packet);		
+		Device *TryFindPacketDestination(dcclite::Packet &packet);	
+
+		void DispatchEvent(const DccLiteEvent &event) const;
 
 		void NotifyItemCreated(const dcclite::IObject &item) const;
 		void NotifyItemDestroyed(const dcclite::IObject &item) const;

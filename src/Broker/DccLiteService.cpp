@@ -65,28 +65,30 @@ DccLiteService::~DccLiteService()
 	//empty
 }
 
+void DccLiteService::DispatchEvent(const DccLiteEvent &event) const
+{
+	for (auto listener : m_vecListeners)
+	{
+		listener->OnDccLiteEvent(event);
+	}	
+}
+
 void DccLiteService::NotifyItemCreated(const dcclite::IObject &item) const
 {
-	std::for_each(
-		m_vecListeners.begin(),
-		m_vecListeners.end(),
-		[&item](IDccLiteServiceListener *listener)
-		{
-			listener->OnItemCreated(item);
-		}
-	);
+	DccLiteEvent event;
+	event.m_tType = DccLiteEvent::ITEM_CREATED;
+	event.m_stItem.m_pclItem = &item;
+
+	this->DispatchEvent(event);
 }
 
 void DccLiteService::NotifyItemDestroyed(const dcclite::IObject &item) const
 {
-	std::for_each(
-		m_vecListeners.begin(),
-		m_vecListeners.end(),
-		[&item](IDccLiteServiceListener *listener)
-		{
-			listener->OnItemDestroyed(item);
-		}
-	);
+	DccLiteEvent event;
+	event.m_tType = DccLiteEvent::ITEM_DESTROYED;
+	event.m_stItem.m_pclItem = &item;
+
+	this->DispatchEvent(event);
 }
 
 void DccLiteService::Device_DestroyDecoder(Decoder &dec)
@@ -250,20 +252,24 @@ void DccLiteService::Device_RegisterSession(Device &dev, const dcclite::Guid &se
 
 	this->NotifyItemCreated(*session);
 
-	for (auto listener : m_vecListeners)
-	{
-		listener->OnDeviceConnected(dev);
-	}
+	DccLiteEvent event;
+	event.m_tType = DccLiteEvent::DEVICE_CONNECTED;
+	event.m_stDevice.m_pclDevice = &dev;
+
+	this->DispatchEvent(event);	
 }
 
 void DccLiteService::Device_UnregisterSession(Device& dev, const dcclite::Guid &sessionToken)
 {	
 	auto session = m_pSessions->RemoveChild(dcclite::GuidToString(sessionToken));	
 
-	for (auto listener : m_vecListeners)
 	{
-		listener->OnDeviceDisconnected(dev);
-	}
+		DccLiteEvent event;
+		event.m_tType = DccLiteEvent::DEVICE_DISCONNECTED;
+		event.m_stDevice.m_pclDevice = &dev;
+
+		this->DispatchEvent(event);
+	}	
 
 	this->NotifyItemDestroyed(*session);
 }
@@ -353,10 +359,11 @@ void DccLiteService::RemoveListener(IDccLiteServiceListener &listener)
 
 void DccLiteService::Decoder_OnStateChanged(Decoder& decoder)
 {
-	for (auto listener : m_vecListeners)
-	{
-		listener->OnDecoderStateChange(decoder);
-	}
+	DccLiteEvent event;
+	event.m_tType = DccLiteEvent::DECODER_STATE_CHANGE;
+	event.m_stDecoder.m_pclDecoder = &decoder;
+
+	this->DispatchEvent(event);	
 }
 
 void DccLiteService::Update(const dcclite::Clock &clock)
