@@ -10,10 +10,11 @@
 
 #pragma once
 
-#include "BasicPin.h"
-
 #include <string_view>
 #include <vector>
+
+#include "BasicPin.h"
+#include "Object.h"
 
 class Decoder;
 

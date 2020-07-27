@@ -21,8 +21,8 @@
 
 #include <fmt/format.h>
 
-class IDccDecoderServices;
-class IDeviceDecoderServices;
+class IDccLite_DecoderServices;
+class IDevice_DecoderServices;
 class Node;
 
 namespace dcclite
@@ -81,15 +81,15 @@ class DccAddress
 class Decoder: public dcclite::Object
 {
 	public:		
-		typedef dcclite::ClassInfo<Decoder, const DccAddress &, const std::string &, IDccDecoderServices &, IDeviceDecoderServices &, const rapidjson::Value &> Class;
+		typedef dcclite::ClassInfo<Decoder, const DccAddress &, const std::string &, IDccLite_DecoderServices &, IDevice_DecoderServices &, const rapidjson::Value &> Class;
 
 	public:
 		Decoder(
 			const Class &decoderClass, 
 			const DccAddress &address, 
 			std::string name,
-			IDccDecoderServices &owner,
-			IDeviceDecoderServices &dev,
+			IDccLite_DecoderServices &owner,
+			IDevice_DecoderServices &dev,
 			const rapidjson::Value &params
 		);
 
@@ -142,14 +142,14 @@ class Decoder: public dcclite::Object
 	private:
 		DccAddress m_iAddress;		
 
-		IDccDecoderServices &m_rclManager;		
+		IDccLite_DecoderServices &m_rclManager;		
 
 		dcclite::DecoderStates m_kRemoteState = dcclite::DecoderStates::INACTIVE;		
 
 		std::string m_strLocationHint;
 
 	protected:
-		IDeviceDecoderServices &m_rclDevice;		
+		IDevice_DecoderServices &m_rclDevice;
 };
 
 inline std::ostream &operator<<(std::ostream& os, const DccAddress &address)

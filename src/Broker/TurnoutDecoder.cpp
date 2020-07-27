@@ -15,15 +15,15 @@
 #include <Packet.h>
 
 static Decoder::Class servoTurnoutDecoder("ServoTurnout",
-	[](const Decoder::Class& decoderClass, const DccAddress& address, const std::string& name, IDccDecoderServices& owner, IDeviceDecoderServices &dev, const rapidjson::Value& params)
+	[](const Decoder::Class& decoderClass, const DccAddress& address, const std::string& name, IDccLite_DecoderServices & owner, IDevice_DecoderServices &dev, const rapidjson::Value& params)
 	-> std::unique_ptr<Decoder> { return std::make_unique<ServoTurnoutDecoder>(decoderClass, address, name, owner, dev, params); }
 );
 
 ServoTurnoutDecoder::ServoTurnoutDecoder(const Class& decoderClass,
 	const DccAddress& address,
 	const std::string& name,
-	IDccDecoderServices& owner,
-	IDeviceDecoderServices &dev,
+	IDccLite_DecoderServices &owner,
+	IDevice_DecoderServices &dev,
 	const rapidjson::Value& params
 ) :
 	TurnoutDecoder(decoderClass, address, name, owner, dev, params),

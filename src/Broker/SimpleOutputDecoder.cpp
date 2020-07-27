@@ -14,7 +14,7 @@
 #include "Packet.h"
 
 static Decoder::Class simpleOutputDecoder("Output",
-	[](const Decoder::Class &decoderClass, const DccAddress &address, const std::string &name, IDccDecoderServices &owner, IDeviceDecoderServices &dev, const rapidjson::Value &params)
+	[](const Decoder::Class &decoderClass, const DccAddress &address, const std::string &name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params)
 		-> std::unique_ptr<Decoder> { return std::make_unique<SimpleOutputDecoder>(decoderClass, address, name, owner, dev, params); }
 );
 
@@ -23,8 +23,8 @@ SimpleOutputDecoder::SimpleOutputDecoder(
 	const Class &decoderClass,
 	const DccAddress &address,
 	const std::string &name,
-	IDccDecoderServices &owner,
-	IDeviceDecoderServices &dev,
+	IDccLite_DecoderServices &owner,
+	IDevice_DecoderServices &dev,
 	const rapidjson::Value &params
 ) :
 	OutputDecoder(decoderClass, address, name, owner, dev, params),

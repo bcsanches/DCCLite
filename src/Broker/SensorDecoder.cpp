@@ -15,15 +15,15 @@
 #include "IDevice.h"
 
 static Decoder::Class sensorDecoder("Sensor",
-	[](const Decoder::Class &decoderClass, const DccAddress &address, const std::string &name, IDccDecoderServices &owner, IDeviceDecoderServices &dev, const rapidjson::Value &params)
+	[](const Decoder::Class &decoderClass, const DccAddress &address, const std::string &name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params)
 	-> std::unique_ptr<Decoder> { return std::make_unique<SensorDecoder>(decoderClass, address, name, owner, dev, params); }
 );
 
 SensorDecoder::SensorDecoder(const Class &decoderClass,
 	const DccAddress &address,
 	const std::string &name,
-	IDccDecoderServices &owner,
-	IDeviceDecoderServices &dev,
+	IDccLite_DecoderServices &owner,
+	IDevice_DecoderServices &dev,
 	const rapidjson::Value &params
 ):
 	Decoder(decoderClass, address, name, owner, dev, params),

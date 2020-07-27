@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "Clock.h"
+#include "IDccLiteService.h"
 #include "IDevice.h"
 #include "FileSystem.h"
 #include "Guid.h"
@@ -25,11 +26,10 @@
 
 #include <rapidjson/document.h>
 
-class IDccDeviceServices;
 class Decoder;
 class Project;
 
-class Device: public dcclite::FolderObject, public IDeviceDecoderServices
+class Device: public dcclite::FolderObject, public IDevice_DecoderServices
 {
 	public:
 		enum class Status
@@ -39,8 +39,8 @@ class Device: public dcclite::FolderObject, public IDeviceDecoderServices
 		};		
 
 	public:
-		Device(std::string name, IDccDeviceServices &dccService, const rapidjson::Value &params, const Project &project);
-		Device(std::string name, IDccDeviceServices &dccService, const Project &project);
+		Device(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project);
+		Device(std::string name, IDccLite_DeviceServices &dccService, const Project &project);
 
 		Device(const Device &) = delete;
 		Device(Device &&) = delete;
@@ -115,7 +115,7 @@ class Device: public dcclite::FolderObject, public IDeviceDecoderServices
 		
 
 	private:		
-		IDccDeviceServices		&m_clDccService;
+		IDccLite_DeviceServices	&m_clDccService;
 
 		std::vector<Decoder *>	m_vecDecoders;
 

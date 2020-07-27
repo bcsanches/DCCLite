@@ -10,6 +10,18 @@
 
 #pragma once
 
+#include <rapidjson/document.h>
+
+namespace dcclite
+{
+	class Guid;
+	class IObject;
+	class NetworkAddress;
+	class Packet;
+}
+
+class DccAddress;
+class Decoder;
 class Device;
 class IDevice_DecoderServices;
 class LocationManager;
@@ -64,13 +76,13 @@ class IDccLiteServiceListener
 		}
 };
 
-class IDccDecoderServices
+class IDccLite_DecoderServices
 {
 	public:
 		virtual void Decoder_OnStateChanged(Decoder& decoder) = 0;
 };
 
-class IDccDeviceServices
+class IDccLite_DeviceServices
 {
 	public:
 		virtual Decoder& Device_CreateDecoder(

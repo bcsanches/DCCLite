@@ -50,7 +50,7 @@ class DccppClient: private IDccLiteServiceListener
 		const NetworkAddress	m_clAddress;
 };
 
-DccppClient::DccppClient(DccLiteService& system, const NetworkAddress address, Socket&& socket) :	
+DccppClient::DccppClient(DccLiteService &system, const NetworkAddress address, Socket&& socket) :	
 	m_clMessenger(std::move(socket), ">"),
 	m_rclSystem(system),
 	m_clAddress(address)

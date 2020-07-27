@@ -56,7 +56,7 @@ DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::stri
 	{
 		auto nodeName = device["name"].GetString();
 
-		m_pDevices->AddChild(std::make_unique<Device>(nodeName, *static_cast<IDccDeviceServices *>(this), device, project));
+		m_pDevices->AddChild(std::make_unique<Device>(nodeName, *static_cast<IDccLite_DeviceServices *>(this), device, project));
 	}
 }
 
@@ -107,7 +107,7 @@ void DccLiteService::Device_DestroyDecoder(Decoder &dec)
 }
 
 Decoder &DccLiteService::Device_CreateDecoder(
-	Device &dev,
+	IDevice_DecoderServices &dev,
 	const std::string &className,
 	DccAddress address,
 	const std::string &name,
@@ -127,7 +127,13 @@ Decoder &DccLiteService::Device_CreateDecoder(
 	auto pDecoder = decoder.get();	
 
 	m_pDecoders->AddChild(std::move(decoder));
-	auto addressShortcut = m_pAddresses->AddChild(std::make_unique<dcclite::Shortcut>(pDecoder->GetAddress().ToString(), *pDecoder));
+
+	auto addressShortcut = m_pAddresses->AddChild(
+		std::make_unique<dcclite::Shortcut>(
+			pDecoder->GetAddress().ToString(), 
+			*pDecoder
+		)
+	);
 
 	this->NotifyItemCreated(*pDecoder);	
 	this->NotifyItemCreated(*addressShortcut);
@@ -202,7 +208,13 @@ void DccLiteService::OnNet_Hello(const dcclite::Clock &clock, const dcclite::Net
 		//no device, create a temp one
 		dcclite::Log::Warn("[{}::DccLiteService::OnNet_Hello] {} is not on config", this->GetName(), name);
 
-		dev = static_cast<Device*>(m_pDevices->AddChild(std::make_unique<Device>(name, *static_cast<IDccDeviceServices *>(this), m_rclProject)));
+		dev = static_cast<Device*>(m_pDevices->AddChild(
+			std::make_unique<Device>(
+				name, 
+				*static_cast<IDccLite_DeviceServices *>(this), 
+				m_rclProject
+			)
+		));
 	}	
 
 	dev->AcceptConnection(clock.Now(), senderAddress, remoteSessionToken, remoteConfigToken);	

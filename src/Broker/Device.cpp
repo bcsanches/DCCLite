@@ -16,7 +16,7 @@
 
 #include "BitPack.h"
 #include "Decoder.h"
-#include "DccLiteService.h"
+#include "IDccLiteService.h"
 #include "FileWatcher.h"
 #include "FmtUtils.h"
 #include "GuidUtils.h"
@@ -49,7 +49,7 @@ class DevicePacket: public dcclite::Packet
 //
 //
 
-Device::Device(std::string name, IDccDeviceServices &dccService, const rapidjson::Value &params, const Project &project):
+Device::Device(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project):
 	FolderObject(std::move(name)),
 	m_clDccService(dccService),
 	m_clPinManager(DecodeBoardName(params["class"].GetString())),
@@ -78,7 +78,7 @@ Device::Device(std::string name, IDccDeviceServices &dccService, const rapidjson
 }
 
 
-Device::Device(std::string name, IDccDeviceServices &dccService, const Project &project):
+Device::Device(std::string name, IDccLite_DeviceServices &dccService, const Project &project):
 	FolderObject(std::move(name)),
 	m_clDccService(dccService),
 	m_clPinManager(ArduinoBoards::MEGA),

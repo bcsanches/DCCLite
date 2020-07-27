@@ -20,8 +20,8 @@ class OutputDecoder : public Decoder
 		OutputDecoder(const Class& decoderClass,
 			const DccAddress& address,
 			const std::string& name,
-			IDccDecoderServices& owner,
-			IDeviceDecoderServices &dev,
+			IDccLite_DecoderServices & owner,
+			IDevice_DecoderServices &dev,
 			const rapidjson::Value& params
 		) :
 			Decoder(decoderClass, address, name, owner, dev, params)

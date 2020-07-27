@@ -27,87 +27,10 @@ class Device;
 class LocationManager;
 class OutputDecoder;
 class SensorDecoder;
-class TurnoutDecoder;;
+class TurnoutDecoder;
 
-class DccLiteEvent
-{
-	public:
-		struct DeviceEvent
-		{
-			const Device *m_pclDevice;
-		};
 
-		struct ItemEvent
-		{
-			const dcclite::IObject *m_pclItem;
-		};
-
-		struct DecoderEvent
-		{
-			const Decoder *m_pclDecoder;
-		};		
-
-		enum EventType
-		{
-			DEVICE_CONNECTED,
-			DEVICE_DISCONNECTED,
-
-			ITEM_CREATED,
-			ITEM_DESTROYED,
-
-			DECODER_STATE_CHANGE
-		};
-
-		EventType m_tType;
-
-		union
-		{
-			DeviceEvent		m_stDevice;
-			ItemEvent		m_stItem;
-			DecoderEvent	m_stDecoder;
-		};
-};
-
-class IDccLiteServiceListener
-{
-	public:	
-		virtual void OnDccLiteEvent(const DccLiteEvent &event) = 0;
-
-		virtual ~IDccLiteServiceListener()
-		{
-			//empty
-		}
-};
-
-class IDccDecoderServices
-{
-	public:
-		virtual void Decoder_OnStateChanged(Decoder& decoder) = 0;
-};
-
-class IDccDeviceServices
-{
-	public:
-		virtual Decoder& Device_CreateDecoder(
-			Device &dev,
-			const std::string& className,
-			DccAddress address,
-			const std::string& name,
-			const rapidjson::Value& params
-		) = 0;
-
-		virtual void Device_DestroyDecoder(Decoder &) = 0;
-		
-		virtual void Device_SendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet& packet) = 0;
-
-		virtual void Device_RegisterSession(Device& dev, const dcclite::Guid& configToken) = 0;
-		virtual void Device_UnregisterSession(Device& dev, const dcclite::Guid& sessionToken) = 0;				
-
-		virtual void Device_NotifyInternalItemCreated(const dcclite::IObject &item) const = 0;
-		virtual void Device_NotifyInternalItemDestroyed(const dcclite::IObject &item) const = 0;
-};
-
-class DccLiteService : public Service, private IDccDeviceServices, private IDccDecoderServices
+class DccLiteService : public Service, private IDccLite_DeviceServices, private IDccLite_DecoderServices
 {
 	public:
 		DccLiteService(const ServiceClass &serviceClass, const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
@@ -179,7 +102,7 @@ class DccLiteService : public Service, private IDccDeviceServices, private IDccD
 		void Device_UnregisterSession(Device& dev, const dcclite::Guid& sessionToken) override;
 
 		Decoder& Device_CreateDecoder(
-			Device &dev,
+			IDevice_DecoderServices &dev,
 			const std::string& className,
 			DccAddress address,
 			const std::string& name,

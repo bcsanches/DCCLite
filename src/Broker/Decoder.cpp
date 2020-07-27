@@ -12,7 +12,7 @@
 
 #include "Decoder.h"
 
-#include "DccLiteService.h"
+#include "IDccLiteService.h"
 #include "IDevice.h"
 #include "Packet.h"
 #include "Parser.h"
@@ -37,7 +37,7 @@ DccAddress::DccAddress(const rapidjson::Value &value)
 	}
 }
 
-Decoder::Decoder(const Class &decoderClass, const DccAddress &address, std::string name, IDccDecoderServices &owner, IDeviceDecoderServices &dev, const rapidjson::Value &params):
+Decoder::Decoder(const Class &decoderClass, const DccAddress &address, std::string name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params):
 	Object(std::move(name)),
 	m_iAddress(address),	
 	m_rclManager(owner),
