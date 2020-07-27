@@ -27,6 +27,8 @@ set(Broker_HDRS
   Decoder.h
   Device.h
   FileWatcher.h
+  IDccLiteService.h
+  IDevice.h
   LocationManager.h
   OutputDecoder.h
   PinManager.h

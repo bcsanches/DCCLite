@@ -12,7 +12,7 @@
 
 #include <Packet.h>
 
-#include "Device.h"
+#include "IDevice.h"
 
 static Decoder::Class sensorDecoder("Sensor",
 	[](const Decoder::Class &decoderClass, const DccAddress &address, const std::string &name, IDccDecoderServices &owner, IDeviceDecoderServices &dev, const rapidjson::Value &params)

@@ -174,3 +174,21 @@ void PinManager::UnregisterPin(const Decoder &decoder, dcclite::BasicPin pin)
 	info.m_pclUser = nullptr;
 	info.m_pszUsage = nullptr;
 }
+
+void PinManager::Serialize(dcclite::JsonOutputStream_t &stream) const
+{
+	auto pinsArray = stream.AddArray("pins");
+
+	for (auto pinInfo : m_vecPins)
+	{
+		auto pinObj = pinsArray.AddObject();
+
+		if(pinInfo.m_pclUser)
+		{
+			pinObj.AddStringValue("decoder", pinInfo.m_pclUser->GetName());
+			pinObj.AddStringValue("usage", pinInfo.m_pszUsage);
+		}
+
+		pinObj.AddStringValue("specialName", pinInfo.m_pszSpecialName);		
+	}
+}

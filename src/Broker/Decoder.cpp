@@ -13,7 +13,7 @@
 #include "Decoder.h"
 
 #include "DccLiteService.h"
-#include "Device.h"
+#include "IDevice.h"
 #include "Packet.h"
 #include "Parser.h"
 

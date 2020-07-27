@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "Clock.h"
+#include "IDevice.h"
 #include "FileSystem.h"
 #include "Guid.h"
 #include "Object.h"
@@ -27,15 +28,6 @@
 class IDccDeviceServices;
 class Decoder;
 class Project;
-
-class IDeviceDecoderServices
-{
-	public:
-		virtual std::string_view GetDeviceName() const noexcept = 0;
-
-		virtual void Decoder_RegisterPin(const Decoder &decoder, dcclite::BasicPin pin, const char *usage) = 0;
-		virtual void Decoder_UnregisterPin(const Decoder &decoder, dcclite::BasicPin pin) = 0;
-};
 
 class Device: public dcclite::FolderObject, public IDeviceDecoderServices
 {

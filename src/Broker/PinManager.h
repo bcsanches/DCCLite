@@ -55,4 +55,6 @@ class PinManager
 
 		void RegisterPin(const Decoder &decoder, dcclite::BasicPin pin, const char *usage);
 		void UnregisterPin(const Decoder &decoder, dcclite::BasicPin pin);
+
+		void Serialize(dcclite::JsonOutputStream_t &stream) const;
 };

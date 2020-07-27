@@ -18,6 +18,7 @@
 
 #include "Decoder.h"
 #include "Guid.h"
+#include "IDccLiteService.h"
 #include "Packet.h"
 
 #include "Socket.h"

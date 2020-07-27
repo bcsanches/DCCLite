@@ -10,7 +10,7 @@
 
 #include "SimpleOutputDecoder.h"
 
-#include "Device.h"
+#include "IDevice.h"
 #include "Packet.h"
 
 static Decoder::Class simpleOutputDecoder("Output",

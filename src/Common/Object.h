@@ -143,7 +143,7 @@ namespace dcclite
 	};
 
 	typedef ObjectPath Path_t;
-	typedef JsonCreator::Object<JsonCreator::StringWriter> JsonOutputStream_t;
+	typedef JsonCreator::Object<JsonCreator::StringWriter> JsonOutputStream_t;	
 
 	class IObject
 	{

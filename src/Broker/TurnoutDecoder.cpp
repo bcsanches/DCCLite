@@ -10,7 +10,7 @@
 
 #include "TurnoutDecoder.h"
 
-#include "Device.h"
+#include "IDevice.h"
 
 #include <Packet.h>
 
