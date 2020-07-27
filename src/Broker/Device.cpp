@@ -52,6 +52,7 @@ class DevicePacket: public dcclite::Packet
 Device::Device(std::string name, IDccDeviceServices &dccService, const rapidjson::Value &params, const Project &project):
 	FolderObject(std::move(name)),
 	m_clDccService(dccService),
+	m_clPinManager(DecodeBoardName(params["class"].GetString())),
 	m_eStatus(Status::OFFLINE),
 	m_fRegistered(true),
 	m_strConfigFileName(std::string(this->GetName()) + ".decoders.json"),
@@ -80,6 +81,7 @@ Device::Device(std::string name, IDccDeviceServices &dccService, const rapidjson
 Device::Device(std::string name, IDccDeviceServices &dccService, const Project &project):
 	FolderObject(std::move(name)),
 	m_clDccService(dccService),
+	m_clPinManager(ArduinoBoards::MEGA),
 	m_eStatus(Status::OFFLINE),
 	m_fRegistered(false),
 	m_rclProject(project)
@@ -91,6 +93,8 @@ Device::~Device()
 {
 	if (!m_pathConfigFile.empty())
 		FileWatcher::UnwatchFile(m_pathConfigFile);
+
+	this->Unload();
 }
 
 //

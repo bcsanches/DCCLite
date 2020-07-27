@@ -22,7 +22,7 @@ class TurnoutDecoder : public OutputDecoder
 			const DccAddress& address,
 			const std::string& name,
 			IDccDecoderServices& owner,
-			Device &dev,
+			IDeviceDecoderServices &dev,
 			const rapidjson::Value& params
 		):
 			OutputDecoder(decoderClass, address, name, owner, dev, params)
@@ -48,9 +48,11 @@ class ServoTurnoutDecoder : public TurnoutDecoder
 			const DccAddress& address,
 			const std::string& name,
 			IDccDecoderServices& owner,
-			Device &dev,
+			IDeviceDecoderServices &dev,
 			const rapidjson::Value& params
 		);
+
+		~ServoTurnoutDecoder() override;
 
 		void WriteConfig(dcclite::Packet& packet) const override;
 

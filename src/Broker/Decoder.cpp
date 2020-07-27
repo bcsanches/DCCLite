@@ -37,12 +37,12 @@ DccAddress::DccAddress(const rapidjson::Value &value)
 	}
 }
 
-Decoder::Decoder(const Class &decoderClass, const DccAddress &address, std::string name, IDccDecoderServices &owner, Device &dev, const rapidjson::Value &params):
+Decoder::Decoder(const Class &decoderClass, const DccAddress &address, std::string name, IDccDecoderServices &owner, IDeviceDecoderServices &dev, const rapidjson::Value &params):
 	Object(std::move(name)),
 	m_iAddress(address),	
 	m_rclManager(owner),
 	m_rclDevice(dev)
-{
+{	
 	auto it = params.FindMember("location");
 	if(it == params.MemberEnd())
 		return;
@@ -80,7 +80,7 @@ void Decoder::Serialize(dcclite::JsonOutputStream_t &stream) const
 
 	stream.AddIntValue("address", m_iAddress.GetAddress());
 	stream.AddBool("remoteActive", m_kRemoteState == dcclite::DecoderStates::ACTIVE);
-	stream.AddStringValue("deviceName", m_rclDevice.GetName());
+	stream.AddStringValue("deviceName", m_rclDevice.GetDeviceName());
 
 	if(!m_strLocationHint.empty())
 		stream.AddStringValue("locationHint", m_strLocationHint);

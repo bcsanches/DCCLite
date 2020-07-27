@@ -22,13 +22,15 @@ class SimpleOutputDecoder : public OutputDecoder
 			const DccAddress &address,
 			const std::string &name,
 			IDccDecoderServices &owner,
-			Device &dev,
+			IDeviceDecoderServices &dev,
 			const rapidjson::Value &params
 		);
 
-		virtual void WriteConfig(dcclite::Packet &packet) const;
+		~SimpleOutputDecoder() override;
 
-		virtual dcclite::DecoderTypes GetType() const noexcept
+		void WriteConfig(dcclite::Packet &packet) const override;
+
+		dcclite::DecoderTypes GetType() const noexcept override
 		{
 			return dcclite::DecoderTypes::DEC_OUTPUT;
 		}
@@ -38,12 +40,12 @@ class SimpleOutputDecoder : public OutputDecoder
 		//
 		//
 
-		virtual const char *GetTypeName() const noexcept
+		const char *GetTypeName() const noexcept override
 		{
 			return "SimpleOutputDecoder";
 		}
 
-		virtual void Serialize(dcclite::JsonOutputStream_t &stream) const
+		void Serialize(dcclite::JsonOutputStream_t &stream) const override
 		{
 			OutputDecoder::Serialize(stream);
 

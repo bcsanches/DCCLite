@@ -2,7 +2,7 @@
 {
       "name":"DebugButton",
       "class":"Sensor",
-      "pin":31,
+      "pin":2,
       "address":"5000",
       "pullup":true,
       "inverted":true,
@@ -402,7 +402,7 @@
   {
     "name":"STA_D11A",
     "class":"Sensor",
-    "pin":68,
+    "pin":1,
     "address":"1799",
     "pullup":true,
     "inverted":true,

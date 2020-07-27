@@ -12,6 +12,7 @@
 
 #include "BasicPin.h"
 
+#include <string_view>
 #include <vector>
 
 class Decoder;
@@ -22,21 +23,31 @@ enum class ArduinoBoards
 	UNO
 };
 
+extern ArduinoBoards DecodeBoardName(std::string_view boardName);
+
 /**
 	This is really a helper class for helping managing boards and pin usage, not necessary for DCCLite system to work
 
 */
 class PinManager
 {
-	private:
+	public:
 		struct PinInfo
 		{
-			const Decoder	*m_pclUser;
-			const char		*m_pszUsage;
-			
-			const char		*m_pszSpecialName;
+			inline PinInfo():
+				m_pclUser{nullptr},
+				m_pszUsage{nullptr},
+				m_pszSpecialName{""}
+			{
+				//empty
+			}
+			const Decoder *m_pclUser;
+			const char *m_pszUsage;
+
+			const char *m_pszSpecialName;
 		};
 
+	private:	
 		std::vector<PinInfo> m_vecPins;
 
 	public:

@@ -21,9 +21,11 @@ class SensorDecoder : public Decoder
 			const DccAddress &address,
 			const std::string &name,
 			IDccDecoderServices &owner,
-			Device &dev,
+			IDeviceDecoderServices &dev,
 			const rapidjson::Value &params
 		);
+
+		~SensorDecoder() override;
 
 		void WriteConfig(dcclite::Packet &packet) const override;
 

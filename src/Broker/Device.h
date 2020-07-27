@@ -19,6 +19,7 @@
 #include "Guid.h"
 #include "Object.h"
 #include "Packet.h"
+#include "PinManager.h"
 #include "Socket.h"
 
 #include <rapidjson/document.h>
@@ -27,7 +28,16 @@ class IDccDeviceServices;
 class Decoder;
 class Project;
 
-class Device: public dcclite::FolderObject
+class IDeviceDecoderServices
+{
+	public:
+		virtual std::string_view GetDeviceName() const noexcept = 0;
+
+		virtual void Decoder_RegisterPin(const Decoder &decoder, dcclite::BasicPin pin, const char *usage) = 0;
+		virtual void Decoder_UnregisterPin(const Decoder &decoder, dcclite::BasicPin pin) = 0;
+};
+
+class Device: public dcclite::FolderObject, public IDeviceDecoderServices
 {
 	public:
 		enum class Status
@@ -73,6 +83,26 @@ class Device: public dcclite::FolderObject
 
 		virtual void Serialize(dcclite::JsonOutputStream_t &stream) const;
 
+		//
+		// IDeviceDEcoderServices
+		//
+		//
+
+		std::string_view GetDeviceName() const noexcept override
+		{
+			return this->GetName();
+		}
+
+		void Decoder_RegisterPin(const Decoder &decoder, dcclite::BasicPin pin, const char *usage)
+		{
+			m_clPinManager.RegisterPin(decoder, pin, usage);
+		}
+
+		void Decoder_UnregisterPin(const Decoder &decoder, dcclite::BasicPin pin)
+		{
+			m_clPinManager.UnregisterPin(decoder, pin);
+		}
+
 	private:
 		bool CheckSessionConfig(const dcclite::Guid remoteConfigToken, const dcclite::NetworkAddress remoteAddress);
 		bool CheckSession(const dcclite::NetworkAddress remoteAddress);
@@ -96,6 +126,8 @@ class Device: public dcclite::FolderObject
 		IDccDeviceServices		&m_clDccService;
 
 		std::vector<Decoder *>	m_vecDecoders;
+
+		PinManager				m_clPinManager;
 
 		//
 		//

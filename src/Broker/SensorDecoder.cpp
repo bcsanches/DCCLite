@@ -12,8 +12,10 @@
 
 #include <Packet.h>
 
+#include "Device.h"
+
 static Decoder::Class sensorDecoder("Sensor",
-	[](const Decoder::Class &decoderClass, const DccAddress &address, const std::string &name, IDccDecoderServices &owner, Device &dev, const rapidjson::Value &params)
+	[](const Decoder::Class &decoderClass, const DccAddress &address, const std::string &name, IDccDecoderServices &owner, IDeviceDecoderServices &dev, const rapidjson::Value &params)
 	-> std::unique_ptr<Decoder> { return std::make_unique<SensorDecoder>(decoderClass, address, name, owner, dev, params); }
 );
 
@@ -21,12 +23,14 @@ SensorDecoder::SensorDecoder(const Class &decoderClass,
 	const DccAddress &address,
 	const std::string &name,
 	IDccDecoderServices &owner,
-	Device &dev,
+	IDeviceDecoderServices &dev,
 	const rapidjson::Value &params
 ):
 	Decoder(decoderClass, address, name, owner, dev, params),
 	m_clPin(params["pin"].GetInt())
 {
+	m_rclDevice.Decoder_RegisterPin(*this, m_clPin, "pin");
+
 	auto pullup = params.FindMember("pullup");
 	m_fPullUp = pullup != params.MemberEnd() ? pullup->value.GetBool() : false;
 
@@ -38,7 +42,11 @@ SensorDecoder::SensorDecoder(const Class &decoderClass,
 
 	auto deactivateDelay = params.FindMember("deactivateDelay");
 	m_uDeactivateDelay = deactivateDelay != params.MemberEnd() ? deactivateDelay->value.GetInt() : 0;
+}
 
+SensorDecoder::~SensorDecoder()
+{
+	m_rclDevice.Decoder_UnregisterPin(*this, m_clPin);
 }
 
 void SensorDecoder::WriteConfig(dcclite::Packet &packet) const

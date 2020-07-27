@@ -10,10 +10,12 @@
 
 #include "TurnoutDecoder.h"
 
+#include "Device.h"
+
 #include <Packet.h>
 
 static Decoder::Class servoTurnoutDecoder("ServoTurnout",
-	[](const Decoder::Class& decoderClass, const DccAddress& address, const std::string& name, IDccDecoderServices& owner, Device &dev, const rapidjson::Value& params)
+	[](const Decoder::Class& decoderClass, const DccAddress& address, const std::string& name, IDccDecoderServices& owner, IDeviceDecoderServices &dev, const rapidjson::Value& params)
 	-> std::unique_ptr<Decoder> { return std::make_unique<ServoTurnoutDecoder>(decoderClass, address, name, owner, dev, params); }
 );
 
@@ -21,17 +23,27 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(const Class& decoderClass,
 	const DccAddress& address,
 	const std::string& name,
 	IDccDecoderServices& owner,
-	Device &dev,
+	IDeviceDecoderServices &dev,
 	const rapidjson::Value& params
 ) :
 	TurnoutDecoder(decoderClass, address, name, owner, dev, params),
 	m_clPin(params["pin"].GetInt())
 {
+	m_rclDevice.Decoder_RegisterPin(*this, m_clPin, "pin");
+
 	auto powerPin = params.FindMember("powerPin");
-	m_clPowerPin = powerPin != params.MemberEnd() ? dcclite::BasicPin{ static_cast<dcclite::PinType_t>(powerPin->value.GetInt()) } : dcclite::BasicPin{};
+	if (powerPin != params.MemberEnd())
+	{
+		m_clPowerPin = dcclite::BasicPin{ static_cast<dcclite::PinType_t>(powerPin->value.GetInt())};
+		m_rclDevice.Decoder_RegisterPin(*this, m_clPowerPin, "powerPin");
+	}	
 
 	auto frogPin = params.FindMember("frogPin");
-	m_clFrogPin = frogPin != params.MemberEnd() ? dcclite::BasicPin{ static_cast<dcclite::PinType_t>(frogPin->value.GetInt()) } : dcclite::BasicPin{};
+	if(frogPin != params.MemberEnd())
+	{
+		m_clFrogPin = dcclite::BasicPin{ static_cast<dcclite::PinType_t>(frogPin->value.GetInt()) };
+		m_rclDevice.Decoder_RegisterPin(*this, m_clFrogPin, "frogPin");
+	}
 
 	auto inverted = params.FindMember("inverted");
 	m_fInvertedOperation = inverted != params.MemberEnd() ? inverted->value.GetBool() : false;
@@ -52,6 +64,13 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(const Class& decoderClass,
 	m_tOperationTime = operationTime != params.MemberEnd() ? std::chrono::milliseconds{ operationTime->value.GetUint() } : m_tOperationTime;
 
 	this->SyncRemoteState(m_fIgnoreSavedState && m_fActivateOnPowerUp ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
+}
+
+ServoTurnoutDecoder::~ServoTurnoutDecoder()
+{
+	m_rclDevice.Decoder_UnregisterPin(*this, m_clPin);
+	m_rclDevice.Decoder_UnregisterPin(*this, m_clPowerPin);
+	m_rclDevice.Decoder_UnregisterPin(*this, m_clFrogPin);
 }
 
 void ServoTurnoutDecoder::WriteConfig(dcclite::Packet& packet) const

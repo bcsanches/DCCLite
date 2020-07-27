@@ -10,10 +10,11 @@
 
 #include "SimpleOutputDecoder.h"
 
+#include "Device.h"
 #include "Packet.h"
 
 static Decoder::Class simpleOutputDecoder("Output",
-	[](const Decoder::Class &decoderClass, const DccAddress &address, const std::string &name, IDccDecoderServices &owner, Device &dev, const rapidjson::Value &params)
+	[](const Decoder::Class &decoderClass, const DccAddress &address, const std::string &name, IDccDecoderServices &owner, IDeviceDecoderServices &dev, const rapidjson::Value &params)
 		-> std::unique_ptr<Decoder> { return std::make_unique<SimpleOutputDecoder>(decoderClass, address, name, owner, dev, params); }
 );
 
@@ -23,12 +24,14 @@ SimpleOutputDecoder::SimpleOutputDecoder(
 	const DccAddress &address,
 	const std::string &name,
 	IDccDecoderServices &owner,
-	Device &dev,
+	IDeviceDecoderServices &dev,
 	const rapidjson::Value &params
 ) :
 	OutputDecoder(decoderClass, address, name, owner, dev, params),
 	m_clPin(params["pin"].GetInt())
 {	
+	m_rclDevice.Decoder_RegisterPin(*this, m_clPin, "pin");
+
 	auto inverted = params.FindMember("inverted");	
 	m_fInvertedOperation = inverted != params.MemberEnd() ? inverted->value.GetBool() : false;
 
@@ -39,6 +42,11 @@ SimpleOutputDecoder::SimpleOutputDecoder(
 	m_fActivateOnPowerUp = activateOnPowerUp != params.MemberEnd() ? activateOnPowerUp->value.GetBool() : false;
 
 	this->SyncRemoteState(m_fIgnoreSavedState && m_fActivateOnPowerUp ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
+}
+
+SimpleOutputDecoder::~SimpleOutputDecoder()
+{
+	m_rclDevice.Decoder_UnregisterPin(*this, m_clPin);
 }
 
 

@@ -62,7 +62,8 @@ DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::stri
 
 DccLiteService::~DccLiteService()
 {
-	//empty
+	//Destroy devices, so they clean everything
+	this->RemoveChild(m_pDevices->GetName());
 }
 
 void DccLiteService::DispatchEvent(const DccLiteEvent &event) const
