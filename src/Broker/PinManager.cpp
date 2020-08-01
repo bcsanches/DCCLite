@@ -189,6 +189,7 @@ void PinManager::Serialize(dcclite::JsonOutputStream_t &stream) const
 			pinObj.AddStringValue("usage", pinInfo.m_pszUsage);
 		}
 
-		pinObj.AddStringValue("specialName", pinInfo.m_pszSpecialName);		
+		if(pinInfo.m_pszSpecialName)
+			pinObj.AddStringValue("specialName", pinInfo.m_pszSpecialName);
 	}
 }
