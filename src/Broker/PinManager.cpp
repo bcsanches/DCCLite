@@ -186,6 +186,7 @@ void PinManager::Serialize(dcclite::JsonOutputStream_t &stream) const
 		if(pinInfo.m_pclUser)
 		{
 			pinObj.AddStringValue("decoder", pinInfo.m_pclUser->GetName());
+			pinObj.AddIntValue("decoderAddress", pinInfo.m_pclUser->GetAddress().GetAddress());
 			pinObj.AddStringValue("usage", pinInfo.m_pszUsage);
 		}
 

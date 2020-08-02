@@ -11,12 +11,16 @@ namespace SharpTerminal
     public class RemotePin
     {
         public String Decoder { get; set; }
+        public int? DecoderAddress { get; set; }
         public String Usage { get; set; }
         public String SpecialName { get; set; }
 
-        public RemotePin(string decoder, string usage, string specialName)
+        
+
+        public RemotePin(string decoder, int? decoderAddress, string usage, string specialName)
         {
             Decoder = decoder;
+            DecoderAddress = decoderAddress;
             Usage = usage;
             SpecialName = specialName;
         }
@@ -58,11 +62,20 @@ namespace SharpTerminal
             {
                 var pinDef = pinsData[i];
 
-                string decoder = pinDef.ContainsKey("decoder") ? pinDef["decoder"] : null;
-                string usage = pinDef.ContainsKey("usage") ? pinDef["usage"] : null;
+                string decoder = null;
+                int? decoderAddress = null;
+                string usage = null;
+
+                if(pinDef.ContainsKey("decoder"))
+                {
+                    decoder = pinDef["decoder"];
+                    decoderAddress = pinDef["decoderAddress"];
+                    usage = pinDef["usage"];
+                }
+                
                 string specialName = pinDef.ContainsKey("specialName") ? pinDef["specialName"] : null;
 
-                Pins[i] = new RemotePin(decoder, usage, specialName);
+                Pins[i] = new RemotePin(decoder, decoderAddress, usage, specialName);
             }
         }
 

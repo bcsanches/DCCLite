@@ -29,26 +29,17 @@
         private void InitializeComponent()
         {
             System.Windows.Forms.GroupBox groupBox1;
-            this.m_lbTitle = new System.Windows.Forms.Label();
             this.m_gridMain = new System.Windows.Forms.DataGridView();
+            this.m_lbTitle = new System.Windows.Forms.Label();
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             groupBox1 = new System.Windows.Forms.GroupBox();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.m_gridMain)).BeginInit();
             this.SuspendLayout();
-            // 
-            // m_lbTitle
-            // 
-            this.m_lbTitle.AutoSize = true;
-            this.m_lbTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_lbTitle.Location = new System.Drawing.Point(3, 9);
-            this.m_lbTitle.Name = "m_lbTitle";
-            this.m_lbTitle.Size = new System.Drawing.Size(171, 24);
-            this.m_lbTitle.TabIndex = 1;
-            this.m_lbTitle.Text = "Remote Device - ";
             // 
             // groupBox1
             // 
@@ -70,6 +61,7 @@
             this.Column1,
             this.Column2,
             this.Column4,
+            this.Column3,
             this.Column5});
             this.m_gridMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.m_gridMain.Location = new System.Drawing.Point(3, 16);
@@ -79,6 +71,16 @@
             this.m_gridMain.RowHeadersVisible = false;
             this.m_gridMain.Size = new System.Drawing.Size(503, 184);
             this.m_gridMain.TabIndex = 0;
+            // 
+            // m_lbTitle
+            // 
+            this.m_lbTitle.AutoSize = true;
+            this.m_lbTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.m_lbTitle.Location = new System.Drawing.Point(3, 9);
+            this.m_lbTitle.Name = "m_lbTitle";
+            this.m_lbTitle.Size = new System.Drawing.Size(171, 24);
+            this.m_lbTitle.TabIndex = 1;
+            this.m_lbTitle.Text = "Remote Device - ";
             // 
             // Column1
             // 
@@ -102,6 +104,14 @@
             this.Column4.HeaderText = "Decoder";
             this.Column4.Name = "Column4";
             this.Column4.ReadOnly = true;
+            // 
+            // Column3
+            // 
+            this.Column3.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.Column3.HeaderText = "Address";
+            this.Column3.Name = "Column3";
+            this.Column3.ReadOnly = true;
+            this.Column3.Width = 70;
             // 
             // Column5
             // 
@@ -129,10 +139,11 @@
         #endregion
 
         private System.Windows.Forms.DataGridView m_gridMain;
+        private System.Windows.Forms.Label m_lbTitle;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column4;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Column3;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column5;
-        private System.Windows.Forms.Label m_lbTitle;
     }
 }

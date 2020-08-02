@@ -52,12 +52,23 @@ DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::stri
 	if (!devicesData.IsArray())
 		throw std::runtime_error(fmt::format("error: invalid config {}, expected devices array inside DccLiteService", name));
 
-	for (auto &device : devicesData.GetArray())
+	try
 	{
-		auto nodeName = device["name"].GetString();
+		for (auto &device : devicesData.GetArray())
+		{
+			auto nodeName = device["name"].GetString();
 
-		m_pDevices->AddChild(std::make_unique<Device>(nodeName, *static_cast<IDccLite_DeviceServices *>(this), device, project));
+			m_pDevices->AddChild(std::make_unique<Device>(nodeName, *static_cast<IDccLite_DeviceServices *>(this), device, project));
+		}
 	}
+	catch (std::exception &ex)
+	{
+		//cleanup before exception blew up everything, otherwise devices get destroyed after us are gone and system goes crazy
+		this->RemoveChild(m_pDevices->GetName());		
+
+		throw;
+	}
+	
 }
 
 DccLiteService::~DccLiteService()
@@ -128,15 +139,26 @@ Decoder &DccLiteService::Device_CreateDecoder(
 
 	m_pDecoders->AddChild(std::move(decoder));
 
-	auto addressShortcut = m_pAddresses->AddChild(
-		std::make_unique<dcclite::Shortcut>(
-			pDecoder->GetAddress().ToString(), 
-			*pDecoder
-		)
-	);
+	try
+	{
+		auto addressShortcut = m_pAddresses->AddChild(
+			std::make_unique<dcclite::Shortcut>(
+				pDecoder->GetAddress().ToString(),
+				*pDecoder
+				)
+		);
 
-	this->NotifyItemCreated(*pDecoder);	
-	this->NotifyItemCreated(*addressShortcut);
+		this->NotifyItemCreated(*pDecoder);
+		this->NotifyItemCreated(*addressShortcut);
+	}
+	catch (...)
+	{
+		//something bad happenned, cleanup to keep a consistent state
+		m_pDecoders->RemoveChild(pDecoder->GetName());
+
+		//blow up
+		throw;
+	}		
 
 	m_pLocations->RegisterDecoder(*pDecoder);
 

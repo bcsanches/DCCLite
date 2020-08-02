@@ -553,6 +553,10 @@ void Device::Unload()
 
 	for (auto dec : m_vecDecoders)
 	{	
+		//The null may happen when an exception is threw during load and we do the cleanup before letting the exception go
+		if(!dec)
+			continue;
+
 		m_clDccService.Device_NotifyInternalItemDestroyed(*(this->TryGetChild(dec->GetName())));
 
 		auto shortcut = this->RemoveChild(dec->GetName());
@@ -608,19 +612,31 @@ bool Device::Load()
 	//also this indicates that we have an inconsistent state	
 	this->Unload();
 
-	for (auto &element : decodersData.GetArray())
+	try
 	{
-		auto decoderName = element["name"].GetString();
-		auto className = element["class"].GetString();
-		DccAddress address{ element["address"] };
+		for (auto &element : decodersData.GetArray())
+		{
+			auto decoderName = element["name"].GetString();
+			auto className = element["class"].GetString();
+			DccAddress address{ element["address"] };
 
-		auto &decoder = m_clDccService.Device_CreateDecoder(*this, className, address, decoderName, element);
+			auto &decoder = m_clDccService.Device_CreateDecoder(*this, className, address, decoderName, element);
 
-		m_vecDecoders.push_back(&decoder);
+			m_vecDecoders.push_back(&decoder);
 
-		auto decShortcut = this->AddChild(std::make_unique<dcclite::Shortcut>(std::string(decoder.GetName()), decoder));
-		m_clDccService.Device_NotifyInternalItemCreated(*decShortcut);
+			auto decShortcut = this->AddChild(std::make_unique<dcclite::Shortcut>(std::string(decoder.GetName()), decoder));
+			m_clDccService.Device_NotifyInternalItemCreated(*decShortcut);
+		}
 	}
+	catch (...)
+	{
+		//bad things happened, cleanup any loaded decoder
+		this->Unload();
+
+		//blow up
+		throw;
+	}
+	
 
 	//if this point is reached, data is load, so store new token
 	m_ConfigToken = storedConfigToken;

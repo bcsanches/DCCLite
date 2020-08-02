@@ -210,5 +210,25 @@
     "pin": 64,
     "inverted":true,
     "ignoreSavedState": true
-  }
+  },
+  {
+    "name":"STA_DENT_YT01",
+    "class":"Sensor",
+    "pin":14,
+    "address":"1749",
+    "pullup":false,
+    "inverted":true,
+    "activateDelay":0,
+    "deactivateDelay":0
+  },
+  {
+    "name":"STA_DENT_MT01",
+    "class":"Sensor",
+    "pin":15,
+    "address":"1750",
+    "pullup":false,
+    "inverted":true,
+    "activateDelay":0,
+    "deactivateDelay":0
+  } 
 ]

@@ -408,5 +408,49 @@
     "inverted":true,
     "activateDelay":0,
     "deactivateDelay":0
-  }
+  },
+  {
+    "name":"STA_DEXT_YT01",
+    "class":"Sensor",
+    "pin":66,
+    "address":"1770",
+    "pullup":false,
+    "inverted":true,
+    "activateDelay":0,
+    "deactivateDelay":0,
+    "comment":"Sensor de corrente / nao instalado"
+  },
+  {
+    "name":"STA_DEXT_YT03",
+    "class":"Sensor",
+    "pin":67,
+    "address":"1771",
+    "pullup":false,
+    "inverted":true,
+    "activateDelay":0,
+    "deactivateDelay":0,
+    "comment":"Sensor de corrente / nao instalado / ultimo grupo de AMVs"
+  },
+  {
+    "name":"STA_DEXT_YT02A",
+    "class":"Sensor",
+    "pin":20,
+    "address":"1772",
+    "pullup":true,
+    "inverted":true,
+    "activateDelay":0,
+    "deactivateDelay":0,
+    "comment":"Sensor infrared - linha conexao ultimo grupo de amvs"
+  },
+  {
+    "name":"STA_DEXT_YT02B",
+    "class":"Sensor",
+    "pin":21,
+    "address":"1773",
+    "pullup":true,
+    "inverted":true,
+    "activateDelay":0,
+    "deactivateDelay":0,
+    "comment":"Sensor infrared - linha conexao ultimo grupo de amvs"
+  } 
 ]          
