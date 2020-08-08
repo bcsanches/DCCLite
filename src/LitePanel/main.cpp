@@ -9,7 +9,7 @@
 class OGLCanvas: public wxGLCanvas
 {
 	public:
-		OGLCanvas(wxWindow *parent, int id);
+		OGLCanvas(wxWindow *parent, int id = -1);
 		~OGLCanvas() = default;
 
 	private:
@@ -83,6 +83,8 @@ MainFrame::MainFrame()
 	wxMenuBar* menuBar = new wxMenuBar;
 	menuBar->Append(menuFile, "&File");
 	menuBar->Append(menuHelp, "&Help");
+
+	auto oglCanvas = new OGLCanvas(this);
 
 	SetMenuBar(menuBar);
 
