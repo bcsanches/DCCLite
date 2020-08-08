@@ -3,7 +3,39 @@
 #include <wx/wxprec.h>
 #ifndef WX_PRECOMP
 #include <wx/wx.h>
+#include <wx/glcanvas.h>
 #endif
+
+class OGLCanvas: public wxGLCanvas
+{
+	public:
+		OGLCanvas(wxWindow *parent, int id);
+		~OGLCanvas() = default;
+
+	private:
+		// Events
+		void OnPaint(wxPaintEvent &e);
+		void OnEraseBackground(wxEraseEvent &e);
+};
+
+OGLCanvas::OGLCanvas(wxWindow *parent, int id):
+	wxGLCanvas(parent, id) 
+{
+	// Bind events
+	Bind(wxEVT_PAINT, &OGLCanvas::OnPaint, this);
+	Bind(wxEVT_ERASE_BACKGROUND, &OGLCanvas::OnEraseBackground, this);
+}
+
+void OGLCanvas::OnPaint(wxPaintEvent &e)
+{
+
+}
+
+void OGLCanvas::OnEraseBackground(wxEraseEvent &e)
+{
+	//empty
+}
+
 
 class LiteApp : public wxApp
 {

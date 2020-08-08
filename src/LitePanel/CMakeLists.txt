@@ -21,6 +21,7 @@ if(WIN32)
     net
     core
     base
+    gl
 	)
 
 	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
@@ -35,16 +36,13 @@ else(WIN32)
 	find_package(OpenSSL REQUIRED)
 
 	target_link_libraries(LitePanel 
-		OpenSSL::Crypto
-		OpenSSL::SSL
-		Common 
-		EmbeddedLib
-		stdc++fs 
-		fmt 
-		uuid 		
+		RIVATE Common 
+		PRIVATE EmbeddedLib 
+		PRIVATE bcrypt.lib 
+		PRIVATE fmt
     net
     core
-    base
+    base		
 	)
 
 endif(WIN32)
