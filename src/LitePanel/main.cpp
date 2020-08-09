@@ -6,6 +6,8 @@
 #include <wx/glcanvas.h>
 #endif
 
+#include <cstdint>
+
 namespace OpenGLState
 {
 	wxGLContext *g_pclContext = nullptr;
@@ -23,6 +25,50 @@ namespace OpenGLState
 	}
 }
 
+template <typename T>
+struct Point
+{
+	T m_tX = {0}, m_tY = {0};
+
+	Point() = default;
+
+	Point(T x, T y):
+		m_tX(x),
+		m_tY(y)
+	{
+		//empty
+	}
+
+	const Point operator/(T num) const
+	{
+		return Point(m_tX / num, m_tY / num);
+	}
+
+	const Point operator*(T num) const
+	{
+		return Point{m_tX * num, m_tY * num};
+	}
+
+	const Point operator+(const Point &rhs) const
+	{
+		return Point(m_tX + rhs.m_tX, m_tY + rhs.m_tY);
+	}
+
+	const Point operator-(const Point &rhs) const
+	{
+		return Point(m_tX - rhs.m_tX, m_tY - rhs.m_tY);
+	}
+
+	const Point &operator+=(const Point &rhs)
+	{
+		m_tX += rhs.m_tX;
+		m_tY += rhs.m_tY;
+
+		return *this;
+	}
+};
+
+typedef Point<int_fast32_t> IntPoint_t;
 
 class OGLCanvas: public wxGLCanvas
 {
@@ -50,7 +96,7 @@ OGLCanvas::OGLCanvas(wxWindow *parent, int id):
 {
 	// Bind events
 	Bind(wxEVT_PAINT, &OGLCanvas::OnPaint, this);
-	Bind(wxEVT_ERASE_BACKGROUND, &OGLCanvas::OnEraseBackground, this);
+	Bind(wxEVT_ERASE_BACKGROUND, &OGLCanvas::OnEraseBackground, this);	
 }
 
 void OGLCanvas::InitGL()
@@ -105,12 +151,24 @@ class TestCanvas: public OGLCanvas
 
 	protected:
 		void OnDraw() override;
+
+		void OnMouseMiddleDown(wxMouseEvent &event);
+		void OnMouseMiddleUp(wxMouseEvent &event);
+		void OnMouseMove(wxMouseEvent &event);
+
+	private:
+		IntPoint_t m_tOrigin;
+		IntPoint_t m_tTileMapSize;
+		
+		IntPoint_t m_tMoveStartPos;
 };
 
 TestCanvas::TestCanvas(wxWindow *parent, int id):
-	OGLCanvas(parent, id)
+	OGLCanvas{parent, id},
+	m_tTileMapSize{64, 64}
 {
-	//empty
+	Bind(wxEVT_MIDDLE_DOWN, &TestCanvas::OnMouseMiddleDown, this);
+	Bind(wxEVT_MIDDLE_UP, &TestCanvas::OnMouseMiddleUp, this);
 }
 
 void TestCanvas::OnDraw()
@@ -136,10 +194,56 @@ void TestCanvas::OnDraw()
 	glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
 
 	const auto TILE_SIZE = 16;
-	const auto size = this->GetSize();
+	const auto size = this->GetSize();	
+
+	IntPoint_t tileOrigin = m_tOrigin / TILE_SIZE;
+	IntPoint_t drawOffset = IntPoint_t{m_tOrigin.m_tX % TILE_SIZE, m_tOrigin.m_tY % TILE_SIZE};
+
+	//how many tiles we can fit on screen?
+	IntPoint_t screenTilesSize{
+		std::max(GetSize().x / TILE_SIZE, m_tTileMapSize.m_tX),
+		std::max(GetSize().y / TILE_SIZE, m_tTileMapSize.m_tY)
+	};		
+
+	const IntPoint_t worldMax{m_tTileMapSize * TILE_SIZE};
+
+	const IntPoint_t virtualScreenMax{m_tOrigin.m_tX + size.x, m_tOrigin.m_tY + size.y};
+	const IntPoint_t visibleLimit = IntPoint_t{
+		std::min(worldMax.m_tX, virtualScreenMax.m_tX) - m_tOrigin.m_tX,
+		std::min(worldMax.m_tY, virtualScreenMax.m_tY) - m_tOrigin.m_tY
+	};
 
 	glBegin(GL_LINES);
 
+	for (int i = 0; i <= screenTilesSize.m_tX; ++i)
+	{
+		IntPoint_t tilePos = IntPoint_t{tileOrigin.m_tX + i, tileOrigin.m_tY};
+
+		if(tilePos.m_tX > m_tTileMapSize.m_tX)
+			break;
+
+		IntPoint_t worldPos = tilePos * TILE_SIZE;
+		IntPoint_t screenOrigin = worldPos - m_tOrigin;
+
+		glVertex2i(screenOrigin.m_tX, 0);
+		glVertex2i(screenOrigin.m_tX, visibleLimit.m_tY);
+	}
+
+	for (int i = 0; i <= screenTilesSize.m_tY; ++i)
+	{
+		IntPoint_t tilePos = IntPoint_t{ tileOrigin.m_tX, tileOrigin.m_tY + i};
+
+		if (tilePos.m_tY > m_tTileMapSize.m_tY)
+			break;
+
+		IntPoint_t worldPos = tilePos * TILE_SIZE;
+		IntPoint_t screenOrigin = worldPos - m_tOrigin;
+
+		glVertex2i(0, screenOrigin.m_tY);
+		glVertex2i(visibleLimit.m_tX, screenOrigin.m_tY);
+	}
+
+#if 0
 	for (int i = 0; i < size.x; i += TILE_SIZE)
 	{		
 		glVertex2i(i, 0);
@@ -151,11 +255,45 @@ void TestCanvas::OnDraw()
 		glVertex2i(0, i);
 		glVertex2i(size.x, i);		
 	}
+#endif
 
 	glEnd();
 
 	this->SwapBuffers();
 }
+
+void TestCanvas::OnMouseMiddleDown(wxMouseEvent &event)
+{
+	event.Skip();
+
+	this->Bind(wxEVT_MOTION, &TestCanvas::OnMouseMove, this);
+
+	m_tMoveStartPos = IntPoint_t{event.GetX(), event.GetY()};	
+}
+
+void TestCanvas::OnMouseMove(wxMouseEvent &event)
+{
+	event.Skip();
+
+	auto currentPos = IntPoint_t{ event.GetX(), event.GetY() };
+
+	m_tOrigin += currentPos - m_tMoveStartPos;
+	m_tOrigin.m_tX = std::max(0, m_tOrigin.m_tX);
+	m_tOrigin.m_tY = std::max(0, m_tOrigin.m_tY);
+
+	m_tMoveStartPos = currentPos;
+
+	this->Refresh();
+}
+
+
+void TestCanvas::OnMouseMiddleUp(wxMouseEvent &event)
+{
+	event.Skip();
+
+	this->Unbind(wxEVT_MOTION, &TestCanvas::OnMouseMove, this);
+}
+
 
 class LiteApp : public wxApp
 {
@@ -171,7 +309,7 @@ class MainFrame : public wxFrame
 	private:
 		void OnHello(wxCommandEvent& event);
 		void OnExit(wxCommandEvent& event);
-		void OnAbout(wxCommandEvent& event);
+		void OnAbout(wxCommandEvent& event);			
 };
 
 enum
