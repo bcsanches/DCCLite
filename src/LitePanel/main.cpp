@@ -156,6 +156,10 @@ class TestCanvas: public OGLCanvas
 		void OnMouseMiddleUp(wxMouseEvent &event);
 		void OnMouseMove(wxMouseEvent &event);
 
+		void OnMouseCaptureLost(wxMouseCaptureLostEvent &event);
+
+		void OnMouseLost();
+
 	private:
 		IntPoint_t m_tOrigin;
 		IntPoint_t m_tTileMapSize;
@@ -167,8 +171,7 @@ TestCanvas::TestCanvas(wxWindow *parent, int id):
 	OGLCanvas{parent, id},
 	m_tTileMapSize{64, 64}
 {
-	Bind(wxEVT_MIDDLE_DOWN, &TestCanvas::OnMouseMiddleDown, this);
-	Bind(wxEVT_MIDDLE_UP, &TestCanvas::OnMouseMiddleUp, this);
+	Bind(wxEVT_MIDDLE_DOWN, &TestCanvas::OnMouseMiddleDown, this);	
 }
 
 void TestCanvas::OnDraw()
@@ -267,6 +270,10 @@ void TestCanvas::OnMouseMiddleDown(wxMouseEvent &event)
 	event.Skip();
 
 	this->Bind(wxEVT_MOTION, &TestCanvas::OnMouseMove, this);
+	this->Bind(wxEVT_MIDDLE_UP, &TestCanvas::OnMouseMiddleUp, this);
+	this->Bind(wxEVT_MOUSE_CAPTURE_LOST, &TestCanvas::OnMouseCaptureLost, this);
+
+	this->CaptureMouse();
 
 	m_tMoveStartPos = IntPoint_t{event.GetX(), event.GetY()};	
 }
@@ -286,12 +293,28 @@ void TestCanvas::OnMouseMove(wxMouseEvent &event)
 	this->Refresh();
 }
 
+void TestCanvas::OnMouseCaptureLost(wxMouseCaptureLostEvent &event)
+{
+	event.Skip();
+
+	this->OnMouseLost();
+}
+
+void TestCanvas::OnMouseLost()
+{
+	this->ReleaseMouse();
+
+	this->Unbind(wxEVT_MOTION, &TestCanvas::OnMouseMove, this);
+	this->Unbind(wxEVT_MIDDLE_UP, &TestCanvas::OnMouseMiddleUp, this);
+	this->Unbind(wxEVT_MOUSE_CAPTURE_LOST, &TestCanvas::OnMouseCaptureLost, this);	
+}
+
 
 void TestCanvas::OnMouseMiddleUp(wxMouseEvent &event)
 {
 	event.Skip();
 
-	this->Unbind(wxEVT_MOTION, &TestCanvas::OnMouseMove, this);
+	this->OnMouseLost();
 }
 
 
