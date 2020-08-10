@@ -10,6 +10,7 @@ add_subdirectory(LiteDecoder)
 
 if (${DCCLITE_GUI_TOOLS})
   add_subdirectory(LitePanel)
+  add_subdirectory(LitePanelLib)
   add_subdirectory(LiteWiring)
 endif()
 

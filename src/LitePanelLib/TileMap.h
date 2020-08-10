@@ -8,12 +8,19 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "Config.h"
+#pragma once
 
-namespace Config
+#include <cstdint>
+
+namespace LitePanel
 {
-	uint16_t g_cfgTimeoutTicks = 15000;
-	uint16_t g_cfgPingTicks = 4500;
-	uint16_t g_cfgStateTicks = 50;
-	uint16_t g_cfgCoolDownTimeoutTicks = 25;
+	constexpr auto DEFAULT_TILE_SIZE = 32;
+
+	class TileMap
+	{
+		public:
+
+		private:
+
+	};
 }

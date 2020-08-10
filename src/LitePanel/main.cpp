@@ -1,6 +1,15 @@
-// wxWidgets "Hello World" Program
-// For compilers that support precompilation, includes "wx/wx.h".
+// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
+// file at the top-level directory of this distribution.
+// 
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// 
+// This Source Code Form is "Incompatible With Secondary Licenses", as
+// defined by the Mozilla Public License, v. 2.0.
+
 #include <wx/wxprec.h>
+
 #ifndef WX_PRECOMP
 #include <wx/wx.h>
 #include <wx/glcanvas.h>
@@ -246,21 +255,7 @@ void TestCanvas::OnDraw()
 		glVertex2i(visibleLimit.m_tX, screenOrigin.m_tY);
 	}
 
-#if 0
-	for (int i = 0; i < size.x; i += TILE_SIZE)
-	{		
-		glVertex2i(i, 0);
-		glVertex2i(i, size.y);		
-	}
-
-	for (int i = 0; i < size.y; i += TILE_SIZE)
-	{		
-		glVertex2i(0, i);
-		glVertex2i(size.x, i);		
-	}
-#endif
-
-	glEnd();
+	glEnd();	
 
 	this->SwapBuffers();
 }
