@@ -1,6 +1,15 @@
-// wxWidgets "Hello World" Program
-// For compilers that support precompilation, includes "wx/wx.h".
+// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
+// file at the top-level directory of this distribution.
+// 
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// 
+// This Source Code Form is "Incompatible With Secondary Licenses", as
+// defined by the Mozilla Public License, v. 2.0.
+
 #include <wx/wxprec.h>
+
 #ifndef WX_PRECOMP
 #include <wx/wx.h>
 #include <wx/glcanvas.h>
@@ -156,6 +165,10 @@ class TestCanvas: public OGLCanvas
 		void OnMouseMiddleUp(wxMouseEvent &event);
 		void OnMouseMove(wxMouseEvent &event);
 
+		void OnMouseCaptureLost(wxMouseCaptureLostEvent &event);
+
+		void OnMouseLost();
+
 	private:
 		IntPoint_t m_tOrigin;
 		IntPoint_t m_tTileMapSize;
@@ -167,8 +180,7 @@ TestCanvas::TestCanvas(wxWindow *parent, int id):
 	OGLCanvas{parent, id},
 	m_tTileMapSize{64, 64}
 {
-	Bind(wxEVT_MIDDLE_DOWN, &TestCanvas::OnMouseMiddleDown, this);
-	Bind(wxEVT_MIDDLE_UP, &TestCanvas::OnMouseMiddleUp, this);
+	Bind(wxEVT_MIDDLE_DOWN, &TestCanvas::OnMouseMiddleDown, this);	
 }
 
 void TestCanvas::OnDraw()
@@ -243,21 +255,7 @@ void TestCanvas::OnDraw()
 		glVertex2i(visibleLimit.m_tX, screenOrigin.m_tY);
 	}
 
-#if 0
-	for (int i = 0; i < size.x; i += TILE_SIZE)
-	{		
-		glVertex2i(i, 0);
-		glVertex2i(i, size.y);		
-	}
-
-	for (int i = 0; i < size.y; i += TILE_SIZE)
-	{		
-		glVertex2i(0, i);
-		glVertex2i(size.x, i);		
-	}
-#endif
-
-	glEnd();
+	glEnd();	
 
 	this->SwapBuffers();
 }
@@ -267,6 +265,10 @@ void TestCanvas::OnMouseMiddleDown(wxMouseEvent &event)
 	event.Skip();
 
 	this->Bind(wxEVT_MOTION, &TestCanvas::OnMouseMove, this);
+	this->Bind(wxEVT_MIDDLE_UP, &TestCanvas::OnMouseMiddleUp, this);
+	this->Bind(wxEVT_MOUSE_CAPTURE_LOST, &TestCanvas::OnMouseCaptureLost, this);
+
+	this->CaptureMouse();
 
 	m_tMoveStartPos = IntPoint_t{event.GetX(), event.GetY()};	
 }
@@ -286,12 +288,28 @@ void TestCanvas::OnMouseMove(wxMouseEvent &event)
 	this->Refresh();
 }
 
+void TestCanvas::OnMouseCaptureLost(wxMouseCaptureLostEvent &event)
+{
+	event.Skip();
+
+	this->OnMouseLost();
+}
+
+void TestCanvas::OnMouseLost()
+{
+	this->ReleaseMouse();
+
+	this->Unbind(wxEVT_MOTION, &TestCanvas::OnMouseMove, this);
+	this->Unbind(wxEVT_MIDDLE_UP, &TestCanvas::OnMouseMiddleUp, this);
+	this->Unbind(wxEVT_MOUSE_CAPTURE_LOST, &TestCanvas::OnMouseCaptureLost, this);	
+}
+
 
 void TestCanvas::OnMouseMiddleUp(wxMouseEvent &event)
 {
 	event.Skip();
 
-	this->Unbind(wxEVT_MOTION, &TestCanvas::OnMouseMove, this);
+	this->OnMouseLost();
 }
 
 

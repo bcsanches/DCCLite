@@ -1,0 +1,24 @@
+
+set(LitePanelLib_SRCS
+	TileMap.cpp	
+)
+
+set(LitePanelLib_HDRS
+	TileMap.h
+)
+
+if(WIN32)
+
+	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+
+endif(WIN32)
+
+add_library(LitePanelLib  ${LitePanelLib_SRCS} ${LitePanelLib_HDRS})
+target_compile_features(Common PUBLIC cxx_std_17)     
+
+target_include_directories(LitePanelLib
+  PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/fmt/include
+  PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/JsonCreator/include
+          ${DCCLite_SOURCE_DIR}/contrib/rapidjson/include
+          ${DCCLite_SOURCE_DIR}/contrib/spdlog/include          
+)
