@@ -13,9 +13,9 @@
 [submodule "src/LiteDecoder/lib/EtherCard"]
 	path = src/LiteDecoder/lib/EtherCard
 	url = https://github.com/bcsanches/EtherCard.git
-[submodule "contrib/wxWidgets"]
-	path = contrib/wxWidgets
-	url = https://github.com/bcsanches/wxWidgets.git
 [submodule "contrib/lfwatch"]
 	path = contrib/lfwatch
 	url = https://github.com/bcsanches/lfwatch.git
+[submodule "contrib/wxWidgets"]
+	path = contrib/wxWidgets
+	url = https://github.com/wxWidgets/wxWidgets.git
