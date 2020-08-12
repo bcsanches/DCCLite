@@ -61,7 +61,7 @@ DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::stri
 			m_pDevices->AddChild(std::make_unique<Device>(nodeName, *static_cast<IDccLite_DeviceServices *>(this), device, project));
 		}
 	}
-	catch (std::exception &ex)
+	catch (std::exception &)
 	{
 		//cleanup before exception blew up everything, otherwise devices get destroyed after us are gone and system goes crazy
 		this->RemoveChild(m_pDevices->GetName());		
