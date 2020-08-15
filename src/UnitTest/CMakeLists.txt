@@ -23,5 +23,5 @@ target_compile_features(ArduinoLib PUBLIC cxx_std_17)
 
 target_include_directories(UnitTest PRIVATE ${DCCLite_SOURCE_DIR}/src/Common ${GTEST_INCLUDE_DIRS})
 
-target_link_libraries(UnitTest PUBLIC Common EmbeddedLib fmt gtest_main)
+target_link_libraries(UnitTest PUBLIC Common EmbeddedLib fmt gtest gtest_main)
 

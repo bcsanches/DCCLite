@@ -19,3 +19,6 @@
 [submodule "contrib/wxWidgets"]
 	path = contrib/wxWidgets
 	url = https://github.com/wxWidgets/wxWidgets.git
+[submodule "contrib/googletest"]
+	path = contrib/googletest
+	url = https://github.com/google/googletest.git
