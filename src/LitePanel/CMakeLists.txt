@@ -7,21 +7,20 @@ add_executable(LitePanel WIN32 ${LitePanel_SRCS} )
 target_compile_features(LitePanel PUBLIC cxx_std_17)    
 
 target_include_directories(LitePanel 
-	PRIVATE ${DCCLite_SOURCE_DIR}/src/Common	
+	PRIVATE ${DCCLite_SOURCE_DIR}/src/Common  
 )
 
 #set_target_properties( Broker PROPERTIES RUNTIME_OUTPUT_DIRECTORY bin/ )
 
 if(WIN32)
     target_link_libraries(LitePanel 
-		PRIVATE Common 
-		PRIVATE EmbeddedLib 
+		PRIVATE Common 		
 		PRIVATE bcrypt.lib 
 		PRIVATE fmt
-    net
-    core
-    base
-    gl
+    wx::net
+    wx::core
+    wx::base
+    wx::gl
 	)
 
 	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
@@ -36,13 +35,13 @@ else(WIN32)
 	find_package(OpenSSL REQUIRED)
 
 	target_link_libraries(LitePanel 
-		RIVATE Common 
-		PRIVATE EmbeddedLib 
+		RIVATE Common 		
 		PRIVATE bcrypt.lib 
 		PRIVATE fmt
-    net
-    core
-    base		
+    wx::net
+    wx::core
+    wx::base
+    wx::gl		
 	)
 
 endif(WIN32)
