@@ -30,7 +30,7 @@ cd %BUILD_FOLDER%
 mkdir %BUILD_FOLDER%\build
 cd %BUILD_FOLDER%\build
 echo --- Running CMake configure ---
-%CMAKE_BIN% -G %GENERATOR% -A %PLATFORM% %BUILD_FOLDER%
+%CMAKE_BIN% -G %GENERATOR% -A %PLATFORM% %BUILD_FOLDER% -D DCCLITE_GUI_TOOLS=true
 %CMAKE_BIN% -G %GENERATOR% -A %PLATFORM% %BUILD_FOLDER%
 
 echo --- Building DCCLite ---
