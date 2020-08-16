@@ -17,6 +17,8 @@ namespace LitePanel
 	template <typename T>
 	struct Point
 	{
+		typedef T Type_t;
+
 		T m_tX = { 0 }, m_tY = { 0 };
 
 		Point() = default;

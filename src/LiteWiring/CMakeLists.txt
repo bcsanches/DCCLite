@@ -32,9 +32,9 @@ if(WIN32)
 		PRIVATE EmbeddedLib 
 		PRIVATE bcrypt.lib 
 		PRIVATE fmt
-    net
-    core
-    base
+    wx::net
+    wx::core
+    wx::base
 	)
 
 	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
@@ -56,9 +56,9 @@ else(WIN32)
 		stdc++fs 
 		fmt 
 		uuid 		
-    net
-    core
-    base
+    wx::net
+    wx::core
+    wx::base
 	)
 
 endif(WIN32)

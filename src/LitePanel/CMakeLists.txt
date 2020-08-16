@@ -1,9 +1,16 @@
 
 set(LitePanel_SRCS	
+  GLCanvas.cpp
   main.cpp    
+  MapCanvas.cpp
 )
 
-add_executable(LitePanel WIN32 ${LitePanel_SRCS} )
+set(LitePanel_HDRS
+  GLCanvas.h    
+  MapCanvas.h
+)
+
+add_executable(LitePanel WIN32 ${LitePanel_SRCS} ${LitePanel_HDRS})
 target_compile_features(LitePanel PUBLIC cxx_std_17)    
 
 target_include_directories(LitePanel 
