@@ -15,10 +15,7 @@
 MapCanvas::MapCanvas(wxWindow *parent, int id):
 	OGLCanvas{parent, id}	
 {
-	Bind(wxEVT_MIDDLE_DOWN, &MapCanvas::OnMouseMiddleDown, this);
-
-	m_tOrigin.m_tX = m_tRenderInfo.m_uTileScale / 2;
-	m_tOrigin.m_tY = m_tRenderInfo.m_uTileScale / 2;
+	Bind(wxEVT_MIDDLE_DOWN, &MapCanvas::OnMouseMiddleDown, this);	
 }
 
 void MapCanvas::SetTileMap(const LitePanel::TileMap *tileMap) noexcept
@@ -51,11 +48,17 @@ MapCanvas::RenderArgs MapCanvas::MakeRenderArgs() const
 
 	args.m_tTilesClientSize = args.m_tViewClientSize / m_tRenderInfo.m_uTileScale;
 
-	args.m_tTilePos_LastVisible = args.m_tTilePos_ViewOrigin + args.m_tTilesClientSize;
+	args.m_tTilePos_LastVisible = args.m_tTilePos_ViewOrigin + args.m_tTilesClientSize + LitePanel::IntPoint_t{ 2, 2 };
 	args.m_tTilePos_LastVisible.m_tX = std::min(args.m_tTilePos_LastVisible.m_tX, m_pclTileMap->GetSize().m_tX - 1);
 	args.m_tTilePos_LastVisible.m_tY = std::min(args.m_tTilePos_LastVisible.m_tY, m_pclTileMap->GetSize().m_tY - 1);
 
-	args.m_tNumVisibleTiles = (args.m_tTilePos_LastVisible - args.m_tTilePos_ViewOrigin) + LitePanel::IntPoint_t{1, 1};	
+	args.m_tNumVisibleTiles = (args.m_tTilePos_LastVisible - args.m_tTilePos_ViewOrigin) + LitePanel::IntPoint_t{ 1, 1 };
+
+	if((args.m_tNumVisibleTiles.m_tX + args.m_tTilePos_ViewOrigin.m_tX) > m_pclTileMap->GetSize().m_tX)
+		--args.m_tNumVisibleTiles.m_tX;
+
+	if ((args.m_tNumVisibleTiles.m_tY + args.m_tTilePos_ViewOrigin.m_tY) > m_pclTileMap->GetSize().m_tY)
+		--args.m_tNumVisibleTiles.m_tY;
 	
 	return args;
 }
@@ -72,7 +75,7 @@ void MapCanvas::DrawGrid(const RenderArgs &rargs)
 	glBegin(GL_LINES);
 
 	//glPushMatrix();	
-	glTranslatef(-rargs.m_tViewOrigin.m_tX, -rargs.m_tViewOrigin.m_tY, 0);
+	//glTranslatef(-rargs.m_tViewOrigin.m_tX, -rargs.m_tViewOrigin.m_tY, 0);
 
 	auto lastVisibleTileCorner = rargs.m_tNumVisibleTiles * m_tRenderInfo.m_uTileScale;
 
@@ -133,7 +136,10 @@ void MapCanvas::OnDraw()
 {
 	// Clear
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);		
+	glClear(GL_COLOR_BUFFER_BIT);	
+
+	glDisable(GL_LIGHTING);
+	glDisable(GL_TEXTURE_2D);
 
 	if (m_pclTileMap)
 	{
@@ -148,15 +154,45 @@ void MapCanvas::OnDraw()
 
 		glOrtho(
 			rargs.m_tViewOrigin.m_tX, 
-			static_cast<int>(GetSize().x + rargs.m_tViewOrigin.m_tX),
-			static_cast<int>(GetSize().y + rargs.m_tViewOrigin.m_tY),
+			GetSize().x + rargs.m_tViewOrigin.m_tX,
+			GetSize().y + rargs.m_tViewOrigin.m_tY,
 			rargs.m_tViewOrigin.m_tY,
 			-1, 
 			1
 		);
 
 		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();		
+		glLoadIdentity();			
+
+#if 0
+
+		int r = 0, g = 1, b = 0;
+		
+		for (int y = 0; y < m_pclTileMap->GetSize().m_tY; ++y)
+		{		
+			for (int x = 0; x < m_pclTileMap->GetSize().m_tX; ++x)
+			{	
+				glBegin(GL_QUADS);
+					glColor3f(255 * r, 255, 0);
+					glVertex2i((x + 0) * m_tRenderInfo.m_uTileScale, (y + 0) * m_tRenderInfo.m_uTileScale);
+
+					glColor3f(255, 255 * g, 0);
+					glVertex2i((x + 1) * m_tRenderInfo.m_uTileScale, (y + 0) * m_tRenderInfo.m_uTileScale);
+
+					glColor3f(255, 0, 255 * b);
+					glVertex2i((x + 1) * m_tRenderInfo.m_uTileScale, (y + 1) * m_tRenderInfo.m_uTileScale);
+
+					glColor3f(255, 255, 255);
+					glVertex2i((x + 0) * m_tRenderInfo.m_uTileScale, (y + 1) * m_tRenderInfo.m_uTileScale);
+				glEnd();
+
+				r = !r;
+				g = !g;
+				b = !b;
+			}
+		}
+
+#endif
 
 		this->DrawGrid(rargs);
 	}		
