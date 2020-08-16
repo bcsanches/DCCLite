@@ -4,6 +4,7 @@ set(LitePanelLib_SRCS
 )
 
 set(LitePanelLib_HDRS
+	Point.h
 	TileMap.h
 )
 
@@ -17,6 +18,7 @@ add_library(LitePanelLib  ${LitePanelLib_SRCS} ${LitePanelLib_HDRS})
 target_compile_features(Common PUBLIC cxx_std_17)     
 
 target_include_directories(LitePanelLib
+  PUBLIC  ${DCCLite_SOURCE_DIR}/src/LitePanelLib/
   PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/fmt/include
   PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/JsonCreator/include
           ${DCCLite_SOURCE_DIR}/contrib/rapidjson/include

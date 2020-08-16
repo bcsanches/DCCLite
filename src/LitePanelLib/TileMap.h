@@ -12,6 +12,8 @@
 
 #include <cstdint>
 
+#include "Point.h"
+
 namespace LitePanel
 {
 	constexpr auto DEFAULT_TILE_SIZE = 32;
@@ -19,8 +21,11 @@ namespace LitePanel
 	class TileMap
 	{
 		public:
+			TileMap(const IntPoint_t size);
+
+			const IntPoint_t &GetSize() const noexcept { return m_tSize; }
 
 		private:
-
+			IntPoint_t m_tSize;
 	};
 }

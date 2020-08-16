@@ -9,3 +9,16 @@
 // defined by the Mozilla Public License, v. 2.0.
 
 #include "TileMap.h"
+
+#include <stdexcept>
+
+namespace LitePanel
+{
+
+	TileMap::TileMap(const IntPoint_t size):
+		m_tSize{size}
+	{
+		if ((size.m_tX <= 0) || (size.m_tY <= 0))
+			throw std::invalid_argument("[LitePanel::TileMap] size must be > 0");
+	}
+}

@@ -14,9 +14,10 @@
 
 #include <cstdint>
 
+#include "Point.h"
+
 namespace OpenGLState
-{
-	wxGLContext *g_pclContext = nullptr;
+{	wxGLContext *g_pclContext = nullptr;
 
 	void SetCurrent(wxGLCanvas &win)
 	{
@@ -30,51 +31,6 @@ namespace OpenGLState
 		}
 	}
 }
-
-template <typename T>
-struct Point
-{
-	T m_tX = {0}, m_tY = {0};
-
-	Point() = default;
-
-	Point(T x, T y):
-		m_tX(x),
-		m_tY(y)
-	{
-		//empty
-	}
-
-	const Point operator/(T num) const
-	{
-		return Point(m_tX / num, m_tY / num);
-	}
-
-	const Point operator*(T num) const
-	{
-		return Point{m_tX * num, m_tY * num};
-	}
-
-	const Point operator+(const Point &rhs) const
-	{
-		return Point(m_tX + rhs.m_tX, m_tY + rhs.m_tY);
-	}
-
-	const Point operator-(const Point &rhs) const
-	{
-		return Point(m_tX - rhs.m_tX, m_tY - rhs.m_tY);
-	}
-
-	const Point &operator+=(const Point &rhs)
-	{
-		m_tX += rhs.m_tX;
-		m_tY += rhs.m_tY;
-
-		return *this;
-	}
-};
-
-typedef Point<int_fast32_t> IntPoint_t;
 
 class OGLCanvas: public wxGLCanvas
 {
@@ -167,10 +123,10 @@ class TestCanvas: public OGLCanvas
 		void OnMouseLost();
 
 	private:
-		IntPoint_t m_tOrigin;
-		IntPoint_t m_tTileMapSize;
+		LitePanel::IntPoint_t m_tOrigin;
+		LitePanel::IntPoint_t m_tTileMapSize;
 		
-		IntPoint_t m_tMoveStartPos;
+		LitePanel::IntPoint_t m_tMoveStartPos;
 };
 
 TestCanvas::TestCanvas(wxWindow *parent, int id):
@@ -205,19 +161,19 @@ void TestCanvas::OnDraw()
 	const auto TILE_SIZE = 16;
 	const auto size = this->GetSize();	
 
-	IntPoint_t tileOrigin = m_tOrigin / TILE_SIZE;
-	IntPoint_t drawOffset = IntPoint_t{m_tOrigin.m_tX % TILE_SIZE, m_tOrigin.m_tY % TILE_SIZE};
+	auto tileOrigin = m_tOrigin / TILE_SIZE;
+	LitePanel::IntPoint_t drawOffset{m_tOrigin.m_tX % TILE_SIZE, m_tOrigin.m_tY % TILE_SIZE};
 
 	//how many tiles we can fit on screen?
-	IntPoint_t screenTilesSize{
+	LitePanel::IntPoint_t screenTilesSize{
 		std::max(GetSize().x / TILE_SIZE, m_tTileMapSize.m_tX),
 		std::max(GetSize().y / TILE_SIZE, m_tTileMapSize.m_tY)
 	};		
 
-	const IntPoint_t worldMax{m_tTileMapSize * TILE_SIZE};
+	const LitePanel::IntPoint_t worldMax{m_tTileMapSize * TILE_SIZE};
 
-	const IntPoint_t virtualScreenMax{m_tOrigin.m_tX + size.x, m_tOrigin.m_tY + size.y};
-	const IntPoint_t visibleLimit = IntPoint_t{
+	const LitePanel::IntPoint_t virtualScreenMax{m_tOrigin.m_tX + size.x, m_tOrigin.m_tY + size.y};
+	const auto visibleLimit = LitePanel::IntPoint_t{
 		std::min(worldMax.m_tX, virtualScreenMax.m_tX) - m_tOrigin.m_tX,
 		std::min(worldMax.m_tY, virtualScreenMax.m_tY) - m_tOrigin.m_tY
 	};
@@ -226,13 +182,13 @@ void TestCanvas::OnDraw()
 
 	for (int i = 0; i <= screenTilesSize.m_tX; ++i)
 	{
-		IntPoint_t tilePos = IntPoint_t{tileOrigin.m_tX + i, tileOrigin.m_tY};
+		LitePanel::IntPoint_t tilePos{tileOrigin.m_tX + i, tileOrigin.m_tY};
 
 		if(tilePos.m_tX > m_tTileMapSize.m_tX)
 			break;
 
-		IntPoint_t worldPos = tilePos * TILE_SIZE;
-		IntPoint_t screenOrigin = worldPos - m_tOrigin;
+		auto worldPos = tilePos * TILE_SIZE;
+		auto screenOrigin = worldPos - m_tOrigin;
 
 		glVertex2i(screenOrigin.m_tX, 0);
 		glVertex2i(screenOrigin.m_tX, visibleLimit.m_tY);
@@ -240,13 +196,13 @@ void TestCanvas::OnDraw()
 
 	for (int i = 0; i <= screenTilesSize.m_tY; ++i)
 	{
-		IntPoint_t tilePos = IntPoint_t{ tileOrigin.m_tX, tileOrigin.m_tY + i};
+		LitePanel::IntPoint_t tilePos{ tileOrigin.m_tX, tileOrigin.m_tY + i};
 
 		if (tilePos.m_tY > m_tTileMapSize.m_tY)
 			break;
 
-		IntPoint_t worldPos = tilePos * TILE_SIZE;
-		IntPoint_t screenOrigin = worldPos - m_tOrigin;
+		auto worldPos = tilePos * TILE_SIZE;
+		auto screenOrigin = worldPos - m_tOrigin;
 
 		glVertex2i(0, screenOrigin.m_tY);
 		glVertex2i(visibleLimit.m_tX, screenOrigin.m_tY);
@@ -267,14 +223,14 @@ void TestCanvas::OnMouseMiddleDown(wxMouseEvent &event)
 
 	this->CaptureMouse();
 
-	m_tMoveStartPos = IntPoint_t{event.GetX(), event.GetY()};	
+	m_tMoveStartPos = LitePanel::IntPoint_t{event.GetX(), event.GetY()};	
 }
 
 void TestCanvas::OnMouseMove(wxMouseEvent &event)
 {
 	event.Skip();
 
-	auto currentPos = IntPoint_t{ event.GetX(), event.GetY() };
+	auto currentPos = LitePanel::IntPoint_t{ event.GetX(), event.GetY() };
 
 	m_tOrigin += currentPos - m_tMoveStartPos;
 	m_tOrigin.m_tX = std::max(0, m_tOrigin.m_tX);

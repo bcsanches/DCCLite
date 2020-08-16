@@ -16,7 +16,8 @@ if(WIN32)
     target_link_libraries(LitePanel 
 		PRIVATE Common 		
 		PRIVATE bcrypt.lib 
-		PRIVATE fmt
+		PRIVATE fmt      
+        PRIVATE LitePanelLib
     wx::net
     wx::core
     wx::base
@@ -38,6 +39,7 @@ else(WIN32)
 		RIVATE Common 		
 		PRIVATE bcrypt.lib 
 		PRIVATE fmt
+        PRIVATE LitePanelLib
     wx::net
     wx::core
     wx::base
