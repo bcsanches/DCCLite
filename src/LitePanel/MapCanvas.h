@@ -30,6 +30,7 @@ class MapCanvas: public OGLCanvas
 	protected:
 		void OnDraw() override;
 
+		void OnMouseWheel(wxMouseEvent &event);
 		void OnMouseMiddleDown(wxMouseEvent &event);
 		void OnMouseMiddleUp(wxMouseEvent &event);
 		void OnMouseMove(wxMouseEvent &event);
@@ -81,5 +82,5 @@ class MapCanvas: public OGLCanvas
 
 		const LitePanel::TileMap *m_pclTileMap = nullptr;
 
-		MapRenderInfo m_tRenderInfo;
+		MapRenderInfo m_tRenderInfo;		
 };

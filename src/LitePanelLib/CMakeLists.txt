@@ -1,9 +1,11 @@
 
 set(LitePanelLib_SRCS
+	MapObject.cpp
 	TileMap.cpp	
 )
 
 set(LitePanelLib_HDRS
+	MapObject.h
 	Point.h
 	TileMap.h
 )

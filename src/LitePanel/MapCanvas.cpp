@@ -16,6 +16,7 @@ MapCanvas::MapCanvas(wxWindow *parent, int id):
 	OGLCanvas{parent, id}	
 {
 	Bind(wxEVT_MIDDLE_DOWN, &MapCanvas::OnMouseMiddleDown, this);	
+	Bind(wxEVT_MOUSEWHEEL, &MapCanvas::OnMouseWheel, this);
 }
 
 void MapCanvas::SetTileMap(const LitePanel::TileMap *tileMap) noexcept
@@ -33,6 +34,8 @@ void MapCanvas::UpdateRenderInfo()
 	assert(m_pclTileMap);
 
 	m_tRenderInfo.m_tWorldSize = m_pclTileMap->GetSize() * m_tRenderInfo.m_uTileScale;
+
+	this->Refresh();
 }
 
 MapCanvas::RenderArgs MapCanvas::MakeRenderArgs() const
@@ -198,6 +201,35 @@ void MapCanvas::OnDraw()
 	}		
 
 	this->SwapBuffers();
+}
+
+void MapCanvas::OnMouseWheel(wxMouseEvent &event)
+{	
+	if (event.GetWheelRotation() > 0)
+	{
+		m_tRenderInfo.m_uTileScale *= 2;
+
+		if(m_tRenderInfo.m_uTileScale > 128)
+			m_tRenderInfo.m_uTileScale = 128;
+	}
+	else
+	{
+		if(m_tRenderInfo.m_uTileScale == 8)
+			return;
+
+		m_tRenderInfo.m_uTileScale /= 2;
+
+		if(m_tOrigin.m_tX > 0)
+			m_tOrigin.m_tX -= m_tRenderInfo.m_uTileScale * 2;
+
+		if (m_tOrigin.m_tY > 0)
+			m_tOrigin.m_tY -= m_tRenderInfo.m_uTileScale * 2;
+
+		m_tOrigin.m_tX = std::max(m_tOrigin.m_tX, 0);
+		m_tOrigin.m_tY = std::max(m_tOrigin.m_tY, 0);
+	}
+
+	this->UpdateRenderInfo();
 }
 
 void MapCanvas::OnMouseMiddleDown(wxMouseEvent &event)
