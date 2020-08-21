@@ -22,6 +22,15 @@ namespace LitePanel
 		T m_tX = { 0 }, m_tY = { 0 };
 
 		Point() = default;
+		Point(const Point &) = default;
+
+		template <typename Y>
+		Point(const Point<Y> &rhs):
+			m_tX{rhs.m_tX},
+			m_tY{rhs.m_tY}
+		{
+			//empty
+		}
 
 		Point(T x, T y):
 			m_tX(x),

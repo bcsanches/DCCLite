@@ -15,10 +15,10 @@
 namespace LitePanel
 {
 
-	TileMap::TileMap(const IntPoint_t size):
+	TileMap::TileMap(const TileCoord_t size):
 		m_tSize{size}
 	{
-		if ((size.m_tX <= 0) || (size.m_tY <= 0))
+		if ((size.m_tX == 0) || (size.m_tY == 0))
 			throw std::invalid_argument("[LitePanel::TileMap] size must be > 0");
 	}
 }

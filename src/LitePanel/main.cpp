@@ -49,7 +49,7 @@ bool LiteApp::OnInit()
 
 MainFrame::MainFrame(): 
 	wxFrame(NULL, wxID_ANY, "Lite Panel"),
-	m_clTileMap(LitePanel::IntPoint_t{4, 4})
+	m_clTileMap(LitePanel::TileCoord_t{4, 4})
 {
 	wxMenu* menuFile = new wxMenu;
 	menuFile->Append(ID_Hello, "&Hello...\tCtrl-H",
@@ -64,7 +64,7 @@ MainFrame::MainFrame():
 	menuBar->Append(menuFile, "&File");
 	menuBar->Append(menuHelp, "&Help");
 
-	auto oglCanvas = new MapCanvas(this);
+	auto oglCanvas = new LitePanel::MapCanvas(this);
 
 	oglCanvas->SetTileMap(&m_clTileMap);
 

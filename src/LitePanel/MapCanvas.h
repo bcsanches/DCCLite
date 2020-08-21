@@ -17,70 +17,75 @@
 
 constexpr auto DEFAULT_TILE_SIZE = 16;
 
-class MapCanvas: public OGLCanvas
+namespace LitePanel
 {
-	private:
-		struct RenderArgs;
+	class MapCanvas: public OGLCanvas
+	{
+		private:
+			struct RenderArgs;
 
-	public:
-		MapCanvas(wxWindow *parent, int id = -1);
+		public:
+			MapCanvas(wxWindow *parent, int id = -1);
 
-		void SetTileMap(const LitePanel::TileMap *tileMap) noexcept;
+			void SetTileMap(const LitePanel::TileMap *tileMap) noexcept;
 
-	protected:
-		void OnDraw() override;
+			protected:
+			void OnDraw() override;
 
-		void OnMouseWheel(wxMouseEvent &event);
-		void OnMouseMiddleDown(wxMouseEvent &event);
-		void OnMouseMiddleUp(wxMouseEvent &event);
-		void OnMouseMove(wxMouseEvent &event);
+			void OnMouseWheel(wxMouseEvent &event);
+			void OnMouseMiddleDown(wxMouseEvent &event);
+			void OnMouseMiddleUp(wxMouseEvent &event);
+			void OnMouseMove(wxMouseEvent &event);
 
-		void OnMouseCaptureLost(wxMouseCaptureLostEvent &event);
+			void OnMouseCaptureLost(wxMouseCaptureLostEvent &event);
 
-		void OnMouseLost();
+			void OnMouseLost();
 
-	private:
-		void DrawGrid(const RenderArgs &rargs);
+		private:
+			void DrawGrid(const RenderArgs &rargs);
 
-		void UpdateRenderInfo();
+			void UpdateRenderInfo();
 
-		RenderArgs MakeRenderArgs() const;
+			RenderArgs MakeRenderArgs() const;
 
-	private:
-		struct MapRenderInfo
-		{
-			unsigned m_uTileScale = DEFAULT_TILE_SIZE;
+		private:
+			struct ViewInfo
+			{
+				unsigned m_uTileScale = DEFAULT_TILE_SIZE;
 
-			//size of the world in pixes, based on tileScale
-			LitePanel::IntPoint_t m_tWorldSize;
-		};
+				//size of the world in pixes, based on tileScale
+				IntPoint_t m_tWorldSize;
 
-		struct RenderArgs
-		{
-			//Visible screen rect size in pixels (how many pixels we will draw or client rect on GUI)
-			LitePanel::IntPoint_t m_tViewClientSize;
+				TileCoord_t WorldToTile(const IntPoint_t &worldPoint) const;
+			};
 
-			//View position in world space - upper left corner
-			LitePanel::IntPoint_t m_tViewOrigin;	
+			struct RenderArgs
+			{
+				//Visible screen rect size in pixels (how many pixels we will draw or client rect on GUI)
+				IntPoint_t m_tViewClientSize;
 
-			//how many tiles we can fit on the current client size
-			LitePanel::IntPoint_t m_tTilesClientSize;
+				//View position in world space - upper left corner
+				IntPoint_t m_tViewOrigin;				
 
-			//First visible tile on view (upper left corner) - can be out of bounds
-			LitePanel::IntPoint_t m_tTilePos_ViewOrigin;
+				//First visible tile on view (upper left corner) - can be out of bounds
+				TileCoord_t m_tTilePos_ViewOrigin;
 
-			//The last visible tile on view (right bottom corner) - can be out of bounds
-			LitePanel::IntPoint_t m_tTilePos_LastVisible;
+				//The last visible tile on view (right bottom corner) - can be out of bounds
+				TileCoord_t m_tTilePos_LastVisible;
 
-			//Number of visible tiles that can fit on screen, including partially visible tiles on screen borders
-			LitePanel::IntPoint_t m_tNumVisibleTiles;			
-		};
+				//Number of visible tiles that can fit on screen, including partially visible tiles on screen borders
+				//if any of this one is zero, no visible tiles
+				TileCoord_t m_tNumVisibleTiles;
+			};
 
-		LitePanel::IntPoint_t m_tOrigin;		
-		
-		LitePanel::IntPoint_t m_tMoveStartPos;
+			IntPoint_t m_tOrigin;
 
-		const LitePanel::TileMap *m_pclTileMap = nullptr;
+			IntPoint_t m_tMoveStartPos;
 
-		MapRenderInfo m_tRenderInfo;		
-};
+			const TileMap *m_pclTileMap = nullptr;
+
+			ViewInfo m_tViewInfo;
+	};
+}
+
+

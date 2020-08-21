@@ -18,14 +18,16 @@ namespace LitePanel
 {
 	constexpr auto DEFAULT_TILE_SIZE = 32;
 
+	typedef Point<uint8_t> TileCoord_t;
+
 	class TileMap
 	{
 		public:
-			TileMap(const IntPoint_t size);
+			TileMap(const TileCoord_t size);
 
-			const IntPoint_t &GetSize() const noexcept { return m_tSize; }
+			const TileCoord_t &GetSize() const noexcept { return m_tSize; }
 
 		private:
-			IntPoint_t m_tSize;
+			TileCoord_t m_tSize;
 	};
 }
