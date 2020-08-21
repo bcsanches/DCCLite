@@ -92,12 +92,12 @@
   {
     "name":"STA_D02C",
     "class":"Sensor",
-    "pin":3,
+    "pin":68,
     "address":"1728",
-    "pullup":true,
+    "pullup":false,
     "inverted":true,
     "activateDelay":0,
-    "deactivateDelay":0
+    "deactivateDelay":5
   },  
   {
     "name":"STA_D03C",
@@ -392,7 +392,7 @@
   {
     "name":"STA_D10A",
     "class":"Sensor",
-    "pin":68,
+    "pin":3,
     "address":"1798",
     "pullup":true,
     "inverted":true,
