@@ -12,6 +12,7 @@
 #include <wx/wx.h>
 
 #include "MapCanvas.h"
+#include "MapObject.h"
 
 class LiteApp : public wxApp
 {
@@ -67,6 +68,9 @@ MainFrame::MainFrame():
 	auto oglCanvas = new LitePanel::MapCanvas(this);
 
 	oglCanvas->SetTileMap(&m_clTileMap);
+
+	auto obj = std::make_unique<LitePanel::MapObject>(LitePanel::TileCoord_t{1, 1});
+	m_clTileMap.RegisterObject(std::move(obj));
 
 	SetMenuBar(menuBar);
 

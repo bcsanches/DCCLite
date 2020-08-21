@@ -10,12 +10,21 @@
 
 #pragma once
 
-
+#include "TileMap.h"
 
 namespace LitePanel
 {	
 	class MapObject
 	{
-		public:			
+		public:
+			MapObject(const TileCoord_t &position);
+
+			inline const TileCoord_t &GetPosition() const noexcept
+			{
+				return m_tPosition;
+			}
+
+		private:
+			TileCoord_t m_tPosition;
 	};
 }

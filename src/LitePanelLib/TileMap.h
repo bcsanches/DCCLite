@@ -12,6 +12,9 @@
 
 #include <cstdint>
 
+#include <memory>
+#include <vector>
+
 #include "Point.h"
 
 namespace LitePanel
@@ -20,6 +23,8 @@ namespace LitePanel
 
 	typedef Point<uint8_t> TileCoord_t;
 
+	class MapObject;
+
 	class TileMap
 	{
 		public:
@@ -27,7 +32,15 @@ namespace LitePanel
 
 			const TileCoord_t &GetSize() const noexcept { return m_tSize; }
 
+			void RegisterObject(std::unique_ptr<MapObject> object);
+
+		private:
+			size_t GetIndex(const TileCoord_t &position) const;
+
 		private:
 			TileCoord_t m_tSize;
+
+			std::vector<std::unique_ptr<MapObject>> m_vecMap;
+
 	};
 }

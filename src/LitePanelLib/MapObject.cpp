@@ -9,3 +9,12 @@
 // defined by the Mozilla Public License, v. 2.0.
 
 #include "MapObject.h"
+
+namespace LitePanel
+{
+	MapObject::MapObject(const TileCoord_t &position):
+		m_tPosition{position}
+	{
+		//empty
+	}	
+}
