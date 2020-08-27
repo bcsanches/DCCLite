@@ -70,7 +70,7 @@ MainFrame::MainFrame():
 	oglCanvas->SetTileMap(&m_clTileMap);
 
 	auto obj = std::make_unique<LitePanel::MapObject>(LitePanel::TileCoord_t{1, 1});
-	m_clTileMap.RegisterObject(std::move(obj));
+	m_clTileMap.RegisterObject(std::move(obj), 0);
 
 	SetMenuBar(menuBar);
 

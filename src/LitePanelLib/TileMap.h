@@ -25,12 +25,10 @@ namespace LitePanel
 
 	class MapObject;
 
-	class TileMap
+	class TileLayer
 	{
 		public:
-			TileMap(const TileCoord_t size);
-
-			const TileCoord_t &GetSize() const noexcept { return m_tSize; }
+			TileLayer(const TileCoord_t size);
 
 			void RegisterObject(std::unique_ptr<MapObject> object);
 
@@ -38,9 +36,24 @@ namespace LitePanel
 			size_t GetIndex(const TileCoord_t &position) const;
 
 		private:
+			//It is redundant to save the size on every layer, but makes life easier
 			TileCoord_t m_tSize;
 
 			std::vector<std::unique_ptr<MapObject>> m_vecMap;
+	};
 
+	class TileMap
+	{
+		public:
+			TileMap(const TileCoord_t size);
+
+			const TileCoord_t &GetSize() const noexcept { return m_tSize; }
+
+			void RegisterObject(std::unique_ptr<MapObject> object, const uint8_t layer);			
+
+		private:
+			TileCoord_t m_tSize;
+
+			std::vector<TileLayer> m_vecLayers;
 	};
 }
