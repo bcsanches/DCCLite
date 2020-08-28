@@ -20,10 +20,18 @@
 namespace LitePanel
 {
 	TileLayer::TileLayer(const TileCoord_t size):
-		m_vecMap{size.m_tX * size.m_tY}
+		m_vecMap{size.m_tX * size.m_tY},
+		m_tSize{size}
 	{
 		assert(size.m_tX > 0);
 		assert(size.m_tY > 0);
+	}
+
+	TileLayer::TileLayer(TileLayer &&other) noexcept:
+		m_tSize(std::move(other.m_tSize)),
+		m_vecMap(std::move(other.m_vecMap))
+	{
+		//empty
 	}
 
 	size_t TileLayer::GetIndex(const TileCoord_t &position) const
@@ -37,6 +45,13 @@ namespace LitePanel
 			));
 
 		return (position.m_tY * m_tSize.m_tY) + position.m_tX;
+	}
+
+	const MapObject *TileLayer::TryGetMapObject(const TileCoord_t position) const
+	{
+		auto index = this->GetIndex(position);
+
+		return m_vecMap[index].get();
 	}
 
 	void TileLayer::RegisterObject(std::unique_ptr<MapObject> object)

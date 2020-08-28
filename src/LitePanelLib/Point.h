@@ -39,12 +39,12 @@ namespace LitePanel
 			//empty
 		}
 
-		const Point operator/(T num) const
+		const Point operator/(const T num) const
 		{
 			return Point(m_tX / num, m_tY / num);
 		}
-
-		const Point operator*(T num) const
+		
+		const Point operator*(const T num) const
 		{
 			return Point{ m_tX * num, m_tY * num };
 		}

@@ -11,13 +11,30 @@
 
 #include "MapCanvas.h"
 
+struct ScaleInfo
+{
+	uint8_t m_uScale;
+	uint8_t m_uLineWidth;
+};
+
+constexpr auto MAX_ZOOM_LEVELS = 5;
+
+constexpr ScaleInfo g_tScales[MAX_ZOOM_LEVELS] = 
+{
+	{8, 1},
+	{16, 2},
+	{32, 4},
+	{64, 8},
+	{128, 16}
+};
+
+#define CURRENT_SCALE (g_tScales[m_uZoomLevel].m_uScale)
 
 namespace LitePanel
-{
-
+{	
 	TileCoord_t MapCanvas::ViewInfo::WorldToTile(const IntPoint_t &worldPoint) const
 	{
-		auto localCoord = worldPoint / m_uTileScale;
+		auto localCoord = worldPoint / CURRENT_SCALE;
 
 		return TileCoord_t{ static_cast<TileCoord_t::Type_t>(localCoord.m_tX), static_cast<TileCoord_t::Type_t>(localCoord.m_tY)};
 	}
@@ -25,7 +42,7 @@ namespace LitePanel
 
 	MapCanvas::MapCanvas(wxWindow *parent, int id):
 		OGLCanvas{parent, id}	
-	{
+	{		
 		Bind(wxEVT_MIDDLE_DOWN, &MapCanvas::OnMouseMiddleDown, this);	
 		Bind(wxEVT_MOUSEWHEEL, &MapCanvas::OnMouseWheel, this);
 	}
@@ -44,6 +61,8 @@ namespace LitePanel
 	{
 		assert(m_pclTileMap);
 
+		m_tViewInfo.m_uTileScale = g_tScales[m_tViewInfo.m_uZoomLevel].m_uScale;
+		m_tViewInfo.m_uLineWidth = g_tScales[m_tViewInfo.m_uZoomLevel].m_uLineWidth;
 		m_tViewInfo.m_tWorldSize = LitePanel::IntPoint_t{m_pclTileMap->GetSize()} * m_tViewInfo.m_uTileScale;
 
 		this->Refresh();
@@ -156,6 +175,51 @@ namespace LitePanel
 		//glPopMatrix();
 	}
 
+	void MapCanvas::Render(const RenderArgs &rargs)
+	{
+		assert(m_pclTileMap);
+		
+		assert((rargs.m_tNumVisibleTiles.m_tX > 0) && (rargs.m_tNumVisibleTiles.m_tY > 0));
+
+		glMatrixMode(GL_MODELVIEW);
+
+		for(auto y = rargs.m_tTilePos_ViewOrigin.m_tY; y < rargs.m_tTilePos_LastVisible.m_tY; ++y)
+		{
+			for(auto x = rargs.m_tTilePos_ViewOrigin.m_tX; x < rargs.m_tTilePos_LastVisible.m_tX; ++x)
+			{
+				const auto position = TileCoord_t{x, y};				
+				
+				auto layers = m_pclTileMap->GetLayers();
+				for (auto layer = 0; layer < m_pclTileMap->GetNumLayers(); ++layer)
+				{
+					auto obj = layers[layer].TryGetMapObject(position);
+
+					if(!obj)
+						continue;
+
+					//go to center of tile
+					IntPoint_t tileWorldPos = IntPoint_t{position} * m_tViewInfo.m_uTileScale;
+					tileWorldPos += IntPoint_t{1, 1} * (m_tViewInfo.m_uTileScale / 2);
+
+					glPushMatrix();
+					glTranslatef(tileWorldPos.m_tX, tileWorldPos.m_tY, 0);					
+
+					glLineWidth(m_tViewInfo.m_uLineWidth);
+
+					glBegin(GL_LINES);
+
+					glVertex2f(static_cast<int>(m_tViewInfo.m_uTileScale) / -2, 0);
+					glVertex2f(m_tViewInfo.m_uTileScale / 2, 0);
+
+					glEnd();
+
+
+					glPopMatrix();
+				}
+			}			
+		}
+	}
+
 	void MapCanvas::OnDraw()
 	{
 		// Clear
@@ -181,8 +245,8 @@ namespace LitePanel
 
 			glOrtho(
 				rargs.m_tViewOrigin.m_tX, 
-				GetSize().x + rargs.m_tViewOrigin.m_tX,
-				GetSize().y + rargs.m_tViewOrigin.m_tY,
+				static_cast<GLdouble>(GetSize().x + rargs.m_tViewOrigin.m_tX),
+				static_cast<GLdouble>(GetSize().y + rargs.m_tViewOrigin.m_tY),
 				rargs.m_tViewOrigin.m_tY,
 				-1, 
 				1
@@ -222,6 +286,7 @@ namespace LitePanel
 	#endif
 
 			this->DrawGrid(rargs);
+			this->Render(rargs);
 		}		
 
 NOTILES:
@@ -232,17 +297,17 @@ NOTILES:
 	{	
 		if (event.GetWheelRotation() > 0)
 		{
-			m_tViewInfo.m_uTileScale *= 2;
+			m_tViewInfo.m_uZoomLevel = std::min(m_tViewInfo.m_uZoomLevel + 1, MAX_ZOOM_LEVELS-1);
 
-			if(m_tViewInfo.m_uTileScale > 128)
-				m_tViewInfo.m_uTileScale = 128;
+			m_tViewInfo.m_uTileScale = g_tScales[m_tViewInfo.m_uZoomLevel].m_uScale;
 		}
 		else
 		{
-			if(m_tViewInfo.m_uTileScale == 8)
+			if(m_tViewInfo.m_uZoomLevel == 0)
 				return;
 
-			m_tViewInfo.m_uTileScale /= 2;
+			m_tViewInfo.m_uZoomLevel --;
+			m_tViewInfo.m_uTileScale = g_tScales[m_tViewInfo.m_uZoomLevel].m_uScale;
 
 			if(m_tOrigin.m_tX > 0)
 				m_tOrigin.m_tX -= m_tViewInfo.m_uTileScale * 2;
