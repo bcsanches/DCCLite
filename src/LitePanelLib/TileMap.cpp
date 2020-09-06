@@ -10,6 +10,7 @@
 
 #include "TileMap.h"
 
+#include <assert.h>
 #include <stdexcept>
 
 #include <fmt/format.h>
@@ -18,19 +19,25 @@
 
 namespace LitePanel
 {
-
-	TileMap::TileMap(const TileCoord_t size):
-		m_tSize{size},
-		m_vecMap{size.m_tX * size.m_tY}
+	TileLayer::TileLayer(const TileCoord_t size):
+		m_vecMap{size.m_tX * size.m_tY},
+		m_tSize{size}
 	{
-		if ((size.m_tX == 0) || (size.m_tY == 0))
-			throw std::invalid_argument("[LitePanel::TileMap] size must be > 0");		
+		assert(size.m_tX > 0);
+		assert(size.m_tY > 0);
 	}
 
-	size_t TileMap::GetIndex(const TileCoord_t &position) const
+	TileLayer::TileLayer(TileLayer &&other) noexcept:
+		m_tSize(std::move(other.m_tSize)),
+		m_vecMap(std::move(other.m_vecMap))
 	{
-		if((position.m_tX >= m_tSize.m_tX) || (position.m_tY >= m_tSize.m_tY))
-			throw std::out_of_range(fmt::format("[TileMap::CheckCoordinate] Coordinate {} - {} is out of bounds for size {} - {]", 
+		//empty
+	}
+
+	size_t TileLayer::GetIndex(const TileCoord_t &position) const
+	{
+		if ((position.m_tX >= m_tSize.m_tX) || (position.m_tY >= m_tSize.m_tY))
+			throw std::out_of_range(fmt::format("[TileMap::CheckCoordinate] Coordinate {} - {} is out of bounds for size {} - {]",
 				position.m_tX,
 				position.m_tY,
 				m_tSize.m_tX,
@@ -40,7 +47,14 @@ namespace LitePanel
 		return (position.m_tY * m_tSize.m_tY) + position.m_tX;
 	}
 
-	void TileMap::RegisterObject(std::unique_ptr<MapObject> object)
+	const MapObject *TileLayer::TryGetMapObject(const TileCoord_t position) const
+	{
+		auto index = this->GetIndex(position);
+
+		return m_vecMap[index].get();
+	}
+
+	void TileLayer::RegisterObject(std::unique_ptr<MapObject> object)
 	{
 		auto index = this->GetIndex(object->GetPosition());
 
@@ -52,5 +66,24 @@ namespace LitePanel
 		}
 
 		std::swap(m_vecMap[index], object);
+	}
+
+
+	TileMap::TileMap(const TileCoord_t size)
+	{
+		if ((size.m_tX == 0) || (size.m_tY == 0))
+			throw std::invalid_argument("[LitePanel::TileMap] size must be > 0");		
+
+		//create layer 0
+		m_vecLayers.emplace_back(size);
+	}
+
+
+	void TileMap::RegisterObject(std::unique_ptr<MapObject> object, const uint8_t layer)
+	{
+		if(layer >= m_vecLayers.size())
+			throw std::runtime_error(fmt::format("[TileMap::RegisterObject] Layer {} is invalid", layer));
+
+		m_vecLayers[layer].RegisterObject(std::move(object));
 	}
 }

@@ -22,3 +22,6 @@
 [submodule "contrib/googletest"]
 	path = contrib/googletest
 	url = https://github.com/google/googletest.git
+[submodule "contrib/magic_enum"]
+	path = contrib/magic_enum
+	url = https://github.com/Neargye/magic_enum.git

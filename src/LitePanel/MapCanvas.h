@@ -15,7 +15,7 @@
 #include "Point.h"
 #include "TileMap.h"
 
-constexpr auto DEFAULT_TILE_SIZE = 16;
+constexpr auto DEFAULT_ZOOM_LEVEL = 1;
 
 namespace LitePanel
 {
@@ -48,10 +48,14 @@ namespace LitePanel
 
 			RenderArgs MakeRenderArgs() const;
 
+			void Render(const RenderArgs &rargs);
+
 		private:
 			struct ViewInfo
 			{
-				unsigned m_uTileScale = DEFAULT_TILE_SIZE;
+				uint8_t m_uZoomLevel = DEFAULT_ZOOM_LEVEL;				
+				unsigned m_uTileScale;
+				unsigned m_uLineWidth;
 
 				//size of the world in pixes, based on tileScale
 				IntPoint_t m_tWorldSize;
