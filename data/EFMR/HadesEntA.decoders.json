@@ -5,10 +5,10 @@
     "address":"1850",
     "pin": 2,
     "inverted": false,
-    "powerPin":22,
-    "frogPin":24,
+    "powerPin":22,    
     "invertedFrog":true,
-    "operationTime":1000
+    "operationTime":1000,
+    "comment":"Frogpin 24 - disabled"
   },
   {
     "name":"STA_T01",
