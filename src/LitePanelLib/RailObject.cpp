@@ -8,35 +8,27 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#pragma once
-
-#include "TileMap.h"
+#include "RailObject.h"
 
 namespace LitePanel
-{	
-	enum class ObjectAngles
+{
+	RailObject::RailObject(const TileCoord_t &position):
+		MapObject(position)
 	{
-		EAST = 0,
-		NORTHEAST = 45,
-		NORTH = 90,
-		NORTHWEST = 135,
-		WEST = 180,
-		SOUTHWEST = 225,
-		SOUTH = 270,
-		SOUTHEAST = 315
-	};
+		//empty
+	}	
 
-	class MapObject
+	SimpleRailObject::SimpleRailObject(const TileCoord_t &position, const SimpleRailTypes type):
+		RailObject(position),
+		m_tType(type)
 	{
-		public:
-			MapObject(const TileCoord_t &position);
+		//empty
+	}
 
-			inline const TileCoord_t &GetPosition() const noexcept
-			{
-				return m_tPosition;
-			}
-
-		private:
-			TileCoord_t m_tPosition;
-	};
+	JunctionRailObject::JunctionRailObject(const TileCoord_t &position, const JunctionTypes type):
+		RailObject(position),
+		m_tType(type)
+	{
+		//empty
+	}
 }
