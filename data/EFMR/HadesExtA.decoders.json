@@ -1,14 +1,4 @@
-[
-{
-      "name":"DebugButton",
-      "class":"Sensor",
-      "pin":2,
-      "address":"5000",
-      "pullup":true,
-      "inverted":true,
-      "activateDelay":0,
-      "deactivateDelay":0
-    },      
+[      
   {
     "name":"STA_T11",
     "class":"ServoTurnout",
@@ -82,10 +72,10 @@
     "class":"Sensor",
     "pin":69,
     "address":"1727",
-    "pullup":true,
-    "inverted":false,
+    "pullup":false,
+    "inverted":true,
     "activateDelay":0,
-    "deactivateDelay":0,
+    "deactivateDelay":5,
     "comment":"Sensor final do staging linha 01",
     "sector":"ST/A"
   },  
@@ -97,7 +87,9 @@
     "pullup":false,
     "inverted":true,
     "activateDelay":0,
-    "deactivateDelay":5
+    "deactivateDelay":5,
+    "comment":"Sensor final do staging linha 02",
+    "sector":"ST/A"
   },  
   {
     "name":"STA_D03C",

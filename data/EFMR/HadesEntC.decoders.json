@@ -1,4 +1,14 @@
-[     
+[
+{
+      "name":"DebugButton",
+      "class":"Sensor",
+      "pin":68,
+      "address":"5000",
+      "pullup":true,
+      "inverted":true,
+      "activateDelay":0,
+      "deactivateDelay":0
+    },     
   {
     "name": "STC_T01",
     "class": "ServoTurnout",
