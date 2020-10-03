@@ -11,22 +11,23 @@
 #include "RailObject.h"
 
 namespace LitePanel
-{
-	RailObject::RailObject(const TileCoord_t &position):
-		MapObject(position)
+{	
+	RailObject::RailObject(const TileCoord_t &position, ObjectAngles angle):
+		MapObject(position),
+		m_tAngle(angle)
 	{
 		//empty
 	}	
 
-	SimpleRailObject::SimpleRailObject(const TileCoord_t &position, const SimpleRailTypes type):
-		RailObject(position),
+	SimpleRailObject::SimpleRailObject(const TileCoord_t &position, ObjectAngles angle, const SimpleRailTypes type):
+		RailObject(position, angle),
 		m_tType(type)
 	{
 		//empty
 	}
 
-	JunctionRailObject::JunctionRailObject(const TileCoord_t &position, const JunctionTypes type):
-		RailObject(position),
+	JunctionRailObject::JunctionRailObject(const TileCoord_t &position, ObjectAngles angle, const JunctionTypes type):
+		RailObject(position, angle),
 		m_tType(type)
 	{
 		//empty

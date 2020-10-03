@@ -14,13 +14,17 @@
 
 namespace LitePanel
 {	
+	/**
+	* By design, those are immutable
+	
+	*/
 	class RailObject: public MapObject
 	{
 		public:
-			RailObject(const TileCoord_t &position);	
+			RailObject(const TileCoord_t &position, ObjectAngles angle = ObjectAngles::EAST);
 
 		private:
-			ObjectAngles m_tAngle = ObjectAngles::EAST;
+			const ObjectAngles m_tAngle = ObjectAngles::EAST;
 	};
 
 	enum class SimpleRailTypes
@@ -28,13 +32,14 @@ namespace LitePanel
 		STRAIGHT,
 		LEFT_TURN,
 		RIGHT_TURN,
-		CROSSING
+		CROSSING,
+		TERMINAL
 	};
 
 	class SimpleRailObject: public RailObject
 	{
 		public:
-			SimpleRailObject(const TileCoord_t &position, const SimpleRailTypes type);
+			SimpleRailObject(const TileCoord_t &position, ObjectAngles angle, const SimpleRailTypes type);
 
 		private:
 			const SimpleRailTypes m_tType;
@@ -49,7 +54,7 @@ namespace LitePanel
 	class JunctionRailObject: public RailObject
 	{
 		public:
-			JunctionRailObject(const TileCoord_t &position, const JunctionTypes type);
+			JunctionRailObject(const TileCoord_t &position, ObjectAngles angle, const JunctionTypes type);
 
 		private:
 			const JunctionTypes m_tType;

@@ -50,7 +50,7 @@ bool LiteApp::OnInit()
 
 MainFrame::MainFrame(): 
 	wxFrame(NULL, wxID_ANY, "Lite Panel"),
-	m_clTileMap(LitePanel::TileCoord_t{4, 4})
+	m_clTileMap(LitePanel::TileCoord_t{32, 32})
 {
 	wxMenu* menuFile = new wxMenu;
 	menuFile->Append(ID_Hello, "&Hello...\tCtrl-H",
