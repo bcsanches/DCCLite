@@ -3,6 +3,7 @@ set(LitePanel_SRCS
   GLCanvas.cpp
   main.cpp    
   MapCanvas.cpp
+  LitePanel.rc
 )
 
 set(LitePanel_HDRS

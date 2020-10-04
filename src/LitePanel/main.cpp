@@ -75,7 +75,31 @@ MainFrame::MainFrame():
 	SetMenuBar(menuBar);
 
 	CreateStatusBar();
-	SetStatusText("Welcome to wxWidgets!");
+	SetStatusText("Welcome to LitePanel Editor!");
+
+	auto toolBar = this->CreateToolBar(wxTB_LEFT | wxTB_FLAT | wxTB_DOCKABLE);
+	toolBar->AddTool(
+		-1, 
+		"track", 
+		wxBITMAP(straight_icon),
+		wxNullBitmap, 
+		wxITEM_NORMAL, 
+		"Horizontal track section",
+		"Creates a horizontal track section"
+	);
+
+	toolBar->AddTool(
+		-1,
+		"track",
+		wxBITMAP(straight_vertical_icon),
+		wxNullBitmap,
+		wxITEM_NORMAL,
+		"Vertical track section",
+		"Creates a vertical track section"
+	);
+
+	toolBar->Realize();
+	//toolBar->SetRows(1);
 
 	Bind(wxEVT_MENU, &MainFrame::OnHello, this, ID_Hello);
 	Bind(wxEVT_MENU, &MainFrame::OnAbout, this, wxID_ABOUT);

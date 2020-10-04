@@ -1,0 +1,6 @@
+
+
+straight_icon BITMAP "resources/bitmaps/straight.bmp"
+straight_vertical_icon BITMAP "resources/bitmaps/straight_v.bmp"
+
+
