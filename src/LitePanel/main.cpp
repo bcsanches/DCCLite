@@ -77,7 +77,7 @@ MainFrame::MainFrame():
 	CreateStatusBar();
 	SetStatusText("Welcome to LitePanel Editor!");
 
-	auto toolBar = this->CreateToolBar(wxTB_LEFT | wxTB_FLAT | wxTB_DOCKABLE);
+	auto toolBar = this->CreateToolBar(wxTB_TOP | wxTB_FLAT | wxTB_DOCKABLE);
 	toolBar->AddTool(
 		-1, 
 		"track", 
