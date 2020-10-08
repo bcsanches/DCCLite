@@ -81,7 +81,7 @@ MainFrame::MainFrame():
 	toolBar->AddTool(
 		-1, 
 		"track", 
-		wxBITMAP(straight_icon),
+		wxBITMAP(rail_straight_000_icon),
 		wxNullBitmap, 
 		wxITEM_NORMAL, 
 		"Horizontal track section",
@@ -91,12 +91,121 @@ MainFrame::MainFrame():
 	toolBar->AddTool(
 		-1,
 		"track",
-		wxBITMAP(straight_vertical_icon),
+		wxBITMAP(rail_straight_045_icon),
+		wxNullBitmap,
+		wxITEM_NORMAL,
+		"Diagonal track section",
+		"Creates a diagonal track section"
+	);
+
+	toolBar->AddTool(
+		-1,
+		"track",
+		wxBITMAP(rail_straight_090_icon),
 		wxNullBitmap,
 		wxITEM_NORMAL,
 		"Vertical track section",
 		"Creates a vertical track section"
 	);
+
+	toolBar->AddTool(
+		-1,
+		"track",
+		wxBITMAP(rail_straight_135_icon),
+		wxNullBitmap,
+		wxITEM_NORMAL,
+		"Diagonal inverted track section",
+		"Creates a inverted diagonal track section"
+	);
+
+	toolBar->AddSeparator();
+
+	toolBar->AddTool(
+		-1,
+		"track",
+		wxBITMAP(rail_left_curve_000_icon),
+		wxNullBitmap,
+		wxITEM_NORMAL,
+		"Left curve track section",
+		"Creates a left curve track section"
+	);
+
+	toolBar->AddTool(
+		-1,
+		"track",
+		wxBITMAP(rail_left_curve_090_icon),
+		wxNullBitmap,
+		wxITEM_NORMAL,
+		"Left curve track section",
+		"Creates a left curve track section"
+	);
+
+	toolBar->AddTool(
+		-1,
+		"track",
+		wxBITMAP(rail_left_curve_180_icon),
+		wxNullBitmap,
+		wxITEM_NORMAL,
+		"Left curve track section",
+		"Creates a left curve track section"
+	);
+
+	toolBar->AddTool(
+		-1,
+		"track",
+		wxBITMAP(rail_left_curve_270_icon),
+		wxNullBitmap,
+		wxITEM_NORMAL,
+		"Left curve track section",
+		"Creates a left curve track section"
+	);
+
+	toolBar->AddSeparator();
+
+	toolBar->AddTool(
+		-1,
+		"track",
+		wxBITMAP(rail_right_curve_000_icon),
+		wxNullBitmap,
+		wxITEM_NORMAL,
+		"Right curve track section",
+		"Creates a right curve track section"
+	);
+
+	toolBar->AddTool(
+		-1,
+		"track",
+		wxBITMAP(rail_right_curve_090_icon),
+		wxNullBitmap,
+		wxITEM_NORMAL,
+		"Right curve track section",
+		"Creates a right curve track section"
+	);
+
+	toolBar->AddTool(
+		-1,
+		"track",
+		wxBITMAP(rail_right_curve_180_icon),
+		wxNullBitmap,
+		wxITEM_NORMAL,
+		"Right curve track section",
+		"Creates a right curve track section"
+	);
+
+	toolBar->AddTool(
+		-1,
+		"track",
+		wxBITMAP(rail_right_curve_270_icon),
+		wxNullBitmap,
+		wxITEM_NORMAL,
+		"Right curve track section",
+		"Creates a right curve track section"
+	);
+
+	toolBar->AddSeparator();
+
+
+
 
 	toolBar->Realize();
 	//toolBar->SetRows(1);
