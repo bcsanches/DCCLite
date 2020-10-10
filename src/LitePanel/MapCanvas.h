@@ -19,6 +19,8 @@ constexpr auto DEFAULT_ZOOM_LEVEL = 1;
 
 namespace LitePanel
 {
+	class SimpleRailObject;
+
 	class MapCanvas: public OGLCanvas
 	{
 		private:
@@ -50,11 +52,18 @@ namespace LitePanel
 
 			void Render(const RenderArgs &rargs);
 
+			void DrawStraightRail(const LitePanel::SimpleRailObject &obj) const;
+			void DrawCurveRail(const LitePanel::SimpleRailObject &obj) const;
+
+			void DrawObject(const MapObject &obj) const;
+			void DrawSimpleRail(const LitePanel::SimpleRailObject &obj) const;
+
 		private:
 			struct ViewInfo
 			{
 				uint8_t m_uZoomLevel = DEFAULT_ZOOM_LEVEL;				
 				unsigned m_uTileScale;
+				unsigned m_uHalfTileScale;
 				unsigned m_uLineWidth;
 
 				//size of the world in pixes, based on tileScale

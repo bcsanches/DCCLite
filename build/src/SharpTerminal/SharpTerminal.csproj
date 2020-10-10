@@ -77,6 +77,7 @@
     <None Include="C:\develop\bcs\DCCLite\src\SharpTerminal\CMakeLists.txt">
       <Link>CMakeLists.txt</Link>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <Target Condition="'$(Configuration)|$(Platform)'=='Debug|Win32' Or '$(Configuration)|$(Platform)'=='Debug|x86'" Name="CustomCommand_Debug_40994d8c3eb89fd8fb1ca1c9f3b8b721" Inputs="C:/develop/bcs/DCCLite/src/SharpTerminal/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCSharpInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CSharpUtilities.cmake;C:\develop\bcs\DCCLite\build\CMakeFiles\3.14.4\CMakeCSharpCompiler.cmake;C:\develop\bcs\DCCLite\src\SharpTerminal\CMakeLists.txt;C:\develop\bcs\DCCLite\src\SharpTerminal\CMakeLists.txt" Outputs="C:\develop\bcs\DCCLite\build\src\SharpTerminal\CMakeFiles\generate.stamp">
     <Exec Command="echo Building Custom Rule C:/develop/bcs/DCCLite/src/SharpTerminal/CMakeLists.txt" />
@@ -232,9 +233,8 @@
       <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
     </Reference>
-    <Reference Include="System.Json">
-      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+    <Reference Include="System.Json, Version=2.0.8.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Json.4.7.1\lib\net461\System.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.Net.Http">
       <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>

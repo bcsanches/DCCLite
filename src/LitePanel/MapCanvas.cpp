@@ -10,6 +10,7 @@
 
 
 #include "MapCanvas.h"
+#include "RailObject.h"
 
 struct ScaleInfo
 {
@@ -62,6 +63,7 @@ namespace LitePanel
 		assert(m_pclTileMap);
 
 		m_tViewInfo.m_uTileScale = g_tScales[m_tViewInfo.m_uZoomLevel].m_uScale;
+		m_tViewInfo.m_uHalfTileScale = g_tScales[m_tViewInfo.m_uZoomLevel].m_uScale / 2;
 		m_tViewInfo.m_uLineWidth = g_tScales[m_tViewInfo.m_uZoomLevel].m_uLineWidth;
 		m_tViewInfo.m_tWorldSize = LitePanel::IntPoint_t{m_pclTileMap->GetSize()} * m_tViewInfo.m_uTileScale;
 
@@ -121,8 +123,7 @@ namespace LitePanel
 		//glTranslatef(-rargs.m_tViewOrigin.m_tX, -rargs.m_tViewOrigin.m_tY, 0);
 
 		auto lastVisibleTileCorner = IntPoint_t{rargs.m_tNumVisibleTiles} * m_tViewInfo.m_uTileScale;
-
-	#if 1
+	
 		for (int i = 0; i <= rargs.m_tNumVisibleTiles.m_tX; ++i)
 		{
 			LitePanel::IntPoint_t tilePos{ rargs.m_tTilePos_ViewOrigin.m_tX + i, rargs.m_tTilePos_ViewOrigin.m_tY };
@@ -147,32 +148,80 @@ namespace LitePanel
 	
 			glVertex2i(tileWorldPos.m_tX, tileWorldPos.m_tY);
 			glVertex2i((rargs.m_tTilePos_LastVisible.m_tX) * m_tViewInfo.m_uTileScale, tileWorldPos.m_tY);
-		}
-	#else
-		for (int i = 0; i <= m_pclTileMap->GetSize().m_tX; ++i)
-		{
-			LitePanel::IntPoint_t tilePos{ i,  0 };
-
-			auto tileWorldPos = tilePos * m_tRenderInfo.m_uTileScale;		
-
-			glVertex2i(tileWorldPos.m_tX, 0);
-			glVertex2i(tileWorldPos.m_tX, m_pclTileMap->GetSize().m_tY * m_tRenderInfo.m_uTileScale);
-		}
-
-		for (int i = 0; i <= m_pclTileMap->GetSize().m_tY; ++i)
-		{
-			LitePanel::IntPoint_t tilePos{ 0,  i };
-
-			auto tileWorldPos = tilePos * m_tRenderInfo.m_uTileScale;		
-
-			glVertex2i(0, tileWorldPos.m_tY);
-			glVertex2i(m_pclTileMap->GetSize().m_tX * m_tRenderInfo.m_uTileScale, tileWorldPos.m_tY);
-		}
-	#endif
+		}	
 
 		glEnd();
 
 		//glPopMatrix();
+	}
+
+	void MapCanvas::DrawStraightRail(const LitePanel::SimpleRailObject &rail) const
+	{
+		glLineWidth(m_tViewInfo.m_uLineWidth);
+
+		switch(rail.GetAngle())
+		{
+			case LitePanel::ObjectAngles::EAST:
+			case LitePanel::ObjectAngles::NORTH:
+			case LitePanel::ObjectAngles::SOUTH:
+			case LitePanel::ObjectAngles::WEST:
+				{
+					glRotatef(static_cast<GLfloat>(rail.GetAngle()), 0, 0, 1);					
+
+					glBegin(GL_LINES);
+
+					glVertex2f(-static_cast<GLfloat>(m_tViewInfo.m_uHalfTileScale), 0);
+					glVertex2f(m_tViewInfo.m_uHalfTileScale, 0);
+
+					glEnd();
+				}
+				break;
+
+			default:
+				{
+					glBegin(GL_LINES);
+
+					glVertex2f(-static_cast<GLfloat>(m_tViewInfo.m_uHalfTileScale), -static_cast<GLfloat>(m_tViewInfo.m_uHalfTileScale));
+					glVertex2f(m_tViewInfo.m_uHalfTileScale, m_tViewInfo.m_uHalfTileScale);					
+
+					glEnd();
+				}
+		}		
+	}
+
+	void MapCanvas::DrawCurveRail(const LitePanel::SimpleRailObject &obj) const
+	{
+
+	}
+
+	void MapCanvas::DrawSimpleRail(const LitePanel::SimpleRailObject &rail) const
+	{
+		switch (rail.GetType())
+		{
+			case SimpleRailTypes::STRAIGHT:
+			case SimpleRailTypes::TERMINAL:
+				this->DrawStraightRail(rail);
+				break;
+
+			case SimpleRailTypes::CURVE_LEFT:
+			case SimpleRailTypes::CURVE_RIGHT:
+				this->DrawCurveRail(rail);
+				break;		
+
+			default:
+				throw std::exception("[MapCanvas::DrawSimpleRail] Invalid rail type");
+		}		
+	}
+
+	void MapCanvas::DrawObject(const MapObject &obj) const
+	{
+		auto simpleRailObject = dynamic_cast<const LitePanel::SimpleRailObject *>(&obj);
+		if (simpleRailObject)
+		{
+			this->DrawSimpleRail(*simpleRailObject);
+
+			return;
+		}		
 	}
 
 	void MapCanvas::Render(const RenderArgs &rargs)
@@ -202,17 +251,9 @@ namespace LitePanel
 					tileWorldPos += IntPoint_t{1, 1} * (m_tViewInfo.m_uTileScale / 2);
 
 					glPushMatrix();
-					glTranslatef(tileWorldPos.m_tX, tileWorldPos.m_tY, 0);					
+					glTranslatef(tileWorldPos.m_tX, tileWorldPos.m_tY, 0);		
 
-					glLineWidth(m_tViewInfo.m_uLineWidth);
-
-					glBegin(GL_LINES);
-
-					glVertex2f(static_cast<int>(m_tViewInfo.m_uTileScale) / -2, 0);
-					glVertex2f(m_tViewInfo.m_uTileScale / 2, 0);
-
-					glEnd();
-
+					DrawObject(*obj);					
 
 					glPopMatrix();
 				}

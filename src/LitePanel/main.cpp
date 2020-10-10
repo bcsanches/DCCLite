@@ -13,6 +13,7 @@
 
 #include "MapCanvas.h"
 #include "MapObject.h"
+#include "RailObject.h"
 
 class LiteApp : public wxApp
 {
@@ -69,8 +70,29 @@ MainFrame::MainFrame():
 
 	oglCanvas->SetTileMap(&m_clTileMap);
 
-	auto obj = std::make_unique<LitePanel::MapObject>(LitePanel::TileCoord_t{1, 1});
+	auto obj = std::make_unique<LitePanel::SimpleRailObject>(
+		LitePanel::TileCoord_t{1, 1},
+		LitePanel::ObjectAngles::EAST,
+		LitePanel::SimpleRailTypes::STRAIGHT
+	);
+
 	m_clTileMap.RegisterObject(std::move(obj), 0);
+
+	auto obj2 = std::make_unique<LitePanel::SimpleRailObject>(
+		LitePanel::TileCoord_t{ 2, 1 },
+		LitePanel::ObjectAngles::NORTHEAST,
+		LitePanel::SimpleRailTypes::STRAIGHT
+	);
+
+	m_clTileMap.RegisterObject(std::move(obj2), 0);
+
+	auto obj3 = std::make_unique<LitePanel::SimpleRailObject>(
+		LitePanel::TileCoord_t{ 3, 1 },
+		LitePanel::ObjectAngles::NORTH,
+		LitePanel::SimpleRailTypes::STRAIGHT
+	);
+
+	m_clTileMap.RegisterObject(std::move(obj3), 0);
 
 	SetMenuBar(menuBar);
 

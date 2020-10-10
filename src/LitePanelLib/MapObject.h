@@ -30,6 +30,7 @@ namespace LitePanel
 	{
 		public:
 			MapObject(const TileCoord_t &position);
+			virtual ~MapObject() = default;
 
 			inline const TileCoord_t &GetPosition() const noexcept
 			{

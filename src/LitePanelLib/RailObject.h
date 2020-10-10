@@ -23,6 +23,11 @@ namespace LitePanel
 		public:
 			RailObject(const TileCoord_t &position, ObjectAngles angle = ObjectAngles::EAST);
 
+			inline const ObjectAngles GetAngle() const
+			{
+				return m_tAngle;
+			}
+
 		private:
 			const ObjectAngles m_tAngle = ObjectAngles::EAST;
 	};
@@ -30,9 +35,9 @@ namespace LitePanel
 	enum class SimpleRailTypes
 	{
 		STRAIGHT,
-		LEFT_TURN,
-		RIGHT_TURN,
-		CROSSING,
+		CURVE_LEFT,
+		CURVE_RIGHT,
+		//CROSSING,
 		TERMINAL
 	};
 
@@ -40,6 +45,11 @@ namespace LitePanel
 	{
 		public:
 			SimpleRailObject(const TileCoord_t &position, ObjectAngles angle, const SimpleRailTypes type);
+
+			inline const SimpleRailTypes GetType() const noexcept
+			{
+				return m_tType;
+			}
 
 		private:
 			const SimpleRailTypes m_tType;
