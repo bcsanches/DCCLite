@@ -92,7 +92,7 @@ namespace dcclite
 		++g_iCount;
 	}
 
-	Socket::Socket(Socket &&other):
+	Socket::Socket(Socket &&other) noexcept:
 		m_hHandle(std::move(other.m_hHandle))
 	{
 		assert(g_iCount > 0);
@@ -114,7 +114,7 @@ namespace dcclite
 		#endif
 	}
 
-	Socket &Socket::operator=(Socket &&other)
+	Socket &Socket::operator=(Socket &&other) noexcept
 	{
 		if (this != &other)
 		{

@@ -6,10 +6,10 @@ namespace SpecialFolders
 	{
 		switch (id)
 		{
-			case ServicesFolderId:
+			case Folders::ServicesId:
 				return "services";
 
-			case CmdHostFolderId:
+			case Folders::CmdHostId:
 				return "cmds";
 
 			default:
@@ -21,10 +21,10 @@ namespace SpecialFolders
 	{
 		switch (id)
 		{
-		case ServicesFolderId:
+		case Folders::ServicesId:
 			return "/services";
 
-		case CmdHostFolderId:
+		case Folders::CmdHostId:
 			return "/cmds";
 
 		default:

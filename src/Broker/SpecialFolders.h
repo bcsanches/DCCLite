@@ -13,10 +13,10 @@
 
 namespace SpecialFolders
 {
-	enum Folders
+	enum class Folders
 	{
-		ServicesFolderId,
-		CmdHostFolderId
+		ServicesId,
+		CmdHostId
 	};
 
 	const char *GetName(Folders id);

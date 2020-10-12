@@ -59,7 +59,7 @@ Broker::Broker(dcclite::fs::path projectPath):
 	using namespace dcclite;
 
 	m_pServices = static_cast<FolderObject*>(m_clRoot.AddChild(
-		std::make_unique<FolderObject>(SpecialFolders::GetName(SpecialFolders::ServicesFolderId)))
+		std::make_unique<FolderObject>(SpecialFolders::GetName(SpecialFolders::Folders::ServicesId)))
 	);
 
 	this->LoadConfig();

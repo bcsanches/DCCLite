@@ -179,7 +179,7 @@ void PinManager::Serialize(dcclite::JsonOutputStream_t &stream) const
 {
 	auto pinsArray = stream.AddArray("pins");
 
-	for (auto pinInfo : m_vecPins)
+	for (const auto &pinInfo : m_vecPins)
 	{
 		auto pinObj = pinsArray.AddObject();
 

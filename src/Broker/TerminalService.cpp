@@ -236,7 +236,7 @@ class DecoderCmdBase : public TerminalCmd
 
 			auto &root = static_cast<FolderObject &>(context.GetItem()->GetRoot());
 
-			ObjectPath path = { SpecialFolders::GetPath(SpecialFolders::ServicesFolderId) };
+			ObjectPath path = { SpecialFolders::GetPath(SpecialFolders::Folders::ServicesId) };
 			path.append(dccSystemName);
 
 			auto *service = dynamic_cast<DccLiteService *>(root.TryNavigate(path));
@@ -386,7 +386,7 @@ TerminalClient::TerminalClient(TerminalClient &&other) noexcept:
 	m_rclOwner(other.m_rclOwner),	
 	m_clContext(std::move(other.m_clContext)),
 	m_rclCmdHost(other.m_rclCmdHost),
-	m_clAddress(std::move(other.m_clAddress))
+	m_clAddress(other.m_clAddress)
 {
 	this->RegisterListeners();
 }
@@ -420,7 +420,7 @@ FolderObject *TerminalClient::TryGetServicesFolder() const
 	}
 	auto folder = static_cast<FolderObject *>(item);
 
-	ObjectPath servicesPath = { SpecialFolders::GetPath(SpecialFolders::ServicesFolderId) };
+	ObjectPath servicesPath = { SpecialFolders::GetPath(SpecialFolders::Folders::ServicesId) };
 	auto *servicesObj = folder->TryNavigate(servicesPath);
 
 	if (servicesObj == nullptr)

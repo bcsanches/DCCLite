@@ -89,7 +89,7 @@ class TerminalContext
 
 		TerminalContext(const TerminalContext &) = delete;
 
-		TerminalContext(TerminalContext &&other) :
+		TerminalContext(TerminalContext &&other) noexcept:
 			m_rclRoot(other.m_rclRoot),
 			m_pthLocation(std::move(other.m_pthLocation))
 		{

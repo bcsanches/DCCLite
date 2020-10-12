@@ -121,11 +121,11 @@ namespace dcclite
 
 		public:
 			Socket();
-			Socket(Socket &&other);
+			Socket(Socket &&other) noexcept;
 			Socket(const Socket &other) = delete;
 			~Socket();
 
-			Socket &operator=(Socket &&other);
+			Socket &operator=(Socket &&other) noexcept;
 
 			bool Open(Port_t port, Type type);
 

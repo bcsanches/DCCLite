@@ -259,9 +259,6 @@ MainFrame::MainFrame():
 
 	toolBar->AddSeparator();
 
-
-
-
 	toolBar->Realize();
 	//toolBar->SetRows(1);
 

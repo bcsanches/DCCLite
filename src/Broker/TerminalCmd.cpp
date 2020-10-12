@@ -35,7 +35,7 @@ dcclite::IObject *TerminalContext::GetItem() const
 }
 
 TerminalCmdHost::TerminalCmdHost():
-	FolderObject(SpecialFolders::GetName(SpecialFolders::CmdHostFolderId))
+	FolderObject(SpecialFolders::GetName(SpecialFolders::Folders::CmdHostId))
 {
 	//empty
 }

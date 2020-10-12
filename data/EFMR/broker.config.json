@@ -25,6 +25,10 @@
         {
           "name": "HadesExtC",
           "class": "ArduinoMega"
+        },
+        {
+            "name": "Helix",
+            "class": "ArduinoMega"
         }
       ],
       "locations": [      

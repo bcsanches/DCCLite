@@ -24,7 +24,7 @@ namespace dcclite
 			NetMessenger(Socket &&socket, const char *separator = "\r\n");
 			NetMessenger(NetMessenger&& rhs) = default;
 
-			NetMessenger &operator=(NetMessenger&& rhs) = default;
+			NetMessenger &operator=(NetMessenger&& rhs) noexcept = default;
 
 			NetMessenger(const NetMessenger &rhs) = delete;			
 			const NetMessenger operator=(const NetMessenger& rhs) = delete;			

@@ -115,8 +115,8 @@ namespace dcclite
 					else
 					{
 						ch = '0';
-					}
-					//fall throught
+					}					
+					[[fallthrough]];
 
 				default:
 					if (IsDigit(ch) || (hexMode && IsHexLetter(ch)))
