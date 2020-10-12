@@ -15,6 +15,68 @@
 #include "MapObject.h"
 #include "RailObject.h"
 
+class ToolManager
+{
+	public:
+		ToolManager(wxToolBar &toolBar);
+
+		void AddTool(					
+					const wxString &label,
+					const wxBitmap &bitmap,			
+					const wxString &shortHelp = wxEmptyString,
+					const wxString &longHelp = wxEmptyString
+		);
+
+		void OnLeftClick(wxCommandEvent &event);
+
+	private:
+		wxToolBar		&m_wxToolBar;
+
+		std::vector<wxToolBarToolBase *> m_vecTools;
+};
+
+ToolManager::ToolManager(wxToolBar &toolBar):
+	m_wxToolBar(toolBar)
+{
+	//empty
+}
+
+void ToolManager::AddTool(	
+	const wxString &label,
+	const wxBitmap &bitmap,
+	const wxString &shortHelp,
+	const wxString &longHelp)
+{	
+	auto tool = m_wxToolBar.AddCheckTool(wxID_ANY, label, bitmap, wxNullBitmap, shortHelp, longHelp);			
+
+	m_vecTools.push_back(tool);	
+}
+
+void ToolManager::OnLeftClick(wxCommandEvent &event)
+{
+	auto clickedTool = std::find_if(
+		m_vecTools.begin(), 
+		m_vecTools.end(),
+		[id = event.GetId()](auto *tool)
+		{
+			return tool->GetId() == id;
+		}
+	);
+
+	assert(clickedTool != m_vecTools.end());
+
+	if(!(*clickedTool)->IsToggled())
+		return;
+
+	for (auto tool : m_vecTools)
+	{
+		if(tool == *clickedTool)
+			continue;
+		
+		m_wxToolBar.ToggleTool(tool->GetId(), false);		
+	}
+}
+
 class LiteApp : public wxApp
 {
 	public:
@@ -31,13 +93,17 @@ class MainFrame : public wxFrame
 		void OnExit(wxCommandEvent& event);
 		void OnAbout(wxCommandEvent& event);	
 
+		void OnToolLeftClick(wxCommandEvent &event);
+
 	private:
 		LitePanel::TileMap m_clTileMap;
+
+		std::unique_ptr<ToolManager> m_upToolManager;
 };
 
 enum
 {
-	ID_Hello = 1
+	ID_Hello = 1,
 };
 
 wxIMPLEMENT_APP(LiteApp);
@@ -100,126 +166,93 @@ MainFrame::MainFrame():
 	SetStatusText("Welcome to LitePanel Editor!");
 
 	auto toolBar = this->CreateToolBar(wxTB_TOP | wxTB_FLAT | wxTB_DOCKABLE);
-	toolBar->AddTool(
-		-1, 
+
+	m_upToolManager = std::make_unique<ToolManager>(*toolBar);	
+
+	m_upToolManager->AddTool(		
 		"track", 
 		wxBITMAP(rail_straight_000_icon),
-		wxNullBitmap, 
-		wxITEM_NORMAL, 
 		"Horizontal track section",
 		"Creates a horizontal track section"
 	);
 
-	toolBar->AddTool(
-		-1,
+	m_upToolManager->AddTool(		
 		"track",
 		wxBITMAP(rail_straight_045_icon),
-		wxNullBitmap,
-		wxITEM_NORMAL,
 		"Diagonal track section",
 		"Creates a diagonal track section"
 	);
 
-	toolBar->AddTool(
-		-1,
+	m_upToolManager->AddTool(		
 		"track",
-		wxBITMAP(rail_straight_090_icon),
-		wxNullBitmap,
-		wxITEM_NORMAL,
+		wxBITMAP(rail_straight_090_icon),		
 		"Vertical track section",
 		"Creates a vertical track section"
 	);
 
-	toolBar->AddTool(
-		-1,
+	m_upToolManager->AddTool(		
 		"track",
-		wxBITMAP(rail_straight_135_icon),
-		wxNullBitmap,
-		wxITEM_NORMAL,
+		wxBITMAP(rail_straight_135_icon),		
 		"Diagonal inverted track section",
 		"Creates a inverted diagonal track section"
 	);
 
 	toolBar->AddSeparator();
 
-	toolBar->AddTool(
-		-1,
+	m_upToolManager->AddTool(		
 		"track",
-		wxBITMAP(rail_left_curve_000_icon),
-		wxNullBitmap,
-		wxITEM_NORMAL,
+		wxBITMAP(rail_left_curve_000_icon),		
 		"Left curve track section",
 		"Creates a left curve track section"
 	);
 
-	toolBar->AddTool(
-		-1,
+	m_upToolManager->AddTool(		
 		"track",
-		wxBITMAP(rail_left_curve_090_icon),
-		wxNullBitmap,
-		wxITEM_NORMAL,
+		wxBITMAP(rail_left_curve_090_icon),		
 		"Left curve track section",
 		"Creates a left curve track section"
 	);
 
-	toolBar->AddTool(
-		-1,
+	m_upToolManager->AddTool(		
 		"track",
-		wxBITMAP(rail_left_curve_180_icon),
-		wxNullBitmap,
-		wxITEM_NORMAL,
+		wxBITMAP(rail_left_curve_180_icon),		
 		"Left curve track section",
 		"Creates a left curve track section"
 	);
 
-	toolBar->AddTool(
-		-1,
+	m_upToolManager->AddTool(		
 		"track",
-		wxBITMAP(rail_left_curve_270_icon),
-		wxNullBitmap,
-		wxITEM_NORMAL,
+		wxBITMAP(rail_left_curve_270_icon),		
 		"Left curve track section",
 		"Creates a left curve track section"
 	);
 
 	toolBar->AddSeparator();
 
-	toolBar->AddTool(
-		-1,
+	m_upToolManager->AddTool(		
 		"track",
-		wxBITMAP(rail_right_curve_000_icon),
-		wxNullBitmap,
-		wxITEM_NORMAL,
+		wxBITMAP(rail_right_curve_000_icon),		
 		"Right curve track section",
 		"Creates a right curve track section"
 	);
 
-	toolBar->AddTool(
-		-1,
+	m_upToolManager->AddTool(		
 		"track",
-		wxBITMAP(rail_right_curve_090_icon),
-		wxNullBitmap,
-		wxITEM_NORMAL,
+		wxBITMAP(rail_right_curve_090_icon),		
 		"Right curve track section",
 		"Creates a right curve track section"
 	);
 
-	toolBar->AddTool(
-		-1,
+	m_upToolManager->AddTool(		
 		"track",
-		wxBITMAP(rail_right_curve_180_icon),
-		wxNullBitmap,
-		wxITEM_NORMAL,
+		wxBITMAP(rail_right_curve_180_icon),		
 		"Right curve track section",
 		"Creates a right curve track section"
 	);
 
-	toolBar->AddTool(
-		-1,
+	m_upToolManager->AddTool(		
 		"track",
-		wxBITMAP(rail_right_curve_270_icon),
-		wxNullBitmap,
-		wxITEM_NORMAL,
+		wxBITMAP(rail_right_curve_270_icon),		
 		"Right curve track section",
 		"Creates a right curve track section"
 	);
@@ -235,6 +268,7 @@ MainFrame::MainFrame():
 	Bind(wxEVT_MENU, &MainFrame::OnHello, this, ID_Hello);
 	Bind(wxEVT_MENU, &MainFrame::OnAbout, this, wxID_ABOUT);
 	Bind(wxEVT_MENU, &MainFrame::OnExit, this, wxID_EXIT);
+	Bind(wxEVT_MENU, &MainFrame::OnToolLeftClick, this, wxID_ANY);
 }
 
 
@@ -252,4 +286,11 @@ void MainFrame::OnAbout(wxCommandEvent& event)
 void MainFrame::OnHello(wxCommandEvent& event)
 {
 	wxLogMessage("Hello world from wxWidgets!");
+}
+
+void MainFrame::OnToolLeftClick(wxCommandEvent &event)
+{
+	//wxLogMessage("Hello toolbar!");
+
+	m_upToolManager->OnLeftClick(event);
 }
