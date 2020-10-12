@@ -115,7 +115,7 @@ namespace LitePanel
 		glDisable(GL_LINE_SMOOTH);
 		glLineWidth(1.0f);
 
-		glColor4f(0.0f, 0.0f, 0.0f, 1.0f);		
+		glColor4f(0.85f, 0.85f, 0.85f, 1.0f);		
 
 		glBegin(GL_LINES);
 
@@ -231,6 +231,8 @@ namespace LitePanel
 		assert((rargs.m_tNumVisibleTiles.m_tX > 0) && (rargs.m_tNumVisibleTiles.m_tY > 0));
 
 		glMatrixMode(GL_MODELVIEW);
+
+		glColor3f(0.0f, 0.0f, 0.0f);
 
 		for(auto y = rargs.m_tTilePos_ViewOrigin.m_tY; y < rargs.m_tTilePos_LastVisible.m_tY; ++y)
 		{
