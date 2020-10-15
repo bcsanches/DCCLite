@@ -15,6 +15,8 @@
 #include "Point.h"
 #include "TileMap.h"
 
+#include <optional>
+
 constexpr auto DEFAULT_ZOOM_LEVEL = 1;
 
 namespace LitePanel
@@ -31,7 +33,9 @@ namespace LitePanel
 
 			void SetTileMap(const LitePanel::TileMap *tileMap) noexcept;
 
-			protected:
+			std::optional<TileCoord_t> TryFindMouseTile(const wxMouseEvent &event) const noexcept;
+
+		protected:
 			void OnDraw() override;
 
 			void OnMouseWheel(wxMouseEvent &event);
@@ -41,7 +45,7 @@ namespace LitePanel
 
 			void OnMouseCaptureLost(wxMouseCaptureLostEvent &event);
 
-			void OnMouseLost();
+			void OnMouseLost();			
 
 		private:
 			void DrawGrid(const RenderArgs &rargs);

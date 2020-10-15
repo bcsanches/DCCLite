@@ -416,4 +416,21 @@ NOTILES:
 
 		this->OnMouseLost();
 	}
+
+	std::optional<TileCoord_t> MapCanvas::TryFindMouseTile(const wxMouseEvent &event) const noexcept
+	{
+		if(!m_pclTileMap)
+			return {};
+
+		const IntPoint_t mousePos{event.GetX(), event.GetY()};
+		
+		const auto tilePos = m_tViewInfo.WorldToTile(mousePos + m_tOrigin);
+
+		const auto mapSize = m_pclTileMap->GetSize();
+
+		if((tilePos.m_tX >= mapSize.m_tX) || (tilePos.m_tY >= mapSize.m_tY))
+			return {};
+
+		return tilePos;
+	}
 }

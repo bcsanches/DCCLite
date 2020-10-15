@@ -1,12 +1,14 @@
 
 set(LitePanelLib_SRCS
 	MapObject.cpp
+	Panel.cpp
 	RailObject.cpp
 	TileMap.cpp	
 )
 
 set(LitePanelLib_HDRS
 	MapObject.h
+	Panel.h
 	Point.h
 	RailObject.h
 	TileMap.h
