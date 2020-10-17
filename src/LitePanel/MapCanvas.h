@@ -35,7 +35,7 @@ namespace LitePanel::Gui
 	{
 		public:
 			TileEvent(wxEventType commandType, TileCoord_t tilePos, int id = 0):
-				wxEvent(commandType, id),
+				wxEvent(id, commandType),
 				m_tTilePosition(tilePos)
 			{
 				//empty
@@ -45,7 +45,7 @@ namespace LitePanel::Gui
 				wxEvent(other),
 				m_tTilePosition(other.m_tTilePosition)
 			{
-				
+				//empty
 			}
 
 			wxEvent *Clone() const

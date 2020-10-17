@@ -308,8 +308,8 @@ void MainFrame::OnMapCanvasLeftClick(wxMouseEvent &event)
 
 	if(!tilePos)
 		this->SetStatusText("No tile");
-	else
-		this->SetStatusText(fmt::format("tile {} {}", tilePos->m_tX, tilePos->m_tY));
+	//else
+		//this->SetStatusText(fmt::format("tile {} {}", tilePos->m_tX, tilePos->m_tY));
 }
 
 void MainFrame::OnMapCanvasTileLeftClick(LitePanel::Gui::TileEvent &event)
