@@ -98,12 +98,14 @@ class MainFrame : public wxFrame
 		void OnToolLeftClick(wxCommandEvent &event);
 		void OnMapCanvasLeftClick(wxMouseEvent &event);
 
+		void OnMapCanvasTileLeftClick(LitePanel::Gui::TileEvent &event);
+
 	private:
 		LitePanel::TileMap m_clTileMap;
 
 		std::unique_ptr<ToolManager> m_upToolManager;
 
-		LitePanel::MapCanvas *m_pclMapCanvas;
+		LitePanel::Gui::MapCanvas *m_pclMapCanvas;
 };
 
 enum
@@ -137,7 +139,7 @@ MainFrame::MainFrame():
 	menuBar->Append(menuFile, "&File");
 	menuBar->Append(menuHelp, "&Help");
 
-	m_pclMapCanvas = new LitePanel::MapCanvas(this);
+	m_pclMapCanvas = new LitePanel::Gui::MapCanvas(this);
 
 	m_pclMapCanvas->SetTileMap(&m_clTileMap);
 
@@ -272,6 +274,7 @@ MainFrame::MainFrame():
 	Bind(wxEVT_MENU, &MainFrame::OnExit, this, wxID_EXIT);
 	Bind(wxEVT_MENU, &MainFrame::OnToolLeftClick, this, wxID_ANY);
 	m_pclMapCanvas->Bind(wxEVT_LEFT_UP, &MainFrame::OnMapCanvasLeftClick, this, wxID_ANY);
+	m_pclMapCanvas->Bind(LitePanel::Gui::EVT_TILE_LEFT_CLICK, &MainFrame::OnMapCanvasTileLeftClick, this, wxID_ANY);
 }
 
 
@@ -307,4 +310,11 @@ void MainFrame::OnMapCanvasLeftClick(wxMouseEvent &event)
 		this->SetStatusText("No tile");
 	else
 		this->SetStatusText(fmt::format("tile {} {}", tilePos->m_tX, tilePos->m_tY));
+}
+
+void MainFrame::OnMapCanvasTileLeftClick(LitePanel::Gui::TileEvent &event)
+{
+	const auto &tilePos = event.GetTilePosition();
+
+	this->SetStatusText(fmt::format("tile {} {}", tilePos.m_tX, tilePos.m_tY));
 }

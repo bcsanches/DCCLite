@@ -22,6 +22,45 @@ constexpr auto DEFAULT_ZOOM_LEVEL = 1;
 namespace LitePanel
 {
 	class SimpleRailObject;
+}
+
+namespace LitePanel::Gui
+{
+	class TileEvent;
+	wxDECLARE_EVENT(EVT_MOUSE_OVER_TILE_CHANGED, TileEvent);
+	wxDECLARE_EVENT(EVT_TILE_LEFT_CLICK, TileEvent);
+	wxDECLARE_EVENT(EVT_TILE_RIGHT_CLICK, TileEvent);
+
+	class TileEvent: public wxEvent
+	{
+		public:
+			TileEvent(wxEventType commandType, TileCoord_t tilePos, int id = 0):
+				wxEvent(commandType, id),
+				m_tTilePosition(tilePos)
+			{
+				//empty
+			}
+
+			TileEvent(const TileEvent &other):
+				wxEvent(other),
+				m_tTilePosition(other.m_tTilePosition)
+			{
+				
+			}
+
+			wxEvent *Clone() const
+			{
+				return new TileEvent(*this);
+			}
+
+			const TileCoord_t &GetTilePosition() const
+			{
+				return m_tTilePosition;
+			}
+
+		private:
+			const TileCoord_t m_tTilePosition;
+	};			
 
 	class MapCanvas: public OGLCanvas
 	{
@@ -39,6 +78,7 @@ namespace LitePanel
 			void OnDraw() override;
 
 			void OnMouseWheel(wxMouseEvent &event);
+			void OnMouseLeftDown(wxMouseEvent &event);
 			void OnMouseMiddleDown(wxMouseEvent &event);
 			void OnMouseMiddleUp(wxMouseEvent &event);
 			void OnMouseMove(wxMouseEvent &event);

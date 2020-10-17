@@ -13,23 +13,28 @@
 #include <wx/wx.h>
 #include <wx/glcanvas.h>
 
-class OGLCanvas: public wxGLCanvas
+namespace LitePanel::Gui
 {
-	public:
+	class OGLCanvas: public wxGLCanvas
+	{
+		public:
 		OGLCanvas(wxWindow *parent, int id = -1);
 		~OGLCanvas() = default;
 
-	protected:
+		protected:
 		virtual void OnDraw() = 0;
 
-	private:
+		private:
 		// Events
 		void OnPaint(wxPaintEvent &e);
 		void OnEraseBackground(wxEraseEvent &e);
 
 		void InitGL();
 
-	private:		
+		private:
 		bool m_fInitialized = false;
-		
-};
+
+	};
+}
+
+

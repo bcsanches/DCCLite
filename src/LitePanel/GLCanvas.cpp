@@ -11,72 +11,74 @@
 
 #include "GLCanvas.h"
 
+namespace LitePanel::Gui
+{
+	namespace OpenGLState
+	{	wxGLContext *g_pclContext = nullptr;
 
-namespace OpenGLState
-{	wxGLContext *g_pclContext = nullptr;
-
-	void SetCurrent(wxGLCanvas &win)
-	{
-		if(!win.IsShown())
-			return;
-
-		if (!g_pclContext)
+		void SetCurrent(wxGLCanvas &win)
 		{
-			g_pclContext = new wxGLContext(&win);
-			g_pclContext->SetCurrent(win);
+			if(!win.IsShown())
+				return;
+
+			if (!g_pclContext)
+			{
+				g_pclContext = new wxGLContext(&win);
+				g_pclContext->SetCurrent(win);
+			}
 		}
 	}
-}
 
-OGLCanvas::OGLCanvas(wxWindow *parent, int id):
-	wxGLCanvas(parent, id) 
-{
-	// Bind events
-	Bind(wxEVT_PAINT, &OGLCanvas::OnPaint, this);
-	Bind(wxEVT_ERASE_BACKGROUND, &OGLCanvas::OnEraseBackground, this);	
-}
+	OGLCanvas::OGLCanvas(wxWindow *parent, int id):
+		wxGLCanvas(parent, id) 
+	{
+		// Bind events
+		Bind(wxEVT_PAINT, &OGLCanvas::OnPaint, this);
+		Bind(wxEVT_ERASE_BACKGROUND, &OGLCanvas::OnEraseBackground, this);	
+	}
 
-void OGLCanvas::InitGL()
-{
-	glViewport(0, 0, GetSize().x, GetSize().y);
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClearDepth(1.0);
-	glShadeModel(GL_SMOOTH);
-	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glCullFace(GL_NONE);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_FOG);
-	glEnable(GL_ALPHA_TEST);
+	void OGLCanvas::InitGL()
+	{
+		glViewport(0, 0, GetSize().x, GetSize().y);
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClearDepth(1.0);
+		glShadeModel(GL_SMOOTH);
+		glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glCullFace(GL_NONE);
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_FOG);
+		glEnable(GL_ALPHA_TEST);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
 
-	glOrtho(0, GetSize().x, GetSize().y, 0, -1, 100);
+		glOrtho(0, GetSize().x, GetSize().y, 0, -1, 100);
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
 
-	m_fInitialized = true;
-}
+		m_fInitialized = true;
+	}
 
-void OGLCanvas::OnPaint(wxPaintEvent &e)
-{
-	if(!this->IsShown())
-		return;
+	void OGLCanvas::OnPaint(wxPaintEvent &e)
+	{
+		if(!this->IsShown())
+			return;
 
-	OpenGLState::SetCurrent(*this);
+		OpenGLState::SetCurrent(*this);
 
-	if(!m_fInitialized)
-		this->InitGL();
+		if(!m_fInitialized)
+			this->InitGL();
 
-	this->OnDraw();
-}
+		this->OnDraw();
+	}
 
-void OGLCanvas::OnEraseBackground(wxEraseEvent &e)
-{
-	//empty
+	void OGLCanvas::OnEraseBackground(wxEraseEvent &e)
+	{
+		//empty
+	}
 }
