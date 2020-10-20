@@ -8,33 +8,25 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#pragma once
+#include "MapObject.h"
+#include "Panel.h"
+#include "RailObject.h"
 
-#include <wx/wx.h>
-#include <wx/glcanvas.h>
-
-namespace LitePanel::Gui
+namespace LitePanel
 {
-	class OGLCanvas: public wxGLCanvas
+	enum Layers
 	{
-		public:
-		OGLCanvas(wxWindow *parent, int id = -1);
-		~OGLCanvas() = default;
-
-		protected:
-		virtual void OnDraw() = 0;
-
-		private:
-		// Events
-		void OnPaint(wxPaintEvent &e);
-		void OnEraseBackground(wxEraseEvent &e);
-
-		void InitGL();
-
-		private:
-		bool m_fInitialized = false;
-
+		RAIL_LAYER
 	};
+
+	Panel::Panel(const TileCoord_t size):
+		m_mapTileMap(size)		
+	{
+		//empty
+	}
+
+	void Panel::RegisterRail(std::unique_ptr<RailObject> object)
+	{
+		m_mapTileMap.RegisterObject(std::move(object), RAIL_LAYER);
+	}
 }
-
-

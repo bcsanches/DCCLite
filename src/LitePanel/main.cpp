@@ -11,6 +11,8 @@
 
 #include <wx/wx.h>
 
+#include <fmt/format.h>
+
 #include "MapCanvas.h"
 #include "MapObject.h"
 #include "RailObject.h"
@@ -94,11 +96,16 @@ class MainFrame : public wxFrame
 		void OnAbout(wxCommandEvent& event);	
 
 		void OnToolLeftClick(wxCommandEvent &event);
+		void OnMapCanvasLeftClick(wxMouseEvent &event);
+
+		void OnMapCanvasTileLeftClick(LitePanel::Gui::TileEvent &event);
 
 	private:
 		LitePanel::TileMap m_clTileMap;
 
 		std::unique_ptr<ToolManager> m_upToolManager;
+
+		LitePanel::Gui::MapCanvas *m_pclMapCanvas;
 };
 
 enum
@@ -132,9 +139,9 @@ MainFrame::MainFrame():
 	menuBar->Append(menuFile, "&File");
 	menuBar->Append(menuHelp, "&Help");
 
-	auto oglCanvas = new LitePanel::MapCanvas(this);
+	m_pclMapCanvas = new LitePanel::Gui::MapCanvas(this);
 
-	oglCanvas->SetTileMap(&m_clTileMap);
+	m_pclMapCanvas->SetTileMap(&m_clTileMap);
 
 	auto obj = std::make_unique<LitePanel::SimpleRailObject>(
 		LitePanel::TileCoord_t{1, 1},
@@ -266,6 +273,8 @@ MainFrame::MainFrame():
 	Bind(wxEVT_MENU, &MainFrame::OnAbout, this, wxID_ABOUT);
 	Bind(wxEVT_MENU, &MainFrame::OnExit, this, wxID_EXIT);
 	Bind(wxEVT_MENU, &MainFrame::OnToolLeftClick, this, wxID_ANY);
+	m_pclMapCanvas->Bind(wxEVT_LEFT_UP, &MainFrame::OnMapCanvasLeftClick, this, wxID_ANY);
+	m_pclMapCanvas->Bind(LitePanel::Gui::EVT_TILE_LEFT_CLICK, &MainFrame::OnMapCanvasTileLeftClick, this, wxID_ANY);
 }
 
 
@@ -290,4 +299,22 @@ void MainFrame::OnToolLeftClick(wxCommandEvent &event)
 	//wxLogMessage("Hello toolbar!");
 
 	m_upToolManager->OnLeftClick(event);
+}
+
+
+void MainFrame::OnMapCanvasLeftClick(wxMouseEvent &event)
+{
+	auto tilePos = m_pclMapCanvas->TryFindMouseTile(event);
+
+	if(!tilePos)
+		this->SetStatusText("No tile");
+	//else
+		//this->SetStatusText(fmt::format("tile {} {}", tilePos->m_tX, tilePos->m_tY));
+}
+
+void MainFrame::OnMapCanvasTileLeftClick(LitePanel::Gui::TileEvent &event)
+{
+	const auto &tilePos = event.GetTilePosition();
+
+	this->SetStatusText(fmt::format("tile {} {}", tilePos.m_tX, tilePos.m_tY));
 }

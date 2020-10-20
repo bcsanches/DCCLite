@@ -15,11 +15,52 @@
 #include "Point.h"
 #include "TileMap.h"
 
+#include <optional>
+
 constexpr auto DEFAULT_ZOOM_LEVEL = 1;
 
 namespace LitePanel
 {
 	class SimpleRailObject;
+}
+
+namespace LitePanel::Gui
+{
+	class TileEvent;
+	wxDECLARE_EVENT(EVT_MOUSE_OVER_TILE_CHANGED, TileEvent);
+	wxDECLARE_EVENT(EVT_TILE_LEFT_CLICK, TileEvent);
+	wxDECLARE_EVENT(EVT_TILE_RIGHT_CLICK, TileEvent);
+
+	class TileEvent: public wxEvent
+	{
+		public:
+			TileEvent(wxEventType commandType, TileCoord_t tilePos, int id = 0):
+				wxEvent(id, commandType),
+				m_tTilePosition(tilePos)
+			{
+				//empty
+			}
+
+			TileEvent(const TileEvent &other):
+				wxEvent(other),
+				m_tTilePosition(other.m_tTilePosition)
+			{
+				//empty
+			}
+
+			wxEvent *Clone() const
+			{
+				return new TileEvent(*this);
+			}
+
+			const TileCoord_t &GetTilePosition() const
+			{
+				return m_tTilePosition;
+			}
+
+		private:
+			const TileCoord_t m_tTilePosition;
+	};			
 
 	class MapCanvas: public OGLCanvas
 	{
@@ -31,17 +72,20 @@ namespace LitePanel
 
 			void SetTileMap(const LitePanel::TileMap *tileMap) noexcept;
 
-			protected:
+			std::optional<TileCoord_t> TryFindMouseTile(const wxMouseEvent &event) const noexcept;
+
+		protected:
 			void OnDraw() override;
 
 			void OnMouseWheel(wxMouseEvent &event);
+			void OnMouseLeftDown(wxMouseEvent &event);
 			void OnMouseMiddleDown(wxMouseEvent &event);
 			void OnMouseMiddleUp(wxMouseEvent &event);
 			void OnMouseMove(wxMouseEvent &event);
 
 			void OnMouseCaptureLost(wxMouseCaptureLostEvent &event);
 
-			void OnMouseLost();
+			void OnMouseLost();			
 
 		private:
 			void DrawGrid(const RenderArgs &rargs);

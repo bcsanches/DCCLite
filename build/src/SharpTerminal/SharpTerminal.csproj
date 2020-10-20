@@ -5,7 +5,7 @@
   </PropertyGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{67BB556E-2B51-393C-8DD2-BA9A2ACB39EB}</ProjectGuid>
-    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <Keyword>Win32Proj</Keyword>
     <Platform>Win32</Platform>
     <ProjectName>SharpTerminal</ProjectName>
@@ -18,11 +18,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32' Or '$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
     <DebugSymbols>true</DebugSymbols>
     <DefineDebug>true</DefineDebug>
-    <OutputPath>C:\develop\bcs\DCCLite_dev\build\bin\Debug\</OutputPath>
+    <OutputPath>C:\develop\bcs\DCCLite\build\bin\Debug\</OutputPath>
     <PlatformToolset>v142</PlatformToolset>
     <AssemblyName>SharpTerminal</AssemblyName>
     <StartAction>Program</StartAction>
-    <StartProgram>C:\develop\bcs\DCCLite_dev\build\bin\Debug\SharpTerminal.exe</StartProgram>
+    <StartProgram>C:\develop\bcs\DCCLite\build\bin\Debug\SharpTerminal.exe</StartProgram>
     <AdditionalOptions>/langversion:latest</AdditionalOptions>
     <DebugType>full</DebugType>
     <DefineConstants>DEBUG;DCCLITE_VERSION="0.4.6";SPDLOG_FMT_EXTERNAL</DefineConstants>
@@ -31,11 +31,11 @@
     <WarningLevel>3</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32' Or '$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
-    <OutputPath>C:\develop\bcs\DCCLite_dev\build\bin\Release\</OutputPath>
+    <OutputPath>C:\develop\bcs\DCCLite\build\bin\Release\</OutputPath>
     <PlatformToolset>v142</PlatformToolset>
     <AssemblyName>SharpTerminal</AssemblyName>
     <StartAction>Program</StartAction>
-    <StartProgram>C:\develop\bcs\DCCLite_dev\build\bin\Release\SharpTerminal.exe</StartProgram>
+    <StartProgram>C:\develop\bcs\DCCLite\build\bin\Release\SharpTerminal.exe</StartProgram>
     <AdditionalOptions>/langversion:latest</AdditionalOptions>
     <DebugType>none</DebugType>
     <DefineConstants>DCCLITE_VERSION="0.4.6";SPDLOG_FMT_EXTERNAL</DefineConstants>
@@ -44,11 +44,11 @@
     <WarningLevel>1</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32' Or '$(Configuration)|$(Platform)'=='MinSizeRel|x86'" Label="Configuration">
-    <OutputPath>C:\develop\bcs\DCCLite_dev\build\bin\MinSizeRel\</OutputPath>
+    <OutputPath>C:\develop\bcs\DCCLite\build\bin\MinSizeRel\</OutputPath>
     <PlatformToolset>v142</PlatformToolset>
     <AssemblyName>SharpTerminal</AssemblyName>
     <StartAction>Program</StartAction>
-    <StartProgram>C:\develop\bcs\DCCLite_dev\build\bin\MinSizeRel\SharpTerminal.exe</StartProgram>
+    <StartProgram>C:\develop\bcs\DCCLite\build\bin\MinSizeRel\SharpTerminal.exe</StartProgram>
     <AdditionalOptions>/langversion:latest</AdditionalOptions>
     <DebugType>none</DebugType>
     <DefineConstants>DCCLITE_VERSION="0.4.6";SPDLOG_FMT_EXTERNAL</DefineConstants>
@@ -57,11 +57,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32' Or '$(Configuration)|$(Platform)'=='RelWithDebInfo|x86'" Label="Configuration">
     <DebugSymbols>true</DebugSymbols>
     <DefineDebug>true</DefineDebug>
-    <OutputPath>C:\develop\bcs\DCCLite_dev\build\bin\RelWithDebInfo\</OutputPath>
+    <OutputPath>C:\develop\bcs\DCCLite\build\bin\RelWithDebInfo\</OutputPath>
     <PlatformToolset>v142</PlatformToolset>
     <AssemblyName>SharpTerminal</AssemblyName>
     <StartAction>Program</StartAction>
-    <StartProgram>C:\develop\bcs\DCCLite_dev\build\bin\RelWithDebInfo\SharpTerminal.exe</StartProgram>
+    <StartProgram>C:\develop\bcs\DCCLite\build\bin\RelWithDebInfo\SharpTerminal.exe</StartProgram>
     <AdditionalOptions>/langversion:latest</AdditionalOptions>
     <DebugType>full</DebugType>
     <DefineConstants>DCCLITE_VERSION="0.4.6";SPDLOG_FMT_EXTERNAL</DefineConstants>
@@ -74,144 +74,132 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
-    <None Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\CMakeLists.txt">
+    <None Include="C:\develop\bcs\DCCLite\src\SharpTerminal\CMakeLists.txt">
       <Link>CMakeLists.txt</Link>
     </None>
   </ItemGroup>
-  <Target Condition="'$(Configuration)|$(Platform)'=='Debug|Win32' Or '$(Configuration)|$(Platform)'=='Debug|x86'"
-    Name="CustomCommand_Debug_06c81776427bfdba7950a255c5aebca8"
-    Inputs="C:/develop/bcs/DCCLite_dev/src/SharpTerminal/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeCSharpInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CSharpUtilities.cmake;C:\develop\bcs\DCCLite_dev\build\CMakeFiles\3.16.3\CMakeCSharpCompiler.cmake"
-    Outputs="C:\develop\bcs\DCCLite_dev\build\src\SharpTerminal\CMakeFiles\generate.stamp">
-    <Exec Command="echo Building Custom Rule C:/develop/bcs/DCCLite_dev/src/SharpTerminal/CMakeLists.txt" />
-    <Exec Command="setlocal&#10;&quot;C:\Program Files\CMake\bin\cmake.exe&quot; -SC:/develop/bcs/DCCLite_dev -BC:/develop/bcs/DCCLite_dev/build --check-stamp-file C:/develop/bcs/DCCLite_dev/build/src/SharpTerminal/CMakeFiles/generate.stamp&#10;if %errorlevel% neq 0 goto :cmEnd&#10;:cmEnd&#10;endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone&#10;:cmErrorLevel&#10;exit /b %1&#10;:cmDone&#10;if %errorlevel% neq 0 goto :VCEnd" />
+  <Target Condition="'$(Configuration)|$(Platform)'=='Debug|Win32' Or '$(Configuration)|$(Platform)'=='Debug|x86'" Name="CustomCommand_Debug_40994d8c3eb89fd8fb1ca1c9f3b8b721" Inputs="C:/develop/bcs/DCCLite/src/SharpTerminal/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCSharpInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CSharpUtilities.cmake;C:\develop\bcs\DCCLite\build\CMakeFiles\3.14.4\CMakeCSharpCompiler.cmake;C:\develop\bcs\DCCLite\src\SharpTerminal\CMakeLists.txt;C:\develop\bcs\DCCLite\src\SharpTerminal\CMakeLists.txt" Outputs="C:\develop\bcs\DCCLite\build\src\SharpTerminal\CMakeFiles\generate.stamp">
+    <Exec Command="echo Building Custom Rule C:/develop/bcs/DCCLite/src/SharpTerminal/CMakeLists.txt" />
+    <Exec Command="setlocal&#xA;&quot;C:\Program Files\CMake\bin\cmake.exe&quot; -SC:/develop/bcs/DCCLite -BC:/develop/bcs/DCCLite/build --check-stamp-file C:/develop/bcs/DCCLite/build/src/SharpTerminal/CMakeFiles/generate.stamp&#xA;if %errorlevel% neq 0 goto :cmEnd&#xA;:cmEnd&#xA;endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone&#xA;:cmErrorLevel&#xA;exit /b %1&#xA;:cmDone&#xA;if %errorlevel% neq 0 goto :VCEnd" />
   </Target>
-  <Target Condition="'$(Configuration)|$(Platform)'=='Release|Win32' Or '$(Configuration)|$(Platform)'=='Release|x86'"
-    Name="CustomCommand_Release_06c81776427bfdba7950a255c5aebca8"
-    Inputs="C:/develop/bcs/DCCLite_dev/src/SharpTerminal/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeCSharpInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CSharpUtilities.cmake;C:\develop\bcs\DCCLite_dev\build\CMakeFiles\3.16.3\CMakeCSharpCompiler.cmake"
-    Outputs="C:\develop\bcs\DCCLite_dev\build\src\SharpTerminal\CMakeFiles\generate.stamp">
-    <Exec Command="echo Building Custom Rule C:/develop/bcs/DCCLite_dev/src/SharpTerminal/CMakeLists.txt" />
-    <Exec Command="setlocal&#10;&quot;C:\Program Files\CMake\bin\cmake.exe&quot; -SC:/develop/bcs/DCCLite_dev -BC:/develop/bcs/DCCLite_dev/build --check-stamp-file C:/develop/bcs/DCCLite_dev/build/src/SharpTerminal/CMakeFiles/generate.stamp&#10;if %errorlevel% neq 0 goto :cmEnd&#10;:cmEnd&#10;endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone&#10;:cmErrorLevel&#10;exit /b %1&#10;:cmDone&#10;if %errorlevel% neq 0 goto :VCEnd" />
+  <Target Condition="'$(Configuration)|$(Platform)'=='Release|Win32' Or '$(Configuration)|$(Platform)'=='Release|x86'" Name="CustomCommand_Release_40994d8c3eb89fd8fb1ca1c9f3b8b721" Inputs="C:/develop/bcs/DCCLite/src/SharpTerminal/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCSharpInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CSharpUtilities.cmake;C:\develop\bcs\DCCLite\build\CMakeFiles\3.14.4\CMakeCSharpCompiler.cmake;C:\develop\bcs\DCCLite\src\SharpTerminal\CMakeLists.txt;C:\develop\bcs\DCCLite\src\SharpTerminal\CMakeLists.txt" Outputs="C:\develop\bcs\DCCLite\build\src\SharpTerminal\CMakeFiles\generate.stamp">
+    <Exec Command="echo Building Custom Rule C:/develop/bcs/DCCLite/src/SharpTerminal/CMakeLists.txt" />
+    <Exec Command="setlocal&#xA;&quot;C:\Program Files\CMake\bin\cmake.exe&quot; -SC:/develop/bcs/DCCLite -BC:/develop/bcs/DCCLite/build --check-stamp-file C:/develop/bcs/DCCLite/build/src/SharpTerminal/CMakeFiles/generate.stamp&#xA;if %errorlevel% neq 0 goto :cmEnd&#xA;:cmEnd&#xA;endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone&#xA;:cmErrorLevel&#xA;exit /b %1&#xA;:cmDone&#xA;if %errorlevel% neq 0 goto :VCEnd" />
   </Target>
-  <Target Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32' Or '$(Configuration)|$(Platform)'=='MinSizeRel|x86'"
-    Name="CustomCommand_MinSizeRel_06c81776427bfdba7950a255c5aebca8"
-    Inputs="C:/develop/bcs/DCCLite_dev/src/SharpTerminal/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeCSharpInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CSharpUtilities.cmake;C:\develop\bcs\DCCLite_dev\build\CMakeFiles\3.16.3\CMakeCSharpCompiler.cmake"
-    Outputs="C:\develop\bcs\DCCLite_dev\build\src\SharpTerminal\CMakeFiles\generate.stamp">
-    <Exec Command="echo Building Custom Rule C:/develop/bcs/DCCLite_dev/src/SharpTerminal/CMakeLists.txt" />
-    <Exec Command="setlocal&#10;&quot;C:\Program Files\CMake\bin\cmake.exe&quot; -SC:/develop/bcs/DCCLite_dev -BC:/develop/bcs/DCCLite_dev/build --check-stamp-file C:/develop/bcs/DCCLite_dev/build/src/SharpTerminal/CMakeFiles/generate.stamp&#10;if %errorlevel% neq 0 goto :cmEnd&#10;:cmEnd&#10;endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone&#10;:cmErrorLevel&#10;exit /b %1&#10;:cmDone&#10;if %errorlevel% neq 0 goto :VCEnd" />
+  <Target Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32' Or '$(Configuration)|$(Platform)'=='MinSizeRel|x86'" Name="CustomCommand_MinSizeRel_40994d8c3eb89fd8fb1ca1c9f3b8b721" Inputs="C:/develop/bcs/DCCLite/src/SharpTerminal/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCSharpInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CSharpUtilities.cmake;C:\develop\bcs\DCCLite\build\CMakeFiles\3.14.4\CMakeCSharpCompiler.cmake;C:\develop\bcs\DCCLite\src\SharpTerminal\CMakeLists.txt;C:\develop\bcs\DCCLite\src\SharpTerminal\CMakeLists.txt" Outputs="C:\develop\bcs\DCCLite\build\src\SharpTerminal\CMakeFiles\generate.stamp">
+    <Exec Command="echo Building Custom Rule C:/develop/bcs/DCCLite/src/SharpTerminal/CMakeLists.txt" />
+    <Exec Command="setlocal&#xA;&quot;C:\Program Files\CMake\bin\cmake.exe&quot; -SC:/develop/bcs/DCCLite -BC:/develop/bcs/DCCLite/build --check-stamp-file C:/develop/bcs/DCCLite/build/src/SharpTerminal/CMakeFiles/generate.stamp&#xA;if %errorlevel% neq 0 goto :cmEnd&#xA;:cmEnd&#xA;endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone&#xA;:cmErrorLevel&#xA;exit /b %1&#xA;:cmDone&#xA;if %errorlevel% neq 0 goto :VCEnd" />
   </Target>
-  <Target Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32' Or '$(Configuration)|$(Platform)'=='RelWithDebInfo|x86'"
-    Name="CustomCommand_RelWithDebInfo_06c81776427bfdba7950a255c5aebca8"
-    Inputs="C:/develop/bcs/DCCLite_dev/src/SharpTerminal/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeCSharpInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CSharpUtilities.cmake;C:\develop\bcs\DCCLite_dev\build\CMakeFiles\3.16.3\CMakeCSharpCompiler.cmake"
-    Outputs="C:\develop\bcs\DCCLite_dev\build\src\SharpTerminal\CMakeFiles\generate.stamp">
-    <Exec Command="echo Building Custom Rule C:/develop/bcs/DCCLite_dev/src/SharpTerminal/CMakeLists.txt" />
-    <Exec Command="setlocal&#10;&quot;C:\Program Files\CMake\bin\cmake.exe&quot; -SC:/develop/bcs/DCCLite_dev -BC:/develop/bcs/DCCLite_dev/build --check-stamp-file C:/develop/bcs/DCCLite_dev/build/src/SharpTerminal/CMakeFiles/generate.stamp&#10;if %errorlevel% neq 0 goto :cmEnd&#10;:cmEnd&#10;endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone&#10;:cmErrorLevel&#10;exit /b %1&#10;:cmDone&#10;if %errorlevel% neq 0 goto :VCEnd" />
+  <Target Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32' Or '$(Configuration)|$(Platform)'=='RelWithDebInfo|x86'" Name="CustomCommand_RelWithDebInfo_40994d8c3eb89fd8fb1ca1c9f3b8b721" Inputs="C:/develop/bcs/DCCLite/src/SharpTerminal/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.14\Modules\CMakeCSharpInformation.cmake;C:\Program Files\CMake\share\cmake-3.14\Modules\CSharpUtilities.cmake;C:\develop\bcs\DCCLite\build\CMakeFiles\3.14.4\CMakeCSharpCompiler.cmake;C:\develop\bcs\DCCLite\src\SharpTerminal\CMakeLists.txt;C:\develop\bcs\DCCLite\src\SharpTerminal\CMakeLists.txt" Outputs="C:\develop\bcs\DCCLite\build\src\SharpTerminal\CMakeFiles\generate.stamp">
+    <Exec Command="echo Building Custom Rule C:/develop/bcs/DCCLite/src/SharpTerminal/CMakeLists.txt" />
+    <Exec Command="setlocal&#xA;&quot;C:\Program Files\CMake\bin\cmake.exe&quot; -SC:/develop/bcs/DCCLite -BC:/develop/bcs/DCCLite/build --check-stamp-file C:/develop/bcs/DCCLite/build/src/SharpTerminal/CMakeFiles/generate.stamp&#xA;if %errorlevel% neq 0 goto :cmEnd&#xA;:cmEnd&#xA;endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone&#xA;:cmErrorLevel&#xA;exit /b %1&#xA;:cmDone&#xA;if %errorlevel% neq 0 goto :VCEnd" />
   </Target>
   <ItemGroup>
-    <None Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\App.config">
+    <None Include="C:\develop\bcs\DCCLite\src\SharpTerminal\App.config">
       <Link>App.config</Link>
     </None>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\ConsoleUserControl.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\ConsoleUserControl.cs">
       <Link>ConsoleUserControl.cs</Link>
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\ConsoleUserControl.Designer.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\ConsoleUserControl.Designer.cs">
       <DependentUpon>ConsoleUserControl.cs</DependentUpon>
       <Link>ConsoleUserControl.Designer.cs</Link>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\DefaultIcons.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\DefaultIcons.cs">
       <Link>DefaultIcons.cs</Link>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\Form1.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\Form1.cs">
       <Link>Form1.cs</Link>
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\Form1.Designer.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
       <Link>Form1.Designer.cs</Link>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\IConsole.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\IConsole.cs">
       <Link>IConsole.cs</Link>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\ITerminalClientListener.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\ITerminalClientListener.cs">
       <Link>ITerminalClientListener.cs</Link>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\ObjectsTreeViewUserControl.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\ObjectsTreeViewUserControl.cs">
       <Link>ObjectsTreeViewUserControl.cs</Link>
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\ObjectsTreeViewUserControl.Designer.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\ObjectsTreeViewUserControl.Designer.cs">
       <DependentUpon>ObjectsTreeViewUserControl.cs</DependentUpon>
       <Link>ObjectsTreeViewUserControl.Designer.cs</Link>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\Program.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\Program.cs">
       <Link>Program.cs</Link>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\RequestManager.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\RequestManager.cs">
       <Link>RequestManager.cs</Link>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\RemoteDecoder.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\RemoteDecoder.cs">
       <Link>RemoteDecoder.cs</Link>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\RemoteDevice.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\RemoteDevice.cs">
       <Link>RemoteDevice.cs</Link>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\RemoteDeviceUserControl.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\RemoteDeviceUserControl.cs">
       <Link>RemoteDeviceUserControl.cs</Link>
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\RemoteDeviceUserControl.Designer.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\RemoteDeviceUserControl.Designer.cs">
       <DependentUpon>RemoteDeviceUserControl.cs</DependentUpon>
       <Link>RemoteDeviceUserControl.Designer.cs</Link>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\RemoteLocationManager.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\RemoteLocationManager.cs">
       <Link>RemoteLocationManager.cs</Link>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\RemoteLocationManagerUserControl.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\RemoteLocationManagerUserControl.cs">
       <Link>RemoteLocationManagerUserControl.cs</Link>
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\RemoteLocationManagerUserControl.Designer.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\RemoteLocationManagerUserControl.Designer.cs">
       <DependentUpon>RemoteLocationManagerUserControl.cs</DependentUpon>
       <Link>RemoteLocationManagerUserControl.Designer.cs</Link>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\RemoteLocationUserControl.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\RemoteLocationUserControl.cs">
       <Link>RemoteLocationUserControl.cs</Link>
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\RemoteLocationUserControl.Designer.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\RemoteLocationUserControl.Designer.cs">
       <DependentUpon>RemoteLocationUserControl.cs</DependentUpon>
       <Link>RemoteLocationUserControl.Designer.cs</Link>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\RemoteObject.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\RemoteObject.cs">
       <Link>RemoteObject.cs</Link>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\TerminalClient.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\TerminalClient.cs">
       <Link>TerminalClient.cs</Link>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\Properties\AssemblyInfo.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\Properties\Resources.Designer.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\Properties\Resources.Designer.cs">
       <Link>Properties\Resources.Designer.cs</Link>
     </Compile>
-    <Compile Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\Properties\Settings.Designer.cs">
+    <Compile Include="C:\develop\bcs\DCCLite\src\SharpTerminal\Properties\Settings.Designer.cs">
       <Link>Properties\Settings.Designer.cs</Link>
     </Compile>
-    <None Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\Properties\Settings.settings">
+    <None Include="C:\develop\bcs\DCCLite\src\SharpTerminal\Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
       <Link>Properties\Settings.settings</Link>
     </None>
-    <Image Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\Resources\connected_drive.png">
+    <Image Include="C:\develop\bcs\DCCLite\src\SharpTerminal\Resources\connected_drive.png">
       <Link>Resources\connected_drive.png</Link>
     </Image>
-    <Image Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\Resources\disconnected_drive.png">
+    <Image Include="C:\develop\bcs\DCCLite\src\SharpTerminal\Resources\disconnected_drive.png">
       <Link>Resources\disconnected_drive.png</Link>
     </Image>
-    <Image Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\Resources\folder.png">
+    <Image Include="C:\develop\bcs\DCCLite\src\SharpTerminal\Resources\folder.png">
       <Link>Resources\folder.png</Link>
     </Image>
-    <Image Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\Resources\file_gear.png">
+    <Image Include="C:\develop\bcs\DCCLite\src\SharpTerminal\Resources\file_gear.png">
       <Link>Resources\file_gear.png</Link>
     </Image>
   </ItemGroup>
@@ -266,45 +254,45 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\ConsoleUserControl.resx">
+    <EmbeddedResource Include="C:\develop\bcs\DCCLite\src\SharpTerminal\ConsoleUserControl.resx">
       <Link>ConsoleUserControl.resx</Link>
       <DependentUpon>ConsoleUserControl.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\Form1.resx">
+    <EmbeddedResource Include="C:\develop\bcs\DCCLite\src\SharpTerminal\Form1.resx">
       <Link>Form1.resx</Link>
       <DependentUpon>Form1.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\ObjectsTreeViewUserControl.resx">
+    <EmbeddedResource Include="C:\develop\bcs\DCCLite\src\SharpTerminal\ObjectsTreeViewUserControl.resx">
       <Link>ObjectsTreeViewUserControl.resx</Link>
       <DependentUpon>ObjectsTreeViewUserControl.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\RemoteDeviceUserControl.resx">
+    <EmbeddedResource Include="C:\develop\bcs\DCCLite\src\SharpTerminal\RemoteDeviceUserControl.resx">
       <Link>RemoteDeviceUserControl.resx</Link>
       <DependentUpon>RemoteDeviceUserControl.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\RemoteLocationManagerUserControl.resx">
+    <EmbeddedResource Include="C:\develop\bcs\DCCLite\src\SharpTerminal\RemoteLocationManagerUserControl.resx">
       <Link>RemoteLocationManagerUserControl.resx</Link>
       <DependentUpon>RemoteLocationManagerUserControl.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\RemoteLocationUserControl.resx">
+    <EmbeddedResource Include="C:\develop\bcs\DCCLite\src\SharpTerminal\RemoteLocationUserControl.resx">
       <Link>RemoteLocationUserControl.resx</Link>
       <DependentUpon>RemoteLocationUserControl.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="C:\develop\bcs\DCCLite_dev\src\SharpTerminal\Properties\Resources.resx">
+    <EmbeddedResource Include="C:\develop\bcs\DCCLite\src\SharpTerminal\Properties\Resources.resx">
       <Link>Properties\Resources.resx</Link>
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="C:\develop\bcs\DCCLite_dev\build\ZERO_CHECK.vcxproj">
-      <Project>{FFB881C2-D18B-3BB6-9031-93C41E6AAF5C}</Project>
+    <ProjectReference Include="C:\develop\bcs\DCCLite\build\ZERO_CHECK.vcxproj">
+      <Project>{643D099F-7C09-3878-9688-F551AFE6EC3D}</Project>
       <Name>ZERO_CHECK</Name>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
@@ -323,10 +311,10 @@
   </PropertyGroup>
   <PropertyGroup>
     <BuildDependsOn>
-      CustomCommand_Debug_06c81776427bfdba7950a255c5aebca8;
-      CustomCommand_MinSizeRel_06c81776427bfdba7950a255c5aebca8;
-      CustomCommand_RelWithDebInfo_06c81776427bfdba7950a255c5aebca8;
-      CustomCommand_Release_06c81776427bfdba7950a255c5aebca8;
+      CustomCommand_Debug_40994d8c3eb89fd8fb1ca1c9f3b8b721;
+      CustomCommand_MinSizeRel_40994d8c3eb89fd8fb1ca1c9f3b8b721;
+      CustomCommand_RelWithDebInfo_40994d8c3eb89fd8fb1ca1c9f3b8b721;
+      CustomCommand_Release_40994d8c3eb89fd8fb1ca1c9f3b8b721;
       $(BuildDependsOn)
 </BuildDependsOn>
   </PropertyGroup>

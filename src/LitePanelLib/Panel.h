@@ -10,31 +10,21 @@
 
 #pragma once
 
-#include <wx/wx.h>
-#include <wx/glcanvas.h>
+#include "TileMap.h"
 
-namespace LitePanel::Gui
+namespace LitePanel
 {
-	class OGLCanvas: public wxGLCanvas
+	class RailObject;
+
+	class Panel
 	{
 		public:
-		OGLCanvas(wxWindow *parent, int id = -1);
-		~OGLCanvas() = default;
+			Panel(const TileCoord_t size);
 
-		protected:
-		virtual void OnDraw() = 0;
+			void RegisterRail(std::unique_ptr<RailObject> object);
 
 		private:
-		// Events
-		void OnPaint(wxPaintEvent &e);
-		void OnEraseBackground(wxEraseEvent &e);
-
-		void InitGL();
-
-		private:
-		bool m_fInitialized = false;
-
+			TileMap m_mapTileMap;
+			
 	};
 }
-
-

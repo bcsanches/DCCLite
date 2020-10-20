@@ -31,8 +31,12 @@ constexpr ScaleInfo g_tScales[MAX_ZOOM_LEVELS] =
 
 #define CURRENT_SCALE (g_tScales[m_uZoomLevel].m_uScale)
 
-namespace LitePanel
-{	
+namespace LitePanel::Gui
+{		
+	wxDEFINE_EVENT(EVT_MOUSE_OVER_TILE_CHANGED, TileEvent);
+	wxDEFINE_EVENT(EVT_TILE_LEFT_CLICK, TileEvent);
+	wxDEFINE_EVENT(EVT_TILE_RIGHT_CLICK, TileEvent);
+
 	TileCoord_t MapCanvas::ViewInfo::WorldToTile(const IntPoint_t &worldPoint) const
 	{
 		auto localCoord = worldPoint / CURRENT_SCALE;
@@ -44,6 +48,7 @@ namespace LitePanel
 	MapCanvas::MapCanvas(wxWindow *parent, int id):
 		OGLCanvas{parent, id}	
 	{		
+		Bind(wxEVT_LEFT_DOWN, &MapCanvas::OnMouseLeftDown, this);
 		Bind(wxEVT_MIDDLE_DOWN, &MapCanvas::OnMouseMiddleDown, this);	
 		Bind(wxEVT_MOUSEWHEEL, &MapCanvas::OnMouseWheel, this);
 	}
@@ -115,7 +120,7 @@ namespace LitePanel
 		glDisable(GL_LINE_SMOOTH);
 		glLineWidth(1.0f);
 
-		glColor4f(0.0f, 0.0f, 0.0f, 1.0f);		
+		glColor4f(0.85f, 0.85f, 0.85f, 1.0f);		
 
 		glBegin(GL_LINES);
 
@@ -231,6 +236,8 @@ namespace LitePanel
 		assert((rargs.m_tNumVisibleTiles.m_tX > 0) && (rargs.m_tNumVisibleTiles.m_tY > 0));
 
 		glMatrixMode(GL_MODELVIEW);
+
+		glColor3f(0.0f, 0.0f, 0.0f);
 
 		for(auto y = rargs.m_tTilePos_ViewOrigin.m_tY; y < rargs.m_tTilePos_LastVisible.m_tY; ++y)
 		{
@@ -363,6 +370,19 @@ NOTILES:
 		this->UpdateRenderInfo();
 	}
 
+	void MapCanvas::OnMouseLeftDown(wxMouseEvent &event)
+	{
+		event.Skip();
+
+		auto tileCoord = this->TryFindMouseTile(event);
+		if(!tileCoord)
+			return;
+
+		TileEvent ev{ EVT_TILE_LEFT_CLICK, *tileCoord};
+
+		wxPostEvent(this, ev);
+	}
+
 	void MapCanvas::OnMouseMiddleDown(wxMouseEvent &event)
 	{
 		event.Skip();
@@ -413,5 +433,22 @@ NOTILES:
 		event.Skip();
 
 		this->OnMouseLost();
+	}
+
+	std::optional<TileCoord_t> MapCanvas::TryFindMouseTile(const wxMouseEvent &event) const noexcept
+	{
+		if(!m_pclTileMap)
+			return {};
+
+		const IntPoint_t mousePos{event.GetX(), event.GetY()};
+		
+		const auto tilePos = m_tViewInfo.WorldToTile(mousePos + m_tOrigin);
+
+		const auto mapSize = m_pclTileMap->GetSize();
+
+		if((tilePos.m_tX >= mapSize.m_tX) || (tilePos.m_tY >= mapSize.m_tY))
+			return {};
+
+		return tilePos;
 	}
 }
