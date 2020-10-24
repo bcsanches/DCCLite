@@ -5,8 +5,8 @@
     "address": "1851",
     "pin": 2,
     "inverted": false,
-    "powerPin": 22,
-    "frogPin": 23,
+    "powerPin": 43,
+    "frogPin": 42,
     "invertedFrog": true,
     "operationTime": 1000,
     "comment": "Double track juntion"
@@ -17,8 +17,8 @@
     "address": "1852",
     "pin": 3,
     "inverted": false,
-    "powerPin": 24,
-    "frogPin": 25,
+    "powerPin": 45,
+    "frogPin": 44,
     "invertedFrog": true,
     "operationTime": 1000,
     "comment": "TC exit"
@@ -29,8 +29,8 @@
     "address": "1853",
     "pin": 4,
     "inverted": false,
-    "powerPin": 26,
-    "frogPin": 27,
+    "powerPin": 47,
+    "frogPin": 46,
     "invertedFrog": true,
     "operationTime": 1000,
     "comment": "TC join"
@@ -42,8 +42,8 @@
     "address": "1854",
     "pin": 5,
     "inverted": false,
-    "powerPin": 28,
-    "frogPin": 29,
+    "powerPin": 49,
+    "frogPin": 48,
     "invertedFrog": true,
     "operationTime": 1000,
     "comment": "TC entry"
