@@ -16,17 +16,25 @@ namespace LitePanel
 {
 	enum Layers
 	{
-		RAIL_LAYER
+		kRAIL_LAYER,
+		kTEMP_LAYER,
+
+		kNUM_LAYERS
 	};
 
 	Panel::Panel(const TileCoord_t size):
-		m_mapTileMap(size)		
+		m_mapTileMap(size, kNUM_LAYERS)
 	{
 		//empty
 	}
 
 	void Panel::RegisterRail(std::unique_ptr<RailObject> object)
 	{
-		m_mapTileMap.RegisterObject(std::move(object), RAIL_LAYER);
+		m_mapTileMap.RegisterObject(std::move(object), kRAIL_LAYER);
+	}
+
+	void Panel::RegisterTempObject(std::unique_ptr<MapObject> object)
+	{
+		m_mapTileMap.RegisterObject(std::move(object), kTEMP_LAYER);
 	}
 }

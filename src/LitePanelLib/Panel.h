@@ -23,6 +23,8 @@ namespace LitePanel
 
 			void RegisterRail(std::unique_ptr<RailObject> object);
 
+			void RegisterTempObject(std::unique_ptr<MapObject> object);
+
 		private:
 			TileMap m_mapTileMap;
 			
