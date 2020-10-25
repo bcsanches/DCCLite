@@ -53,7 +53,7 @@ namespace LitePanel
 	class TileMap
 	{
 		public:
-			TileMap(const TileCoord_t size);
+			TileMap(const TileCoord_t size, const unsigned numLayers = 1);
 
 			const TileCoord_t &GetSize() const noexcept { return m_vecLayers[0].GetSize(); }
 

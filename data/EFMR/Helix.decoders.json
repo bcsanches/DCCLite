@@ -1,0 +1,51 @@
+[
+  {
+    "name": "HLX_T02",
+    "class": "ServoTurnout",
+    "address": "1851",
+    "pin": 2,
+    "inverted": false,
+    "powerPin": 43,
+    "frogPin": 42,
+    "invertedFrog": true,
+    "operationTime": 1000,
+    "comment": "Double track juntion"
+  },
+  {
+    "name": "HLX_T03",
+    "class": "ServoTurnout",
+    "address": "1852",
+    "pin": 3,
+    "inverted": false,
+    "powerPin": 45,
+    "frogPin": 44,
+    "invertedFrog": true,
+    "operationTime": 1000,
+    "comment": "TC exit"
+  },
+  {
+    "name": "HLX_T04",
+    "class": "ServoTurnout",
+    "address": "1853",
+    "pin": 4,
+    "inverted": false,
+    "powerPin": 47,
+    "frogPin": 46,
+    "invertedFrog": true,
+    "operationTime": 1000,
+    "comment": "TC join"
+  },
+
+  {
+    "name": "HLX_T05",
+    "class": "ServoTurnout",
+    "address": "1854",
+    "pin": 5,
+    "inverted": false,
+    "powerPin": 49,
+    "frogPin": 48,
+    "invertedFrog": true,
+    "operationTime": 1000,
+    "comment": "TC entry"
+  }
+]

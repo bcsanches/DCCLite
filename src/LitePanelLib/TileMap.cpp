@@ -69,13 +69,19 @@ namespace LitePanel
 	}
 
 
-	TileMap::TileMap(const TileCoord_t size)
+	TileMap::TileMap(const TileCoord_t size, const unsigned numLayers)
 	{
 		if ((size.m_tX == 0) || (size.m_tY == 0))
-			throw std::invalid_argument("[LitePanel::TileMap] size must be > 0");		
+			throw std::invalid_argument("[LitePanel::TileMap] size must be > 0");	
 
-		//create layer 0
-		m_vecLayers.emplace_back(size);
+		if(numLayers == 0)
+			throw std::invalid_argument("[LitePanel::TileMap] numLayers must be > 0");
+
+
+		for (auto i = 0; i < numLayers; ++i)
+		{
+			m_vecLayers.emplace_back(size);
+		}						
 	}
 
 
