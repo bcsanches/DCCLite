@@ -13,8 +13,9 @@
 
 #include <fmt/format.h>
 
-#include "MapCanvas.h"
+#include "MapEditorCanvas.h"
 #include "MapObject.h"
+#include "Panel.h"
 #include "RailObject.h"
 
 class ToolManager
@@ -101,7 +102,7 @@ class MainFrame : public wxFrame
 		void OnMapCanvasTileLeftClick(LitePanel::Gui::TileEvent &event);
 
 	private:
-		LitePanel::TileMap m_clTileMap;
+		LitePanel::Panel m_clPanel;
 
 		std::unique_ptr<ToolManager> m_upToolManager;
 
@@ -124,7 +125,7 @@ bool LiteApp::OnInit()
 
 MainFrame::MainFrame(): 
 	wxFrame(NULL, wxID_ANY, "Lite Panel"),
-	m_clTileMap(LitePanel::TileCoord_t{32, 32})
+	m_clPanel(LitePanel::TileCoord_t{32, 32})
 {
 	wxMenu* menuFile = new wxMenu;
 	menuFile->Append(ID_Hello, "&Hello...\tCtrl-H",
@@ -139,9 +140,9 @@ MainFrame::MainFrame():
 	menuBar->Append(menuFile, "&File");
 	menuBar->Append(menuHelp, "&Help");
 
-	m_pclMapCanvas = new LitePanel::Gui::MapCanvas(this);
+	m_pclMapCanvas = new LitePanel::Gui::MapEditorCanvas(this);
 
-	m_pclMapCanvas->SetTileMap(&m_clTileMap);
+	m_pclMapCanvas->SetTileMap(&m_clPanel.GetTileMap());
 
 	auto obj = std::make_unique<LitePanel::SimpleRailObject>(
 		LitePanel::TileCoord_t{1, 1},
@@ -149,7 +150,7 @@ MainFrame::MainFrame():
 		LitePanel::SimpleRailTypes::STRAIGHT
 	);
 
-	m_clTileMap.RegisterObject(std::move(obj), 0);
+	m_clPanel.RegisterRail(std::move(obj));
 
 	auto obj2 = std::make_unique<LitePanel::SimpleRailObject>(
 		LitePanel::TileCoord_t{ 2, 1 },
@@ -157,7 +158,7 @@ MainFrame::MainFrame():
 		LitePanel::SimpleRailTypes::STRAIGHT
 	);
 
-	m_clTileMap.RegisterObject(std::move(obj2), 0);
+	m_clPanel.RegisterRail(std::move(obj2));
 
 	auto obj3 = std::make_unique<LitePanel::SimpleRailObject>(
 		LitePanel::TileCoord_t{ 3, 1 },
@@ -165,7 +166,7 @@ MainFrame::MainFrame():
 		LitePanel::SimpleRailTypes::STRAIGHT
 	);
 
-	m_clTileMap.RegisterObject(std::move(obj3), 0);
+	m_clPanel.RegisterRail(std::move(obj3));
 
 	SetMenuBar(menuBar);
 

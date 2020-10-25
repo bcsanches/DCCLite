@@ -10,26 +10,15 @@
 
 #pragma once
 
-#include "TileMap.h"
+#include "MapCanvas.h"
 
-namespace LitePanel
+namespace LitePanel::Gui
 {
-	class RailObject;
-
-	class Panel
+	class MapEditorCanvas: public MapCanvas
 	{
 		public:
-			Panel(const TileCoord_t size);
-
-			void RegisterRail(std::unique_ptr<RailObject> object);
-
-			inline const TileMap& GetTileMap() const noexcept
-			{
-				return m_mapTileMap;
-			}
-
-		private:
-			TileMap m_mapTileMap;
-			
+			MapEditorCanvas(wxWindow *parent, int id = -1);			
 	};
 }
+
+

@@ -8,28 +8,15 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#pragma once
 
-#include "TileMap.h"
+#include "MapEditorCanvas.h"
 
-namespace LitePanel
-{
-	class RailObject;
-
-	class Panel
+namespace LitePanel::Gui
+{			
+	MapEditorCanvas::MapEditorCanvas(wxWindow *parent, int id):
+		MapCanvas{parent, id}	
 	{
-		public:
-			Panel(const TileCoord_t size);
+		//empty
+	}
 
-			void RegisterRail(std::unique_ptr<RailObject> object);
-
-			inline const TileMap& GetTileMap() const noexcept
-			{
-				return m_mapTileMap;
-			}
-
-		private:
-			TileMap m_mapTileMap;
-			
-	};
 }
