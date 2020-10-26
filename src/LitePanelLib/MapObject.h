@@ -38,6 +38,14 @@ namespace LitePanel
 			}
 
 		private:
+			friend class Panel;
+
+			void SetPosition(const TileCoord_t& position)
+			{
+				m_tPosition = position;
+			}
+
+		private:
 			TileCoord_t m_tPosition;
 	};
 }

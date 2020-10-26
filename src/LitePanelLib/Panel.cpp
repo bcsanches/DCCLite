@@ -16,8 +16,8 @@ namespace LitePanel
 {
 	enum Layers
 	{
-		kRAIL_LAYER,
 		kTEMP_LAYER,
+		kRAIL_LAYER,		
 
 		kNUM_LAYERS
 	};
@@ -37,4 +37,19 @@ namespace LitePanel
 	{
 		m_mapTileMap.RegisterObject(std::move(object), kTEMP_LAYER);
 	}
+
+	std::unique_ptr<MapObject> Panel::UnregisterTempObject(const MapObject& object)
+	{
+		return m_mapTileMap.UnregisterObject(object, kTEMP_LAYER);
+	}
+
+	void Panel::SetTempObjectPosition(MapObject& object, const TileCoord_t& newPosition)
+	{		
+		auto obj = this->UnregisterTempObject(object);
+		
+		obj->SetPosition(newPosition);
+
+		this->RegisterTempObject(std::move(obj));
+	}
+
 }

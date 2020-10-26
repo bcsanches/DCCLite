@@ -13,10 +13,11 @@
 
 #include <fmt/format.h>
 
-#include "MapEditorCanvas.h"
+#include "PanelEditorCanvas.h"
 #include "MapObject.h"
 #include "Panel.h"
 #include "RailObject.h"
+#include "TempObjects.h"
 
 class ToolManager
 {
@@ -101,12 +102,16 @@ class MainFrame : public wxFrame
 
 		void OnMapCanvasTileLeftClick(LitePanel::Gui::TileEvent &event);
 
+		void OnTileUnderMouseChanged(LitePanel::Gui::TileEvent& event);
+
 	private:
 		LitePanel::Panel m_clPanel;
 
 		std::unique_ptr<ToolManager> m_upToolManager;
 
-		LitePanel::Gui::MapCanvas *m_pclMapCanvas;
+		LitePanel::Gui::TileMapCanvas *m_pclMapCanvas = nullptr;
+
+		LitePanel::QuadObject *m_pclMouseShadow = nullptr;
 };
 
 enum
@@ -140,7 +145,7 @@ MainFrame::MainFrame():
 	menuBar->Append(menuFile, "&File");
 	menuBar->Append(menuHelp, "&Help");
 
-	m_pclMapCanvas = new LitePanel::Gui::MapEditorCanvas(this);
+	m_pclMapCanvas = new LitePanel::Gui::PanelEditorCanvas(this);
 
 	m_pclMapCanvas->SetTileMap(&m_clPanel.GetTileMap());
 
@@ -276,6 +281,7 @@ MainFrame::MainFrame():
 	Bind(wxEVT_MENU, &MainFrame::OnToolLeftClick, this, wxID_ANY);
 	m_pclMapCanvas->Bind(wxEVT_LEFT_UP, &MainFrame::OnMapCanvasLeftClick, this, wxID_ANY);
 	m_pclMapCanvas->Bind(LitePanel::Gui::EVT_TILE_LEFT_CLICK, &MainFrame::OnMapCanvasTileLeftClick, this, wxID_ANY);
+	m_pclMapCanvas->Bind(LitePanel::Gui::EVT_TILE_UNDER_MOUSE_CHANGED, &MainFrame::OnTileUnderMouseChanged, this, wxID_ANY);
 }
 
 
@@ -315,7 +321,38 @@ void MainFrame::OnMapCanvasLeftClick(wxMouseEvent &event)
 
 void MainFrame::OnMapCanvasTileLeftClick(LitePanel::Gui::TileEvent &event)
 {
-	const auto &tilePos = event.GetTilePosition();
+	const auto &tilePos = event.GetTilePosition().value();
 
 	this->SetStatusText(fmt::format("tile {} {}", tilePos.m_tX, tilePos.m_tY));
+}
+
+void MainFrame::OnTileUnderMouseChanged(LitePanel::Gui::TileEvent &event)
+{
+	event.Skip();
+
+	const auto &position = event.GetTilePosition();
+
+	if (!position)
+	{
+		if (m_pclMouseShadow)
+		{
+			m_clPanel.UnregisterTempObject(*m_pclMouseShadow);
+			m_pclMouseShadow = nullptr;
+		}
+	}
+	else
+	{
+		if (!m_pclMouseShadow)
+		{
+			auto obj = std::make_unique<LitePanel::QuadObject>(position.value(), 1.0f, 0, 1.0f);
+
+			m_pclMouseShadow = obj.get();
+
+			m_clPanel.RegisterTempObject(std::move(obj));
+		}
+		else
+		{
+			m_clPanel.SetTempObjectPosition(*m_pclMouseShadow, position.value());
+		}
+	}
 }

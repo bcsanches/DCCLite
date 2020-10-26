@@ -9,7 +9,8 @@
 // defined by the Mozilla Public License, v. 2.0.
 
 
-#include "MapCanvas.h"
+#include "TileMapCanvas.h"
+#include "TempObjects.h"
 #include "RailObject.h"
 
 struct ScaleInfo
@@ -33,11 +34,11 @@ constexpr ScaleInfo g_tScales[MAX_ZOOM_LEVELS] =
 
 namespace LitePanel::Gui
 {		
-	wxDEFINE_EVENT(EVT_MOUSE_OVER_TILE_CHANGED, TileEvent);
+	wxDEFINE_EVENT(EVT_TILE_UNDER_MOUSE_CHANGED, TileEvent);
 	wxDEFINE_EVENT(EVT_TILE_LEFT_CLICK, TileEvent);
 	wxDEFINE_EVENT(EVT_TILE_RIGHT_CLICK, TileEvent);
 
-	TileCoord_t MapCanvas::ViewInfo::WorldToTile(const IntPoint_t &worldPoint) const
+	TileCoord_t ViewInfo::WorldToTile(const IntPoint_t &worldPoint) const
 	{
 		auto localCoord = worldPoint / CURRENT_SCALE;
 
@@ -45,25 +46,32 @@ namespace LitePanel::Gui
 	}
 
 
-	MapCanvas::MapCanvas(wxWindow *parent, int id):
+	TileMapCanvas::TileMapCanvas(wxWindow *parent, int id):
 		OGLCanvas{parent, id}	
 	{		
-		Bind(wxEVT_LEFT_DOWN, &MapCanvas::OnMouseLeftDown, this);
-		Bind(wxEVT_MIDDLE_DOWN, &MapCanvas::OnMouseMiddleDown, this);	
-		Bind(wxEVT_MOUSEWHEEL, &MapCanvas::OnMouseWheel, this);
+		Bind(wxEVT_LEFT_DOWN, &TileMapCanvas::OnMouseLeftDown, this);
+		Bind(wxEVT_MIDDLE_DOWN, &TileMapCanvas::OnMouseMiddleDown, this);
+		Bind(wxEVT_MOUSEWHEEL, &TileMapCanvas::OnMouseWheel, this);
+		Bind(wxEVT_MOTION, &TileMapCanvas::OnMouseMove, this);
 	}
 
-	void MapCanvas::SetTileMap(const LitePanel::TileMap *tileMap) noexcept
+	void TileMapCanvas::SetTileMap(LitePanel::TileMap *tileMap) noexcept
 	{
+		if (m_pclTileMap)
+		{
+			m_pclTileMap->RemoveListener(this);
+		}
+
 		m_pclTileMap = tileMap;
 
 		if(!m_pclTileMap)
 			return;
 
+		m_pclTileMap->AddListener(this);
 		this->UpdateRenderInfo();
 	}
 
-	void MapCanvas::UpdateRenderInfo()
+	void TileMapCanvas::UpdateRenderInfo()
 	{
 		assert(m_pclTileMap);
 
@@ -72,10 +80,19 @@ namespace LitePanel::Gui
 		m_tViewInfo.m_uLineWidth = g_tScales[m_tViewInfo.m_uZoomLevel].m_uLineWidth;
 		m_tViewInfo.m_tWorldSize = LitePanel::IntPoint_t{m_pclTileMap->GetSize()} * m_tViewInfo.m_uTileScale;
 
+		this->RequestDraw();
+	}
+
+	void TileMapCanvas::RequestDraw()
+	{
+		if(m_fPendingDraw)
+			return;
+
+		m_fPendingDraw = true;
 		this->Refresh();
 	}
 
-	MapCanvas::RenderArgs MapCanvas::MakeRenderArgs() const
+	TileMapCanvas::RenderArgs TileMapCanvas::MakeRenderArgs() const
 	{
 		assert(m_pclTileMap);
 
@@ -113,14 +130,14 @@ namespace LitePanel::Gui
 		return rargs;
 	}
 
-	void MapCanvas::DrawGrid(const RenderArgs &rargs)
+	void TileMapCanvas::DrawGrid(const RenderArgs &rargs)
 	{
 		assert(m_pclTileMap);
 
 		glDisable(GL_LINE_SMOOTH);
 		glLineWidth(1.0f);
 
-		glColor4f(0.85f, 0.85f, 0.85f, 1.0f);		
+		glColor4f(0.85f, 0.85f, 0.85f, 1.0f);
 
 		glBegin(GL_LINES);
 
@@ -160,8 +177,9 @@ namespace LitePanel::Gui
 		//glPopMatrix();
 	}
 
-	void MapCanvas::DrawStraightRail(const LitePanel::SimpleRailObject &rail) const
+	void TileMapCanvas::DrawStraightRail(const LitePanel::SimpleRailObject &rail) const
 	{
+		glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
 		glLineWidth(m_tViewInfo.m_uLineWidth);
 
 		switch(rail.GetAngle())
@@ -194,12 +212,12 @@ namespace LitePanel::Gui
 		}		
 	}
 
-	void MapCanvas::DrawCurveRail(const LitePanel::SimpleRailObject &obj) const
+	void TileMapCanvas::DrawCurveRail(const LitePanel::SimpleRailObject &obj) const
 	{
 
 	}
 
-	void MapCanvas::DrawSimpleRail(const LitePanel::SimpleRailObject &rail) const
+	void TileMapCanvas::DrawSimpleRail(const LitePanel::SimpleRailObject &rail) const
 	{
 		switch (rail.GetType())
 		{
@@ -218,26 +236,26 @@ namespace LitePanel::Gui
 		}		
 	}
 
-	void MapCanvas::DrawObject(const MapObject &obj) const
+	void TileMapCanvas::DrawObject(const MapObject &obj) const
 	{
 		auto simpleRailObject = dynamic_cast<const LitePanel::SimpleRailObject *>(&obj);
 		if (simpleRailObject)
 		{
-			this->DrawSimpleRail(*simpleRailObject);
-
-			return;
+			this->DrawSimpleRail(*simpleRailObject);			
 		}		
+		else if (auto tempObject = dynamic_cast<const LitePanel::TempObject*>(&obj))
+		{
+			tempObject->Draw(m_tViewInfo);
+		}
 	}
 
-	void MapCanvas::Render(const RenderArgs &rargs)
+	void TileMapCanvas::Render(const RenderArgs &rargs)
 	{
 		assert(m_pclTileMap);
 		
 		assert((rargs.m_tNumVisibleTiles.m_tX > 0) && (rargs.m_tNumVisibleTiles.m_tY > 0));
 
-		glMatrixMode(GL_MODELVIEW);
-
-		glColor3f(0.0f, 0.0f, 0.0f);
+		glMatrixMode(GL_MODELVIEW);		
 
 		for(auto y = rargs.m_tTilePos_ViewOrigin.m_tY; y < rargs.m_tTilePos_LastVisible.m_tY; ++y)
 		{
@@ -268,7 +286,7 @@ namespace LitePanel::Gui
 		}
 	}
 
-	void MapCanvas::OnDraw()
+	void TileMapCanvas::OnDraw()
 	{
 		// Clear
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -339,9 +357,16 @@ namespace LitePanel::Gui
 
 NOTILES:
 		this->SwapBuffers();
+
+		m_fPendingDraw = false;
 	}
 
-	void MapCanvas::OnMouseWheel(wxMouseEvent &event)
+	void TileMapCanvas::TileMap_OnStateChanged()
+	{		
+		this->RequestDraw();
+	}
+
+	void TileMapCanvas::OnMouseWheel(wxMouseEvent &event)
 	{	
 		if (event.GetWheelRotation() > 0)
 		{
@@ -370,7 +395,7 @@ NOTILES:
 		this->UpdateRenderInfo();
 	}
 
-	void MapCanvas::OnMouseLeftDown(wxMouseEvent &event)
+	void TileMapCanvas::OnMouseLeftDown(wxMouseEvent &event)
 	{
 		event.Skip();
 
@@ -383,59 +408,77 @@ NOTILES:
 		wxPostEvent(this, ev);
 	}
 
-	void MapCanvas::OnMouseMiddleDown(wxMouseEvent &event)
+	void TileMapCanvas::OnMouseMiddleDown(wxMouseEvent &event)
 	{
 		event.Skip();
-
-		this->Bind(wxEVT_MOTION, &MapCanvas::OnMouseMove, this);
-		this->Bind(wxEVT_MIDDLE_UP, &MapCanvas::OnMouseMiddleUp, this);
-		this->Bind(wxEVT_MOUSE_CAPTURE_LOST, &MapCanvas::OnMouseCaptureLost, this);
+		
+		this->Bind(wxEVT_MIDDLE_UP, &TileMapCanvas::OnMouseMiddleUp, this);
+		this->Bind(wxEVT_MOUSE_CAPTURE_LOST, &TileMapCanvas::OnMouseCaptureLost, this);
 
 		this->CaptureMouse();
 
 		m_tMoveStartPos = LitePanel::IntPoint_t{event.GetX(), event.GetY()};	
+		m_fMapMouseScroll = true;
 	}
 
-	void MapCanvas::OnMouseMove(wxMouseEvent &event)
+	void TileMapCanvas::OnMouseMove(wxMouseEvent &event)
 	{
 		event.Skip();
 
-		auto currentPos = LitePanel::IntPoint_t{ event.GetX(), event.GetY() };
+		if (m_fMapMouseScroll)
+		{
+			auto currentPos = LitePanel::IntPoint_t{ event.GetX(), event.GetY() };
 
-		m_tOrigin += currentPos - m_tMoveStartPos;
-		m_tOrigin.m_tX = std::max(0, m_tOrigin.m_tX);
-		m_tOrigin.m_tY = std::max(0, m_tOrigin.m_tY);
+			m_tOrigin += currentPos - m_tMoveStartPos;
+			m_tOrigin.m_tX = std::max(0, m_tOrigin.m_tX);
+			m_tOrigin.m_tY = std::max(0, m_tOrigin.m_tY);
 
-		m_tMoveStartPos = currentPos;
+			m_tMoveStartPos = currentPos;
 
-		this->Refresh();
+			this->RequestDraw();
+		}
+		else
+		{
+			auto newTilePosition = this->TryFindMouseTile(event);
+
+			if(newTilePosition == m_tTileUnderMouse)
+				return;
+
+			m_tTileUnderMouse = newTilePosition;
+
+			TileEvent ev{ EVT_TILE_UNDER_MOUSE_CHANGED, m_tTileUnderMouse };
+
+			wxPostEvent(this, ev);
+		}
+		
 	}
 
-	void MapCanvas::OnMouseCaptureLost(wxMouseCaptureLostEvent &event)
+	void TileMapCanvas::OnMouseCaptureLost(wxMouseCaptureLostEvent &event)
 	{
 		event.Skip();
 
-		this->OnMouseLost();
+		this->OnMouseLost();		
 	}
 
-	void MapCanvas::OnMouseLost()
+	void TileMapCanvas::OnMouseLost()
 	{
 		this->ReleaseMouse();
-
-		this->Unbind(wxEVT_MOTION, &MapCanvas::OnMouseMove, this);
-		this->Unbind(wxEVT_MIDDLE_UP, &MapCanvas::OnMouseMiddleUp, this);
-		this->Unbind(wxEVT_MOUSE_CAPTURE_LOST, &MapCanvas::OnMouseCaptureLost, this);
+		
+		m_fMapMouseScroll = false;
+		this->Unbind(wxEVT_MIDDLE_UP, &TileMapCanvas::OnMouseMiddleUp, this);
+		this->Unbind(wxEVT_MOUSE_CAPTURE_LOST, &TileMapCanvas::OnMouseCaptureLost, this);
 	}
 
 
-	void MapCanvas::OnMouseMiddleUp(wxMouseEvent &event)
+	void TileMapCanvas::OnMouseMiddleUp(wxMouseEvent &event)
 	{
 		event.Skip();
+		m_fMapMouseScroll = false;
 
 		this->OnMouseLost();
 	}
 
-	std::optional<TileCoord_t> MapCanvas::TryFindMouseTile(const wxMouseEvent &event) const noexcept
+	std::optional<TileCoord_t> TileMapCanvas::TryFindMouseTile(const wxMouseEvent &event) const noexcept
 	{
 		if(!m_pclTileMap)
 			return {};

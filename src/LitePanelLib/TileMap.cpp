@@ -68,6 +68,19 @@ namespace LitePanel
 		std::swap(m_vecMap[index], object);
 	}
 
+	std::unique_ptr<MapObject> TileLayer::UnregisterObject(const MapObject& obj)
+	{
+		auto &pos = obj.GetPosition();
+		auto index = this->GetIndex(pos);
+
+		if (m_vecMap[index].get() != &obj)
+		{
+			throw std::runtime_error(fmt::format("[TileLayer::UnregisterObject] Position {} - {} is not occupied by object", pos.m_tX, pos.m_tY));
+		}
+
+		return std::move(m_vecMap[index]);
+	}
+
 
 	TileMap::TileMap(const TileCoord_t size, const unsigned numLayers)
 	{
@@ -78,12 +91,11 @@ namespace LitePanel
 			throw std::invalid_argument("[LitePanel::TileMap] numLayers must be > 0");
 
 
-		for (auto i = 0; i < numLayers; ++i)
+		for (unsigned i = 0; i < numLayers; ++i)
 		{
 			m_vecLayers.emplace_back(size);
 		}						
 	}
-
 
 	void TileMap::RegisterObject(std::unique_ptr<MapObject> object, const uint8_t layer)
 	{
@@ -91,5 +103,44 @@ namespace LitePanel
 			throw std::runtime_error(fmt::format("[TileMap::RegisterObject] Layer {} is invalid", layer));
 
 		m_vecLayers[layer].RegisterObject(std::move(object));
+
+		this->StateChanged();
 	}
+
+	std::unique_ptr<MapObject> TileMap::UnregisterObject(const MapObject& obj, const uint8_t layer)
+	{
+		if(layer >= m_vecLayers.size())
+			throw std::runtime_error(fmt::format("[TileMap::UnregisterObject] layer {} is invalid", layer));
+
+		auto tmp = m_vecLayers[layer].UnregisterObject(obj);
+
+		this->StateChanged();
+
+		return tmp;
+	}
+
+	void TileMap::AddListener(ITileMapListener* listener)
+	{
+		assert(listener);
+
+		m_vecListeners.push_back(listener);
+	}
+
+	void TileMap::RemoveListener(ITileMapListener* listener)
+	{
+		std::remove_if(m_vecListeners.begin(), m_vecListeners.end(), [listener](ITileMapListener* obj)
+			{
+				return obj == listener;
+			}
+		);
+	}
+
+	void TileMap::StateChanged()
+	{
+		for (auto listener : m_vecListeners)
+		{
+			listener->TileMap_OnStateChanged();
+		}
+	}
+
 }

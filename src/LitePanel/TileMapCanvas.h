@@ -27,14 +27,14 @@ namespace LitePanel
 namespace LitePanel::Gui
 {
 	class TileEvent;
-	wxDECLARE_EVENT(EVT_MOUSE_OVER_TILE_CHANGED, TileEvent);
+	wxDECLARE_EVENT(EVT_TILE_UNDER_MOUSE_CHANGED, TileEvent);
 	wxDECLARE_EVENT(EVT_TILE_LEFT_CLICK, TileEvent);
 	wxDECLARE_EVENT(EVT_TILE_RIGHT_CLICK, TileEvent);
 
 	class TileEvent: public wxEvent
 	{
 		public:
-			TileEvent(wxEventType commandType, TileCoord_t tilePos, int id = 0):
+			TileEvent(wxEventType commandType, std::optional<TileCoord_t> tilePos, int id = 0):
 				wxEvent(id, commandType),
 				m_tTilePosition(tilePos)
 			{
@@ -53,24 +53,37 @@ namespace LitePanel::Gui
 				return new TileEvent(*this);
 			}
 
-			const TileCoord_t &GetTilePosition() const
+			const std::optional<TileCoord_t> &GetTilePosition() const
 			{
 				return m_tTilePosition;
 			}
 
 		private:
-			const TileCoord_t m_tTilePosition;
-	};			
+			const std::optional<TileCoord_t> m_tTilePosition;
+	};				
 
-	class MapCanvas: public OGLCanvas
+	struct ViewInfo
+	{
+		uint8_t m_uZoomLevel = DEFAULT_ZOOM_LEVEL;
+		unsigned m_uTileScale;
+		unsigned m_uHalfTileScale;
+		unsigned m_uLineWidth;
+
+		//size of the world in pixes, based on tileScale
+		IntPoint_t m_tWorldSize;
+
+		TileCoord_t WorldToTile(const IntPoint_t& worldPoint) const;
+	};
+
+	class TileMapCanvas: public OGLCanvas, ITileMapListener
 	{
 		private:
 			struct RenderArgs;
 
 		public:
-			MapCanvas(wxWindow *parent, int id = -1);
+			TileMapCanvas(wxWindow *parent, int id = -1);
 
-			void SetTileMap(const LitePanel::TileMap *tileMap) noexcept;
+			void SetTileMap(LitePanel::TileMap *tileMap) noexcept;
 
 			std::optional<TileCoord_t> TryFindMouseTile(const wxMouseEvent &event) const noexcept;
 
@@ -102,19 +115,12 @@ namespace LitePanel::Gui
 			void DrawObject(const MapObject &obj) const;
 			void DrawSimpleRail(const LitePanel::SimpleRailObject &obj) const;
 
+			void TileMap_OnStateChanged() override;
+
+			void RequestDraw();
+
 		private:
-			struct ViewInfo
-			{
-				uint8_t m_uZoomLevel = DEFAULT_ZOOM_LEVEL;				
-				unsigned m_uTileScale;
-				unsigned m_uHalfTileScale;
-				unsigned m_uLineWidth;
-
-				//size of the world in pixes, based on tileScale
-				IntPoint_t m_tWorldSize;
-
-				TileCoord_t WorldToTile(const IntPoint_t &worldPoint) const;
-			};
+			
 
 			struct RenderArgs
 			{
@@ -139,9 +145,14 @@ namespace LitePanel::Gui
 
 			IntPoint_t m_tMoveStartPos;
 
-			const TileMap *m_pclTileMap = nullptr;
+			TileMap *m_pclTileMap = nullptr;
 
 			ViewInfo m_tViewInfo;
+
+			std::optional<TileCoord_t> m_tTileUnderMouse;
+			bool m_fMapMouseScroll = false;
+
+			bool m_fPendingDraw = false;
 	};
 }
 

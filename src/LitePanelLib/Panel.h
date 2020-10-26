@@ -25,7 +25,10 @@ namespace LitePanel
 
 			void RegisterTempObject(std::unique_ptr<MapObject> object);
 
-			inline const TileMap& GetTileMap() const noexcept
+			void SetTempObjectPosition(MapObject &obj, const TileCoord_t &newPosition);
+			std::unique_ptr<MapObject> UnregisterTempObject(const MapObject &obj);
+
+			inline TileMap& GetTileMap() noexcept
 			{
 				return m_mapTileMap;
 			}

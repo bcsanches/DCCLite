@@ -8,17 +8,14 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#pragma once
 
-#include "MapCanvas.h"
+#include "PanelEditorCanvas.h"
 
 namespace LitePanel::Gui
-{
-	class MapEditorCanvas: public MapCanvas
+{			
+	PanelEditorCanvas::PanelEditorCanvas(wxWindow *parent, int id):
+		TileMapCanvas{parent, id}	
 	{
-		public:
-			MapEditorCanvas(wxWindow *parent, int id = -1);			
-	};
+		//empty
+	}
 }
-
-

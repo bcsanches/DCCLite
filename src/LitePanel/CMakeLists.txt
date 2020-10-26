@@ -1,16 +1,18 @@
 
 set(LitePanel_SRCS	
   GLCanvas.cpp
-  main.cpp    
-  MapCanvas.cpp
-  MapEditorCanvas.cpp
+  main.cpp      
+  PanelEditorCanvas.cpp  
+  TempObjects.cpp
+  TileMapCanvas.cpp
   LitePanel.rc
 )
 
 set(LitePanel_HDRS
-  GLCanvas.h    
-  MapCanvas.h
-  MapEditorCanvas.h
+  GLCanvas.h        
+  PanelEditorCanvas.h
+  TempObjects.h
+  TileMapCanvas.h
 )
 
 add_executable(LitePanel WIN32 ${LitePanel_SRCS} ${LitePanel_HDRS})

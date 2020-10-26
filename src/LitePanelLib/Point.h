@@ -25,46 +25,51 @@ namespace LitePanel
 		Point(const Point &) = default;
 
 		template <typename Y>
-		Point(const Point<Y> &rhs):
+		inline Point(const Point<Y> &rhs) noexcept:
 			m_tX{rhs.m_tX},
 			m_tY{rhs.m_tY}
 		{
 			//empty
 		}
 
-		Point(T x, T y):
+		inline Point(T x, T y) noexcept:
 			m_tX(x),
 			m_tY(y)
 		{
 			//empty
 		}
 
-		const Point operator/(const T num) const
+		inline const Point operator/(const T num) const noexcept
 		{
 			return Point(m_tX / num, m_tY / num);
 		}
 		
-		const Point operator*(const T num) const
+		inline const Point operator*(const T num) const noexcept
 		{
 			return Point{ m_tX * num, m_tY * num };
 		}
 
-		const Point operator+(const Point &rhs) const
+		inline const Point operator+(const Point &rhs) const noexcept
 		{
 			return Point(m_tX + rhs.m_tX, m_tY + rhs.m_tY);
 		}
 
-		const Point operator-(const Point &rhs) const
+		inline const Point operator-(const Point &rhs) const noexcept
 		{
 			return Point(m_tX - rhs.m_tX, m_tY - rhs.m_tY);
 		}
 
-		const Point &operator+=(const Point &rhs)
+		inline const Point &operator+=(const Point &rhs) noexcept
 		{
 			m_tX += rhs.m_tX;
 			m_tY += rhs.m_tY;
 
 			return *this;
+		}
+
+		inline bool operator==(const Point& rhs) const noexcept
+		{
+			return (m_tX == rhs.m_tX) && (m_tY == rhs.m_tY);
 		}
 	};
 

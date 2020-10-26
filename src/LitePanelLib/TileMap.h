@@ -35,6 +35,7 @@ namespace LitePanel
 			TileLayer(const TileLayer &) = delete;
 
 			void RegisterObject(std::unique_ptr<MapObject> object);
+			std::unique_ptr<MapObject> UnregisterObject(const MapObject& obj);
 
 			const MapObject *TryGetMapObject(const TileCoord_t pos) const;
 
@@ -50,6 +51,12 @@ namespace LitePanel
 			std::vector<std::unique_ptr<MapObject>> m_vecMap;
 	};
 
+	class ITileMapListener
+	{
+		public:
+			virtual void TileMap_OnStateChanged() = 0;
+	};
+
 	class TileMap
 	{
 		public:
@@ -58,6 +65,7 @@ namespace LitePanel
 			const TileCoord_t &GetSize() const noexcept { return m_vecLayers[0].GetSize(); }
 
 			void RegisterObject(std::unique_ptr<MapObject> object, const uint8_t layer);	
+			std::unique_ptr<MapObject> UnregisterObject(const MapObject &obj, const uint8_t layer);
 
 			inline uint8_t GetNumLayers() const
 			{
@@ -69,7 +77,15 @@ namespace LitePanel
 				return &m_vecLayers[0];
 			}
 
+			void AddListener(ITileMapListener *listener);
+			void RemoveListener(ITileMapListener *listener);
+
+		private:
+			void StateChanged();
+
 		private:			
 			std::vector<TileLayer> m_vecLayers;
+
+			std::vector< ITileMapListener *> m_vecListeners;
 	};
 }
