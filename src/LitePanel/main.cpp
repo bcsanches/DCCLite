@@ -344,7 +344,7 @@ void MainFrame::OnTileUnderMouseChanged(LitePanel::Gui::TileEvent &event)
 	{
 		if (!m_pclMouseShadow)
 		{
-			auto obj = std::make_unique<LitePanel::QuadObject>(position.value(), 1.0f, 0, 1.0f);
+			auto obj = std::make_unique<LitePanel::QuadObject>(position.value(), 1.0f, 1.0f, 0.7f);
 
 			m_pclMouseShadow = obj.get();
 
