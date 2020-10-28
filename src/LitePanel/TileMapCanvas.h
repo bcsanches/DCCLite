@@ -27,6 +27,8 @@ namespace LitePanel
 namespace LitePanel::Gui
 {
 	class TileEvent;
+	class RenderTimer;
+
 	wxDECLARE_EVENT(EVT_TILE_UNDER_MOUSE_CHANGED, TileEvent);
 	wxDECLARE_EVENT(EVT_TILE_LEFT_CLICK, TileEvent);
 	wxDECLARE_EVENT(EVT_TILE_RIGHT_CLICK, TileEvent);
@@ -75,15 +77,16 @@ namespace LitePanel::Gui
 		TileCoord_t WorldToTile(const IntPoint_t& worldPoint) const;
 	};
 
-	class TileMapCanvas: public OGLCanvas, ITileMapListener
+	class TileMapCanvas: public OGLCanvas
 	{
 		private:
 			struct RenderArgs;
 
 		public:
 			TileMapCanvas(wxWindow *parent, int id = -1);
+			~TileMapCanvas() override;
 
-			void SetTileMap(LitePanel::TileMap *tileMap) noexcept;
+			void SetTileMap(const LitePanel::TileMap *tileMap) noexcept;
 
 			std::optional<TileCoord_t> TryFindMouseTile(const wxMouseEvent &event) const noexcept;
 
@@ -98,7 +101,9 @@ namespace LitePanel::Gui
 
 			void OnMouseCaptureLost(wxMouseCaptureLostEvent &event);
 
-			void OnMouseLost();			
+			void OnMouseLost();		
+
+			void OnMouseLeaveWindow(wxMouseEvent &event);
 
 		private:
 			void DrawGrid(const RenderArgs &rargs);
@@ -113,11 +118,11 @@ namespace LitePanel::Gui
 			void DrawCurveRail(const LitePanel::SimpleRailObject &obj) const;
 
 			void DrawObject(const MapObject &obj) const;
-			void DrawSimpleRail(const LitePanel::SimpleRailObject &obj) const;
-
-			void TileMap_OnStateChanged() override;
+			void DrawSimpleRail(const LitePanel::SimpleRailObject &obj) const;			
 
 			void RequestDraw();
+
+			void OnClose(wxCloseEvent& evt);
 
 		private:
 			
@@ -145,7 +150,9 @@ namespace LitePanel::Gui
 
 			IntPoint_t m_tMoveStartPos;
 
-			TileMap *m_pclTileMap = nullptr;
+			const TileMap *m_pclTileMap = nullptr;
+
+			std::unique_ptr<RenderTimer> m_upRenderTimer;
 
 			ViewInfo m_tViewInfo;
 
@@ -153,6 +160,8 @@ namespace LitePanel::Gui
 			bool m_fMapMouseScroll = false;
 
 			bool m_fPendingDraw = false;
+
+			friend class RenderTimer;
 	};
 }
 

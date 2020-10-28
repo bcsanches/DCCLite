@@ -128,10 +128,13 @@ namespace LitePanel
 
 	void TileMap::RemoveListener(ITileMapListener* listener)
 	{
-		std::remove_if(m_vecListeners.begin(), m_vecListeners.end(), [listener](ITileMapListener* obj)
-			{
-				return obj == listener;
-			}
+		m_vecListeners.erase(
+			std::remove_if(m_vecListeners.begin(), m_vecListeners.end(), [listener](ITileMapListener* obj)
+				{
+					return obj == listener;
+				}
+			),
+			m_vecListeners.end()
 		);
 	}
 

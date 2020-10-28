@@ -23,10 +23,10 @@ namespace LitePanel
 
 		glBegin(GL_QUADS);
 
-		glVertex2i(-viewInfo.m_uHalfTileScale, -viewInfo.m_uHalfTileScale);
-		glVertex2i(viewInfo.m_uHalfTileScale, -viewInfo.m_uHalfTileScale);
+		glVertex2i(-static_cast<int>(viewInfo.m_uHalfTileScale), -static_cast<int>(viewInfo.m_uHalfTileScale));
+		glVertex2i(viewInfo.m_uHalfTileScale, -static_cast<int>(viewInfo.m_uHalfTileScale));
 		glVertex2i(viewInfo.m_uHalfTileScale, viewInfo.m_uHalfTileScale);
-		glVertex2i(-viewInfo.m_uHalfTileScale, viewInfo.m_uHalfTileScale);
+		glVertex2i(-static_cast<int>(viewInfo.m_uHalfTileScale), viewInfo.m_uHalfTileScale);
 
 		glEnd();
 	}

@@ -45,6 +45,25 @@ namespace LitePanel::Gui
 		return TileCoord_t{ static_cast<TileCoord_t::Type_t>(localCoord.m_tX), static_cast<TileCoord_t::Type_t>(localCoord.m_tY)};
 	}
 
+	class RenderTimer : public wxTimer
+	{
+		private:	
+			TileMapCanvas &m_rclPanel;
+
+		public:
+			RenderTimer(TileMapCanvas& panel):
+				m_rclPanel(panel)
+			{
+				//empty
+			}
+
+			void Notify()
+			{
+				m_rclPanel.RequestDraw();
+			}	
+	};
+
+
 
 	TileMapCanvas::TileMapCanvas(wxWindow *parent, int id):
 		OGLCanvas{parent, id}	
@@ -53,21 +72,31 @@ namespace LitePanel::Gui
 		Bind(wxEVT_MIDDLE_DOWN, &TileMapCanvas::OnMouseMiddleDown, this);
 		Bind(wxEVT_MOUSEWHEEL, &TileMapCanvas::OnMouseWheel, this);
 		Bind(wxEVT_MOTION, &TileMapCanvas::OnMouseMove, this);
+		Bind(wxEVT_LEAVE_WINDOW, &TileMapCanvas::OnMouseLeaveWindow, this);
+
+		Bind(wxEVT_CLOSE_WINDOW, &TileMapCanvas::OnClose, this);
+
+		m_upRenderTimer = std::make_unique<RenderTimer>(*this);				
 	}
 
-	void TileMapCanvas::SetTileMap(LitePanel::TileMap *tileMap) noexcept
+	TileMapCanvas::~TileMapCanvas()
 	{
-		if (m_pclTileMap)
-		{
-			m_pclTileMap->RemoveListener(this);
-		}
+		//empty - only to allow forward declaring RenderTimer on header file
+	}
 
+	void TileMapCanvas::SetTileMap(const LitePanel::TileMap *tileMap) noexcept
+	{
 		m_pclTileMap = tileMap;
 
-		if(!m_pclTileMap)
-			return;
-
-		m_pclTileMap->AddListener(this);
+		if (m_pclTileMap)
+		{
+			m_upRenderTimer->Start(25);
+		}
+		else
+		{
+			m_upRenderTimer->Stop();
+		}
+	
 		this->UpdateRenderInfo();
 	}
 
@@ -361,11 +390,6 @@ NOTILES:
 		m_fPendingDraw = false;
 	}
 
-	void TileMapCanvas::TileMap_OnStateChanged()
-	{		
-		this->RequestDraw();
-	}
-
 	void TileMapCanvas::OnMouseWheel(wxMouseEvent &event)
 	{	
 		if (event.GetWheelRotation() > 0)
@@ -449,8 +473,15 @@ NOTILES:
 			TileEvent ev{ EVT_TILE_UNDER_MOUSE_CHANGED, m_tTileUnderMouse };
 
 			wxPostEvent(this, ev);
-		}
-		
+		}	
+	}
+
+	void TileMapCanvas::OnMouseLeaveWindow(wxMouseEvent& event)
+	{
+		m_tTileUnderMouse = {};
+		TileEvent ev{EVT_TILE_UNDER_MOUSE_CHANGED, m_tTileUnderMouse};
+
+		wxPostEvent(this, ev);
 	}
 
 	void TileMapCanvas::OnMouseCaptureLost(wxMouseCaptureLostEvent &event)
@@ -493,5 +524,11 @@ NOTILES:
 			return {};
 
 		return tilePos;
+	}
+
+	void TileMapCanvas::OnClose(wxCloseEvent& evt)
+	{
+		evt.Skip();
+		m_upRenderTimer->Stop();
 	}
 }
