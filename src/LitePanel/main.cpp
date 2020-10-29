@@ -19,6 +19,8 @@
 #include "RailObject.h"
 #include "TempObjects.h"
 
+typedef  std::function<void(const LitePanel::TileCoord_t&)> ToolProc_t;
+
 class ToolManager
 {
 	public:
@@ -26,17 +28,32 @@ class ToolManager
 
 		void AddTool(					
 					const wxString &label,
-					const wxBitmap &bitmap,			
+					const wxBitmap &bitmap,		
+					ToolProc_t proc,
 					const wxString &shortHelp = wxEmptyString,
 					const wxString &longHelp = wxEmptyString
 		);
 
 		void OnLeftClick(wxCommandEvent &event);
 
+		inline ToolProc_t TryGetSelectedToolProc() const
+		{
+			return m_pfnSelectedTool;
+		}
+
 	private:
 		wxToolBar		&m_wxToolBar;
 
-		std::vector<wxToolBarToolBase *> m_vecTools;
+
+		ToolProc_t		m_pfnSelectedTool = nullptr;
+
+		struct ToolInfo
+		{
+			wxToolBarToolBase *m_pTool;
+			ToolProc_t m_pfnProc;
+		};
+
+		std::vector<ToolInfo> m_vecTools;		
 };
 
 ToolManager::ToolManager(wxToolBar &toolBar):
@@ -48,36 +65,47 @@ ToolManager::ToolManager(wxToolBar &toolBar):
 void ToolManager::AddTool(	
 	const wxString &label,
 	const wxBitmap &bitmap,
+	ToolProc_t proc,
 	const wxString &shortHelp,
 	const wxString &longHelp)
 {	
 	auto tool = m_wxToolBar.AddCheckTool(wxID_ANY, label, bitmap, wxNullBitmap, shortHelp, longHelp);			
 
-	m_vecTools.push_back(tool);	
+	m_vecTools.push_back(ToolInfo{ tool, proc });
 }
 
 void ToolManager::OnLeftClick(wxCommandEvent &event)
 {
-	auto clickedTool = std::find_if(
+	auto clickedToolIt = std::find_if(
 		m_vecTools.begin(), 
 		m_vecTools.end(),
-		[id = event.GetId()](auto *tool)
+		[id = event.GetId()](auto &toolInfo)
 		{
-			return tool->GetId() == id;
+			return toolInfo.m_pTool->GetId() == id;
 		}
 	);
 
-	assert(clickedTool != m_vecTools.end());
+	assert(clickedToolIt != m_vecTools.end());
 
-	if(!(*clickedTool)->IsToggled())
-		return;
+	auto &toolInfo = *clickedToolIt;
 
-	for (auto tool : m_vecTools)
+	if (!toolInfo.m_pTool->IsToggled())
 	{
-		if(tool == *clickedTool)
+		m_pfnSelectedTool = nullptr;
+
+		return;
+	}		
+	else
+	{
+		m_pfnSelectedTool = toolInfo.m_pfnProc;
+	}
+
+	for (auto &tool : m_vecTools)
+	{
+		if(tool.m_pTool == toolInfo.m_pTool)
 			continue;
 		
-		m_wxToolBar.ToggleTool(tool->GetId(), false);		
+		m_wxToolBar.ToggleTool(tool.m_pTool->GetId(), false);		
 	}
 }
 
@@ -185,6 +213,14 @@ MainFrame::MainFrame():
 	m_upToolManager->AddTool(		
 		"track", 
 		wxBITMAP(rail_straight_000_icon),
+		[this](const LitePanel::TileCoord_t &coord) -> void
+		{
+			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+				coord,
+				LitePanel::ObjectAngles::EAST,
+				LitePanel::SimpleRailTypes::STRAIGHT
+			));
+		},
 		"Horizontal track section",
 		"Creates a horizontal track section"
 	);
@@ -192,20 +228,44 @@ MainFrame::MainFrame():
 	m_upToolManager->AddTool(		
 		"track",
 		wxBITMAP(rail_straight_045_icon),
+		[this](const LitePanel::TileCoord_t& coord) -> void
+		{
+			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+				coord,
+				LitePanel::ObjectAngles::NORTHEAST,
+				LitePanel::SimpleRailTypes::STRAIGHT
+			));
+		},
 		"Diagonal track section",
 		"Creates a diagonal track section"
 	);
 
 	m_upToolManager->AddTool(		
 		"track",
-		wxBITMAP(rail_straight_090_icon),		
+		wxBITMAP(rail_straight_090_icon),	
+		[this](const LitePanel::TileCoord_t& coord) -> void
+		{
+			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+				coord,
+				LitePanel::ObjectAngles::NORTH,
+				LitePanel::SimpleRailTypes::STRAIGHT
+			));
+		},
 		"Vertical track section",
 		"Creates a vertical track section"
 	);
 
 	m_upToolManager->AddTool(		
 		"track",
-		wxBITMAP(rail_straight_135_icon),		
+		wxBITMAP(rail_straight_135_icon),
+		[this](const LitePanel::TileCoord_t& coord) -> void
+		{
+			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+				coord,
+				LitePanel::ObjectAngles::NORTHWEST,
+				LitePanel::SimpleRailTypes::STRAIGHT
+				));
+		},
 		"Diagonal inverted track section",
 		"Creates a inverted diagonal track section"
 	);
@@ -215,13 +275,29 @@ MainFrame::MainFrame():
 	m_upToolManager->AddTool(		
 		"track",
 		wxBITMAP(rail_left_curve_000_icon),		
+		[this](const LitePanel::TileCoord_t& coord) -> void
+		{
+			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+				coord,
+				LitePanel::ObjectAngles::EAST,
+				LitePanel::SimpleRailTypes::CURVE_LEFT
+			));
+		},
 		"Left curve track section",
 		"Creates a left curve track section"
 	);
 
 	m_upToolManager->AddTool(		
 		"track",
-		wxBITMAP(rail_left_curve_090_icon),		
+		wxBITMAP(rail_left_curve_090_icon),	
+		[this](const LitePanel::TileCoord_t& coord) -> void
+		{
+			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+				coord,
+				LitePanel::ObjectAngles::NORTH,
+				LitePanel::SimpleRailTypes::CURVE_LEFT
+				));
+		},
 		"Left curve track section",
 		"Creates a left curve track section"
 	);
@@ -229,6 +305,14 @@ MainFrame::MainFrame():
 	m_upToolManager->AddTool(		
 		"track",
 		wxBITMAP(rail_left_curve_180_icon),		
+		[this](const LitePanel::TileCoord_t& coord) -> void
+		{
+			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+				coord,
+				LitePanel::ObjectAngles::WEST,
+				LitePanel::SimpleRailTypes::CURVE_LEFT
+				));
+		},
 		"Left curve track section",
 		"Creates a left curve track section"
 	);
@@ -236,6 +320,14 @@ MainFrame::MainFrame():
 	m_upToolManager->AddTool(		
 		"track",
 		wxBITMAP(rail_left_curve_270_icon),		
+		[this](const LitePanel::TileCoord_t& coord) -> void
+		{
+			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+				coord,
+				LitePanel::ObjectAngles::SOUTH,
+				LitePanel::SimpleRailTypes::CURVE_LEFT
+			));
+		},
 		"Left curve track section",
 		"Creates a left curve track section"
 	);
@@ -244,7 +336,15 @@ MainFrame::MainFrame():
 
 	m_upToolManager->AddTool(		
 		"track",
-		wxBITMAP(rail_right_curve_000_icon),		
+		wxBITMAP(rail_right_curve_000_icon),	
+		[this](const LitePanel::TileCoord_t& coord) -> void
+		{
+			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+				coord,
+				LitePanel::ObjectAngles::EAST,
+				LitePanel::SimpleRailTypes::CURVE_RIGHT
+			));
+		},
 		"Right curve track section",
 		"Creates a right curve track section"
 	);
@@ -252,20 +352,44 @@ MainFrame::MainFrame():
 	m_upToolManager->AddTool(		
 		"track",
 		wxBITMAP(rail_right_curve_090_icon),		
+		[this](const LitePanel::TileCoord_t& coord) -> void
+		{
+			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+				coord,
+				LitePanel::ObjectAngles::NORTH,
+				LitePanel::SimpleRailTypes::CURVE_RIGHT
+			));
+		},
 		"Right curve track section",
 		"Creates a right curve track section"
 	);
 
 	m_upToolManager->AddTool(		
 		"track",
-		wxBITMAP(rail_right_curve_180_icon),		
+		wxBITMAP(rail_right_curve_180_icon),	
+		[this](const LitePanel::TileCoord_t& coord) -> void
+		{
+			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+				coord,
+				LitePanel::ObjectAngles::WEST,
+				LitePanel::SimpleRailTypes::CURVE_RIGHT
+			));
+		},
 		"Right curve track section",
 		"Creates a right curve track section"
 	);
 
 	m_upToolManager->AddTool(		
 		"track",
-		wxBITMAP(rail_right_curve_270_icon),		
+		wxBITMAP(rail_right_curve_270_icon),
+		[this](const LitePanel::TileCoord_t& coord) -> void
+		{
+			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+				coord,
+				LitePanel::ObjectAngles::SOUTH,
+				LitePanel::SimpleRailTypes::CURVE_RIGHT
+			));
+		},
 		"Right curve track section",
 		"Creates a right curve track section"
 	);
@@ -313,10 +437,18 @@ void MainFrame::OnMapCanvasLeftClick(wxMouseEvent &event)
 {
 	auto tilePos = m_pclMapCanvas->TryFindMouseTile(event);
 
-	if(!tilePos)
+	if (!tilePos)
+	{
 		this->SetStatusText("No tile");
-	//else
-		//this->SetStatusText(fmt::format("tile {} {}", tilePos->m_tX, tilePos->m_tY));
+
+		return;
+	}
+	
+	auto proc = m_upToolManager->TryGetSelectedToolProc();
+	if (!proc)
+		return;
+
+	proc(tilePos.value());
 }
 
 void MainFrame::OnMapCanvasTileLeftClick(LitePanel::Gui::TileEvent &event)

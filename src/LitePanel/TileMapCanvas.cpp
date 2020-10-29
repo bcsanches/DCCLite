@@ -231,6 +231,10 @@ namespace LitePanel::Gui
 
 			default:
 				{
+					glLineWidth(m_tViewInfo.m_uLineWidth * 2);
+					if ((rail.GetAngle() == LitePanel::ObjectAngles::NORTHEAST) || (rail.GetAngle() == LitePanel::ObjectAngles::SOUTHWEST))
+						glRotatef(90, 0, 0, 1);
+
 					glBegin(GL_LINES);
 
 					glVertex2f(-static_cast<GLfloat>(m_tViewInfo.m_uHalfTileScale), -static_cast<GLfloat>(m_tViewInfo.m_uHalfTileScale));
