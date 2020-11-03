@@ -410,12 +410,14 @@ NOTILES:
 			m_tViewInfo.m_uZoomLevel --;
 			m_tViewInfo.m_uTileScale = g_tScales[m_tViewInfo.m_uZoomLevel].m_uScale;
 
+			//adjust scrolling
 			if(m_tOrigin.m_tX > 0)
 				m_tOrigin.m_tX -= m_tViewInfo.m_uTileScale * 2;
 
 			if (m_tOrigin.m_tY > 0)
 				m_tOrigin.m_tY -= m_tViewInfo.m_uTileScale * 2;
 
+			//avoid putting origin beyond left upper corner
 			m_tOrigin.m_tX = std::max(m_tOrigin.m_tX, 0);
 			m_tOrigin.m_tY = std::max(m_tOrigin.m_tY, 0);
 		}
