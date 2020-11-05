@@ -133,6 +133,8 @@ class MainFrame : public wxFrame
 
 		void OnTileUnderMouseChanged(LitePanel::Gui::TileEvent& event);
 
+		void ExecuteInsertRailCmd(std::unique_ptr<LitePanel::RailObject> railObj);
+
 	private:
 		LitePanel::Panel m_clPanel;
 
@@ -157,6 +159,20 @@ bool LiteApp::OnInit()
 	frame->Show(true);
 
 	return true;
+}
+
+
+void MainFrame::ExecuteInsertRailCmd(std::unique_ptr<LitePanel::RailObject> railObj)
+{
+	const auto &coord = railObj->GetPosition();
+
+	LitePanel::ComplexEditCmd cmd{
+				"Insert rail object",
+				m_clPanel.IsRailTileOccupied(coord) ? std::make_unique<LitePanel::RemoveRailCmd>(coord) : std::unique_ptr<LitePanel::EditCmd>{},
+				std::make_unique<LitePanel::InsertRailCmd>(std::move(railObj))
+	};
+
+	m_clEditCmdManager.Run(std::move(cmd), m_clPanel);
 }
 
 MainFrame::MainFrame(): 
@@ -218,19 +234,11 @@ MainFrame::MainFrame():
 		wxBITMAP(rail_straight_000_icon),
 		[this](const LitePanel::TileCoord_t &coord) -> void
 		{
-			auto railObj = std::make_unique<LitePanel::SimpleRailObject>(
+			ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 				coord,
 				LitePanel::ObjectAngles::EAST,
 				LitePanel::SimpleRailTypes::STRAIGHT
-			);
-
-			LitePanel::ComplexEditCmd cmd{
-				"Insert rail object",
-				m_clPanel.IsRailTileOccupied(coord) ? std::make_unique<LitePanel::RemoveRailCmd>(coord) : std::unique_ptr<LitePanel::EditCmd>{},
-				std::make_unique<LitePanel::InsertRailCmd>(std::move(railObj))
-			};
-
-			m_clEditCmdManager.Run(std::move(cmd), m_clPanel);
+			));			
 		},
 		"Horizontal track section",
 		"Creates a horizontal track section"
@@ -241,11 +249,11 @@ MainFrame::MainFrame():
 		wxBITMAP(rail_straight_045_icon),
 		[this](const LitePanel::TileCoord_t& coord) -> void
 		{
-			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+			ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 				coord,
 				LitePanel::ObjectAngles::NORTHEAST,
 				LitePanel::SimpleRailTypes::STRAIGHT
-			));
+			));			
 		},
 		"Diagonal track section",
 		"Creates a diagonal track section"
@@ -256,7 +264,7 @@ MainFrame::MainFrame():
 		wxBITMAP(rail_straight_090_icon),	
 		[this](const LitePanel::TileCoord_t& coord) -> void
 		{
-			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+			ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 				coord,
 				LitePanel::ObjectAngles::NORTH,
 				LitePanel::SimpleRailTypes::STRAIGHT
@@ -271,7 +279,7 @@ MainFrame::MainFrame():
 		wxBITMAP(rail_straight_135_icon),
 		[this](const LitePanel::TileCoord_t& coord) -> void
 		{
-			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+			ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 				coord,
 				LitePanel::ObjectAngles::NORTHWEST,
 				LitePanel::SimpleRailTypes::STRAIGHT
@@ -288,7 +296,7 @@ MainFrame::MainFrame():
 		wxBITMAP(rail_left_curve_000_icon),		
 		[this](const LitePanel::TileCoord_t& coord) -> void
 		{
-			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+			ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 				coord,
 				LitePanel::ObjectAngles::EAST,
 				LitePanel::SimpleRailTypes::CURVE_LEFT
@@ -303,11 +311,11 @@ MainFrame::MainFrame():
 		wxBITMAP(rail_left_curve_090_icon),	
 		[this](const LitePanel::TileCoord_t& coord) -> void
 		{
-			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+			ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 				coord,
 				LitePanel::ObjectAngles::NORTH,
 				LitePanel::SimpleRailTypes::CURVE_LEFT
-				));
+			));
 		},
 		"Left curve track section",
 		"Creates a left curve track section"
@@ -318,11 +326,11 @@ MainFrame::MainFrame():
 		wxBITMAP(rail_left_curve_180_icon),		
 		[this](const LitePanel::TileCoord_t& coord) -> void
 		{
-			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+			ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 				coord,
 				LitePanel::ObjectAngles::WEST,
 				LitePanel::SimpleRailTypes::CURVE_LEFT
-				));
+			));
 		},
 		"Left curve track section",
 		"Creates a left curve track section"
@@ -333,7 +341,7 @@ MainFrame::MainFrame():
 		wxBITMAP(rail_left_curve_270_icon),		
 		[this](const LitePanel::TileCoord_t& coord) -> void
 		{
-			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+			ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 				coord,
 				LitePanel::ObjectAngles::SOUTH,
 				LitePanel::SimpleRailTypes::CURVE_LEFT
@@ -350,7 +358,7 @@ MainFrame::MainFrame():
 		wxBITMAP(rail_right_curve_000_icon),	
 		[this](const LitePanel::TileCoord_t& coord) -> void
 		{
-			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+			ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 				coord,
 				LitePanel::ObjectAngles::EAST,
 				LitePanel::SimpleRailTypes::CURVE_RIGHT
@@ -365,7 +373,7 @@ MainFrame::MainFrame():
 		wxBITMAP(rail_right_curve_090_icon),		
 		[this](const LitePanel::TileCoord_t& coord) -> void
 		{
-			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+			ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 				coord,
 				LitePanel::ObjectAngles::NORTH,
 				LitePanel::SimpleRailTypes::CURVE_RIGHT
@@ -380,7 +388,7 @@ MainFrame::MainFrame():
 		wxBITMAP(rail_right_curve_180_icon),	
 		[this](const LitePanel::TileCoord_t& coord) -> void
 		{
-			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+			ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 				coord,
 				LitePanel::ObjectAngles::WEST,
 				LitePanel::SimpleRailTypes::CURVE_RIGHT
@@ -395,7 +403,7 @@ MainFrame::MainFrame():
 		wxBITMAP(rail_right_curve_270_icon),
 		[this](const LitePanel::TileCoord_t& coord) -> void
 		{
-			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+			ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 				coord,
 				LitePanel::ObjectAngles::SOUTH,
 				LitePanel::SimpleRailTypes::CURVE_RIGHT
