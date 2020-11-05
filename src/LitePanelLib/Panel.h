@@ -22,6 +22,9 @@ namespace LitePanel
 			Panel(const TileCoord_t size);
 
 			void RegisterRail(std::unique_ptr<RailObject> object);
+			std::unique_ptr<RailObject> TryUnregisterRail(const TileCoord_t &position);
+
+			bool IsRailTileOccupied(const TileCoord_t &position) const noexcept;
 
 			void RegisterTempObject(std::unique_ptr<MapObject> object);
 

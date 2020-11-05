@@ -33,6 +33,18 @@ namespace LitePanel
 		m_mapTileMap.RegisterObject(std::move(object), kRAIL_LAYER);
 	}
 
+	std::unique_ptr<RailObject> Panel::TryUnregisterRail(const TileCoord_t &position)
+	{
+		auto tmp = m_mapTileMap.TryUnregisterObject(position, kRAIL_LAYER);
+
+		return std::unique_ptr<RailObject>(static_cast<RailObject *>(tmp.release()));
+	}
+
+	bool Panel::IsRailTileOccupied(const TileCoord_t &position) const noexcept
+	{
+		return m_mapTileMap.IsTileOccupied(position, kRAIL_LAYER);
+	}
+
 	void Panel::RegisterTempObject(std::unique_ptr<MapObject> object)
 	{
 		m_mapTileMap.RegisterObject(std::move(object), kTEMP_LAYER);

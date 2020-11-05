@@ -9,6 +9,7 @@ set(LitePanelLib_SRCS
 
 set(LitePanelLib_HDRS
     EditCmds.h
+    LitePanelLibDefs.h
 	MapObject.h
 	Panel.h
 	Point.h

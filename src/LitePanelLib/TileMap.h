@@ -15,14 +15,10 @@
 #include <memory>
 #include <vector>
 
-#include "Point.h"
+#include "LitePanelLibDefs.h"
 
 namespace LitePanel
 {
-	constexpr auto DEFAULT_TILE_SIZE = 32;
-
-	typedef Point<uint8_t> TileCoord_t;
-
 	class MapObject;
 
 	class TileLayer
@@ -35,7 +31,7 @@ namespace LitePanel
 			TileLayer(const TileLayer &) = delete;
 
 			void RegisterObject(std::unique_ptr<MapObject> object);
-			std::unique_ptr<MapObject> UnregisterObject(const MapObject& obj);
+			std::unique_ptr<MapObject> UnregisterObject(const MapObject& obj);			
 
 			const MapObject *TryGetMapObject(const TileCoord_t pos) const;
 
@@ -66,6 +62,9 @@ namespace LitePanel
 
 			void RegisterObject(std::unique_ptr<MapObject> object, const uint8_t layer);	
 			std::unique_ptr<MapObject> UnregisterObject(const MapObject &obj, const uint8_t layer);
+			std::unique_ptr<MapObject> TryUnregisterObject(const TileCoord_t &position, const uint8_t layer);
+
+			bool IsTileOccupied(const TileCoord_t &position, const uint8_t layer) const;
 
 			inline uint8_t GetNumLayers() const
 			{

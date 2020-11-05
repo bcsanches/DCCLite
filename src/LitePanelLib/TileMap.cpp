@@ -119,6 +119,30 @@ namespace LitePanel
 		return tmp;
 	}
 
+	std::unique_ptr<MapObject> TileMap::TryUnregisterObject(const TileCoord_t &position, const uint8_t layer)
+	{
+		if (layer >= m_vecLayers.size())
+			throw std::runtime_error(fmt::format("[TileMap::TryUnregisterObject] layer {} is invalid", layer));
+
+		auto obj = m_vecLayers[layer].TryGetMapObject(position);
+		if (!obj)
+			return nullptr;
+
+		auto tmp = m_vecLayers[layer].UnregisterObject(*obj);
+
+		this->StateChanged();
+
+		return tmp;
+	}
+
+	bool TileMap::IsTileOccupied(const TileCoord_t &position, const uint8_t layer) const
+	{
+		if (layer >= m_vecLayers.size())
+			throw std::runtime_error(fmt::format("[TileMap::IsTileOccupied] layer {} is invalid", layer));
+
+		return m_vecLayers[layer].TryGetMapObject(position) != nullptr;
+	}
+
 	void TileMap::AddListener(ITileMapListener* listener)
 	{
 		assert(listener);

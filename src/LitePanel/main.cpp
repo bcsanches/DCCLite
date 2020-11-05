@@ -13,9 +13,10 @@
 
 #include <fmt/format.h>
 
-#include "PanelEditorCanvas.h"
+#include "EditCmds.h"
 #include "MapObject.h"
 #include "Panel.h"
+#include "PanelEditorCanvas.h"
 #include "RailObject.h"
 #include "TempObjects.h"
 
@@ -140,6 +141,8 @@ class MainFrame : public wxFrame
 		LitePanel::Gui::TileMapCanvas *m_pclMapCanvas = nullptr;
 
 		LitePanel::QuadObject *m_pclMouseShadow = nullptr;
+
+		LitePanel::EditCmdManager m_clEditCmdManager;
 };
 
 enum
@@ -215,11 +218,19 @@ MainFrame::MainFrame():
 		wxBITMAP(rail_straight_000_icon),
 		[this](const LitePanel::TileCoord_t &coord) -> void
 		{
-			m_clPanel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(
+			auto railObj = std::make_unique<LitePanel::SimpleRailObject>(
 				coord,
 				LitePanel::ObjectAngles::EAST,
 				LitePanel::SimpleRailTypes::STRAIGHT
-			));
+			);
+
+			LitePanel::ComplexEditCmd cmd{
+				"Insert rail object",
+				m_clPanel.IsRailTileOccupied(coord) ? std::make_unique<LitePanel::RemoveRailCmd>(coord) : std::unique_ptr<LitePanel::EditCmd>{},
+				std::make_unique<LitePanel::InsertRailCmd>(std::move(railObj))
+			};
+
+			m_clEditCmdManager.Run(std::move(cmd), m_clPanel);
 		},
 		"Horizontal track section",
 		"Creates a horizontal track section"

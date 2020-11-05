@@ -16,14 +16,39 @@
 #include <string>
 #include <vector>
 
-namespace LitePanel
-{
-	class Panel;
+#include "LitePanelLibDefs.h"
 
+namespace LitePanel
+{	
 	class EditCmd
 	{
 		public:
-			virtual std::unique_ptr<EditCmd> Run(Panel &panel) = 0;
+			virtual ~EditCmd() {}
+
+			virtual std::unique_ptr<EditCmd> Run(Panel &panel) noexcept = 0;
+
+	};
+
+	class InsertRailCmd: public EditCmd
+	{
+		public:
+			InsertRailCmd(std::unique_ptr<RailObject> rail);
+
+			std::unique_ptr<EditCmd> Run(Panel &panel) noexcept override;
+
+		private:
+			std::unique_ptr<RailObject> m_spRailObject;
+	};
+
+	class RemoveRailCmd: public EditCmd
+	{
+		public:
+			RemoveRailCmd(const TileCoord_t &coord);
+
+			std::unique_ptr<EditCmd> Run(Panel &panel) noexcept override;
+
+		private:
+			const TileCoord_t m_Position;
 	};
 
 	constexpr unsigned MAX_EDIT_CMDS = 3;
