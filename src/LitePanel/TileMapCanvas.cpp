@@ -222,8 +222,8 @@ namespace LitePanel::Gui
 
 					glBegin(GL_LINES);
 
-					glVertex2f(-static_cast<GLfloat>(m_tViewInfo.m_uHalfTileScale), 0);
-					glVertex2f(m_tViewInfo.m_uHalfTileScale, 0);
+					glVertex2i(-static_cast<int>(m_tViewInfo.m_uHalfTileScale), 0);
+					glVertex2i(m_tViewInfo.m_uHalfTileScale, 0);
 
 					glEnd();
 				}
@@ -237,17 +237,43 @@ namespace LitePanel::Gui
 
 					glBegin(GL_LINES);
 
-					glVertex2f(-static_cast<GLfloat>(m_tViewInfo.m_uHalfTileScale), -static_cast<GLfloat>(m_tViewInfo.m_uHalfTileScale));
-					glVertex2f(m_tViewInfo.m_uHalfTileScale, m_tViewInfo.m_uHalfTileScale);					
+					glVertex2i(-static_cast<int>(m_tViewInfo.m_uHalfTileScale), -static_cast<int>(m_tViewInfo.m_uHalfTileScale));
+					glVertex2i(m_tViewInfo.m_uHalfTileScale, m_tViewInfo.m_uHalfTileScale);					
 
 					glEnd();
 				}
 		}		
 	}
 
-	void TileMapCanvas::DrawCurveRail(const LitePanel::SimpleRailObject &obj) const
+	void TileMapCanvas::DrawCurveRail(const LitePanel::SimpleRailObject &rail) const
 	{
+		glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
+		glLineWidth(m_tViewInfo.m_uLineWidth);
 
+		switch (rail.GetAngle())
+		{
+			case LitePanel::ObjectAngles::EAST:
+			case LitePanel::ObjectAngles::NORTH:
+			case LitePanel::ObjectAngles::SOUTH:
+			case LitePanel::ObjectAngles::WEST:
+				{
+					glRotatef(static_cast<GLfloat>(rail.GetAngle()), 0, 0, 1);
+
+					if (rail.GetType() == SimpleRailTypes::CURVE_RIGHT)
+						glScalef(1, -1, 1);
+
+					glBegin(GL_LINES);
+
+					glVertex2i(-static_cast<int>(m_tViewInfo.m_uHalfTileScale), 0);
+					glVertex2i(0, 0);
+
+					glVertex2i(0, 0);
+					glVertex2i(m_tViewInfo.m_uHalfTileScale, -static_cast<int>(m_tViewInfo.m_uHalfTileScale));
+
+					glEnd();
+				}
+				break;
+		}
 	}
 
 	void TileMapCanvas::DrawSimpleRail(const LitePanel::SimpleRailObject &rail) const
