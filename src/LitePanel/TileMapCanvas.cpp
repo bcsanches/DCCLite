@@ -17,17 +17,18 @@ struct ScaleInfo
 {
 	uint8_t m_uScale;
 	uint8_t m_uLineWidth;
+	uint8_t m_uDiagonalLineWidth;
 };
 
 constexpr auto MAX_ZOOM_LEVELS = 5;
 
 constexpr ScaleInfo g_tScales[MAX_ZOOM_LEVELS] = 
 {
-	{8, 1},
-	{16, 2},
-	{32, 4},
-	{64, 8},
-	{128, 16}
+	{8, 2, 3},
+	{16, 4, 5},
+	{32, 8, 16},
+	{64, 16, 32},
+	{128, 32, 44}
 };
 
 #define CURRENT_SCALE (g_tScales[m_uZoomLevel].m_uScale)
@@ -107,6 +108,7 @@ namespace LitePanel::Gui
 		m_tViewInfo.m_uTileScale = g_tScales[m_tViewInfo.m_uZoomLevel].m_uScale;
 		m_tViewInfo.m_uHalfTileScale = g_tScales[m_tViewInfo.m_uZoomLevel].m_uScale / 2;
 		m_tViewInfo.m_uLineWidth = g_tScales[m_tViewInfo.m_uZoomLevel].m_uLineWidth;
+		m_tViewInfo.m_uDiagonalLineWidth = g_tScales[m_tViewInfo.m_uZoomLevel].m_uDiagonalLineWidth;
 		m_tViewInfo.m_tWorldSize = LitePanel::IntPoint_t{m_pclTileMap->GetSize()} * m_tViewInfo.m_uTileScale;
 
 		this->RequestDraw();
@@ -208,8 +210,7 @@ namespace LitePanel::Gui
 
 	void TileMapCanvas::DrawStraightRail(const LitePanel::SimpleRailObject &rail) const
 	{
-		glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
-		glLineWidth(m_tViewInfo.m_uLineWidth);
+		glColor4f(0.0f, 0.0f, 0.0f, 1.0f);		
 
 		switch(rail.GetAngle())
 		{
@@ -218,6 +219,9 @@ namespace LitePanel::Gui
 			case LitePanel::ObjectAngles::SOUTH:
 			case LitePanel::ObjectAngles::WEST:
 				{
+					//glEnable(GL_LINE_SMOOTH);
+					glLineWidth(m_tViewInfo.m_uLineWidth);					
+
 					glRotatef(static_cast<GLfloat>(rail.GetAngle()), 0, 0, 1);					
 
 					glBegin(GL_LINES);
@@ -230,8 +234,10 @@ namespace LitePanel::Gui
 				break;
 
 			default:
-				{
-					glLineWidth(m_tViewInfo.m_uLineWidth * 2);
+				{					
+					//glEnable(GL_LINE_SMOOTH);
+					glLineWidth(m_tViewInfo.m_uDiagonalLineWidth);
+
 					if ((rail.GetAngle() == LitePanel::ObjectAngles::NORTHEAST) || (rail.GetAngle() == LitePanel::ObjectAngles::SOUTHWEST))
 						glRotatef(90, 0, 0, 1);
 
@@ -257,7 +263,9 @@ namespace LitePanel::Gui
 			case LitePanel::ObjectAngles::SOUTH:
 			case LitePanel::ObjectAngles::WEST:
 				{
-					glRotatef(static_cast<GLfloat>(rail.GetAngle()), 0, 0, 1);
+					//glEnable(GL_LINE_SMOOTH);
+
+					glRotatef(-static_cast<GLfloat>(rail.GetAngle()), 0, 0, 1);
 
 					if (rail.GetType() == SimpleRailTypes::CURVE_RIGHT)
 						glScalef(1, -1, 1);
@@ -266,6 +274,12 @@ namespace LitePanel::Gui
 
 					glVertex2i(-static_cast<int>(m_tViewInfo.m_uHalfTileScale), 0);
 					glVertex2i(0, 0);
+
+					glEnd();
+
+
+					glLineWidth(m_tViewInfo.m_uDiagonalLineWidth);
+					glBegin(GL_LINES);
 
 					glVertex2i(0, 0);
 					glVertex2i(m_tViewInfo.m_uHalfTileScale, -static_cast<int>(m_tViewInfo.m_uHalfTileScale));

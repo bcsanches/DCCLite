@@ -70,6 +70,7 @@ namespace LitePanel::Gui
 		unsigned m_uTileScale;
 		unsigned m_uHalfTileScale;
 		unsigned m_uLineWidth;
+		unsigned m_uDiagonalLineWidth;
 
 		//size of the world in pixes, based on tileScale
 		IntPoint_t m_tWorldSize;
