@@ -11,11 +11,16 @@
 
 #include <wx/wx.h>
 
+#include <wx/docview.h>
+#include <wx/object.h>
+
 #include <fmt/format.h>
 
 #include "EditCmds.h"
 #include "MapObject.h"
 #include "Panel.h"
+#include "PanelDocument.h"
+#include "PanelDocumentView.h"
 #include "PanelEditorCanvas.h"
 #include "RailObject.h"
 #include "TempObjects.h"
@@ -86,7 +91,12 @@ void ToolManager::OnLeftClick(wxCommandEvent &event)
 		}
 	);
 
-	assert(clickedToolIt != m_vecTools.end());
+	//assert(clickedToolIt != m_vecTools.end());
+	if (clickedToolIt == m_vecTools.end())
+	{
+		event.Skip();
+		return;
+	}
 
 	auto &toolInfo = *clickedToolIt;
 
@@ -116,10 +126,10 @@ class LiteApp : public wxApp
 		virtual bool OnInit();
 };
 
-class MainFrame : public wxFrame
+class MainFrame : public wxDocParentFrame
 {
 	public:
-		MainFrame();
+		MainFrame(wxDocManager *manager);
 
 	private:
 		void OnHello(wxCommandEvent& event);
@@ -147,15 +157,27 @@ class MainFrame : public wxFrame
 		LitePanel::EditCmdManager m_clEditCmdManager;
 };
 
-enum
-{
-	ID_Hello = 1,
-};
+
 
 wxIMPLEMENT_APP(LiteApp);
 bool LiteApp::OnInit()
 {
-	auto *frame = new MainFrame();
+	auto docManager = new wxDocManager();
+	docManager->SetMaxDocsOpen(1);
+
+	new wxDocTemplate(
+		docManager,
+		"Panel files",		//short description
+		"*.panel",			//filter
+		"panel",			//default folder
+		"panel",			//extension
+		"Panel Json File",	//file identifier
+		"Panel View",		//view identifier
+		CLASSINFO(LitePanel::Gui::PanelDocument),
+		CLASSINFO(LitePanel::Gui::PanelDocumentView)
+	);
+
+	auto *frame = new MainFrame(docManager);
 	frame->Show(true);
 
 	return true;
@@ -175,22 +197,32 @@ void MainFrame::ExecuteInsertRailCmd(std::unique_ptr<LitePanel::RailObject> rail
 	m_clEditCmdManager.Run(std::move(cmd), m_clPanel);
 }
 
-MainFrame::MainFrame(): 
-	wxFrame(NULL, wxID_ANY, "Lite Panel"),
+MainFrame::MainFrame(wxDocManager *docManager):
+	wxDocParentFrame(docManager, nullptr, wxID_ANY, "Lite Panel"),
 	m_clPanel(LitePanel::TileCoord_t{32, 32})
 {
 	wxMenu* menuFile = new wxMenu;
-	menuFile->Append(ID_Hello, "&Hello...\tCtrl-H",
-		"Help string shown in status bar for this menu item");
+	
+	menuFile->Append(wxID_NEW);
+	menuFile->Append(wxID_OPEN);
+	menuFile->Append(wxID_CLOSE);
+	menuFile->Append(wxID_SAVE);
+	menuFile->Append(wxID_SAVEAS);
+
 	menuFile->AppendSeparator();
 	menuFile->Append(wxID_EXIT);
+
+	wxMenu *const menuEdit = new wxMenu;
+	menuEdit->Append(wxID_UNDO);
+	menuEdit->Append(wxID_REDO);
 
 	wxMenu* menuHelp = new wxMenu;
 	menuHelp->Append(wxID_ABOUT);
 
 	wxMenuBar* menuBar = new wxMenuBar;
 	menuBar->Append(menuFile, "&File");
-	menuBar->Append(menuHelp, "&Help");
+	menuBar->Append(menuEdit, "&Edit");
+	menuBar->Append(menuHelp, "&Help");	
 
 	m_pclMapCanvas = new LitePanel::Gui::PanelEditorCanvas(this);
 
@@ -417,8 +449,7 @@ MainFrame::MainFrame():
 
 	toolBar->Realize();
 	//toolBar->SetRows(1);
-
-	Bind(wxEVT_MENU, &MainFrame::OnHello, this, ID_Hello);
+	
 	Bind(wxEVT_MENU, &MainFrame::OnAbout, this, wxID_ABOUT);
 	Bind(wxEVT_MENU, &MainFrame::OnExit, this, wxID_EXIT);
 	Bind(wxEVT_MENU, &MainFrame::OnToolLeftClick, this, wxID_ANY);
@@ -435,13 +466,11 @@ void MainFrame::OnExit(wxCommandEvent& event)
 
 void MainFrame::OnAbout(wxCommandEvent& event)
 {
-	wxMessageBox("This is a wxWidgets Hello World example",
-		"About Hello World", wxOK | wxICON_INFORMATION);
-}
-
-void MainFrame::OnHello(wxCommandEvent& event)
-{
-	wxLogMessage("Hello world from wxWidgets!");
+	wxMessageBox(
+		"This LitePanel editor\n"
+		"\n"
+		"Author: Bruno C. Sanches - 2020",
+		"About LitePanel", wxOK | wxICON_INFORMATION);
 }
 
 void MainFrame::OnToolLeftClick(wxCommandEvent &event)

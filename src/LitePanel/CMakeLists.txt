@@ -2,6 +2,8 @@
 set(LitePanel_SRCS	
   GLCanvas.cpp
   main.cpp      
+  PanelDocument.cpp
+  PanelDocumentView.cpp
   PanelEditorCanvas.cpp  
   TempObjects.cpp
   TileMapCanvas.cpp
@@ -9,7 +11,9 @@ set(LitePanel_SRCS
 )
 
 set(LitePanel_HDRS
-  GLCanvas.h        
+  GLCanvas.h       
+  PanelDocument.h 
+  PanelDocumentView.h
   PanelEditorCanvas.h
   TempObjects.h
   TileMapCanvas.h
