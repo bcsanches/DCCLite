@@ -11,8 +11,12 @@
 
 #include "PanelDocument.h"
 
+#include <wx/rtti.h>
+
+wxIMPLEMENT_DYNAMIC_CLASS(LitePanel::Gui::PanelDocument, wxDocument);
+
 namespace LitePanel::Gui
-{
+{	
 	PanelDocument::PanelDocument()
 	{
 		//empty
@@ -22,4 +26,13 @@ namespace LitePanel::Gui
 	{
 		//empty
 	}
+
+	bool PanelDocument::OnCreate(const wxString &path, long flags)
+	{
+		if (!wxDocument::OnCreate(path, flags))
+			return false;
+
+		return true;
+	}
+
 }

@@ -12,6 +12,8 @@
 
 #include <wx/docview.h>
 
+
+
 namespace LitePanel::Gui
 {
 	class PanelDocumentView: public wxView
@@ -19,6 +21,11 @@ namespace LitePanel::Gui
 		public:
 			PanelDocumentView();
 			virtual ~PanelDocumentView();
+
+		protected:
+			void OnDraw(wxDC *dc) override;
+
+			wxDECLARE_DYNAMIC_CLASS(PanelDocumentView);
 	};
 }
 

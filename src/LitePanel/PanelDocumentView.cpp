@@ -11,6 +11,10 @@
 
 #include "PanelDocumentView.h"
 
+#include <wx/rtti.h>
+
+wxIMPLEMENT_DYNAMIC_CLASS(LitePanel::Gui::PanelDocumentView, wxView);
+
 namespace LitePanel::Gui
 {
 	PanelDocumentView::PanelDocumentView()
@@ -21,5 +25,10 @@ namespace LitePanel::Gui
 	PanelDocumentView::~PanelDocumentView()
 	{
 		//empty
+	}
+
+	void PanelDocumentView::OnDraw(wxDC *dc)
+	{
+
 	}
 }

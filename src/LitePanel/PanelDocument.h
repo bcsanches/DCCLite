@@ -19,6 +19,10 @@ namespace LitePanel::Gui
 		public:
 			PanelDocument();
 			virtual ~PanelDocument();
+
+			bool OnCreate(const wxString &path, long flags) override;
+
+			wxDECLARE_DYNAMIC_CLASS(PanelDocument);
 	};
 }
 
