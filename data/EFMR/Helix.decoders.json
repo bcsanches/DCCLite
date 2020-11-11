@@ -1,6 +1,6 @@
 [
   {
-    "name": "HLX_T02",
+    "name": "HLX_T01",
     "class": "ServoTurnout",
     "address": "1851",
     "pin": 2,
@@ -12,7 +12,7 @@
     "comment": "Double track juntion"
   },
   {
-    "name": "HLX_T03",
+    "name": "HLX_T02",
     "class": "ServoTurnout",
     "address": "1852",
     "pin": 3,
@@ -24,7 +24,7 @@
     "comment": "TC exit"
   },
   {
-    "name": "HLX_T04",
+    "name": "HLX_T03",
     "class": "ServoTurnout",
     "address": "1853",
     "pin": 4,
@@ -37,7 +37,7 @@
   },
 
   {
-    "name": "HLX_T05",
+    "name": "HLX_T04",
     "class": "ServoTurnout",
     "address": "1854",
     "pin": 5,
