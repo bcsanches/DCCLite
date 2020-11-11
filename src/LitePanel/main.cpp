@@ -137,9 +137,7 @@ class MainFrame : public wxDocParentFrame
 		void OnAbout(wxCommandEvent& event);	
 
 		void OnToolLeftClick(wxCommandEvent &event);
-		void OnMapCanvasLeftClick(wxMouseEvent &event);
-
-		void OnMapCanvasTileLeftClick(LitePanel::Gui::TileEvent &event);
+		void OnMapCanvasLeftClick(wxMouseEvent &event);		
 
 		void OnTileUnderMouseChanged(LitePanel::Gui::TileEvent& event);
 
@@ -148,13 +146,9 @@ class MainFrame : public wxDocParentFrame
 	private:
 		LitePanel::Panel m_clPanel;
 
-		std::unique_ptr<ToolManager> m_upToolManager;
+		std::unique_ptr<ToolManager> m_upToolManager;		
 
-		LitePanel::Gui::TileMapCanvas *m_pclMapCanvas = nullptr;
-
-		LitePanel::QuadObject *m_pclMouseShadow = nullptr;
-
-		LitePanel::EditCmdManager m_clEditCmdManager;
+		LitePanel::QuadObject *m_pclMouseShadow = nullptr;		
 };
 
 
@@ -224,9 +218,9 @@ MainFrame::MainFrame(wxDocManager *docManager):
 	menuBar->Append(menuEdit, "&Edit");
 	menuBar->Append(menuHelp, "&Help");	
 
-	m_pclMapCanvas = new LitePanel::Gui::PanelEditorCanvas(this);
+	//m_pclMapCanvas = new LitePanel::Gui::PanelEditorCanvas(this);
 
-	m_pclMapCanvas->SetTileMap(&m_clPanel.GetTileMap());
+	//m_pclMapCanvas->SetTileMap(&m_clPanel.GetTileMap());
 
 	auto obj = std::make_unique<LitePanel::SimpleRailObject>(
 		LitePanel::TileCoord_t{1, 1},
@@ -454,7 +448,6 @@ MainFrame::MainFrame(wxDocManager *docManager):
 	Bind(wxEVT_MENU, &MainFrame::OnExit, this, wxID_EXIT);
 	Bind(wxEVT_MENU, &MainFrame::OnToolLeftClick, this, wxID_ANY);
 	m_pclMapCanvas->Bind(wxEVT_LEFT_UP, &MainFrame::OnMapCanvasLeftClick, this, wxID_ANY);
-	m_pclMapCanvas->Bind(LitePanel::Gui::EVT_TILE_LEFT_CLICK, &MainFrame::OnMapCanvasTileLeftClick, this, wxID_ANY);
 	m_pclMapCanvas->Bind(LitePanel::Gui::EVT_TILE_UNDER_MOUSE_CHANGED, &MainFrame::OnTileUnderMouseChanged, this, wxID_ANY);
 }
 
@@ -497,13 +490,6 @@ void MainFrame::OnMapCanvasLeftClick(wxMouseEvent &event)
 		return;
 
 	proc(tilePos.value());
-}
-
-void MainFrame::OnMapCanvasTileLeftClick(LitePanel::Gui::TileEvent &event)
-{
-	const auto &tilePos = event.GetTilePosition().value();
-
-	this->SetStatusText(fmt::format("tile {} {}", tilePos.m_tX, tilePos.m_tY));
 }
 
 void MainFrame::OnTileUnderMouseChanged(LitePanel::Gui::TileEvent &event)

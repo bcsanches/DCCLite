@@ -12,6 +12,8 @@
 
 #include <wx/docview.h>
 
+#include <Panel.h>
+
 namespace LitePanel::Gui
 {
 	class PanelDocument: public wxDocument
@@ -23,6 +25,14 @@ namespace LitePanel::Gui
 			bool OnCreate(const wxString &path, long flags) override;
 
 			wxDECLARE_DYNAMIC_CLASS(PanelDocument);
+
+			inline LitePanel::Panel *GetPanel()
+			{
+				return m_upPanel.get();
+			}
+
+		private:
+			std::unique_ptr<LitePanel::Panel> m_upPanel;
 	};
 }
 

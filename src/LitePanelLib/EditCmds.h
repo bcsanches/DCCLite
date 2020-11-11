@@ -49,38 +49,5 @@ namespace LitePanel
 
 		private:
 			const TileCoord_t m_Position;
-	};
-
-	constexpr unsigned MAX_EDIT_CMDS = 3;
-	typedef std::array<std::unique_ptr<EditCmd>, MAX_EDIT_CMDS> CmdsArray_t;
-
-	class ComplexEditCmd
-	{
-		public:
-			ComplexEditCmd(std::string description, std::unique_ptr<EditCmd> cmd1, std::unique_ptr<EditCmd> cmd2 = {}, std::unique_ptr<EditCmd> cmd3 = {});
-
-			ComplexEditCmd() = delete;
-			ComplexEditCmd(const ComplexEditCmd& rhs) = delete;
-			ComplexEditCmd(ComplexEditCmd&& rhs) = default;
-
-			ComplexEditCmd& operator=(const ComplexEditCmd&) = delete;
-			ComplexEditCmd& operator=(ComplexEditCmd&&) = default;			
-
-			ComplexEditCmd Run(Panel &panel);
-
-		private:			
-			std::string m_strDescription;
-
-			CmdsArray_t m_arCmds;
-	};
-
-	class EditCmdManager
-	{
-		public:
-			void Run(ComplexEditCmd cmd, Panel &panel);
-
-		private:
-			std::vector<ComplexEditCmd> m_vecUndo;
-			std::vector<ComplexEditCmd> m_vecRedo;
-	};
+	};	
 }

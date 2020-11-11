@@ -45,44 +45,5 @@ namespace LitePanel
 
 		return std::make_unique<InsertRailCmd>(std::move(obj));
 	}
-
-	ComplexEditCmd::ComplexEditCmd(std::string description, std::unique_ptr<EditCmd> cmd1, std::unique_ptr<EditCmd> cmd2, std::unique_ptr<EditCmd> cmd3):
-		m_strDescription(std::move(m_strDescription)),
-		m_arCmds({ std::move(cmd1), std::move(cmd2), std::move(cmd3) })
-	{		
-		if(!m_arCmds[0].get() && !m_arCmds[1].get() && !m_arCmds[2].get())
-			throw std::invalid_argument("[ComplexEditCmd::ComplexEditCmd] cmds cannot be empty");		
-	}
-
-	ComplexEditCmd ComplexEditCmd::Run(Panel &panel)
-	{
-		CmdsArray_t undoStack;
-
-		for (auto i = 0; i < MAX_EDIT_CMDS; ++i)
-		{
-			auto cmd = m_arCmds[i].get();
-			if (!cmd)
-				continue;
-			
-			undoStack[i] = cmd->Run(panel);			
-		}
-
-		std::reverse(undoStack.begin(), undoStack.end());
-
-		return ComplexEditCmd(
-			fmt::format("Undo {}", m_strDescription), 
-			std::move(undoStack[0]), 
-			std::move(undoStack[1]), 
-			std::move(undoStack[2])
-		);
-	}
-
-	void EditCmdManager::Run(ComplexEditCmd cmd, Panel &panel)
-	{
-		auto undoCmd = cmd.Run(panel);
-
-		m_vecRedo.clear();
-		m_vecUndo.push_back(std::move(undoCmd));
-	}
 }
 

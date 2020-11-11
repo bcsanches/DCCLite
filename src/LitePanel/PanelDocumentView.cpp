@@ -11,6 +11,10 @@
 
 #include "PanelDocumentView.h"
 
+#include "Panel.h"
+#include "PanelDocument.h"
+#include "PanelEditorCanvas.h"
+
 #include <wx/rtti.h>
 
 wxIMPLEMENT_DYNAMIC_CLASS(LitePanel::Gui::PanelDocumentView, wxView);
@@ -25,6 +29,24 @@ namespace LitePanel::Gui
 	PanelDocumentView::~PanelDocumentView()
 	{
 		//empty
+	}
+
+	bool PanelDocumentView::OnCreate(wxDocument *doc, long flags)
+	{
+		if (!wxView::OnCreate(doc, flags))
+			return false;		
+
+		m_pclMapCanvas = new LitePanel::Gui::PanelEditorCanvas(this->GetFrame());
+
+		auto panelDocument = static_cast<PanelDocument *>(doc);
+
+		auto *panel = panelDocument->GetPanel();
+		if (!panel)
+			return false;
+
+		m_pclMapCanvas->SetTileMap(&panel->GetTileMap());		
+
+		return true;		
 	}
 
 	void PanelDocumentView::OnDraw(wxDC *dc)
