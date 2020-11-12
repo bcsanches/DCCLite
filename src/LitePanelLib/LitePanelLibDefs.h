@@ -14,6 +14,7 @@
 
 namespace LitePanel
 {
+	class EditCmd;
 	class Panel;
 	class RailObject;
 

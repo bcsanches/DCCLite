@@ -1,7 +1,7 @@
 
 set(LitePanel_SRCS	
   GLCanvas.cpp
-  main.cpp      
+  LitePanel.cpp      
   PanelDocument.cpp
   PanelDocumentView.cpp
   PanelEditorCanvas.cpp  
@@ -11,7 +11,8 @@ set(LitePanel_SRCS
 )
 
 set(LitePanel_HDRS
-  GLCanvas.h       
+  GLCanvas.h      
+  LitePanel.h 
   PanelDocument.h 
   PanelDocumentView.h
   PanelEditorCanvas.h

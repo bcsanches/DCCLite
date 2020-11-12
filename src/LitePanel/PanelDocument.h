@@ -10,12 +10,44 @@
 
 #pragma once
 
+#include <array>
+
+#include <wx/cmdproc.h>
 #include <wx/docview.h>
 
 #include <Panel.h>
 
+#include "LitePanelLibDefs.h"
+
 namespace LitePanel::Gui
 {
+	constexpr unsigned MAX_EDIT_CMDS = 3;
+	typedef std::array<std::unique_ptr<LitePanel::EditCmd>, MAX_EDIT_CMDS> CmdsArray_t;
+
+	class PanelDocument;
+
+	class PanelDocumentCommand : public wxCommand
+	{
+		public:
+			PanelDocumentCommand(
+				PanelDocument &doc,
+				const wxString &name,
+				std::unique_ptr<LitePanel::EditCmd> cmd1,
+				std::unique_ptr<LitePanel::EditCmd> cmd2 = {},
+				std::unique_ptr<LitePanel::EditCmd> cmd3 = {}
+			);
+
+		protected:
+			bool Do() override;
+			bool Undo() override;
+
+		private:
+			CmdsArray_t m_arCmds;
+			CmdsArray_t m_arUndoCmds;
+
+			LitePanel::Gui::PanelDocument &m_rclDocument;
+	};
+
 	class PanelDocument: public wxDocument
 	{
 		public:

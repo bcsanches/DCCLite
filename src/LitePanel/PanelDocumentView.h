@@ -24,17 +24,14 @@ namespace LitePanel::Gui
 			virtual ~PanelDocumentView();
 
 			PanelDocumentView(const PanelDocumentView &) = delete;
-			PanelDocumentView(PanelDocumentView &&) = delete;
+			PanelDocumentView(PanelDocumentView &&) = delete;			
 
 		protected:
 			void OnDraw(wxDC *dc) override;
 
 			bool OnCreate(wxDocument *doc, long flags) override;
 
-			wxDECLARE_DYNAMIC_CLASS(PanelDocumentView);
-
-		private:
-			LitePanel::Gui::TileMapCanvas *m_pclMapCanvas = nullptr;
+			wxDECLARE_DYNAMIC_CLASS(PanelDocumentView);		
 	};
 }
 

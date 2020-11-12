@@ -18,4 +18,9 @@ namespace LitePanel::Gui
 	{
 		//empty
 	}
+
+	PanelEditorCanvas::~PanelEditorCanvas()
+	{
+
+	}
 }

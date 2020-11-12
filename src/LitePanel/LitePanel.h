@@ -10,20 +10,26 @@
 
 #pragma once
 
-#include "TileMapCanvas.h"
+#include <wx/wx.h>
 
-#include <memory>
 
 namespace LitePanel::Gui
 {
-	class ToolManager;
+	class MainFrame;
+	class PanelDocumentView;
 
-	class PanelEditorCanvas: public TileMapCanvas
+	class LiteApp : public wxApp
 	{
 		public:
-			PanelEditorCanvas(wxWindow *parent, int id = -1);
-			~PanelEditorCanvas();		
+			virtual bool OnInit();
+
+			void SetCurrentView(PanelDocumentView &view);
+
+			void CreateChildFrame(PanelDocumentView &view);
+
+		private:
+			MainFrame *m_pclMainFrame = nullptr;
 	};
 }
 
-
+wxDECLARE_APP(LitePanel::Gui::LiteApp);
