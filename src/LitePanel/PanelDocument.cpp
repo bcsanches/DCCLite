@@ -63,7 +63,10 @@ namespace LitePanel::Gui
 	bool PanelDocumentCommand::Undo()
 	{
 		std::swap(m_arCmds, m_arUndoCmds);
-		return this->Do();	
+		this->Do();	
+		std::swap(m_arCmds, m_arUndoCmds);
+
+		return true;
 	}
 
 	//

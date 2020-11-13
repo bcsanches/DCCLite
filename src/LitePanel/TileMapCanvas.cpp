@@ -91,14 +91,13 @@ namespace LitePanel::Gui
 
 		if (m_pclTileMap)
 		{
-			m_upRenderTimer->Start(25);
+			this->UpdateRenderInfo();
+			m_upRenderTimer->Start(25);			
 		}
 		else
 		{
 			m_upRenderTimer->Stop();
-		}
-	
-		this->UpdateRenderInfo();
+		}		
 	}
 
 	void TileMapCanvas::UpdateRenderInfo()

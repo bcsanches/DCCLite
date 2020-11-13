@@ -27,6 +27,8 @@ namespace LitePanel::Gui
 			PanelDocumentView(PanelDocumentView &&) = delete;			
 
 		protected:
+			bool OnClose(bool deleteWindow) override;
+
 			void OnDraw(wxDC *dc) override;
 
 			bool OnCreate(wxDocument *doc, long flags) override;

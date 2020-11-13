@@ -133,6 +133,7 @@ namespace LitePanel::Gui
 			MainFrame(wxDocManager *manager);
 
 			void SetCurrentView(PanelDocumentView &view);
+			void RemoveCurrentView();
 
 		private:
 			void OnExit(wxCommandEvent &event);
@@ -191,6 +192,11 @@ namespace LitePanel::Gui
 		m_pclMainFrame->SetCurrentView(view);		
 	}
 
+	void LiteApp::RemoveCurrentView()
+	{
+		m_pclMainFrame->RemoveCurrentView();
+	}
+
 	void LiteApp::CreateChildFrame(PanelDocumentView &view)
 	{
 		auto subFrame = new wxDocChildFrame(
@@ -206,6 +212,13 @@ namespace LitePanel::Gui
 		subFrame->Centre();
 	}
 
+	int LiteApp::OnExit()
+	{
+		delete wxDocManager::GetDocumentManager();
+
+		return wxApp::OnExit();
+	}
+
 	void MainFrame::SetCurrentView(PanelDocumentView &view)
 	{
 		m_pclDocument = static_cast<PanelDocument *>(view.GetDocument());
@@ -215,6 +228,14 @@ namespace LitePanel::Gui
 		m_pclCommandProcessor->Initialize();			
 
 		m_pclMapCanvas->SetTileMap(&m_pclDocument->GetPanel()->GetTileMap());
+	}
+
+	void MainFrame::RemoveCurrentView()
+	{
+		m_pclMapCanvas->SetTileMap(nullptr);
+
+		m_pclCommandProcessor = nullptr;
+		m_pclDocument = nullptr;
 	}
 
 	void MainFrame::ExecuteInsertRailCmd(std::unique_ptr<LitePanel::RailObject> railObj)

@@ -24,8 +24,12 @@ namespace LitePanel::Gui
 			virtual bool OnInit();
 
 			void SetCurrentView(PanelDocumentView &view);
+			void RemoveCurrentView();
 
 			void CreateChildFrame(PanelDocumentView &view);
+
+		protected:
+			int OnExit() override;
 
 		private:
 			MainFrame *m_pclMainFrame = nullptr;

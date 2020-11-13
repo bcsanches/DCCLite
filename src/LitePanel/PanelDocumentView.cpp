@@ -45,6 +45,17 @@ namespace LitePanel::Gui
 		return true;		
 	}
 
+	bool PanelDocumentView::OnClose(bool deleteWindow)
+	{
+		if (!wxView::OnClose(deleteWindow))
+			return false;
+
+		auto &app = wxGetApp();
+		app.RemoveCurrentView();
+
+		return true;
+	}
+
 	void PanelDocumentView::OnDraw(wxDC *dc)
 	{
 
