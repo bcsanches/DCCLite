@@ -524,6 +524,9 @@ NOTILES:
 
 	void TileMapCanvas::OnMouseLeaveWindow(wxMouseEvent& event)
 	{
+		if (!m_pclTileMap)
+			return;
+
 		m_tTileUnderMouse = {};
 		TileEvent ev{EVT_TILE_UNDER_MOUSE_CHANGED, m_tTileUnderMouse};
 

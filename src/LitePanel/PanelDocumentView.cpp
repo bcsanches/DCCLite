@@ -37,11 +37,7 @@ namespace LitePanel::Gui
 		if (!wxView::OnCreate(doc, flags))
 			return false;										
 
-		auto panelDocument = static_cast<PanelDocument *>(doc);
-
-		auto *panel = panelDocument->GetPanel();
-		if (!panel)
-			return false;			
+		auto panelDocument = static_cast<PanelDocument *>(doc);		
 
 		auto &app = wxGetApp();
 		app.SetCurrentView(*this);

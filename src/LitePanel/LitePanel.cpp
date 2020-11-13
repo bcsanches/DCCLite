@@ -178,7 +178,10 @@ namespace LitePanel::Gui
 		);
 
 		m_pclMainFrame = new MainFrame(docManager);
-		m_pclMainFrame->Show(true);
+
+		docManager->CreateNewDocument();
+
+		m_pclMainFrame->Show(true);		
 
 		return true;
 	}
@@ -209,7 +212,9 @@ namespace LitePanel::Gui
 
 		m_pclCommandProcessor = m_pclDocument->GetCommandProcessor();
 		m_pclCommandProcessor->SetEditMenu(m_pclEditMenu);
-		m_pclCommandProcessor->Initialize();					
+		m_pclCommandProcessor->Initialize();			
+
+		m_pclMapCanvas->SetTileMap(&m_pclDocument->GetPanel()->GetTileMap());
 	}
 
 	void MainFrame::ExecuteInsertRailCmd(std::unique_ptr<LitePanel::RailObject> railObj)
@@ -256,34 +261,6 @@ namespace LitePanel::Gui
 		menuBar->Append(menuHelp, "&Help");
 		
 		m_pclMapCanvas = new LitePanel::Gui::PanelEditorCanvas(this);
-
-		#if 0
-		//m_pclMapCanvas->SetTileMap(&m_clPanel.GetTileMap());
-
-		auto obj = std::make_unique<LitePanel::SimpleRailObject>(
-			LitePanel::TileCoord_t{ 1, 1 },
-			LitePanel::ObjectAngles::EAST,
-			LitePanel::SimpleRailTypes::STRAIGHT
-			);
-
-		m_clPanel.RegisterRail(std::move(obj));
-
-		auto obj2 = std::make_unique<LitePanel::SimpleRailObject>(
-			LitePanel::TileCoord_t{ 2, 1 },
-			LitePanel::ObjectAngles::NORTHEAST,
-			LitePanel::SimpleRailTypes::STRAIGHT
-			);
-
-		m_clPanel.RegisterRail(std::move(obj2));
-
-		auto obj3 = std::make_unique<LitePanel::SimpleRailObject>(
-			LitePanel::TileCoord_t{ 3, 1 },
-			LitePanel::ObjectAngles::NORTH,
-			LitePanel::SimpleRailTypes::STRAIGHT
-			);
-
-		m_clPanel.RegisterRail(std::move(obj3));
-		#endif
 
 		SetMenuBar(menuBar);
 
