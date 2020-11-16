@@ -19,6 +19,11 @@ namespace LitePanel
 		//empty
 	}	
 
+	void RailObject::OnSave(JsonOutputStream_t& stream) const noexcept
+	{
+		stream.AddIntValue("angle", static_cast<int>(m_tAngle));
+	}
+
 	SimpleRailObject::SimpleRailObject(const TileCoord_t &position, ObjectAngles angle, const SimpleRailTypes type):
 		RailObject(position, angle),
 		m_tType(type)
@@ -31,5 +36,5 @@ namespace LitePanel
 		m_tType(type)
 	{
 		//empty
-	}
+	}	
 }

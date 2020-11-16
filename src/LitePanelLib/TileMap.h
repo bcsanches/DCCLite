@@ -37,6 +37,8 @@ namespace LitePanel
 
 			const TileCoord_t &GetSize() const noexcept { return m_tSize; }
 
+			void Save(JsonOutputStream_t& stream) const;
+
 		private:
 			size_t GetIndex(const TileCoord_t &position) const;
 
@@ -78,6 +80,8 @@ namespace LitePanel
 
 			void AddListener(ITileMapListener *listener);
 			void RemoveListener(ITileMapListener *listener);
+
+			void Save(JsonOutputStream_t& stream) const;
 
 		private:
 			void StateChanged();

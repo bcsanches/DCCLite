@@ -30,6 +30,11 @@ namespace LitePanel
 			}
 
 			virtual void Draw(const Gui::ViewInfo &viewInfo) const noexcept = 0;
+		
+			bool IsPersistent() const noexcept override
+			{
+				return false;
+			}
 	};	
 
 	class QuadObject : public TempObject
@@ -43,7 +48,7 @@ namespace LitePanel
 				m_fpColor[2] = b;
 			}
 
-			void Draw(const Gui::ViewInfo &viewInfo) const noexcept override;
+			void Draw(const Gui::ViewInfo &viewInfo) const noexcept override;		
 
 		private:	
 			float m_fpColor[3];

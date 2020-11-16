@@ -64,4 +64,11 @@ namespace LitePanel
 		this->RegisterTempObject(std::move(obj));
 	}
 
+	void Panel::Save(JsonOutputStream_t &stream) const
+	{
+		auto tileMapObj = stream.AddObject("tileMap");
+
+		m_mapTileMap.Save(tileMapObj);
+	}
+
 }

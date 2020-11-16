@@ -81,6 +81,26 @@ namespace LitePanel
 		return std::move(m_vecMap[index]);
 	}
 
+	void TileLayer::Save(JsonOutputStream_t &stream) const
+	{
+		auto outputArray = stream.AddArray("objects");
+
+		for (auto& obj : m_vecMap)
+		{
+			if (!obj || !obj->IsPersistent())
+				continue;
+			
+			auto outputObj = outputArray.AddObject();
+			obj->Save(outputObj);
+		}
+	}
+
+	//
+	//
+	// TileMap
+	//
+	//
+
 
 	TileMap::TileMap(const TileCoord_t size, const unsigned numLayers)
 	{
@@ -167,6 +187,21 @@ namespace LitePanel
 		for (auto listener : m_vecListeners)
 		{
 			listener->TileMap_OnStateChanged();
+		}
+	}
+
+	void TileMap::Save(JsonOutputStream_t& stream) const
+	{
+		const auto &size = m_vecLayers[0].GetSize();
+
+		stream.AddIntValue("width", size.m_tX);
+		stream.AddIntValue("height", size.m_tY);
+
+		auto layersObj = stream.AddArray("layers");
+		for (auto& layer : m_vecLayers)
+		{
+			auto layerObj = layersObj.AddObject();
+			layer.Save(layerObj);
 		}
 	}
 

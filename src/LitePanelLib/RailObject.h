@@ -28,6 +28,9 @@ namespace LitePanel
 				return m_tAngle;
 			}
 
+		protected:
+			void OnSave(JsonOutputStream_t& stream) const noexcept override;
+
 		private:
 			const ObjectAngles m_tAngle = ObjectAngles::EAST;
 	};

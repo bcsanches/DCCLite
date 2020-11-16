@@ -39,7 +39,7 @@ namespace LitePanel::Gui
 
 		protected:
 			bool Do() override;
-			bool Undo() override;
+			bool Undo() override;			
 
 		private:
 			CmdsArray_t m_arCmds;
@@ -62,6 +62,10 @@ namespace LitePanel::Gui
 			{
 				return m_upPanel.get();
 			}
+
+		protected:
+			bool DoSaveDocument(const wxString& filename) override;
+			bool DoOpenDocument(const wxString& filename) override;
 
 		private:
 			std::unique_ptr<LitePanel::Panel> m_upPanel;

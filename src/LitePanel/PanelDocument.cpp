@@ -11,9 +11,13 @@
 
 #include "PanelDocument.h"
 
+#include <fstream>
+#include <stdexcept>
+
 #include <wx/rtti.h>
 
-#include <stdexcept>
+#include "JsonCreator/StringWriter.h"
+#include "JsonCreator/Object.h"
 
 #include "EditCmds.h"
 #include "MapObject.h"
@@ -90,6 +94,26 @@ namespace LitePanel::Gui
 		m_upPanel = std::make_unique<LitePanel::Panel>(LitePanel::TileCoord_t{ 32, 32 });
 
 		return wxDocument::OnCreate(path, flags);
+	}
+
+	bool PanelDocument::DoSaveDocument(const wxString &filename)
+	{
+		std::ofstream newStateFile(filename.c_str().AsWChar(), std::ios_base::trunc);
+
+		JsonCreator::StringWriter responseWriter;
+
+		{
+			auto rootObj = JsonCreator::MakeObject(responseWriter);
+			
+			m_upPanel->Save(rootObj);			
+		}
+
+		return false;
+	}
+
+	bool PanelDocument::DoOpenDocument(const wxString &filename)
+	{
+		return false;
 	}
 
 }

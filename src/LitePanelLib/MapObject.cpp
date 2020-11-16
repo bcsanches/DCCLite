@@ -17,4 +17,17 @@ namespace LitePanel
 	{
 		//empty
 	}	
+
+	void MapObject::Save(JsonOutputStream_t& stream) const noexcept
+	{
+		stream.AddIntValue("x", m_tPosition.m_tX);
+		stream.AddIntValue("y", m_tPosition.m_tY);
+
+		this->OnSave(stream);
+	}
+
+	void MapObject::OnSave(JsonOutputStream_t& stream) const noexcept
+	{
+		//empty
+	}
 }

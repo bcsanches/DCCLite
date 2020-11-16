@@ -36,6 +36,8 @@ namespace LitePanel
 				return m_mapTileMap;
 			}
 
+			void Save(JsonOutputStream_t &stream) const;
+
 		private:
 			TileMap m_mapTileMap;
 			

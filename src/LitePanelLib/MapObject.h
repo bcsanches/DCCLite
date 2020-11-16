@@ -37,8 +37,17 @@ namespace LitePanel
 				return m_tPosition;
 			}
 
+			void Save(JsonOutputStream_t& stream) const noexcept;
+
+			virtual bool IsPersistent() const noexcept
+			{
+				return true;
+			}
+
 		private:
 			friend class Panel;
+
+			virtual void OnSave(JsonOutputStream_t& stream) const noexcept;
 
 			void SetPosition(const TileCoord_t& position)
 			{

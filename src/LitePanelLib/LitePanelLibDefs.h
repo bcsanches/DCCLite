@@ -12,6 +12,9 @@
 
 #include "Point.h"
 
+#include "JsonCreator/Object.h"
+#include "JsonCreator/StringWriter.h"
+
 namespace LitePanel
 {
 	class EditCmd;
@@ -21,4 +24,6 @@ namespace LitePanel
 	constexpr auto DEFAULT_TILE_SIZE = 32;
 
 	typedef Point<uint8_t> TileCoord_t;
+
+	typedef JsonCreator::Object<JsonCreator::StringWriter> JsonOutputStream_t;
 }
