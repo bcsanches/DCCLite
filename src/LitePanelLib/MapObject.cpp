@@ -22,6 +22,7 @@ namespace LitePanel
 	{
 		stream.AddIntValue("x", m_tPosition.m_tX);
 		stream.AddIntValue("y", m_tPosition.m_tY);
+		stream.AddStringValue("classname", this->GetTypeName());
 
 		this->OnSave(stream);
 	}

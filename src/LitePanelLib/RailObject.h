@@ -28,6 +28,13 @@ namespace LitePanel
 				return m_tAngle;
 			}
 
+			const char* GetTypeName() const noexcept override
+			{
+				return TYPE_NAME;
+			}
+
+			static constexpr char* TYPE_NAME = "RailObject";
+
 		protected:
 			void OnSave(JsonOutputStream_t& stream) const noexcept override;
 
@@ -54,6 +61,13 @@ namespace LitePanel
 				return m_tType;
 			}
 
+			const char* GetTypeName() const noexcept override
+			{
+				return TYPE_NAME;
+			}
+
+			static constexpr char* TYPE_NAME = "SimpleRailObject";
+
 		private:
 			const SimpleRailTypes m_tType;
 	};
@@ -68,6 +82,13 @@ namespace LitePanel
 	{
 		public:
 			JunctionRailObject(const TileCoord_t &position, ObjectAngles angle, const JunctionTypes type);
+
+			const char* GetTypeName() const noexcept override
+			{
+				return TYPE_NAME;
+			}
+
+			static constexpr char *TYPE_NAME = "JunctionRailObject";
 
 		private:
 			const JunctionTypes m_tType;

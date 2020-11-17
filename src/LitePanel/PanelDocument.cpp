@@ -108,7 +108,9 @@ namespace LitePanel::Gui
 			m_upPanel->Save(rootObj);			
 		}
 
-		return false;
+		newStateFile << responseWriter.GetString();
+
+		return true;
 	}
 
 	bool PanelDocument::DoOpenDocument(const wxString &filename)

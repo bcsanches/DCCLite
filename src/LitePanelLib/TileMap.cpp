@@ -197,10 +197,10 @@ namespace LitePanel
 		stream.AddIntValue("width", size.m_tX);
 		stream.AddIntValue("height", size.m_tY);
 
-		auto layersObj = stream.AddArray("layers");
+		auto layersArray = stream.AddArray("layers");
 		for (auto& layer : m_vecLayers)
 		{
-			auto layerObj = layersObj.AddObject();
+			auto layerObj = layersArray.AddObject();
 			layer.Save(layerObj);
 		}
 	}

@@ -44,6 +44,13 @@ namespace LitePanel
 				return true;
 			}
 
+			virtual const char* GetTypeName() const noexcept
+			{
+				return TYPE_NAME;
+			}
+
+			static constexpr char* TYPE_NAME = "MapObject";
+
 		private:
 			friend class Panel;
 
