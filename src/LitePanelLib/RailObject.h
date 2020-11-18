@@ -22,6 +22,7 @@ namespace LitePanel
 	{
 		public:
 			RailObject(const TileCoord_t &position, ObjectAngles angle = ObjectAngles::EAST);
+			RailObject(const rapidjson::Value& params);
 
 			inline const ObjectAngles GetAngle() const
 			{
@@ -55,6 +56,7 @@ namespace LitePanel
 	{
 		public:
 			SimpleRailObject(const TileCoord_t &position, ObjectAngles angle, const SimpleRailTypes type);
+			SimpleRailObject(const rapidjson::Value &params);
 
 			inline const SimpleRailTypes GetType() const noexcept
 			{
@@ -67,6 +69,9 @@ namespace LitePanel
 			}
 
 			static constexpr char* TYPE_NAME = "SimpleRailObject";
+
+		protected:
+			void OnSave(JsonOutputStream_t& stream) const noexcept override;
 
 		private:
 			const SimpleRailTypes m_tType;

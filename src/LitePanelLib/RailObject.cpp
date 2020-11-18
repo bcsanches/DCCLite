@@ -19,8 +19,17 @@ namespace LitePanel
 		//empty
 	}	
 
+	RailObject::RailObject(const rapidjson::Value &params) :
+		MapObject(params),
+		m_tAngle{params["angle"].GetInt()}
+	{
+		//empty
+	}
+
 	void RailObject::OnSave(JsonOutputStream_t& stream) const noexcept
 	{
+		MapObject::OnSave(stream);
+
 		stream.AddIntValue("angle", static_cast<int>(m_tAngle));
 	}
 
@@ -29,6 +38,20 @@ namespace LitePanel
 		m_tType(type)
 	{
 		//empty
+	}
+
+	SimpleRailObject::SimpleRailObject(const rapidjson::Value &params):
+		RailObject(params),
+		m_tType{params["type"].GetInt()}
+	{
+		//empty
+	}
+
+	void SimpleRailObject::OnSave(JsonOutputStream_t& stream) const noexcept
+	{
+		RailObject::OnSave(stream);
+		
+		stream.AddIntValue("type", static_cast<int>(m_tType));
 	}
 
 	JunctionRailObject::JunctionRailObject(const TileCoord_t &position, ObjectAngles angle, const JunctionTypes type):

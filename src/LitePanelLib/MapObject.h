@@ -12,6 +12,8 @@
 
 #include "TileMap.h"
 
+#include <rapidjson/document.h>
+
 namespace LitePanel
 {	
 	enum class ObjectAngles
@@ -30,6 +32,8 @@ namespace LitePanel
 	{
 		public:
 			MapObject(const TileCoord_t &position);
+			MapObject(const rapidjson::Value &params);
+
 			virtual ~MapObject() = default;
 
 			inline const TileCoord_t &GetPosition() const noexcept
@@ -51,10 +55,11 @@ namespace LitePanel
 
 			static constexpr char* TYPE_NAME = "MapObject";
 
-		private:
-			friend class Panel;
-
+		protected:
 			virtual void OnSave(JsonOutputStream_t& stream) const noexcept;
+
+		private:
+			friend class Panel;			
 
 			void SetPosition(const TileCoord_t& position)
 			{

@@ -2,6 +2,7 @@
 set(LitePanelLib_SRCS
     EditCmds.cpp
 	MapObject.cpp
+    MapObjectFactory.cpp
 	Panel.cpp
 	RailObject.cpp
 	TileMap.cpp	
@@ -11,6 +12,7 @@ set(LitePanelLib_HDRS
     EditCmds.h
     LitePanelLibDefs.h
 	MapObject.h
+    MapObjectFactory.h
 	Panel.h
 	Point.h
 	RailObject.h

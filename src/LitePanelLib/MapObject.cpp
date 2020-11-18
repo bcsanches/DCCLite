@@ -18,6 +18,12 @@ namespace LitePanel
 		//empty
 	}	
 
+	MapObject::MapObject(const rapidjson::Value& params):
+		m_tPosition{params["x"].GetInt(), params["y"].GetInt() }
+	{
+		//empty
+	}
+
 	void MapObject::Save(JsonOutputStream_t& stream) const noexcept
 	{
 		stream.AddIntValue("x", m_tPosition.m_tX);
