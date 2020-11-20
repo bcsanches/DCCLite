@@ -28,6 +28,12 @@ namespace LitePanel
 		//empty
 	}
 
+	Panel::Panel(const rapidjson::Value& data) :
+		m_mapTileMap(TileCoord_t{ static_cast<uint8_t>(data["width"].GetInt()), static_cast<uint8_t>(data["height"].GetInt()) }, kNUM_LAYERS)
+	{
+		//empty
+	}
+
 	void Panel::RegisterRail(std::unique_ptr<RailObject> object)
 	{
 		m_mapTileMap.RegisterObject(std::move(object), kRAIL_LAYER);

@@ -15,6 +15,8 @@
 #include "JsonCreator/Object.h"
 #include "JsonCreator/StringWriter.h"
 
+#include <rapidjson/document.h>
+
 namespace LitePanel
 {
 	class EditCmd;

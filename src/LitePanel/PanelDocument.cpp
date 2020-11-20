@@ -16,6 +16,11 @@
 
 #include <wx/rtti.h>
 
+#include <wx/log.h>
+
+#include <rapidjson/document.h>
+#include <rapidjson/istreamwrapper.h>
+
 #include "JsonCreator/StringWriter.h"
 #include "JsonCreator/Object.h"
 
@@ -115,7 +120,29 @@ namespace LitePanel::Gui
 
 	bool PanelDocument::DoOpenDocument(const wxString &filename)
 	{
-		return false;
+		std::ifstream docFile(filename.c_str().AsWChar());
+		if (!docFile)
+		{			
+			wxLogMessage("Cannot open %s", filename);
+			return false;
+		}			
+
+		rapidjson::IStreamWrapper isw(docFile);
+		rapidjson::Document data;
+		data.ParseStream(isw);
+
+		try
+		{
+			m_upPanel = std::make_unique<LitePanel::Panel>(data);			
+		}
+		catch (std::exception& e)
+		{
+			wxLogError("Cannot load document: %s", e.what());
+
+			return false;
+		}
+
+		return true;
 	}
 
 }
