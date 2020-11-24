@@ -52,10 +52,23 @@ namespace LitePanel
 		TERMINAL
 	};
 
+	enum BlockSplitTypes
+	{
+		kBLOCK_SPLIT_NONE = 0,
+		kBLOCK_SPLIT_LEFT = 0x02,
+		kBLOCK_SPLIT_RIGHT = 0x04
+	};
+
 	class SimpleRailObject: public RailObject
 	{
 		public:
-			SimpleRailObject(const TileCoord_t &position, ObjectAngles angle, const SimpleRailTypes type);
+			SimpleRailObject(
+				const TileCoord_t &position, 
+				ObjectAngles angle, 
+				const SimpleRailTypes type, 
+				const BlockSplitTypes splitTypes = kBLOCK_SPLIT_NONE
+			);
+
 			SimpleRailObject(const rapidjson::Value &params);
 
 			inline const SimpleRailTypes GetType() const noexcept
@@ -74,7 +87,8 @@ namespace LitePanel
 			void OnSave(JsonOutputStream_t& stream) const noexcept override;
 
 		private:
-			const SimpleRailTypes m_tType;
+			const SimpleRailTypes	m_tType;			
+			const uint8_t			m_fBlockSplit;
 	};
 
 	enum class JunctionTypes

@@ -391,26 +391,42 @@ namespace LitePanel::Gui
 			},
 			"Left curve track section",
 				"Creates a left curve track section"
-				);
+		);
 
 		m_clToolManager.AddTool(
 			toolBarLeft2Index,
 			"track",
-			wxBITMAP(rail_left_curve_090_icon),
-			[this](const LitePanel::TileCoord_t &coord) -> void
+			wxBITMAP(rail_right_curve_180_icon),
+			[this](const LitePanel::TileCoord_t& coord) -> void
 			{
 				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 					coord,
-					LitePanel::ObjectAngles::NORTH,
-					LitePanel::SimpleRailTypes::CURVE_LEFT
+					LitePanel::ObjectAngles::WEST,
+					LitePanel::SimpleRailTypes::CURVE_RIGHT
 					));
 			},
-			"Left curve track section",
-				"Creates a left curve track section"
-				);
+			"Right curve track section",
+				"Creates a right curve track section"
+		);
 
 		m_clToolManager.AddTool(
 			toolBarLeft1Index,
+			"track",
+			wxBITMAP(rail_right_curve_000_icon),
+			[this](const LitePanel::TileCoord_t& coord) -> void
+			{
+				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
+					coord,
+					LitePanel::ObjectAngles::EAST,
+					LitePanel::SimpleRailTypes::CURVE_RIGHT
+					));
+			},
+			"Right curve track section",
+				"Creates a right curve track section"
+		);
+
+		m_clToolManager.AddTool(
+			toolBarLeft2Index,
 			"track",
 			wxBITMAP(rail_left_curve_180_icon),
 			[this](const LitePanel::TileCoord_t &coord) -> void
@@ -422,11 +438,45 @@ namespace LitePanel::Gui
 					));
 			},
 			"Left curve track section",
-				"Creates a left curve track section"
-				);
+			"Creates a left curve track section"
+		);		
+
+		m_clToolManager.AddTool(
+			toolBarLeft1Index,
+			"track",
+			wxBITMAP(rail_right_curve_090_icon),
+			[this](const LitePanel::TileCoord_t& coord) -> void
+			{
+				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
+					coord,
+					LitePanel::ObjectAngles::NORTH,
+					LitePanel::SimpleRailTypes::CURVE_RIGHT,
+					LitePanel::kBLOCK_SPLIT_LEFT
+					));
+			},
+			"Right curve track section",
+			"Creates a right curve track section"
+		);
 
 		m_clToolManager.AddTool(
 			toolBarLeft2Index,
+			"track",
+			wxBITMAP(rail_left_curve_090_icon),
+			[this](const LitePanel::TileCoord_t& coord) -> void
+			{
+				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
+					coord,
+					LitePanel::ObjectAngles::NORTH,
+					LitePanel::SimpleRailTypes::CURVE_LEFT,
+					LitePanel::kBLOCK_SPLIT_LEFT
+					));
+			},
+			"Left curve track section",
+			"Creates a left curve track section"
+		);
+
+		m_clToolManager.AddTool(
+			toolBarLeft1Index,
 			"track",
 			wxBITMAP(rail_left_curve_270_icon),
 			[this](const LitePanel::TileCoord_t &coord) -> void
@@ -434,79 +484,34 @@ namespace LitePanel::Gui
 				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 					coord,
 					LitePanel::ObjectAngles::SOUTH,
-					LitePanel::SimpleRailTypes::CURVE_LEFT
-					));
+					LitePanel::SimpleRailTypes::CURVE_LEFT,
+					LitePanel::kBLOCK_SPLIT_LEFT
+				));
 			},
 			"Left curve track section",
-				"Creates a left curve track section"
-				);
-
-		//toolBarLeft1->AddSeparator();
-		//toolBarLeft2->AddSeparator();
-
-		m_clToolManager.AddTool(
-			toolBarLeft1Index,
-			"track",
-			wxBITMAP(rail_right_curve_000_icon),
-			[this](const LitePanel::TileCoord_t &coord) -> void
-			{
-				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
-					coord,
-					LitePanel::ObjectAngles::EAST,
-					LitePanel::SimpleRailTypes::CURVE_RIGHT
-					));
-			},
-			"Right curve track section",
-			"Creates a right curve track section"
+			"Creates a left curve track section"
 		);
-
-		m_clToolManager.AddTool(
-			toolBarLeft2Index,
-			"track",
-			wxBITMAP(rail_right_curve_090_icon),
-			[this](const LitePanel::TileCoord_t &coord) -> void
-			{
-				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
-					coord,
-					LitePanel::ObjectAngles::NORTH,
-					LitePanel::SimpleRailTypes::CURVE_RIGHT
-					));
-			},
-			"Right curve track section",
-			"Creates a right curve track section"
-		);
-
-		m_clToolManager.AddTool(
-			toolBarLeft1Index,
-			"track",
-			wxBITMAP(rail_right_curve_180_icon),
-			[this](const LitePanel::TileCoord_t &coord) -> void
-			{
-				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
-					coord,
-					LitePanel::ObjectAngles::WEST,
-					LitePanel::SimpleRailTypes::CURVE_RIGHT
-					));
-			},
-			"Right curve track section",
-			"Creates a right curve track section"
-		);		
 
 		m_clToolManager.AddTool(
 			toolBarLeft2Index,
 			"track",
 			wxBITMAP(rail_right_curve_270_icon),
-			[this](const LitePanel::TileCoord_t &coord) -> void
+			[this](const LitePanel::TileCoord_t& coord) -> void
 			{
 				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 					coord,
 					LitePanel::ObjectAngles::SOUTH,
-					LitePanel::SimpleRailTypes::CURVE_RIGHT
-					));
+					LitePanel::SimpleRailTypes::CURVE_RIGHT,
+					LitePanel::kBLOCK_SPLIT_LEFT
+				));
 			},
 			"Right curve track section",
 			"Creates a right curve track section"
-		);		
+		);
+
+				
+
+			
 
 		//toolBarLeft1->AddSeparator();		
 		//toolBarLeft2->AddSeparator();
