@@ -55,6 +55,8 @@ namespace LitePanel
 
 			static constexpr char* TYPE_NAME = "MapObject";
 
+			static std::unique_ptr<MapObject> Create(const rapidjson::Value& defs);
+
 		protected:
 			virtual void OnSave(JsonOutputStream_t& stream) const noexcept;
 

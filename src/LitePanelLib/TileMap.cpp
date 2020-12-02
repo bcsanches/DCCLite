@@ -95,27 +95,58 @@ namespace LitePanel
 		}
 	}
 
+	void TileLayer::Load(const rapidjson::Value& data)
+	{
+		auto objectsArray = data["objects"].GetArray();
+
+		for (auto& it : objectsArray)
+		{			
+			this->RegisterObject(MapObject::Create(it));
+		}
+	}
+
 	//
 	//
 	// TileMap
 	//
 	//
 
+	static void CheckSize(const TileCoord_t size)
+	{
+		if ((size.m_tX == 0) || (size.m_tY == 0))
+			throw std::invalid_argument("[LitePanel::TileMap] size must be > 0");		
+	}
+
 
 	TileMap::TileMap(const TileCoord_t size, const unsigned numLayers)
 	{
-		if ((size.m_tX == 0) || (size.m_tY == 0))
-			throw std::invalid_argument("[LitePanel::TileMap] size must be > 0");	
+		CheckSize(size);
 
-		if(numLayers == 0)
+		if (numLayers == 0)
 			throw std::invalid_argument("[LitePanel::TileMap] numLayers must be > 0");
-
 
 		for (unsigned i = 0; i < numLayers; ++i)
 		{
 			m_vecLayers.emplace_back(size);
 		}						
 	}
+
+	TileMap::TileMap(const rapidjson::Value& data) :
+		TileMap(
+			TileCoord_t{ static_cast<uint8_t>(data["width"].GetInt()), static_cast<uint8_t>(data["height"].GetInt()) },
+			data["layers"].Size()
+		)
+	{
+		auto layersArray = data["layers"].GetArray();
+
+		int index = 0;
+		for (auto &it : layersArray)
+		{
+			m_vecLayers[index].Load(it);
+			++index;
+		}
+	}
+
 
 	void TileMap::RegisterObject(std::unique_ptr<MapObject> object, const uint8_t layer)
 	{
@@ -205,4 +236,29 @@ namespace LitePanel
 		}
 	}
 
+	void TileMap::Load(const rapidjson::Value &data)
+	{
+		std::vector<TileLayer> newLayers;		
+
+		auto size = TileCoord_t{ static_cast<uint8_t>(data["width"].GetInt()), static_cast<uint8_t>(data["height"].GetInt()) };
+
+		CheckSize(size);
+
+		auto layersData = data["layers"].GetArray();
+		auto numLayers = layersData.Size();
+
+		if (numLayers == 0)
+		{
+			throw std::invalid_argument("[TileMap::Load] numLayers must be >= 0");
+		}
+		
+		newLayers.reserve(numLayers);
+		for (unsigned i = 0; i < numLayers; ++i)
+		{
+			newLayers.emplace_back(size);
+			newLayers[i].Load(layersData[i]);
+		}
+
+		std::swap(m_vecLayers, newLayers);
+	}
 }

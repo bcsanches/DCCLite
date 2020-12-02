@@ -37,7 +37,8 @@ namespace LitePanel
 				return m_mapTileMap;
 			}
 
-			void Save(JsonOutputStream_t &stream) const;			
+			void Save(JsonOutputStream_t &stream) const;
+			void Load(const rapidjson::Value &data);
 
 		private:
 			TileMap m_mapTileMap;

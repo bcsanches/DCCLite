@@ -38,6 +38,7 @@ namespace LitePanel
 			const TileCoord_t &GetSize() const noexcept { return m_tSize; }
 
 			void Save(JsonOutputStream_t& stream) const;
+			void Load(const rapidjson::Value& data);
 
 		private:
 			size_t GetIndex(const TileCoord_t &position) const;
@@ -59,6 +60,7 @@ namespace LitePanel
 	{
 		public:
 			TileMap(const TileCoord_t size, const unsigned numLayers = 1);
+			TileMap(const rapidjson::Value& data);
 
 			const TileCoord_t &GetSize() const noexcept { return m_vecLayers[0].GetSize(); }
 
@@ -82,6 +84,7 @@ namespace LitePanel
 			void RemoveListener(ITileMapListener *listener);
 
 			void Save(JsonOutputStream_t& stream) const;
+			void Load(const rapidjson::Value &data);
 
 		private:
 			void StateChanged();

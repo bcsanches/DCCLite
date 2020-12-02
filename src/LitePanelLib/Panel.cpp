@@ -29,9 +29,10 @@ namespace LitePanel
 	}
 
 	Panel::Panel(const rapidjson::Value& data) :
-		m_mapTileMap(TileCoord_t{ static_cast<uint8_t>(data["width"].GetInt()), static_cast<uint8_t>(data["height"].GetInt()) }, kNUM_LAYERS)
+		m_mapTileMap(data["tileMap"])
 	{
-		//empty
+		if (m_mapTileMap.GetNumLayers() != kNUM_LAYERS)
+			throw std::invalid_argument("[Panel::Panel] File contains invalid number of layers");
 	}
 
 	void Panel::RegisterRail(std::unique_ptr<RailObject> object)
@@ -77,4 +78,8 @@ namespace LitePanel
 		m_mapTileMap.Save(tileMapObj);
 	}
 
+	void Panel::Load(const rapidjson::Value &data)
+	{
+		m_mapTileMap.Load(data["tileMap"]);
+	}
 }

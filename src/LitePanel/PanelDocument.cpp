@@ -133,7 +133,7 @@ namespace LitePanel::Gui
 
 		try
 		{
-			m_upPanel = std::make_unique<LitePanel::Panel>(data);			
+			m_upPanel->Load(data);
 		}
 		catch (std::exception& e)
 		{
