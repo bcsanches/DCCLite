@@ -178,8 +178,8 @@
     "address":"1768",
     "pullup":false,
     "inverted":true,
-    "activateDelay":0,
-    "deactivateDelay":0
+    "activateDelay":1,
+    "deactivateDelay":5
   },
   {
     "name":"STC_DEXT_MT01",
@@ -188,7 +188,7 @@
     "address":"1769",
     "pullup":false,
     "inverted":true,
-    "activateDelay":0,
-    "deactivateDelay":0
+    "activateDelay":1,
+    "deactivateDelay":5
   } 
 ]

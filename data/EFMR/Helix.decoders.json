@@ -8,8 +8,8 @@
     "powerPin": 43,
     "frogPin": 42,
     "invertedFrog": false,
-    "operationTime": 1000,
-    "range":10,
+    "operationTime": 3000,
+    "range":15,
     "comment": "Double track juntion"
   },
   {
@@ -17,11 +17,11 @@
     "class": "ServoTurnout",
     "address": "1852",
     "pin": 20,
-    "inverted": false,
+    "inverted": true,
     "powerPin": 45,
     "frogPin": 44,
-    "invertedFrog": true,
-    "operationTime": 1000,
+    "invertedFrog": false,
+    "operationTime": 3000,
     "comment": "TC exit"
   },
   {
@@ -48,5 +48,27 @@
     "invertedFrog": true,
     "operationTime": 1000,
     "comment": "TC entry"
-  }
+  },
+      
+  {
+    "name":"HLD_DMT03",
+    "class":"Sensor",
+    "pin":67,
+    "address":"1898",
+    "pullup":false,
+    "inverted":true,
+    "activateDelay":1,
+    "deactivateDelay":1
+  },
+  {
+    "name":"HLX_DTC01",
+    "class":"Sensor",
+    "pin":68,
+    "address":"1899",
+    "pullup":false,
+    "inverted":true,
+    "activateDelay":1,
+    "deactivateDelay":1
+  } 
+  
 ]
