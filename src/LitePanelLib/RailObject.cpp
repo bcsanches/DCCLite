@@ -19,11 +19,42 @@ namespace LitePanel
 		//empty
 	}	
 
-	SimpleRailObject::SimpleRailObject(const TileCoord_t &position, ObjectAngles angle, const SimpleRailTypes type):
-		RailObject(position, angle),
-		m_tType(type)
+	RailObject::RailObject(const rapidjson::Value &params) :
+		MapObject(params),
+		m_tAngle{params["angle"].GetInt()}
 	{
 		//empty
+	}
+
+	void RailObject::OnSave(JsonOutputStream_t& stream) const noexcept
+	{
+		MapObject::OnSave(stream);
+
+		stream.AddIntValue("angle", static_cast<int>(m_tAngle));
+	}
+
+	SimpleRailObject::SimpleRailObject(const TileCoord_t& position, ObjectAngles angle, const SimpleRailTypes type, const BlockSplitTypes splitTypes) :
+		RailObject(position, angle),
+		m_tType(type),
+		m_fBlockSplit(splitTypes)
+	{
+		//empty
+	}
+
+	SimpleRailObject::SimpleRailObject(const rapidjson::Value &params):
+		RailObject(params),		
+		m_tType{params["type"].GetInt()},
+		m_fBlockSplit{static_cast<uint8_t>(params["blockSplit"].GetInt())}
+	{
+		//empty
+	}
+
+	void SimpleRailObject::OnSave(JsonOutputStream_t& stream) const noexcept
+	{
+		RailObject::OnSave(stream);
+		
+		stream.AddIntValue("type", static_cast<int>(m_tType));
+		stream.AddIntValue("blockSplit", m_fBlockSplit);
 	}
 
 	JunctionRailObject::JunctionRailObject(const TileCoord_t &position, ObjectAngles angle, const JunctionTypes type):
@@ -31,5 +62,5 @@ namespace LitePanel
 		m_tType(type)
 	{
 		//empty
-	}
+	}	
 }

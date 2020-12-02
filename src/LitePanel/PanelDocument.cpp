@@ -11,9 +11,18 @@
 
 #include "PanelDocument.h"
 
+#include <fstream>
+#include <stdexcept>
+
 #include <wx/rtti.h>
 
-#include <stdexcept>
+#include <wx/log.h>
+
+#include <rapidjson/document.h>
+#include <rapidjson/istreamwrapper.h>
+
+#include "JsonCreator/StringWriter.h"
+#include "JsonCreator/Object.h"
 
 #include "EditCmds.h"
 #include "MapObject.h"
@@ -90,6 +99,50 @@ namespace LitePanel::Gui
 		m_upPanel = std::make_unique<LitePanel::Panel>(LitePanel::TileCoord_t{ 32, 32 });
 
 		return wxDocument::OnCreate(path, flags);
+	}
+
+	bool PanelDocument::DoSaveDocument(const wxString &filename)
+	{
+		std::ofstream newStateFile(filename.c_str().AsWChar(), std::ios_base::trunc);
+
+		JsonCreator::StringWriter responseWriter;
+
+		{
+			auto rootObj = JsonCreator::MakeObject(responseWriter);
+			
+			m_upPanel->Save(rootObj);			
+		}
+
+		newStateFile << responseWriter.GetString();
+
+		return true;
+	}
+
+	bool PanelDocument::DoOpenDocument(const wxString &filename)
+	{
+		std::ifstream docFile(filename.c_str().AsWChar());
+		if (!docFile)
+		{			
+			wxLogMessage("Cannot open %s", filename);
+			return false;
+		}			
+
+		rapidjson::IStreamWrapper isw(docFile);
+		rapidjson::Document data;
+		data.ParseStream(isw);
+
+		try
+		{
+			m_upPanel->Load(data);
+		}
+		catch (std::exception& e)
+		{
+			wxLogError("Cannot load document: %s", e.what());
+
+			return false;
+		}
+
+		return true;
 	}
 
 }

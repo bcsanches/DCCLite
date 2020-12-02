@@ -29,5 +29,5 @@ namespace LitePanel
 		glVertex2i(-static_cast<int>(viewInfo.m_uHalfTileScale), viewInfo.m_uHalfTileScale);
 
 		glEnd();
-	}
+	}	
 }

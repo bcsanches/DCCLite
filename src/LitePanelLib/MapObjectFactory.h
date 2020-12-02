@@ -10,23 +10,13 @@
 
 #pragma once
 
-#include "Point.h"
-
-#include "JsonCreator/Object.h"
-#include "JsonCreator/StringWriter.h"
+#include <memory>
 
 #include <rapidjson/document.h>
 
-namespace LitePanel
-{
-	class EditCmd;
-	class MapObject;
-	class Panel;
-	class RailObject;
+#include "LitePanelLibDefs.h"
 
-	constexpr auto DEFAULT_TILE_SIZE = 32;
-
-	typedef Point<uint8_t> TileCoord_t;
-
-	typedef JsonCreator::Object<JsonCreator::StringWriter> JsonOutputStream_t;
+namespace LitePanel::MapObjectFactory
+{	
+	std::unique_ptr<MapObject> Create(std::string_view name, const rapidjson::Value &params);
 }

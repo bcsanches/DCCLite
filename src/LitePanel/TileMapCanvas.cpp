@@ -107,8 +107,7 @@ namespace LitePanel::Gui
 		m_tViewInfo.m_uTileScale = g_tScales[m_tViewInfo.m_uZoomLevel].m_uScale;
 		m_tViewInfo.m_uHalfTileScale = g_tScales[m_tViewInfo.m_uZoomLevel].m_uScale / 2;
 		m_tViewInfo.m_uLineWidth = g_tScales[m_tViewInfo.m_uZoomLevel].m_uLineWidth;
-		m_tViewInfo.m_uDiagonalLineWidth = g_tScales[m_tViewInfo.m_uZoomLevel].m_uDiagonalLineWidth;
-		m_tViewInfo.m_tWorldSize = LitePanel::IntPoint_t{m_pclTileMap->GetSize()} * m_tViewInfo.m_uTileScale;
+		m_tViewInfo.m_uDiagonalLineWidth = g_tScales[m_tViewInfo.m_uZoomLevel].m_uDiagonalLineWidth;		
 
 		this->RequestDraw();
 	}

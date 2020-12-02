@@ -10,6 +10,8 @@
 
 #include "MapObject.h"
 
+#include "MapObjectFactory.h"
+
 namespace LitePanel
 {
 	MapObject::MapObject(const TileCoord_t &position):
@@ -17,4 +19,29 @@ namespace LitePanel
 	{
 		//empty
 	}	
+
+	MapObject::MapObject(const rapidjson::Value &params):
+		m_tPosition{params["x"].GetInt(), params["y"].GetInt() }
+	{
+		//empty
+	}
+
+	void MapObject::Save(JsonOutputStream_t &stream) const noexcept
+	{
+		stream.AddIntValue("x", m_tPosition.m_tX);
+		stream.AddIntValue("y", m_tPosition.m_tY);
+		stream.AddStringValue("classname", this->GetTypeName());
+
+		this->OnSave(stream);
+	}
+
+	void MapObject::OnSave(JsonOutputStream_t &stream) const noexcept
+	{
+		//empty
+	}
+
+	std::unique_ptr<MapObject> MapObject::Create(const rapidjson::Value &params)
+	{				
+		return MapObjectFactory::Create(params["classname"].GetString(), params);
+	}
 }

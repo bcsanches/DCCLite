@@ -13,4 +13,9 @@ rail_right_curve_090_icon BITMAP "resources/bitmaps/rail_right_curve_090.bmp"
 rail_right_curve_180_icon BITMAP "resources/bitmaps/rail_right_curve_180.bmp"
 rail_right_curve_270_icon BITMAP "resources/bitmaps/rail_right_curve_270.bmp"
 
+rail_terminal_straight_000_icon BITMAP "resources/bitmaps/rail_terminal_straight_000.bmp"
+rail_terminal_straight_090_icon BITMAP "resources/bitmaps/rail_terminal_straight_090.bmp"
+rail_terminal_straight_180_icon BITMAP "resources/bitmaps/rail_terminal_straight_180.bmp"
+rail_terminal_straight_270_icon BITMAP "resources/bitmaps/rail_terminal_straight_270.bmp"
+
 
