@@ -36,7 +36,12 @@ namespace SharpTerminal
                 row.Cells[1].Value = pin.SpecialName;
                 row.Cells[2].Value = pin.Decoder;
                 row.Cells[3].Value = pin.DecoderAddress;
-                row.Cells[4].Value = pin.Usage;                             
+                row.Cells[4].Value = pin.Usage;
+                
+                if((pin.DecoderBroken != null) && ((bool)pin.DecoderBroken))
+                {
+                    row.DefaultCellStyle.BackColor = Color.Red;
+                }
             }            
         }
     }

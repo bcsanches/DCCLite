@@ -187,7 +187,8 @@ void PinManager::Serialize(dcclite::JsonOutputStream_t &stream) const
 		{
 			pinObj.AddStringValue("decoder", pinInfo.m_pclUser->GetName());
 			pinObj.AddIntValue("decoderAddress", pinInfo.m_pclUser->GetAddress().GetAddress());
-			pinObj.AddStringValue("usage", pinInfo.m_pszUsage);
+			pinObj.AddBool("decoderBroken", pinInfo.m_pclUser->IsBroken());
+			pinObj.AddStringValue("usage", pinInfo.m_pszUsage);			
 		}
 
 		if(pinInfo.m_pszSpecialName)

@@ -38,6 +38,9 @@ namespace SharpTerminal
                 row.Cells[1].Value = decoders[pos].ClassName;
                 row.Cells[2].Value = decoders[pos].Name;
                 row.Cells[3].Value = decoders[pos].DeviceName;
+
+                if (decoders[pos].Broken)
+                    row.DefaultCellStyle.BackColor = Color.Red;
             }
 
             m_lbTitle.Text += " " + name;

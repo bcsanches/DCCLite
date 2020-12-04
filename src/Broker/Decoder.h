@@ -127,6 +127,11 @@ class Decoder: public dcclite::Object
 			return m_kRemoteState;
 		}		
 
+		inline bool IsBroken() const noexcept
+		{
+			return m_fBroken;
+		}
+
 		//
 		//IObject
 		//
@@ -147,6 +152,8 @@ class Decoder: public dcclite::Object
 		dcclite::DecoderStates m_kRemoteState = dcclite::DecoderStates::INACTIVE;		
 
 		std::string m_strLocationHint;
+
+		bool		m_fBroken = false;
 
 	protected:
 		IDevice_DecoderServices &m_rclDevice;

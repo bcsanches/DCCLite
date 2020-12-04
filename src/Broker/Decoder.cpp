@@ -44,10 +44,12 @@ Decoder::Decoder(const Class &decoderClass, const DccAddress &address, std::stri
 	m_rclDevice(dev)
 {	
 	auto it = params.FindMember("location");
-	if(it == params.MemberEnd())
-		return;
+	if(it != params.MemberEnd())
+		m_strLocationHint = it->value.GetString();
 
-	m_strLocationHint = it->value.GetString();
+	it = params.FindMember("broken");
+	if (it != params.MemberEnd())
+		m_fBroken = it->value.GetBool();
 }
 
 
@@ -64,7 +66,7 @@ void DccAddress::WriteConfig(dcclite::Packet &packet) const
 
 void Decoder::SyncRemoteState(dcclite::DecoderStates state)
 {
-	if (state != m_kRemoteState)
+	if((state != m_kRemoteState) && !m_fBroken)
 	{
 		m_kRemoteState = state;
 
@@ -81,6 +83,7 @@ void Decoder::Serialize(dcclite::JsonOutputStream_t &stream) const
 	stream.AddIntValue("address", m_iAddress.GetAddress());
 	stream.AddBool("remoteActive", m_kRemoteState == dcclite::DecoderStates::ACTIVE);
 	stream.AddStringValue("deviceName", m_rclDevice.GetDeviceName());
+	stream.AddBool("broken", m_fBroken);
 
 	if(!m_strLocationHint.empty())
 		stream.AddStringValue("locationHint", m_strLocationHint);

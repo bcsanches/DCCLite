@@ -40,7 +40,10 @@ namespace SharpTerminal
                 row.Cells[5].Value = decoder.LocationHint;
 
                 if (mismatch.MappedLocation != null)
-                    row.Cells[6].Value = mismatch.MappedLocation;                
+                    row.Cells[6].Value = mismatch.MappedLocation;
+
+                if (decoder.Broken)
+                    row.DefaultCellStyle.BackColor = Color.Red;
             }            
         }
     }
