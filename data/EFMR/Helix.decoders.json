@@ -53,7 +53,7 @@
   {
     "name":"HLX_DMT03",
     "class":"Sensor",
-    "pin":68,
+    "pin":69,
     "address":"1898",
     "pullup":false,
     "inverted":false,
@@ -63,7 +63,7 @@
   {
     "name":"HLX_DTC01",
     "class":"Sensor",
-    "pin":67,
+    "pin":68,
     "address":"1899",
     "pullup":false,
     "inverted":false,
@@ -73,7 +73,7 @@
   {
     "name":"HLX_DTC02",
     "class":"Sensor",
-    "pin":66,
+    "pin":67,
     "address":"1897",
     "pullup":false,
     "inverted":false,
@@ -84,7 +84,7 @@
   {
     "name":"HLX_DTC03",
     "class":"Sensor",
-    "pin":65,
+    "pin":66,
     "address":"1896",
     "pullup":false,
     "inverted":false,

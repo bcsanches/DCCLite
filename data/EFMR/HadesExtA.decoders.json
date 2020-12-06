@@ -399,7 +399,8 @@
     "pullup":true,
     "inverted":true,
     "activateDelay":0,
-    "deactivateDelay":0
+    "deactivateDelay":0,
+    "broken":true
   },
   {
     "name":"STA_DEXT_YT01",
