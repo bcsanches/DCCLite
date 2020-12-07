@@ -411,7 +411,8 @@
     "inverted":true,
     "activateDelay":0,
     "deactivateDelay":0,
-    "comment":"Sensor de corrente / nao instalado"
+    "comment":"Sensor de corrente / nao instalado",
+    "broken":true
   },
   {
     "name":"STA_DEXT_YT03",
@@ -422,7 +423,8 @@
     "inverted":true,
     "activateDelay":0,
     "deactivateDelay":0,
-    "comment":"Sensor de corrente / nao instalado / ultimo grupo de AMVs"
+    "comment":"Sensor de corrente / nao instalado / ultimo grupo de AMVs",
+    "broken":true
   },
   {
     "name":"STA_DEXT_YT02A",

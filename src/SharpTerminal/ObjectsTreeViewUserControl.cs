@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.Design.Serialization;
 using System.Json;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Windows.Forms;
@@ -188,16 +189,14 @@ namespace SharpTerminal
 
                     var servicesFolder = (RemoteFolder)await RemoteObjectManager.GetRemoteObjectAsync("/services");
                     var services = await servicesFolder.LoadChildrenAsync(mRequestManager);
-                    
-                    foreach(var service in services)
-                    {
-                        if(service.Name == "locationManager")
-                        {
-                            var locationNode = mTreeView.Nodes.Add("locations");
-                            locationNode.Tag = service;
 
-                            RegisterNode(service, locationNode);
-                        }
+                    var locationService = services.Where(x => x.Name == "locationManager").FirstOrDefault();
+                    if (locationService != null)
+                    {                                        
+                        var locationNode = mTreeView.Nodes.Add("locations");
+                        locationNode.Tag = locationService;
+
+                        RegisterNode(locationService, locationNode);                        
                     }
                 }
                 else if (args.State == ConnectionState.DISCONNECTED)
