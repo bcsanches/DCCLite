@@ -29,11 +29,11 @@
     "class": "ServoTurnout",
     "address": "1853",
     "pin": 19,
-    "inverted": false,
+    "inverted": true,
     "powerPin": 47,
     "frogPin": 46,
-    "invertedFrog": true,
-    "operationTime": 1000,
+    "invertedFrog": false,
+    "operationTime": 3000,
     "comment": "TC join"
   },
 
