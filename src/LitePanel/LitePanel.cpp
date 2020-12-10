@@ -509,9 +509,39 @@ namespace LitePanel::Gui
 			"Creates a right curve track section"
 		);
 
-				
+		m_clToolManager.AddTool(
+			toolBarLeft1Index,
+			"track terminal",
+			wxBITMAP(rail_terminal_straight_180_icon),
+			[this](const LitePanel::TileCoord_t &coord) -> void
+			{
+				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
+					coord,
+					LitePanel::ObjectAngles::EAST,
+					LitePanel::SimpleRailTypes::STRAIGHT,
+					LitePanel::kBLOCK_SPLIT_RIGHT
+				));
+			},
+			"Straight track section with block split",
+			"Creates a block split track section"
+		);
 
-			
+		m_clToolManager.AddTool(
+			toolBarLeft2Index,
+			"track",
+			wxBITMAP(rail_terminal_straight_000_icon),
+			[this](const LitePanel::TileCoord_t &coord) -> void
+			{
+				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
+					coord,
+					LitePanel::ObjectAngles::EAST,
+					LitePanel::SimpleRailTypes::STRAIGHT,
+					LitePanel::kBLOCK_SPLIT_LEFT
+				));
+			},
+			"Straight track section with block split",
+				"Creates a block split track section"
+		);
 
 		//toolBarLeft1->AddSeparator();		
 		//toolBarLeft2->AddSeparator();

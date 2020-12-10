@@ -220,7 +220,28 @@ namespace LitePanel::Gui
 					//glEnable(GL_LINE_SMOOTH);
 					glLineWidth(m_tViewInfo.m_uLineWidth);					
 
-					glRotatef(static_cast<GLfloat>(rail.GetAngle()), 0, 0, 1);					
+					glRotatef(static_cast<GLfloat>(rail.GetAngle()), 0, 0, 1);		
+
+					const auto splitFlags = rail.GetBlockSplit();
+					if (splitFlags & kBLOCK_SPLIT_LEFT)
+					{
+						glBegin(GL_LINES);
+
+						glVertex2f(-static_cast<int>(m_tViewInfo.m_uHalfTileScale), -static_cast<int>(m_tViewInfo.m_uHalfTileScale)/1.25f);
+						glVertex2f(-static_cast<int>(m_tViewInfo.m_uHalfTileScale), m_tViewInfo.m_uHalfTileScale /1.25f);
+
+						glEnd();
+					}
+
+					if (splitFlags & kBLOCK_SPLIT_RIGHT)
+					{
+						glBegin(GL_LINES);
+
+						glVertex2f(m_tViewInfo.m_uHalfTileScale, -static_cast<int>(m_tViewInfo.m_uHalfTileScale) / 1.25f);
+						glVertex2f(m_tViewInfo.m_uHalfTileScale, m_tViewInfo.m_uHalfTileScale / 1.25f);
+
+						glEnd();
+					}
 
 					glBegin(GL_LINES);
 
@@ -268,10 +289,21 @@ namespace LitePanel::Gui
 					if (rail.GetType() == SimpleRailTypes::CURVE_RIGHT)
 						glScalef(1, -1, 1);
 
+					const auto splitFlags = rail.GetBlockSplit();
+					if (splitFlags & kBLOCK_SPLIT_LEFT)
+					{
+						glBegin(GL_LINES);
+
+						glVertex2f(-static_cast<int>(m_tViewInfo.m_uHalfTileScale), -static_cast<int>(m_tViewInfo.m_uHalfTileScale) / 1.25f);
+						glVertex2f(-static_cast<int>(m_tViewInfo.m_uHalfTileScale), m_tViewInfo.m_uHalfTileScale / 1.25f);
+
+						glEnd();
+					}
+
 					glBegin(GL_LINES);
 
 					glVertex2i(-static_cast<int>(m_tViewInfo.m_uHalfTileScale), 0);
-					glVertex2i(0, 0);
+					glVertex2i(1, 0);
 
 					glEnd();
 
