@@ -202,6 +202,7 @@ namespace LitePanel::Gui
 	void LiteApp::SetCurrentView(PanelDocumentView &view)
 	{
 		m_pclMainFrame->SetCurrentView(view);		
+		view.SetFrame(m_pclMainFrame);
 	}
 
 	void LiteApp::RemoveCurrentView()

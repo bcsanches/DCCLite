@@ -66,6 +66,8 @@ namespace LitePanel::Gui
 
 		std::reverse(m_arUndoCmds.begin(), m_arUndoCmds.end());
 
+		m_rclDocument.Modify(true);
+
 		return true;
 	}
 
