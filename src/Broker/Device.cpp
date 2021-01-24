@@ -640,7 +640,7 @@ bool Device::Load()
 
 	//if this point is reached, data is load, so store new token
 	m_ConfigToken = storedConfigToken;
-	dcclite::Log::Trace("[Device::Device] {} ready.", this->GetName());
+	dcclite::Log::Info("[Device::Device] {} loaded.", this->GetName());
 
 	return true;
 }

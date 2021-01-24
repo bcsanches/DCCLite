@@ -21,7 +21,7 @@
     "frogPin":62,
     "invertedFrog":true,
     "operationTime":1000,
-    "range":20
+    "range":25
   },
   {
     "name":"STA_T13",

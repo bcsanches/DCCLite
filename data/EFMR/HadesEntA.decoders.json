@@ -1,15 +1,4 @@
-[   
-  {
-    "name":"HLXIntT01",
-    "class":"ServoTurnout",
-    "address":"1850",
-    "pin": 2,
-    "inverted": false,
-    "powerPin":22,    
-    "invertedFrog":true,
-    "operationTime":1000,
-    "comment":"Frogpin 24 - disabled"
-  },
+[    
   {
     "name":"STA_T01",
     "class":"ServoTurnout",
@@ -75,7 +64,8 @@
     "powerPin":31,
     "frogPin":33,
     "invertedFrog":true,
-    "operationTime":1000
+    "operationTime":1000,
+    "range":20
   },
   {
     "name":"STA_T07",
