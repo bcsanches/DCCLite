@@ -81,6 +81,11 @@ namespace LitePanel
 				return TYPE_NAME;
 			}
 
+			inline uint8_t GetBlockSplit() const noexcept
+			{
+				return m_fBlockSplit;
+			}
+
 			static constexpr char* TYPE_NAME = "SimpleRailObject";
 
 		protected:
