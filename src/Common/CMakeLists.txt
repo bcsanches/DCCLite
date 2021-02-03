@@ -20,6 +20,7 @@ set(Common_SRCS
 	GuidUtils.cpp
 	LogUtils.cpp
 	NetMessenger.cpp
+	NmraUtil.cpp
 	Object.cpp
 	Sha1.cpp
 	PathUtils.cpp	
@@ -38,6 +39,7 @@ set(Common_HDRS
 	Log.h
 	LogUtils.h
 	NetMessenger.h
+	NmraUtil.h
 	Object.h
 	PathUtils.h
 	Sha1.h

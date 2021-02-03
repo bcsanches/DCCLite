@@ -180,6 +180,40 @@ namespace dcclite
 			NumChar2Num(digit);
 	}
 
+	static int Str2Num(const char *buffer, const bool hex)
+	{
+		int dest = 0;
+		auto base = hex ? 16 : 10;
+
+		for (unsigned i = 0; buffer[i]; ++i)
+		{
+			dest = (dest * base) + Char2Num(buffer[i]);
+		}
+
+		return dest;
+	}
+
+	Tokens Parser::GetHexNumber(int &dest)
+	{
+		char buffer[11] = "0x";
+
+		auto token = this->GetToken(buffer + 2, sizeof(buffer) - 2);
+		if ((token != TOKEN_NUMBER) && (token != TOKEN_HEX_NUMBER))
+		{
+			if (token != TOKEN_ID)
+				return token;
+
+			Parser parser(buffer);
+
+			return parser.GetNumber(dest);
+		}
+
+		dest = Str2Num(buffer+2, TOKEN_HEX_NUMBER);
+
+		return TOKEN_NUMBER;
+	}
+
+
 	Tokens Parser::GetNumber(int &dest)
 	{
 		char buffer[9];
@@ -188,18 +222,7 @@ namespace dcclite
 		if ((token != TOKEN_NUMBER) && (token != TOKEN_HEX_NUMBER))
 			return token;
 
-#if 1				
-		dest = 0;
-		auto base = token == TOKEN_HEX_NUMBER ? 16 : 10;		
-		
-		for (unsigned i = 0; buffer[i]; ++i)
-		{
-			dest = (dest * base) + Char2Num(buffer[i]);
-		}
-		
-#else
-		sscanf(buffer, (token == TOKEN_HEX_NUMBER) ? "%x" : "%d", &dest);		
-#endif
+		dest = Str2Num(buffer, token == TOKEN_HEX_NUMBER);		
 
 		return TOKEN_NUMBER;
 	}

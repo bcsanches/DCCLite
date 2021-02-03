@@ -6,6 +6,7 @@
 #include "Decoder.h"
 #include "DccLiteService.h"
 #include "NetMessenger.h"
+#include "NmraUtil.h"
 #include "OutputDecoder.h"
 #include "Parser.h"
 #include "SensorDecoder.h"
@@ -176,6 +177,76 @@ bool DccppClient::Update()
 				case 'c':
 					//current
 					m_clMessenger.Send(m_clAddress, "<a 0>");
+					break;
+
+
+				case 'M':
+					Log::Debug("[DccppClient::Update] Custom packet cmd {}, msg: {}", cmd, msg);
+					{
+						int num1;
+
+						if (parser.GetHexNumber(num1) != TOKEN_NUMBER)
+						{
+							Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER 0 for: {}", msg);
+							goto ERROR_RESPONSE;
+						}
+
+						if (num1 != 0)
+						{
+							Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER 0 for: {}", msg);
+							goto ERROR_RESPONSE;
+						}
+
+						if (parser.GetHexNumber(num1) != TOKEN_NUMBER)
+						{
+							Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER 1 for: {}", msg);
+							goto ERROR_RESPONSE;
+						}						
+
+#if 0
+						if ((0xC0 & num1) != 0x80) 
+						{
+							Log::Error("[DccppClient::Update] Expected accessory address: {}", msg);
+							goto ERROR_RESPONSE;
+						}
+#endif
+
+						int num2;
+						if (parser.GetHexNumber(num2) != TOKEN_NUMBER)
+						{
+							Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER 2 for: {}", msg);
+							goto ERROR_RESPONSE;
+						}
+
+						if ((num2 & 0x01) != 0x01)
+						{
+							Log::Error("[DccppClient::Update] Expected signal decoder address: {}", msg);
+							goto ERROR_RESPONSE;
+						}
+
+						int num3;
+						if (parser.GetHexNumber(num3) != TOKEN_NUMBER)
+						{
+							Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER 3 for: {}", msg);
+							goto ERROR_RESPONSE;
+						}
+
+						if ((num3 & 0xE0) != 0x00)
+						{
+							Log::Error("[DccppClient::Update] Expected signal decoder 2 address: {}", msg);
+							goto ERROR_RESPONSE;
+						}		
+
+						uint8_t packet[3] = { static_cast<uint8_t>(num1), static_cast<uint8_t>(num2), static_cast<uint8_t>(num3) };
+
+						uint16_t address;
+						dcclite::SignalAspects packetAspect;
+
+						std::tie(address, packetAspect) = ExtractSignalDataFromPacket(packet);									
+
+						Log::Debug("[DccppClient::Update] Signal decoder {} cmd {}", address, num3);
+					}
+
 					break;
 
 				case 's':

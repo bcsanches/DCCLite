@@ -38,8 +38,10 @@ static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 	return true;
 }
 
+
+
 int main(int argc, char **argv)
-{				
+{			
 	try
 	{ 
 		dcclite::PathUtils::InitAppFolders("Broker");
