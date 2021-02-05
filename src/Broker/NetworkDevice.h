@@ -14,7 +14,6 @@
 #include <variant>
 #include <vector>
 
-#include "Clock.h"
 #include "IDccLiteService.h"
 #include "Device.h"
 #include "IDevice.h"
@@ -47,7 +46,7 @@ class NetworkDevice: public Device, public IDevice_DecoderServices
 
 		~NetworkDevice();
 
-		void Update(const dcclite::Clock &clock);
+		void Update(const dcclite::Clock &clock) override;
 
 		void AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::NetworkAddress remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken);
 

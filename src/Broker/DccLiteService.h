@@ -23,6 +23,7 @@
 
 #include "Socket.h"
 
+class Device;
 class NetworkDevice;
 class LocationManager;
 class OutputDecoder;
@@ -80,7 +81,7 @@ class DccLiteService : public Service, private IDccLite_DeviceServices, private 
 
 		void OnNet_Packet(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType);
 
-		NetworkDevice *TryFindDeviceByName(std::string_view name);
+		Device *TryFindDeviceByName(std::string_view name);
 
 		NetworkDevice *TryFindDeviceSession(const dcclite::Guid &guid);
 

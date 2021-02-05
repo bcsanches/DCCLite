@@ -29,6 +29,10 @@
         {
             "name": "Helix",
             "class": "ArduinoMega"
+        },
+        {
+            "name": "SignalController",
+            "class": "Virtual"
         }
       ],
       "locations": [      

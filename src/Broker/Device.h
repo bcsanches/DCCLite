@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include "Clock.h"
 #include "Object.h"
 
 #include <rapidjson/document.h>
@@ -22,6 +23,8 @@ class Device : public dcclite::FolderObject
 	public:
 		Device(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project);
 		Device(std::string name, IDccLite_DeviceServices &dccService, const Project &project);	
+
+		virtual void Update(const dcclite::Clock &clock) = 0;
 
 	protected:
 		IDccLite_DeviceServices &m_clDccService;

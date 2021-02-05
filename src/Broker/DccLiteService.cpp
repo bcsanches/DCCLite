@@ -22,6 +22,7 @@
 #include "Packet.h"
 #include "SensorDecoder.h"
 #include "TurnoutDecoder.h"
+#include "VirtualDevice.h"
 
 static ServiceClass dccLiteService("DccLite", 
 	[](const ServiceClass &serviceClass, const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) ->
@@ -57,8 +58,12 @@ DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::stri
 		for (auto &device : devicesData.GetArray())
 		{
 			auto nodeName = device["name"].GetString();
+			auto className = device["class"].GetString();
 
-			m_pDevices->AddChild(std::make_unique<NetworkDevice>(nodeName, *static_cast<IDccLite_DeviceServices *>(this), device, project));
+			if (strcmp(className, "Virtual"))
+				m_pDevices->AddChild(std::make_unique<NetworkDevice>(nodeName, *static_cast<IDccLite_DeviceServices *>(this), device, project));
+			else
+				m_pDevices->AddChild(std::make_unique<VirtualDevice>(nodeName, *static_cast<IDccLite_DeviceServices *>(this), device, project));
 		}
 	}
 	catch (std::exception &)
@@ -175,9 +180,9 @@ void DccLiteService::Device_NotifyInternalItemDestroyed(const dcclite::IObject &
 	this->NotifyItemDestroyed(item);
 }
 
-NetworkDevice *DccLiteService::TryFindDeviceByName(std::string_view name)
+Device *DccLiteService::TryFindDeviceByName(std::string_view name)
 {	
-	return static_cast<NetworkDevice *>(m_pDevices->TryGetChild(name));
+	return static_cast<Device *>(m_pDevices->TryGetChild(name));
 }
 
 NetworkDevice *DccLiteService::TryFindDeviceSession(const dcclite::Guid &guid)
@@ -224,13 +229,14 @@ void DccLiteService::OnNet_Hello(const dcclite::Clock &clock, const dcclite::Net
 	dcclite::Log::Info("[{}::DccLiteService::OnNet_Hello] received hello from {}, starting handshake", this->GetName(), name);
 
 	//lookup device
-	auto dev = this->TryFindDeviceByName(name);
+	auto dev = this->TryFindDeviceByName(name);	
+	NetworkDevice *netDevice;
 	if (dev == nullptr)
 	{
 		//no device, create a temp one
 		dcclite::Log::Warn("[{}::DccLiteService::OnNet_Hello] {} is not on config", this->GetName(), name);
 
-		dev = static_cast<NetworkDevice*>(m_pDevices->AddChild(
+		netDevice = static_cast<NetworkDevice*>(m_pDevices->AddChild(
 			std::make_unique<NetworkDevice>(
 				name, 
 				*static_cast<IDccLite_DeviceServices *>(this), 
@@ -238,8 +244,18 @@ void DccLiteService::OnNet_Hello(const dcclite::Clock &clock, const dcclite::Net
 			)
 		));
 	}	
+	else
+	{
+		netDevice = dynamic_cast<NetworkDevice *>(dev);
+		if (netDevice == nullptr)
+		{
+			dcclite::Log::Error("[{}::DccLiteService::OnNet_Hello] {} is not a network device, cannot accept connection. Please check config.", this->GetName(), name);
 
-	dev->AcceptConnection(clock.Now(), senderAddress, remoteSessionToken, remoteConfigToken);	
+			return;
+		}
+	}
+
+	netDevice->AcceptConnection(clock.Now(), senderAddress, remoteSessionToken, remoteConfigToken);
 }
 
 NetworkDevice *DccLiteService::TryFindPacketDestination(dcclite::Packet &packet)
@@ -454,14 +470,12 @@ void DccLiteService::Update(const dcclite::Clock &clock)
 		}
 	}
 
-#if 1
 	auto enumerator = this->m_pDevices->GetEnumerator();
 	while (enumerator.MoveNext())
 	{
-		auto dev = enumerator.TryGetCurrent<NetworkDevice>();
+		auto dev = enumerator.TryGetCurrent<Device>();
 
 		dev->Update(clock);
 	}
-#endif
 }
 

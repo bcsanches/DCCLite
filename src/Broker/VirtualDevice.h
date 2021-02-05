@@ -18,6 +18,6 @@ class VirtualDevice : public Device
 		VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project);
 		VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const Project &project);
 
-		~VirtualDevice();
+		void Update(const dcclite::Clock &clock) override;
 };
 
