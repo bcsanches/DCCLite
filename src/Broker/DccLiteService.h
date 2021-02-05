@@ -23,7 +23,7 @@
 
 #include "Socket.h"
 
-class Device;
+class NetworkDevice;
 class LocationManager;
 class OutputDecoder;
 class SensorDecoder;
@@ -80,11 +80,11 @@ class DccLiteService : public Service, private IDccLite_DeviceServices, private 
 
 		void OnNet_Packet(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType);
 
-		Device *TryFindDeviceByName(std::string_view name);
+		NetworkDevice *TryFindDeviceByName(std::string_view name);
 
-		Device *TryFindDeviceSession(const dcclite::Guid &guid);
+		NetworkDevice *TryFindDeviceSession(const dcclite::Guid &guid);
 
-		Device *TryFindPacketDestination(dcclite::Packet &packet);	
+		NetworkDevice *TryFindPacketDestination(dcclite::Packet &packet);	
 
 		void DispatchEvent(const DccLiteEvent &event) const;
 
@@ -98,8 +98,8 @@ class DccLiteService : public Service, private IDccLite_DeviceServices, private 
 		//		
 		void Device_SendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet& packet) override;
 
-		void Device_RegisterSession(Device& dev, const dcclite::Guid& configToken) override;
-		void Device_UnregisterSession(Device& dev, const dcclite::Guid& sessionToken) override;
+		void Device_RegisterSession(NetworkDevice& dev, const dcclite::Guid& configToken) override;
+		void Device_UnregisterSession(NetworkDevice& dev, const dcclite::Guid& sessionToken) override;
 
 		Decoder& Device_CreateDecoder(
 			IDevice_DecoderServices &dev,

@@ -22,7 +22,7 @@ namespace dcclite
 
 class DccAddress;
 class Decoder;
-class Device;
+class NetworkDevice;
 class IDevice_DecoderServices;
 class LocationManager;
 
@@ -31,7 +31,7 @@ class DccLiteEvent
 	public:
 		struct DeviceEvent
 		{
-			const Device *m_pclDevice;
+			const NetworkDevice *m_pclDevice;
 		};
 
 		struct ItemEvent
@@ -97,8 +97,8 @@ class IDccLite_DeviceServices
 		
 		virtual void Device_SendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet& packet) = 0;
 
-		virtual void Device_RegisterSession(Device& dev, const dcclite::Guid& configToken) = 0;
-		virtual void Device_UnregisterSession(Device& dev, const dcclite::Guid& sessionToken) = 0;				
+		virtual void Device_RegisterSession(NetworkDevice& dev, const dcclite::Guid& configToken) = 0;
+		virtual void Device_UnregisterSession(NetworkDevice& dev, const dcclite::Guid& sessionToken) = 0;				
 
 		virtual void Device_NotifyInternalItemCreated(const dcclite::IObject &item) const = 0;
 		virtual void Device_NotifyInternalItemDestroyed(const dcclite::IObject &item) const = 0;

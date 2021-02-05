@@ -8,6 +8,7 @@ set(Broker_SRCS
   FileWatcher.cpp
   LocationManager.cpp
   main.cpp  
+  NetworkDevice.cpp
   OutputDecoder.cpp
   PinManager.cpp
   Project.cpp
@@ -18,6 +19,7 @@ set(Broker_SRCS
   TerminalCmd.cpp
   TerminalService.cpp
   TurnoutDecoder.cpp
+  VirtualDevice.cpp
 )
 
 set(Broker_HDRS
@@ -30,6 +32,7 @@ set(Broker_HDRS
   IDccLiteService.h
   IDevice.h
   LocationManager.h
+  NetworkDevice.h
   OutputDecoder.h
   PinManager.h
   Project.h
@@ -40,6 +43,7 @@ set(Broker_HDRS
   TerminalCmd.h
   TerminalService.h
   TurnoutDecoder.h
+  VirtualDevice.h
 )
 
 add_executable(Broker  ${Broker_SRCS} ${Broker_HDRS})

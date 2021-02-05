@@ -23,7 +23,7 @@
 
 #include "Broker.h"
 #include "DccLiteService.h"
-#include "Device.h"
+#include "NetworkDevice.h"
 #include "NetMessenger.h"
 #include "OutputDecoder.h"
 #include "SpecialFolders.h"

@@ -14,7 +14,7 @@
 
 #include <Log.h>
 
-#include "Device.h"
+#include "NetworkDevice.h"
 #include "FmtUtils.h"
 #include "GuidUtils.h"
 #include "LocationManager.h"
@@ -58,7 +58,7 @@ DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::stri
 		{
 			auto nodeName = device["name"].GetString();
 
-			m_pDevices->AddChild(std::make_unique<Device>(nodeName, *static_cast<IDccLite_DeviceServices *>(this), device, project));
+			m_pDevices->AddChild(std::make_unique<NetworkDevice>(nodeName, *static_cast<IDccLite_DeviceServices *>(this), device, project));
 		}
 	}
 	catch (std::exception &)
@@ -175,14 +175,14 @@ void DccLiteService::Device_NotifyInternalItemDestroyed(const dcclite::IObject &
 	this->NotifyItemDestroyed(item);
 }
 
-Device *DccLiteService::TryFindDeviceByName(std::string_view name)
+NetworkDevice *DccLiteService::TryFindDeviceByName(std::string_view name)
 {	
-	return static_cast<Device *>(m_pDevices->TryGetChild(name));
+	return static_cast<NetworkDevice *>(m_pDevices->TryGetChild(name));
 }
 
-Device *DccLiteService::TryFindDeviceSession(const dcclite::Guid &guid)
+NetworkDevice *DccLiteService::TryFindDeviceSession(const dcclite::Guid &guid)
 {
-	return static_cast<Device *>(m_pSessions->TryResolveChild(dcclite::GuidToString(guid)));
+	return static_cast<NetworkDevice *>(m_pSessions->TryResolveChild(dcclite::GuidToString(guid)));
 }
 
 void DccLiteService::OnNet_Discovery(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet)
@@ -230,8 +230,8 @@ void DccLiteService::OnNet_Hello(const dcclite::Clock &clock, const dcclite::Net
 		//no device, create a temp one
 		dcclite::Log::Warn("[{}::DccLiteService::OnNet_Hello] {} is not on config", this->GetName(), name);
 
-		dev = static_cast<Device*>(m_pDevices->AddChild(
-			std::make_unique<Device>(
+		dev = static_cast<NetworkDevice*>(m_pDevices->AddChild(
+			std::make_unique<NetworkDevice>(
 				name, 
 				*static_cast<IDccLite_DeviceServices *>(this), 
 				m_rclProject
@@ -242,7 +242,7 @@ void DccLiteService::OnNet_Hello(const dcclite::Clock &clock, const dcclite::Net
 	dev->AcceptConnection(clock.Now(), senderAddress, remoteSessionToken, remoteConfigToken);	
 }
 
-Device *DccLiteService::TryFindPacketDestination(dcclite::Packet &packet)
+NetworkDevice *DccLiteService::TryFindPacketDestination(dcclite::Packet &packet)
 {	
 	dcclite::Guid sessionToken = packet.ReadGuid();	
 
@@ -281,7 +281,7 @@ void DccLiteService::Device_SendPacket(const dcclite::NetworkAddress destination
 	}
 }
 
-void DccLiteService::Device_RegisterSession(Device &dev, const dcclite::Guid &sessionToken)
+void DccLiteService::Device_RegisterSession(NetworkDevice &dev, const dcclite::Guid &sessionToken)
 {
 	auto session = m_pSessions->AddChild(std::make_unique<dcclite::Shortcut>(dcclite::GuidToString(sessionToken), dev));
 
@@ -294,7 +294,7 @@ void DccLiteService::Device_RegisterSession(Device &dev, const dcclite::Guid &se
 	this->DispatchEvent(event);	
 }
 
-void DccLiteService::Device_UnregisterSession(Device& dev, const dcclite::Guid &sessionToken)
+void DccLiteService::Device_UnregisterSession(NetworkDevice& dev, const dcclite::Guid &sessionToken)
 {	
 	auto session = m_pSessions->RemoveChild(dcclite::GuidToString(sessionToken));	
 
@@ -458,7 +458,7 @@ void DccLiteService::Update(const dcclite::Clock &clock)
 	auto enumerator = this->m_pDevices->GetEnumerator();
 	while (enumerator.MoveNext())
 	{
-		auto dev = enumerator.TryGetCurrent<Device>();
+		auto dev = enumerator.TryGetCurrent<NetworkDevice>();
 
 		dev->Update(clock);
 	}

@@ -8,18 +8,21 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "Device.h"
+#include "VirtualDevice.h"
 
-Device::Device(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project) :
-	FolderObject{ std::move(name) },
-	m_clDccService{ dccService }
+VirtualDevice::VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project) :
+	Device{ std::move(name), dccService, params, project }	
 {
 	//empty
 }
 
-Device::Device(std::string name, IDccLite_DeviceServices &dccService, const Project &project) :
-	FolderObject{ std::move(name) },
-	m_clDccService{dccService}
+VirtualDevice::VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const Project &project) :
+	Device{ std::move(name), dccService, project }
 {
 	//emtpy
+}
+
+VirtualDevice::~VirtualDevice()
+{
+
 }
