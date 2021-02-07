@@ -1,0 +1,31 @@
+[
+  {
+    "name":"STC_SIG_12",
+    "class":"Signal",    
+    "address":"1770",  
+    "heads":
+    {
+        "red":"STC_HR12",
+        "green":"STC_HG12"
+    },        
+    "aspects":
+    [
+        {
+            "name":"stop",
+            "heads":
+            {
+                "red":true
+                "green":false
+            }          
+        },
+        {
+            "name":"clear"
+            "heads":
+            {
+                "red":false,
+                "green":true
+            }
+        }        
+    ]  
+  }
+]
