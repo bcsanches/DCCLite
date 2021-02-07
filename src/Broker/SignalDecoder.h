@@ -28,12 +28,7 @@ class SignalDecoder : public Decoder
 			Decoder(decoderClass, address, name, owner, dev, params)
 		{
 			//empty
-		}		
-
-		dcclite::DecoderTypes GetType() const noexcept override
-		{
-			return dcclite::DecoderTypes::DEC_SIGNAL;
-		}					
+		}						
 
 		//
 		//IObject

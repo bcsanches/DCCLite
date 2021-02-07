@@ -7,29 +7,43 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace SharpTerminal
-{   
-    public class RemoteDecoder: RemoteObject
-    {           
+{
+    public class RemoteDecoder : RemoteObject
+    {
         public int Address { get; }
         public string LocationHint { get; }
 
         public bool Broken { get; set; }
 
-        public RemoteDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef):
+        public RemoteDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
             base(name, className, path, internalId, parentInternalId)
         {
             DeviceName = objectDef["deviceName"];
 
             Address = objectDef["address"];
 
-            if(objectDef.ContainsKey("locationHint"))
+            if (objectDef.ContainsKey("locationHint"))
                 LocationHint = objectDef["locationHint"];
 
             //Only remote decoders supports broken
-            if(objectDef.ContainsKey("broken"))
+            if (objectDef.ContainsKey("broken"))
                 Broken = objectDef["broken"];
-        }           
+        }
 
         public string DeviceName { get; }
+    }
+
+    public class RemoteSignalDecoder : RemoteDecoder
+    {
+        public RemoteSignalDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
+            base(name, className, path, internalId, parentInternalId, objectDef)
+        {
+
+        }
+
+        public override string TryGetIconName()
+        {
+            return DefaultIcons.SIGNAL_ICON;
+        }
     }
 }

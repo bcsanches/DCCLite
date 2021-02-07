@@ -101,9 +101,7 @@ class Decoder: public dcclite::Object
 		inline const std::string &GetLocationHint() const
 		{
 			return m_strLocationHint;
-		}		
-
-		virtual dcclite::DecoderTypes GetType() const noexcept = 0;		
+		}				
 
 		//
 		//IObject

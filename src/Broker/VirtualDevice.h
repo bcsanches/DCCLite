@@ -20,6 +20,15 @@ class VirtualDevice : public Device
 
 		void Update(const dcclite::Clock &clock) override;	
 
+		//
+		//IObject
+		//
+		//
+		const char *GetTypeName() const noexcept override
+		{
+			return "VirtualDevice";
+		}
+
 	protected:
 		void CheckLoadedDecoder(Decoder &decoder) override;
 };

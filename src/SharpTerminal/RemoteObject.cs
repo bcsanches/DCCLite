@@ -281,7 +281,11 @@ namespace SharpTerminal
                     obj = new RemoteDecoder(name, className, path, id, parentInternalId, objectDef);
                     break;
 
-                case "Device":
+                case "SignalDecoder":
+                    obj = new RemoteSignalDecoder(name, className, path, id, parentInternalId, objectDef);
+                    break;
+
+                case "NetworkDevice":                
                     obj = new RemoteDevice(name, className, path, id, parentInternalId, objectDef);
                     break;
 

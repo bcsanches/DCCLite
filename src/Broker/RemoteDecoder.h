@@ -65,8 +65,10 @@ class RemoteDecoder: public Decoder
 		//
 		//
 		
-
 		void Serialize(dcclite::JsonOutputStream_t &stream) const override;		
+
+	protected:
+		virtual dcclite::DecoderTypes GetType() const noexcept = 0;
 
 	private:				
 		dcclite::DecoderStates m_kRemoteState = dcclite::DecoderStates::INACTIVE;				

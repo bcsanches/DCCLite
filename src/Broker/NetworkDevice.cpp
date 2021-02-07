@@ -536,7 +536,7 @@ void NetworkDevice::OnlineState::Update(NetworkDevice &self, const dcclite::Cloc
 
 void NetworkDevice::Serialize(dcclite::JsonOutputStream_t &stream) const
 {
-	FolderObject::Serialize(stream);
+	Device::Serialize(stream);
 
 	stream.AddBool("registered", m_fRegistered);
 	stream.AddStringValue("configToken", dcclite::GuidToString(m_ConfigToken));

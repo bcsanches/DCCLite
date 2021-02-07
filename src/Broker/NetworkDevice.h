@@ -61,9 +61,9 @@ class NetworkDevice: public Device, public INetworkDevice_DecoderServices
 		//
 		//
 
-		virtual const char *GetTypeName() const noexcept
+		const char *GetTypeName() const noexcept override
 		{
-			return "Device";
+			return "NetworkDevice";
 		}
 
 		virtual void Serialize(dcclite::JsonOutputStream_t &stream) const;
