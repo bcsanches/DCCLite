@@ -139,6 +139,8 @@ void Device::Load()
 
 			auto &decoder = m_clDccService.Device_CreateDecoder(*this, className, address, decoderName, element);
 
+			this->CheckLoadedDecoder(decoder);
+
 			m_vecDecoders.push_back(&decoder);
 
 			auto decShortcut = this->AddChild(std::make_unique<dcclite::Shortcut>(std::string(decoder.GetName()), decoder));
@@ -159,3 +161,4 @@ void Device::Load()
 	m_ConfigToken = storedConfigToken;
 	dcclite::Log::Info("[Device::Device] {} loaded.", this->GetName());
 }
+

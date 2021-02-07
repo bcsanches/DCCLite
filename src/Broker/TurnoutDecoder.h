@@ -63,7 +63,7 @@ class ServoTurnoutDecoder : public TurnoutDecoder
 
 		void Serialize(dcclite::JsonOutputStream_t& stream) const override
 		{
-			OutputDecoder::Serialize(stream);
+			TurnoutDecoder::Serialize(stream);
 
 			stream.AddIntValue("pin", m_clPin.Raw());
 

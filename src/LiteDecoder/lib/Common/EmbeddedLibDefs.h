@@ -31,7 +31,8 @@ namespace dcclite
 		DEC_NULL = 0,
 		DEC_OUTPUT = 1,
 		DEC_SENSOR = 2,
-		DEC_SERVO_TURNOUT = 3
+		DEC_SERVO_TURNOUT = 3,
+		DEC_SIGNAL = 4			//Only virtual, not implemented on Arduino
 	};
 
 	enum class DecoderStates

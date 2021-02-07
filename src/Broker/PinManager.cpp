@@ -10,7 +10,7 @@
 
 #include "PinManager.h"
 
-#include "Decoder.h"
+#include "RemoteDecoder.h"
 
 #include <stdexcept>
 
@@ -115,7 +115,7 @@ PinManager::PinManager(ArduinoBoards board)
 	}
 }
 
-void PinManager::RegisterPin(const Decoder &decoder, dcclite::BasicPin pin, const char *usage)
+void PinManager::RegisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage)
 {
 	if (!pin)
 		throw std::invalid_argument(fmt::format("[PinManager::RegisterPin] Decoder tried to register an null pin to use as {}", decoder.GetName(), usage));
@@ -141,7 +141,7 @@ void PinManager::RegisterPin(const Decoder &decoder, dcclite::BasicPin pin, cons
 	info.m_pszUsage = usage;
 }
 
-void PinManager::UnregisterPin(const Decoder &decoder, dcclite::BasicPin pin)
+void PinManager::UnregisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin)
 {
 	//ignore, like deleting a null pointer
 	if(!pin)

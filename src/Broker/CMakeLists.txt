@@ -12,8 +12,10 @@ set(Broker_SRCS
   OutputDecoder.cpp
   PinManager.cpp
   Project.cpp
+  RemoteDecoder.cpp
   SensorDecoder.cpp  
   Service.cpp
+  SignalDecoder.cpp
   SimpleOutputDecoder.cpp
   SpecialFolders.cpp
   TerminalCmd.cpp
@@ -36,8 +38,10 @@ set(Broker_HDRS
   OutputDecoder.h
   PinManager.h
   Project.h
+  RemoteDecoder.h
   SensorDecoder.h
   Service.h
+  SignalDecoder.h
   SimpleOutputDecoder.h
   SpecialFolders.h
   TerminalCmd.h

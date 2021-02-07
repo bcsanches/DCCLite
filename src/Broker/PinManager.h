@@ -16,7 +16,7 @@
 #include "BasicPin.h"
 #include "Object.h"
 
-class Decoder;
+class RemoteDecoder;
 
 enum class ArduinoBoards
 {
@@ -42,7 +42,7 @@ class PinManager
 			{
 				//empty
 			}
-			const Decoder *m_pclUser;
+			const RemoteDecoder *m_pclUser;
 			const char *m_pszUsage;
 
 			const char *m_pszSpecialName;
@@ -54,8 +54,8 @@ class PinManager
 	public:
 		PinManager(ArduinoBoards board);
 
-		void RegisterPin(const Decoder &decoder, dcclite::BasicPin pin, const char *usage);
-		void UnregisterPin(const Decoder &decoder, dcclite::BasicPin pin);
+		void RegisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage);
+		void UnregisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin);
 
 		void Serialize(dcclite::JsonOutputStream_t &stream) const;
 };

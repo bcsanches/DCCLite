@@ -52,7 +52,7 @@ SimpleOutputDecoder::~SimpleOutputDecoder()
 
 void SimpleOutputDecoder::WriteConfig(dcclite::Packet &packet) const
 {
-	Decoder::WriteConfig(packet);	
+	OutputDecoder::WriteConfig(packet);	
 
 	packet.Write8(m_clPin.Raw());
 	packet.Write8(

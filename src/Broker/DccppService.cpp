@@ -89,7 +89,7 @@ static inline std::string CreateOutputDecoderResponse(const OutputDecoder& decod
 	}
 }
 
-static inline std::string CreateDecoderResponse(const Decoder& decoder)
+static inline std::string CreateDecoderResponse(const RemoteDecoder& decoder)
 {	
 	if (decoder.IsInputDecoder())
 	{
@@ -129,7 +129,10 @@ void DccppClient::OnDccLiteEvent(const DccLiteEvent &event)
 	switch (event.m_tType)
 	{
 		case DccLiteEvent::DECODER_STATE_CHANGE:
-			m_clMessenger.Send(m_clAddress, CreateDecoderResponse(*event.m_stDecoder.m_pclDecoder));
+			auto remoteDecoder = dynamic_cast<const RemoteDecoder *>(event.m_stDecoder.m_pclDecoder);
+
+			if(remoteDecoder)
+				m_clMessenger.Send(m_clAddress, CreateDecoderResponse(*remoteDecoder));
 	}
 }
 
@@ -365,14 +368,15 @@ bool DccppClient::Update()
 							goto ERROR_RESPONSE;
 						}
 
-						if (!dec->IsOutputDecoder())
+						auto remoteDecoder = dynamic_cast<RemoteDecoder *>(dec);
+						if ((!remoteDecoder) || (!remoteDecoder->IsOutputDecoder()))
 						{
-							Log::Error("[DccppClient::Update] Error decoder {} - {} is not an output type", id, dec->GetName());
+							Log::Error("[DccppClient::Update] Error decoder {} - {} is not an output type", id, dec ? dec->GetName() : "NOT FOUND");
 
 							goto ERROR_RESPONSE;
 						}
 
-						auto* outputDecoder = static_cast<OutputDecoder*>(dec);
+						auto* outputDecoder = static_cast<OutputDecoder*>(remoteDecoder);
 
 						auto newState = direction ? DecoderStates::ACTIVE : DecoderStates::INACTIVE;
 

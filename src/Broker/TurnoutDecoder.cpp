@@ -83,7 +83,7 @@ ServoTurnoutDecoder::~ServoTurnoutDecoder()
 
 void ServoTurnoutDecoder::WriteConfig(dcclite::Packet& packet) const
 {
-	Decoder::WriteConfig(packet);
+	TurnoutDecoder::WriteConfig(packet);
 
 	packet.Write8(m_clPin.Raw());	
 

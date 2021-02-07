@@ -25,7 +25,9 @@ namespace SharpTerminal
             if(objectDef.ContainsKey("locationHint"))
                 LocationHint = objectDef["locationHint"];
 
-            Broken = objectDef["broken"];
+            //Only remote decoders supports broken
+            if(objectDef.ContainsKey("broken"))
+                Broken = objectDef["broken"];
         }           
 
         public string DeviceName { get; }

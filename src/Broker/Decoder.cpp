@@ -14,8 +14,8 @@
 
 #include "IDccLiteService.h"
 #include "IDevice.h"
-#include "Packet.h"
 #include "Parser.h"
+#include "Packet.h"
 
 DccAddress::DccAddress(const rapidjson::Value &value)
 {
@@ -46,17 +46,6 @@ Decoder::Decoder(const Class &decoderClass, const DccAddress &address, std::stri
 	auto it = params.FindMember("location");
 	if(it != params.MemberEnd())
 		m_strLocationHint = it->value.GetString();
-
-	it = params.FindMember("broken");
-	if (it != params.MemberEnd())
-		m_fBroken = it->value.GetBool();
-}
-
-
-void Decoder::WriteConfig(dcclite::Packet &packet) const
-{
-	packet.Write8(static_cast<std::uint8_t>(this->GetType()));
-	m_iAddress.WriteConfig(packet);
 }
 
 void DccAddress::WriteConfig(dcclite::Packet &packet) const
@@ -64,26 +53,12 @@ void DccAddress::WriteConfig(dcclite::Packet &packet) const
 	packet.Write16(m_iAddress);
 }
 
-void Decoder::SyncRemoteState(dcclite::DecoderStates state)
-{
-	if((state != m_kRemoteState) && !m_fBroken)
-	{
-		m_kRemoteState = state;
-
-		dcclite::Log::Info("[{}::SyncRemoteState] changed: {}", this->GetName(), dcclite::DecoderStateName(state));
-
-		m_rclManager.Decoder_OnStateChanged(*this);
-	}	
-}
-
 void Decoder::Serialize(dcclite::JsonOutputStream_t &stream) const
 {
 	Object::Serialize(stream);
 
-	stream.AddIntValue("address", m_iAddress.GetAddress());
-	stream.AddBool("remoteActive", m_kRemoteState == dcclite::DecoderStates::ACTIVE);
-	stream.AddStringValue("deviceName", m_rclDevice.GetDeviceName());
-	stream.AddBool("broken", m_fBroken);
+	stream.AddIntValue("address", m_iAddress.GetAddress());	
+	stream.AddStringValue("deviceName", m_rclDevice.GetDeviceName());	
 
 	if(!m_strLocationHint.empty())
 		stream.AddStringValue("locationHint", m_strLocationHint);

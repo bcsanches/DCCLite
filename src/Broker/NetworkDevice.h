@@ -83,18 +83,20 @@ class NetworkDevice: public Device, public INetworkDevice_DecoderServices
 		//
 		//
 
-		void Decoder_RegisterPin(const Decoder &decoder, dcclite::BasicPin pin, const char *usage)
+		void Decoder_RegisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage)
 		{
 			m_clPinManager.RegisterPin(decoder, pin, usage);
 		}
 
-		void Decoder_UnregisterPin(const Decoder &decoder, dcclite::BasicPin pin)
+		void Decoder_UnregisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin)
 		{
 			m_clPinManager.UnregisterPin(decoder, pin);
 		}	
 
 	protected:
 		void OnUnload() override;
+
+		void CheckLoadedDecoder(Decoder &decoder) override;
 
 	private:
 		bool CheckSessionConfig(const dcclite::Guid remoteConfigToken, const dcclite::NetworkAddress remoteAddress);

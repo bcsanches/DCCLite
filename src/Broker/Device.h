@@ -51,6 +51,8 @@ class Device : public dcclite::FolderObject, IDevice_DecoderServices
 
 		virtual void OnUnload();
 
+		virtual void CheckLoadedDecoder(Decoder &decoder) = 0;
+
 	protected:
 		std::vector<Decoder *>	m_vecDecoders;
 

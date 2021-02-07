@@ -15,6 +15,7 @@
 #include "BasicPin.h"
 
 class Decoder;
+class RemoteDecoder;
 class INetworkDevice_DecoderServices;
 
 class IDevice_DecoderServices
@@ -33,6 +34,6 @@ class IDevice_DecoderServices
 class INetworkDevice_DecoderServices
 {
 	public:
-		virtual void Decoder_RegisterPin(const Decoder &decoder, dcclite::BasicPin pin, const char *usage) = 0;
-		virtual void Decoder_UnregisterPin(const Decoder &decoder, dcclite::BasicPin pin) = 0;
+		virtual void Decoder_RegisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage) = 0;
+		virtual void Decoder_UnregisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin) = 0;
 };

@@ -132,12 +132,8 @@ Decoder &DccLiteService::Device_CreateDecoder(
 {
 	auto decoder = Decoder::Class::TryProduce(className.c_str(), address, name, *this, dev, params);
 	if (!decoder)
-	{
-		std::stringstream stream;
-
-		stream << "error: failed to instantiate decoder " << address << " named " << name;
-
-		throw std::runtime_error(stream.str());
+	{				
+		throw std::runtime_error(fmt::format("[DccLiteService::Device_CreateDecoder] Error: failed to instantiate decoder {} - {} [{}]", name, address, className));
 	}
 
 	auto pDecoder = decoder.get();	
@@ -150,7 +146,7 @@ Decoder &DccLiteService::Device_CreateDecoder(
 			std::make_unique<dcclite::Shortcut>(
 				pDecoder->GetAddress().ToString(),
 				*pDecoder
-				)
+			)
 		);
 
 		this->NotifyItemCreated(*pDecoder);

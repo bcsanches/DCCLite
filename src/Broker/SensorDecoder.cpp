@@ -26,7 +26,7 @@ SensorDecoder::SensorDecoder(const Class &decoderClass,
 	IDevice_DecoderServices &dev,
 	const rapidjson::Value &params
 ):
-	Decoder(decoderClass, address, name, owner, dev, params),
+	RemoteDecoder(decoderClass, address, name, owner, dev, params),
 	m_clPin(params["pin"].GetInt())
 {
 	m_rclDevice.TryGetINetworkDevice()->Decoder_RegisterPin(*this, m_clPin, "pin");
@@ -51,7 +51,7 @@ SensorDecoder::~SensorDecoder()
 
 void SensorDecoder::WriteConfig(dcclite::Packet &packet) const
 {
-	Decoder::WriteConfig(packet);
+	RemoteDecoder::WriteConfig(packet);
 
 	packet.Write8(m_clPin.Raw());
 	packet.Write8(
@@ -60,5 +60,14 @@ void SensorDecoder::WriteConfig(dcclite::Packet &packet) const
 	);
 	packet.Write8(m_uActivateDelay);
 	packet.Write8(m_uDeactivateDelay);
+}
+
+void SensorDecoder::Serialize(dcclite::JsonOutputStream_t &stream) const
+{
+	RemoteDecoder::Serialize(stream);
+
+	stream.AddIntValue("pin", m_clPin.Raw());
+	stream.AddBool("pullup", m_fPullUp);
+	stream.AddBool("inverted", m_fInverted);
 }
 

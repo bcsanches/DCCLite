@@ -10,11 +10,11 @@
 
 #pragma once
 
-#include "Decoder.h"
+#include "RemoteDecoder.h"
 
 #include "BasicPin.h"
 
-class SensorDecoder : public Decoder
+class SensorDecoder : public RemoteDecoder
 {
 	public:
 		SensorDecoder(const Class &decoderClass,
@@ -64,14 +64,7 @@ class SensorDecoder : public Decoder
 			return "SensorDecoder";
 		}
 
-		virtual void Serialize(dcclite::JsonOutputStream_t &stream) const
-		{
-			Decoder::Serialize(stream);
-
-			stream.AddIntValue("pin", m_clPin.Raw());
-			stream.AddBool("pullup", m_fPullUp);	
-			stream.AddBool("inverted", m_fInverted);
-		}	
+		void Serialize(dcclite::JsonOutputStream_t &stream) const override;
 
 	private:
 		dcclite::BasicPin m_clPin;

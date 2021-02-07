@@ -67,6 +67,12 @@ NetworkDevice::~NetworkDevice()
 	this->Unload();
 }
 
+void NetworkDevice::CheckLoadedDecoder(Decoder &decoder)
+{
+	if (!dynamic_cast<RemoteDecoder *>(&decoder))
+		throw std::invalid_argument(fmt::format("[NetworkDevice::CheckLoadedDecoder] Decoder {} must be a RemoteDecoder subtype, but it is: {}", decoder.GetName(), decoder.GetTypeName()));
+}
+
 void NetworkDevice::OnUnload()
 {
 	Device::OnUnload();
@@ -120,7 +126,7 @@ void NetworkDevice::ConfigState::SendDecoderConfigPacket(const NetworkDevice &se
 	DevicePacket pkt{ dcclite::MsgTypes::CONFIG_DEV, self.m_SessionToken, self.m_ConfigToken };
 	pkt.Write8(static_cast<uint8_t>(index));
 
-	self.m_vecDecoders[index]->WriteConfig(pkt);
+	static_cast<RemoteDecoder *>(self.m_vecDecoders[index])->WriteConfig(pkt);
 
 	self.m_clDccService.Device_SendPacket(self.m_RemoteAddress, pkt);
 }
@@ -305,11 +311,12 @@ void NetworkDevice::SyncState::OnPacket(
 			continue;
 
 		auto state = states[i] ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE;
-		self.m_vecDecoders[i]->SyncRemoteState(state);
+		auto remoteDecoder = static_cast<RemoteDecoder *>(self.m_vecDecoders[i]);
+		remoteDecoder->SyncRemoteState(state);
 
-		if (self.m_vecDecoders[i]->IsOutputDecoder())
+		if (remoteDecoder->IsOutputDecoder())
 		{
-			auto *outputDecoder = static_cast<OutputDecoder *>(self.m_vecDecoders[i]);
+			auto *outputDecoder = static_cast<OutputDecoder *>(remoteDecoder);
 
 			//if after a sync, the requested state changes, we toggle it, so they are synced
 			//Hack?
@@ -365,7 +372,7 @@ void NetworkDevice::OnlineState::SendStateDelta(NetworkDevice &self, const bool 
 	const unsigned numDecoders = static_cast<unsigned>(std::min(self.m_vecDecoders.size(), size_t{ dcclite::MAX_DECODERS_STATES_PER_PACKET }));
 	for (unsigned i = 0; i < numDecoders; ++i)
 	{
-		auto *decoder = self.m_vecDecoders[i];
+		auto *decoder = static_cast<RemoteDecoder *>(self.m_vecDecoders[i]);
 		if (!decoder)
 			continue;
 
@@ -408,7 +415,7 @@ void NetworkDevice::OnlineState::SendStateDelta(NetworkDevice &self, const bool 
 
 		for (unsigned i = 0; i < numDecoders; ++i)
 		{
-			auto *decoder = self.m_vecDecoders[i];
+			auto *decoder = static_cast<RemoteDecoder *>(self.m_vecDecoders[i]);
 			if (!decoder)
 				continue;
 
@@ -500,7 +507,8 @@ void NetworkDevice::OnlineState::OnPacket(
 
 		auto state = states[i] ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE;
 
-		self.m_vecDecoders[i]->SyncRemoteState(state);
+		auto remoteDecoder = static_cast<RemoteDecoder *>(self.m_vecDecoders[i]);
+		remoteDecoder->SyncRemoteState(state);
 
 		/**
 
@@ -509,7 +517,7 @@ void NetworkDevice::OnlineState::OnPacket(
 		So if we received any sensor state, we send back to the client our current state so it can ACK our current state
 		*/
 
-		if (self.m_vecDecoders[i]->IsInputDecoder())
+		if (remoteDecoder->IsInputDecoder())
 		{
 			stateRefresh = true;
 		}

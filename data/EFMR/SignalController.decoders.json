@@ -1,8 +1,8 @@
 [
   {
     "name":"STC_SIG_12",
-    "class":"Signal",    
-    "address":"1770",  
+    "class":"VirtualSignal",    
+    "address":"1840",  
     "heads":
     {
         "red":"STC_HR12",
@@ -14,12 +14,12 @@
             "name":"stop",
             "heads":
             {
-                "red":true
+                "red":true,
                 "green":false
             }          
         },
         {
-            "name":"clear"
+            "name":"clear",
             "heads":
             {
                 "red":false,

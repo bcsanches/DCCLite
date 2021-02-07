@@ -101,36 +101,9 @@ class Decoder: public dcclite::Object
 		inline const std::string &GetLocationHint() const
 		{
 			return m_strLocationHint;
-		}
-
-		virtual void WriteConfig(dcclite::Packet &packet) const;
-
-		virtual dcclite::DecoderTypes GetType() const noexcept = 0;
-
-		virtual bool IsOutputDecoder() const = 0;
-		virtual bool IsInputDecoder() const = 0;
-
-		virtual bool IsTurnoutDecoder() const
-		{
-			return false;
-		}
-
-		virtual std::optional<dcclite::DecoderStates> GetPendingStateChange() const
-		{
-			return std::nullopt;
-		}
-
-		void SyncRemoteState(dcclite::DecoderStates state);
-
-		inline dcclite::DecoderStates GetRemoteState() const
-		{
-			return m_kRemoteState;
 		}		
 
-		inline bool IsBroken() const noexcept
-		{
-			return m_fBroken;
-		}
+		virtual dcclite::DecoderTypes GetType() const noexcept = 0;		
 
 		//
 		//IObject
@@ -145,17 +118,12 @@ class Decoder: public dcclite::Object
 		void Serialize(dcclite::JsonOutputStream_t &stream) const override;	
 
 	private:
-		DccAddress m_iAddress;		
+		DccAddress m_iAddress;				
 
-		IDccLite_DecoderServices &m_rclManager;		
-
-		dcclite::DecoderStates m_kRemoteState = dcclite::DecoderStates::INACTIVE;		
-
-		std::string m_strLocationHint;
-
-		bool		m_fBroken = false;
+		std::string m_strLocationHint;		
 
 	protected:
+		IDccLite_DecoderServices &m_rclManager;
 		IDevice_DecoderServices &m_rclDevice;
 };
 

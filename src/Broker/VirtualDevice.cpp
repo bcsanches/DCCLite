@@ -10,10 +10,14 @@
 
 #include "VirtualDevice.h"
 
+#include "SignalDecoder.h"
+
+#include <fmt/format.h>
+
 VirtualDevice::VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project) :
 	Device{ std::move(name), dccService, params, project }	
 {
-	//empty
+	this->Load();
 }
 
 VirtualDevice::VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const Project &project) :
@@ -26,4 +30,10 @@ VirtualDevice::VirtualDevice(std::string name, IDccLite_DeviceServices &dccServi
 void VirtualDevice::Update(const dcclite::Clock &clock)
 {
 	//empty
+}
+
+void VirtualDevice::CheckLoadedDecoder(Decoder &decoder)
+{
+	if (!dynamic_cast<SignalDecoder *>(&decoder))
+		throw std::invalid_argument(fmt::format("[VirtualDevice::CheckLoadedDecoder] Decoder {} must be a SignalDecoder subtype, but it is: {}", decoder.GetName(), decoder.GetTypeName()));
 }

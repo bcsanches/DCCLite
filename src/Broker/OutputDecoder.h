@@ -10,11 +10,11 @@
 
 #pragma once
 
-#include "Decoder.h"
+#include "RemoteDecoder.h"
 
 #include "EmbeddedLibDefs.h"
 
-class OutputDecoder : public Decoder
+class OutputDecoder : public RemoteDecoder
 {
 	public:
 		OutputDecoder(const Class& decoderClass,
@@ -24,12 +24,10 @@ class OutputDecoder : public Decoder
 			IDevice_DecoderServices &dev,
 			const rapidjson::Value& params
 		) :
-			Decoder(decoderClass, address, name, owner, dev, params)
+			RemoteDecoder(decoderClass, address, name, owner, dev, params)
 		{
 			//empty
-		}
-
-		void WriteConfig(dcclite::Packet& packet) const override = 0;
+		}		
 
 		dcclite::DecoderTypes GetType() const noexcept override
 		{
@@ -68,7 +66,7 @@ class OutputDecoder : public Decoder
 			return false;
 		}
 
-		std::optional<dcclite::DecoderStates> GetPendingStateChange() const override
+		std::optional<dcclite::DecoderStates> GetPendingStateChange() const
 		{
 			return m_kRequestedState != this->GetRemoteState() ? std::optional{ m_kRequestedState } : std::nullopt;
 		}				
@@ -81,12 +79,7 @@ class OutputDecoder : public Decoder
 		const char* GetTypeName() const noexcept override
 		{
 			return "OutputDecoder";
-		}
-
-		void Serialize(dcclite::JsonOutputStream_t& stream) const override
-		{
-			Decoder::Serialize(stream);			
-		}		
+		}				
 
 	private:				
 		dcclite::DecoderStates m_kRequestedState = dcclite::DecoderStates::INACTIVE;

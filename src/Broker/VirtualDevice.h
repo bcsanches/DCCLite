@@ -19,5 +19,8 @@ class VirtualDevice : public Device
 		VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const Project &project);
 
 		void Update(const dcclite::Clock &clock) override;	
+
+	protected:
+		void CheckLoadedDecoder(Decoder &decoder) override;
 };
 
