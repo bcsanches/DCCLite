@@ -109,10 +109,7 @@ class NetworkDevice: public Device, public INetworkDevice_DecoderServices
 		void ClearState();
 		void GotoSyncState();
 		void GotoOnlineState();
-		void GotoConfigState(const dcclite::Clock::TimePoint_t time);
-		
-		void Unload();
-		
+		void GotoConfigState(const dcclite::Clock::TimePoint_t time);						
 
 	private:						
 		PinManager				m_clPinManager;		

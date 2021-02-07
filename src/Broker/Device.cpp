@@ -15,6 +15,7 @@
 #include <rapidjson/istreamwrapper.h>
 
 #include "Decoder.h"
+#include "FmtUtils.h"
 #include "IDccLiteService.h"
 #include "FileWatcher.h"
 #include "Log.h"
