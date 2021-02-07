@@ -65,7 +65,7 @@ class DccAddress
 			return m_iAddress > rhs.m_iAddress;
 		}
 
-		std::string ToString() const
+		inline std::string ToString() const
 		{
 			return fmt::format("{:#05x}", m_iAddress);
 		}

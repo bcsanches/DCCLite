@@ -10,15 +10,29 @@
 
 #pragma once
 
+#include <string_view>
+
 #include "BasicPin.h"
 
 class Decoder;
+class INetworkDevice_DecoderServices;
 
 class IDevice_DecoderServices
 {
 	public:
-		virtual std::string_view GetDeviceName() const noexcept = 0;
+		virtual std::string_view GetDeviceName() const noexcept = 0;		
 
+		virtual INetworkDevice_DecoderServices *TryGetINetworkDevice() noexcept
+		{
+			return nullptr;
+		}
+
+
+};
+
+class INetworkDevice_DecoderServices
+{
+	public:
 		virtual void Decoder_RegisterPin(const Decoder &decoder, dcclite::BasicPin pin, const char *usage) = 0;
 		virtual void Decoder_UnregisterPin(const Decoder &decoder, dcclite::BasicPin pin) = 0;
 };

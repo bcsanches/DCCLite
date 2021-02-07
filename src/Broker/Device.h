@@ -10,23 +10,60 @@
 
 #pragma once
 
+#include <vector>
+#include <string>
+
 #include "Clock.h"
+#include "IDevice.h"
+#include "Guid.h"
+#include "FileSystem.h"
 #include "Object.h"
 
 #include <rapidjson/document.h>
 
+class Decoder;
 class IDccLite_DeviceServices;
 class Project;
 
-class Device : public dcclite::FolderObject
+class Device : public dcclite::FolderObject, IDevice_DecoderServices
 {
 	public:
 		Device(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project);
 		Device(std::string name, IDccLite_DeviceServices &dccService, const Project &project);	
 
+		virtual ~Device();
+
 		virtual void Update(const dcclite::Clock &clock) = 0;
 
+		//
+		// IDeviceDEcoderServices
+		//
+		//
+
+		std::string_view GetDeviceName() const noexcept override
+		{
+			return this->GetName();
+		}
+
 	protected:
+		void Load();
+		void Unload();
+
+		virtual void OnUnload();
+
+	protected:
+		std::vector<Decoder *>	m_vecDecoders;
+
 		IDccLite_DeviceServices &m_clDccService;
+	
+		//
+		//
+		//Storage data
+		const std::string		m_strConfigFileName;
+		const dcclite::fs::path m_pathConfigFile;
+
+		const Project &m_rclProject;
+
+		dcclite::Guid		m_ConfigToken;
 };
 

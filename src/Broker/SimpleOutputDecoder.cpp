@@ -30,7 +30,7 @@ SimpleOutputDecoder::SimpleOutputDecoder(
 	OutputDecoder(decoderClass, address, name, owner, dev, params),
 	m_clPin(params["pin"].GetInt())
 {	
-	m_rclDevice.Decoder_RegisterPin(*this, m_clPin, "pin");
+	m_rclDevice.TryGetINetworkDevice()->Decoder_RegisterPin(*this, m_clPin, "pin");
 
 	auto inverted = params.FindMember("inverted");	
 	m_fInvertedOperation = inverted != params.MemberEnd() ? inverted->value.GetBool() : false;
@@ -46,7 +46,7 @@ SimpleOutputDecoder::SimpleOutputDecoder(
 
 SimpleOutputDecoder::~SimpleOutputDecoder()
 {
-	m_rclDevice.Decoder_UnregisterPin(*this, m_clPin);
+	m_rclDevice.TryGetINetworkDevice()->Decoder_UnregisterPin(*this, m_clPin);
 }
 
 

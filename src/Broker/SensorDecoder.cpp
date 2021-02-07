@@ -29,7 +29,7 @@ SensorDecoder::SensorDecoder(const Class &decoderClass,
 	Decoder(decoderClass, address, name, owner, dev, params),
 	m_clPin(params["pin"].GetInt())
 {
-	m_rclDevice.Decoder_RegisterPin(*this, m_clPin, "pin");
+	m_rclDevice.TryGetINetworkDevice()->Decoder_RegisterPin(*this, m_clPin, "pin");
 
 	auto pullup = params.FindMember("pullup");
 	m_fPullUp = pullup != params.MemberEnd() ? pullup->value.GetBool() : false;
@@ -46,7 +46,7 @@ SensorDecoder::SensorDecoder(const Class &decoderClass,
 
 SensorDecoder::~SensorDecoder()
 {
-	m_rclDevice.Decoder_UnregisterPin(*this, m_clPin);
+	m_rclDevice.TryGetINetworkDevice()->Decoder_UnregisterPin(*this, m_clPin);
 }
 
 void SensorDecoder::WriteConfig(dcclite::Packet &packet) const

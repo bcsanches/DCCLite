@@ -22,6 +22,7 @@ VirtualDevice::VirtualDevice(std::string name, IDccLite_DeviceServices &dccServi
 	//emtpy
 }
 
+
 void VirtualDevice::Update(const dcclite::Clock &clock)
 {
 	//empty

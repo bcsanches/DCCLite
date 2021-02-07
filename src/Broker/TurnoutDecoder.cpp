@@ -29,20 +29,24 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(const Class& decoderClass,
 	TurnoutDecoder(decoderClass, address, name, owner, dev, params),
 	m_clPin(params["pin"].GetInt())
 {
-	m_rclDevice.Decoder_RegisterPin(*this, m_clPin, "pin");
+	auto networkDevice = m_rclDevice.TryGetINetworkDevice();
+
+	assert(networkDevice);
+
+	networkDevice->Decoder_RegisterPin(*this, m_clPin, "pin");
 
 	auto powerPin = params.FindMember("powerPin");
 	if (powerPin != params.MemberEnd())
 	{
 		m_clPowerPin = dcclite::BasicPin{ static_cast<dcclite::PinType_t>(powerPin->value.GetInt())};
-		m_rclDevice.Decoder_RegisterPin(*this, m_clPowerPin, "powerPin");
+		networkDevice->Decoder_RegisterPin(*this, m_clPowerPin, "powerPin");
 	}	
 
 	auto frogPin = params.FindMember("frogPin");
 	if(frogPin != params.MemberEnd())
 	{
 		m_clFrogPin = dcclite::BasicPin{ static_cast<dcclite::PinType_t>(frogPin->value.GetInt()) };
-		m_rclDevice.Decoder_RegisterPin(*this, m_clFrogPin, "frogPin");
+		networkDevice->Decoder_RegisterPin(*this, m_clFrogPin, "frogPin");
 	}
 
 	auto inverted = params.FindMember("inverted");
@@ -68,9 +72,13 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(const Class& decoderClass,
 
 ServoTurnoutDecoder::~ServoTurnoutDecoder()
 {
-	m_rclDevice.Decoder_UnregisterPin(*this, m_clPin);
-	m_rclDevice.Decoder_UnregisterPin(*this, m_clPowerPin);
-	m_rclDevice.Decoder_UnregisterPin(*this, m_clFrogPin);
+	auto networkDevice = m_rclDevice.TryGetINetworkDevice();
+
+	assert(networkDevice);
+
+	networkDevice->Decoder_UnregisterPin(*this, m_clPin);
+	networkDevice->Decoder_UnregisterPin(*this, m_clPowerPin);
+	networkDevice->Decoder_UnregisterPin(*this, m_clFrogPin);
 }
 
 void ServoTurnoutDecoder::WriteConfig(dcclite::Packet& packet) const

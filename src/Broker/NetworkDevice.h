@@ -12,23 +12,17 @@
 
 #include <string>
 #include <variant>
-#include <vector>
 
 #include "IDccLiteService.h"
 #include "Device.h"
 #include "IDevice.h"
-#include "FileSystem.h"
-#include "Guid.h"
 #include "Packet.h"
 #include "PinManager.h"
 #include "Socket.h"
 
 #include <rapidjson/document.h>
 
-class Decoder;
-class Project;
-
-class NetworkDevice: public Device, public IDevice_DecoderServices
+class NetworkDevice: public Device, public INetworkDevice_DecoderServices
 {
 	public:
 		enum class Status
@@ -75,14 +69,19 @@ class NetworkDevice: public Device, public IDevice_DecoderServices
 		virtual void Serialize(dcclite::JsonOutputStream_t &stream) const;
 
 		//
-		// IDeviceDEcoderServices
+		//IDevice_DecoderServices
 		//
 		//
-
-		std::string_view GetDeviceName() const noexcept override
+		
+		INetworkDevice_DecoderServices *TryGetINetworkDevice() noexcept override
 		{
-			return this->GetName();
+			return this;
 		}
+
+		//
+		//INetworkDevice_DecoderServices
+		//
+		//
 
 		void Decoder_RegisterPin(const Decoder &decoder, dcclite::BasicPin pin, const char *usage)
 		{
@@ -92,7 +91,10 @@ class NetworkDevice: public Device, public IDevice_DecoderServices
 		void Decoder_UnregisterPin(const Decoder &decoder, dcclite::BasicPin pin)
 		{
 			m_clPinManager.UnregisterPin(decoder, pin);
-		}
+		}	
+
+	protected:
+		void OnUnload() override;
 
 	private:
 		bool CheckSessionConfig(const dcclite::Guid remoteConfigToken, const dcclite::NetworkAddress remoteAddress);
@@ -108,28 +110,16 @@ class NetworkDevice: public Device, public IDevice_DecoderServices
 		void GotoSyncState();
 		void GotoOnlineState();
 		void GotoConfigState(const dcclite::Clock::TimePoint_t time);
-
-		bool Load();
+		
 		void Unload();
 		
 
-	private:				
-		std::vector<Decoder *>	m_vecDecoders;
-
-		PinManager				m_clPinManager;
+	private:						
+		PinManager				m_clPinManager;		
 
 		//
 		//
-		//Storage data
-		const std::string		m_strConfigFileName;
-		const dcclite::fs::path m_pathConfigFile;
-
-		const Project			&m_rclProject;
-
-		//
-		//
-		//Remote Device Info		
-		dcclite::Guid		m_ConfigToken;
+		//Remote Device Info				
 		dcclite::Guid		m_SessionToken;
 
 		dcclite::NetworkAddress	m_RemoteAddress;
