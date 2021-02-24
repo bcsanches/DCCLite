@@ -14,16 +14,14 @@
             "name":"stop",
             "heads":
             {
-                "red":true,
-                "green":false
+                "red":true
             }          
         },
         {
             "name":"clear",
             "heads":
             {
-                "red":false,
-                "green":true
+                "red":false
             }
         }        
     ]  

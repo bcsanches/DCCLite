@@ -15,6 +15,32 @@ static Decoder::Class signalDecoderClass("VirtualSignal",
 	-> std::unique_ptr<Decoder> { return std::make_unique<SignalDecoder>(decoderClass, address, name, owner, dev, params); }
 );
 
+
+SignalDecoder::SignalDecoder(
+	const Class &decoderClass,
+	const DccAddress &address,
+	const std::string &name,
+	IDccLite_DecoderServices &owner,
+	IDevice_DecoderServices &dev,
+	const rapidjson::Value &params
+) :
+	Decoder(decoderClass, address, name, owner, dev, params)
+{
+	auto headsData = params.FindMember("heads");
+	if ((headsData == params.MemberEnd()) || (!headsData->value.IsObject()))
+	{
+		throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: expected heads object for {}", this->GetName()));		
+	}
+
+	for (auto &headElement : headsData->value.GetObject())
+	{
+		m_setHeads.insert(std::make_pair(headElement.name.GetString(), headElement.value.GetString()));
+	}
+
+
+}
+
+
 void SignalDecoder::Serialize(dcclite::JsonOutputStream_t &stream) const
 {
 	Decoder::Serialize(stream);

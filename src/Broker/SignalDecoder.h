@@ -12,23 +12,21 @@
 
 #include "Decoder.h"
 
+#include <set>
+
 #include "EmbeddedLibDefs.h"
 
 class SignalDecoder : public Decoder
 {
 	public:
 		SignalDecoder(
-			const Class& decoderClass,
-			const DccAddress& address,
-			const std::string& name,
-			IDccLite_DecoderServices & owner,
+			const Class &decoderClass,
+			const DccAddress &address,
+			const std::string &name,
+			IDccLite_DecoderServices &owner,
 			IDevice_DecoderServices &dev,
-			const rapidjson::Value& params
-		) :
-			Decoder(decoderClass, address, name, owner, dev, params)
-		{
-			//empty
-		}						
+			const rapidjson::Value &params
+		);
 
 		//
 		//IObject
@@ -44,4 +42,6 @@ class SignalDecoder : public Decoder
 
 	private:				
 		dcclite::DecoderStates m_kRequestedState = dcclite::DecoderStates::INACTIVE;
+
+		std::map<std::string, std::string> m_setHeads;
 };
