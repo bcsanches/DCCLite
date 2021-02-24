@@ -150,6 +150,7 @@ namespace LitePanel::Gui
 		private:
 			void OnExit(wxCommandEvent &event);
 			void OnAbout(wxCommandEvent &event);
+			void OnSize(wxSizeEvent &event);
 
 			void OnToolLeftClick(wxCommandEvent &event);			
 
@@ -171,6 +172,9 @@ namespace LitePanel::Gui
 			PanelDocument *m_pclDocument = nullptr;
 
 			LitePanel::Gui::PanelEditorCanvas *m_pclMapCanvas = nullptr;
+
+			//offset due to horizontal toolbars
+			uint32_t m_uOffset = 0;
 	};
 	
 	bool LiteApp::OnInit()
@@ -550,16 +554,18 @@ namespace LitePanel::Gui
 		toolBarLeft1->Realize();
 		toolBarLeft2->Realize();	
 
+#if 1		
 		//adjust size due to secondary toolbar
 		{
 			wxSize size = GetClientSize();
 
 			toolBarLeft2->SetSize(0, 0, wxDefaultCoord, size.y);
-			int offset = toolBarLeft2->GetSize().x;
+			m_uOffset = toolBarLeft2->GetSize().x;
 
-			m_pclMapCanvas->SetSize(offset, 0, size.x - offset, size.y);
+			m_pclMapCanvas->SetSize(m_uOffset, 0, size.x - m_uOffset, size.y);
 		}		
-
+#endif
+		Bind(wxEVT_SIZE, &MainFrame::OnSize, this, wxID_ANY);
 		Bind(wxEVT_MENU, &MainFrame::OnAbout, this, wxID_ABOUT);
 		Bind(wxEVT_MENU, &MainFrame::OnExit, this, wxID_EXIT);
 		toolBarLeft1->Bind(wxEVT_TOOL, &MainFrame::OnToolLeftClick, this, wxID_ANY);	
@@ -568,6 +574,12 @@ namespace LitePanel::Gui
 		m_pclMapCanvas->Bind(LitePanel::Gui::EVT_TILE_UNDER_MOUSE_CHANGED, &MainFrame::OnTileUnderMouseChanged, this, wxID_ANY);
 	}
 
+	void MainFrame::OnSize(wxSizeEvent &event)
+	{
+		wxSize size = GetClientSize();
+
+		m_pclMapCanvas->SetSize(m_uOffset, 0, size.x - m_uOffset, size.y);
+	}
 
 	void MainFrame::OnExit(wxCommandEvent &event)
 	{
