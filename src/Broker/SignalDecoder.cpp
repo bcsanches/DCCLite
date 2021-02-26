@@ -10,6 +10,8 @@
 
 #include "SignalDecoder.h"
 
+#include "NmraUtil.h"
+
 static Decoder::Class signalDecoderClass("VirtualSignal",
 	[](const Decoder::Class &decoderClass, const DccAddress &address, const std::string &name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params)
 	-> std::unique_ptr<Decoder> { return std::make_unique<SignalDecoder>(decoderClass, address, name, owner, dev, params); }
@@ -34,9 +36,21 @@ SignalDecoder::SignalDecoder(
 
 	for (auto &headElement : headsData->value.GetObject())
 	{
-		m_setHeads.insert(std::make_pair(headElement.name.GetString(), headElement.value.GetString()));
+		m_mapHeads.insert(std::make_pair(headElement.name.GetString(), headElement.value.GetString()));
 	}
 
+	auto aspectsData = params.FindMember("aspects");
+	if ((aspectsData == params.MemberEnd()) || (!aspectsData->value.IsArray()))
+	{
+		throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: expected aspects array for {}", this->GetName()));
+	}
+
+	for (auto &aspectElement : aspectsData->value.GetArray())
+	{
+		auto name = aspectElement["name"].GetString();
+
+		auto aspect = dcclite::ConvertNameToAspect(name);
+	}
 
 }
 

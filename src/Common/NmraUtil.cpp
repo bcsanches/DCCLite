@@ -10,6 +10,9 @@
 
 #include "NmraUtil.h"
 
+#include "fmt/format.h"
+#include "magic_enum.hpp"
+
 /*
 	Straight from JMRI source code (https://www.jmri.org/), only used for testing purposes
 
@@ -46,3 +49,16 @@ std::tuple<uint16_t, dcclite::SignalAspects> dcclite::ExtractSignalDataFromPacke
 
 	return std::make_tuple(((boardAddr << 2) | lowAddr) + 1, static_cast<dcclite::SignalAspects>(packet[2]));
 }
+
+dcclite::SignalAspects dcclite::ConvertNameToAspect(const char *name)
+{
+	auto v = magic_enum::enum_cast<SignalAspects>(name);
+
+	if (!v.has_value())
+	{
+		throw std::invalid_argument(fmt::format("[dcclite::ConvertNameToAspect] Name {} is not a valid aspect", name).c_str());
+	}
+
+	return v.value();
+}
+

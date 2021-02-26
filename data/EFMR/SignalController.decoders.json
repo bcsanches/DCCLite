@@ -11,18 +11,12 @@
     "aspects":
     [
         {
-            "name":"stop",
-            "heads":
-            {
-                "red":true
-            }          
+            "name":"Stop",
+            "on":["red"]
         },
         {
-            "name":"clear",
-            "heads":
-            {
-                "red":false
-            }
+            "name":"Clear",
+            "on":["green"]
         }        
     ]  
   }

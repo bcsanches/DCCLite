@@ -40,8 +40,18 @@ class SignalDecoder : public Decoder
 
 		void Serialize(dcclite::JsonOutputStream_t &stream) const override;
 
+	private:
+		class Aspect
+		{
+			public:
+
+
+			private:
+
+		};
+
 	private:				
 		dcclite::DecoderStates m_kRequestedState = dcclite::DecoderStates::INACTIVE;
 
-		std::map<std::string, std::string> m_setHeads;
+		std::map<std::string, std::string> m_mapHeads;
 };
