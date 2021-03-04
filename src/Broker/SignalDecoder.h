@@ -15,6 +15,7 @@
 #include <set>
 
 #include "EmbeddedLibDefs.h"
+#include "NmraUtil.h"
 
 class SignalDecoder : public Decoder
 {
@@ -44,14 +45,17 @@ class SignalDecoder : public Decoder
 		class Aspect
 		{
 			public:
+				const dcclite::SignalAspects m_eAspect;
 
+				const std::vector<std::string> m_vecOnHeads;
+				const std::vector<std::string> m_vecOffHeads;
 
-			private:
-
+				const bool m_Flash;
 		};
 
 	private:				
 		dcclite::DecoderStates m_kRequestedState = dcclite::DecoderStates::INACTIVE;
 
 		std::map<std::string, std::string> m_mapHeads;
+		std::vector<Aspect> m_vecAspects;
 };
