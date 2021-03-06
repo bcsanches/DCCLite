@@ -126,14 +126,13 @@ static inline std::string CreateSensorStateRespnse(const std::vector<SensorDecod
 
 void DccppClient::OnDccLiteEvent(const DccLiteEvent &event)
 {
-	switch (event.m_tType)
-	{
-		case DccLiteEvent::DECODER_STATE_CHANGE:
-			auto remoteDecoder = dynamic_cast<const RemoteDecoder *>(event.m_stDecoder.m_pclDecoder);
+	if (event.m_tType != DccLiteEvent::DECODER_STATE_CHANGE)
+		return;
+	
+	auto remoteDecoder = dynamic_cast<const RemoteDecoder *>(event.m_stDecoder.m_pclDecoder);
 
-			if(remoteDecoder)
-				m_clMessenger.Send(m_clAddress, CreateDecoderResponse(*remoteDecoder));
-	}
+	if(remoteDecoder)
+		m_clMessenger.Send(m_clAddress, CreateDecoderResponse(*remoteDecoder));	
 }
 
 bool DccppClient::Update()
