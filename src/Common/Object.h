@@ -321,14 +321,14 @@ namespace dcclite
 
 			IObject *TryNavigate(const Path_t &path);
 
-			virtual bool IsFolder() const noexcept { return true; }
+			bool IsFolder() const noexcept override { return true; }
 
 			inline FolderEnumerator GetEnumerator() 
 			{
 				return FolderEnumerator(m_mapObjects.begin(), m_mapObjects.end());
 			}
 
-			virtual const char *GetTypeName() const noexcept
+			const char *GetTypeName() const noexcept override
 			{
 				return "dcclite::FolderObject";
 			}
