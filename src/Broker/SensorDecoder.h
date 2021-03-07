@@ -59,7 +59,7 @@ class SensorDecoder : public RemoteDecoder
 		//
 		//
 
-		virtual const char *GetTypeName() const noexcept
+		const char *GetTypeName() const noexcept override
 		{
 			return "SensorDecoder";
 		}

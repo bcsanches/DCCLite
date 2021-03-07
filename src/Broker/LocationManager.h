@@ -40,7 +40,7 @@ class LocationManager: public dcclite::FolderObject
 
 		void Serialize(dcclite::JsonOutputStream_t &stream) const override;
 
-		virtual const char *GetTypeName() const noexcept
+		const char *GetTypeName() const noexcept override
 		{
 			return "LocationManager";
 		}

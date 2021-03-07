@@ -66,7 +66,7 @@ class NetworkDevice: public Device, public INetworkDevice_DecoderServices
 			return "NetworkDevice";
 		}
 
-		virtual void Serialize(dcclite::JsonOutputStream_t &stream) const;
+		void Serialize(dcclite::JsonOutputStream_t &stream) const override;
 
 		//
 		//IDevice_DecoderServices
@@ -83,12 +83,12 @@ class NetworkDevice: public Device, public INetworkDevice_DecoderServices
 		//
 		//
 
-		void Decoder_RegisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage)
+		void Decoder_RegisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage) override
 		{
 			m_clPinManager.RegisterPin(decoder, pin, usage);
 		}
 
-		void Decoder_UnregisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin)
+		void Decoder_UnregisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin) override
 		{
 			m_clPinManager.UnregisterPin(decoder, pin);
 		}	
