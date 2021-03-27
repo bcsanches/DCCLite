@@ -12,22 +12,24 @@
 
 namespace dcclite
 {
-	enum Tokens
+	enum class Tokens
 	{
-		TOKEN_ID,
-		TOKEN_NUMBER,
-		TOKEN_HEX_NUMBER,
+		ID,
+		NUMBER,
+		HEX_NUMBER,
 
-		TOKEN_CMD_START,
-		TOKEN_CMD_END,
+		CMD_START,
+		CMD_END,
 
-		TOKEN_DOT,
+		DOT,
 
-		TOKEN_COLON,
+		COLON,
 
-		TOKEN_EOF,
+		END_OF_BUFFER,
 
-		TOKEN_ERROR
+		HASH,
+
+		SYNTAX_ERROR
 	};
 
 	class Parser

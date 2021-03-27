@@ -19,7 +19,7 @@ static void TestNum(const char *cmd, const int expectedNum)
 	int num;
 	Parser parser(cmd);
 
-	EXPECT_EQ(parser.GetNumber(num), Tokens::TOKEN_NUMBER);
+	EXPECT_EQ(parser.GetNumber(num), Tokens::NUMBER);
 	EXPECT_EQ(num, expectedNum);
 }
 

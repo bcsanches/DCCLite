@@ -62,3 +62,9 @@ dcclite::SignalAspects dcclite::ConvertNameToAspect(const char *name)
 	return v.value();
 }
 
+
+std::tuple<int16_t, uint16_t> dcclite::ConvertAddressToNMRA(uint16_t address)
+{
+	return std::make_tuple(address >> 2, address & 3);
+}
+

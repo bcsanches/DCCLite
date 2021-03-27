@@ -27,6 +27,7 @@ class Device;
 class NetworkDevice;
 class LocationManager;
 class OutputDecoder;
+class SimpleOutputDecoder;
 class SensorDecoder;
 class TurnoutDecoder;
 
@@ -69,7 +70,7 @@ class DccLiteService : public Service, private IDccLite_DeviceServices, private 
 		Decoder *TryFindDecoder(std::string_view id) const;
 
 		//This returns only pure outputs, turnouts are ignored
-		std::vector<OutputDecoder*> FindAllOutputDecoders();
+		std::vector<SimpleOutputDecoder *> FindAllSimpleOutputDecoders();
 
 		std::vector<SensorDecoder*> FindAllSensorDecoders();
 

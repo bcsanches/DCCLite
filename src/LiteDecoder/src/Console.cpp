@@ -106,7 +106,7 @@ static void Parse(const char *command)
 		dcclite::Parser parser(command+3);
 
 		char nodeName[17];
-		if(parser.GetToken(nodeName, sizeof(nodeName)) != dcclite::TOKEN_ID)
+		if(parser.GetToken(nodeName, sizeof(nodeName)) != dcclite::Tokens::ID)
 		{
 			Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_NODE, " ", FSTR_NAME);
 
@@ -119,7 +119,7 @@ static void Parse(const char *command)
 		for(int i = 0;i < 6; ++i)
 		{
 			int number;
-			if(parser.GetNumber(number) != dcclite::TOKEN_NUMBER)
+			if(parser.GetNumber(number) != dcclite::Tokens::NUMBER)
 			{
 				Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", "mac");
 
@@ -133,7 +133,7 @@ static void Parse(const char *command)
 			if(i == 5)
 				break;
 
-			if(parser.GetToken(nullptr, 0) != dcclite::TOKEN_DOT)
+			if(parser.GetToken(nullptr, 0) != dcclite::Tokens::DOT)
 			{				
 				Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", "mac", " ", "sep");
 
@@ -142,7 +142,7 @@ static void Parse(const char *command)
 		}
 
 		int port;
-		if(parser.GetNumber(port) != dcclite::TOKEN_NUMBER)
+		if(parser.GetNumber(port) != dcclite::Tokens::NUMBER)
 		{
 			Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_PORT);
 
@@ -151,7 +151,7 @@ static void Parse(const char *command)
 
 		uint8_t ip[4] = {0};		
 		int srvport;
-		if (parser.GetNumber(srvport) != dcclite::TOKEN_NUMBER)
+		if (parser.GetNumber(srvport) != dcclite::Tokens::NUMBER)
 		{
 			Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_SRVPORT);
 

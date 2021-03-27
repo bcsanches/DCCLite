@@ -7,7 +7,7 @@
 #include "DccLiteService.h"
 #include "NetMessenger.h"
 #include "NmraUtil.h"
-#include "OutputDecoder.h"
+#include "SimpleOutputDecoder.h"
 #include "Parser.h"
 #include "SensorDecoder.h"
 #include "TurnoutDecoder.h"
@@ -44,6 +44,14 @@ class DccppClient: private IDccLiteServiceListener
 	private:
 		void OnDccLiteEvent(const DccLiteEvent &event) override;
 
+		void ParseStatusCommand(dcclite::Parser &parser, const std::string &msg);
+		bool ParseSensorCommand(dcclite::Parser &parser, const std::string &msg);
+
+		bool CreateTurnoutsStateResponse(std::stringstream &stream) const;
+
+		bool CreateTurnoutsDefResponse(std::stringstream &stream) const;
+		bool CreateOutputsDefResponse(std::stringstream &stream) const;
+
 	private:
 		NetMessenger m_clMessenger;
 		DccLiteService& m_rclSystem;
@@ -72,16 +80,16 @@ DccppClient::~DccppClient()
 	m_rclSystem.RemoveListener(*this);
 }
 
-static inline std::string CreateTurnoutDecoderResponse(const TurnoutDecoder& decoder)
+static inline std::string CreateTurnoutDecoderStateResponse(const TurnoutDecoder& decoder)
 {
 	return fmt::format("<H{} {}>", decoder.GetAddress(), (decoder.GetRemoteState() == DecoderStates::ACTIVE ? 1 : 0));
 }
 
-static inline std::string CreateOutputDecoderResponse(const OutputDecoder& decoder)
+static inline std::string CreateOutputDecoderStateResponse(const OutputDecoder& decoder)
 {
 	if (decoder.IsTurnoutDecoder())
 	{
-		return CreateTurnoutDecoderResponse(static_cast<const TurnoutDecoder&>(decoder));
+		return CreateTurnoutDecoderStateResponse(static_cast<const TurnoutDecoder&>(decoder));
 	}
 	else
 	{
@@ -89,7 +97,7 @@ static inline std::string CreateOutputDecoderResponse(const OutputDecoder& decod
 	}
 }
 
-static inline std::string CreateDecoderResponse(const RemoteDecoder& decoder)
+static inline std::string CreateDecoderStateResponse(const RemoteDecoder& decoder)
 {	
 	if (decoder.IsInputDecoder())
 	{
@@ -97,7 +105,7 @@ static inline std::string CreateDecoderResponse(const RemoteDecoder& decoder)
 	}	
 	else
 	{
-		return CreateOutputDecoderResponse(static_cast<const OutputDecoder&>(decoder));
+		return CreateOutputDecoderStateResponse(static_cast<const OutputDecoder&>(decoder));
 	}
 }
 
@@ -124,6 +132,208 @@ static inline std::string CreateSensorStateRespnse(const std::vector<SensorDecod
 	return response.str();
 }
 
+static bool ParseSignalCommandM(dcclite::Parser &parser, const std::string &msg)
+{	
+	int num1;
+
+	if (parser.GetHexNumber(num1) != Tokens::NUMBER)
+	{
+		Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER 0 for: {}", msg);
+		return false;
+	}
+
+	if (num1 != 0)
+	{
+		Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER 0 for: {}", msg);
+		return false;
+	}
+
+	if (parser.GetHexNumber(num1) != Tokens::NUMBER)
+	{
+		Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER 1 for: {}", msg);
+		return false;
+	}
+
+#if 0
+	if ((0xC0 & num1) != 0x80)
+	{
+		Log::Error("[DccppClient::Update] Expected accessory address: {}", msg);
+		goto ERROR_RESPONSE;
+	}
+#endif
+
+	int num2;
+	if (parser.GetHexNumber(num2) != Tokens::NUMBER)
+	{
+		Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER 2 for: {}", msg);
+		return false;
+	}
+
+	if ((num2 & 0x01) != 0x01)
+	{
+		Log::Error("[DccppClient::Update] Expected signal decoder address: {}", msg);
+		return false;
+	}
+
+	int num3;
+	if (parser.GetHexNumber(num3) != Tokens::NUMBER)
+	{
+		Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER 3 for: {}", msg);
+		return false;
+	}
+
+	if ((num3 & 0xE0) != 0x00)
+	{
+		Log::Error("[DccppClient::Update] Expected signal decoder 2 address: {}", msg);
+		return false;
+	}
+
+	uint8_t packet[3] = { static_cast<uint8_t>(num1), static_cast<uint8_t>(num2), static_cast<uint8_t>(num3) };
+
+	uint16_t address;
+	dcclite::SignalAspects packetAspect;
+
+	std::tie(address, packetAspect) = ExtractSignalDataFromPacket(packet);
+
+	Log::Debug("[DccppClient::Update] Signal decoder {} cmd {}", address, num3);	
+
+	return true;
+}
+
+bool DccppClient::CreateTurnoutsStateResponse(std::stringstream &response) const
+{
+	auto turnoutDecoders = m_rclSystem.FindAllTurnoutDecoders();
+	if (turnoutDecoders.empty())
+	{
+		response << "<X>";
+		return false;
+	}		
+	
+	for (auto turnout : turnoutDecoders)
+	{
+		response << CreateTurnoutDecoderStateResponse(*turnout);
+	}
+
+	return true;
+}
+
+bool DccppClient::CreateTurnoutsDefResponse(std::stringstream &response) const
+{
+	auto turnoutDecoders = m_rclSystem.FindAllTurnoutDecoders();
+	if (turnoutDecoders.empty())
+	{
+		response << "<X>";
+		return false;
+	}
+
+	for (auto turnout : turnoutDecoders)
+	{
+		auto addressNum = turnout->GetAddress().GetAddress();
+		auto nmraAddress = dcclite::ConvertAddressToNMRA(addressNum);
+
+		response << "<H " << 
+			addressNum << ' ' << 
+			std::get<0>(nmraAddress) << ' ' << 
+			std::get<1>(nmraAddress) << ' ' << 
+			((turnout->GetRemoteState() == DecoderStates::ACTIVE) ? 1 : 0 ) << 
+		">";
+	}
+
+	return true;
+}
+
+bool DccppClient::CreateOutputsDefResponse(std::stringstream &response) const
+{
+	auto outputDecoders = m_rclSystem.FindAllSimpleOutputDecoders();
+	if (outputDecoders.empty())
+	{
+		response << "<X>";
+		return false;
+	}
+	
+	for (auto dec : outputDecoders)
+	{
+		response << "<Y " << 
+			dec->GetAddress() << ' ' << 
+			dec->GetPin() << ' ' << 
+			(int)dec->GetDccppFlags() << ' ' << 
+			((dec->GetRemoteState() == DecoderStates::ACTIVE) ? 1 : 0) << 
+		">";
+
+		response << CreateOutputDecoderStateResponse(*dec);
+	}	
+
+	return true;
+}
+
+
+void DccppClient::ParseStatusCommand(dcclite::Parser &parser, const std::string &msg)
+{
+	std::stringstream response;
+	response << "<p0><iDCC++ DccLite><N1: Ethernet>";
+
+	this->CreateTurnoutsStateResponse(response);
+			
+	auto outputDecoders = m_rclSystem.FindAllSimpleOutputDecoders();
+	if (!outputDecoders.empty())
+	{
+		for (auto dec : outputDecoders)
+		{
+			response << CreateOutputDecoderStateResponse(*dec);
+		}
+	}
+	else
+	{
+		response << "<X>";
+	}	
+
+	m_clMessenger.Send(m_clAddress, response.str());
+
+	//DCCPP by default seems to do not request this, so we send so it has sensors states at load
+	auto sensorDecoders = m_rclSystem.FindAllSensorDecoders();
+	if (!sensorDecoders.empty())		
+		m_clMessenger.Send(m_clAddress, CreateSensorStateRespnse(sensorDecoders));
+}
+
+bool DccppClient::ParseSensorCommand(dcclite::Parser &parser, const std::string &msg)
+{
+	char token[128];
+	if (parser.GetToken(token, sizeof(token)) != Tokens::END_OF_BUFFER)
+	{
+		Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_EOF for: {}", msg);
+
+		return false;
+	}
+	
+	std::stringstream response;
+
+	//Send all sensors definition
+	auto sensorDecoders = m_rclSystem.FindAllSensorDecoders();
+	if (!sensorDecoders.empty())
+	{
+		for (auto dec : sensorDecoders)
+		{
+			response <<
+				"<Q" <<
+				dec->GetAddress().GetAddress() <<
+				' ' <<
+				static_cast<unsigned int>(dec->GetPin()) <<
+				' ' <<
+				dec->HasPullUp() <<
+				'>';
+		}
+	}
+	else
+	{
+		response << "<X>";
+	}
+
+	m_clMessenger.Send(m_clAddress, response.str());	
+
+	return true;	
+}
+
+
 void DccppClient::OnDccLiteEvent(const DccLiteEvent &event)
 {
 	if (event.m_tType != DccLiteEvent::DECODER_STATE_CHANGE)
@@ -132,7 +342,7 @@ void DccppClient::OnDccLiteEvent(const DccLiteEvent &event)
 	auto remoteDecoder = dynamic_cast<const RemoteDecoder *>(event.m_stDecoder.m_pclDecoder);
 
 	if(remoteDecoder)
-		m_clMessenger.Send(m_clAddress, CreateDecoderResponse(*remoteDecoder));	
+		m_clMessenger.Send(m_clAddress, CreateDecoderStateResponse(*remoteDecoder));	
 }
 
 bool DccppClient::Update()
@@ -154,7 +364,7 @@ bool DccppClient::Update()
 			dcclite::Parser parser(msg.c_str());
 
 			char token[128];
-			if (parser.GetToken(token, sizeof(token)) != TOKEN_CMD_START)
+			if (parser.GetToken(token, sizeof(token)) != Tokens::CMD_START)
 			{
 				Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_CMD_START: {}", msg);
 
@@ -162,7 +372,16 @@ bool DccppClient::Update()
 			}
 
 			char cmd[4];
-			if (parser.GetToken(cmd, sizeof(cmd)) != TOKEN_ID)
+			auto tokenType = parser.GetToken(cmd, sizeof(cmd));
+
+			if (tokenType == Tokens::HASH)
+			{
+				//max slots, have no idea why and how it is used
+				m_clMessenger.Send(m_clAddress, "<# 0>");
+				continue;
+			}
+			
+			if (tokenType != Tokens::ID)
 			{
 				Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_ID for cmd identification: {}", msg);
 
@@ -170,12 +389,7 @@ bool DccppClient::Update()
 			}
 
 			switch (cmd[0])
-			{
-				case '#':
-					//max slots, have no idea why and how it is used
-					m_clMessenger.Send(m_clAddress, "<# 0>");
-					break;
-
+			{				
 				case 'c':
 					//current
 					m_clMessenger.Send(m_clAddress, "<a 0>");
@@ -184,148 +398,22 @@ bool DccppClient::Update()
 
 				case 'M':
 					Log::Debug("[DccppClient::Update] Custom packet cmd {}, msg: {}", cmd, msg);
-					{
-						int num1;
-
-						if (parser.GetHexNumber(num1) != TOKEN_NUMBER)
-						{
-							Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER 0 for: {}", msg);
-							goto ERROR_RESPONSE;
-						}
-
-						if (num1 != 0)
-						{
-							Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER 0 for: {}", msg);
-							goto ERROR_RESPONSE;
-						}
-
-						if (parser.GetHexNumber(num1) != TOKEN_NUMBER)
-						{
-							Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER 1 for: {}", msg);
-							goto ERROR_RESPONSE;
-						}						
-
-#if 0
-						if ((0xC0 & num1) != 0x80) 
-						{
-							Log::Error("[DccppClient::Update] Expected accessory address: {}", msg);
-							goto ERROR_RESPONSE;
-						}
-#endif
-
-						int num2;
-						if (parser.GetHexNumber(num2) != TOKEN_NUMBER)
-						{
-							Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER 2 for: {}", msg);
-							goto ERROR_RESPONSE;
-						}
-
-						if ((num2 & 0x01) != 0x01)
-						{
-							Log::Error("[DccppClient::Update] Expected signal decoder address: {}", msg);
-							goto ERROR_RESPONSE;
-						}
-
-						int num3;
-						if (parser.GetHexNumber(num3) != TOKEN_NUMBER)
-						{
-							Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER 3 for: {}", msg);
-							goto ERROR_RESPONSE;
-						}
-
-						if ((num3 & 0xE0) != 0x00)
-						{
-							Log::Error("[DccppClient::Update] Expected signal decoder 2 address: {}", msg);
-							goto ERROR_RESPONSE;
-						}		
-
-						uint8_t packet[3] = { static_cast<uint8_t>(num1), static_cast<uint8_t>(num2), static_cast<uint8_t>(num3) };
-
-						uint16_t address;
-						dcclite::SignalAspects packetAspect;
-
-						std::tie(address, packetAspect) = ExtractSignalDataFromPacket(packet);									
-
-						Log::Debug("[DccppClient::Update] Signal decoder {} cmd {}", address, num3);
-					}
+					if (!ParseSignalCommandM(parser, msg))
+						goto ERROR_RESPONSE;
 
 					break;
 
 				case 's':
-				{
-					std::stringstream response;
-					response << "<p0><iDCC++ DccLite><N1: Ethernet>";
-
-					auto turnoutDecoders = m_rclSystem.FindAllTurnoutDecoders();
-					if (!turnoutDecoders.empty())
-					{
-						for (auto turnout : turnoutDecoders)
-						{
-							response << CreateTurnoutDecoderResponse(*turnout);
-						}
-					}
-					else
-					{
-						response << "<X>";
-					}
-
-					auto outputDecoders = m_rclSystem.FindAllOutputDecoders();
-					if (!outputDecoders.empty())
-					{
-						for (auto dec : outputDecoders)
-						{
-							response << CreateOutputDecoderResponse(*dec);							
-						}
-					}
-					else
-					{
-						response << "<X>";
-					}
-
-					m_clMessenger.Send(m_clAddress, response.str());
-				}
-				break;
+					this->ParseStatusCommand(parser, msg);
+					break;
 
 				case 'S':					
-					if (parser.GetToken(token, sizeof(token)) != TOKEN_EOF)
-					{
-						Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_EOF for: {}", msg);
-
+					if (!this->ParseSensorCommand(parser, msg))
 						goto ERROR_RESPONSE;
-					}
-					else
-					{
-						std::stringstream response;
-
-						auto sensorDecoders = m_rclSystem.FindAllSensorDecoders();
-						if (!sensorDecoders.empty())
-						{
-							for (auto dec : sensorDecoders)
-							{
-								response <<
-									"<Q" <<
-									dec->GetAddress().GetAddress() <<
-									' ' <<
-									static_cast<unsigned int>(dec->GetPin()) <<
-									' ' <<
-									dec->HasPullUp() <<
-									'>';
-							}
-						}
-						else
-						{
-							response << "<X>";
-						}
-
-						m_clMessenger.Send(m_clAddress, response.str());
-
-						//DCCPP by default seems to do not request this, so we send so it has sensors states at load
-						m_clMessenger.Send(m_clAddress, CreateSensorStateRespnse(sensorDecoders));
-					}															
 					break;
 
 				case 'Q':
-					if (parser.GetToken(token, sizeof(token)) != TOKEN_EOF)
+					if (parser.GetToken(token, sizeof(token)) != Tokens::END_OF_BUFFER)
 					{
 						Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_EOF for: {}", msg);
 
@@ -344,15 +432,31 @@ bool DccppClient::Update()
 				case 'Z':
 					{
 						int id;
-						if (parser.GetNumber(id) != TOKEN_NUMBER)
+						tokenType = parser.GetNumber(id);
+						if (tokenType == Tokens::END_OF_BUFFER)
 						{
+							std::stringstream response;
+
+							if (cmd[0] == 'T')
+								this->CreateTurnoutsDefResponse(response);
+							else
+								this->CreateOutputsDefResponse(response);
+
+
+							m_clMessenger.Send(m_clAddress, response.str());
+							break;
+						}
+
+						if (tokenType != Tokens::NUMBER)
+						{							
+
 							Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER for device id: {}", msg);
 
 							goto ERROR_RESPONSE;
 						}
 
 						int direction;
-						if (parser.GetNumber(direction) != TOKEN_NUMBER)
+						if (parser.GetNumber(direction) != Tokens::NUMBER)
 						{
 							Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER for device state: {}", msg);
 
@@ -383,7 +487,7 @@ bool DccppClient::Update()
 						if (!outputDecoder->GetPendingStateChange() && outputDecoder->GetRemoteState() == newState)
 						{
 							//we force an output, because we should not have a incoming state, so tell JMRI that we are on requested state
-							m_clMessenger.Send(m_clAddress, CreateOutputDecoderResponse(*outputDecoder));
+							m_clMessenger.Send(m_clAddress, CreateOutputDecoderStateResponse(*outputDecoder));
 						}
 						else
 						{

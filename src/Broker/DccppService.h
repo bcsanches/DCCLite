@@ -32,7 +32,7 @@ class DccppService: public Service
 
 		void Update(const dcclite::Clock& clock) override;
 
-		void Initialize() override;
+		void Initialize() override;	
 
 	private:
 		std::string		m_strDccServiceName;

@@ -34,6 +34,13 @@ class SimpleOutputDecoder : public OutputDecoder
 		{
 			return dcclite::DecoderTypes::DEC_OUTPUT;
 		}
+
+		inline dcclite::BasicPin GetPin() const noexcept
+		{
+			return m_clPin;
+		}
+
+		uint8_t GetDccppFlags() const noexcept;
 		
 		//
 		//IObject

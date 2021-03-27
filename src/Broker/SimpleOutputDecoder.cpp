@@ -49,15 +49,18 @@ SimpleOutputDecoder::~SimpleOutputDecoder()
 	m_rclDevice.TryGetINetworkDevice()->Decoder_UnregisterPin(*this, m_clPin);
 }
 
+uint8_t SimpleOutputDecoder::GetDccppFlags() const noexcept
+{
+	return	(m_fInvertedOperation ? dcclite::OutputDecoderFlags::OUTD_INVERTED_OPERATION : 0) |
+			(m_fIgnoreSavedState ? dcclite::OutputDecoderFlags::OUTD_IGNORE_SAVED_STATE : 0) |
+			(m_fActivateOnPowerUp ? dcclite::OUTD_ACTIVATE_ON_POWER_UP : 0);
+}
+
 
 void SimpleOutputDecoder::WriteConfig(dcclite::Packet &packet) const
 {
 	OutputDecoder::WriteConfig(packet);	
 
 	packet.Write8(m_clPin.Raw());
-	packet.Write8(
-		(m_fInvertedOperation ? dcclite::OutputDecoderFlags::OUTD_INVERTED_OPERATION : 0) |
-		(m_fIgnoreSavedState ? dcclite::OutputDecoderFlags::OUTD_IGNORE_SAVED_STATE : 0) |
-		(m_fActivateOnPowerUp ? dcclite::OUTD_ACTIVATE_ON_POWER_UP : 0)
-	);
+	packet.Write8(this->GetDccppFlags());		
 }

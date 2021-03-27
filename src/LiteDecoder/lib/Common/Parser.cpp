@@ -86,16 +86,19 @@ namespace dcclite
 					break;
 
 				case '<':
-					return TOKEN_CMD_START;
+					return Tokens::CMD_START;
 
 				case '>':
-					return TOKEN_CMD_END;
+					return Tokens::CMD_END;
 
 				case '.':
-					return TOKEN_DOT;
+					return Tokens::DOT;
 
 				case ':':
-					return TOKEN_COLON;
+					return Tokens::COLON;
+
+				case '#':
+					return Tokens::HASH;
 
 				case '0':
 					ch = m_pszCmd[m_iPos];
@@ -106,7 +109,7 @@ namespace dcclite
 						ch = m_pszCmd[m_iPos];
 
 						if (!ch)
-							return TOKEN_ERROR;
+							return Tokens::SYNTAX_ERROR;
 
 						++m_iPos;
 
@@ -135,7 +138,7 @@ namespace dcclite
 							{
 								FinishToken(dest, destPos, destSize);
 
-								return hexMode ? TOKEN_HEX_NUMBER : TOKEN_NUMBER;
+								return hexMode ? Tokens::HEX_NUMBER : Tokens::NUMBER;
 							}
 						}
 					}
@@ -156,16 +159,16 @@ namespace dcclite
 							{							
 								FinishToken(dest, destPos, destSize);
 								
-								return TOKEN_ID;
+								return Tokens::ID;
 							}
 						}
 					}
 
-					return TOKEN_ERROR;
+					return Tokens::SYNTAX_ERROR;
 			}
 		}
 
-		return TOKEN_EOF;
+		return Tokens::END_OF_BUFFER;
 	}
 
 	inline int NumChar2Num(const char digit)
@@ -198,9 +201,9 @@ namespace dcclite
 		char buffer[11] = "0x";
 
 		auto token = this->GetToken(buffer + 2, sizeof(buffer) - 2);
-		if ((token != TOKEN_NUMBER) && (token != TOKEN_HEX_NUMBER))
+		if ((token != Tokens::NUMBER) && (token != Tokens::HEX_NUMBER))
 		{
-			if (token != TOKEN_ID)
+			if (token != Tokens::ID)
 				return token;
 
 			Parser parser(buffer);
@@ -208,9 +211,9 @@ namespace dcclite
 			return parser.GetNumber(dest);
 		}
 
-		dest = Str2Num(buffer+2, TOKEN_HEX_NUMBER);
+		dest = Str2Num(buffer+2, true);
 
-		return TOKEN_NUMBER;
+		return Tokens::NUMBER;
 	}
 
 
@@ -219,12 +222,12 @@ namespace dcclite
 		char buffer[9];
 
 		auto token = this->GetToken(buffer, sizeof(buffer));
-		if ((token != TOKEN_NUMBER) && (token != TOKEN_HEX_NUMBER))
+		if ((token != Tokens::NUMBER) && (token != Tokens::HEX_NUMBER))
 			return token;
 
-		dest = Str2Num(buffer, token == TOKEN_HEX_NUMBER);		
+		dest = Str2Num(buffer, token == Tokens::HEX_NUMBER);
 
-		return TOKEN_NUMBER;
+		return Tokens::NUMBER;
 	}
 
 	void Parser::PushToken()

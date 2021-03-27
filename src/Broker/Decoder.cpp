@@ -24,7 +24,7 @@ DccAddress::DccAddress(const rapidjson::Value &value)
 		dcclite::Parser parser{ value.GetString() };
 		
 		int adr;		
-		if (parser.GetNumber(adr) != dcclite::TOKEN_NUMBER)
+		if (parser.GetNumber(adr) != dcclite::Tokens::NUMBER)
 		{					
 			throw std::runtime_error(fmt::format("error: Decoder::Address::Address(const nlohmann::json::value_type &value) invalid value for address, see {}", value.GetString()));
 		}		

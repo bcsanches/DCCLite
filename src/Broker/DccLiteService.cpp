@@ -21,6 +21,7 @@
 #include "OutputDecoder.h"
 #include "Packet.h"
 #include "SensorDecoder.h"
+#include "SimpleOutputDecoder.h"
 #include "TurnoutDecoder.h"
 #include "VirtualDevice.h"
 
@@ -333,22 +334,19 @@ Decoder *DccLiteService::TryFindDecoder(std::string_view id) const
 	return static_cast<Decoder *>(decoder ? decoder : m_pDecoders->TryResolveChild(id));
 }
 
-std::vector<OutputDecoder*> DccLiteService::FindAllOutputDecoders()
+std::vector<SimpleOutputDecoder *> DccLiteService::FindAllSimpleOutputDecoders()
 {
-	std::vector<OutputDecoder*> vecDecoders;
+	std::vector<SimpleOutputDecoder*> vecDecoders;
 
 	auto enumerator = m_pDecoders->GetEnumerator();
 
 	while (enumerator.MoveNext())
 	{
-		auto decoder = dynamic_cast<OutputDecoder *>(enumerator.TryGetCurrent());
+		auto decoder = dynamic_cast<SimpleOutputDecoder *>(enumerator.TryGetCurrent());
 
 		if (!decoder)
 			continue;
-
-		if (decoder->IsTurnoutDecoder())
-			continue;
-
+		
 		vecDecoders.push_back(decoder);
 	}
 

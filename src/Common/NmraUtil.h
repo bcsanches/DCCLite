@@ -55,4 +55,6 @@ namespace dcclite
 	std::tuple<uint16_t, SignalAspects> ExtractSignalDataFromPacket(const uint8_t packet[3]);    
 
     SignalAspects ConvertNameToAspect(const char *name);
+
+    std::tuple<int16_t, uint16_t> ConvertAddressToNMRA(uint16_t address);
 }
