@@ -27,6 +27,10 @@
           "class": "ArduinoMega"
         },
         {
+            "name": "TC_02",
+            "class": "ArduinoMega"
+        },
+        {
             "name": "Helix",
             "class": "ArduinoMega"
         },

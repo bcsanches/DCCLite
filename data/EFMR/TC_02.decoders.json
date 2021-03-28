@@ -1,0 +1,15 @@
+[
+  {
+    "name": "TC_T50",
+    "class": "ServoTurnout",
+    "address": "1300",
+    "pin": 21,
+    "inverted": true,
+    "powerPin": 43,
+    "frogPin": 42,
+    "invertedFrog": false,
+    "operationTime": 3000,
+    "range":15,
+    "comment": "Exit superior"
+  }
+]
