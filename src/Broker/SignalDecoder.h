@@ -42,15 +42,14 @@ class SignalDecoder : public Decoder
 		void Serialize(dcclite::JsonOutputStream_t &stream) const override;
 
 	private:
-		class Aspect
-		{
-			public:
-				const dcclite::SignalAspects m_eAspect;
+		struct Aspect
+		{			
+			dcclite::SignalAspects m_eAspect;
 
-				const std::vector<std::string> m_vecOnHeads;
-				const std::vector<std::string> m_vecOffHeads;
+			std::vector<std::string> m_vecOnHeads;
+			std::vector<std::string> m_vecOffHeads;
 
-				const bool m_Flash;
+			bool m_Flash = false;
 		};
 
 	private:				

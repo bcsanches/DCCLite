@@ -47,9 +47,71 @@ SignalDecoder::SignalDecoder(
 	{
 		auto name = aspectElement["name"].GetString();
 
-		auto aspect = dcclite::ConvertNameToAspect(name);
+		auto aspectId = dcclite::ConvertNameToAspect(name);
+
+		if(std::any_of(m_vecAspects.begin(), m_vecAspects.end(), [aspectId](const Aspect &aspect) { return aspect.m_eAspect == aspectId; }))		
+		{
+			throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: aspect {} already defined", name));
+		}
+
+		Aspect newAspect;
+
+		newAspect.m_eAspect = aspectId;
+
+		auto onLights = aspectElement.FindMember("on");
+		if (onLights != aspectElement.MemberEnd())
+		{
+			for (auto &it : onLights->value.GetArray())
+			{
+				if (m_mapHeads.find(it.GetString()) == m_mapHeads.end())
+				{
+					throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: aspect {} on \"on\" array not found on heads defintion", it.GetString()));
+				}
+
+				newAspect.m_vecOnHeads.push_back(it.GetString());
+			}
+		}
+
+		auto offLights = aspectElement.FindMember("off");
+		if (offLights != aspectElement.MemberEnd())
+		{
+			for (auto &it : offLights->value.GetArray())
+			{
+				if (m_mapHeads.find(it.GetString()) == m_mapHeads.end())
+				{
+					throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: aspect {} on \"off\" array not found on heads defintion", it.GetString()));
+				}
+
+				if (std::any_of(newAspect.m_vecOnHeads.begin(), newAspect.m_vecOnHeads.end(), [&it](const std::string &onAspectName) { return onAspectName.compare(it.GetString()) == 0; }))
+				{
+					throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: \"off\" head {} also defined on the \"on\" table", it.GetString()));
+				}
+
+				newAspect.m_vecOffHeads.push_back(it.GetString());
+			}
+		}
+		else
+		{
+			//if no off array defined, we simple add all heads not listed on the "on" table
+			for (auto headIt : m_mapHeads)
+			{
+				//skip existing heads
+				if (std::any_of(newAspect.m_vecOnHeads.begin(), newAspect.m_vecOnHeads.end(), [headIt](const std::string &onAspectName) { return onAspectName.compare(headIt.first) == 0; }))
+				{
+					continue;
+				}
+
+				newAspect.m_vecOffHeads.push_back(headIt.first);
+			}
+		}
+
+		m_vecAspects.push_back(std::move(newAspect));
 	}
 
+	std::sort(m_vecAspects.begin(), m_vecAspects.end(), [](const Aspect &a, const Aspect &b)
+	{
+		return a.m_eAspect < b.m_eAspect;
+	});
 }
 
 
@@ -60,3 +122,4 @@ void SignalDecoder::Serialize(dcclite::JsonOutputStream_t &stream) const
 
 
 }
+
