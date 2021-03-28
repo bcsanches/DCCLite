@@ -18,14 +18,14 @@
 class TurnoutDecoder : public OutputDecoder
 {
 	public:
-		TurnoutDecoder(const Class& decoderClass,
+		TurnoutDecoder(
 			const DccAddress& address,
 			const std::string& name,
 			IDccLite_DecoderServices &owner,
 			IDevice_DecoderServices &dev,
 			const rapidjson::Value& params
 		):
-			OutputDecoder(decoderClass, address, name, owner, dev, params)
+			OutputDecoder(address, name, owner, dev, params)
 		{
 			//empty
 		}
@@ -44,7 +44,7 @@ class TurnoutDecoder : public OutputDecoder
 class ServoTurnoutDecoder : public TurnoutDecoder
 {
 	public:
-		ServoTurnoutDecoder(const Class& decoderClass,
+		ServoTurnoutDecoder(
 			const DccAddress& address,
 			const std::string& name,
 			IDccLite_DecoderServices &owner,

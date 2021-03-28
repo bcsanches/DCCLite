@@ -22,23 +22,33 @@
 #include "Log.h"
 
 #include "TerminalCmd.h"
+#include "TerminalService.h"
 #include "SpecialFolders.h"
 
 #include "DccLiteService.h"
+#include "DccppService.h"
 
 //fucking header leak
 #undef GetObject
 
-static std::unique_ptr<Service> CreateService(Broker &broker, const rapidjson::Value &data, const Project &project)
+static std::unique_ptr<Service> CreateBrokerService(Broker &broker, const rapidjson::Value &data, const Project &project)
 {
 	const char *className = data["class"].GetString();
 	const char *name = data["name"].GetString();
 
 	dcclite::Log::Info("Creating DccLite Service: {}", name);
-	
-	if (auto output = ServiceClass::TryProduce(className, name,  broker, data, project))
+
+	if (strcmp(className, "DccLite") == 0)
 	{
-		return output;	
+		return std::make_unique<DccLiteService>(name, broker, data, project);
+	}
+	else if (strcmp(className, "DccppService") == 0)
+	{
+		return DccppService::Create(name, broker, data, project);
+	}	
+	else if (strcmp(className, "Terminal") == 0)
+	{
+		return std::make_unique<TerminalService>(name, broker, data, project);
 	}
 	
 	throw std::runtime_error(fmt::format("error: unknown service type {}", className));
@@ -64,6 +74,8 @@ Broker::Broker(dcclite::fs::path projectPath):
 
 	this->LoadConfig();
 }
+
+
 
 void Broker::LoadConfig()
 {
@@ -94,7 +106,7 @@ void Broker::LoadConfig()
 	
 	for(auto &serviceData : services.GetArray())	
 	{		
-		auto service = CreateService(*this, serviceData, m_clProject);			
+		auto service = CreateBrokerService(*this, serviceData, m_clProject);
 
 		m_pServices->AddChild(std::move(service));
 	}

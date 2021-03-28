@@ -35,7 +35,7 @@ class TurnoutDecoder;
 class DccLiteService : public Service, private IDccLite_DeviceServices, private IDccLite_DecoderServices
 {
 	public:
-		DccLiteService(const ServiceClass &serviceClass, const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+		DccLiteService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
 		~DccLiteService() override;
 		

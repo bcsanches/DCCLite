@@ -37,7 +37,7 @@ DccAddress::DccAddress(const rapidjson::Value &value)
 	}
 }
 
-Decoder::Decoder(const Class &decoderClass, const DccAddress &address, std::string name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params):
+Decoder::Decoder(const DccAddress &address, std::string name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params):
 	Object(std::move(name)),
 	m_iAddress(address),	
 	m_rclManager(owner),

@@ -12,6 +12,7 @@
 
 #include <spdlog/spdlog.h>
 
+#include <exception>
 #include <Log.h>
 
 #include "NetworkDevice.h"
@@ -21,17 +22,28 @@
 #include "OutputDecoder.h"
 #include "Packet.h"
 #include "SensorDecoder.h"
+#include "SignalDecoder.h"
 #include "SimpleOutputDecoder.h"
 #include "TurnoutDecoder.h"
 #include "VirtualDevice.h"
 
-static ServiceClass dccLiteService("DccLite", 
-	[](const ServiceClass &serviceClass, const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) ->
-	std::unique_ptr<Service> { return std::make_unique<DccLiteService>(serviceClass, name, broker, params, project); }
-);
+std::unique_ptr<Decoder> TryCreateDecoder(const std::string &className, DccAddress address, std::string name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params)
+{
+	if (className.compare("Output") == 0)
+		return std::make_unique<SimpleOutputDecoder>(address, std::move(name), owner, dev, params);
+	else if (className.compare("Sensor") == 0)
+		return std::make_unique<SensorDecoder>(address, std::move(name), owner, dev, params);
+	else if (className.compare("ServoTurnout") == 0)
+		return std::make_unique<ServoTurnoutDecoder>(address, std::move(name), owner, dev, params);
+	else if (className.compare("VirtualSignal") == 0)
+		return std::make_unique<SignalDecoder>(address, std::move(name), owner, dev, params);
+	else
+		return std::unique_ptr<Decoder>();
+}
 
-DccLiteService::DccLiteService(const ServiceClass &serviceClass, const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :
-	Service(serviceClass, name, broker, params, project)	
+
+DccLiteService::DccLiteService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :
+	Service(name, broker, params, project)	
 {
 	m_pDecoders = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("decoders")));
 	m_pAddresses = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("addresses")));
@@ -131,7 +143,7 @@ Decoder &DccLiteService::Device_CreateDecoder(
 	const rapidjson::Value &params
 )
 {
-	auto decoder = Decoder::Class::TryProduce(className.c_str(), address, name, *this, dev, params);
+	auto decoder = TryCreateDecoder(className.c_str(), address, name, *this, dev, params);	
 	if (!decoder)
 	{				
 		throw std::runtime_error(fmt::format("[DccLiteService::Device_CreateDecoder] Error: failed to instantiate decoder {} - {} [{}]", name, address, className));

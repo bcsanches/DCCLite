@@ -8,6 +8,20 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
+
+#pragma once
+
 #include "Service.h"
 
-#include "ClassInfo.h"
+class DccppService: public Service
+{	
+	public:
+		DccppService(const std::string &name, Broker &broker, const rapidjson::Value& params, const Project& project);
+		~DccppService() override 
+		{
+			//empty
+		}
+		
+
+		static std::unique_ptr<Service> Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+};

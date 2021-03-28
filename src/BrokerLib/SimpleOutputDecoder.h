@@ -18,7 +18,7 @@
 class SimpleOutputDecoder : public OutputDecoder
 {
 	public:
-		SimpleOutputDecoder(const Class &decoderClass,
+		SimpleOutputDecoder(
 			const DccAddress &address,
 			const std::string &name,
 			IDccLite_DecoderServices &owner,

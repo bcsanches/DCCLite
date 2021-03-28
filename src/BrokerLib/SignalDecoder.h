@@ -20,8 +20,7 @@
 class SignalDecoder : public Decoder
 {
 	public:
-		SignalDecoder(
-			const Class &decoderClass,
+		SignalDecoder(			
 			const DccAddress &address,
 			const std::string &name,
 			IDccLite_DecoderServices &owner,
@@ -51,6 +50,8 @@ class SignalDecoder : public Decoder
 
 			bool m_Flash = false;
 		};
+
+		friend class SignalTester;
 
 	private:				
 		dcclite::DecoderStates m_kRequestedState = dcclite::DecoderStates::INACTIVE;

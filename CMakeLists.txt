@@ -28,11 +28,13 @@ add_subdirectory(contrib)
 set_property(TARGET fmt PROPERTY FOLDER "contrib")
 set_property(TARGET gtest PROPERTY FOLDER "contrib")
 set_property(TARGET gtest_main PROPERTY FOLDER "contrib")
+set_property(TARGET gmock PROPERTY FOLDER "contrib")
+set_property(TARGET gmock_main PROPERTY FOLDER "contrib")
 set_property(TARGET lfwatch PROPERTY FOLDER "contrib")
 
 set(LFWATCH_BUILD_DEMO OFF CACHE BOOL "" FORCE)
 
-set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
+set(BUILD_GMOCK ON CACHE BOOL "" FORCE)
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)

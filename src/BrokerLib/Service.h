@@ -12,7 +12,6 @@
 
 #include <string>
 
-#include "ClassInfo.h"
 #include "Object.h"
 
 #include <rapidjson/document.h>
@@ -20,8 +19,6 @@
 class Broker;
 class Project;
 class Service;
-
-typedef dcclite::ClassInfo<Service, const std::string&, Broker &, const rapidjson::Value &, const Project &> ServiceClass;
 
 namespace dcclite
 {
@@ -38,9 +35,8 @@ class Service: public dcclite::FolderObject
 		virtual void Update(const dcclite::Clock& clock) { ; }
 	
 	protected:
-		Service(const ServiceClass &serviceClass, std::string name, Broker &broker, const rapidjson::Value &params, const Project &project):
-			FolderObject(std::move(name)),
-			m_rclServiceClass(serviceClass),
+		Service(std::string name, Broker &broker, const rapidjson::Value &params, const Project &project):
+			FolderObject(std::move(name)),			
 			m_rclBroker(broker),
 			m_rclProject(project)
 		{
@@ -62,9 +58,7 @@ class Service: public dcclite::FolderObject
 			//nothing
 		}	
 
-	protected:
-		const ServiceClass& m_rclServiceClass;
-
+	protected:		
 		Broker& m_rclBroker;
 
 		const Project &m_rclProject;

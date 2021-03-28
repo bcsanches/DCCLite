@@ -15,8 +15,8 @@
 #include "Log.h"
 #include "Packet.h"
 
-RemoteDecoder::RemoteDecoder(const Class &decoderClass, const DccAddress &address, std::string name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params):
-	Decoder(decoderClass, address, std::move(name), owner, dev, params)	
+RemoteDecoder::RemoteDecoder(const DccAddress &address, std::string name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params):
+	Decoder(address, std::move(name), owner, dev, params)	
 {	
 	auto it = params.FindMember("broken");
 	if (it != params.MemberEnd())

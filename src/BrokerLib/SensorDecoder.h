@@ -17,7 +17,7 @@
 class SensorDecoder : public RemoteDecoder
 {
 	public:
-		SensorDecoder(const Class &decoderClass,
+		SensorDecoder(
 			const DccAddress &address,
 			const std::string &name,
 			IDccLite_DecoderServices &owner,

@@ -28,8 +28,7 @@ namespace dcclite
 class RemoteDecoder: public Decoder
 {	
 	public:
-		RemoteDecoder(
-			const Class &decoderClass, 
+		RemoteDecoder(			
 			const DccAddress &address, 
 			std::string name,
 			IDccLite_DecoderServices &owner,

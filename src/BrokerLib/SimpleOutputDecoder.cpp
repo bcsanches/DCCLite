@@ -13,21 +13,15 @@
 #include "IDevice.h"
 #include "Packet.h"
 
-static Decoder::Class simpleOutputDecoder("Output",
-	[](const Decoder::Class &decoderClass, const DccAddress &address, const std::string &name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params)
-		-> std::unique_ptr<Decoder> { return std::make_unique<SimpleOutputDecoder>(decoderClass, address, name, owner, dev, params); }
-);
 
-
-SimpleOutputDecoder::SimpleOutputDecoder(
-	const Class &decoderClass,
+SimpleOutputDecoder::SimpleOutputDecoder(	
 	const DccAddress &address,
 	const std::string &name,
 	IDccLite_DecoderServices &owner,
 	IDevice_DecoderServices &dev,
 	const rapidjson::Value &params
 ) :
-	OutputDecoder(decoderClass, address, name, owner, dev, params),
+	OutputDecoder(address, name, owner, dev, params),
 	m_clPin(params["pin"].GetInt())
 {	
 	m_rclDevice.TryGetINetworkDevice()->Decoder_RegisterPin(*this, m_clPin, "pin");

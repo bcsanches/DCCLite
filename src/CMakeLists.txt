@@ -1,12 +1,13 @@
 add_compile_definitions(SPDLOG_FMT_EXTERNAL)
 
 add_subdirectory(ArduinoLib)
-add_subdirectory(Common)
-add_subdirectory(Terminal)
 add_subdirectory(Broker)
+add_subdirectory(BrokerLib)
+add_subdirectory(Common)
 add_subdirectory(Emulator)
 add_subdirectory(Launcher)
 add_subdirectory(LiteDecoder)
+add_subdirectory(Terminal)
 
 if (${DCCLITE_GUI_TOOLS})
   add_subdirectory(LitePanel)

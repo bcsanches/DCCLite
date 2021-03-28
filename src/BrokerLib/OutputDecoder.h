@@ -17,14 +17,14 @@
 class OutputDecoder : public RemoteDecoder
 {
 	public:
-		OutputDecoder(const Class& decoderClass,
+		OutputDecoder(
 			const DccAddress& address,
 			const std::string& name,
 			IDccLite_DecoderServices & owner,
 			IDevice_DecoderServices &dev,
 			const rapidjson::Value& params
 		) :
-			RemoteDecoder(decoderClass, address, name, owner, dev, params)
+			RemoteDecoder(address, name, owner, dev, params)
 		{
 			//empty
 		}		

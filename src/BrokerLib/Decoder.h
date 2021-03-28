@@ -13,7 +13,6 @@
 #include <optional>
 #include <ostream>
 
-#include "ClassInfo.h"
 #include "EmbeddedLibDefs.h"
 #include "Object.h"
 
@@ -79,13 +78,9 @@ class DccAddress
 };
 
 class Decoder: public dcclite::Object
-{
-	public:		
-		typedef dcclite::ClassInfo<Decoder, const DccAddress &, const std::string &, IDccLite_DecoderServices &, IDevice_DecoderServices &, const rapidjson::Value &> Class;
-
+{	
 	public:
-		Decoder(
-			const Class &decoderClass, 
+		Decoder(			
 			const DccAddress &address, 
 			std::string name,
 			IDccLite_DecoderServices &owner,

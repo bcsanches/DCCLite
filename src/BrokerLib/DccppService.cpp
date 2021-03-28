@@ -15,10 +15,10 @@
 
 using namespace dcclite;
 
-static ServiceClass dccppService("DccppService",
-	[](const ServiceClass& serviceClass, const std::string& name, Broker& broker, const rapidjson::Value& params, const Project& project) ->
-	std::unique_ptr<Service> { return std::make_unique<DccppService>(serviceClass, name, broker, params, project); }
-);
+std::unique_ptr<Service> DccppService::Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project)
+{
+	return std::make_unique<DccppService>(name, broker, params, project);
+}
 
 class DccppClient: private IDccLiteServiceListener
 {
@@ -512,9 +512,36 @@ ERROR_RESPONSE:
 	return true;
 }
 
+class DccppServiceImpl : public DccppService
+{
+	public:
+		DccppServiceImpl(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+		~DccppServiceImpl() override
+		{
+			//empty
+		}
 
-DccppService::DccppService(const ServiceClass& serviceClass, const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
-	Service(serviceClass, name, broker, params, project),
+		void Update(const dcclite::Clock &clock) override;
+
+		void Initialize() override;
+
+		static std::unique_ptr<Service> Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+
+	private:
+		std::string		m_strDccServiceName;
+		DccLiteService *m_pclDccService = nullptr;
+
+		//
+		//Network communication
+		//
+		dcclite::Socket m_clSocket;
+
+		std::vector<DccppClient> m_vecClients;
+};
+
+
+DccppServiceImpl::DccppServiceImpl(const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
+	DccppService(name, broker, params, project),
 	m_strDccServiceName(params["system"].GetString())
 {
 	//standard port used by DCC++
@@ -537,7 +564,7 @@ DccppService::DccppService(const ServiceClass& serviceClass, const std::string& 
 	dcclite::Log::Info("[DccppService] Started, listening on port {}", port);
 }
 
-void DccppService::Initialize()
+void DccppServiceImpl::Initialize()
 {
 	m_pclDccService = static_cast<DccLiteService *>(m_rclBroker.TryFindService(m_strDccServiceName));
 
@@ -545,7 +572,7 @@ void DccppService::Initialize()
 		throw std::runtime_error(fmt::format("[DccppService::Initialize] Cannot find dcc service: {}", m_strDccServiceName));
 }
 
-void DccppService::Update(const dcclite::Clock& clock)
+void DccppServiceImpl::Update(const dcclite::Clock& clock)
 {
 	auto [status, socket, address] = m_clSocket.TryAccept();
 
@@ -569,4 +596,10 @@ void DccppService::Update(const dcclite::Clock& clock)
 			m_vecClients.erase(m_vecClients.begin() + i);
 		}
 	}
+}
+
+DccppService::DccppService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :
+	Service(name, broker, params, project)
+{
+	//empty
 }

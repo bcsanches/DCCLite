@@ -14,19 +14,15 @@
 
 #include "IDevice.h"
 
-static Decoder::Class sensorDecoder("Sensor",
-	[](const Decoder::Class &decoderClass, const DccAddress &address, const std::string &name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params)
-	-> std::unique_ptr<Decoder> { return std::make_unique<SensorDecoder>(decoderClass, address, name, owner, dev, params); }
-);
 
-SensorDecoder::SensorDecoder(const Class &decoderClass,
+SensorDecoder::SensorDecoder(
 	const DccAddress &address,
 	const std::string &name,
 	IDccLite_DecoderServices &owner,
 	IDevice_DecoderServices &dev,
 	const rapidjson::Value &params
 ):
-	RemoteDecoder(decoderClass, address, name, owner, dev, params),
+	RemoteDecoder(address, name, owner, dev, params),
 	m_clPin(params["pin"].GetInt())
 {
 	m_rclDevice.TryGetINetworkDevice()->Decoder_RegisterPin(*this, m_clPin, "pin");

@@ -28,8 +28,7 @@ set(Common_SRCS
 	Util.cpp
 )
 
-set(Common_HDRS	
-	ClassInfo.h
+set(Common_HDRS		
 	Clock.h
 	ConsoleUtils.h
 	defs.h
@@ -59,7 +58,7 @@ target_compile_features(Common PUBLIC cxx_std_17)
 target_include_directories(Common
   PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/fmt/include
   PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/JsonCreator/include
-          ${DCCLite_SOURCE_DIR}/contrib/rapidjson/include
+  PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/rapidjson/include
           ${DCCLite_SOURCE_DIR}/contrib/spdlog/include
           ${DCCLite_SOURCE_DIR}/src/LiteDecoder/lib/Common
   PRIVATE ${DCCLite_SOURCE_DIR}/contrib/magic_enum/include	

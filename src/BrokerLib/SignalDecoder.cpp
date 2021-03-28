@@ -10,21 +10,15 @@
 
 #include "SignalDecoder.h"
 
-static Decoder::Class signalDecoderClass("VirtualSignal",
-	[](const Decoder::Class &decoderClass, const DccAddress &address, const std::string &name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params)
-	-> std::unique_ptr<Decoder> { return std::make_unique<SignalDecoder>(decoderClass, address, name, owner, dev, params); }
-);
-
 
 SignalDecoder::SignalDecoder(
-	const Class &decoderClass,
 	const DccAddress &address,
 	const std::string &name,
 	IDccLite_DecoderServices &owner,
 	IDevice_DecoderServices &dev,
 	const rapidjson::Value &params
 ) :
-	Decoder(decoderClass, address, name, owner, dev, params)
+	Decoder(address, name, owner, dev, params)
 {
 	auto headsData = params.FindMember("heads");
 	if ((headsData == params.MemberEnd()) || (!headsData->value.IsObject()))
@@ -110,7 +104,7 @@ SignalDecoder::SignalDecoder(
 
 	std::sort(m_vecAspects.begin(), m_vecAspects.end(), [](const Aspect &a, const Aspect &b)
 	{
-		return a.m_eAspect < b.m_eAspect;
+		return b.m_eAspect < a.m_eAspect;
 	});
 }
 
