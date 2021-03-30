@@ -15,20 +15,20 @@ using namespace rapidjson;
 
 class DeviceDecoderServicesMockup : public IDevice_DecoderServices
 {
-public:
-	std::string_view GetDeviceName() const noexcept override
-	{
-		return "mockup";
-	}
+	public:
+		std::string_view GetDeviceName() const noexcept override
+		{
+			return "mockup";
+		}
 };
 
 class DecoderServicesMockup : public IDccLite_DecoderServices
 {
-public:
-	void Decoder_OnStateChanged(Decoder &decoder) override
-	{
-		//empty
-	}
+	public:
+		void Decoder_OnStateChanged(Decoder &decoder) override
+		{
+			//empty
+		}
 };
 
 static DecoderServicesMockup g_DecoderServices;
@@ -139,35 +139,51 @@ TEST(SignalDecoderTest, Basic)
 		ASSERT_FALSE(aspect.m_Flash);
 	}
 
+	//
+	// 	   
 	//DARK aspect
+	//
+	//
 	ASSERT_EQ(aspects[0].m_vecOnHeads.size(), 2);
-	ASSERT_EQ(aspects[0].m_vecOffHeads.size(), 1);
+	ASSERT_EQ(aspects[0].m_vecOffHeads.size(), 1) << "m_vecOffHeads should contain one element only";
 
+	//Check if m_vecOffHeads on DARK aspect contains only green, that is configured on JSON	
+	ASSERT_TRUE(VectorHasStr(aspects[0].m_vecOffHeads, "green"));
+
+	ASSERT_TRUE(VectorHasStr(aspects[0].m_vecOnHeads, "yellow"));
+	ASSERT_TRUE(VectorHasStr(aspects[0].m_vecOnHeads, "caution"));
+
+	//
+	//
+	// Other Aspects
+	//
+	//
 	for (int i = 1; i < 3; ++i)
 	{		
 		ASSERT_EQ(aspects[i].m_vecOnHeads.size(), 1);
 		ASSERT_EQ(aspects[i].m_vecOffHeads.size(), 3);
 	}
 
+	//size was checked to be 1, so just confirm correct head is there
 	ASSERT_STREQ(aspects[1].m_vecOnHeads[0].c_str(), "green");
 	ASSERT_STREQ(aspects[2].m_vecOnHeads[0].c_str(), "yellow");
 	ASSERT_STREQ(aspects[3].m_vecOnHeads[0].c_str(), "red");
 
-	ASSERT_TRUE(VectorHasStr(aspects[0].m_vecOffHeads, "green"));
-	ASSERT_TRUE(VectorHasStr(aspects[0].m_vecOnHeads, "yellow"));
-	ASSERT_TRUE(VectorHasStr(aspects[0].m_vecOnHeads, "caution"));
-
+	//size was checked to be 3, so just confirm the heads are there
 	ASSERT_TRUE(VectorHasStr(aspects[1].m_vecOffHeads, "red"));
 	ASSERT_TRUE(VectorHasStr(aspects[1].m_vecOffHeads, "yellow"));
+	ASSERT_TRUE(VectorHasStr(aspects[1].m_vecOffHeads, "caution"));
 
 	ASSERT_TRUE(VectorHasStr(aspects[2].m_vecOffHeads, "red"));
 	ASSERT_TRUE(VectorHasStr(aspects[2].m_vecOffHeads, "green"));
+	ASSERT_TRUE(VectorHasStr(aspects[2].m_vecOffHeads, "caution"));
 
 	ASSERT_TRUE(VectorHasStr(aspects[3].m_vecOffHeads, "yellow"));
 	ASSERT_TRUE(VectorHasStr(aspects[3].m_vecOffHeads, "green"));
+	ASSERT_TRUE(VectorHasStr(aspects[3].m_vecOffHeads, "caution"));
 }
 
-std::string ExtractSignalExceptionString(const char *json)
+static std::string ExtractSignalExceptionString(const char *json)
 {	
 	try
 	{
@@ -202,7 +218,7 @@ TEST(SignalDecoderTest, NoHeadsData)
 		}
 	)JSON";
 
-	ASSERT_THAT(ExtractSignalExceptionString(json), HasSubstr("Error: expected heads object for"));
+	ASSERT_THAT(ExtractSignalExceptionString(json), HasSubstr("Error: expected heads object for")) << "Heads data in JSON is not an object";
 }
 
 TEST(SignalDecoderTest, NoAspectsData)
@@ -387,5 +403,5 @@ TEST(SignalDecoderTest, InvalidAspectName)
 			}
 		]  
 	}
-	)JSON"));
+	)JSON")) << "Signal definition in JSON uses an name for aspect that is not know [BLA]";
 };
