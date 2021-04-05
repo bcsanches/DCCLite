@@ -95,7 +95,7 @@ void ServoTurnoutDecoder::TurnOnPower(const unsigned long ticks)
 
 	if (m_clPowerPin)		
 	{
-		m_clPowerPin.DigitalWrite(Pin::VLOW);
+		m_clPowerPin.DigitalWrite((m_fFlags & dcclite::ServoTurnoutDecoderFlags::SRVT_INVERTED_POWER) ? Pin::VHIGH : Pin::VLOW);
 	}	
 		
 	m_fFlags |= dcclite::SRVT_POWER_ON;
@@ -106,7 +106,7 @@ void ServoTurnoutDecoder::TurnOffPower()
 {
 	if (m_clPowerPin)		
 	{
-		m_clPowerPin.DigitalWrite(Pin::VHIGH);
+		m_clPowerPin.DigitalWrite((m_fFlags & dcclite::ServoTurnoutDecoderFlags::SRVT_INVERTED_POWER) ? Pin::VLOW : Pin::VHIGH);		
 	}
 
 	m_clServo.detach();

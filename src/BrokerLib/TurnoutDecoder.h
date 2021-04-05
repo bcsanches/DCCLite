@@ -98,4 +98,5 @@ class ServoTurnoutDecoder : public TurnoutDecoder
 		bool m_fActivateOnPowerUp = false;
 
 		bool m_fInvertedFrog = false;		
+		bool m_fInvertedPower = false;
 };

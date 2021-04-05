@@ -79,8 +79,9 @@ namespace dcclite
 		SRVT_IGNORE_SAVED_STATE = 0x08,
 		SRVT_ACTIVATE_ON_POWER_UP = 0x10,
 		SRVT_INVERTED_FROG = 0x20,
+		SRVT_INVERTED_POWER = 0x40,
 		
-		SRVT_POWER_ON = 0x40
+		SRVT_POWER_ON = 0x80
 	};
 
 	enum SensorDecoderFlags : uint8_t

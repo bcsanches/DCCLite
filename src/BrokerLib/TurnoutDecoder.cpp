@@ -56,6 +56,9 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(
 	auto invertedFrog = params.FindMember("invertedFrog");
 	m_fInvertedFrog = invertedFrog != params.MemberEnd() ? invertedFrog->value.GetBool() : false;
 
+	auto invertedPower = params.FindMember("invertedPower");
+	m_fInvertedFrog = invertedPower != params.MemberEnd() ? invertedPower->value.GetBool() : false;
+
 	auto range = params.FindMember("range");
 	m_uRange = range != params.MemberEnd() ? range->value.GetUint() : m_uRange;
 
@@ -86,7 +89,8 @@ void ServoTurnoutDecoder::WriteConfig(dcclite::Packet& packet) const
 		(m_fInvertedOperation ? dcclite::ServoTurnoutDecoderFlags::SRVT_INVERTED_OPERATION : 0) |
 		(m_fIgnoreSavedState ? dcclite::ServoTurnoutDecoderFlags::SRVT_IGNORE_SAVED_STATE : 0) |
 		(m_fActivateOnPowerUp ? dcclite::ServoTurnoutDecoderFlags::SRVT_ACTIVATE_ON_POWER_UP : 0) |
-		(m_fInvertedFrog ? dcclite::ServoTurnoutDecoderFlags::SRVT_INVERTED_FROG : 0)
+		(m_fInvertedFrog ? dcclite::ServoTurnoutDecoderFlags::SRVT_INVERTED_FROG : 0) |
+		(m_fInvertedPower ? dcclite::ServoTurnoutDecoderFlags::SRVT_INVERTED_POWER : 0)
 	);
 
 	packet.Write8(m_clPowerPin.Raw());
