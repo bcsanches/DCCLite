@@ -15,10 +15,7 @@
 
 using namespace dcclite;
 
-std::unique_ptr<Service> DccppService::Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project)
-{
-	return std::make_unique<DccppService>(name, broker, params, project);
-}
+
 
 class DccppClient: private IDccLiteServiceListener
 {
@@ -602,4 +599,9 @@ DccppService::DccppService(const std::string &name, Broker &broker, const rapidj
 	Service(name, broker, params, project)
 {
 	//empty
+}
+
+std::unique_ptr<Service> DccppService::Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project)
+{
+	return std::make_unique<DccppServiceImpl>(name, broker, params, project);
 }

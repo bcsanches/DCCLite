@@ -17,6 +17,7 @@ class DccppService: public Service
 {	
 	public:
 		DccppService(const std::string &name, Broker &broker, const rapidjson::Value& params, const Project& project);
+		
 		~DccppService() override 
 		{
 			//empty

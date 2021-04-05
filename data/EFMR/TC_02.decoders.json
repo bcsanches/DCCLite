@@ -1,15 +1,38 @@
 [
-  {
-    "name": "TC_T50",
-    "class": "ServoTurnout",
-    "address": "1300",
-    "pin": 21,
-    "inverted": true,
-    "powerPin": 43,
-    "frogPin": 42,
-    "invertedFrog": false,
-    "operationTime": 3000,
-    "range":15,
-    "comment": "Exit superior"
-  }
+    {
+        "name": "TC_PL22B",
+        "class": "Output",
+        "address": "1300",
+        "pin": 23,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L22B"
+    },
+    {
+        "name": "TC_PL24",
+        "class": "Output",
+        "address": "1301",
+        "pin": 22,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L24"
+    },
+    {
+        "name": "TC_PL22A",
+        "class": "Output",
+        "address": "1302",
+        "pin": 25,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L22A"
+    },
+    {
+        "name": "TC_PL28",
+        "class": "Output",
+        "address": "1303",
+        "pin": 24,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L28 / Turntable access"
+    }
 ]
