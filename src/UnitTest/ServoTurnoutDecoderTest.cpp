@@ -45,11 +45,7 @@ TEST(ServoTurnoutDecoderTest, Basic)
 	ASSERT_EQ(3, packet.Read< dcclite::PinType_t>());
 
 	auto flags = packet.Read<uint8_t>();
-	ASSERT_FALSE(flags & dcclite::ServoTurnoutDecoderFlags::SRVT_INVERTED_OPERATION);
-	ASSERT_FALSE(flags & dcclite::ServoTurnoutDecoderFlags::SRVT_IGNORE_SAVED_STATE);	
-	ASSERT_FALSE(flags & dcclite::ServoTurnoutDecoderFlags::SRVT_ACTIVATE_ON_POWER_UP);	
-	ASSERT_FALSE(flags & dcclite::ServoTurnoutDecoderFlags::SRVT_INVERTED_FROG);
-	ASSERT_FALSE(flags & dcclite::ServoTurnoutDecoderFlags::SRVT_INVERTED_POWER);
+	ASSERT_EQ(0, flags);	
 
 	//power pin
 	ASSERT_EQ(26, packet.Read< dcclite::PinType_t>());
