@@ -39,6 +39,8 @@ class DccAddress
 		}
 
 		explicit DccAddress(const rapidjson::Value &value);
+		
+		explicit DccAddress(dcclite::Packet &packet);
 
 		DccAddress() = default;
 		DccAddress(const DccAddress &) = default;
@@ -64,12 +66,17 @@ class DccAddress
 			return m_iAddress > rhs.m_iAddress;
 		}
 
+		inline bool operator==(const DccAddress &rhs) const
+		{
+			return m_iAddress == rhs.m_iAddress;
+		}
+
 		inline std::string ToString() const
 		{
 			return fmt::format("{:#05x}", m_iAddress);
 		}
 
-		void WriteConfig(dcclite::Packet &packet) const;
+		void WriteConfig(dcclite::Packet &packet) const;		
 
 	private:
 		uint16_t m_iAddress;

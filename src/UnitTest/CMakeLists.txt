@@ -5,12 +5,13 @@ set(UnitTest_SRCS
   ObjectPathUnitTest.cpp
   ParserUnitTest.cpp
   ProjectUnitTest.cpp
+  ServoTurnoutDecoderTest.cpp
   SignalDecoderTest.cpp
   UtilUnitTest.cpp
 )
 
 set(UnitTest_HDRS
-
+    BrokerMockups.h
 )
 
 # GTest

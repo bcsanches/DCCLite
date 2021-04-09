@@ -57,7 +57,7 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(
 	m_fInvertedFrog = invertedFrog != params.MemberEnd() ? invertedFrog->value.GetBool() : false;
 
 	auto invertedPower = params.FindMember("invertedPower");
-	m_fInvertedFrog = invertedPower != params.MemberEnd() ? invertedPower->value.GetBool() : false;
+	m_fInvertedPower = invertedPower != params.MemberEnd() ? invertedPower->value.GetBool() : false;
 
 	auto range = params.FindMember("range");
 	m_uRange = range != params.MemberEnd() ? range->value.GetUint() : m_uRange;

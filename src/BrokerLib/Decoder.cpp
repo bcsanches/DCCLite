@@ -37,6 +37,18 @@ DccAddress::DccAddress(const rapidjson::Value &value)
 	}
 }
 
+DccAddress::DccAddress(dcclite::Packet &packet) :
+	m_iAddress(packet.Read<uint16_t>())
+{
+	//empty
+}
+
+
+void DccAddress::WriteConfig(dcclite::Packet &packet) const
+{
+	packet.Write16(m_iAddress);
+}
+
 Decoder::Decoder(const DccAddress &address, std::string name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params):
 	Object(std::move(name)),
 	m_iAddress(address),	
@@ -48,10 +60,7 @@ Decoder::Decoder(const DccAddress &address, std::string name, IDccLite_DecoderSe
 		m_strLocationHint = it->value.GetString();
 }
 
-void DccAddress::WriteConfig(dcclite::Packet &packet) const
-{
-	packet.Write16(m_iAddress);
-}
+
 
 void Decoder::Serialize(dcclite::JsonOutputStream_t &stream) const
 {

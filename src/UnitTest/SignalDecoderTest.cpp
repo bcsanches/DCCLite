@@ -6,30 +6,11 @@
 
 #include "SignalDecoder.h"
 
-#include "IDccLiteService.h"
-#include "IDevice.h"
-
 using testing::HasSubstr;
 
 using namespace rapidjson;
 
-class DeviceDecoderServicesMockup : public IDevice_DecoderServices
-{
-	public:
-		std::string_view GetDeviceName() const noexcept override
-		{
-			return "mockup";
-		}
-};
-
-class DecoderServicesMockup : public IDccLite_DecoderServices
-{
-	public:
-		void Decoder_OnStateChanged(Decoder &decoder) override
-		{
-			//empty
-		}
-};
+#include "BrokerMockups.h"
 
 static DecoderServicesMockup g_DecoderServices;
 static DeviceDecoderServicesMockup g_DeviceDecoderServices;

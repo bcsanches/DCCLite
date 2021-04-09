@@ -216,6 +216,9 @@ namespace dcclite
 				return &m_arData[0];
 			}
 
+			/// <summary>
+			/// Go to starting index
+			/// </summary>						
 			inline void Reset() noexcept
 			{
 				m_iIndex = 0;
