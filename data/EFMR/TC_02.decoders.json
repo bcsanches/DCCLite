@@ -3,7 +3,7 @@
         "name": "TC_PL22B",
         "class": "Output",
         "address": "1300",
-        "pin": 23,
+        "pin": 18,
         "inverted": false,
         "ignoreSavedState": true,
         "comment":"Power track L22B"
@@ -12,7 +12,7 @@
         "name": "TC_PL24",
         "class": "Output",
         "address": "1301",
-        "pin": 22,
+        "pin": 17,
         "inverted": false,
         "ignoreSavedState": true,
         "comment":"Power track L24"
@@ -21,7 +21,7 @@
         "name": "TC_PL22A",
         "class": "Output",
         "address": "1302",
-        "pin": 25,
+        "pin": 16,
         "inverted": false,
         "ignoreSavedState": true,
         "comment":"Power track L22A"
@@ -30,9 +30,21 @@
         "name": "TC_PL28",
         "class": "Output",
         "address": "1303",
-        "pin": 24,
+        "pin": 15,
         "inverted": false,
         "ignoreSavedState": true,
         "comment":"Power track L28 / Turntable access"
-    }
+    } ,
+    {
+      "name": "TC_T02",
+      "class": "ServoTurnout",
+      "address": "1402",
+      "pin": 23,
+      "inverted": false,
+      "powerPin": 40,
+      "frogPin": 38,
+      "invertedFrog": false,
+      "invertedPower": true,
+      "operationTime": 3000
+  }
 ]
