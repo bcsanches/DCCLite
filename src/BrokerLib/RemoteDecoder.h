@@ -18,61 +18,65 @@ namespace dcclite
 	class Packet;
 }
 
-/**
-	RemoteDecoders are decoders that represent a decoder implemented on a remote device, like an Arduino.
+namespace dcclite::broker
+{
 
-	So they are used to control the remote state of the "physical" decoders sending commands
+	/**
+		RemoteDecoders are decoders that represent a decoder implemented on a remote device, like an Arduino.
+
+		So they are used to control the remote state of the "physical" decoders sending commands
 
 
-*/
-class RemoteDecoder: public Decoder
-{	
-	public:
-		RemoteDecoder(			
-			const DccAddress &address, 
-			std::string name,
-			IDccLite_DecoderServices &owner,
-			IDevice_DecoderServices &dev,
-			const rapidjson::Value &params
-		);		
+	*/
+	class RemoteDecoder: public Decoder
+	{	
+		public:
+			RemoteDecoder(			
+				const DccAddress &address, 
+				std::string name,
+				IDccLite_DecoderServices &owner,
+				IDevice_DecoderServices &dev,
+				const rapidjson::Value &params
+			);		
 				
 
-		void SyncRemoteState(dcclite::DecoderStates state);
+			void SyncRemoteState(dcclite::DecoderStates state);
 
-		inline dcclite::DecoderStates GetRemoteState() const
-		{
-			return m_kRemoteState;
-		}		
+			inline dcclite::DecoderStates GetRemoteState() const
+			{
+				return m_kRemoteState;
+			}		
 
-		inline bool IsBroken() const noexcept
-		{
-			return m_fBroken;
-		}
+			inline bool IsBroken() const noexcept
+			{
+				return m_fBroken;
+			}
 
-		virtual void WriteConfig(dcclite::Packet &packet) const;
+			virtual void WriteConfig(dcclite::Packet &packet) const;
 
-		virtual bool IsOutputDecoder() const = 0;
-		virtual bool IsInputDecoder() const = 0;
+			virtual bool IsOutputDecoder() const = 0;
+			virtual bool IsInputDecoder() const = 0;
 
-		virtual bool IsTurnoutDecoder() const
-		{
-			return false;
-		}
+			virtual bool IsTurnoutDecoder() const
+			{
+				return false;
+			}
 
-		//
-		//IObject
-		//
-		//
+			//
+			//IObject
+			//
+			//
 		
-		void Serialize(dcclite::JsonOutputStream_t &stream) const override;		
+			void Serialize(dcclite::JsonOutputStream_t &stream) const override;		
 
-	protected:
-		virtual dcclite::DecoderTypes GetType() const noexcept = 0;
+		protected:
+			virtual dcclite::DecoderTypes GetType() const noexcept = 0;
 
-	private:				
-		dcclite::DecoderStates m_kRemoteState = dcclite::DecoderStates::INACTIVE;				
+		private:				
+			dcclite::DecoderStates m_kRemoteState = dcclite::DecoderStates::INACTIVE;				
 
-		bool		m_fBroken = false;			
-};
+			bool		m_fBroken = false;			
+	};
+}
 
 

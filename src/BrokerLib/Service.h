@@ -16,51 +16,55 @@
 
 #include <rapidjson/document.h>
 
-class Broker;
-class Project;
-class Service;
-
 namespace dcclite
 {
 	class Clock;
 }
 
-class Service: public dcclite::FolderObject
+
+namespace dcclite::broker
 {
-	public:
-		virtual void Initialize() {};
+	class Broker;
+	class Project;
+	class Service;
 
-		virtual ~Service() {}
+	class Service: public dcclite::FolderObject
+	{
+		public:
+			virtual void Initialize() {};
 
-		virtual void Update(const dcclite::Clock& clock) { ; }
+			virtual ~Service() {}
+
+			virtual void Update(const dcclite::Clock& clock) { ; }
 	
-	protected:
-		Service(std::string name, Broker &broker, const rapidjson::Value &params, const Project &project):
-			FolderObject(std::move(name)),			
-			m_rclBroker(broker),
-			m_rclProject(project)
-		{
-			//empty
-		}
+		protected:
+			Service(std::string name, Broker &broker, const rapidjson::Value &params, const Project &project):
+				FolderObject(std::move(name)),			
+				m_rclBroker(broker),
+				m_rclProject(project)
+			{
+				//empty
+			}
 
-		Service(const Service &) = delete;
-		Service(Service &&) = delete;		
+			Service(const Service &) = delete;
+			Service(Service &&) = delete;		
 
-		virtual const char *GetTypeName() const noexcept
-		{
-			return "Service";
-		}
+			virtual const char *GetTypeName() const noexcept
+			{
+				return "Service";
+			}
 
-		virtual void Serialize(dcclite::JsonOutputStream_t &stream) const
-		{
-			FolderObject::Serialize(stream);
+			virtual void Serialize(dcclite::JsonOutputStream_t &stream) const
+			{
+				FolderObject::Serialize(stream);
 
-			//nothing
-		}	
+				//nothing
+			}	
 
-	protected:		
-		Broker& m_rclBroker;
+		protected:		
+			Broker& m_rclBroker;
 
-		const Project &m_rclProject;
-};
+			const Project &m_rclProject;
+	};
+}
 

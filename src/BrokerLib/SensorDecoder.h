@@ -14,64 +14,69 @@
 
 #include "BasicPin.h"
 
-class SensorDecoder : public RemoteDecoder
+namespace dcclite::broker
 {
-	public:
-		SensorDecoder(
-			const DccAddress &address,
-			const std::string &name,
-			IDccLite_DecoderServices &owner,
-			IDevice_DecoderServices &dev,
-			const rapidjson::Value &params
-		);
 
-		~SensorDecoder() override;
+	class SensorDecoder : public RemoteDecoder
+	{
+		public:
+			SensorDecoder(
+				const DccAddress &address,
+				const std::string &name,
+				IDccLite_DecoderServices &owner,
+				IDevice_DecoderServices &dev,
+				const rapidjson::Value &params
+			);
 
-		void WriteConfig(dcclite::Packet &packet) const override;
+			~SensorDecoder() override;
 
-		dcclite::DecoderTypes GetType() const noexcept override
-		{
-			return dcclite::DecoderTypes::DEC_SENSOR;
-		}
+			void WriteConfig(dcclite::Packet &packet) const override;
 
-		bool IsOutputDecoder() const override
-		{
-			return false;
-		}
+			dcclite::DecoderTypes GetType() const noexcept override
+			{
+				return dcclite::DecoderTypes::DEC_SENSOR;
+			}
 
-		bool IsInputDecoder() const override
-		{
-			return true;
-		}						
+			bool IsOutputDecoder() const override
+			{
+				return false;
+			}
 
-		inline dcclite::PinType_t GetPin() const
-		{
-			return m_clPin.Raw();
-		}
+			bool IsInputDecoder() const override
+			{
+				return true;
+			}						
 
-		inline bool HasPullUp() const
-		{
-			return m_fPullUp;
-		}
+			inline dcclite::PinType_t GetPin() const
+			{
+				return m_clPin.Raw();
+			}
 
-		//
-		//IObject
-		//
-		//
+			inline bool HasPullUp() const
+			{
+				return m_fPullUp;
+			}
 
-		const char *GetTypeName() const noexcept override
-		{
-			return "SensorDecoder";
-		}
+			//
+			//IObject
+			//
+			//
 
-		void Serialize(dcclite::JsonOutputStream_t &stream) const override;
+			const char *GetTypeName() const noexcept override
+			{
+				return "SensorDecoder";
+			}
 
-	private:
-		dcclite::BasicPin m_clPin;
+			void Serialize(dcclite::JsonOutputStream_t &stream) const override;
 
-		uint8_t m_uActivateDelay;
-		uint8_t m_uDeactivateDelay;
+		private:
+			dcclite::BasicPin m_clPin;
 
-		bool m_fPullUp = false;		
-		bool m_fInverted = false;		
-};
+			uint8_t m_uActivateDelay;
+			uint8_t m_uDeactivateDelay;
+
+			bool m_fPullUp = false;		
+			bool m_fInverted = false;		
+	};
+
+}

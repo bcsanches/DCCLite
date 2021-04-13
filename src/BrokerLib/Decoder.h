@@ -20,130 +20,136 @@
 
 #include <fmt/format.h>
 
-class IDccLite_DecoderServices;
-class IDevice_DecoderServices;
-class Node;
-
 namespace dcclite
 {
 	class Packet;
 }
 
-class DccAddress
+namespace dcclite::broker
 {
-	public:
-		inline explicit DccAddress(uint16_t address):
-			m_iAddress(address)
-		{
-			//empty
-		}
+	class IDccLite_DecoderServices;
+	class IDevice_DecoderServices;
+	class Node;
 
-		explicit DccAddress(const rapidjson::Value &value);
+
+	class DccAddress
+	{
+		public:
+			inline explicit DccAddress(uint16_t address):
+				m_iAddress(address)
+			{
+				//empty
+			}
+
+			explicit DccAddress(const rapidjson::Value &value);
 		
-		explicit DccAddress(dcclite::Packet &packet);
+			explicit DccAddress(dcclite::Packet &packet);
 
-		DccAddress() = default;
-		DccAddress(const DccAddress &) = default;
-		DccAddress(DccAddress &&) = default;
+			DccAddress() = default;
+			DccAddress(const DccAddress &) = default;
+			DccAddress(DccAddress &&) = default;
 
-		inline int GetAddress() const
-		{
-			return m_iAddress;
-		}		
+			inline int GetAddress() const
+			{
+				return m_iAddress;
+			}		
 
-		inline bool operator>=(const DccAddress &rhs) const
-		{
-			return m_iAddress >= rhs.m_iAddress;
-		}
+			inline bool operator>=(const DccAddress &rhs) const
+			{
+				return m_iAddress >= rhs.m_iAddress;
+			}
 
-		inline bool operator<(const DccAddress &rhs) const
-		{
-			return m_iAddress < rhs.m_iAddress;
-		}
+			inline bool operator<(const DccAddress &rhs) const
+			{
+				return m_iAddress < rhs.m_iAddress;
+			}
 
-		inline bool operator>(const DccAddress &rhs) const
-		{
-			return m_iAddress > rhs.m_iAddress;
-		}
+			inline bool operator>(const DccAddress &rhs) const
+			{
+				return m_iAddress > rhs.m_iAddress;
+			}
 
-		inline bool operator==(const DccAddress &rhs) const
-		{
-			return m_iAddress == rhs.m_iAddress;
-		}
+			inline bool operator==(const DccAddress &rhs) const
+			{
+				return m_iAddress == rhs.m_iAddress;
+			}
 
-		inline std::string ToString() const
-		{
-			return fmt::format("{:#05x}", m_iAddress);
-		}
+			inline std::string ToString() const
+			{
+				return fmt::format("{:#05x}", m_iAddress);
+			}
 
-		void WriteConfig(dcclite::Packet &packet) const;		
+			void WriteConfig(dcclite::Packet &packet) const;		
 
-	private:
-		uint16_t m_iAddress;
+		private:
+			uint16_t m_iAddress;
 
-		friend std::ostream &operator<<(std::ostream &os, const DccAddress &address);
-};
+			friend std::ostream &operator<<(std::ostream &os, const DccAddress &address);
+	};
 
-class Decoder: public dcclite::Object
-{	
-	public:
-		Decoder(			
-			const DccAddress &address, 
-			std::string name,
-			IDccLite_DecoderServices &owner,
-			IDevice_DecoderServices &dev,
-			const rapidjson::Value &params
-		);
+	class Decoder: public dcclite::Object
+	{	
+		public:
+			Decoder(			
+				const DccAddress &address, 
+				std::string name,
+				IDccLite_DecoderServices &owner,
+				IDevice_DecoderServices &dev,
+				const rapidjson::Value &params
+			);
 
-		inline DccAddress GetAddress() const
-		{
-			return m_iAddress;
-		}
+			inline DccAddress GetAddress() const
+			{
+				return m_iAddress;
+			}
 
-		inline const std::string &GetLocationHint() const
-		{
-			return m_strLocationHint;
-		}				
+			inline const std::string &GetLocationHint() const
+			{
+				return m_strLocationHint;
+			}				
 
-		//
-		//IObject
-		//
-		//
+			//
+			//IObject
+			//
+			//
 
-		const char *GetTypeName() const noexcept override
-		{
-			return "Decoder";
-		}
+			const char *GetTypeName() const noexcept override
+			{
+				return "Decoder";
+			}
 
-		void Serialize(dcclite::JsonOutputStream_t &stream) const override;	
+			void Serialize(dcclite::JsonOutputStream_t &stream) const override;	
 
-	private:
-		DccAddress m_iAddress;				
+		private:
+			DccAddress m_iAddress;				
 
-		std::string m_strLocationHint;		
+			std::string m_strLocationHint;		
 
-	protected:
-		IDccLite_DecoderServices &m_rclManager;
-		IDevice_DecoderServices &m_rclDevice;
-};
+		protected:
+			IDccLite_DecoderServices &m_rclManager;
+			IDevice_DecoderServices &m_rclDevice;
+	};
 
-inline std::ostream &operator<<(std::ostream& os, const DccAddress &address)
-{
-	os << address.m_iAddress;
+	inline std::ostream &operator<<(std::ostream &os, const dcclite::broker::DccAddress &address)
+	{
+		os << address.m_iAddress;
 
-	return os;
+		return os;
+	}
 }
+
+
 
 namespace fmt
 {
 	template <>
-	struct formatter<DccAddress>
+	struct formatter<dcclite::broker::DccAddress>
 	{
 		template <typename ParseContext>
 		constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
 
 		template <typename FormatContext>
-		auto format(const DccAddress &a, FormatContext& ctx)
+		auto format(const dcclite::broker::DccAddress &a, FormatContext& ctx)
 		{
 			return format_to(ctx.out(), "{}", a.GetAddress());
 		}

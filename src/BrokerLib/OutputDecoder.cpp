@@ -12,17 +12,21 @@
 
 #include <Log.h>
 
-void OutputDecoder::SetState(dcclite::DecoderStates newState, const char *requester)
+namespace dcclite::broker
 {
-	if (m_kRequestedState != newState)
-	{
-		dcclite::Log::Info("[{}::OutputDecoder::SetState] requested change from {} to {} by {}", 
-			this->GetName(), 
-			dcclite::DecoderStateName(m_kRequestedState), 
-			dcclite::DecoderStateName(newState), 
-			requester
-		);
 
-		m_kRequestedState = newState;
-	}	
-}		
+	void OutputDecoder::SetState(dcclite::DecoderStates newState, const char *requester)
+	{
+		if (m_kRequestedState != newState)
+		{
+			dcclite::Log::Info("[{}::OutputDecoder::SetState] requested change from {} to {} by {}",
+				this->GetName(),
+				dcclite::DecoderStateName(m_kRequestedState),
+				dcclite::DecoderStateName(newState),
+				requester
+			);
+
+			m_kRequestedState = newState;
+		}
+	}
+}

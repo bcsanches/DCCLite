@@ -23,118 +23,119 @@
 
 #include "Socket.h"
 
-class Device;
-class NetworkDevice;
-class LocationManager;
-class OutputDecoder;
-class SimpleOutputDecoder;
-class SensorDecoder;
-class TurnoutDecoder;
-
-
-class DccLiteService : public Service, private IDccLite_DeviceServices, private IDccLite_DecoderServices
+namespace dcclite::broker
 {
-	public:
-		DccLiteService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+	class Device;
+	class NetworkDevice;
+	class LocationManager;
+	class OutputDecoder;
+	class SimpleOutputDecoder;
+	class SensorDecoder;
+	class TurnoutDecoder;
 
-		~DccLiteService() override;
+	class DccLiteService : public Service, private IDccLite_DeviceServices, private IDccLite_DecoderServices
+	{
+		public:
+			DccLiteService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+
+			~DccLiteService() override;
 		
-		void Update(const dcclite::Clock &clock) override;				
+			void Update(const dcclite::Clock &clock) override;				
 
-		//
-		//IObject
-		//
-		//
+			//
+			//IObject
+			//
+			//
 
-		const char *GetTypeName() const noexcept override
-		{
-			return "DccLiteService";
-		}
+			const char *GetTypeName() const noexcept override
+			{
+				return "DccLiteService";
+			}
 
-		void Serialize(dcclite::JsonOutputStream_t &stream) const override
-		{
-			Service::Serialize(stream);
+			void Serialize(dcclite::JsonOutputStream_t &stream) const override
+			{
+				Service::Serialize(stream);
 
-			//nothing
-		}
+				//nothing
+			}
 
-		void AddListener(IDccLiteServiceListener &listener);
-		void RemoveListener(IDccLiteServiceListener &listener);
+			void AddListener(IDccLiteServiceListener &listener);
+			void RemoveListener(IDccLiteServiceListener &listener);
 
-		//
-		//DECODERS Management
-		//
-		//
+			//
+			//DECODERS Management
+			//
+			//
 
-		Decoder* TryFindDecoder(const DccAddress address) const;
-		Decoder *TryFindDecoder(std::string_view id) const;
+			Decoder* TryFindDecoder(const DccAddress address) const;
+			Decoder *TryFindDecoder(std::string_view id) const;
 
-		//This returns only pure outputs, turnouts are ignored
-		std::vector<SimpleOutputDecoder *> FindAllSimpleOutputDecoders();
+			//This returns only pure outputs, turnouts are ignored
+			std::vector<SimpleOutputDecoder *> FindAllSimpleOutputDecoders();
 
-		std::vector<SensorDecoder*> FindAllSensorDecoders();
+			std::vector<SensorDecoder*> FindAllSensorDecoders();
 
-		std::vector<TurnoutDecoder*> FindAllTurnoutDecoders();
+			std::vector<TurnoutDecoder*> FindAllTurnoutDecoders();
 
-	private:
-		void OnNet_Discovery(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet);
-		void OnNet_Hello(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet);		
+		private:
+			void OnNet_Discovery(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet);
+			void OnNet_Hello(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet);		
 
-		void OnNet_Packet(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType);
+			void OnNet_Packet(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType);
 
-		Device *TryFindDeviceByName(std::string_view name);
+			Device *TryFindDeviceByName(std::string_view name);
 
-		NetworkDevice *TryFindDeviceSession(const dcclite::Guid &guid);
+			NetworkDevice *TryFindDeviceSession(const dcclite::Guid &guid);
 
-		NetworkDevice *TryFindPacketDestination(dcclite::Packet &packet);	
+			NetworkDevice *TryFindPacketDestination(dcclite::Packet &packet);	
 
-		void DispatchEvent(const DccLiteEvent &event) const;
+			void DispatchEvent(const DccLiteEvent &event) const;
 
-		void NotifyItemCreated(const dcclite::IObject &item) const;
-		void NotifyItemDestroyed(const dcclite::IObject &item) const;
+			void NotifyItemCreated(const dcclite::IObject &item) const;
+			void NotifyItemDestroyed(const dcclite::IObject &item) const;
 
-	private:
-		//
-		// To be used only by Devices
-		//
-		//		
-		void Device_SendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet& packet) override;
+		private:
+			//
+			// To be used only by Devices
+			//
+			//		
+			void Device_SendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet& packet) override;
 
-		void Device_RegisterSession(NetworkDevice& dev, const dcclite::Guid& configToken) override;
-		void Device_UnregisterSession(NetworkDevice& dev, const dcclite::Guid& sessionToken) override;
+			void Device_RegisterSession(NetworkDevice& dev, const dcclite::Guid& configToken) override;
+			void Device_UnregisterSession(NetworkDevice& dev, const dcclite::Guid& sessionToken) override;
 
-		Decoder& Device_CreateDecoder(
-			IDevice_DecoderServices &dev,
-			const std::string& className,
-			DccAddress address,
-			const std::string& name,
-			const rapidjson::Value& params
-		) override;
+			Decoder& Device_CreateDecoder(
+				IDevice_DecoderServices &dev,
+				const std::string& className,
+				DccAddress address,
+				const std::string& name,
+				const rapidjson::Value& params
+			) override;
 
-		void Device_DestroyDecoder(Decoder &dec) override;
+			void Device_DestroyDecoder(Decoder &dec) override;
 
-		void Device_NotifyInternalItemCreated(const dcclite::IObject &item) const override;
-		void Device_NotifyInternalItemDestroyed(const dcclite::IObject &item) const override;
+			void Device_NotifyInternalItemCreated(const dcclite::IObject &item) const override;
+			void Device_NotifyInternalItemDestroyed(const dcclite::IObject &item) const override;
 
-		//
-		//
-		// To be used only by Decoders
-		//
-		//
+			//
+			//
+			// To be used only by Decoders
+			//
+			//
 
-		void Decoder_OnStateChanged(Decoder& decoder) override;
+			void Decoder_OnStateChanged(Decoder& decoder) override;
 
-	private:
-		dcclite::Socket m_clSocket;		
+		private:
+			dcclite::Socket m_clSocket;		
 
-		FolderObject *m_pDecoders;
-		FolderObject *m_pAddresses;
-		FolderObject *m_pDevices;
-		FolderObject *m_pSessions;
+			FolderObject *m_pDecoders;
+			FolderObject *m_pAddresses;
+			FolderObject *m_pDevices;
+			FolderObject *m_pSessions;
 
-		LocationManager *m_pLocations;
+			LocationManager *m_pLocations;
 
-		std::vector<IDccLiteServiceListener *> m_vecListeners;
-};
-
+			std::vector<IDccLiteServiceListener *> m_vecListeners;
+	};
+}
 

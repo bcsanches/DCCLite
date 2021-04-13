@@ -38,8 +38,6 @@ static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 	return true;
 }
 
-
-
 int main(int argc, char **argv)
 {			
 	try
@@ -58,7 +56,7 @@ int main(int argc, char **argv)
 
 		dcclite::ConsoleTryMakeNice();
 
-		Broker broker{ (argc == 1) ? "MyRailroad" : argv[1] };
+		dcclite::broker::Broker broker{ (argc == 1) ? "MyRailroad" : argv[1] };
 
 		dcclite::Clock clock;
 

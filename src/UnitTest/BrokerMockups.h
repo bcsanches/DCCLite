@@ -14,21 +14,21 @@
 #include "IDevice.h"
 
 
-class NetworkDeviceDecoderServicesMockup: public INetworkDevice_DecoderServices
+class NetworkDeviceDecoderServicesMockup: public dcclite::broker::INetworkDevice_DecoderServices
 {
 	public:
-		void Decoder_RegisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage) override
+		void Decoder_RegisterPin(const dcclite::broker::RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage) override
 		{
 
 		}
 
-		void Decoder_UnregisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin) override
+		void Decoder_UnregisterPin(const dcclite::broker::RemoteDecoder &decoder, dcclite::BasicPin pin) override
 		{
 
 		}
 };
 
-class DeviceDecoderServicesMockup : public IDevice_DecoderServices
+class DeviceDecoderServicesMockup : public dcclite::broker::IDevice_DecoderServices
 {
 	public:
 		std::string_view GetDeviceName() const noexcept override
@@ -36,7 +36,7 @@ class DeviceDecoderServicesMockup : public IDevice_DecoderServices
 			return "mockup";
 		}
 
-		INetworkDevice_DecoderServices *TryGetINetworkDevice() noexcept override
+		dcclite::broker::INetworkDevice_DecoderServices *TryGetINetworkDevice() noexcept override
 		{
 			return &m_DecoderServices;
 		}
@@ -45,10 +45,10 @@ class DeviceDecoderServicesMockup : public IDevice_DecoderServices
 		NetworkDeviceDecoderServicesMockup m_DecoderServices;
 };
 
-class DecoderServicesMockup : public IDccLite_DecoderServices
+class DecoderServicesMockup : public dcclite::broker::IDccLite_DecoderServices
 {
 	public:
-		void Decoder_OnStateChanged(Decoder &decoder) override
+		void Decoder_OnStateChanged(dcclite::broker::Decoder &decoder) override
 		{
 			//empty
 		}

@@ -13,48 +13,52 @@
 #include "IDevice.h"
 #include "Packet.h"
 
-
-SimpleOutputDecoder::SimpleOutputDecoder(	
-	const DccAddress &address,
-	const std::string &name,
-	IDccLite_DecoderServices &owner,
-	IDevice_DecoderServices &dev,
-	const rapidjson::Value &params
-) :
-	OutputDecoder(address, name, owner, dev, params),
-	m_clPin(params["pin"].GetInt())
-{	
-	m_rclDevice.TryGetINetworkDevice()->Decoder_RegisterPin(*this, m_clPin, "pin");
-
-	auto inverted = params.FindMember("inverted");	
-	m_fInvertedOperation = inverted != params.MemberEnd() ? inverted->value.GetBool() : false;
-
-	auto setOnPower = params.FindMember("ignoreSavedState");
-	m_fIgnoreSavedState = setOnPower != params.MemberEnd() ? setOnPower->value.GetBool() : false;
-
-	auto activateOnPowerUp = params.FindMember("activateOnPowerUp");
-	m_fActivateOnPowerUp = activateOnPowerUp != params.MemberEnd() ? activateOnPowerUp->value.GetBool() : false;
-
-	this->SyncRemoteState(m_fIgnoreSavedState && m_fActivateOnPowerUp ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
-}
-
-SimpleOutputDecoder::~SimpleOutputDecoder()
+namespace dcclite::broker
 {
-	m_rclDevice.TryGetINetworkDevice()->Decoder_UnregisterPin(*this, m_clPin);
-}
 
-uint8_t SimpleOutputDecoder::GetDccppFlags() const noexcept
-{
-	return	(m_fInvertedOperation ? dcclite::OutputDecoderFlags::OUTD_INVERTED_OPERATION : 0) |
+	SimpleOutputDecoder::SimpleOutputDecoder(
+		const DccAddress &address,
+		const std::string &name,
+		IDccLite_DecoderServices &owner,
+		IDevice_DecoderServices &dev,
+		const rapidjson::Value &params
+	) :
+		OutputDecoder(address, name, owner, dev, params),
+		m_clPin(params["pin"].GetInt())
+	{
+		m_rclDevice.TryGetINetworkDevice()->Decoder_RegisterPin(*this, m_clPin, "pin");
+
+		auto inverted = params.FindMember("inverted");
+		m_fInvertedOperation = inverted != params.MemberEnd() ? inverted->value.GetBool() : false;
+
+		auto setOnPower = params.FindMember("ignoreSavedState");
+		m_fIgnoreSavedState = setOnPower != params.MemberEnd() ? setOnPower->value.GetBool() : false;
+
+		auto activateOnPowerUp = params.FindMember("activateOnPowerUp");
+		m_fActivateOnPowerUp = activateOnPowerUp != params.MemberEnd() ? activateOnPowerUp->value.GetBool() : false;
+
+		this->SyncRemoteState(m_fIgnoreSavedState && m_fActivateOnPowerUp ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
+	}
+
+	SimpleOutputDecoder::~SimpleOutputDecoder()
+	{
+		m_rclDevice.TryGetINetworkDevice()->Decoder_UnregisterPin(*this, m_clPin);
+	}
+
+	uint8_t SimpleOutputDecoder::GetDccppFlags() const noexcept
+	{
+		return	(m_fInvertedOperation ? dcclite::OutputDecoderFlags::OUTD_INVERTED_OPERATION : 0) |
 			(m_fIgnoreSavedState ? dcclite::OutputDecoderFlags::OUTD_IGNORE_SAVED_STATE : 0) |
 			(m_fActivateOnPowerUp ? dcclite::OUTD_ACTIVATE_ON_POWER_UP : 0);
-}
+	}
 
 
-void SimpleOutputDecoder::WriteConfig(dcclite::Packet &packet) const
-{
-	OutputDecoder::WriteConfig(packet);	
+	void SimpleOutputDecoder::WriteConfig(dcclite::Packet &packet) const
+	{
+		OutputDecoder::WriteConfig(packet);
 
-	packet.Write8(m_clPin.Raw());
-	packet.Write8(this->GetDccppFlags());		
+		packet.Write8(m_clPin.Raw());
+		packet.Write8(this->GetDccppFlags());
+	}
+
 }

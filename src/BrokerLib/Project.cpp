@@ -25,112 +25,116 @@
 #include "Log.h"
 
 
-dcclite::fs::path Project::GetAppFilePath(const std::string_view fileName) const
+namespace dcclite::broker
 {
-	auto cacheFilePath = dcclite::PathUtils::GetAppFolder();
 
-	cacheFilePath.append(m_strName);
-	cacheFilePath.append(fileName);
-
-	return cacheFilePath;
-}
-
-dcclite::Guid Project::GetFileToken(const std::string_view fileName) const
-{	
-	dcclite::Sha1 currentFileHash;
-	currentFileHash.ComputeForFile(this->GetFilePath(fileName));
-
-	//dcclite::Log::Trace("hash {} -> {}", filePath.string(), currentFileHash.ToString());
-
-	dcclite::Guid token;
-	dcclite::Sha1 storedHash;
-
-	std::string stateFileName(fileName);
-	stateFileName.append(".state");
-
-	auto stateFilePath = this->GetAppFilePath(stateFileName);
-
+	dcclite::fs::path Project::GetAppFilePath(const std::string_view fileName) const
 	{
-		std::ifstream stateFile(stateFilePath);
-		if (stateFile)
+		auto cacheFilePath = dcclite::PathUtils::GetAppFolder();
+
+		cacheFilePath.append(m_strName);
+		cacheFilePath.append(fileName);
+
+		return cacheFilePath;
+	}
+
+	dcclite::Guid Project::GetFileToken(const std::string_view fileName) const
+	{
+		dcclite::Sha1 currentFileHash;
+		currentFileHash.ComputeForFile(this->GetFilePath(fileName));
+
+		//dcclite::Log::Trace("hash {} -> {}", filePath.string(), currentFileHash.ToString());
+
+		dcclite::Guid token;
+		dcclite::Sha1 storedHash;
+
+		std::string stateFileName(fileName);
+		stateFileName.append(".state");
+
+		auto stateFilePath = this->GetAppFilePath(stateFileName);
+
 		{
-			using namespace rapidjson;
-
-			IStreamWrapper isw(stateFile);
-			Document stateData;
-			stateData.ParseStream(isw);			
-
-			//read token first, because if it fails, hash is already null			
-			auto tokenData = stateData.FindMember("token");
-			if ((tokenData == stateData.MemberEnd()) || (!tokenData->value.IsString()))
+			std::ifstream stateFile(stateFilePath);
+			if (stateFile)
 			{
-				dcclite::Log::Error("[Project::GetFileToken] {} project state file does not contain token", stateFilePath.string());
-				goto SKIP_LOAD;
-			}
+				using namespace rapidjson;
 
-			//read tokenStr
-			if (!dcclite::TryGuidLoadFromString(token, tokenData->value.GetString()))
-			{
-				dcclite::Log::Error("[Project::GetFileToken] {} project error parsing stored token", stateFilePath.string());
-				goto SKIP_LOAD;
-			}	
+				IStreamWrapper isw(stateFile);
+				Document stateData;
+				stateData.ParseStream(isw);
 
-			auto hashData = stateData.FindMember("sha1");
-			if ((hashData == stateData.MemberEnd()) || (!hashData->value.IsString()))
-			{
-				dcclite::Log::Error("[Project::GetFileToken] {} Project state file does not contain hash", stateFilePath.string());
+				//read token first, because if it fails, hash is already null			
+				auto tokenData = stateData.FindMember("token");
+				if ((tokenData == stateData.MemberEnd()) || (!tokenData->value.IsString()))
+				{
+					dcclite::Log::Error("[Project::GetFileToken] {} project state file does not contain token", stateFilePath.string());
+					goto SKIP_LOAD;
+				}
 
-				goto SKIP_LOAD;
-			}
-			
-			//read hash
-			if (!storedHash.TryLoadFromString(hashData->value.GetString()))
-			{
-				dcclite::Log::Error("[Project::GetFileToken] {} Project error parsing hash", stateFilePath.string());
-				goto SKIP_LOAD;
-			}			
-		}
-		else
-		{
-			dcclite::Log::Info("[Project::GetFileToken] Project state file for {} not found", fileName);
-		}
+				//read tokenStr
+				if (!dcclite::TryGuidLoadFromString(token, tokenData->value.GetString()))
+				{
+					dcclite::Log::Error("[Project::GetFileToken] {} project error parsing stored token", stateFilePath.string());
+					goto SKIP_LOAD;
+				}
 
-SKIP_LOAD:
-		if (storedHash != currentFileHash)
-		{
-			dcclite::Log::Info("[Project::GetFileToken] Project config file {} modified", fileName);
+				auto hashData = stateData.FindMember("sha1");
+				if ((hashData == stateData.MemberEnd()) || (!hashData->value.IsString()))
+				{
+					dcclite::Log::Error("[Project::GetFileToken] {} Project state file does not contain hash", stateFilePath.string());
 
-			token = dcclite::GuidCreate();
-			
-			dcclite::fs::path filePath = stateFilePath;
-			filePath.remove_filename();
+					goto SKIP_LOAD;
+				}
 
-			std::error_code ec;
-			dcclite::fs::create_directories(filePath, ec);
-
-			if (ec)
-			{
-				dcclite::Log::Error("[Project::GetFileToken] Cannot create app path for storing state for {}, system error: {}", fileName, ec.message());				
+				//read hash
+				if (!storedHash.TryLoadFromString(hashData->value.GetString()))
+				{
+					dcclite::Log::Error("[Project::GetFileToken] {} Project error parsing hash", stateFilePath.string());
+					goto SKIP_LOAD;
+				}
 			}
 			else
 			{
-				std::ofstream newStateFile(stateFilePath, std::ios_base::trunc);
+				dcclite::Log::Info("[Project::GetFileToken] Project state file for {} not found", fileName);
+			}
 
-				JsonCreator::StringWriter responseWriter;
+		SKIP_LOAD:
+			if (storedHash != currentFileHash)
+			{
+				dcclite::Log::Info("[Project::GetFileToken] Project config file {} modified", fileName);
+
+				token = dcclite::GuidCreate();
+
+				dcclite::fs::path filePath = stateFilePath;
+				filePath.remove_filename();
+
+				std::error_code ec;
+				dcclite::fs::create_directories(filePath, ec);
+
+				if (ec)
 				{
-					auto object = JsonCreator::MakeObject(responseWriter);
-
-					object.AddStringValue("token", fmt::format("{}", token));
-					object.AddStringValue("sha1", currentFileHash.ToString());
+					dcclite::Log::Error("[Project::GetFileToken] Cannot create app path for storing state for {}, system error: {}", fileName, ec.message());
 				}
-							
-				newStateFile << responseWriter.GetString();
+				else
+				{
+					std::ofstream newStateFile(stateFilePath, std::ios_base::trunc);
 
-				dcclite::Log::Info("[Project::GetFileToken] Stored {} state data on {}", fileName, stateFilePath.string());
+					JsonCreator::StringWriter responseWriter;
+					{
+						auto object = JsonCreator::MakeObject(responseWriter);
+
+						object.AddStringValue("token", fmt::format("{}", token));
+						object.AddStringValue("sha1", currentFileHash.ToString());
+					}
+
+					newStateFile << responseWriter.GetString();
+
+					dcclite::Log::Info("[Project::GetFileToken] Stored {} state data on {}", fileName, stateFilePath.string());
+				}
 			}
 		}
-	}	
 
-	return token;
+		return token;
+	}
+
 }
-

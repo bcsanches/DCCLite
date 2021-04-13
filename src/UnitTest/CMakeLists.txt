@@ -26,9 +26,10 @@ target_compile_features(UnitTest PUBLIC cxx_std_17)
 
 target_include_directories(UnitTest PRIVATE
     ${DCCLite_SOURCE_DIR}/src/BrokerLib 
-    ${DCCLite_SOURCE_DIR}/src/Common     
+    ${DCCLite_SOURCE_DIR}/src/Common
+    ${DCCLite_SOURCE_DIR}/src/LiteDecoder/src     
     ${GTEST_INCLUDE_DIRS}
     ${GMOCK_INCLUDE_DIRS})
 
-target_link_libraries(UnitTest PUBLIC BrokerLib Common EmbeddedLib fmt gtest gtest_main gmock)
+target_link_libraries(UnitTest PUBLIC BrokerLib Common EmbeddedLib LiteDecoderLib fmt gtest gtest_main gmock)
 

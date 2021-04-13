@@ -29,703 +29,706 @@
 #include "SpecialFolders.h"
 #include "TerminalCmd.h"
 
-constexpr auto JSONRPC_KEY = "jsonrpc";
-constexpr auto JSONRPC_VERSION = "2.0";
-
-using namespace dcclite;
-
-
-class GetChildItemCmd : public TerminalCmd
+namespace dcclite::broker
 {
-	public:
-		GetChildItemCmd(std::string name = "Get-ChildItem"):
-			TerminalCmd(std::move(name))
-		{
-			//empty
-		}
 
-		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
-		{
-			auto item = context.GetItem();
-			if (!item->IsFolder())
+	constexpr auto JSONRPC_KEY = "jsonrpc";
+	constexpr auto JSONRPC_VERSION = "2.0";
+
+	using namespace dcclite;
+
+
+	class GetChildItemCmd : public TerminalCmd
+	{
+		public:
+			GetChildItemCmd(std::string name = "Get-ChildItem"):
+				TerminalCmd(std::move(name))
 			{
-				throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
+				//empty
 			}
-			auto folder = static_cast<FolderObject *>(item);
 
-			auto paramsIt = request.FindMember("params");
-			if (paramsIt != request.MemberEnd())
+			virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
 			{
+				auto item = context.GetItem();
+				if (!item->IsFolder())
+				{
+					throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
+				}
+				auto folder = static_cast<FolderObject *>(item);
+
+				auto paramsIt = request.FindMember("params");
+				if (paramsIt != request.MemberEnd())
+				{
+					auto locationParam = paramsIt->value[0].GetString();
+					item = folder->TryNavigate(dcclite::Path_t(locationParam));
+					if (!item)
+					{
+						throw TerminalCmdException(fmt::format("Invalid location {}", locationParam), id);
+					}
+
+					if (!item->IsFolder())
+					{
+						throw TerminalCmdException(fmt::format("Location is not a folder {}", locationParam), id);
+					}
+
+					folder = static_cast<FolderObject *>(item);
+				}			
+
+				results.AddStringValue("classname", "ChildItem");
+				results.AddStringValue("location", folder->GetPath().string());
+
+				auto dataArray = results.AddArray("children");
+												
+				auto enumerator = folder->GetEnumerator();
+
+				while (enumerator.MoveNext())
+				{
+					item = enumerator.TryGetCurrent();
+
+					auto itemObject = dataArray.AddObject();
+					item->Serialize(itemObject);				
+				}
+			}
+	};
+
+	class GetItemCmd: public TerminalCmd
+	{
+		public:
+			GetItemCmd(std::string name = "Get-Item"):
+				TerminalCmd(std::move(name))
+			{
+				//empty
+			}
+
+			virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
+			{
+				auto item = context.GetItem();
+				if (!item->IsFolder())
+				{
+					throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
+				}
+				auto folder = static_cast<FolderObject *>(item);
+
+				auto paramsIt = request.FindMember("params");
+				if (paramsIt == request.MemberEnd())
+				{
+					throw TerminalCmdException(fmt::format("Usage: {} <path>", this->GetName()), id);
+				}
+
 				auto locationParam = paramsIt->value[0].GetString();
 				item = folder->TryNavigate(dcclite::Path_t(locationParam));
 				if (!item)
 				{
 					throw TerminalCmdException(fmt::format("Invalid location {}", locationParam), id);
-				}
+				}			
 
+				results.AddStringValue("classname", "Item");
+				results.AddStringValue("location", item->GetPath().string());
+
+				auto dataObj = results.AddObject("item");			
+				item->Serialize(dataObj);			
+			}
+	};
+
+	class SetLocationCmd : public TerminalCmd
+	{
+		public:
+			SetLocationCmd(std::string name = "Set-Location") :
+				TerminalCmd(std::move(name))
+			{
+				//empty
+			}
+
+			virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
+			{
+				auto item = context.GetItem();
 				if (!item->IsFolder())
 				{
-					throw TerminalCmdException(fmt::format("Location is not a folder {}", locationParam), id);
+					throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
 				}
 
-				folder = static_cast<FolderObject *>(item);
-			}			
+				auto folder = static_cast<FolderObject *>(item);
 
-			results.AddStringValue("classname", "ChildItem");
-			results.AddStringValue("location", folder->GetPath().string());
+				auto paramsIt = request.FindMember("params");
+				if (paramsIt != request.MemberEnd())
+				{							
+					if (!paramsIt->value.IsArray())
+					{
+						throw TerminalCmdException("Expected positional parameters", id);
+					}
 
-			auto dataArray = results.AddArray("children");
-												
-			auto enumerator = folder->GetEnumerator();
+					auto destinationPath = paramsIt->value[0].GetString();
 
-			while (enumerator.MoveNext())
-			{
-				item = enumerator.TryGetCurrent();
+					auto destinationObj = folder->TryNavigate(Path_t(destinationPath));
+					if (!destinationObj)
+					{
+						throw TerminalCmdException(fmt::format("Invalid path {}", destinationPath), id);
+					}
 
-				auto itemObject = dataArray.AddObject();
-				item->Serialize(itemObject);				
-			}
-		}
-};
+					if (!destinationObj->IsFolder())
+					{
+						throw TerminalCmdException(fmt::format("Path {} led to an IObject, not IFolder", destinationPath), id);
+					}
 
-class GetItemCmd: public TerminalCmd
-{
-	public:
-		GetItemCmd(std::string name = "Get-Item"):
-			TerminalCmd(std::move(name))
-		{
-			//empty
-		}
 
-		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
-		{
-			auto item = context.GetItem();
-			if (!item->IsFolder())
-			{
-				throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
-			}
-			auto folder = static_cast<FolderObject *>(item);
-
-			auto paramsIt = request.FindMember("params");
-			if (paramsIt == request.MemberEnd())
-			{
-				throw TerminalCmdException(fmt::format("Usage: {} <path>", this->GetName()), id);
-			}
-
-			auto locationParam = paramsIt->value[0].GetString();
-			item = folder->TryNavigate(dcclite::Path_t(locationParam));
-			if (!item)
-			{
-				throw TerminalCmdException(fmt::format("Invalid location {}", locationParam), id);
-			}			
-
-			results.AddStringValue("classname", "Item");
-			results.AddStringValue("location", item->GetPath().string());
-
-			auto dataObj = results.AddObject("item");			
-			item->Serialize(dataObj);			
-		}
-};
-
-class SetLocationCmd : public TerminalCmd
-{
-	public:
-		SetLocationCmd(std::string name = "Set-Location") :
-			TerminalCmd(std::move(name))
-		{
-			//empty
-		}
-
-		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
-		{
-			auto item = context.GetItem();
-			if (!item->IsFolder())
-			{
-				throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
-			}
-
-			auto folder = static_cast<FolderObject *>(item);
-
-			auto paramsIt = request.FindMember("params");
-			if (paramsIt != request.MemberEnd())
-			{							
-				if (!paramsIt->value.IsArray())
-				{
-					throw TerminalCmdException("Expected positional parameters", id);
+					context.SetLocation(destinationObj->GetPath());
+					item = destinationObj;
 				}
-
-				auto destinationPath = paramsIt->value[0].GetString();
-
-				auto destinationObj = folder->TryNavigate(Path_t(destinationPath));
-				if (!destinationObj)
-				{
-					throw TerminalCmdException(fmt::format("Invalid path {}", destinationPath), id);
-				}
-
-				if (!destinationObj->IsFolder())
-				{
-					throw TerminalCmdException(fmt::format("Path {} led to an IObject, not IFolder", destinationPath), id);
-				}
-
-
-				context.SetLocation(destinationObj->GetPath());
-				item = destinationObj;
-			}
 		
-			results.AddStringValue("classname", "Location");
-			results.AddStringValue("location", item->GetPath().string());
-		}
-};
+				results.AddStringValue("classname", "Location");
+				results.AddStringValue("location", item->GetPath().string());
+			}
+	};
 
-class GetCommandCmd : public TerminalCmd
-{
-	public:
-		GetCommandCmd(std::string name = "Get-Command") :
-			TerminalCmd(std::move(name))
-		{
-			//empty
-		}
-
-		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
-		{
-			auto item = this->GetParent();
-
-			assert(item->IsFolder());
-
-			auto folder = static_cast<FolderObject*>(item);
-
-			results.AddStringValue("classname", "CmdList");			
-
-			auto dataArray = results.AddArray("cmds");
-
-			auto enumerator = folder->GetEnumerator();
-
-			while (enumerator.MoveNext())
+	class GetCommandCmd : public TerminalCmd
+	{
+		public:
+			GetCommandCmd(std::string name = "Get-Command") :
+				TerminalCmd(std::move(name))
 			{
-				auto cmd = enumerator.TryGetCurrent();
-
-				auto itemObject = dataArray.AddObject();
-				cmd->Serialize(itemObject);
-			}			
-		}
-};
-
-class DecoderCmdBase : public TerminalCmd
-{
-	protected:
-		DecoderCmdBase(std::string name) :
-			TerminalCmd(std::move(name))
-		{
-			//empty
-		}
-
-		std::tuple<Decoder *, const char *, const char *> FindDecoder(const TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
-		{
-			auto paramsIt = request.FindMember("params");
-			if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() != 2))
-			{
-				throw TerminalCmdException(fmt::format("Usage: {} <dccSystem> <decoder>", this->GetName()), id);
+				//empty
 			}
 
-			auto dccSystemName = paramsIt->value[0].GetString();
-			auto decoderId = paramsIt->value[1].GetString();
-
-			auto &root = static_cast<FolderObject &>(context.GetItem()->GetRoot());
-
-			ObjectPath path = { SpecialFolders::GetPath(SpecialFolders::Folders::ServicesId) };
-			path.append(dccSystemName);
-
-			auto *service = dynamic_cast<DccLiteService *>(root.TryNavigate(path));
-			if (service == nullptr)
+			virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
 			{
-				throw TerminalCmdException(fmt::format("DCC System {} not found", dccSystemName), id);
+				auto item = this->GetParent();
+
+				assert(item->IsFolder());
+
+				auto folder = static_cast<FolderObject*>(item);
+
+				results.AddStringValue("classname", "CmdList");			
+
+				auto dataArray = results.AddArray("cmds");
+
+				auto enumerator = folder->GetEnumerator();
+
+				while (enumerator.MoveNext())
+				{
+					auto cmd = enumerator.TryGetCurrent();
+
+					auto itemObject = dataArray.AddObject();
+					cmd->Serialize(itemObject);
+				}			
+			}
+	};
+
+	class DecoderCmdBase : public TerminalCmd
+	{
+		protected:
+			DecoderCmdBase(std::string name) :
+				TerminalCmd(std::move(name))
+			{
+				//empty
 			}
 
-			auto *decoder = service->TryFindDecoder(decoderId);
-			if (decoder == nullptr)
+			std::tuple<Decoder *, const char *, const char *> FindDecoder(const TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
 			{
-				throw TerminalCmdException(fmt::format("Decoder {} not found on DCC System {}", decoderId, dccSystemName), id);
+				auto paramsIt = request.FindMember("params");
+				if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() != 2))
+				{
+					throw TerminalCmdException(fmt::format("Usage: {} <dccSystem> <decoder>", this->GetName()), id);
+				}
+
+				auto dccSystemName = paramsIt->value[0].GetString();
+				auto decoderId = paramsIt->value[1].GetString();
+
+				auto &root = static_cast<FolderObject &>(context.GetItem()->GetRoot());
+
+				ObjectPath path = { SpecialFolders::GetPath(SpecialFolders::Folders::ServicesId) };
+				path.append(dccSystemName);
+
+				auto *service = dynamic_cast<DccLiteService *>(root.TryNavigate(path));
+				if (service == nullptr)
+				{
+					throw TerminalCmdException(fmt::format("DCC System {} not found", dccSystemName), id);
+				}
+
+				auto *decoder = service->TryFindDecoder(decoderId);
+				if (decoder == nullptr)
+				{
+					throw TerminalCmdException(fmt::format("Decoder {} not found on DCC System {}", decoderId, dccSystemName), id);
+				}
+
+				return std::make_tuple(decoder, dccSystemName, decoderId);
 			}
 
-			return std::make_tuple(decoder, dccSystemName, decoderId);
-		}
-
-		OutputDecoder *FindOutputDecoder(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
-		{
-			auto[decoder, dccSystemName, decoderName] = this->FindDecoder(context, id, request);
-
-			auto outputDecoder = dynamic_cast<OutputDecoder *>(decoder);
-			if (outputDecoder == nullptr)
+			OutputDecoder *FindOutputDecoder(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
 			{
-				throw TerminalCmdException(fmt::format("Decoder {} on DCC System {} is not an output type", decoderName, dccSystemName), id);
+				auto[decoder, dccSystemName, decoderName] = this->FindDecoder(context, id, request);
+
+				auto outputDecoder = dynamic_cast<OutputDecoder *>(decoder);
+				if (outputDecoder == nullptr)
+				{
+					throw TerminalCmdException(fmt::format("Decoder {} on DCC System {} is not an output type", decoderName, dccSystemName), id);
+				}
+
+				return outputDecoder;
+			}
+	};
+
+	class ActivateItemCmd : public DecoderCmdBase
+	{
+		public:
+			ActivateItemCmd(std::string name = "Activate-Item") :
+				DecoderCmdBase(std::move(name))
+			{
+				//empty
 			}
 
-			return outputDecoder;
-		}
-};
+			virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
+			{			
+				auto outputDecoder = this->FindOutputDecoder(context, id, request);
 
-class ActivateItemCmd : public DecoderCmdBase
-{
-	public:
-		ActivateItemCmd(std::string name = "Activate-Item") :
-			DecoderCmdBase(std::move(name))
-		{
-			//empty
-		}
+				outputDecoder->Activate("ActivateItemCmd");
 
-		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
-		{			
-			auto outputDecoder = this->FindOutputDecoder(context, id, request);
+				results.AddStringValue("classname", "string");
+				results.AddStringValue("msg", "OK");
+			}
+	};
 
-			outputDecoder->Activate("ActivateItemCmd");
-
-			results.AddStringValue("classname", "string");
-			results.AddStringValue("msg", "OK");
-		}
-};
-
-class DeactivateItemCmd : public DecoderCmdBase
-{
-	public:
-		DeactivateItemCmd(std::string name = "Deactivate-Item") :
-			DecoderCmdBase(std::move(name))
-		{
-			//empty
-		}
-
-		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
-		{
-			auto outputDecoder = this->FindOutputDecoder(context, id, request);
-
-			outputDecoder->Deactivate("DeactivateItemCmd");
-
-			results.AddStringValue("classname", "string");
-			results.AddStringValue("msg", "OK");
-		}
-};
-
-class FlipItemCmd : public DecoderCmdBase
-{
-	public:
-		FlipItemCmd(std::string name = "Flip-Item") :
-			DecoderCmdBase(std::move(name))
-		{
-			//empty
-		}
-
-		virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
-		{
-			auto outputDecoder = this->FindOutputDecoder(context, id, request);
-
-			outputDecoder->ToggleState("FlipItemCmd");
-
-			results.AddStringValue("classname", "string");
-			results.AddStringValue("msg", fmt::format("OK: {}", dcclite::DecoderStateName(outputDecoder->GetRequestedState())));
-		}
-};
-
-
-
-class TerminalClient: private IDccLiteServiceListener
-{
-	public:
-		TerminalClient(TerminalService &owner, TerminalCmdHost &cmdHost, const NetworkAddress address, Socket &&socket);
-		TerminalClient(const TerminalClient &client) = delete;
-		TerminalClient(TerminalClient &&other) noexcept;
-
-		virtual ~TerminalClient();
-
-		TerminalClient &operator=(TerminalClient &&other) noexcept
-		{
-			if (this != &other)
+	class DeactivateItemCmd : public DecoderCmdBase
+	{
+		public:
+			DeactivateItemCmd(std::string name = "Deactivate-Item") :
+				DecoderCmdBase(std::move(name))
 			{
-				m_clMessenger = std::move(other.m_clMessenger);
+				//empty
 			}
 
-			return *this;
-		}
+			virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
+			{
+				auto outputDecoder = this->FindOutputDecoder(context, id, request);
 
-		bool Update();
+				outputDecoder->Deactivate("DeactivateItemCmd");
 
-	private:
-		void OnDccLiteEvent(const DccLiteEvent &event) override;
+				results.AddStringValue("classname", "string");
+				results.AddStringValue("msg", "OK");
+			}
+	};
 
-		void RegisterListeners();
-
-		void SendItemPropertyValueChangedNotification(const IObject &obj);
-
-		FolderObject *TryGetServicesFolder() const;	
-
-	private:
-		NetMessenger m_clMessenger;
-		TerminalService &m_rclOwner;
-		TerminalContext m_clContext;
-		TerminalCmdHost &m_rclCmdHost;
-
-		const NetworkAddress	m_clAddress;
-};
-
-TerminalClient::TerminalClient(TerminalService &owner, TerminalCmdHost &cmdHost, const NetworkAddress address, Socket &&socket) :	
-	m_clMessenger(std::move(socket)),
-	m_rclOwner(owner),	
-	m_rclCmdHost(cmdHost),
-	m_clContext(static_cast<dcclite::FolderObject &>(owner.GetRoot())),
-	m_clAddress(address)
-{
-	m_clContext.SetLocation(owner.GetPath());
-
-	this->RegisterListeners();
-}
-
-TerminalClient::TerminalClient(TerminalClient &&other) noexcept:		
-	m_clMessenger(std::move(other.m_clMessenger)),
-	m_rclOwner(other.m_rclOwner),	
-	m_clContext(std::move(other.m_clContext)),
-	m_rclCmdHost(other.m_rclCmdHost),
-	m_clAddress(other.m_clAddress)
-{
-	this->RegisterListeners();
-}
-
-TerminalClient::~TerminalClient()
-{
-	auto *servicesFolder = this->TryGetServicesFolder();
-	if (servicesFolder == nullptr)
-		return;
-
-	auto enumerator = servicesFolder->GetEnumerator();
-	while (enumerator.MoveNext())
+	class FlipItemCmd : public DecoderCmdBase
 	{
-		auto *obj = enumerator.TryGetCurrent();
-		auto *dccService = dynamic_cast<DccLiteService *>(obj);
-		if (dccService == nullptr)
-			continue;
+		public:
+			FlipItemCmd(std::string name = "Flip-Item") :
+				DecoderCmdBase(std::move(name))
+			{
+				//empty
+			}
 
-		dccService->RemoveListener(*this);
-	}
-}
+			virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
+			{
+				auto outputDecoder = this->FindOutputDecoder(context, id, request);
 
-FolderObject *TerminalClient::TryGetServicesFolder() const
-{
-	auto item = m_clContext.GetItem();
-	if (!item->IsFolder())
+				outputDecoder->ToggleState("FlipItemCmd");
+
+				results.AddStringValue("classname", "string");
+				results.AddStringValue("msg", fmt::format("OK: {}", dcclite::DecoderStateName(outputDecoder->GetRequestedState())));
+			}
+	};
+
+
+
+	class TerminalClient: private IDccLiteServiceListener
 	{
-		dcclite::Log::Error("[TerminalClient::RegisterListeners] Current location {} is invalid", m_clContext.GetLocation().string());
+		public:
+			TerminalClient(TerminalService &owner, TerminalCmdHost &cmdHost, const NetworkAddress address, Socket &&socket);
+			TerminalClient(const TerminalClient &client) = delete;
+			TerminalClient(TerminalClient &&other) noexcept;
 
-		return nullptr;
-	}
-	auto folder = static_cast<FolderObject *>(item);
+			virtual ~TerminalClient();
 
-	ObjectPath servicesPath = { SpecialFolders::GetPath(SpecialFolders::Folders::ServicesId) };
-	auto *servicesObj = folder->TryNavigate(servicesPath);
+			TerminalClient &operator=(TerminalClient &&other) noexcept
+			{
+				if (this != &other)
+				{
+					m_clMessenger = std::move(other.m_clMessenger);
+				}
 
-	if (servicesObj == nullptr)
+				return *this;
+			}
+
+			bool Update();
+
+		private:
+			void OnDccLiteEvent(const DccLiteEvent &event) override;
+
+			void RegisterListeners();
+
+			void SendItemPropertyValueChangedNotification(const IObject &obj);
+
+			FolderObject *TryGetServicesFolder() const;	
+
+		private:
+			NetMessenger m_clMessenger;
+			TerminalService &m_rclOwner;
+			TerminalContext m_clContext;
+			TerminalCmdHost &m_rclCmdHost;
+
+			const NetworkAddress	m_clAddress;
+	};
+
+	TerminalClient::TerminalClient(TerminalService &owner, TerminalCmdHost &cmdHost, const NetworkAddress address, Socket &&socket) :	
+		m_clMessenger(std::move(socket)),
+		m_rclOwner(owner),	
+		m_rclCmdHost(cmdHost),
+		m_clContext(static_cast<dcclite::FolderObject &>(owner.GetRoot())),
+		m_clAddress(address)
 	{
-		dcclite::Log::Error("[TerminalClient::RegisterListeners] Cannot find services folder at {}", servicesPath.string());
+		m_clContext.SetLocation(owner.GetPath());
 
-		return nullptr;
-	}
-
-	if (!servicesObj->IsFolder())
-	{
-		dcclite::Log::Error("[TerminalClient::RegisterListeners] Services object is not a folder: {}", servicesPath.string());
-
-		return nullptr;
+		this->RegisterListeners();
 	}
 
-	return static_cast<FolderObject *>(servicesObj);
-}
-
-void TerminalClient::RegisterListeners()
-{	
-	auto *servicesFolder = this->TryGetServicesFolder();
-	if(servicesFolder == nullptr)
-		return;
-
-	auto enumerator = servicesFolder->GetEnumerator();
-	while (enumerator.MoveNext())
+	TerminalClient::TerminalClient(TerminalClient &&other) noexcept:		
+		m_clMessenger(std::move(other.m_clMessenger)),
+		m_rclOwner(other.m_rclOwner),	
+		m_clContext(std::move(other.m_clContext)),
+		m_rclCmdHost(other.m_rclCmdHost),
+		m_clAddress(other.m_clAddress)
 	{
-		auto *obj = enumerator.TryGetCurrent();
-		auto *dccService = dynamic_cast<DccLiteService *>(obj);
-		if(dccService == nullptr)
-			continue;
-
-		dccService->AddListener(*this);
+		this->RegisterListeners();
 	}
-}
 
-std::string MakeRpcMessage(CmdId_t id, std::string_view *methodName, std::string_view nestedObjName, std::function<void(JsonOutputStream_t &object)> filler)
-{
-	JsonCreator::StringWriter messageWriter;
-
+	TerminalClient::~TerminalClient()
 	{
-		auto messageObj = JsonCreator::MakeObject(messageWriter);
+		auto *servicesFolder = this->TryGetServicesFolder();
+		if (servicesFolder == nullptr)
+			return;
 
-		messageObj.AddStringValue(JSONRPC_KEY, JSONRPC_VERSION);
-
-		if (id >= 0)
+		auto enumerator = servicesFolder->GetEnumerator();
+		while (enumerator.MoveNext())
 		{
-			messageObj.AddIntValue("id", id);
-		}
+			auto *obj = enumerator.TryGetCurrent();
+			auto *dccService = dynamic_cast<DccLiteService *>(obj);
+			if (dccService == nullptr)
+				continue;
 
-		if (methodName)
-			messageObj.AddStringValue("method", *methodName);
-
-		if (filler)
-		{
-			auto params = messageObj.AddObject(nestedObjName);
-
-			filler(params);
+			dccService->RemoveListener(*this);
 		}
 	}
 
-	return messageWriter.GetString();
-
-}
-
-std::string MakeRpcNotificationMessage(CmdId_t id, std::string_view methodName, std::function<void(JsonOutputStream_t &object)> filler)
-{
-	return MakeRpcMessage(id, &methodName, "params", filler);	
-}
-
-static std::string MakeRpcErrorResponse(const CmdId_t id, const std::string &msg)
-{
-	return MakeRpcMessage(id, nullptr, "error", [&, msg](JsonOutputStream_t &params) { params.AddStringValue("message", msg); });
-}
-
-static std::string MakeRpcResultMessage(const CmdId_t id, std::function<void(JsonOutputStream_t &object)> filler)
-{
-	return MakeRpcMessage(id, nullptr, "result", filler);
-}
-
-void TerminalClient::SendItemPropertyValueChangedNotification(const IObject &obj)
-{	
-	m_clMessenger.Send(
-		m_clAddress, 
-		MakeRpcNotificationMessage(
-			-1,
-			"On-ItemPropertyValueChanged",
-			[&obj](JsonOutputStream_t &params)
-			{
-				obj.Serialize(params);
-			}
-		)
-	);
-}
-
-void TerminalClient::OnDccLiteEvent(const DccLiteEvent &event)
-{
-	switch (event.m_tType)
+	FolderObject *TerminalClient::TryGetServicesFolder() const
 	{
-		case DccLiteEvent::DECODER_STATE_CHANGE:
-			SendItemPropertyValueChangedNotification(*event.m_stDecoder.m_pclDecoder);
-			break;
+		auto item = m_clContext.GetItem();
+		if (!item->IsFolder())
+		{
+			dcclite::Log::Error("[TerminalClient::RegisterListeners] Current location {} is invalid", m_clContext.GetLocation().string());
 
-		case DccLiteEvent::DEVICE_CONNECTED:
-			SendItemPropertyValueChangedNotification(*event.m_stDevice.m_pclDevice);
-			break;
+			return nullptr;
+		}
+		auto folder = static_cast<FolderObject *>(item);
 
-		case DccLiteEvent::DEVICE_DISCONNECTED:
-			SendItemPropertyValueChangedNotification(*event.m_stDevice.m_pclDevice);
-			break;
+		ObjectPath servicesPath = { SpecialFolders::GetPath(SpecialFolders::Folders::ServicesId) };
+		auto *servicesObj = folder->TryNavigate(servicesPath);
 
-		case DccLiteEvent::ITEM_CREATED:
-			m_clMessenger.Send(
-				m_clAddress,
-				MakeRpcNotificationMessage(
-					-1,
-					"On-ItemCreated",
-					[&event](JsonOutputStream_t &params)
+		if (servicesObj == nullptr)
+		{
+			dcclite::Log::Error("[TerminalClient::RegisterListeners] Cannot find services folder at {}", servicesPath.string());
+
+			return nullptr;
+		}
+
+		if (!servicesObj->IsFolder())
+		{
+			dcclite::Log::Error("[TerminalClient::RegisterListeners] Services object is not a folder: {}", servicesPath.string());
+
+			return nullptr;
+		}
+
+		return static_cast<FolderObject *>(servicesObj);
+	}
+
+	void TerminalClient::RegisterListeners()
+	{	
+		auto *servicesFolder = this->TryGetServicesFolder();
+		if(servicesFolder == nullptr)
+			return;
+
+		auto enumerator = servicesFolder->GetEnumerator();
+		while (enumerator.MoveNext())
+		{
+			auto *obj = enumerator.TryGetCurrent();
+			auto *dccService = dynamic_cast<DccLiteService *>(obj);
+			if(dccService == nullptr)
+				continue;
+
+			dccService->AddListener(*this);
+		}
+	}
+
+	std::string MakeRpcMessage(CmdId_t id, std::string_view *methodName, std::string_view nestedObjName, std::function<void(JsonOutputStream_t &object)> filler)
+	{
+		JsonCreator::StringWriter messageWriter;
+
+		{
+			auto messageObj = JsonCreator::MakeObject(messageWriter);
+
+			messageObj.AddStringValue(JSONRPC_KEY, JSONRPC_VERSION);
+
+			if (id >= 0)
+			{
+				messageObj.AddIntValue("id", id);
+			}
+
+			if (methodName)
+				messageObj.AddStringValue("method", *methodName);
+
+			if (filler)
+			{
+				auto params = messageObj.AddObject(nestedObjName);
+
+				filler(params);
+			}
+		}
+
+		return messageWriter.GetString();
+
+	}
+
+	std::string MakeRpcNotificationMessage(CmdId_t id, std::string_view methodName, std::function<void(JsonOutputStream_t &object)> filler)
+	{
+		return MakeRpcMessage(id, &methodName, "params", filler);	
+	}
+
+	static std::string MakeRpcErrorResponse(const CmdId_t id, const std::string &msg)
+	{
+		return MakeRpcMessage(id, nullptr, "error", [&, msg](JsonOutputStream_t &params) { params.AddStringValue("message", msg); });
+	}
+
+	static std::string MakeRpcResultMessage(const CmdId_t id, std::function<void(JsonOutputStream_t &object)> filler)
+	{
+		return MakeRpcMessage(id, nullptr, "result", filler);
+	}
+
+	void TerminalClient::SendItemPropertyValueChangedNotification(const IObject &obj)
+	{	
+		m_clMessenger.Send(
+			m_clAddress, 
+			MakeRpcNotificationMessage(
+				-1,
+				"On-ItemPropertyValueChanged",
+				[&obj](JsonOutputStream_t &params)
+				{
+					obj.Serialize(params);
+				}
+			)
+		);
+	}
+
+	void TerminalClient::OnDccLiteEvent(const DccLiteEvent &event)
+	{
+		switch (event.m_tType)
+		{
+			case DccLiteEvent::DECODER_STATE_CHANGE:
+				SendItemPropertyValueChangedNotification(*event.m_stDecoder.m_pclDecoder);
+				break;
+
+			case DccLiteEvent::DEVICE_CONNECTED:
+				SendItemPropertyValueChangedNotification(*event.m_stDevice.m_pclDevice);
+				break;
+
+			case DccLiteEvent::DEVICE_DISCONNECTED:
+				SendItemPropertyValueChangedNotification(*event.m_stDevice.m_pclDevice);
+				break;
+
+			case DccLiteEvent::ITEM_CREATED:
+				m_clMessenger.Send(
+					m_clAddress,
+					MakeRpcNotificationMessage(
+						-1,
+						"On-ItemCreated",
+						[&event](JsonOutputStream_t &params)
+						{
+							event.m_stItem.m_pclItem->Serialize(params);
+						}
+					)
+				);
+				break;
+
+			case DccLiteEvent::ITEM_DESTROYED:
+				m_clMessenger.Send(
+					m_clAddress,
+					MakeRpcNotificationMessage(
+						-1,
+						"On-ItemDestroyed",
+						[&event](JsonOutputStream_t &params)
+						{
+							event.m_stItem.m_pclItem->Serialize(params);
+						}
+					)
+				);
+				break;
+		}
+	}
+
+	bool TerminalClient::Update()
+	{
+		for (;;)
+		{
+			auto[status, msg] = m_clMessenger.Poll();
+
+			if (status == Socket::Status::DISCONNECTED)
+				return false;
+
+			if (status == Socket::Status::WOULD_BLOCK)
+				return true;
+
+			if (status == Socket::Status::OK)
+			{
+				std::string response;
+
+				try
+				{
+					//dcclite::Log::Trace("Received {}", msg);
+
+					rapidjson::Document doc;
+					doc.Parse(msg.c_str());
+
+					if (doc.HasParseError())
 					{
-						event.m_stItem.m_pclItem->Serialize(params);
+						throw TerminalCmdException(fmt::format("Invalid json: {}", msg), -1);
 					}
-				)
-			);
-			break;
 
-		case DccLiteEvent::ITEM_DESTROYED:
-			m_clMessenger.Send(
-				m_clAddress,
-				MakeRpcNotificationMessage(
-					-1,
-					"On-ItemDestroyed",
-					[&event](JsonOutputStream_t &params)
+					auto jsonrpcKey = doc.FindMember(JSONRPC_KEY);
+					if ((jsonrpcKey == doc.MemberEnd()) || (!jsonrpcKey->value.IsString()) || (strcmp(jsonrpcKey->value.GetString(), JSONRPC_VERSION)))
 					{
-						event.m_stItem.m_pclItem->Serialize(params);
+						throw TerminalCmdException(fmt::format("Invalid rpc version or was not set: {}", msg), -1);
 					}
-				)
-			);
-			break;
+
+					auto methodKey = doc.FindMember("method");
+					if ((methodKey == doc.MemberEnd()) || (!methodKey->value.IsString()))
+					{
+						throw TerminalCmdException(fmt::format("Invalid method name in msg: {}", msg), -1);
+					}
+
+					const auto methodName = methodKey->value.GetString();
+
+					auto idKey = doc.FindMember("id");
+					if ((idKey == doc.MemberEnd()) || (!idKey->value.IsInt()))
+					{
+						throw TerminalCmdException(fmt::format("No method id in: {}", msg), -1);
+					}				
+
+					int id = idKey->value.GetInt();								
+
+					auto cmd = m_rclCmdHost.TryFindCmd(methodName);
+					if (cmd == nullptr)
+					{
+						dcclite::Log::Error("Invalid cmd: {}", methodName);
+						throw TerminalCmdException(fmt::format("Invalid cmd name: {}", methodName), id);					
+
+						continue;
+					}
+
+					response = MakeRpcResultMessage(id, [cmd, this, id, &doc](dcclite::JsonOutputStream_t &resultObj)
+					{
+						cmd->Run(m_clContext, resultObj, id, doc);
+					});
+
+					dcclite::Log::Trace("response {}", response);
+				}
+				catch (TerminalCmdException &ex)
+				{
+					response = MakeRpcErrorResponse(ex.GetId(), ex.what());
+				}
+				catch (std::exception &ex)
+				{
+					response = MakeRpcErrorResponse(-1, ex.what());
+				}
+
+				if (!m_clMessenger.Send(m_clAddress, response))
+				{
+					dcclite::Log::Error("message for {} not sent, contents: {}", m_clAddress.GetIpString(), response);
+				}
+			}
+		}
+	
+
+		return true;
 	}
-}
 
-bool TerminalClient::Update()
-{
-	for (;;)
+	TerminalService::TerminalService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :
+		Service(name, broker, params, project)	
+	{	
+		auto cmdHost = broker.GetTerminalCmdHost();
+
+		assert(cmdHost);	
+
+		{
+			auto getChildItemCmd = cmdHost->AddCmd(std::make_unique<GetChildItemCmd>());
+			cmdHost->AddAlias("dir", *getChildItemCmd);
+			cmdHost->AddAlias("ls", *getChildItemCmd);
+		}
+
+		{
+			cmdHost->AddCmd(std::make_unique<GetItemCmd>());	
+		}
+
+		{
+			auto setLocationCmd = cmdHost->AddCmd(std::make_unique<SetLocationCmd>());
+			cmdHost->AddAlias("cd", *setLocationCmd);
+		}	
+
+		{
+			auto getCommandCmd = cmdHost->AddCmd(std::make_unique<GetCommandCmd>());
+			cmdHost->AddAlias("gcm", *getCommandCmd);
+		}	
+
+		{
+			cmdHost->AddCmd(std::make_unique<ActivateItemCmd>());
+		}
+
+		{
+			cmdHost->AddCmd(std::make_unique<DeactivateItemCmd>());
+		}
+
+		{
+			cmdHost->AddCmd(std::make_unique<FlipItemCmd>());
+		}
+
+		const auto port = params["port"].GetInt();
+		if (!m_clSocket.Open(port, dcclite::Socket::Type::STREAM))
+		{
+			throw std::runtime_error("[TerminalService] Cannot open socket");
+		}
+
+		if (!m_clSocket.Listen())
+		{
+			throw std::runtime_error("[TerminalService] Cannot put socket on listen mode");
+		}
+
+		dcclite::Log::Info("[TerminalService] Started, listening on port {}", port);
+	}
+
+
+	TerminalService::~TerminalService()
 	{
-		auto[status, msg] = m_clMessenger.Poll();
+		//empty
+	}
 
-		if (status == Socket::Status::DISCONNECTED)
-			return false;
-
-		if (status == Socket::Status::WOULD_BLOCK)
-			return true;
+	void TerminalService::Update(const dcclite::Clock &clock)
+	{
+		auto [status, socket, address] = m_clSocket.TryAccept();
 
 		if (status == Socket::Status::OK)
 		{
-			std::string response;
+			dcclite::Log::Info("[TerminalService] Client connected {}", address.GetIpString());
 
-			try
-			{
-				//dcclite::Log::Trace("Received {}", msg);
-
-				rapidjson::Document doc;
-				doc.Parse(msg.c_str());
-
-				if (doc.HasParseError())
-				{
-					throw TerminalCmdException(fmt::format("Invalid json: {}", msg), -1);
-				}
-
-				auto jsonrpcKey = doc.FindMember(JSONRPC_KEY);
-				if ((jsonrpcKey == doc.MemberEnd()) || (!jsonrpcKey->value.IsString()) || (strcmp(jsonrpcKey->value.GetString(), JSONRPC_VERSION)))
-				{
-					throw TerminalCmdException(fmt::format("Invalid rpc version or was not set: {}", msg), -1);
-				}
-
-				auto methodKey = doc.FindMember("method");
-				if ((methodKey == doc.MemberEnd()) || (!methodKey->value.IsString()))
-				{
-					throw TerminalCmdException(fmt::format("Invalid method name in msg: {}", msg), -1);
-				}
-
-				const auto methodName = methodKey->value.GetString();
-
-				auto idKey = doc.FindMember("id");
-				if ((idKey == doc.MemberEnd()) || (!idKey->value.IsInt()))
-				{
-					throw TerminalCmdException(fmt::format("No method id in: {}", msg), -1);
-				}				
-
-				int id = idKey->value.GetInt();								
-
-				auto cmd = m_rclCmdHost.TryFindCmd(methodName);
-				if (cmd == nullptr)
-				{
-					dcclite::Log::Error("Invalid cmd: {}", methodName);
-					throw TerminalCmdException(fmt::format("Invalid cmd name: {}", methodName), id);					
-
-					continue;
-				}
-
-				response = MakeRpcResultMessage(id, [cmd, this, id, &doc](dcclite::JsonOutputStream_t &resultObj)
-				{
-					cmd->Run(m_clContext, resultObj, id, doc);
-				});
-
-				dcclite::Log::Trace("response {}", response);
-			}
-			catch (TerminalCmdException &ex)
-			{
-				response = MakeRpcErrorResponse(ex.GetId(), ex.what());
-			}
-			catch (std::exception &ex)
-			{
-				response = MakeRpcErrorResponse(-1, ex.what());
-			}
-
-			if (!m_clMessenger.Send(m_clAddress, response))
-			{
-				dcclite::Log::Error("message for {} not sent, contents: {}", m_clAddress.GetIpString(), response);
-			}
+			m_vecClients.emplace_back(*this, *m_rclBroker.GetTerminalCmdHost(), address, std::move(socket));
 		}
-	}
-	
 
-	return true;
-}
-
-TerminalService::TerminalService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :
-	Service(name, broker, params, project)	
-{	
-	auto cmdHost = broker.GetTerminalCmdHost();
-
-	assert(cmdHost);	
-
-	{
-		auto getChildItemCmd = cmdHost->AddCmd(std::make_unique<GetChildItemCmd>());
-		cmdHost->AddAlias("dir", *getChildItemCmd);
-		cmdHost->AddAlias("ls", *getChildItemCmd);
-	}
-
-	{
-		cmdHost->AddCmd(std::make_unique<GetItemCmd>());	
-	}
-
-	{
-		auto setLocationCmd = cmdHost->AddCmd(std::make_unique<SetLocationCmd>());
-		cmdHost->AddAlias("cd", *setLocationCmd);
-	}	
-
-	{
-		auto getCommandCmd = cmdHost->AddCmd(std::make_unique<GetCommandCmd>());
-		cmdHost->AddAlias("gcm", *getCommandCmd);
-	}	
-
-	{
-		cmdHost->AddCmd(std::make_unique<ActivateItemCmd>());
-	}
-
-	{
-		cmdHost->AddCmd(std::make_unique<DeactivateItemCmd>());
-	}
-
-	{
-		cmdHost->AddCmd(std::make_unique<FlipItemCmd>());
-	}
-
-	const auto port = params["port"].GetInt();
-	if (!m_clSocket.Open(port, dcclite::Socket::Type::STREAM))
-	{
-		throw std::runtime_error("[TerminalService] Cannot open socket");
-	}
-
-	if (!m_clSocket.Listen())
-	{
-		throw std::runtime_error("[TerminalService] Cannot put socket on listen mode");
-	}
-
-	dcclite::Log::Info("[TerminalService] Started, listening on port {}", port);
-}
-
-
-TerminalService::~TerminalService()
-{
-	//empty
-}
-
-void TerminalService::Update(const dcclite::Clock &clock)
-{
-	auto [status, socket, address] = m_clSocket.TryAccept();
-
-	if (status == Socket::Status::OK)
-	{
-		dcclite::Log::Info("[TerminalService] Client connected {}", address.GetIpString());
-
-		m_vecClients.emplace_back(*this, *m_rclBroker.GetTerminalCmdHost(), address, std::move(socket));
-	}
-
-	for (size_t i = 0; i < m_vecClients.size(); ++i)
-	{
-		auto &client = m_vecClients[i];
-
-		if (!client.Update())
+		for (size_t i = 0; i < m_vecClients.size(); ++i)
 		{
-			dcclite::Log::Info("[TerminalService] Client disconnected");			
+			auto &client = m_vecClients[i];
 
-			m_vecClients.erase(m_vecClients.begin() + i);
+			if (!client.Update())
+			{
+				dcclite::Log::Info("[TerminalService] Client disconnected");			
+
+				m_vecClients.erase(m_vecClients.begin() + i);
+			}
 		}
 	}
+
 }
-
-

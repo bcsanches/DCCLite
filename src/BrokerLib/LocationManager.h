@@ -17,36 +17,40 @@
 
 #include <rapidjson/document.h>
 
-class Decoder;
-class Location;
-
-enum class LocationMismatchReason
+namespace dcclite::broker
 {
-	WRONG_LOCATION_HINT,
-	OUTSIDE_RANGES
-};
 
-class LocationManager: public dcclite::FolderObject
-{	
-	public:
-		LocationManager(std::string name, const rapidjson::Value& params);
-		~LocationManager() override
-		{
-			//empty
-		}
+	class Decoder;
+	class Location;
 
-		void RegisterDecoder(const Decoder &decoder);
-		void UnregisterDecoder(const Decoder &decoder);
+	enum class LocationMismatchReason
+	{
+		WRONG_LOCATION_HINT,
+		OUTSIDE_RANGES
+	};
 
-		void Serialize(dcclite::JsonOutputStream_t &stream) const override;
+	class LocationManager: public dcclite::FolderObject
+	{	
+		public:
+			LocationManager(std::string name, const rapidjson::Value& params);
+			~LocationManager() override
+			{
+				//empty
+			}
 
-		const char *GetTypeName() const noexcept override
-		{
-			return "LocationManager";
-		}
+			void RegisterDecoder(const Decoder &decoder);
+			void UnregisterDecoder(const Decoder &decoder);
 
-	private:
-		std::vector<Location *> m_vecIndex;
+			void Serialize(dcclite::JsonOutputStream_t &stream) const override;
 
-		std::vector<std::tuple<const Decoder *, LocationMismatchReason, const Location *>> m_vecMismatches;
-};
+			const char *GetTypeName() const noexcept override
+			{
+				return "LocationManager";
+			}
+
+		private:
+			std::vector<Location *> m_vecIndex;
+
+			std::vector<std::tuple<const Decoder *, LocationMismatchReason, const Location *>> m_vecMismatches;
+	};
+}

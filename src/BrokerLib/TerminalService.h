@@ -16,21 +16,25 @@
 
 #include "Socket.h"
 
-class TerminalClient;
-
-class TerminalService : public Service
+namespace dcclite::broker
 {
-	private:		
-		dcclite::Socket m_clSocket;
 
-		std::vector<TerminalClient> m_vecClients;
+	class TerminalClient;
 
-	public:
-		TerminalService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+	class TerminalService : public Service
+	{
+		private:		
+			dcclite::Socket m_clSocket;
 
-		virtual ~TerminalService();
+			std::vector<TerminalClient> m_vecClients;
 
-		void Update(const dcclite::Clock &clock) override;
+		public:
+			TerminalService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
-		const char *GetTypeName() const noexcept override { return "TerminalService"; }
-};
+			virtual ~TerminalService();
+
+			void Update(const dcclite::Clock &clock) override;
+
+			const char *GetTypeName() const noexcept override { return "TerminalService"; }
+	};
+}

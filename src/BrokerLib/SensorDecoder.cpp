@@ -14,56 +14,58 @@
 
 #include "IDevice.h"
 
-
-SensorDecoder::SensorDecoder(
-	const DccAddress &address,
-	const std::string &name,
-	IDccLite_DecoderServices &owner,
-	IDevice_DecoderServices &dev,
-	const rapidjson::Value &params
-):
-	RemoteDecoder(address, name, owner, dev, params),
-	m_clPin(params["pin"].GetInt())
+namespace dcclite::broker
 {
-	m_rclDevice.TryGetINetworkDevice()->Decoder_RegisterPin(*this, m_clPin, "pin");
 
-	auto pullup = params.FindMember("pullup");
-	m_fPullUp = pullup != params.MemberEnd() ? pullup->value.GetBool() : false;
+	SensorDecoder::SensorDecoder(
+		const DccAddress &address,
+		const std::string &name,
+		IDccLite_DecoderServices &owner,
+		IDevice_DecoderServices &dev,
+		const rapidjson::Value &params
+	) :
+		RemoteDecoder(address, name, owner, dev, params),
+		m_clPin(params["pin"].GetInt())
+	{
+		m_rclDevice.TryGetINetworkDevice()->Decoder_RegisterPin(*this, m_clPin, "pin");
 
-	auto inverted = params.FindMember("inverted");
-	m_fInverted = inverted != params.MemberEnd() ? inverted->value.GetBool() : false;
+		auto pullup = params.FindMember("pullup");
+		m_fPullUp = pullup != params.MemberEnd() ? pullup->value.GetBool() : false;
 
-	auto activateDelay = params.FindMember("activateDelay");
-	m_uActivateDelay = activateDelay != params.MemberEnd() ? activateDelay->value.GetInt() : 0;
+		auto inverted = params.FindMember("inverted");
+		m_fInverted = inverted != params.MemberEnd() ? inverted->value.GetBool() : false;
 
-	auto deactivateDelay = params.FindMember("deactivateDelay");
-	m_uDeactivateDelay = deactivateDelay != params.MemberEnd() ? deactivateDelay->value.GetInt() : 0;
+		auto activateDelay = params.FindMember("activateDelay");
+		m_uActivateDelay = activateDelay != params.MemberEnd() ? activateDelay->value.GetInt() : 0;
+
+		auto deactivateDelay = params.FindMember("deactivateDelay");
+		m_uDeactivateDelay = deactivateDelay != params.MemberEnd() ? deactivateDelay->value.GetInt() : 0;
+	}
+
+	SensorDecoder::~SensorDecoder()
+	{
+		m_rclDevice.TryGetINetworkDevice()->Decoder_UnregisterPin(*this, m_clPin);
+	}
+
+	void SensorDecoder::WriteConfig(dcclite::Packet &packet) const
+	{
+		RemoteDecoder::WriteConfig(packet);
+
+		packet.Write8(m_clPin.Raw());
+		packet.Write8(
+			(m_fPullUp ? dcclite::SensorDecoderFlags::SNRD_PULL_UP : 0) |
+			(m_fInverted ? dcclite::SensorDecoderFlags::SNRD_INVERTED : 0)
+		);
+		packet.Write8(m_uActivateDelay);
+		packet.Write8(m_uDeactivateDelay);
+	}
+
+	void SensorDecoder::Serialize(dcclite::JsonOutputStream_t &stream) const
+	{
+		RemoteDecoder::Serialize(stream);
+
+		stream.AddIntValue("pin", m_clPin.Raw());
+		stream.AddBool("pullup", m_fPullUp);
+		stream.AddBool("inverted", m_fInverted);
+	}
 }
-
-SensorDecoder::~SensorDecoder()
-{
-	m_rclDevice.TryGetINetworkDevice()->Decoder_UnregisterPin(*this, m_clPin);
-}
-
-void SensorDecoder::WriteConfig(dcclite::Packet &packet) const
-{
-	RemoteDecoder::WriteConfig(packet);
-
-	packet.Write8(m_clPin.Raw());
-	packet.Write8(
-		(m_fPullUp ? dcclite::SensorDecoderFlags::SNRD_PULL_UP : 0) |
-		(m_fInverted ? dcclite::SensorDecoderFlags::SNRD_INVERTED : 0)
-	);
-	packet.Write8(m_uActivateDelay);
-	packet.Write8(m_uDeactivateDelay);
-}
-
-void SensorDecoder::Serialize(dcclite::JsonOutputStream_t &stream) const
-{
-	RemoteDecoder::Serialize(stream);
-
-	stream.AddIntValue("pin", m_clPin.Raw());
-	stream.AddBool("pullup", m_fPullUp);
-	stream.AddBool("inverted", m_fInverted);
-}
-
