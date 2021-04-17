@@ -22,237 +22,242 @@
 
 #include <rapidjson/document.h>
 
-class NetworkDevice: public Device, public INetworkDevice_DecoderServices
-{
-	public:
-		enum class Status
-		{
-			OFFLINE,
-			ONLINE			
-		};		
+namespace dcclite::broker
+{ 
 
-	public:
-		NetworkDevice(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project);
-		NetworkDevice(std::string name, IDccLite_DeviceServices &dccService, const Project &project);
+	class NetworkDevice: public Device, public INetworkDevice_DecoderServices
+	{
+		public:
+			enum class Status
+			{
+				OFFLINE,
+				ONLINE			
+			};		
 
-		NetworkDevice(const NetworkDevice &) = delete;
-		NetworkDevice(NetworkDevice &&) = delete;
+		public:
+			NetworkDevice(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project);
+			NetworkDevice(std::string name, IDccLite_DeviceServices &dccService, const Project &project);
 
-		~NetworkDevice();
+			NetworkDevice(const NetworkDevice &) = delete;
+			NetworkDevice(NetworkDevice &&) = delete;
 
-		void Update(const dcclite::Clock &clock) override;
+			~NetworkDevice();
 
-		void AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::NetworkAddress remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken);
+			void Update(const dcclite::Clock &clock) override;
 
-		void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteConfigToken);		
+			void AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::NetworkAddress remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken);
+
+			void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteConfigToken);		
 		
-		inline const dcclite::Guid &GetConfigToken() noexcept
-		{
-			return m_ConfigToken;
-		}
+			inline const dcclite::Guid &GetConfigToken() noexcept
+			{
+				return m_ConfigToken;
+			}
 
-		inline bool IsOnline() const noexcept
-		{
-			return m_eStatus == Status::ONLINE;
-		}
+			inline bool IsOnline() const noexcept
+			{
+				return m_eStatus == Status::ONLINE;
+			}
 
-		//
-		//IObject
-		//
-		//
+			//
+			//IObject
+			//
+			//
 
-		const char *GetTypeName() const noexcept override
-		{
-			return "NetworkDevice";
-		}
+			const char *GetTypeName() const noexcept override
+			{
+				return "NetworkDevice";
+			}
 
-		void Serialize(dcclite::JsonOutputStream_t &stream) const override;
+			void Serialize(dcclite::JsonOutputStream_t &stream) const override;
 
-		//
-		//IDevice_DecoderServices
-		//
-		//
+			//
+			//IDevice_DecoderServices
+			//
+			//
 		
-		INetworkDevice_DecoderServices *TryGetINetworkDevice() noexcept override
-		{
-			return this;
-		}
+			INetworkDevice_DecoderServices *TryGetINetworkDevice() noexcept override
+			{
+				return this;
+			}
 
-		//
-		//INetworkDevice_DecoderServices
-		//
-		//
+			//
+			//INetworkDevice_DecoderServices
+			//
+			//
 
-		void Decoder_RegisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage) override
-		{
-			m_clPinManager.RegisterPin(decoder, pin, usage);
-		}
+			void Decoder_RegisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage) override
+			{
+				m_clPinManager.RegisterPin(decoder, pin, usage);
+			}
 
-		void Decoder_UnregisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin) override
-		{
-			m_clPinManager.UnregisterPin(decoder, pin);
-		}	
+			void Decoder_UnregisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin) override
+			{
+				m_clPinManager.UnregisterPin(decoder, pin);
+			}	
 
-	protected:
-		void OnUnload() override;
+		protected:
+			void OnUnload() override;
 
-		void CheckLoadedDecoder(Decoder &decoder) override;
+			void CheckLoadedDecoder(Decoder &decoder) override;
 
-	private:
-		bool CheckSessionConfig(const dcclite::Guid remoteConfigToken, const dcclite::NetworkAddress remoteAddress);
-		bool CheckSession(const dcclite::NetworkAddress remoteAddress);
+		private:
+			bool CheckSessionConfig(const dcclite::Guid remoteConfigToken, const dcclite::NetworkAddress remoteAddress);
+			bool CheckSession(const dcclite::NetworkAddress remoteAddress);
 
-		void GoOffline();
-		void Disconnect();
+			void GoOffline();
+			void Disconnect();
 
-		void RefreshTimeout(const dcclite::Clock::TimePoint_t time);
-		bool CheckTimeout(const dcclite::Clock::TimePoint_t time);				
+			void RefreshTimeout(const dcclite::Clock::TimePoint_t time);
+			bool CheckTimeout(const dcclite::Clock::TimePoint_t time);				
 		
-		void ClearState();
-		void GotoSyncState();
-		void GotoOnlineState();
-		void GotoConfigState(const dcclite::Clock::TimePoint_t time);						
+			void ClearState();
+			void GotoSyncState();
+			void GotoOnlineState();
+			void GotoConfigState(const dcclite::Clock::TimePoint_t time);						
 
-	private:						
-		PinManager				m_clPinManager;		
+		private:						
+			PinManager				m_clPinManager;		
 
-		//
-		//
-		//Remote Device Info				
-		dcclite::Guid		m_SessionToken;
+			//
+			//
+			//Remote Device Info				
+			dcclite::Guid		m_SessionToken;
 
-		dcclite::NetworkAddress	m_RemoteAddress;
+			dcclite::NetworkAddress	m_RemoteAddress;
 
-		//
-		//
-		//Connection status
-		Status				m_eStatus;
+			//
+			//
+			//Connection status
+			Status				m_eStatus;
 
-		dcclite::Clock::TimePoint_t m_Timeout;					
+			dcclite::Clock::TimePoint_t m_Timeout;					
 
-		struct State
-		{
-			virtual void OnPacket(
-				NetworkDevice &self,
-				dcclite::Packet &packet, 
-				const dcclite::Clock::TimePoint_t time, 
-				const dcclite::MsgTypes msgType, 
-				const dcclite::NetworkAddress remoteAddress, 
-				const dcclite::Guid remoteConfigToken
-			);
+			struct State
+			{
+				virtual void OnPacket(
+					NetworkDevice &self,
+					dcclite::Packet &packet, 
+					const dcclite::Clock::TimePoint_t time, 
+					const dcclite::MsgTypes msgType, 
+					const dcclite::NetworkAddress remoteAddress, 
+					const dcclite::Guid remoteConfigToken
+				);
 
-			virtual void Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time) = 0;
-			virtual const char *GetName() const = 0;				
-		};		
+				virtual void Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time) = 0;
+				virtual const char *GetName() const = 0;				
+			};		
 
-		struct ConfigState: State
-		{
-			std::vector<bool>	m_vecAcks;
+			struct ConfigState: State
+			{
+				std::vector<bool>	m_vecAcks;
 
-			dcclite::Clock::TimePoint_t m_RetryTime;
+				dcclite::Clock::TimePoint_t m_RetryTime;
 
-			uint8_t				m_uSeqCount = { 0 };
-			bool				m_fAckReceived = { false };
+				uint8_t				m_uSeqCount = { 0 };
+				bool				m_fAckReceived = { false };
 
-			ConfigState(NetworkDevice &self, const dcclite::Clock::TimePoint_t time);			
+				ConfigState(NetworkDevice &self, const dcclite::Clock::TimePoint_t time);			
 
-			void OnPacket(
-				NetworkDevice &self,
-				dcclite::Packet &packet,
-				const dcclite::Clock::TimePoint_t time,
-				const dcclite::MsgTypes msgType,
-				const dcclite::NetworkAddress remoteAddress,
-				const dcclite::Guid remoteConfigToken
-			) override;
-
-			void Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time) override;
-
-			const char *GetName() const override { return "ConfigState"; }
-
-			private:				
-				void SendDecoderConfigPacket(const NetworkDevice &self, const size_t index) const;
-				void SendConfigStartPacket(const NetworkDevice &self) const;
-				void SendConfigFinishedPacket(const NetworkDevice &self) const;
-
-				void OnPacket_ConfigAck(
+				void OnPacket(
 					NetworkDevice &self,
 					dcclite::Packet &packet,
 					const dcclite::Clock::TimePoint_t time,
 					const dcclite::MsgTypes msgType,
 					const dcclite::NetworkAddress remoteAddress,
 					const dcclite::Guid remoteConfigToken
-				);
+				) override;
 
-				void OnPacket_ConfigFinished(
+				void Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time) override;
+
+				const char *GetName() const override { return "ConfigState"; }
+
+				private:				
+					void SendDecoderConfigPacket(const NetworkDevice &self, const size_t index) const;
+					void SendConfigStartPacket(const NetworkDevice &self) const;
+					void SendConfigFinishedPacket(const NetworkDevice &self) const;
+
+					void OnPacket_ConfigAck(
+						NetworkDevice &self,
+						dcclite::Packet &packet,
+						const dcclite::Clock::TimePoint_t time,
+						const dcclite::MsgTypes msgType,
+						const dcclite::NetworkAddress remoteAddress,
+						const dcclite::Guid remoteConfigToken
+					);
+
+					void OnPacket_ConfigFinished(
+						NetworkDevice &self,
+						dcclite::Packet &packet,
+						const dcclite::Clock::TimePoint_t time,
+						const dcclite::MsgTypes msgType,
+						const dcclite::NetworkAddress remoteAddress,
+						const dcclite::Guid remoteConfigToken
+					);
+			};			
+
+			struct SyncState: State
+			{
+				dcclite::Clock::TimePoint_t m_SyncTimeout;
+
+				void OnPacket(
 					NetworkDevice &self,
 					dcclite::Packet &packet,
 					const dcclite::Clock::TimePoint_t time,
 					const dcclite::MsgTypes msgType,
 					const dcclite::NetworkAddress remoteAddress,
 					const dcclite::Guid remoteConfigToken
-				);
-		};			
+				) override;
 
-		struct SyncState: State
-		{
-			dcclite::Clock::TimePoint_t m_SyncTimeout;
+				void Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time) override;
 
-			void OnPacket(
-				NetworkDevice &self,
-				dcclite::Packet &packet,
-				const dcclite::Clock::TimePoint_t time,
-				const dcclite::MsgTypes msgType,
-				const dcclite::NetworkAddress remoteAddress,
-				const dcclite::Guid remoteConfigToken
-			) override;
+				const char *GetName() const override { return "SyncState"; }
+			};
 
-			void Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time) override;
+			struct OnlineState: State
+			{			
+				OnlineState();
 
-			const char *GetName() const override { return "SyncState"; }
-		};
+				void OnPacket(
+					NetworkDevice &self,
+					dcclite::Packet &packet,
+					const dcclite::Clock::TimePoint_t time,
+					const dcclite::MsgTypes msgType,
+					const dcclite::NetworkAddress remoteAddress,
+					const dcclite::Guid remoteConfigToken
+				) override;
 
-		struct OnlineState: State
-		{			
-			OnlineState();
+				void Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time) override;
 
-			void OnPacket(
-				NetworkDevice &self,
-				dcclite::Packet &packet,
-				const dcclite::Clock::TimePoint_t time,
-				const dcclite::MsgTypes msgType,
-				const dcclite::NetworkAddress remoteAddress,
-				const dcclite::Guid remoteConfigToken
-			) override;
+				const char *GetName() const override { return "OnlineState"; }
 
-			void Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time) override;
+				private:
+					void SendStateDelta(NetworkDevice &self, const bool sendSensorsState, const dcclite::Clock::TimePoint_t time);
 
-			const char *GetName() const override { return "OnlineState"; }
+					dcclite::Clock::TimePoint_t m_tLastStateSentTime;
+					dcclite::StatesBitPack_t	m_tLastStateSent;
 
-			private:
-				void SendStateDelta(NetworkDevice &self, const bool sendSensorsState, const dcclite::Clock::TimePoint_t time);
+					uint64_t			m_uLastReceivedStatePacketId = 0;
 
-				dcclite::Clock::TimePoint_t m_tLastStateSentTime;
-				dcclite::StatesBitPack_t	m_tLastStateSent;
-
-				uint64_t			m_uLastReceivedStatePacketId = 0;
-
-				uint64_t			m_uOutgoingStatePacketId = 0;
-		};
+					uint64_t			m_uOutgoingStatePacketId = 0;
+			};
 
 
-		//
-		//
-		//Connection state
-		struct NullState {};
+			//
+			//
+			//Connection state
+			struct NullState {};
 		
-		std::variant< NullState, ConfigState, SyncState, OnlineState> m_vState;
-		State *m_pclCurrentState = nullptr;
+			std::variant< NullState, ConfigState, SyncState, OnlineState> m_vState;
+			State *m_pclCurrentState = nullptr;
 
-		/**
-		Registered is a device that is stored on config.
+			/**
+			Registered is a device that is stored on config.
 
-		Devices that contact the Broker, but are not in the config files, are marked as unregistered
+			Devices that contact the Broker, but are not in the config files, are marked as unregistered
 
-		*/				
-		bool					m_fRegistered;		
-};
+			*/				
+			bool					m_fRegistered;		
+	};
+
+}

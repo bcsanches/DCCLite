@@ -15,57 +15,62 @@
 #include "EmbeddedLibDefs.h"
 #include "BasicPin.h"
 
-class SimpleOutputDecoder : public OutputDecoder
+namespace dcclite::broker
 {
-	public:
-		SimpleOutputDecoder(
-			const DccAddress &address,
-			const std::string &name,
-			IDccLite_DecoderServices &owner,
-			IDevice_DecoderServices &dev,
-			const rapidjson::Value &params
-		);
 
-		~SimpleOutputDecoder() override;
+	class SimpleOutputDecoder : public OutputDecoder
+	{
+		public:
+			SimpleOutputDecoder(
+				const DccAddress &address,
+				const std::string &name,
+				IDccLite_DecoderServices &owner,
+				IDevice_DecoderServices &dev,
+				const rapidjson::Value &params
+			);
 
-		void WriteConfig(dcclite::Packet &packet) const override;
+			~SimpleOutputDecoder() override;
 
-		dcclite::DecoderTypes GetType() const noexcept override
-		{
-			return dcclite::DecoderTypes::DEC_OUTPUT;
-		}
+			void WriteConfig(dcclite::Packet &packet) const override;
 
-		inline dcclite::BasicPin GetPin() const noexcept
-		{
-			return m_clPin;
-		}
+			dcclite::DecoderTypes GetType() const noexcept override
+			{
+				return dcclite::DecoderTypes::DEC_OUTPUT;
+			}
 
-		uint8_t GetDccppFlags() const noexcept;
+			inline dcclite::BasicPin GetPin() const noexcept
+			{
+				return m_clPin;
+			}
+
+			uint8_t GetDccppFlags() const noexcept;
 		
-		//
-		//IObject
-		//
-		//
+			//
+			//IObject
+			//
+			//
 
-		const char *GetTypeName() const noexcept override
-		{
-			return "SimpleOutputDecoder";
-		}
+			const char *GetTypeName() const noexcept override
+			{
+				return "SimpleOutputDecoder";
+			}
 
-		void Serialize(dcclite::JsonOutputStream_t &stream) const override
-		{
-			OutputDecoder::Serialize(stream);
+			void Serialize(dcclite::JsonOutputStream_t &stream) const override
+			{
+				OutputDecoder::Serialize(stream);
 
-			stream.AddIntValue ("pin", m_clPin.Raw());
-			stream.AddBool("invertedOperation", m_fInvertedOperation);
-			stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
-			stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
-		}
+				stream.AddIntValue ("pin", m_clPin.Raw());
+				stream.AddBool("invertedOperation", m_fInvertedOperation);
+				stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
+				stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
+			}
 
-	private:
-		dcclite::BasicPin m_clPin;
+		private:
+			dcclite::BasicPin m_clPin;
 
-		bool m_fInvertedOperation = false;
-		bool m_fIgnoreSavedState = false;
-		bool m_fActivateOnPowerUp = false;		
-};
+			bool m_fInvertedOperation = false;
+			bool m_fIgnoreSavedState = false;
+			bool m_fActivateOnPowerUp = false;		
+	};
+
+}

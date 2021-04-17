@@ -16,46 +16,51 @@
 #include "BasicPin.h"
 #include "Object.h"
 
-class RemoteDecoder;
-
-enum class ArduinoBoards
+namespace dcclite::broker
 {
-	MEGA,
-	UNO
-};
 
-extern ArduinoBoards DecodeBoardName(std::string_view boardName);
+	class RemoteDecoder;
 
-/**
-	This is really a helper class for helping managing boards and pin usage, not necessary for DCCLite system to work
+	enum class ArduinoBoards
+	{
+		MEGA,
+		UNO
+	};
 
-*/
-class PinManager
-{
-	public:
-		struct PinInfo
-		{
-			inline PinInfo():
-				m_pclUser{nullptr},
-				m_pszUsage{nullptr},
-				m_pszSpecialName{""}
+	extern ArduinoBoards DecodeBoardName(std::string_view boardName);
+
+	/**
+		This is really a helper class for helping managing boards and pin usage, not necessary for DCCLite system to work
+
+	*/
+	class PinManager
+	{
+		public:
+			struct PinInfo
 			{
-				//empty
-			}
-			const RemoteDecoder *m_pclUser;
-			const char *m_pszUsage;
+				inline PinInfo():
+					m_pclUser{nullptr},
+					m_pszUsage{nullptr},
+					m_pszSpecialName{""}
+				{
+					//empty
+				}
+				const RemoteDecoder *m_pclUser;
+				const char *m_pszUsage;
 
-			const char *m_pszSpecialName;
-		};
+				const char *m_pszSpecialName;
+			};
 
-	private:	
-		std::vector<PinInfo> m_vecPins;
+		private:	
+			std::vector<PinInfo> m_vecPins;
 
-	public:
-		PinManager(ArduinoBoards board);
+		public:
+			PinManager(ArduinoBoards board);
 
-		void RegisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage);
-		void UnregisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin);
+			void RegisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage);
+			void UnregisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin);
 
-		void Serialize(dcclite::JsonOutputStream_t &stream) const;
-};
+			void Serialize(dcclite::JsonOutputStream_t &stream) const;
+	};
+
+}

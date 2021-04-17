@@ -15,6 +15,8 @@ using namespace rapidjson;
 static DecoderServicesMockup g_DecoderServices;
 static DeviceDecoderServicesMockup g_DeviceDecoderServices;
 
+using namespace dcclite::broker;
+
 std::unique_ptr<SignalDecoder> CreateSignal(const char *json)
 {
 	DccAddress					address{ 1024 };

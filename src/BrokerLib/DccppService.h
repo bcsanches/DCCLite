@@ -13,16 +13,20 @@
 
 #include "Service.h"
 
-class DccppService: public Service
-{	
-	public:
-		DccppService(const std::string &name, Broker &broker, const rapidjson::Value& params, const Project& project);
+namespace dcclite::broker
+{ 
+
+	class DccppService: public Service
+	{	
+		public:
+			DccppService(const std::string &name, Broker &broker, const rapidjson::Value& params, const Project& project);
 		
-		~DccppService() override 
-		{
-			//empty
-		}
+			~DccppService() override 
+			{
+				//empty
+			}
 		
 
-		static std::unique_ptr<Service> Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
-};
+			static std::unique_ptr<Service> Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+	};
+}

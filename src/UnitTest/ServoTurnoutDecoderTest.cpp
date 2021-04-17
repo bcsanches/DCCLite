@@ -5,11 +5,14 @@
 #include "BrokerMockups.h"
 #include "Packet.h"
 #include "TurnoutDecoder.h"
+//#include "ServoTurnoutDecoder.h"
 
 using namespace rapidjson;
 
 static DecoderServicesMockup g_DecoderServices;
 static DeviceDecoderServicesMockup g_DeviceDecoderServices;
+
+using namespace dcclite::broker;
 
 TEST(ServoTurnoutDecoderTest, Basic)
 {
@@ -174,3 +177,33 @@ TEST(ServoTurnoutDecoderTest, InvertedPowerFlag)
 
 	CheckTurnoutFlags(json, dcclite::ServoTurnoutDecoderFlags::SRVT_INVERTED_POWER);
 }
+
+TEST(ServoTurnoutDecoderTest, RemoteDecoder)
+{
+	const char *json = R"JSON(
+		{
+			"name":"STA_T01",
+			"class":"ServoTurnout",
+			"address":"1700",
+			"pin": 3,						
+			"powerPin":26,
+			"frogPin":28,			
+			"operationTime":1000,
+			"range":10,
+			"invertedPower":false
+		}
+	)JSON";
+
+	Document d;
+	d.Parse(json);
+
+	ServoTurnoutDecoder turnout{ DccAddress{128}, "test", g_DecoderServices, g_DeviceDecoderServices, d };
+
+	dcclite::Packet packet;
+
+	turnout.WriteConfig(packet);
+
+	packet.Reset();
+
+}
+

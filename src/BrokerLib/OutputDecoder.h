@@ -14,73 +14,77 @@
 
 #include "EmbeddedLibDefs.h"
 
-class OutputDecoder : public RemoteDecoder
+namespace dcclite::broker
 {
-	public:
-		OutputDecoder(
-			const DccAddress& address,
-			const std::string& name,
-			IDccLite_DecoderServices & owner,
-			IDevice_DecoderServices &dev,
-			const rapidjson::Value& params
-		) :
-			RemoteDecoder(address, name, owner, dev, params)
-		{
-			//empty
-		}		
 
-		dcclite::DecoderTypes GetType() const noexcept override
-		{
-			return dcclite::DecoderTypes::DEC_OUTPUT;
-		}
+	class OutputDecoder : public RemoteDecoder
+	{
+		public:
+			OutputDecoder(
+				const DccAddress& address,
+				const std::string& name,
+				IDccLite_DecoderServices & owner,
+				IDevice_DecoderServices &dev,
+				const rapidjson::Value& params
+			) :
+				RemoteDecoder(address, name, owner, dev, params)
+			{
+				//empty
+			}		
 
-		void Activate(const char* requester)
-		{
-			this->SetState(dcclite::DecoderStates::ACTIVE, requester);			
-		}
+			dcclite::DecoderTypes GetType() const noexcept override
+			{
+				return dcclite::DecoderTypes::DEC_OUTPUT;
+			}
 
-		void Deactivate(const char* requester)
-		{
-			this->SetState(dcclite::DecoderStates::INACTIVE, requester);			
-		}
+			void Activate(const char* requester)
+			{
+				this->SetState(dcclite::DecoderStates::ACTIVE, requester);			
+			}
 
-		void SetState(const dcclite::DecoderStates newState, const char *requester);
+			void Deactivate(const char* requester)
+			{
+				this->SetState(dcclite::DecoderStates::INACTIVE, requester);			
+			}
 
-		void ToggleState(const char* requester)
-		{
-			this->SetState(m_kRequestedState == dcclite::DecoderStates::ACTIVE ? dcclite::DecoderStates::INACTIVE : dcclite::DecoderStates::ACTIVE, requester);			
-		}
+			void SetState(const dcclite::DecoderStates newState, const char *requester);
 
-		dcclite::DecoderStates GetRequestedState() const
-		{
-			return m_kRequestedState;
-		}
+			void ToggleState(const char* requester)
+			{
+				this->SetState(m_kRequestedState == dcclite::DecoderStates::ACTIVE ? dcclite::DecoderStates::INACTIVE : dcclite::DecoderStates::ACTIVE, requester);			
+			}
+
+			dcclite::DecoderStates GetRequestedState() const
+			{
+				return m_kRequestedState;
+			}
 		
-		bool IsOutputDecoder() const override
-		{
-			return true;
-		}
+			bool IsOutputDecoder() const override
+			{
+				return true;
+			}
 
-		bool IsInputDecoder() const override
-		{
-			return false;
-		}
+			bool IsInputDecoder() const override
+			{
+				return false;
+			}
 
-		std::optional<dcclite::DecoderStates> GetPendingStateChange() const
-		{
-			return m_kRequestedState != this->GetRemoteState() ? std::optional{ m_kRequestedState } : std::nullopt;
-		}				
+			std::optional<dcclite::DecoderStates> GetPendingStateChange() const
+			{
+				return m_kRequestedState != this->GetRemoteState() ? std::optional{ m_kRequestedState } : std::nullopt;
+			}				
 
-		//
-		//IObject
-		//
-		//
+			//
+			//IObject
+			//
+			//
 
-		const char* GetTypeName() const noexcept override
-		{
-			return "OutputDecoder";
-		}				
+			const char* GetTypeName() const noexcept override
+			{
+				return "OutputDecoder";
+			}				
 
-	private:				
-		dcclite::DecoderStates m_kRequestedState = dcclite::DecoderStates::INACTIVE;
-};
+		private:				
+			dcclite::DecoderStates m_kRequestedState = dcclite::DecoderStates::INACTIVE;
+	};
+}

@@ -15,37 +15,42 @@
 #include "Log.h"
 #include "Packet.h"
 
-RemoteDecoder::RemoteDecoder(const DccAddress &address, std::string name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params):
-	Decoder(address, std::move(name), owner, dev, params)	
-{	
-	auto it = params.FindMember("broken");
-	if (it != params.MemberEnd())
-		m_fBroken = it->value.GetBool();
-}
-
-void RemoteDecoder::WriteConfig(dcclite::Packet &packet) const
+namespace dcclite::broker
 {
-	packet.Write8(static_cast<std::uint8_t>(this->GetType()));
-	this->GetAddress().WriteConfig(packet);	
-}
 
-void RemoteDecoder::SyncRemoteState(dcclite::DecoderStates state)
-{
-	if((state != m_kRemoteState) && !m_fBroken)
+
+	RemoteDecoder::RemoteDecoder(const DccAddress &address, std::string name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params):
+		Decoder(address, std::move(name), owner, dev, params)	
+	{	
+		auto it = params.FindMember("broken");
+		if (it != params.MemberEnd())
+			m_fBroken = it->value.GetBool();
+	}
+
+	void RemoteDecoder::WriteConfig(dcclite::Packet &packet) const
 	{
-		m_kRemoteState = state;
+		packet.Write8(static_cast<std::uint8_t>(this->GetType()));
+		this->GetAddress().WriteConfig(packet);	
+	}
 
-		dcclite::Log::Info("[{}::SyncRemoteState] changed: {}", this->GetName(), dcclite::DecoderStateName(state));
+	void RemoteDecoder::SyncRemoteState(dcclite::DecoderStates state)
+	{
+		if((state != m_kRemoteState) && !m_fBroken)
+		{
+			m_kRemoteState = state;
 
-		m_rclManager.Decoder_OnStateChanged(*this);
-	}	
-}
+			dcclite::Log::Info("[{}::SyncRemoteState] changed: {}", this->GetName(), dcclite::DecoderStateName(state));
 
-void RemoteDecoder::Serialize(dcclite::JsonOutputStream_t &stream) const
-{
-	Decoder::Serialize(stream);
+			m_rclManager.Decoder_OnStateChanged(*this);
+		}	
+	}
+
+	void RemoteDecoder::Serialize(dcclite::JsonOutputStream_t &stream) const
+	{
+		Decoder::Serialize(stream);
 	
-	stream.AddBool("remoteActive", m_kRemoteState == dcclite::DecoderStates::ACTIVE);	
-	stream.AddBool("broken", m_fBroken);
-}
+		stream.AddBool("remoteActive", m_kRemoteState == dcclite::DecoderStates::ACTIVE);	
+		stream.AddBool("broken", m_fBroken);
+	}
 
+}

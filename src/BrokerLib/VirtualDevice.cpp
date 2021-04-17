@@ -14,26 +14,30 @@
 
 #include <fmt/format.h>
 
-VirtualDevice::VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project) :
-	Device{ std::move(name), dccService, params, project }	
+namespace dcclite::broker
 {
-	this->Load();
-}
 
-VirtualDevice::VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const Project &project) :
-	Device{ std::move(name), dccService, project }
-{
-	//emtpy
-}
+	VirtualDevice::VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project) :
+		Device{ std::move(name), dccService, params, project }
+	{
+		this->Load();
+	}
+
+	VirtualDevice::VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const Project &project) :
+		Device{ std::move(name), dccService, project }
+	{
+		//emtpy
+	}
 
 
-void VirtualDevice::Update(const dcclite::Clock &clock)
-{
-	//empty
-}
+	void VirtualDevice::Update(const dcclite::Clock &clock)
+	{
+		//empty
+	}
 
-void VirtualDevice::CheckLoadedDecoder(Decoder &decoder)
-{
-	if (!dynamic_cast<SignalDecoder *>(&decoder))
-		throw std::invalid_argument(fmt::format("[VirtualDevice::CheckLoadedDecoder] Decoder {} must be a SignalDecoder subtype, but it is: {}", decoder.GetName(), decoder.GetTypeName()));
+	void VirtualDevice::CheckLoadedDecoder(Decoder &decoder)
+	{
+		if (!dynamic_cast<SignalDecoder *>(&decoder))
+			throw std::invalid_argument(fmt::format("[VirtualDevice::CheckLoadedDecoder] Decoder {} must be a SignalDecoder subtype, but it is: {}", decoder.GetName(), decoder.GetTypeName()));
+	}
 }

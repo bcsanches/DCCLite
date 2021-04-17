@@ -55,7 +55,7 @@ namespace SharpDude
         {
             cbComPorts.SuspendLayout();
 
-            var previousPort = cbComPorts.SelectedItem;
+            var previousPort = (string)cbComPorts.SelectedItem;
 
             mComPorts = SerialPort.GetPortNames();
 

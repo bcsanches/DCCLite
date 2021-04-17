@@ -12,24 +12,28 @@
 
 #include "Device.h"
 
-class VirtualDevice : public Device
+namespace dcclite::broker
 {
-	public:
-		VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project);
-		VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const Project &project);
 
-		void Update(const dcclite::Clock &clock) override;	
+	class VirtualDevice : public Device
+	{
+		public:
+			VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project);
+			VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const Project &project);
 
-		//
-		//IObject
-		//
-		//
-		const char *GetTypeName() const noexcept override
-		{
-			return "VirtualDevice";
-		}
+			void Update(const dcclite::Clock &clock) override;	
 
-	protected:
-		void CheckLoadedDecoder(Decoder &decoder) override;
-};
+			//
+			//IObject
+			//
+			//
+			const char *GetTypeName() const noexcept override
+			{
+				return "VirtualDevice";
+			}
 
+		protected:
+			void CheckLoadedDecoder(Decoder &decoder) override;
+	};
+
+}

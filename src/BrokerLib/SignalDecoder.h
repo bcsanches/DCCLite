@@ -17,45 +17,52 @@
 #include "EmbeddedLibDefs.h"
 #include "NmraUtil.h"
 
-class SignalDecoder : public Decoder
+class SignalTester;
+
+namespace dcclite::broker
 {
-	public:
-		SignalDecoder(			
-			const DccAddress &address,
-			const std::string &name,
-			IDccLite_DecoderServices &owner,
-			IDevice_DecoderServices &dev,
-			const rapidjson::Value &params
-		);
 
-		//
-		//IObject
-		//
-		//
+	class SignalDecoder : public Decoder
+	{
+		public:
+			SignalDecoder(			
+				const DccAddress &address,
+				const std::string &name,
+				IDccLite_DecoderServices &owner,
+				IDevice_DecoderServices &dev,
+				const rapidjson::Value &params
+			);
 
-		const char* GetTypeName() const noexcept override
-		{
-			return "SignalDecoder";
-		}
+			//
+			//IObject
+			//
+			//
 
-		void Serialize(dcclite::JsonOutputStream_t &stream) const override;
+			const char* GetTypeName() const noexcept override
+			{
+				return "SignalDecoder";
+			}
 
-	private:
-		struct Aspect
-		{			
-			dcclite::SignalAspects m_eAspect;
+			void Serialize(dcclite::JsonOutputStream_t &stream) const override;
 
-			std::vector<std::string> m_vecOnHeads;
-			std::vector<std::string> m_vecOffHeads;
+		private:
+			struct Aspect
+			{			
+				dcclite::SignalAspects m_eAspect;
 
-			bool m_Flash = false;
-		};
+				std::vector<std::string> m_vecOnHeads;
+				std::vector<std::string> m_vecOffHeads;
 
-		friend class SignalTester;
+				bool m_Flash = false;
+			};
 
-	private:				
-		dcclite::DecoderStates m_kRequestedState = dcclite::DecoderStates::INACTIVE;
+			friend class ::SignalTester;
 
-		std::map<std::string, std::string> m_mapHeads;
-		std::vector<Aspect> m_vecAspects;
-};
+		private:				
+			dcclite::DecoderStates m_kRequestedState = dcclite::DecoderStates::INACTIVE;
+
+			std::map<std::string, std::string> m_mapHeads;
+			std::vector<Aspect> m_vecAspects;
+	};
+
+}

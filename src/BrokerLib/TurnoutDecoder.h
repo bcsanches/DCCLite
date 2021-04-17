@@ -15,88 +15,92 @@
 #include "BasicPin.h"
 #include "OutputDecoder.h"
 
-class TurnoutDecoder : public OutputDecoder
+namespace dcclite::broker
 {
-	public:
-		TurnoutDecoder(
-			const DccAddress& address,
-			const std::string& name,
-			IDccLite_DecoderServices &owner,
-			IDevice_DecoderServices &dev,
-			const rapidjson::Value& params
-		):
-			OutputDecoder(address, name, owner, dev, params)
-		{
-			//empty
-		}
 
-		bool IsTurnoutDecoder() const override
-		{
-			return true;
-		}
+	class TurnoutDecoder : public OutputDecoder
+	{
+		public:
+			TurnoutDecoder(
+				const DccAddress& address,
+				const std::string& name,
+				IDccLite_DecoderServices &owner,
+				IDevice_DecoderServices &dev,
+				const rapidjson::Value& params
+			):
+				OutputDecoder(address, name, owner, dev, params)
+			{
+				//empty
+			}
 
-		const char *GetTypeName() const noexcept override
-		{
-			return "TurnoutDecoder";
-		}
-};
+			bool IsTurnoutDecoder() const override
+			{
+				return true;
+			}
 
-class ServoTurnoutDecoder : public TurnoutDecoder
-{
-	public:
-		ServoTurnoutDecoder(
-			const DccAddress& address,
-			const std::string& name,
-			IDccLite_DecoderServices &owner,
-			IDevice_DecoderServices &dev,
-			const rapidjson::Value& params
-		);
+			const char *GetTypeName() const noexcept override
+			{
+				return "TurnoutDecoder";
+			}
+	};
 
-		~ServoTurnoutDecoder() override;
+	class ServoTurnoutDecoder : public TurnoutDecoder
+	{
+		public:
+			ServoTurnoutDecoder(
+				const DccAddress& address,
+				const std::string& name,
+				IDccLite_DecoderServices &owner,
+				IDevice_DecoderServices &dev,
+				const rapidjson::Value& params
+			);
 
-		void WriteConfig(dcclite::Packet& packet) const override;
+			~ServoTurnoutDecoder() override;
 
-		dcclite::DecoderTypes GetType() const noexcept override
-		{
-			return dcclite::DecoderTypes::DEC_SERVO_TURNOUT;
-		}
+			void WriteConfig(dcclite::Packet& packet) const override;
 
-		void Serialize(dcclite::JsonOutputStream_t& stream) const override
-		{
-			TurnoutDecoder::Serialize(stream);
+			dcclite::DecoderTypes GetType() const noexcept override
+			{
+				return dcclite::DecoderTypes::DEC_SERVO_TURNOUT;
+			}
 
-			stream.AddIntValue("pin", m_clPin.Raw());
+			void Serialize(dcclite::JsonOutputStream_t& stream) const override
+			{
+				TurnoutDecoder::Serialize(stream);
 
-			if (m_clPowerPin)
-				stream.AddIntValue("powerPin", m_clPowerPin.Raw());
+				stream.AddIntValue("pin", m_clPin.Raw());
 
-			if (m_clFrogPin)
-				stream.AddIntValue("frogPin", m_clFrogPin.Raw());
+				if (m_clPowerPin)
+					stream.AddIntValue("powerPin", m_clPowerPin.Raw());
 
-			stream.AddBool("invertedOperation", m_fInvertedOperation);
-			stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
-			stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
-			stream.AddBool("invertedFrog", m_fInvertedFrog);
-		}
+				if (m_clFrogPin)
+					stream.AddIntValue("frogPin", m_clFrogPin.Raw());
 
-		const char *GetTypeName() const noexcept override
-		{
-			return "ServoTurnoutDecoder";
-		}
+				stream.AddBool("invertedOperation", m_fInvertedOperation);
+				stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
+				stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
+				stream.AddBool("invertedFrog", m_fInvertedFrog);
+			}
+
+			const char *GetTypeName() const noexcept override
+			{
+				return "ServoTurnoutDecoder";
+			}
 
 
-	private:
-		dcclite::BasicPin	m_clPin;
-		dcclite::BasicPin	m_clPowerPin;
-		dcclite::BasicPin	m_clFrogPin;
+		private:
+			dcclite::BasicPin	m_clPin;
+			dcclite::BasicPin	m_clPowerPin;
+			dcclite::BasicPin	m_clFrogPin;
 
-		std::uint8_t				m_uRange = dcclite::SERVO_DEFAULT_RANGE;
-		std::chrono::milliseconds	m_tOperationTime = std::chrono::milliseconds{1000};
+			std::uint8_t				m_uRange = dcclite::SERVO_DEFAULT_RANGE;
+			std::chrono::milliseconds	m_tOperationTime = std::chrono::milliseconds{1000};
 
-		bool m_fInvertedOperation = false;
-		bool m_fIgnoreSavedState = false;
-		bool m_fActivateOnPowerUp = false;
+			bool m_fInvertedOperation = false;
+			bool m_fIgnoreSavedState = false;
+			bool m_fActivateOnPowerUp = false;
 
-		bool m_fInvertedFrog = false;		
-		bool m_fInvertedPower = false;
-};
+			bool m_fInvertedFrog = false;		
+			bool m_fInvertedPower = false;
+	};
+}

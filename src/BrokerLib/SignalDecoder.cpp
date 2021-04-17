@@ -11,109 +11,113 @@
 #include "SignalDecoder.h"
 
 
-SignalDecoder::SignalDecoder(
-	const DccAddress &address,
-	const std::string &name,
-	IDccLite_DecoderServices &owner,
-	IDevice_DecoderServices &dev,
-	const rapidjson::Value &params
-) :
-	Decoder(address, name, owner, dev, params)
+namespace dcclite::broker
 {
-	auto headsData = params.FindMember("heads");
-	if ((headsData == params.MemberEnd()) || (!headsData->value.IsObject()))
+
+	SignalDecoder::SignalDecoder(
+		const DccAddress &address,
+		const std::string &name,
+		IDccLite_DecoderServices &owner,
+		IDevice_DecoderServices &dev,
+		const rapidjson::Value &params
+	) :
+		Decoder(address, name, owner, dev, params)
 	{
-		throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: expected heads object for {}", this->GetName()));		
-	}
-
-	for (auto &headElement : headsData->value.GetObject())
-	{
-		m_mapHeads.insert(std::make_pair(headElement.name.GetString(), headElement.value.GetString()));
-	}
-
-	auto aspectsData = params.FindMember("aspects");
-	if ((aspectsData == params.MemberEnd()) || (!aspectsData->value.IsArray()))
-	{
-		throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: expected aspects array for {}", this->GetName()));
-	}
-
-	for (auto &aspectElement : aspectsData->value.GetArray())
-	{
-		auto name = aspectElement["name"].GetString();
-
-		auto aspectId = dcclite::ConvertNameToAspect(name);
-
-		if(std::any_of(m_vecAspects.begin(), m_vecAspects.end(), [aspectId](const Aspect &aspect) { return aspect.m_eAspect == aspectId; }))		
+		auto headsData = params.FindMember("heads");
+		if ((headsData == params.MemberEnd()) || (!headsData->value.IsObject()))
 		{
-			throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: aspect {} already defined", name));
+			throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: expected heads object for {}", this->GetName()));
 		}
 
-		Aspect newAspect;
-
-		newAspect.m_eAspect = aspectId;
-
-		auto onLights = aspectElement.FindMember("on");
-		if (onLights != aspectElement.MemberEnd())
+		for (auto &headElement : headsData->value.GetObject())
 		{
-			for (auto &it : onLights->value.GetArray())
+			m_mapHeads.insert(std::make_pair(headElement.name.GetString(), headElement.value.GetString()));
+		}
+
+		auto aspectsData = params.FindMember("aspects");
+		if ((aspectsData == params.MemberEnd()) || (!aspectsData->value.IsArray()))
+		{
+			throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: expected aspects array for {}", this->GetName()));
+		}
+
+		for (auto &aspectElement : aspectsData->value.GetArray())
+		{
+			auto name = aspectElement["name"].GetString();
+
+			auto aspectId = dcclite::ConvertNameToAspect(name);
+
+			if (std::any_of(m_vecAspects.begin(), m_vecAspects.end(), [aspectId](const Aspect &aspect) { return aspect.m_eAspect == aspectId; }))
 			{
-				if (m_mapHeads.find(it.GetString()) == m_mapHeads.end())
-				{
-					throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: aspect {} on \"on\" array not found on heads defintion", it.GetString()));
-				}
-
-				newAspect.m_vecOnHeads.push_back(it.GetString());
+				throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: aspect {} already defined", name));
 			}
-		}
 
-		auto offLights = aspectElement.FindMember("off");
-		if (offLights != aspectElement.MemberEnd())
-		{
-			for (auto &it : offLights->value.GetArray())
+			Aspect newAspect;
+
+			newAspect.m_eAspect = aspectId;
+
+			auto onLights = aspectElement.FindMember("on");
+			if (onLights != aspectElement.MemberEnd())
 			{
-				if (m_mapHeads.find(it.GetString()) == m_mapHeads.end())
+				for (auto &it : onLights->value.GetArray())
 				{
-					throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: aspect {} on \"off\" array not found on heads defintion", it.GetString()));
-				}
+					if (m_mapHeads.find(it.GetString()) == m_mapHeads.end())
+					{
+						throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: aspect {} on \"on\" array not found on heads defintion", it.GetString()));
+					}
 
-				if (std::any_of(newAspect.m_vecOnHeads.begin(), newAspect.m_vecOnHeads.end(), [&it](const std::string &onAspectName) { return onAspectName.compare(it.GetString()) == 0; }))
-				{
-					throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: \"off\" head {} also defined on the \"on\" table", it.GetString()));
+					newAspect.m_vecOnHeads.push_back(it.GetString());
 				}
-
-				newAspect.m_vecOffHeads.push_back(it.GetString());
 			}
-		}
-		else
-		{
-			//if no off array defined, we simple add all heads not listed on the "on" table
-			for (auto headIt : m_mapHeads)
+
+			auto offLights = aspectElement.FindMember("off");
+			if (offLights != aspectElement.MemberEnd())
 			{
-				//skip existing heads
-				if (std::any_of(newAspect.m_vecOnHeads.begin(), newAspect.m_vecOnHeads.end(), [headIt](const std::string &onAspectName) { return onAspectName.compare(headIt.first) == 0; }))
+				for (auto &it : offLights->value.GetArray())
 				{
-					continue;
-				}
+					if (m_mapHeads.find(it.GetString()) == m_mapHeads.end())
+					{
+						throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: aspect {} on \"off\" array not found on heads defintion", it.GetString()));
+					}
 
-				newAspect.m_vecOffHeads.push_back(headIt.first);
+					if (std::any_of(newAspect.m_vecOnHeads.begin(), newAspect.m_vecOnHeads.end(), [&it](const std::string &onAspectName) { return onAspectName.compare(it.GetString()) == 0; }))
+					{
+						throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: \"off\" head {} also defined on the \"on\" table", it.GetString()));
+					}
+
+					newAspect.m_vecOffHeads.push_back(it.GetString());
+				}
 			}
+			else
+			{
+				//if no off array defined, we simple add all heads not listed on the "on" table
+				for (auto headIt : m_mapHeads)
+				{
+					//skip existing heads
+					if (std::any_of(newAspect.m_vecOnHeads.begin(), newAspect.m_vecOnHeads.end(), [headIt](const std::string &onAspectName) { return onAspectName.compare(headIt.first) == 0; }))
+					{
+						continue;
+					}
+
+					newAspect.m_vecOffHeads.push_back(headIt.first);
+				}
+			}
+
+			m_vecAspects.push_back(std::move(newAspect));
 		}
 
-		m_vecAspects.push_back(std::move(newAspect));
+		std::sort(m_vecAspects.begin(), m_vecAspects.end(), [](const Aspect &a, const Aspect &b)
+			{
+				return b.m_eAspect < a.m_eAspect;
+			});
 	}
 
-	std::sort(m_vecAspects.begin(), m_vecAspects.end(), [](const Aspect &a, const Aspect &b)
+
+	void SignalDecoder::Serialize(dcclite::JsonOutputStream_t &stream) const
 	{
-		return b.m_eAspect < a.m_eAspect;
-	});
+		Decoder::Serialize(stream);
+
+
+
+	}
+
 }
-
-
-void SignalDecoder::Serialize(dcclite::JsonOutputStream_t &stream) const
-{
-	Decoder::Serialize(stream);
-
-
-
-}
-

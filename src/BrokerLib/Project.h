@@ -15,39 +15,43 @@
 #include "Guid.h"
 #include "Sha1.h"
 
-class Project
+namespace dcclite::broker
 {
-	public:
-		explicit Project(dcclite::fs::path path)  :
-			m_pthRoot(std::move(path))
-		{
-			//empty
-		}
 
-		dcclite::fs::path GetFilePath(const std::string_view fileName) const
-		{
-			dcclite::fs::path path(m_pthRoot);
+	class Project
+	{
+		public:
+			explicit Project(dcclite::fs::path path)  :
+				m_pthRoot(std::move(path))
+			{
+				//empty
+			}
 
-			path.append(fileName);
+			dcclite::fs::path GetFilePath(const std::string_view fileName) const
+			{
+				dcclite::fs::path path(m_pthRoot);
 
-			return path.string();
-		}
+				path.append(fileName);
 
-		dcclite::fs::path GetAppFilePath(const std::string_view fileName) const;
+				return path.string();
+			}
 
-		dcclite::Guid GetFileToken(const std::string_view fileName) const;
+			dcclite::fs::path GetAppFilePath(const std::string_view fileName) const;
 
-		inline void SetName(std::string_view name)
-		{
-			m_strName = name;
-		}
+			dcclite::Guid GetFileToken(const std::string_view fileName) const;
 
-		inline const dcclite::fs::path &GetRoot() const
-		{
-			return m_pthRoot;
-		}
+			inline void SetName(std::string_view name)
+			{
+				m_strName = name;
+			}
 
-	private:
-		const dcclite::fs::path m_pthRoot;
-		std::string m_strName;
-};
+			inline const dcclite::fs::path &GetRoot() const
+			{
+				return m_pthRoot;
+			}
+
+		private:
+			const dcclite::fs::path m_pthRoot;
+			std::string m_strName;
+	};
+}

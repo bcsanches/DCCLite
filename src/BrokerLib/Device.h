@@ -21,51 +21,55 @@
 
 #include <rapidjson/document.h>
 
-class Decoder;
-class IDccLite_DeviceServices;
-class Project;
-
-class Device : public dcclite::FolderObject, IDevice_DecoderServices
+namespace dcclite::broker
 {
-	public:
-		Device(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project);
-		Device(std::string name, IDccLite_DeviceServices &dccService, const Project &project);	
 
-		virtual ~Device();
+	class Decoder;
+	class IDccLite_DeviceServices;
+	class Project;
 
-		virtual void Update(const dcclite::Clock &clock) = 0;
+	class Device : public dcclite::FolderObject, IDevice_DecoderServices
+	{
+		public:
+			Device(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project);
+			Device(std::string name, IDccLite_DeviceServices &dccService, const Project &project);	
 
-		//
-		// IDeviceDEcoderServices
-		//
-		//
+			virtual ~Device();
 
-		std::string_view GetDeviceName() const noexcept override
-		{
-			return this->GetName();
-		}
+			virtual void Update(const dcclite::Clock &clock) = 0;
 
-	protected:
-		void Load();
-		void Unload();
+			//
+			// IDeviceDEcoderServices
+			//
+			//
 
-		virtual void OnUnload();
+			std::string_view GetDeviceName() const noexcept override
+			{
+				return this->GetName();
+			}
 
-		virtual void CheckLoadedDecoder(Decoder &decoder) = 0;
+		protected:
+			void Load();
+			void Unload();
 
-	protected:
-		std::vector<Decoder *>	m_vecDecoders;
+			virtual void OnUnload();
 
-		IDccLite_DeviceServices &m_clDccService;
+			virtual void CheckLoadedDecoder(Decoder &decoder) = 0;
+
+		protected:
+			std::vector<Decoder *>	m_vecDecoders;
+
+			IDccLite_DeviceServices &m_clDccService;
 	
-		//
-		//
-		//Storage data
-		const std::string		m_strConfigFileName;
-		const dcclite::fs::path m_pathConfigFile;
+			//
+			//
+			//Storage data
+			const std::string		m_strConfigFileName;
+			const dcclite::fs::path m_pathConfigFile;
 
-		const Project &m_rclProject;
+			const Project &m_rclProject;
 
-		dcclite::Guid		m_ConfigToken;
-};
+			dcclite::Guid		m_ConfigToken;
+	};
 
+}

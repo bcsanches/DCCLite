@@ -23,31 +23,34 @@ namespace dcclite
 	class Clock;
 }
 
-class Service;
-class TerminalCmdHost;
-
-class Broker
+namespace dcclite::broker
 {
-	public:
-		explicit Broker(dcclite::fs::path projectPath);
+	class Service;
+	class TerminalCmdHost;
 
-		void Update(const dcclite::Clock& clock);
+	class Broker
+	{
+		public:
+			explicit Broker(dcclite::fs::path projectPath);
 
-		Service *TryFindService(std::string_view name);
+			void Update(const dcclite::Clock& clock);
 
-		TerminalCmdHost *GetTerminalCmdHost()
-		{
-			return m_pclTerminalCmdHost;
-		}
+			Service *TryFindService(std::string_view name);
 
-	private:	
-		dcclite::FolderObject	m_clRoot;
-		dcclite::FolderObject	*m_pServices;
+			TerminalCmdHost *GetTerminalCmdHost()
+			{
+				return m_pclTerminalCmdHost;
+			}
 
-		TerminalCmdHost			*m_pclTerminalCmdHost = nullptr;
+		private:	
+			dcclite::FolderObject	m_clRoot;
+			dcclite::FolderObject	*m_pServices;
 
-		Project m_clProject;
+			TerminalCmdHost			*m_pclTerminalCmdHost = nullptr;
 
-	private:
-		void LoadConfig();	
-};
+			Project m_clProject;
+
+		private:
+			void LoadConfig();	
+	};
+}
