@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "EmbeddedLibDefs.h"
+#include "SharedLibDefs.h"
 
 class EpromStream;
 

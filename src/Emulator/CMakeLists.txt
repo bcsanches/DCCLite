@@ -12,7 +12,7 @@ target_include_directories(Emulator
     ${DCCLite_SOURCE_DIR}/src/ArduinoLib
 )
 
-target_link_libraries(Emulator PRIVATE ArduinoLib Common EmbeddedLib)
+target_link_libraries(Emulator PRIVATE ArduinoLib Common SharedLib)
 
 #set_target_properties( Emulator PROPERTIES RUNTIME_OUTPUT_DIRECTORY bin/ )
 

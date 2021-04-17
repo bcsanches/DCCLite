@@ -18,9 +18,8 @@
 
 #include "Parser.h"
 
-#include "EmbeddedLibDefs.h"
+#include "SharedLibDefs.h"
 #include "LiteDecoder.h"
-#include "NetUdp.h"
 #include "Session.h"
 #include "Storage.h"
 #include "Strings.h"

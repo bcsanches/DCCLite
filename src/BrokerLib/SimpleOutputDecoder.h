@@ -12,7 +12,7 @@
 
 #include "OutputDecoder.h"
 
-#include "EmbeddedLibDefs.h"
+#include "SharedLibDefs.h"
 #include "BasicPin.h"
 
 namespace dcclite::broker

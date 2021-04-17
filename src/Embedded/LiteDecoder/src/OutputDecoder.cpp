@@ -11,7 +11,7 @@
 #include "OutputDecoder.h"
 
 #include <Arduino.h>
-#include <EmbeddedLibDefs.h>
+#include <SharedLibDefs.h>
 #include <Packet.h>
 
 #include "Console.h"

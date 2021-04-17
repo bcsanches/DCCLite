@@ -31,5 +31,5 @@ target_include_directories(UnitTest PRIVATE
     ${GTEST_INCLUDE_DIRS}
     ${GMOCK_INCLUDE_DIRS})
 
-target_link_libraries(UnitTest PUBLIC BrokerLib Common EmbeddedLib LiteDecoderLib fmt gtest gtest_main gmock)
+target_link_libraries(UnitTest PUBLIC BrokerLib Common SharedLib LiteDecoderLib fmt gtest gtest_main gmock)
 

@@ -29,7 +29,7 @@ target_include_directories(LiteWiring
 if(WIN32)
     target_link_libraries(LiteWiring 
 		PRIVATE Common 
-		PRIVATE EmbeddedLib 
+		PRIVATE SharedLib 
 		PRIVATE bcrypt.lib 
 		PRIVATE fmt
     wx::net

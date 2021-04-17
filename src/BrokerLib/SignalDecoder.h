@@ -14,7 +14,7 @@
 
 #include <set>
 
-#include "EmbeddedLibDefs.h"
+#include "SharedLibDefs.h"
 #include "NmraUtil.h"
 
 class SignalTester;

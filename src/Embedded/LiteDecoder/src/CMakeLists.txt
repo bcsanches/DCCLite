@@ -2,8 +2,7 @@
 set(LiteDecoderLib_SRCS
 	Blinker.cpp
   Config.cpp
-  Console.cpp
-  Decoder.cpp
+  Console.cpp  
   DecoderManager.cpp
   main.cpp
   NetUdp.cpp
@@ -18,14 +17,12 @@ set(LiteDecoderLib_SRCS
 set(LiteDecoderLib_HDRS
 	Blinker.h
   Config.h
-  Console.h
-  Decoder.h
+  Console.h  
   DecoderManager.h
   LiteDecoder.h
   main.h
   NetUdp.h
-  OutputDecoder.h
-  Pin.h
+  OutputDecoder.h  
   SensorDecoder.h
   ServoTurnoutDecoder.h
   Session.h
@@ -43,8 +40,9 @@ target_include_directories(LiteDecoderLib
   PRIVATE 
     ${DCCLite_SOURCE_DIR}/src/Common 
     ${DCCLite_SOURCE_DIR}/src/ArduinoLib
-    ${DCCLite_SOURCE_DIR}/src/LiteDecoder/lib/Common
+    ${DCCLite_SOURCE_DIR}/src/Embedded/lib/Shared
+    ${DCCLite_SOURCE_DIR}/src/Embedded/lib/DecodersCommon
 )
 
-target_link_libraries(LiteDecoderLib PUBLIC ArduinoLib Common EmbeddedLib fmt)
+target_link_libraries(LiteDecoderLib PUBLIC ArduinoLib Common DecodersCommonLib SharedLib fmt)
 

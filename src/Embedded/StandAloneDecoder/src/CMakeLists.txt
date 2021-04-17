@@ -20,5 +20,5 @@ target_include_directories(StandAloneDecoderLib
     ${DCCLite_SOURCE_DIR}/src/LiteDecoder/lib/Common
 )
 
-target_link_libraries(StandAloneDecoderLib PUBLIC ArduinoLib Common EmbeddedLib fmt)
+target_link_libraries(StandAloneDecoderLib PUBLIC ArduinoLib Common SharedLib fmt)
 

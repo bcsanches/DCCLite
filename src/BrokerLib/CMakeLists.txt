@@ -57,13 +57,13 @@ target_include_directories(BrokerLib
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/lfwatch/include    
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/rapidjson/include
     PUBLIC ${DCCLite_SOURCE_DIR}/src/Common
-    PUBLIC ${DCCLite_SOURCE_DIR}/src/Embedded/lib/Common
+    PUBLIC ${DCCLite_SOURCE_DIR}/src/Embedded/lib/Shared
 )
 
 if(WIN32)
     target_link_libraries(BrokerLib         
 		PRIVATE Common 
-		PRIVATE EmbeddedLib 		 
+		PRIVATE SharedLib 		 
 		PRIVATE fmt
         PRIVATE lfwatch
 	)
@@ -78,7 +78,7 @@ else(WIN32)
 		OpenSSL::Crypto
 		OpenSSL::SSL
 		Common 
-		EmbeddedLib
+		SharedLib
 		stdc++fs 
 		fmt 
 		uuid 		

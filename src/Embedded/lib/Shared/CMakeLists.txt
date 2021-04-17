@@ -3,15 +3,15 @@
 
 # include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-set(EmbeddedLib_SRCS
+set(SharedLib_SRCS
 	Misc.cpp
   Parser.cpp
 )
 
-set(EmbeddedLib_HDRS
+set(SharedLib_HDRS
   BasicPin.h
 	BitPack.h
-  EmbeddedLibDefs.h
+  SharedLibDefs.h
   Guid.h  
   Misc.h
   Packet.h
@@ -19,6 +19,6 @@ set(EmbeddedLib_HDRS
   Version.h
 )
 
-add_library(EmbeddedLib  ${EmbeddedLib_SRCS} ${EmbeddedLib_HDRS})
-target_compile_features(EmbeddedLib PUBLIC cxx_std_17)
+add_library(SharedLib  ${SharedLib_SRCS} ${SharedLib_HDRS})
+target_compile_features(SharedLib PUBLIC cxx_std_17)
 

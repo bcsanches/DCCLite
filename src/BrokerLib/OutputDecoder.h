@@ -12,7 +12,7 @@
 
 #include "RemoteDecoder.h"
 
-#include "EmbeddedLibDefs.h"
+#include "SharedLibDefs.h"
 
 namespace dcclite::broker
 {

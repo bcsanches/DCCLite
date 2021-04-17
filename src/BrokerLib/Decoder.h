@@ -13,7 +13,7 @@
 #include <optional>
 #include <ostream>
 
-#include "EmbeddedLibDefs.h"
+#include "SharedLibDefs.h"
 #include "Object.h"
 
 #include <rapidjson/document.h>

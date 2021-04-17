@@ -17,9 +17,9 @@
 #include "Config.h"
 #include "Decoder.h"
 #include "DecoderManager.h"
-#include "EmbeddedLibDefs.h"
 #include "NetUdp.h"
 #include "Packet.h"
+#include "SharedLibDefs.h"
 #include "Storage.h"
 #include "Strings.h"
 
