@@ -21,3 +21,5 @@ build/
 src/LiteDecoder/.pio/
 /build_clang
 check-cppcheck-build-dir/
+src/Embedded/.pio/
+src/Embedded/.vscode/
