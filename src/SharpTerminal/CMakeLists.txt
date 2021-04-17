@@ -104,3 +104,5 @@ set_property(TARGET SharpTerminal PROPERTY VS_DOTNET_REFERENCES
     "System.Xml"
     "System.Xml.Linq"
 )
+
+set_property(TARGET SharpTerminal PROPERTY VS_PACKAGE_REFERENCES "System.Json")

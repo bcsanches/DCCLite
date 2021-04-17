@@ -57,7 +57,7 @@ target_include_directories(BrokerLib
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/lfwatch/include    
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/rapidjson/include
     PUBLIC ${DCCLite_SOURCE_DIR}/src/Common
-    PUBLIC ${DCCLite_SOURCE_DIR}/src/LiteDecoder/lib/Common
+    PUBLIC ${DCCLite_SOURCE_DIR}/src/Embedded/lib/Common
 )
 
 if(WIN32)

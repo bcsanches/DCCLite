@@ -60,6 +60,6 @@ target_include_directories(Common
   PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/JsonCreator/include
   PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/rapidjson/include
           ${DCCLite_SOURCE_DIR}/contrib/spdlog/include
-          ${DCCLite_SOURCE_DIR}/src/LiteDecoder/lib/Common
+          ${DCCLite_SOURCE_DIR}/src/Embedded/lib/Common
   PRIVATE ${DCCLite_SOURCE_DIR}/contrib/magic_enum/include	
 )
