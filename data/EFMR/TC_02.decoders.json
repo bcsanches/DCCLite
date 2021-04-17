@@ -36,15 +36,27 @@
         "comment":"Power track L28 / Turntable access"
     } ,
     {
-      "name": "TC_T02",
-      "class": "ServoTurnout",
-      "address": "1402",
-      "pin": 23,
-      "inverted": false,
-      "powerPin": 40,
-      "frogPin": 38,
-      "invertedFrog": false,
-      "invertedPower": true,
-      "operationTime": 3000
-  }
+        "name": "TC_T02",
+        "class": "ServoTurnout",
+        "address": "1402",
+        "pin": 23,
+        "inverted": false,
+        "powerPin": 40,
+        "frogPin": 38,
+        "invertedFrog": false,
+        "invertedPower": true,
+        "operationTime": 3000
+    },
+    {
+        "name": "TC_T04",
+        "class": "ServoTurnout",
+        "address": "1403",
+        "pin": 25,
+        "inverted": true,
+        "powerPin": 36,
+        "frogPin": 34,
+        "invertedFrog": true,
+        "invertedPower": true,
+        "operationTime": 3000
+    }
 ]
