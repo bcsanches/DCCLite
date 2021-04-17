@@ -10,9 +10,6 @@
 [submodule "contrib/rapidjson"]
 	path = contrib/rapidjson
 	url = https://github.com/Tencent/rapidjson.git
-[submodule "src/LiteDecoder/lib/EtherCard"]
-	path = src/LiteDecoder/lib/EtherCard
-	url = https://github.com/bcsanches/EtherCard.git
 [submodule "contrib/lfwatch"]
 	path = contrib/lfwatch
 	url = https://github.com/bcsanches/lfwatch.git
@@ -25,3 +22,6 @@
 [submodule "contrib/magic_enum"]
 	path = contrib/magic_enum
 	url = https://github.com/Neargye/magic_enum.git
+[submodule "contrib/EtherCard"]
+	path = contrib/EtherCard
+	url = https://github.com/bcsanches/EtherCard.git
