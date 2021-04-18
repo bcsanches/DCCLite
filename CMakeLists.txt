@@ -76,10 +76,7 @@ if (${DCCLITE_GUI_TOOLS})
     set_property(TARGET wxregex PROPERTY FOLDER "contrib/wxWidgets/Third Party Libraries")
     set_property(TARGET wxscintilla PROPERTY FOLDER "contrib/wxWidgets/Third Party Libraries")
     set_property(TARGET wxtiff PROPERTY FOLDER "contrib/wxWidgets/Third Party Libraries")
-    set_property(TARGET wxzlib PROPERTY FOLDER "contrib/wxWidgets/Third Party Libraries")
-    
-    set_property(TARGET SharpDude PROPERTY FOLDER "Tools")
-    set_property(TARGET SharpTerminal PROPERTY FOLDER "Tools")    
+    set_property(TARGET wxzlib PROPERTY FOLDER "contrib/wxWidgets/Third Party Libraries")           
     
     set_property(TARGET LitePanel PROPERTY FOLDER "CTC")
     set_property(TARGET LitePanelLib PROPERTY FOLDER "CTC")
@@ -88,6 +85,11 @@ if (${DCCLITE_GUI_TOOLS})
     set(wxBUILD_SHARED ON CACHE BOOL "" FORCE)
     set(wxBUILD_INSTALL OFF CACHE BOOL "" FORCE)
     
+endif()
+
+if (${DCCLITE_SHARP_TOOLS})
+    set_property(TARGET SharpDude PROPERTY FOLDER "Tools")
+    set_property(TARGET SharpTerminal PROPERTY FOLDER "Tools")
 endif()
 
 include(InstallRequiredSystemLibraries)
