@@ -24,8 +24,6 @@ set_property( GLOBAL PROPERTY USE_FOLDERS ON)
 
 add_subdirectory(src)
 add_subdirectory(contrib)
-
-set_property(TARGET clean_cotire PROPERTY FOLDER "contrib")
  
 set_property(TARGET fmt PROPERTY FOLDER "contrib")
 set_property(TARGET gtest PROPERTY FOLDER "contrib")
@@ -42,9 +40,6 @@ set_property(TARGET StandAloneDecoderLib PROPERTY FOLDER "Embedded")
 
 set_property(TARGET Launcher PROPERTY FOLDER "Tools")
 set_property(TARGET Terminal PROPERTY FOLDER "Tools")
-
-set_property(TARGET LitePanel PROPERTY FOLDER "CTC")
-set_property(TARGET LitePanelLib PROPERTY FOLDER "CTC")
 
 set(LFWATCH_BUILD_DEMO OFF CACHE BOOL "" FORCE)
 
@@ -85,6 +80,9 @@ if (${DCCLITE_GUI_TOOLS})
     
     set_property(TARGET SharpDude PROPERTY FOLDER "Tools")
     set_property(TARGET SharpTerminal PROPERTY FOLDER "Tools")    
+    
+    set_property(TARGET LitePanel PROPERTY FOLDER "CTC")
+    set_property(TARGET LitePanelLib PROPERTY FOLDER "CTC")
     
     #force shared build for wxWidgets
     set(wxBUILD_SHARED ON CACHE BOOL "" FORCE)
