@@ -59,6 +59,7 @@ target_include_directories(BrokerLib
     PUBLIC ${DCCLite_SOURCE_DIR}/src/Common
     PUBLIC ${DCCLite_SOURCE_DIR}/src/Embedded/lib/Shared
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/fmt/include
+    PUBLIC ${DCCLite_SOURCE_DIR}/contrib/spdlog/include
 )
 
 if(WIN32)
