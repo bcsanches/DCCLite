@@ -11,18 +11,18 @@
 #pragma once
 
 #ifdef WIN32
-	#ifdef LITEDECODERLIB_EXPORTS  
-	#define LITEDECODER_API __declspec(dllexport)   
+	#ifdef STANDALONEDECODERLIB_EXPORTS  
+	#define STANDALONEDECODER_API __declspec(dllexport)   
 	#else  
-	#define LITEDECODER_API __declspec(dllimport)   
+	#define STANDALONEDECODER_API __declspec(dllimport)   
 	#endif
 #else
-	#define LITEDECODER_API
+	#define STANDALONEDECODER_API
 #endif
 
 
-extern "C" LITEDECODER_API void setup();
-extern "C" LITEDECODER_API void loop();
+extern "C" STANDALONEDECODER_API void setup();
+extern "C" STANDALONEDECODER_API void loop();
 
 
 

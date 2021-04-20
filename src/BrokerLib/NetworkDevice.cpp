@@ -33,11 +33,11 @@ namespace dcclite::broker
 
 	class DevicePacket : public dcclite::Packet
 	{
-	public:
-		DevicePacket(dcclite::MsgTypes msgType, const dcclite::Guid &sessionToken, const dcclite::Guid &configToken)
-		{
-			dcclite::PacketBuilder builder{ *this, msgType, sessionToken, configToken };
-		}
+		public:
+			DevicePacket(dcclite::MsgTypes msgType, const dcclite::Guid &sessionToken, const dcclite::Guid &configToken)
+			{
+				dcclite::PacketBuilder builder{ *this, msgType, sessionToken, configToken };
+			}
 	};
 
 	//
