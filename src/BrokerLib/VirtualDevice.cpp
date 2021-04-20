@@ -31,8 +31,15 @@ namespace dcclite::broker
 
 
 	void VirtualDevice::Update(const dcclite::Clock &clock)
-	{
-		//empty
+	{		
+		for (auto it : m_vecDecoders)
+		{
+			auto *decoder = static_cast<SignalDecoder *>(it);
+			if (!decoder)
+				continue;
+
+			decoder->Update(clock);
+		}
 	}
 
 	void VirtualDevice::CheckLoadedDecoder(Decoder &decoder)

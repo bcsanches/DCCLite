@@ -388,3 +388,24 @@ TEST(SignalDecoderTest, InvalidAspectName)
 	}
 	)JSON")) << "Signal definition in JSON uses an name for aspect that is not know [BLA]";
 };
+
+TEST(SignalDecoderTest, EmptyAspectsArray)
+{
+	const char *json = R"JSON(
+		{
+			"name":"STC_SIG_12",
+			"class":"VirtualSignal",    
+			"address":"1840",  
+			"heads":
+			{
+				"red":"STC_HR12",
+				"green":"STC_HG12"			
+			},        
+			"aspects":
+			[			
+			]  
+		}
+	)JSON";
+
+	ASSERT_THAT(ExtractSignalExceptionString(json), HasSubstr(" Error: expected aspects array for"));	
+};

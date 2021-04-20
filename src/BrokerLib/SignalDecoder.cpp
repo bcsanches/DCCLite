@@ -10,9 +10,21 @@
 
 #include "SignalDecoder.h"
 
+#include <Log.h>
+
+#include "IDccLiteService.h"
+#include "OutputDecoder.h"
+
+// ms define leak...
+#ifdef GetObject
+#undef GetObject
+#endif
 
 namespace dcclite::broker
 {
+	using namespace std::chrono_literals;
+	static auto constexpr FLASH_INTERVAL = 300ms;
+
 
 	SignalDecoder::SignalDecoder(
 		const DccAddress &address,
@@ -35,7 +47,7 @@ namespace dcclite::broker
 		}
 
 		auto aspectsData = params.FindMember("aspects");
-		if ((aspectsData == params.MemberEnd()) || (!aspectsData->value.IsArray()))
+		if ((aspectsData == params.MemberEnd()) || (!aspectsData->value.IsArray()) || (aspectsData->value.GetArray().Empty()))
 		{
 			throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: expected aspects array for {}", this->GetName()));
 		}
@@ -103,7 +115,7 @@ namespace dcclite::broker
 			}
 
 			m_vecAspects.push_back(std::move(newAspect));
-		}
+		}		
 
 		std::sort(m_vecAspects.begin(), m_vecAspects.end(), [](const Aspect &a, const Aspect &b)
 			{
@@ -120,4 +132,124 @@ namespace dcclite::broker
 
 	}
 
+	void SignalDecoder::ForEachHead(const std::vector<std::string> &heads, const dcclite::SignalAspects aspect, std::function<bool(OutputDecoder &)> proc) const
+	{
+		for (auto head : heads)
+		{
+			auto *dec = dynamic_cast<OutputDecoder *>(m_rclManager.TryFindDecoder(head));
+			if (dec == nullptr)
+			{
+				dcclite::Log::Error("[SignalDecoder::SetAspect] Head {} for aspect {} not found or is not an output decoder.", head, dcclite::ConvertAspectToName(aspect));
+				continue;
+			}
+
+			if (!proc(*dec))
+				break;
+		}
+	}
+
+	void SignalDecoder::SetAspect(const dcclite::SignalAspects aspect, const char *requester)
+	{
+		if (aspect == m_eCurrentAspect)
+			return;
+
+		int index = 0;
+		for (auto it : m_vecAspects)
+		{
+			if (it.m_eAspect <= aspect)
+			{
+				break;
+			}
+
+			++index;
+		}
+
+		if (index == m_vecAspects.size())
+			--index;		
+
+		this->ForEachHead(m_vecAspects[index].m_vecOffHeads, aspect, [this](OutputDecoder &dec)
+			{
+				dec.SetState(dcclite::DecoderStates::INACTIVE, this->GetName().data());
+
+				return true;
+			}
+		);
+
+		m_eCurrentAspect = aspect;
+		m_uCurrentAspectIndex = index;
+
+		m_vState = State_WaitTurnOff{};		
+		m_pclCurrentState = std::get_if<State_WaitTurnOff>(&m_vState);
+	}
+
+	void SignalDecoder::Update(const dcclite::Clock &clock)
+	{
+		if (m_pclCurrentState)
+			m_pclCurrentState->Update(*this, clock.Now());
+	}
+	
+	void SignalDecoder::State_WaitTurnOff::Update(SignalDecoder &self, const dcclite::Clock::TimePoint_t time)
+	{
+		bool stillPending = false;
+		self.ForEachHead(self.m_vecAspects[self.m_uCurrentAspectIndex].m_vecOffHeads, self.m_eCurrentAspect, [&stillPending](OutputDecoder &dec)
+			{
+				if (dec.GetRemoteState() == dcclite::DecoderStates::INACTIVE)
+				{
+					stillPending = true;
+
+					return false;
+				}
+
+				return true;
+			}
+		);
+
+		if (stillPending)
+			return;
+
+		self.ForEachHead(self.m_vecAspects[self.m_uCurrentAspectIndex].m_vecOnHeads, self.m_eCurrentAspect, [&self](OutputDecoder &dec)
+			{
+				dec.Activate(self.GetName().data());
+
+				return true;
+			}
+		);
+
+		if (self.m_vecAspects[self.m_uCurrentAspectIndex].m_Flash)
+		{
+			self.m_vState = State_Flash{time};
+			self.m_pclCurrentState = std::get_if<State_Flash>(&self.m_vState);
+		}
+		else
+		{
+			self.m_vState = NullState{};
+			self.m_pclCurrentState = nullptr;
+		}		
+	}
+	
+	SignalDecoder::State_Flash::State_Flash(const dcclite::Clock::TimePoint_t time):
+		m_tNextThink(time + FLASH_INTERVAL)
+	{
+		//empty
+	}
+	
+	void SignalDecoder::State_Flash::Update(SignalDecoder &self, const dcclite::Clock::TimePoint_t time)
+	{
+		if (time < m_tNextThink)
+			return;
+
+		m_fOn = !m_fOn;
+
+		const auto state = m_fOn ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE;
+
+		self.ForEachHead(self.m_vecAspects[self.m_uCurrentAspectIndex].m_vecOnHeads, self.m_eCurrentAspect, [state, &self](OutputDecoder &dec)
+			{
+				dec.SetState(state, self.GetName().data());
+
+				return true;
+			}
+		);
+
+		m_tNextThink = time + FLASH_INTERVAL;
+	}		
 }

@@ -68,7 +68,7 @@ namespace dcclite::broker
 			//
 
 			Decoder* TryFindDecoder(const DccAddress address) const;
-			Decoder *TryFindDecoder(std::string_view id) const;
+			Decoder *TryFindDecoder(std::string_view id) const override;
 
 			//This returns only pure outputs, turnouts are ignored
 			std::vector<SimpleOutputDecoder *> FindAllSimpleOutputDecoders();
