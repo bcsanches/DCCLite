@@ -128,8 +128,8 @@ namespace dcclite::broker
 	{
 		Decoder::Serialize(stream);
 
-
-
+		stream.AddStringValue("currentRequestedAspectName", dcclite::ConvertAspectToName(m_eCurrentAspect));
+		stream.AddStringValue("selectedAspectName", dcclite::ConvertAspectToName(m_vecAspects[m_uCurrentAspectIndex].m_eAspect));
 	}
 
 	void SignalDecoder::ForEachHead(const std::vector<std::string> &heads, const dcclite::SignalAspects aspect, std::function<bool(OutputDecoder &)> proc) const
