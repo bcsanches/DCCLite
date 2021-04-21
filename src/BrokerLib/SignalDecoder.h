@@ -82,6 +82,11 @@ namespace dcclite::broker
 				virtual void Update(SignalDecoder &self, const dcclite::Clock::TimePoint_t time) = 0;
 			};
 
+			struct State_TurnOff : State
+			{
+				void Update(SignalDecoder &self, const dcclite::Clock::TimePoint_t time) override;
+			};
+
 			struct State_WaitTurnOff: State
 			{
 				void Update(SignalDecoder &self, const dcclite::Clock::TimePoint_t time) override;
@@ -100,10 +105,10 @@ namespace dcclite::broker
 			struct NullState {};
 
 		private:
-			dcclite::SignalAspects	m_eCurrentAspect = dcclite::SignalAspects::Stop;
-			size_t					m_uCurrentAspectIndex = 0;
+			dcclite::SignalAspects	m_eCurrentAspect;
+			size_t					m_uCurrentAspectIndex;
 
-			std::variant<NullState, State_Flash, State_WaitTurnOff> m_vState;
+			std::variant<NullState, State_Flash, State_WaitTurnOff, State_TurnOff> m_vState;
 			State *m_pclCurrentState = nullptr;
 
 			std::map<std::string, std::string> m_mapHeads;

@@ -118,9 +118,17 @@ namespace dcclite::broker
 		}		
 
 		std::sort(m_vecAspects.begin(), m_vecAspects.end(), [](const Aspect &a, const Aspect &b)
-			{
-				return b.m_eAspect < a.m_eAspect;
-			});
+		{
+			return b.m_eAspect < a.m_eAspect;
+		});
+
+		//start with most restrictive state, expected to be Stop
+		m_uCurrentAspectIndex = m_vecAspects.size() - 1;
+		m_eCurrentAspect = m_vecAspects[m_uCurrentAspectIndex].m_eAspect;
+
+		//go to a valid state
+		m_vState = State_TurnOff{};
+		m_pclCurrentState = std::get_if<State_TurnOff>(&m_vState);
 	}
 
 
@@ -139,7 +147,7 @@ namespace dcclite::broker
 			auto *dec = dynamic_cast<OutputDecoder *>(m_rclManager.TryFindDecoder(head));
 			if (dec == nullptr)
 			{
-				dcclite::Log::Error("[SignalDecoder::SetAspect] Head {} for aspect {} not found or is not an output decoder.", head, dcclite::ConvertAspectToName(aspect));
+				dcclite::Log::Error("[SignalDecoder::SetAspect] {}: Head {} for aspect {} not found or is not an output decoder.", this->GetName(), head, dcclite::ConvertAspectToName(aspect));
 				continue;
 			}
 
@@ -167,25 +175,55 @@ namespace dcclite::broker
 		if (index == m_vecAspects.size())
 			--index;		
 
-		this->ForEachHead(m_vecAspects[index].m_vecOffHeads, aspect, [this](OutputDecoder &dec)
-			{
-				dec.SetState(dcclite::DecoderStates::INACTIVE, this->GetName().data());
-
-				return true;
-			}
+		//warn user...
+		if (aspect != m_vecAspects[index].m_eAspect)
+		{
+			Log::Warn(
+				"[SignalDecoder::SetAspect] {}: Aspect {} requested by {} not found, using {}", 
+				this->GetName(), 
+				dcclite::ConvertAspectToName(aspect), 
+				requester,
+				dcclite::ConvertAspectToName(m_vecAspects[index].m_eAspect)
+			);
+		}
+		
+		Log::Info(
+			"[SignalDecoder::SetAspect] {}: Changed from {} to {}, requested by {}",
+			this->GetName(),
+			dcclite::ConvertAspectToName(m_vecAspects[m_uCurrentAspectIndex].m_eAspect),
+			dcclite::ConvertAspectToName(aspect),
+			requester
 		);
 
 		m_eCurrentAspect = aspect;
 		m_uCurrentAspectIndex = index;
 
-		m_vState = State_WaitTurnOff{};		
-		m_pclCurrentState = std::get_if<State_WaitTurnOff>(&m_vState);
+		//
+		//We have a turnoff state so on the first update the signal will go to a consistent state		
+		m_vState = State_TurnOff{};		
+		m_pclCurrentState = std::get_if<State_TurnOff>(&m_vState);		
+
+		m_rclManager.Decoder_OnStateChanged(*this);
 	}
 
 	void SignalDecoder::Update(const dcclite::Clock &clock)
 	{
 		if (m_pclCurrentState)
 			m_pclCurrentState->Update(*this, clock.Now());
+	}
+
+	void SignalDecoder::State_TurnOff::Update(SignalDecoder &self, const dcclite::Clock::TimePoint_t time)
+	{
+		self.ForEachHead(self.m_vecAspects[self.m_uCurrentAspectIndex].m_vecOffHeads, self.m_eCurrentAspect, [&self](OutputDecoder &dec)
+			{
+				dec.SetState(dcclite::DecoderStates::INACTIVE, self.GetName().data());
+
+				return true;
+			}
+		);
+
+		self.m_vState = State_WaitTurnOff{};
+		self.m_pclCurrentState = std::get_if<State_WaitTurnOff>(&self.m_vState);
 	}
 	
 	void SignalDecoder::State_WaitTurnOff::Update(SignalDecoder &self, const dcclite::Clock::TimePoint_t time)

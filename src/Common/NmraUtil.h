@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <optional>
 #include <string_view>
 #include <tuple>
 
@@ -55,6 +56,7 @@ namespace dcclite
 	std::tuple<uint16_t, SignalAspects> ExtractSignalDataFromPacket(const uint8_t packet[3]);    
 
     SignalAspects ConvertNameToAspect(const char *name);
+    std::optional<SignalAspects> TryConvertNameToAspect(const char *name);
 
     std::string ConvertAspectToName(const SignalAspects aspect);
 
