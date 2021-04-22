@@ -73,7 +73,7 @@ TEST(SignalDecoderTest, Basic)
 			[
 			{
 				"name":"Stop",
-				"on":["red"]
+				"on":["red"]				
 			},
 			{
 				"name":"Clear",
@@ -81,12 +81,13 @@ TEST(SignalDecoderTest, Basic)
 			},
 			{
 				"name":"Aproach",
-				"on":["yellow"]				
+				"on":["yellow"]		
 			},
 			{
 				"name":"Dark",
 				"on":["yellow", "caution"],
 				"off":["green"],
+				"flash":true,
 				"comment":"This is not parsed, this aspect is used for testing special cases on parsing"
 			}      
 		]  
@@ -117,11 +118,6 @@ TEST(SignalDecoderTest, Basic)
 	ASSERT_EQ(aspects[2].m_eAspect, dcclite::SignalAspects::Aproach);
 	ASSERT_EQ(aspects[3].m_eAspect, dcclite::SignalAspects::Stop);
 
-	for (auto &aspect : aspects)
-	{
-		ASSERT_FALSE(aspect.m_Flash);
-	}
-
 	//
 	// 	   
 	//DARK aspect
@@ -129,6 +125,7 @@ TEST(SignalDecoderTest, Basic)
 	//
 	ASSERT_EQ(aspects[0].m_vecOnHeads.size(), 2);
 	ASSERT_EQ(aspects[0].m_vecOffHeads.size(), 1) << "m_vecOffHeads should contain one element only";
+	ASSERT_TRUE(aspects[0].m_Flash);
 
 	//Check if m_vecOffHeads on DARK aspect contains only green, that is configured on JSON	
 	ASSERT_TRUE(VectorHasStr(aspects[0].m_vecOffHeads, "STC_HG12"));
@@ -145,6 +142,7 @@ TEST(SignalDecoderTest, Basic)
 	{		
 		ASSERT_EQ(aspects[i].m_vecOnHeads.size(), 1);
 		ASSERT_EQ(aspects[i].m_vecOffHeads.size(), 3);
+		ASSERT_FALSE(aspects[i].m_Flash);
 	}
 
 	//size was checked to be 1, so just confirm correct head is there

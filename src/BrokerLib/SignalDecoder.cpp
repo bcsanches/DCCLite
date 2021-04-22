@@ -23,7 +23,7 @@
 namespace dcclite::broker
 {
 	using namespace std::chrono_literals;
-	static auto constexpr FLASH_INTERVAL = 300ms;
+	static auto constexpr FLASH_INTERVAL = 500ms;
 
 
 	SignalDecoder::SignalDecoder(
@@ -115,6 +115,10 @@ namespace dcclite::broker
 					newAspect.m_vecOffHeads.push_back(headIt.second);
 				}
 			}
+
+			auto flashData = aspectElement.FindMember("flash");
+			newAspect.m_Flash = (flashData != aspectElement.MemberEnd()) ? flashData->value.GetBool() : false;
+			
 
 			m_vecAspects.push_back(std::move(newAspect));
 		}		
@@ -233,7 +237,7 @@ namespace dcclite::broker
 		bool stillPending = false;
 		self.ForEachHead(self.m_vecAspects[self.m_uCurrentAspectIndex].m_vecOffHeads, self.m_eCurrentAspect, [&stillPending](OutputDecoder &dec)
 			{
-				if (dec.GetRemoteState() == dcclite::DecoderStates::INACTIVE)
+				if (dec.GetRemoteState() != dcclite::DecoderStates::INACTIVE)
 				{
 					stillPending = true;
 
