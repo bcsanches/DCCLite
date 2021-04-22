@@ -15,8 +15,22 @@
             "on":["red"]
         },
         {
+            "name":"Restricted",
+            "on":["red"],
+            "flash":true
+        },
+        {
+            "name":"Aproach",
+            "on":["green"],
+            "flash":true
+        },
+        {
             "name":"Clear",
             "on":["green"]
+        },
+        {
+            "name":"Dark",
+            "off":["red", "green"]
         }        
     ]  
   }

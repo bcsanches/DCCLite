@@ -131,10 +131,10 @@ TEST(SignalDecoderTest, Basic)
 	ASSERT_EQ(aspects[0].m_vecOffHeads.size(), 1) << "m_vecOffHeads should contain one element only";
 
 	//Check if m_vecOffHeads on DARK aspect contains only green, that is configured on JSON	
-	ASSERT_TRUE(VectorHasStr(aspects[0].m_vecOffHeads, "green"));
+	ASSERT_TRUE(VectorHasStr(aspects[0].m_vecOffHeads, "STC_HG12"));
 
-	ASSERT_TRUE(VectorHasStr(aspects[0].m_vecOnHeads, "yellow"));
-	ASSERT_TRUE(VectorHasStr(aspects[0].m_vecOnHeads, "caution"));
+	ASSERT_TRUE(VectorHasStr(aspects[0].m_vecOnHeads, "STC_HY12"));
+	ASSERT_TRUE(VectorHasStr(aspects[0].m_vecOnHeads, "STC_BLA"));
 
 	//
 	//
@@ -148,22 +148,22 @@ TEST(SignalDecoderTest, Basic)
 	}
 
 	//size was checked to be 1, so just confirm correct head is there
-	ASSERT_STREQ(aspects[1].m_vecOnHeads[0].c_str(), "green");
-	ASSERT_STREQ(aspects[2].m_vecOnHeads[0].c_str(), "yellow");
-	ASSERT_STREQ(aspects[3].m_vecOnHeads[0].c_str(), "red");
+	ASSERT_STREQ(aspects[1].m_vecOnHeads[0].c_str(), "STC_HG12");
+	ASSERT_STREQ(aspects[2].m_vecOnHeads[0].c_str(), "STC_HY12");
+	ASSERT_STREQ(aspects[3].m_vecOnHeads[0].c_str(), "STC_HR12");
 
 	//size was checked to be 3, so just confirm the heads are there
-	ASSERT_TRUE(VectorHasStr(aspects[1].m_vecOffHeads, "red"));
-	ASSERT_TRUE(VectorHasStr(aspects[1].m_vecOffHeads, "yellow"));
-	ASSERT_TRUE(VectorHasStr(aspects[1].m_vecOffHeads, "caution"));
+	ASSERT_TRUE(VectorHasStr(aspects[1].m_vecOffHeads, "STC_HR12"));
+	ASSERT_TRUE(VectorHasStr(aspects[1].m_vecOffHeads, "STC_HY12"));
+	ASSERT_TRUE(VectorHasStr(aspects[1].m_vecOffHeads, "STC_BLA"));
 
-	ASSERT_TRUE(VectorHasStr(aspects[2].m_vecOffHeads, "red"));
-	ASSERT_TRUE(VectorHasStr(aspects[2].m_vecOffHeads, "green"));
-	ASSERT_TRUE(VectorHasStr(aspects[2].m_vecOffHeads, "caution"));
+	ASSERT_TRUE(VectorHasStr(aspects[2].m_vecOffHeads, "STC_HR12"));
+	ASSERT_TRUE(VectorHasStr(aspects[2].m_vecOffHeads, "STC_HG12"));
+	ASSERT_TRUE(VectorHasStr(aspects[2].m_vecOffHeads, "STC_BLA"));
 
-	ASSERT_TRUE(VectorHasStr(aspects[3].m_vecOffHeads, "yellow"));
-	ASSERT_TRUE(VectorHasStr(aspects[3].m_vecOffHeads, "green"));
-	ASSERT_TRUE(VectorHasStr(aspects[3].m_vecOffHeads, "caution"));
+	ASSERT_TRUE(VectorHasStr(aspects[3].m_vecOffHeads, "STC_HY12"));
+	ASSERT_TRUE(VectorHasStr(aspects[3].m_vecOffHeads, "STC_HG12"));
+	ASSERT_TRUE(VectorHasStr(aspects[3].m_vecOffHeads, "STC_BLA"));
 }
 
 static std::string ExtractSignalExceptionString(const char *json)

@@ -72,12 +72,13 @@ namespace dcclite::broker
 			{
 				for (auto &it : onLights->value.GetArray())
 				{
-					if (m_mapHeads.find(it.GetString()) == m_mapHeads.end())
+					auto headIt = m_mapHeads.find(it.GetString());
+					if (headIt == m_mapHeads.end())
 					{
 						throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: aspect {} on \"on\" array not found on heads defintion", it.GetString()));
 					}
 
-					newAspect.m_vecOnHeads.push_back(it.GetString());
+					newAspect.m_vecOnHeads.push_back(headIt->second);
 				}
 			}
 
@@ -86,17 +87,18 @@ namespace dcclite::broker
 			{
 				for (auto &it : offLights->value.GetArray())
 				{
-					if (m_mapHeads.find(it.GetString()) == m_mapHeads.end())
+					auto headIt = m_mapHeads.find(it.GetString());
+					if (headIt == m_mapHeads.end())
 					{
 						throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: aspect {} on \"off\" array not found on heads defintion", it.GetString()));
 					}
 
-					if (std::any_of(newAspect.m_vecOnHeads.begin(), newAspect.m_vecOnHeads.end(), [&it](const std::string &onAspectName) { return onAspectName.compare(it.GetString()) == 0; }))
+					if (std::any_of(newAspect.m_vecOnHeads.begin(), newAspect.m_vecOnHeads.end(), [&headIt](const std::string &onAspectName) { return onAspectName.compare(headIt->second) == 0; }))
 					{
 						throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: \"off\" head {} also defined on the \"on\" table", it.GetString()));
 					}
 
-					newAspect.m_vecOffHeads.push_back(it.GetString());
+					newAspect.m_vecOffHeads.push_back(headIt->second);
 				}
 			}
 			else
@@ -105,12 +107,12 @@ namespace dcclite::broker
 				for (auto headIt : m_mapHeads)
 				{
 					//skip existing heads
-					if (std::any_of(newAspect.m_vecOnHeads.begin(), newAspect.m_vecOnHeads.end(), [headIt](const std::string &onAspectName) { return onAspectName.compare(headIt.first) == 0; }))
+					if (std::any_of(newAspect.m_vecOnHeads.begin(), newAspect.m_vecOnHeads.end(), [headIt](const std::string &onAspectName) { return onAspectName.compare(headIt.second) == 0; }))
 					{
 						continue;
 					}
 
-					newAspect.m_vecOffHeads.push_back(headIt.first);
+					newAspect.m_vecOffHeads.push_back(headIt.second);
 				}
 			}
 
@@ -143,7 +145,7 @@ namespace dcclite::broker
 	void SignalDecoder::ForEachHead(const std::vector<std::string> &heads, const dcclite::SignalAspects aspect, std::function<bool(OutputDecoder &)> proc) const
 	{
 		for (auto head : heads)
-		{
+		{			
 			auto *dec = dynamic_cast<OutputDecoder *>(m_rclManager.TryFindDecoder(head));
 			if (dec == nullptr)
 			{
