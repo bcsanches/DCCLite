@@ -73,7 +73,9 @@ TEST(SignalDecoderTest, Basic)
 			[
 			{
 				"name":"Stop",
-				"on":["red"]				
+				"on":["red"],
+				"flash":false,
+				"comment":"Flash false is the default, we just put it here for testing"				
 			},
 			{
 				"name":"Clear",
