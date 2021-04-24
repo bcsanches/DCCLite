@@ -168,6 +168,8 @@ namespace Console
 	extern int ReadChar();
 
 	extern void Update();
+
+	extern bool ParseCustomCommand(const char *command);
 };
 
 #endif

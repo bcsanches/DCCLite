@@ -3,20 +3,21 @@
 
 # include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-set(SharedLib_SRCS
+set(SharedLib_SRCS    
 	Misc.cpp
-  Parser.cpp
+    Parser.cpp
 )
 
 set(SharedLib_HDRS
-  BasicPin.h
-	BitPack.h
-  SharedLibDefs.h
-  Guid.h  
-  Misc.h
-  Packet.h
-  Parser.h  
-  Version.h
+    ArduinoTypes.h
+    BasicPin.h
+    BitPack.h    
+    SharedLibDefs.h
+    Guid.h  
+    Misc.h
+    Packet.h
+    Parser.h  
+    Version.h
 )
 
 add_library(SharedLib  ${SharedLib_SRCS} ${SharedLib_HDRS})

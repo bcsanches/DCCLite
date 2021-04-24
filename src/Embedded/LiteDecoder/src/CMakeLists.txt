@@ -1,8 +1,7 @@
 
 set(LiteDecoderLib_SRCS
 	Blinker.cpp
-  Config.cpp
-  Console.cpp  
+  Config.cpp  
   DecoderManager.cpp
   main.cpp
   NetUdp.cpp
@@ -11,15 +10,12 @@ set(LiteDecoderLib_SRCS
   ServoTurnoutDecoder.cpp
   Session.cpp
   Storage.cpp
-  Strings.cpp
 )
 
 set(LiteDecoderLib_HDRS
 	Blinker.h
-  Config.h
-  Console.h  
-  DecoderManager.h
-  LiteDecoder.h
+  Config.h 
+  DecoderManager.h  
   main.h
   NetUdp.h
   OutputDecoder.h  
@@ -27,7 +23,6 @@ set(LiteDecoderLib_HDRS
   ServoTurnoutDecoder.h
   Session.h
   Storage.h
-  Strings.h
 )
 
 add_compile_definitions(LITEDECODERLIB_EXPORTS)
