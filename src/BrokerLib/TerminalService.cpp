@@ -26,6 +26,7 @@
 #include "NetworkDevice.h"
 #include "NetMessenger.h"
 #include "OutputDecoder.h"
+#include "SignalDecoder.h"
 #include "SpecialFolders.h"
 #include "TerminalCmd.h"
 
@@ -225,7 +226,7 @@ namespace dcclite::broker
 			std::tuple<Decoder *, const char *, const char *> FindDecoder(const TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
 			{
 				auto paramsIt = request.FindMember("params");
-				if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() != 2))
+				if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() < 2))
 				{
 					throw TerminalCmdException(fmt::format("Usage: {} <dccSystem> <decoder>", this->GetName()), id);
 				}
@@ -324,6 +325,45 @@ namespace dcclite::broker
 
 				results.AddStringValue("classname", "string");
 				results.AddStringValue("msg", fmt::format("OK: {}", dcclite::DecoderStateName(outputDecoder->GetRequestedState())));
+			}
+	};
+
+	class SetAspectCmd : public DecoderCmdBase
+	{
+		public:
+			SetAspectCmd(std::string name = "Set-Aspect") :
+				DecoderCmdBase(std::move(name))
+			{
+				//empty
+			}
+
+			void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request) override
+			{
+				auto [decoder, dccSystemName, decoderName] = this->FindDecoder(context, id, request);
+
+				auto signalDecoder = dynamic_cast<SignalDecoder *>(decoder);
+				if (signalDecoder == nullptr)
+				{
+					throw TerminalCmdException(fmt::format("Decoder {} on DCC System {} is not an Signal type", decoderName, dccSystemName), id);
+				}
+
+				auto paramsIt = request.FindMember("params");
+				if (paramsIt->value.Size() < 3)
+				{
+					throw TerminalCmdException(fmt::format("Usage: {} <dccSystem> <decoder> <aspect>", this->GetName()), id);
+				}
+
+				auto aspectName = paramsIt->value[2].GetString();
+				auto aspect = dcclite::TryConvertNameToAspect(aspectName);
+				if (!aspect.has_value())
+				{
+					throw TerminalCmdException(fmt::format("Invalid aspect name {}", aspectName), id);
+				}
+
+				signalDecoder->SetAspect(aspect.value(), this->GetName().data());				
+
+				results.AddStringValue("classname", "string");
+				results.AddStringValue("msg", fmt::format("OK: {}", aspectName));
 			}
 	};
 
@@ -685,6 +725,10 @@ namespace dcclite::broker
 
 		{
 			cmdHost->AddCmd(std::make_unique<FlipItemCmd>());
+		}
+
+		{
+			cmdHost->AddCmd(std::make_unique<SetAspectCmd>());
 		}
 
 		const auto port = params["port"].GetInt();

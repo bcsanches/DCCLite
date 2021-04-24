@@ -50,6 +50,11 @@ std::tuple<uint16_t, dcclite::SignalAspects> dcclite::ExtractSignalDataFromPacke
 	return std::make_tuple(((boardAddr << 2) | lowAddr) + 1, static_cast<dcclite::SignalAspects>(packet[2]));
 }
 
+std::optional<dcclite::SignalAspects> dcclite::TryConvertNameToAspect(const char *name)
+{
+	return magic_enum::enum_cast<SignalAspects>(name);
+}
+
 dcclite::SignalAspects dcclite::ConvertNameToAspect(const char *name)
 {
 	auto v = magic_enum::enum_cast<SignalAspects>(name);
@@ -60,6 +65,11 @@ dcclite::SignalAspects dcclite::ConvertNameToAspect(const char *name)
 	}
 
 	return v.value();
+}
+
+std::string dcclite::ConvertAspectToName(const SignalAspects aspect)
+{
+	return std::string{ magic_enum::enum_name(aspect) };
 }
 
 

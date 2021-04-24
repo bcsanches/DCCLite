@@ -40,7 +40,7 @@ namespace dcclite::broker
 					- Remove-Item
 					- Rename-Item
 
-			https://docs.microsoft.com/en-us/powershell/developer/cmdlet/approved-verbs-for-windows-powershell-commands
+			https://docs.microsoft.com/pt-br/powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands?view=powershell-7.1
 			New vs. Set
 	The New verb is used to create a new resource. The Set verb is used to modify an existing resource, optionally creating the resource if it does not exist, such as the Set-Variable cmdlet.
 

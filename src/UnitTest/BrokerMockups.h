@@ -13,6 +13,11 @@
 #include "IDccLiteService.h"
 #include "IDevice.h"
 
+namespace dcclite::broker
+{
+	class Decoder;
+}
+
 
 class NetworkDeviceDecoderServicesMockup: public dcclite::broker::INetworkDevice_DecoderServices
 {
@@ -51,5 +56,10 @@ class DecoderServicesMockup : public dcclite::broker::IDccLite_DecoderServices
 		void Decoder_OnStateChanged(dcclite::broker::Decoder &decoder) override
 		{
 			//empty
+		}
+
+		dcclite::broker::Decoder *TryFindDecoder(std::string_view id) const override
+		{
+			return nullptr;
 		}
 };

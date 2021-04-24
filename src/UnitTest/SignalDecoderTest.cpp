@@ -73,7 +73,9 @@ TEST(SignalDecoderTest, Basic)
 			[
 			{
 				"name":"Stop",
-				"on":["red"]
+				"on":["red"],
+				"flash":false,
+				"comment":"Flash false is the default, we just put it here for testing"				
 			},
 			{
 				"name":"Clear",
@@ -81,12 +83,13 @@ TEST(SignalDecoderTest, Basic)
 			},
 			{
 				"name":"Aproach",
-				"on":["yellow"]				
+				"on":["yellow"]		
 			},
 			{
 				"name":"Dark",
 				"on":["yellow", "caution"],
 				"off":["green"],
+				"flash":true,
 				"comment":"This is not parsed, this aspect is used for testing special cases on parsing"
 			}      
 		]  
@@ -117,11 +120,6 @@ TEST(SignalDecoderTest, Basic)
 	ASSERT_EQ(aspects[2].m_eAspect, dcclite::SignalAspects::Aproach);
 	ASSERT_EQ(aspects[3].m_eAspect, dcclite::SignalAspects::Stop);
 
-	for (auto &aspect : aspects)
-	{
-		ASSERT_FALSE(aspect.m_Flash);
-	}
-
 	//
 	// 	   
 	//DARK aspect
@@ -129,12 +127,13 @@ TEST(SignalDecoderTest, Basic)
 	//
 	ASSERT_EQ(aspects[0].m_vecOnHeads.size(), 2);
 	ASSERT_EQ(aspects[0].m_vecOffHeads.size(), 1) << "m_vecOffHeads should contain one element only";
+	ASSERT_TRUE(aspects[0].m_Flash);
 
 	//Check if m_vecOffHeads on DARK aspect contains only green, that is configured on JSON	
-	ASSERT_TRUE(VectorHasStr(aspects[0].m_vecOffHeads, "green"));
+	ASSERT_TRUE(VectorHasStr(aspects[0].m_vecOffHeads, "STC_HG12"));
 
-	ASSERT_TRUE(VectorHasStr(aspects[0].m_vecOnHeads, "yellow"));
-	ASSERT_TRUE(VectorHasStr(aspects[0].m_vecOnHeads, "caution"));
+	ASSERT_TRUE(VectorHasStr(aspects[0].m_vecOnHeads, "STC_HY12"));
+	ASSERT_TRUE(VectorHasStr(aspects[0].m_vecOnHeads, "STC_BLA"));
 
 	//
 	//
@@ -145,25 +144,26 @@ TEST(SignalDecoderTest, Basic)
 	{		
 		ASSERT_EQ(aspects[i].m_vecOnHeads.size(), 1);
 		ASSERT_EQ(aspects[i].m_vecOffHeads.size(), 3);
+		ASSERT_FALSE(aspects[i].m_Flash);
 	}
 
 	//size was checked to be 1, so just confirm correct head is there
-	ASSERT_STREQ(aspects[1].m_vecOnHeads[0].c_str(), "green");
-	ASSERT_STREQ(aspects[2].m_vecOnHeads[0].c_str(), "yellow");
-	ASSERT_STREQ(aspects[3].m_vecOnHeads[0].c_str(), "red");
+	ASSERT_STREQ(aspects[1].m_vecOnHeads[0].c_str(), "STC_HG12");
+	ASSERT_STREQ(aspects[2].m_vecOnHeads[0].c_str(), "STC_HY12");
+	ASSERT_STREQ(aspects[3].m_vecOnHeads[0].c_str(), "STC_HR12");
 
 	//size was checked to be 3, so just confirm the heads are there
-	ASSERT_TRUE(VectorHasStr(aspects[1].m_vecOffHeads, "red"));
-	ASSERT_TRUE(VectorHasStr(aspects[1].m_vecOffHeads, "yellow"));
-	ASSERT_TRUE(VectorHasStr(aspects[1].m_vecOffHeads, "caution"));
+	ASSERT_TRUE(VectorHasStr(aspects[1].m_vecOffHeads, "STC_HR12"));
+	ASSERT_TRUE(VectorHasStr(aspects[1].m_vecOffHeads, "STC_HY12"));
+	ASSERT_TRUE(VectorHasStr(aspects[1].m_vecOffHeads, "STC_BLA"));
 
-	ASSERT_TRUE(VectorHasStr(aspects[2].m_vecOffHeads, "red"));
-	ASSERT_TRUE(VectorHasStr(aspects[2].m_vecOffHeads, "green"));
-	ASSERT_TRUE(VectorHasStr(aspects[2].m_vecOffHeads, "caution"));
+	ASSERT_TRUE(VectorHasStr(aspects[2].m_vecOffHeads, "STC_HR12"));
+	ASSERT_TRUE(VectorHasStr(aspects[2].m_vecOffHeads, "STC_HG12"));
+	ASSERT_TRUE(VectorHasStr(aspects[2].m_vecOffHeads, "STC_BLA"));
 
-	ASSERT_TRUE(VectorHasStr(aspects[3].m_vecOffHeads, "yellow"));
-	ASSERT_TRUE(VectorHasStr(aspects[3].m_vecOffHeads, "green"));
-	ASSERT_TRUE(VectorHasStr(aspects[3].m_vecOffHeads, "caution"));
+	ASSERT_TRUE(VectorHasStr(aspects[3].m_vecOffHeads, "STC_HY12"));
+	ASSERT_TRUE(VectorHasStr(aspects[3].m_vecOffHeads, "STC_HG12"));
+	ASSERT_TRUE(VectorHasStr(aspects[3].m_vecOffHeads, "STC_BLA"));
 }
 
 static std::string ExtractSignalExceptionString(const char *json)
@@ -387,4 +387,25 @@ TEST(SignalDecoderTest, InvalidAspectName)
 		]  
 	}
 	)JSON")) << "Signal definition in JSON uses an name for aspect that is not know [BLA]";
+};
+
+TEST(SignalDecoderTest, EmptyAspectsArray)
+{
+	const char *json = R"JSON(
+		{
+			"name":"STC_SIG_12",
+			"class":"VirtualSignal",    
+			"address":"1840",  
+			"heads":
+			{
+				"red":"STC_HR12",
+				"green":"STC_HG12"			
+			},        
+			"aspects":
+			[			
+			]  
+		}
+	)JSON";
+
+	ASSERT_THAT(ExtractSignalExceptionString(json), HasSubstr(" Error: expected aspects array for"));	
 };
