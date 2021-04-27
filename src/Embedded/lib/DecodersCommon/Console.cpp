@@ -18,10 +18,8 @@
 
 #include "Parser.h"
 
+#include "ArduinoTypes.h"
 #include "SharedLibDefs.h"
-#include "LiteDecoder.h"
-#include "Session.h"
-#include "Storage.h"
 #include "Strings.h"
 
 //hack for emulator for avoiding polutating namespace with stupid names
@@ -36,9 +34,6 @@
 const char ConsoleModuleName[] PROGMEM = {"CONSOLE"} ;
 #define MODULE_NAME Console::FlashStr(ConsoleModuleName)
 
-const char CmdCfgName[] PROGMEM = {"cfg"} ;
-const char CmdDumpName[] PROGMEM = {"dump"} ;
-const char CmdHDumpName[] PROGMEM = {"hdump"} ;
 const char CmdMemName[] PROGMEM = {"mem"} ;
 
 extern int __heap_start, *__brkval;
@@ -98,84 +93,7 @@ static void Parse(const char *command)
 {
 	Console::SendLogEx(MODULE_NAME, "in:", " ", command);
 
-	if(strncmp_P(command, CmdCfgName, 3) == 0)
-	{
-		//format: cfg <nodeName> <mac> <port> <srvport>	
-
-		dcclite::Parser parser(command+3);
-
-		char nodeName[17];
-		if(parser.GetToken(nodeName, sizeof(nodeName)) != dcclite::Tokens::ID)
-		{
-			Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_NODE, " ", FSTR_NAME);
-
-			return;
-		}
-
-		//Console::SendLog("[CONSOLE]", "name: %s", nodeName);
-		
-		uint8_t mac[6];
-		for(int i = 0;i < 6; ++i)
-		{
-			int number;
-			if(parser.GetNumber(number) != dcclite::Tokens::NUMBER)
-			{
-				Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", "mac");
-
-				return;
-			}
-
-			//Console::SendLog("[CONSOLE]", "mac: %d", number);
-
-			mac[i] = number;
-
-			if(i == 5)
-				break;
-
-			if(parser.GetToken(nullptr, 0) != dcclite::Tokens::DOT)
-			{				
-				Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", "mac", " ", "sep");
-
-				return;
-			}
-		}
-
-		int port;
-		if(parser.GetNumber(port) != dcclite::Tokens::NUMBER)
-		{
-			Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_PORT);
-
-			return;
-		}		
-
-		uint8_t ip[4] = {0};		
-		int srvport;
-		if (parser.GetNumber(srvport) != dcclite::Tokens::NUMBER)
-		{
-			Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_SRVPORT);
-
-			return;
-		}		
-
-		NetUdp::Configure(nodeName, port, mac);
-		Session::Configure(ip, srvport);		
-
-		Console::SendLogEx(MODULE_NAME, FSTR_OK);
-
-		Storage::SaveConfig();
-		Console::SendLogEx(MODULE_NAME, FSTR_OK);
-	}	
-	else if(strncmp_P(command, CmdDumpName, 4) == 0)
-	{
-		Storage::Dump();
-		Console::SendLogEx(MODULE_NAME, FSTR_OK);
-	}
-	else if(strncmp_P(command, CmdHDumpName, 5) == 0)
-	{
-		Storage::DumpHex();
-		Console::SendLogEx(MODULE_NAME, FSTR_OK);
-	}
-	else if(strncmp_P(command, CmdMemName, 3) == 0)
+	if(strncmp_P(command, CmdMemName, 3) == 0)
 	{
 		//based on https://github.com/DccPlusPlus/BaseStation/blob/master/DCCpp_Uno/SerialCommand.cpp
 
@@ -187,14 +105,14 @@ static void Parse(const char *command)
 #endif
 
 	}
-	else
+    else if(!Console::ParseCustomCommand(command))	
 	{
 		Console::SendLogEx(MODULE_NAME, FSTR_NOK, ' ', command);
 	}
 }
 
 
-#define MAX_COMMAND_LENGTH 65
+constexpr auto MAX_COMMAND_LENGTH = 65;
 
 void Console::Update()
 {

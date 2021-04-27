@@ -63,7 +63,7 @@ void OutputDecoder::OperatePin()
 	m_clPin.DigitalWrite(active ? Pin::VHIGH : Pin::VLOW);	
 
 	//Store current state on eprom, so we can reload.
-	if(m_uFlagsStorageIndex)
+	if((m_uFlagsStorageIndex) && (!(m_fFlags & OUTD_IGNORE_SAVED_STATE)))
 		Storage::UpdateField(m_uFlagsStorageIndex, m_fFlags);
 }
 

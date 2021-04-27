@@ -1,11 +1,15 @@
 
 set(DecodersCommonLib_SRCS
+    Console.cpp
 	Decoder.cpp
+    Strings.cpp
 )
 
 set(DecodersCommonLib_HDRS
-  Decoder.h
-  Pin.h
+    Console.h
+    Decoder.h
+    Pin.h
+    Strings.h
 )
 
 
