@@ -58,5 +58,29 @@
         "invertedFrog": true,
         "invertedPower": true,
         "operationTime": 3000
+    },
+    {
+        "name": "TC_T06",
+        "class": "ServoTurnout",
+        "address": "1404",
+        "pin": 27,
+        "inverted": true,
+        "powerPin": 42,
+        "frogPin": 44,
+        "invertedFrog": true,
+        "invertedPower": true,
+        "operationTime": 3000
+    },
+    {
+        "name": "TC_T08",
+        "class": "ServoTurnout",
+        "address": "1405",
+        "pin": 29,
+        "inverted": false,
+        "powerPin": 46,
+        "frogPin": 48,
+        "invertedFrog": true,
+        "invertedPower": true,
+        "operationTime": 3000
     }
 ]
