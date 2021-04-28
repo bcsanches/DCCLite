@@ -38,12 +38,14 @@ namespace dcclite
 			const char *m_pszCmd;
 
 			unsigned int m_iPos;
-			unsigned int m_iLastKnowPos;			
+			unsigned int m_iLastKnowPos;	
+
+			void SkipBlanks();
 
 		public:
 			explicit Parser(const char *cmd);
 
-			Tokens GetToken(char *dest, unsigned int destSize);
+			Tokens GetToken(char *dest, unsigned int destSize, bool forceHexMode = false);
 			Tokens GetNumber(int &dest);
 			Tokens GetHexNumber(int &dest);
 

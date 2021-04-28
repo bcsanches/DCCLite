@@ -7,6 +7,7 @@
 #include "DccLiteService.h"
 #include "NetMessenger.h"
 #include "NmraUtil.h"
+#include "SignalDecoder.h"
 #include "SimpleOutputDecoder.h"
 #include "Parser.h"
 #include "SensorDecoder.h"
@@ -128,13 +129,13 @@ namespace dcclite::broker
 		return response.str();
 	}
 
-	static bool ParseSignalCommandM(dcclite::Parser &parser, const std::string &msg)
+	static bool ParseSignalCommandM(dcclite::Parser &parser, const std::string &msg, DccLiteService &liteService)
 	{	
 		int num1;
 
-		if (parser.GetHexNumber(num1) != Tokens::NUMBER)
+		if (parser.GetHexNumber(num1) != Tokens::HEX_NUMBER)
 		{
-			Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER 0 for: {}", msg);
+			Log::Error("[DccppClient::ParseSignalCommandM] Error parsing msg, expected TOKEN_NUMBER 0 for: {}", msg);
 			return false;
 		}
 
@@ -144,43 +145,43 @@ namespace dcclite::broker
 			return false;
 		}
 
-		if (parser.GetHexNumber(num1) != Tokens::NUMBER)
+		if (parser.GetHexNumber(num1) != Tokens::HEX_NUMBER)
 		{
-			Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER 1 for: {}", msg);
+			Log::Error("[DccppClient::ParseSignalCommandM] Error parsing msg, expected TOKEN_NUMBER 1 for: {}", msg);
 			return false;
 		}
 
 	#if 0
 		if ((0xC0 & num1) != 0x80)
 		{
-			Log::Error("[DccppClient::Update] Expected accessory address: {}", msg);
+			Log::Error("[DccppClient::ParseSignalCommandM] Expected accessory address: {}", msg);
 			goto ERROR_RESPONSE;
 		}
 	#endif
 
 		int num2;
-		if (parser.GetHexNumber(num2) != Tokens::NUMBER)
+		if (parser.GetHexNumber(num2) != Tokens::HEX_NUMBER)
 		{
-			Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER 2 for: {}", msg);
+			Log::Error("[DccppClient::ParseSignalCommandM] Error parsing msg, expected TOKEN_NUMBER 2 for: {}", msg);
 			return false;
 		}
 
 		if ((num2 & 0x01) != 0x01)
 		{
-			Log::Error("[DccppClient::Update] Expected signal decoder address: {}", msg);
+			Log::Error("[DccppClient::ParseSignalCommandM] Expected signal decoder address: {}", msg);
 			return false;
 		}
 
 		int num3;
-		if (parser.GetHexNumber(num3) != Tokens::NUMBER)
+		if (parser.GetHexNumber(num3) != Tokens::HEX_NUMBER)
 		{
-			Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER 3 for: {}", msg);
+			Log::Error("[DccppClient::ParseSignalCommandM] Error parsing msg, expected TOKEN_NUMBER 3 for: {}", msg);
 			return false;
 		}
 
 		if ((num3 & 0xE0) != 0x00)
 		{
-			Log::Error("[DccppClient::Update] Expected signal decoder 2 address: {}", msg);
+			Log::Error("[DccppClient::ParseSignalCommandM] Expected signal decoder 2 address: {}", msg);
 			return false;
 		}
 
@@ -192,6 +193,23 @@ namespace dcclite::broker
 		std::tie(address, packetAspect) = ExtractSignalDataFromPacket(packet);
 
 		Log::Debug("[DccppClient::Update] Signal decoder {} cmd {}", address, num3);	
+		auto dec = liteService.TryFindDecoder(DccAddress(address));
+		if (!dec) 
+		{
+			Log::Error("[DccppClient::ParseSignalCommandM] Decoder for address {} not found", address);
+
+			return false;
+		}
+
+		auto signal = dynamic_cast<SignalDecoder *>(dec);
+		if (!signal)
+		{
+			Log::Error("[DccppClient::ParseSignalCommandM] Decoder {} - {} is not a SignalDecoder", address, dec->GetName());
+
+			return false;
+		}
+
+		signal->SetAspect(packetAspect, "DccppClient::ParseSignalCommandM");
 
 		return true;
 	}
@@ -394,7 +412,7 @@ namespace dcclite::broker
 
 					case 'M':
 						Log::Debug("[DccppClient::Update] Custom packet cmd {}, msg: {}", cmd, msg);
-						if (!ParseSignalCommandM(parser, msg))
+						if (!ParseSignalCommandM(parser, msg, m_rclSystem))
 							goto ERROR_RESPONSE;
 
 						break;

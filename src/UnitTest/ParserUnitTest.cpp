@@ -49,3 +49,18 @@ TEST(Parser, GetNumber_HEX)
 	TestNum("0xfc", 0xfc);
 	TestNum("0xFF", 0xFF);
 }
+
+static void TestHexNum(const char *cmd, const int expectedNum)
+{
+	int num;
+	Parser parser(cmd);
+
+	EXPECT_EQ(parser.GetHexNumber(num), Tokens::HEX_NUMBER);
+	EXPECT_EQ(num, expectedNum);
+}
+
+TEST(Parser, GetHexNumber)
+{
+	TestHexNum("8B", 0x8B);
+	TestHexNum("0x8B", 0x8B);	
+}

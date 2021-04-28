@@ -55,16 +55,32 @@ namespace dcclite
 		}
 	}
 
-	Tokens Parser::GetToken(char *dest, unsigned int destSize)
+	void Parser::SkipBlanks()
+	{
+		for (;;)
+		{
+			char ch = m_pszCmd[m_iPos];		
+
+			if ((ch == ' ') || (ch == '\n') || (ch == '\t') || (ch == '\r'))
+			{
+				++m_iPos;
+				continue;
+			}
+
+			break;
+		}
+	}
+
+	Tokens Parser::GetToken(char *dest, unsigned int destSize, bool forceHexMode)
 	{
 		unsigned int destPos = 0;
 
-		m_iLastKnowPos = m_iPos;
-
-		bool hexMode = false;
+		m_iLastKnowPos = m_iPos;		
 
 		for (;;)
 		{
+			this->SkipBlanks();
+
 			char ch = m_pszCmd[m_iPos];
 			if (ch)
 			{
@@ -73,18 +89,10 @@ namespace dcclite
 			else
 			{
 				break;
-			}
-
-			//NetClient::sendLog("parsing", "%c", ch);
+			}			
 
 			switch (ch)
-			{
-				case ' ':
-				case '\n':
-				case '\t':
-				case '\r':
-					break;
-
+			{				
 				case '<':
 					return Tokens::CMD_START;
 
@@ -113,7 +121,7 @@ namespace dcclite
 
 						++m_iPos;
 
-						hexMode = true;
+						forceHexMode = true;
 					}
 					else
 					{
@@ -122,14 +130,14 @@ namespace dcclite
 					[[fallthrough]];
 
 				default:
-					if (IsDigit(ch) || (hexMode && IsHexLetter(ch)))
+					if (IsDigit(ch) || (forceHexMode && IsHexLetter(ch)))
 					{
 						SafeCopy(dest, destPos, destSize, ch);					
 
 						for (;;)
 						{
 							ch = m_pszCmd[m_iPos];
-							if (IsDigit(ch) || (hexMode && IsHexLetter(ch)))
+							if (IsDigit(ch) || (forceHexMode && IsHexLetter(ch)))
 							{
 								SafeCopy(dest, destPos, destSize, ch);
 								++m_iPos;
@@ -138,7 +146,7 @@ namespace dcclite
 							{
 								FinishToken(dest, destPos, destSize);
 
-								return hexMode ? Tokens::HEX_NUMBER : Tokens::NUMBER;
+								return forceHexMode ? Tokens::HEX_NUMBER : Tokens::NUMBER;
 							}
 						}
 					}
@@ -198,22 +206,14 @@ namespace dcclite
 
 	Tokens Parser::GetHexNumber(int &dest)
 	{
-		char buffer[11] = "0x";
+		char buffer[9];
+		auto token = this->GetToken(buffer, sizeof(buffer), true);
+		if (token != Tokens::HEX_NUMBER)
+			return token;
 
-		auto token = this->GetToken(buffer + 2, sizeof(buffer) - 2);
-		if ((token != Tokens::NUMBER) && (token != Tokens::HEX_NUMBER))
-		{
-			if (token != Tokens::ID)
-				return token;
+		dest = Str2Num(buffer, true);
 
-			Parser parser(buffer);
-
-			return parser.GetNumber(dest);
-		}
-
-		dest = Str2Num(buffer+2, true);
-
-		return Tokens::NUMBER;
+		return Tokens::HEX_NUMBER;
 	}
 
 

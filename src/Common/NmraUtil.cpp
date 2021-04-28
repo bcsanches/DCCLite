@@ -21,7 +21,7 @@
 static void accSignalDecoderPktCommon(uint8_t dest[4], const int lowAddr, const int boardAddr, const dcclite::SignalAspects aspect)
 {
 
-	int midAddr = boardAddr & 0x7F;
+	int midAddr = boardAddr & 0x3F;
 	int highAddr = ((~boardAddr) >> 6) & 0x07;
 	
 	dest[0] = (uint8_t)(0x80 | midAddr);
