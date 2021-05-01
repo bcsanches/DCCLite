@@ -18,39 +18,7 @@
 #include "Packet.h"
 
 namespace dcclite::broker
-{
-	DccAddress::DccAddress(const rapidjson::Value &value)
-	{
-		if (value.IsString())
-		{
-			dcclite::Parser parser{ value.GetString() };
-
-			int adr;
-			if (parser.GetNumber(adr) != dcclite::Tokens::NUMBER)
-			{
-				throw std::runtime_error(fmt::format("error: Decoder::Address::Address(const nlohmann::json::value_type &value) invalid value for address, see {}", value.GetString()));
-			}
-
-			m_iAddress = adr;
-		}
-		else
-		{
-			m_iAddress = value.GetInt();
-		}
-	}
-
-	DccAddress::DccAddress(dcclite::Packet &packet) :
-		m_iAddress(packet.Read<uint16_t>())
-	{
-		//empty
-	}
-
-
-	void DccAddress::WriteConfig(dcclite::Packet &packet) const
-	{
-		packet.Write16(m_iAddress);
-	}
-
+{	
 	Decoder::Decoder(const DccAddress &address, std::string name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params) :
 		Object(std::move(name)),
 		m_iAddress(address),

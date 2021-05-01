@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include <optional>
+
 #include "RemoteDecoder.h"
 
 #include "SharedLibDefs.h"

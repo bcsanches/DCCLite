@@ -1,12 +1,14 @@
 
 set(BrokerLib_SRCS
-	Broker.cpp
+	Broker.cpp    
+    DccAddress.cpp
     DccLiteService.cpp  
     DccppService.cpp
     Decoder.cpp
     Device.cpp
     FileWatcher.cpp
-    LocationManager.cpp  
+    LocationManager.cpp
+    LoconetService.cpp  
     NetworkDevice.cpp
     OutputDecoder.cpp
     PinManager.cpp
@@ -25,6 +27,7 @@ set(BrokerLib_SRCS
 
 set(BrokerLib_HDRS
 	Broker.h
+    DccAddress.h
     DccLiteService.h  
     DccppService.h
     Decoder.h
@@ -33,6 +36,7 @@ set(BrokerLib_HDRS
     IDccLiteService.h
     IDevice.h
     LocationManager.h
+    LoconetService.h
     NetworkDevice.h
     OutputDecoder.h
     PinManager.h

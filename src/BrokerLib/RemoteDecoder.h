@@ -12,6 +12,8 @@
 
 #include "Decoder.h"
 
+#include "SharedLibDefs.h"
+
 
 namespace dcclite
 {

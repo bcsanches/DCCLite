@@ -10,15 +10,8 @@
 
 #pragma once
 
-#include <optional>
-#include <ostream>
-
-#include "SharedLibDefs.h"
+#include "DccAddress.h"
 #include "Object.h"
-
-#include <rapidjson/document.h>
-
-#include <fmt/format.h>
 
 namespace dcclite
 {
@@ -29,63 +22,7 @@ namespace dcclite::broker
 {
 	class IDccLite_DecoderServices;
 	class IDevice_DecoderServices;
-	class Node;
-
-
-	class DccAddress
-	{
-		public:
-			inline explicit DccAddress(uint16_t address):
-				m_iAddress(address)
-			{
-				//empty
-			}
-
-			explicit DccAddress(const rapidjson::Value &value);
-		
-			explicit DccAddress(dcclite::Packet &packet);
-
-			DccAddress() = default;
-			DccAddress(const DccAddress &) = default;
-			DccAddress(DccAddress &&) = default;
-
-			inline int GetAddress() const
-			{
-				return m_iAddress;
-			}		
-
-			inline bool operator>=(const DccAddress &rhs) const
-			{
-				return m_iAddress >= rhs.m_iAddress;
-			}
-
-			inline bool operator<(const DccAddress &rhs) const
-			{
-				return m_iAddress < rhs.m_iAddress;
-			}
-
-			inline bool operator>(const DccAddress &rhs) const
-			{
-				return m_iAddress > rhs.m_iAddress;
-			}
-
-			inline bool operator==(const DccAddress &rhs) const
-			{
-				return m_iAddress == rhs.m_iAddress;
-			}
-
-			inline std::string ToString() const
-			{
-				return fmt::format("{:#05x}", m_iAddress);
-			}
-
-			void WriteConfig(dcclite::Packet &packet) const;		
-
-		private:
-			uint16_t m_iAddress;
-
-			friend std::ostream &operator<<(std::ostream &os, const DccAddress &address);
-	};
+	class Node;	
 
 	class Decoder: public dcclite::Object
 	{	
@@ -129,30 +66,5 @@ namespace dcclite::broker
 			IDccLite_DecoderServices &m_rclManager;
 			IDevice_DecoderServices &m_rclDevice;
 	};
-
-	inline std::ostream &operator<<(std::ostream &os, const dcclite::broker::DccAddress &address)
-	{
-		os << address.m_iAddress;
-
-		return os;
-	}
 }
-
-
-
-namespace fmt
-{
-	template <>
-	struct formatter<dcclite::broker::DccAddress>
-	{
-		template <typename ParseContext>
-		constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
-
-		template <typename FormatContext>
-		auto format(const dcclite::broker::DccAddress &a, FormatContext& ctx)
-		{
-			return format_to(ctx.out(), "{}", a.GetAddress());
-		}
-	};
-} //end of namespace fmt
 

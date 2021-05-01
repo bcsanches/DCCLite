@@ -21,6 +21,7 @@
 
 #include "Log.h"
 
+#include "LoconetService.h"
 #include "TerminalCmd.h"
 #include "TerminalService.h"
 #include "SpecialFolders.h"
@@ -47,6 +48,10 @@ namespace dcclite::broker
 		else if (strcmp(className, "DccppService") == 0)
 		{
 			return DccppService::Create(name, broker, data, project);
+		}
+		else if (strcmp(className, "LoconetService") == 0)
+		{
+			return LoconetService::Create(name, broker, data, project);
 		}
 		else if (strcmp(className, "Terminal") == 0)
 		{

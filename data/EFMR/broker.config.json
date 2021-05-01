@@ -105,6 +105,11 @@
       "class": "DccppService",
       "name": "dccpp",
       "system":"Dcc0"
-    }    
+    },
+    {
+        "class": "LoconetService",
+        "name": "loconet",
+        "port": "COM4"
+    }  
   ]
 }
