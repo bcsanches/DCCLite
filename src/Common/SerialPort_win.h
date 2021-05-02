@@ -17,29 +17,70 @@
 
 namespace dcclite
 {
+	constexpr auto DATA_PACKET_SIZE = 512;	
+
 	class SerialPort
 	{
 		public:
+			class DataPacket
+			{
+				public:
+					DataPacket();
+					~DataPacket();
+
+					bool IsDataReady();
+
+					unsigned int GetDataSize() const
+					{
+						return m_uDataSize;
+					}
+
+					const uint8_t *GetData() const
+					{
+						return m_u8Data;
+					}
+
+					unsigned int GetNumFreeBytes() const
+					{
+						return DATA_PACKET_SIZE - m_uDataSize;
+					}
+
+					/**
+						This actually reset data size counter
+
+						Usually is only called after a Write is complete, so you can re-use the packet for writing more data
+					
+					*/
+					void Clear();
+
+					void WriteData(const uint8_t *data, unsigned int dataSize);
+
+				private:
+					uint8_t m_u8Data[DATA_PACKET_SIZE];
+					unsigned int m_uDataSize = { 0 };
+
+					OVERLAPPED	m_stOverlapped = { 0 };
+
+					//Referenced from the SerialPort that started the operation, so it is not owned here.
+					HANDLE m_hComPort = { 0 };
+
+					bool m_fWaiting = false;
+
+					friend class SerialPort;
+			};
+
+		public:
 			SerialPort(std::string_view portName);
-			~SerialPort();
+			~SerialPort();			
 
-			/**
-				Write numOfBytes bytes from buffer to the port
-
-				Returns number of bytes written
-
-				This throws if the write fails
-			
-			*/
-			size_t Write(void *buffer, std::size_t numOfBytes);
-
-			size_t Read(void *buffer, std::size_t bufferSize);
+			void Read(DataPacket &packet);
+			void Write(DataPacket &packet);
 
 		private:
-			HANDLE m_hComPort;
+			HANDLE m_hComPort;			
 
 			std::string m_strName;
-	};	
+	};		
 
 } //end of namespace dcclite
 

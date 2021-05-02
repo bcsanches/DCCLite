@@ -5,6 +5,7 @@
 #include <Windows.h>
 
 #include <optional>
+#include <deque>
 
 #include "DccAddress.h"
 #include "SerialPort.h"
@@ -240,6 +241,74 @@ void SlotManager::SetSlotToInUse(uint8_t slot)
 
 namespace dcclite::broker
 {
+
+	class MessageDispatcher
+	{
+		public:
+			void Send(const LoconetMessageWriter &msg, SerialPort &port);
+
+			void Update(SerialPort &port);
+
+		private:
+			void SendData(const uint8_t *data, unsigned size, SerialPort &port);
+
+			void PumpMessages(SerialPort &port);
+
+		private:
+			SerialPort::DataPacket m_clOutputPacket;
+
+			std::deque<LoconetMessageWriter> m_clOutputQueue;
+	};
+
+	void MessageDispatcher::Send(const LoconetMessageWriter &msg, SerialPort &port)
+	{
+		//is queue empty and packet idle?
+		if (m_clOutputQueue.empty() && m_clOutputPacket.IsDataReady())
+		{
+			//yes, so dispatch it imediatelly
+			LoconetMessageWriter localMsg{ msg };
+
+			this->SendData(localMsg.PackMsg(), localMsg.GetMsgLen(), port);
+		}
+		else
+		{
+			m_clOutputQueue.push_back(msg);
+
+			//The OutputPacket may be idle now, so try to pump
+			this->PumpMessages(port);
+		}
+	}
+
+	void MessageDispatcher::PumpMessages(SerialPort &port)
+	{
+		if (!m_clOutputPacket.IsDataReady())
+			return;
+
+		if (m_clOutputQueue.empty())
+			return;		
+
+		auto msg = m_clOutputQueue.front();
+		m_clOutputQueue.pop_front();
+
+		this->SendData(msg.PackMsg(), msg.GetMsgLen(), port);
+	}
+
+	void MessageDispatcher::Update(SerialPort &port)
+	{
+		this->PumpMessages(port);
+	}
+
+	void MessageDispatcher::SendData(const uint8_t *data, unsigned int size, SerialPort &port)
+	{
+		if (!m_clOutputPacket.IsDataReady())
+			throw std::logic_error("[MessageDispatcher::SendData] Do not call me when m_clOutputPacket is busy");
+
+		m_clOutputPacket.Clear();
+		m_clOutputPacket.WriteData(data, size);
+
+		port.Write(m_clOutputPacket);
+	}
+
 	class LoconetServiceImpl : public LoconetService
 	{
 		public:
@@ -257,10 +326,16 @@ namespace dcclite::broker
 
 			void DispatchLnMessage(LoconetMessageWriter &msg);
 
+			void ParseMessage(const uint8_t opcode, const uint8_t *data);
+
 		private:
 			SlotManager m_clSlotManager;
 
 			SerialPort  m_clSerialPort;		
+
+			SerialPort::DataPacket m_clInputPacket;			
+
+			MessageDispatcher m_clMessageDispatcher;
 	};
 
 
@@ -278,6 +353,8 @@ namespace dcclite::broker
 		msg.WriteByte(0);
 
 		this->DispatchLnMessage(msg);
+
+		m_clSerialPort.Read(m_clInputPacket);
 	}
 	
 
@@ -317,212 +394,204 @@ namespace dcclite::broker
 
 	void LoconetServiceImpl::DispatchLnMessage(LoconetMessageWriter &msg)
 	{
-		auto *data = msg.PackMsg();
+		m_clMessageDispatcher.Send(msg, m_clSerialPort);		
+	}
 
-		auto len = msg.GetMsgLen();
-
-		try
+	void LoconetServiceImpl::ParseMessage(const uint8_t opcode, const uint8_t *data)
+	{
+		switch (opcode)
 		{
-			m_clSerialPort.Write(msg.PackMsg(), len);
+			case Opcodes::OPC_LOCO_SPD:
+				{
+					uint8_t slot = *data;
+					++data;
+
+					uint8_t speed = *data;
+					++data;
+
+					Log::Trace("[LoconetServiceImpl::Update] Setting speed {} for slot {}", speed, slot);
+				}
+				break;
+
+			case Opcodes::OPC_MOVE_SLOTS:
+				{
+					uint8_t src = *data;
+					++data;
+
+					uint8_t dest = *data;
+					++data;
+
+					//is a null move)
+					if (src == dest)
+					{
+						m_clSlotManager.SetSlotToInUse(src);
+
+						auto msg = this->MakeSlotReadDataMsg(src);
+
+						this->DispatchLnMessage(msg);
+
+						Log::Trace("[LoconetServiceImpl::ParseMessage] MoveSlots: null move {}", src);
+					}
+					else
+					{
+						Log::Error("[LoconetServiceImpl::ParseMessage] MoveSlots: movement not supported, src: {}, dest: {}", src, dest);					
+					}
+				}
+				break;
+
+			case Opcodes::OPC_RQ_SL_DATA:
+				{
+					uint8_t slot = *data;
+
+					if (slot >= MAX_SLOTS)
+						break;
+
+					auto response = this->MakeSlotReadDataMsg(slot);
+
+					this->DispatchLnMessage(response);
+
+					Log::Trace("[LoconetServiceImpl::Update] Request slot {} data", slot);
+				}
+				break;
+
+			case OPC_SLOT_STAT1:
+				{
+					uint8_t slot = *data;
+					++data;
+
+					if (slot >= MAX_SLOTS)
+						break;
+
+					uint8_t stat = *data;
+					Log::Trace("[LoconetServiceImpl::Update] Write slot {} stat1 {:#x}", slot, stat);
+				}
+				break;
+
+			case Opcodes::OPC_LOCO_ADR:
+				{
+					//<0xBF>,<0>,<ADR>,<CHK>
+					uint16_t high = *data;
+					++data;
+
+					/**
+					DATA return <E7>, is SLOT#, DATA that ADR was found in
+						; IF ADR not found, MASTER puts ADR in FREE slot
+						; andsends DATA / STATUS return <E7>......
+						; IF no FREE slot, Fail LACK, 0 is returned[<B4>, <3F>, <0>, <CHK>]
+					*/
+
+					uint16_t low = *data;
+					++data;
+
+					uint16_t address = (high << 7) + low;
+
+					auto slot = m_clSlotManager.AcquireLocomotive(DccAddress{ address });
+					if (!slot)
+					{
+						LoconetMessageWriter msg{ OPC_LONG_ACK };
+						msg.WriteByte(0x3F);
+						msg.WriteByte(0x00);
+
+						this->DispatchLnMessage(msg);
+					}
+					else
+					{
+						auto msg = this->MakeSlotReadDataMsg(slot.value());
+
+						this->DispatchLnMessage(msg);
+					}
+				}
+				break;
+
+			case Opcodes::OPC_SL_RD_DATA:
+				{
+#if 0						
+					uint8_t slot = *msg;
+
+					if (slot >= MAX_SLOTS)
+						//ignore for now
+						return;
+
+					//ignore
+					return;
+
+					Log::Trace("[RD_DATA] Slot: {}", slot);
+					auto msg = this->MakeSlotReadDataMsg(slot);
+
+					this->DispatchLnMessage(msg);
+#endif
+				}
+				break;
+
+			case Opcodes::OPD_UNDOC_SETMS100:
+				//ignore
+				break;
+
+			default:
+				Log::Warn("[LoconetServiceImpl::Update] Unknow opcode: {:#x}", opcode);
+				break;
+
 		}
-		catch (std::exception &ex)
-		{
-			Log::Error("[LoconetServiceImpl::DispatchLnMessage] Error sending data: {}", ex.what());
-		}		
 	}
 
 	void LoconetServiceImpl::Update(const dcclite::Clock& clock)
-	{
-		uint8_t buffer[1024];
-		size_t numBytesRead;
+	{	
+		//pump outgoing messages
+		m_clMessageDispatcher.Update(m_clSerialPort);
 
-		try
-		{
-
-			numBytesRead = m_clSerialPort.Read(buffer, sizeof(buffer));
-		}
-		catch (std::exception &ex)
-		{
-			Log::Error("[LoconetServiceImpl::Update] Cannot read serial port: {}", ex.what());
-
-			return;
-		}
-
-		if (!numBytesRead)
+		//Do we have any incoming message?
+		if (!m_clInputPacket.IsDataReady())
 			return;
 		
-		uint8_t *msg = buffer;		
+		auto numBytesRead = m_clInputPacket.GetDataSize();	
+		if (numBytesRead)
+		{					
+			auto msg = m_clInputPacket.GetData();
 
-		while (numBytesRead)
-		{
-			uint8_t opcode = *msg;
-			uint8_t msgLen = 2;
-
-			if ((opcode & 0x60) == 0x60)
+			while (numBytesRead)
 			{
-				msgLen = msg[1];				
-			}
-			else if (opcode & 0x20)
-				msgLen = 4;
-			else if (opcode & 0x40)
-				msgLen = 6;		
+				uint8_t opcode = *msg;
+				uint8_t msgLen = 2;
 
-			uint8_t checkSum = 0xFF;
-			for (int i = 0; i < msgLen - 1; ++i)
-			{
-				checkSum ^= msg[i];
-			}
+				if ((opcode & 0x60) == 0x60)
+				{
+					msgLen = msg[1];				
+				}
+				else if (opcode & 0x20)
+					msgLen = 4;
+				else if (opcode & 0x40)
+					msgLen = 6;		
 
-			if (checkSum != msg[msgLen - 1])
-			{
-				Log::Warn("[LoconetServiceImpl::Update] Checksum mismatch, ignoring message");
+				uint8_t checkSum = 0xFF;
+				for (int i = 0; i < msgLen - 1; ++i)
+				{
+					checkSum ^= msg[i];
+				}
 
-				return;
-			}
+				if (checkSum != msg[msgLen - 1])
+				{
+					Log::Warn("[LoconetServiceImpl::Update] Checksum mismatch, ignoring message");
 
-			auto nextMsg = msg + msgLen;
+					return;
+				}
 
-			//skip size byte
-			if (msgLen > 6)
-				++msg;
+				auto nextMsg = msg + msgLen;
 
-			++msg;			
+				//skip size byte
+				if (msgLen > 6)
+					++msg;
 
-			switch (opcode)
-			{
-				case Opcodes::OPC_LOCO_SPD:
-					{
-						uint8_t slot = *msg;
-						++msg;
+				++msg;			
 
-						uint8_t speed = *msg;
-						++msg;
-
-						Log::Trace("[LoconetServiceImpl::Update] Setting speed {} for slot {}", speed, slot);
-					}
-					break;
-
-				case Opcodes::OPC_MOVE_SLOTS:
-					{
-						uint8_t src = *msg;
-						++msg;
-
-						uint8_t dest = *msg;
-						++msg;
-
-						//is a null move)
-						if (src == dest)
-						{
-							m_clSlotManager.SetSlotToInUse(src);
-
-							auto msg = this->MakeSlotReadDataMsg(src);
-
-							this->DispatchLnMessage(msg);
-						}
-						else
-						{
-							Log::Trace("Ops");
-						}
-					}
-					break;
-
-				case Opcodes::OPC_RQ_SL_DATA:
-					{
-						uint8_t slot = *msg;
-
-						if (slot >= MAX_SLOTS)
-							return;
-
-						auto response = this->MakeSlotReadDataMsg(slot);
-
-						this->DispatchLnMessage(response);
-
-						Log::Trace("[LoconetServiceImpl::Update] Request slot {} data", slot);
-					}
-					break;
-
-				case OPC_SLOT_STAT1:
-					{
-						uint8_t slot = *msg;
-						++msg;
-
-						if (slot >= MAX_SLOTS)
-							return;
-
-						uint8_t stat = *msg;
-						Log::Trace("[LoconetServiceImpl::Update] Write slot {} stat1 {:#x}", slot, stat);
-					}
-					break;
-
-				case Opcodes::OPC_LOCO_ADR:
-					{
-						//<0xBF>,<0>,<ADR>,<CHK>
-						uint16_t high = *msg;
-						++msg; 
-
-						/**
-						DATA return <E7>, is SLOT#, DATA that ADR was found in
-							; IF ADR not found, MASTER puts ADR in FREE slot
-							; andsends DATA / STATUS return <E7>......
-							; IF no FREE slot, Fail LACK, 0 is returned[<B4>, <3F>, <0>, <CHK>]
-						*/
-
-						uint16_t low = *msg;
-						++msg;
-
-						uint16_t address = (high << 7) + low;
-
-						auto slot = m_clSlotManager.AcquireLocomotive(DccAddress{ address });
-						if (!slot)
-						{
-							LoconetMessageWriter msg{ OPC_LONG_ACK };
-							msg.WriteByte(0x3F);
-							msg.WriteByte(0x00);
-
-							this->DispatchLnMessage(msg);
-						}
-						else
-						{
-							auto msg = this->MakeSlotReadDataMsg(slot.value());
-
-							this->DispatchLnMessage(msg);
-						}						
-					}
-					break;
-
-				case Opcodes::OPC_SL_RD_DATA:		
-					{
-#if 0						
-						uint8_t slot = *msg;
-
-						if (slot >= MAX_SLOTS)
-							//ignore for now
-							return;
-
-						//ignore
-						return;
-
-						Log::Trace("[RD_DATA] Slot: {}", slot);
-						auto msg = this->MakeSlotReadDataMsg(slot);
-
-						this->DispatchLnMessage(msg);
-#endif
-					}
-					break;
-
-				case Opcodes::OPD_UNDOC_SETMS100:
-					//ignore
-					break;
-
-				default:
-					Log::Trace("Ops");
-					break;
-
-			}
+				this->ParseMessage(opcode, msg);
 			
-			msg = nextMsg;
-			numBytesRead -= msgLen;
-		}		
+				msg = nextMsg;
+				numBytesRead -= msgLen;
+			}	
+		}
+
+		//grab more data
+		m_clSerialPort.Read(m_clInputPacket);
 	}
 
 	LoconetService::LoconetService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :

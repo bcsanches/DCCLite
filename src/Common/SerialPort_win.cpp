@@ -15,6 +15,78 @@
 
 namespace dcclite
 {
+	SerialPort::DataPacket::DataPacket()
+	{
+		m_stOverlapped.hEvent = CreateEvent(
+			NULL,	//eventAttributes
+			TRUE,	//ManualReset
+			FALSE,	//InitialState - non signaled
+			NULL	//Name
+		);
+
+		if (!m_stOverlapped.hEvent)
+		{			
+			throw std::runtime_error(fmt::format("[SerialPort::DataPacket] Cannot create hEvent for overlapped IO - {}", GetSystemLastErrorMessage()));
+		}
+	}
+
+	SerialPort::DataPacket::~DataPacket()
+	{
+		CloseHandle(m_stOverlapped.hEvent);
+	}
+	
+	bool SerialPort::DataPacket::IsDataReady()
+	{
+		if (!m_fWaiting)
+			return true;		
+
+		//
+		// We have a pending IO operation, check what is going on
+		//
+
+		DWORD numBytesTransferred = 0;
+		if (!GetOverlappedResultEx(m_hComPort, &m_stOverlapped, &numBytesTransferred, 0, FALSE))
+		{
+			auto error = GetLastError();
+
+			//operation still in progress
+			if (error == ERROR_IO_INCOMPLETE)
+				return false;
+
+			//push it back
+			SetLastError(error);
+			throw std::runtime_error(fmt::format("[SerialPort::DataPacket::IsDataReady] GetOverlappedResultEx failed: {}", GetSystemLastErrorMessage()));
+		}
+
+		//
+		//we got some data
+		m_fWaiting = false;
+		m_uDataSize = numBytesTransferred;
+
+		return true;
+	}
+
+	void SerialPort::DataPacket::WriteData(const uint8_t *data, unsigned int dataSize)
+	{
+		if(m_fWaiting)
+			throw std::runtime_error("[SerialPort::DataPacket::WriteData] Packet is waiting, cannot write");
+
+		if (dataSize > this->GetNumFreeBytes())
+			throw std::overflow_error(fmt::format("[SerialPort::DataPacket::WriteData] Caller requested to write {} bytes, but only {} are left", dataSize, this->GetNumFreeBytes()));
+
+		memcpy(m_u8Data + m_uDataSize, data, dataSize);
+		m_uDataSize += dataSize;
+	}
+
+	void SerialPort::DataPacket::Clear()
+	{
+		if(m_fWaiting)
+			throw std::runtime_error("[SerialPort::DataPacket::WriteData] Packet is waiting, cannot clear");
+
+		m_uDataSize = 0;
+	}
+
+
 	SerialPort::SerialPort(std::string_view portName):
 		m_strName(portName)
 	{
@@ -24,7 +96,7 @@ namespace dcclite
 			0,
 			0,
 			OPEN_EXISTING,
-			FILE_ATTRIBUTE_NORMAL,
+			FILE_FLAG_OVERLAPPED,
 			0
 		);
 
@@ -43,7 +115,7 @@ namespace dcclite
 		dcb.fDtrControl = DTR_CONTROL_ENABLE;
 		dcb.fRtsControl = RTS_CONTROL_ENABLE;
 		dcb.fOutxDsrFlow = FALSE;
-		dcb.fOutxCtsFlow = FALSE;
+		dcb.fOutxCtsFlow = TRUE;
 		dcb.StopBits = ONESTOPBIT;
 		dcb.Parity = NOPARITY;
 		dcb.BaudRate = CBR_57600;
@@ -55,34 +127,77 @@ namespace dcclite
 
 			throw std::runtime_error(fmt::format("[SerialPort] {}: Cannot update CommState - {}", portName, GetSystemLastErrorMessage()));
 		}
+
+		
 	}
 
 	SerialPort::~SerialPort()
 	{
+		//Cancel any pending overlapped operation
+		CancelIo(m_hComPort);		
 		CloseHandle(m_hComPort);
 	}
 
-	size_t SerialPort::Write(void *buffer, std::size_t numOfBytes)
+	void SerialPort::Write(DataPacket &packet)
 	{
-		DWORD bytesWritten = 0;
-		if (!WriteFile(m_hComPort, buffer, numOfBytes, &bytesWritten, nullptr))
+		if (packet.m_fWaiting)
 		{
-			throw std::runtime_error(fmt::format("[SerialPort] {}: Error writing {} bytes to port - {}", m_strName, numOfBytes, GetSystemLastErrorMessage()));			
+			throw std::logic_error(fmt::format("[SerialPort::Write] {}: DataPacket is on WaitingState, cannot be used for another write, WAIT!", m_strName));
 		}
+		
+		const auto dataSize = packet.GetDataSize();
 
-		return bytesWritten;
+		//empty packet? Duh... ignore
+		if (!dataSize)
+			return;
+
+		DWORD bytesWritten = 0;
+		if (!WriteFile(m_hComPort, packet.GetData(), dataSize, &bytesWritten, &packet.m_stOverlapped))
+		{
+			auto errorCode = GetLastError();
+			if (errorCode != ERROR_IO_PENDING)
+			{
+				SetLastError(errorCode);
+
+				throw std::runtime_error(fmt::format("[SerialPort::Write] {}: Error ASYNC writing to port - {}", m_strName, GetSystemLastErrorMessage()));
+			}
+
+			//we must wait
+			packet.m_fWaiting = true;
+			packet.m_hComPort = m_hComPort;
+		}		
+
+		//if above if not entered, data went thought, nothing left to do
 	}
 
-	size_t SerialPort::Read(void *buffer, std::size_t bufferSize)
+	void SerialPort::Read(DataPacket &packet)
 	{
-		DWORD dwBytesRead;
-
-		if (!ReadFile(m_hComPort, buffer, bufferSize, &dwBytesRead, nullptr))
+		if (packet.m_fWaiting)
 		{
-			throw std::runtime_error(fmt::format("[SerialPort] {}: Error reading {} bytes from port - {}", m_strName, bufferSize, GetSystemLastErrorMessage()));
+			throw std::logic_error(fmt::format("[SerialPort::AsyncRead] {}: DataPacket is on WaitingState, cannot be used for another read, WAIT!", m_strName));
 		}
 
-		return dwBytesRead;
+		packet.m_uDataSize = 0;
+
+		DWORD dwBytesRead;
+		if (!ReadFile(m_hComPort, packet.m_u8Data, sizeof(packet.m_u8Data), &dwBytesRead, &packet.m_stOverlapped))
+		{
+			auto errorCode = GetLastError();
+			if (errorCode != ERROR_IO_PENDING)
+			{
+				SetLastError(errorCode);
+
+				throw std::runtime_error(fmt::format("[SerialPort::AsyncRead] {}: Error ASYNC reading from port - {}", m_strName, GetSystemLastErrorMessage()));
+			}
+
+			packet.m_fWaiting = true;
+			packet.m_hComPort = m_hComPort;
+		}
+		else
+		{
+			//some data was read
+			packet.m_uDataSize = dwBytesRead;
+		}
 	}
 
 }
