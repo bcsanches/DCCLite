@@ -24,6 +24,7 @@ enum Bits : uint8_t
 //based on https://www.digitrax.com/static/apps/cms/media/documents/loconet/loconetpersonaledition.pdf
 enum Opcodes : uint8_t
 {
+	OPC_LOCO_SPD = 0xA0,
 	OPC_LONG_ACK = 0xB4,
 	OPC_MOVE_SLOTS = 0xBA,
 	OPC_RQ_SL_DATA = 0xBB,
@@ -347,6 +348,35 @@ namespace dcclite::broker
 		{
 			Log::Error("[LoconetServiceImpl::DispatchLnMessage] Error writing: {}", GetLastError());
 		}
+
+		{
+			auto msgData = msg.PackMsg();
+
+			uint8_t opcode = *msgData;
+			uint8_t msgLen = 2;
+
+			if ((opcode & 0x60) == 0x60)
+			{
+				msgLen = msgData[1];
+			}
+			else if (opcode & 0x20)
+				msgLen = 4;
+			else if (opcode & 0x40)
+				msgLen = 6;
+
+			uint8_t checkSum = 0xFF;
+			for (int i = 0; i < msgLen - 1; ++i)
+			{
+				checkSum ^= msgData[i];
+			}
+
+			if (checkSum != msgData[msgLen - 1])
+			{
+				Log::Warn("[LoconetServiceImpl::Update] Checksum mismatch, ignoring message");
+
+				return;
+			}
+		}
 	}
 
 	void LoconetServiceImpl::Update(const dcclite::Clock& clock)
@@ -364,7 +394,7 @@ namespace dcclite::broker
 		if (!dwBytesRead)
 			return;
 		
-		uint8_t *msg = buffer;
+		uint8_t *msg = buffer;		
 
 		while (dwBytesRead)
 		{
@@ -393,14 +423,28 @@ namespace dcclite::broker
 				return;
 			}
 
+			auto nextMsg = msg + msgLen;
+
 			//skip size byte
 			if (msgLen > 6)
 				++msg;
 
-			++msg;
+			++msg;			
 
 			switch (opcode)
 			{
+				case Opcodes::OPC_LOCO_SPD:
+					{
+						uint8_t slot = *msg;
+						++msg;
+
+						uint8_t speed = *msg;
+						++msg;
+
+						Log::Trace("[Speed] {}", speed);
+					}
+					break;
+
 				case Opcodes::OPC_MOVE_SLOTS:
 					{
 						uint8_t src = *msg;
@@ -438,7 +482,8 @@ namespace dcclite::broker
 				case Opcodes::OPC_LOCO_ADR:
 					{
 						//<0xBF>,<0>,<ADR>,<CHK>
-						++msg; //skip <0>
+						uint16_t high = *msg;
+						++msg; 
 
 						/**
 						DATA return <E7>, is SLOT#, DATA that ADR was found in
@@ -447,8 +492,10 @@ namespace dcclite::broker
 							; IF no FREE slot, Fail LACK, 0 is returned[<B4>, <3F>, <0>, <CHK>]
 						*/
 
-						uint8_t address = *msg;	
+						uint16_t low = *msg;
 						++msg;
+
+						uint16_t address = (high << 7) | low;
 
 						auto slot = m_clSlotManager.AcquireLocomotive(DccAddress{ address });
 						if (!slot)
@@ -470,16 +517,21 @@ namespace dcclite::broker
 
 				case Opcodes::OPC_SL_RD_DATA:		
 					{
+#if 0						
 						uint8_t slot = *msg;
 
 						if (slot >= MAX_SLOTS)
 							//ignore for now
 							return;
 
+						//ignore
+						return;
+
 						Log::Trace("[RD_DATA] Slot: {}", slot);
 						auto msg = this->MakeSlotReadDataMsg(slot);
 
 						this->DispatchLnMessage(msg);
+#endif
 					}
 					break;
 
@@ -488,7 +540,8 @@ namespace dcclite::broker
 					break;
 
 			}
-
+			
+			msg = nextMsg;
 			dwBytesRead -= msgLen;			
 		}
 
