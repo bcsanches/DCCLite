@@ -329,7 +329,7 @@ namespace dcclite::broker
 		msg.WriteByte(slot.m_u8Dirf);					//DIRF
 		msg.WriteByte(0x01);							//TRK
 		msg.WriteByte(0);								//SS2
-		msg.WriteByte((rawLocoAddress / 128) & 0x7F);	//ADDR2
+		msg.WriteByte((rawLocoAddress >> 7) & 0x7F);	//ADDR2
 		msg.WriteByte(0);								//SND
 		msg.WriteByte(0);								//Id1
 		msg.WriteByte(0);								//Id2
@@ -495,7 +495,7 @@ namespace dcclite::broker
 						uint16_t low = *msg;
 						++msg;
 
-						uint16_t address = (high << 7) | low;
+						uint16_t address = (high << 7) + low;
 
 						auto slot = m_clSlotManager.AcquireLocomotive(DccAddress{ address });
 						if (!slot)
