@@ -7,6 +7,7 @@
 #include <optional>
 
 #include "DccAddress.h"
+#include "SerialPort.h"
 
 enum Bits : uint8_t
 {
@@ -26,9 +27,14 @@ enum Opcodes : uint8_t
 {
 	OPC_LOCO_SPD = 0xA0,
 	OPC_LONG_ACK = 0xB4,
+	OPC_SLOT_STAT1 = 0xB5,
 	OPC_MOVE_SLOTS = 0xBA,
 	OPC_RQ_SL_DATA = 0xBB,
 	OPC_LOCO_ADR = 0xBF,
+
+	//See JMRI - PR3Adapter.java configure()
+	OPD_UNDOC_SETMS100 = 0xD3,
+
 	OPC_SL_RD_DATA = 0xE7,
 	OPC_WR_SL_DATA = 0xEF
 };
@@ -76,6 +82,9 @@ uint8_t DefaultMsgSizes(const Opcodes opcode)
 
 		case OPC_WR_SL_DATA:
 			return 14;
+
+		case OPD_UNDOC_SETMS100:
+			return 6;
 
 		default:
 			throw std::exception(fmt::format("[LoconetService::DefaultMsgSizes] Unknown opcode: {}", opcode).c_str());
@@ -251,61 +260,30 @@ namespace dcclite::broker
 		private:
 			SlotManager m_clSlotManager;
 
-			std::string m_strComPortName;
-
-			HANDLE m_hComPort;
+			SerialPort  m_clSerialPort;		
 	};
 
 
 	LoconetServiceImpl::LoconetServiceImpl(const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
 		LoconetService(name, broker, params, project),
-		m_strComPortName(params["port"].GetString())
-	{		
-		m_hComPort =  ::CreateFile(
-			m_strComPortName.c_str(),
-			GENERIC_READ | GENERIC_WRITE,
-			0,
-			0,
-			OPEN_EXISTING,
-			FILE_ATTRIBUTE_NORMAL,
-			0
-		);
+		m_clSerialPort(params["port"].GetString())		
+	{				
+		dcclite::Log::Info("[LoconetService] Started, listening on port {}", params["port"].GetString());
 
-		if (m_hComPort == INVALID_HANDLE_VALUE)
-			throw std::exception(fmt::format("[LoconetService] Error opening port {}", m_strComPortName).c_str());
+		LoconetMessageWriter msg(OPD_UNDOC_SETMS100);
 
-		DCB dcb;
+		msg.WriteByte(0x10);
+		msg.WriteByte(3);
+		msg.WriteByte(0);
+		msg.WriteByte(0);
 
-		if (!GetCommState(m_hComPort, &dcb))
-		{
-			CloseHandle(m_hComPort);
-
-			throw std::exception(fmt::format("[LoconetService] Cannot read DCB data from {}", m_strComPortName).c_str());
-		}
-
-		dcb.fDtrControl = DTR_CONTROL_ENABLE;
-		dcb.fRtsControl = RTS_CONTROL_ENABLE;
-		dcb.fOutxDsrFlow = FALSE;
-		dcb.fOutxCtsFlow = FALSE;
-		dcb.StopBits = ONESTOPBIT;
-		dcb.Parity = NOPARITY;
-		dcb.BaudRate = CBR_57600;
-		dcb.fDtrControl = DTR_CONTROL_ENABLE;
-
-		if (!SetCommState(m_hComPort, &dcb))
-		{
-			CloseHandle(m_hComPort);
-
-			throw std::exception(fmt::format("[LoconetService] Cannot update CommState for {}", m_strComPortName).c_str());
-		}
-
-		dcclite::Log::Info("[LoconetService] Started, listening on port {}", m_strComPortName);
+		this->DispatchLnMessage(msg);
 	}
 	
 
 	LoconetServiceImpl::~LoconetServiceImpl()
 	{
-		CloseHandle(m_hComPort);
+		//empty
 	}
 
 	void LoconetServiceImpl::Initialize()
@@ -343,60 +321,39 @@ namespace dcclite::broker
 
 		auto len = msg.GetMsgLen();
 
-		DWORD bytesWritten = 0;		
-		if (!WriteFile(m_hComPort, msg.PackMsg(), len, &bytesWritten, nullptr))
+		try
 		{
-			Log::Error("[LoconetServiceImpl::DispatchLnMessage] Error writing: {}", GetLastError());
+			m_clSerialPort.Write(msg.PackMsg(), len);
 		}
-
+		catch (std::exception &ex)
 		{
-			auto msgData = msg.PackMsg();
-
-			uint8_t opcode = *msgData;
-			uint8_t msgLen = 2;
-
-			if ((opcode & 0x60) == 0x60)
-			{
-				msgLen = msgData[1];
-			}
-			else if (opcode & 0x20)
-				msgLen = 4;
-			else if (opcode & 0x40)
-				msgLen = 6;
-
-			uint8_t checkSum = 0xFF;
-			for (int i = 0; i < msgLen - 1; ++i)
-			{
-				checkSum ^= msgData[i];
-			}
-
-			if (checkSum != msgData[msgLen - 1])
-			{
-				Log::Warn("[LoconetServiceImpl::Update] Checksum mismatch, ignoring message");
-
-				return;
-			}
-		}
+			Log::Error("[LoconetServiceImpl::DispatchLnMessage] Error sending data: {}", ex.what());
+		}		
 	}
 
 	void LoconetServiceImpl::Update(const dcclite::Clock& clock)
 	{
-		BYTE buffer[1024];
+		uint8_t buffer[1024];
+		size_t numBytesRead;
 
-		DWORD dwBytesRead;
-
-		if (!ReadFile(m_hComPort, buffer, sizeof(buffer), &dwBytesRead, nullptr)) 
+		try
 		{
-			Log::Error("Error: {}", GetLastError());
+
+			numBytesRead = m_clSerialPort.Read(buffer, sizeof(buffer));
+		}
+		catch (std::exception &ex)
+		{
+			Log::Error("[LoconetServiceImpl::Update] Cannot read serial port: {}", ex.what());
+
 			return;
 		}
 
-		if (!dwBytesRead)
+		if (!numBytesRead)
 			return;
 		
 		uint8_t *msg = buffer;		
 
-		while (dwBytesRead)
+		while (numBytesRead)
 		{
 			uint8_t opcode = *msg;
 			uint8_t msgLen = 2;
@@ -441,7 +398,7 @@ namespace dcclite::broker
 						uint8_t speed = *msg;
 						++msg;
 
-						Log::Trace("[Speed] {}", speed);
+						Log::Trace("[LoconetServiceImpl::Update] Setting speed {} for slot {}", speed, slot);
 					}
 					break;
 
@@ -473,9 +430,27 @@ namespace dcclite::broker
 					{
 						uint8_t slot = *msg;
 
-						auto msg = this->MakeSlotReadDataMsg(slot);
+						if (slot >= MAX_SLOTS)
+							return;
 
-						this->DispatchLnMessage(msg);																
+						auto response = this->MakeSlotReadDataMsg(slot);
+
+						this->DispatchLnMessage(response);
+
+						Log::Trace("[LoconetServiceImpl::Update] Request slot {} data", slot);
+					}
+					break;
+
+				case OPC_SLOT_STAT1:
+					{
+						uint8_t slot = *msg;
+						++msg;
+
+						if (slot >= MAX_SLOTS)
+							return;
+
+						uint8_t stat = *msg;
+						Log::Trace("[LoconetServiceImpl::Update] Write slot {} stat1 {:#x}", slot, stat);
 					}
 					break;
 
@@ -535,6 +510,10 @@ namespace dcclite::broker
 					}
 					break;
 
+				case Opcodes::OPD_UNDOC_SETMS100:
+					//ignore
+					break;
+
 				default:
 					Log::Trace("Ops");
 					break;
@@ -542,12 +521,8 @@ namespace dcclite::broker
 			}
 			
 			msg = nextMsg;
-			dwBytesRead -= msgLen;			
-		}
-
-
-		//do something
-		Log::Trace("Got {} bytes", dwBytesRead);
+			numBytesRead -= msgLen;
+		}		
 	}
 
 	LoconetService::LoconetService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :

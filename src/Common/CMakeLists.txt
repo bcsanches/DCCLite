@@ -3,8 +3,13 @@ if(WIN32)
 	set(CommonPlatSrcs 
 		ConsoleUtils_win.cpp
 		GuidUtils_win.cpp
-		Sha1_win.cpp
+        SerialPort_win.cpp
+		Sha1_win.cpp        
 	)
+    
+    set(CommonPlatHeaders
+        SerialPort_win.h
+    )
 
 else(WIN32)
 	set(CommonPlatSrcs 
@@ -12,6 +17,11 @@ else(WIN32)
 		GuidUtils_linux.cpp
 		Sha1_linux.cpp
 	)
+    
+    set(CommonPlatHeaders
+        SerialPort_linux.h
+    )
+    
 endif(WIN32)
 
 set(Common_SRCS
@@ -28,7 +38,8 @@ set(Common_SRCS
 	Util.cpp
 )
 
-set(Common_HDRS		
+set(Common_HDRS	
+    ${CommonPlatHeaders}	
 	Clock.h
 	ConsoleUtils.h
 	defs.h
@@ -41,6 +52,7 @@ set(Common_HDRS
 	NmraUtil.h
 	Object.h
 	PathUtils.h
+    SerialPort.h
 	Sha1.h
 	Socket.h  
 	Util.h

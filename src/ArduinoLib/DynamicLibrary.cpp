@@ -15,6 +15,7 @@
 #include <fmt/format.h>
 
 #include "FileSystem.h"
+#include "Util.h"
 
 //based on https://github.com/bcsanches/phobos3d/blob/master/src/Base/DynamicLibrary.cpp
 
@@ -98,30 +99,7 @@ void *DynamicLibrary::GetSymbol(const char *name)
 
 void DynamicLibrary::RaiseException(const char *module, const char *dll)
 {
-#ifndef WIN32
-	auto errorMsg = dlerror();
+	auto errMsg = dcclite::GetSystemLastErrorMessage();
 
-	std::string ret = fmt::format("DynamicLibrary[{}] {} not found item {}", module, errorMsg, dll);
-
-#elif defined WIN32
-	LPVOID lpMsgBuf;
-	FormatMessage(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER |
-		FORMAT_MESSAGE_FROM_SYSTEM |
-		FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL,
-		GetLastError(),
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPTSTR)&lpMsgBuf,
-		0,
-		NULL
-	);
-
-	std::string ret = fmt::format("DynamicLibrary[{}] {} not found item {}", module, lpMsgBuf, dll);
-
-	// Free the buffer.
-	LocalFree(lpMsgBuf);
-#endif
-		
-	throw std::logic_error(ret);
+	throw std::logic_error(fmt::format("DynamicLibrary[{}] {} not found item {}", module, errMsg, dll));
 }

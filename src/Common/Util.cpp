@@ -14,6 +14,13 @@
 
 #include <algorithm>
 
+#ifndef WIN32
+#include <dlfcn.h>
+#else
+#include <windows.h>
+#endif
+
+
 bool dcclite::TryHexStrToBinary(std::uint8_t dest[], size_t destSize, std::string_view str)
 {
 	size_t dataIndex = 0;	
@@ -62,4 +69,34 @@ std::string_view dcclite::StrTrim(std::string_view str)
 	++newEnd;
 
 	return str.substr(newBegin - str.begin(), newEnd - newBegin);
+}
+
+std::string dcclite::GetSystemLastErrorMessage()
+{
+#ifndef WIN32
+	auto errorMsg = dlerror();
+
+	return std::string(errorMsg);
+
+#elif defined WIN32
+	LPVOID lpMsgBuf;
+	FormatMessage(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER |
+		FORMAT_MESSAGE_FROM_SYSTEM |
+		FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL,
+		GetLastError(),
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&lpMsgBuf,
+		0,
+		NULL
+	);
+
+	std::string ret{ static_cast<char *>(lpMsgBuf) };
+
+	// Free the buffer.
+	LocalFree(lpMsgBuf);
+
+	return ret;	
+#endif
 }
