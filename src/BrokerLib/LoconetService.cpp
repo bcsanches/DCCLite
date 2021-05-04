@@ -7,7 +7,9 @@
 #include <optional>
 #include <deque>
 
+#include "Clock.h"
 #include "DccAddress.h"
+#include "Packet.h"
 #include "SerialPort.h"
 
 enum Bits : uint8_t
@@ -40,10 +42,15 @@ enum Opcodes : uint8_t
 	OPC_WR_SL_DATA = 0xEF
 };
 
-constexpr auto MAX_LN_MESSAGE_LEN = 20;
-constexpr auto MAX_SLOTS = 120;
+using namespace std::chrono_literals;
 
-constexpr auto SLOT_STAT_SPEED_STEPS_BITS = (BIT_0 | BIT_1);	//011 = send 128 speed mode packets
+static auto constexpr PURGE_INTERVAL = 60s;
+static auto constexpr PURGE_TIMEOUT = 200s;
+
+static constexpr auto MAX_LN_MESSAGE_LEN = 20;
+static constexpr auto MAX_SLOTS = 120;
+
+static constexpr auto SLOT_STAT_SPEED_STEPS_BITS = (BIT_0 | BIT_1);	//011 = send 128 speed mode packets
 
 enum class SlotStatUsage : uint8_t
 {
@@ -55,7 +62,7 @@ enum class SlotStatUsage : uint8_t
 
 //    D5 D4
 // 00 1  1    0000
-constexpr auto SLOT_STAT_USAGE_MASK = 0x30;
+static constexpr auto SLOT_STAT_USAGE_MASK = 0x30;
 
 /**
 D7 - 0; always 0
@@ -67,12 +74,14 @@ D2 - SL_F3; 1 = F3 ON
 D1 - SL_F2; 1 = F2 ON
 D0 - SL_F1; 1 = F1 ON
 */
-constexpr auto SLOT_SPEED_DIR_BIT = BIT_5;
-constexpr auto SLOT_SPEED_F0 = BIT_4;
-constexpr auto SLOT_SPEED_F4 = BIT_3;
-constexpr auto SLOT_SPEED_F3 = BIT_2;
-constexpr auto SLOT_SPEED_F2 = BIT_1;
-constexpr auto SLOT_SPEED_F1 = BIT_0;
+static constexpr auto SLOT_SPEED_DIR_BIT = BIT_5;
+static constexpr auto SLOT_SPEED_F0 = BIT_4;
+static constexpr auto SLOT_SPEED_F4 = BIT_3;
+static constexpr auto SLOT_SPEED_F3 = BIT_2;
+static constexpr auto SLOT_SPEED_F2 = BIT_1;
+static constexpr auto SLOT_SPEED_F1 = BIT_0;
+
+typedef dcclite::BasePacket<MAX_LN_MESSAGE_LEN> MiniPacket_t;
 
 uint8_t DefaultMsgSizes(const Opcodes opcode)
 {
@@ -97,38 +106,36 @@ class LoconetMessageWriter
 	public:
 		LoconetMessageWriter(Opcodes opcode)
 		{
-			m_uBuffer[0] = opcode;
-			++m_uIndex;
-
+			m_tPacket.Write8(opcode);
+			
 			m_uMsgLen = DefaultMsgSizes(opcode);
 			if (m_uMsgLen > 6)
 			{
-				m_uBuffer[1] = m_uMsgLen;
-				++m_uIndex;
+				m_tPacket.Write8(m_uMsgLen);				
 			}
 		}
 
 		void WriteByte(const uint8_t byte)
 		{
-			if (m_uIndex >= m_uMsgLen - 1)
+			if (m_tPacket.GetSize() >= m_uMsgLen - 1)
 				throw std::exception(fmt::format("[LoconetService::WriteByte] Buffer overflow").c_str());
 
-			m_uBuffer[m_uIndex] = byte & 0x7F;
-			++m_uIndex;
+			m_tPacket.Write8(byte & 0x7F);			
 		}
 
-		uint8_t *PackMsg()
+		const uint8_t *PackMsg()
 		{
 			uint8_t checksum = 0xFF;
 
+			m_tPacket.Seek(0);
 			for (int i = 0; i < m_uMsgLen - 1; ++i)
 			{
-				checksum ^= m_uBuffer[i];
+				checksum ^= m_tPacket.ReadByte();
 			}
 
-			m_uBuffer[m_uMsgLen - 1] = checksum;
+			m_tPacket.Write8(checksum);
 
-			return m_uBuffer;
+			return m_tPacket.GetData();
 		}
 
 		uint8_t GetMsgLen() const
@@ -137,9 +144,8 @@ class LoconetMessageWriter
 		}
 
 	private:
-		uint8_t m_uBuffer[MAX_LN_MESSAGE_LEN];
+		MiniPacket_t m_tPacket;
 
-		uint8_t m_uIndex = 0;
 		uint8_t m_uMsgLen = 2;
 };
 
@@ -326,7 +332,7 @@ namespace dcclite::broker
 
 			void DispatchLnMessage(LoconetMessageWriter &msg);
 
-			void ParseMessage(const uint8_t opcode, const uint8_t *data);
+			void ParseMessage(const uint8_t opcode, MiniPacket_t &payload);
 
 		private:
 			SlotManager m_clSlotManager;
@@ -336,6 +342,8 @@ namespace dcclite::broker
 			SerialPort::DataPacket m_clInputPacket;			
 
 			MessageDispatcher m_clMessageDispatcher;
+
+			dcclite::Clock::TimePoint_t m_tNextPurgeTicks;
 	};
 
 
@@ -397,17 +405,14 @@ namespace dcclite::broker
 		m_clMessageDispatcher.Send(msg, m_clSerialPort);		
 	}
 
-	void LoconetServiceImpl::ParseMessage(const uint8_t opcode, const uint8_t *data)
+	void LoconetServiceImpl::ParseMessage(const uint8_t opcode, MiniPacket_t &payload)
 	{
 		switch (opcode)
 		{
 			case Opcodes::OPC_LOCO_SPD:
 				{
-					uint8_t slot = *data;
-					++data;
-
-					uint8_t speed = *data;
-					++data;
+					uint8_t slot = payload.ReadByte();					
+					uint8_t speed = payload.ReadByte();					
 
 					Log::Trace("[LoconetServiceImpl::Update] Setting speed {} for slot {}", speed, slot);
 				}
@@ -415,11 +420,8 @@ namespace dcclite::broker
 
 			case Opcodes::OPC_MOVE_SLOTS:
 				{
-					uint8_t src = *data;
-					++data;
-
-					uint8_t dest = *data;
-					++data;
+					uint8_t src = payload.ReadByte();					
+					uint8_t dest = payload.ReadByte();					
 
 					//is a null move)
 					if (src == dest)
@@ -441,7 +443,7 @@ namespace dcclite::broker
 
 			case Opcodes::OPC_RQ_SL_DATA:
 				{
-					uint8_t slot = *data;
+					uint8_t slot = payload.ReadByte();
 
 					if (slot >= MAX_SLOTS)
 						break;
@@ -456,13 +458,12 @@ namespace dcclite::broker
 
 			case OPC_SLOT_STAT1:
 				{
-					uint8_t slot = *data;
-					++data;
+					uint8_t slot = payload.ReadByte();					
 
 					if (slot >= MAX_SLOTS)
 						break;
 
-					uint8_t stat = *data;
+					uint8_t stat = payload.ReadByte();
 					Log::Trace("[LoconetServiceImpl::Update] Write slot {} stat1 {:#x}", slot, stat);
 				}
 				break;
@@ -470,8 +471,7 @@ namespace dcclite::broker
 			case Opcodes::OPC_LOCO_ADR:
 				{
 					//<0xBF>,<0>,<ADR>,<CHK>
-					uint16_t high = *data;
-					++data;
+					uint16_t high = payload.ReadByte();					
 
 					/**
 					DATA return <E7>, is SLOT#, DATA that ADR was found in
@@ -480,8 +480,7 @@ namespace dcclite::broker
 						; IF no FREE slot, Fail LACK, 0 is returned[<B4>, <3F>, <0>, <CHK>]
 					*/
 
-					uint16_t low = *data;
-					++data;
+					uint16_t low = payload.ReadByte();					
 
 					uint16_t address = (high << 7) + low;
 
@@ -536,6 +535,13 @@ namespace dcclite::broker
 
 	void LoconetServiceImpl::Update(const dcclite::Clock& clock)
 	{	
+		if (m_tNextPurgeTicks <= clock.Now())
+		{
+			m_tNextPurgeTicks = clock.Now() + PURGE_INTERVAL;
+
+			Log::Trace("[LoconetServiceImpl::Update] Purging slots");
+		}
+
 		//pump outgoing messages
 		m_clMessageDispatcher.Update(m_clSerialPort);
 
@@ -581,9 +587,11 @@ namespace dcclite::broker
 				if (msgLen > 6)
 					++msg;
 
-				++msg;			
+				++msg;		
 
-				this->ParseMessage(opcode, msg);
+				MiniPacket_t packet(msg, nextMsg - msg);
+
+				this->ParseMessage(opcode, packet);
 			
 				msg = nextMsg;
 				numBytesRead -= msgLen;

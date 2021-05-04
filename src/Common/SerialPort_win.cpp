@@ -11,6 +11,7 @@
 
 #include <fmt/format.h>
 
+#include "Log.h"
 #include "Util.h"
 
 namespace dcclite
@@ -105,6 +106,10 @@ namespace dcclite
 
 		DCB dcb;
 
+		//  Initialize the DCB structure.
+		SecureZeroMemory(&dcb, sizeof(DCB));
+		dcb.DCBlength = sizeof(DCB);
+
 		if (!GetCommState(m_hComPort, &dcb))
 		{
 			CloseHandle(m_hComPort);
@@ -112,14 +117,35 @@ namespace dcclite
 			throw std::runtime_error(fmt::format("[SerialPort] {}: Cannot read DCB data - {}", portName, GetSystemLastErrorMessage()));
 		}
 
-		dcb.fDtrControl = DTR_CONTROL_ENABLE;
-		dcb.fRtsControl = RTS_CONTROL_ENABLE;
-		dcb.fOutxDsrFlow = FALSE;
-		dcb.fOutxCtsFlow = TRUE;
-		dcb.StopBits = ONESTOPBIT;
-		dcb.Parity = NOPARITY;
+		DCB old = dcb;
+
 		dcb.BaudRate = CBR_57600;
-		dcb.fDtrControl = DTR_CONTROL_ENABLE;
+		dcb.fBinary = TRUE;
+		dcb.fParity = NOPARITY;
+		dcb.fOutxCtsFlow = FALSE;
+		dcb.fOutxDsrFlow = FALSE;
+		dcb.fDtrControl = DTR_CONTROL_DISABLE;
+		dcb.fDsrSensitivity = FALSE;
+		dcb.fTXContinueOnXoff = FALSE;
+		dcb.fOutX = FALSE;
+		dcb.fInX = FALSE;
+		dcb.fErrorChar = FALSE;
+		dcb.fNull = FALSE;
+		dcb.fRtsControl = RTS_CONTROL_DISABLE;	
+		dcb.fAbortOnError = FALSE;
+		dcb.XonLim = 0;
+		dcb.XoffLim = 0;
+		dcb.ByteSize = 8;
+		dcb.Parity = NOPARITY;
+		dcb.StopBits = ONESTOPBIT;
+
+		/**
+		dcb.XonChar = (char)0x8d;
+		dcb.XoffChar = (char)0x96;
+		dcb.ErrorChar = (char)0xF6;
+		dcb.EofChar = (char)0x20;
+		dcb.EvtChar = (char)0x00;		
+		*/
 
 		if (!SetCommState(m_hComPort, &dcb))
 		{
@@ -128,7 +154,22 @@ namespace dcclite
 			throw std::runtime_error(fmt::format("[SerialPort] {}: Cannot update CommState - {}", portName, GetSystemLastErrorMessage()));
 		}
 
+		COMMTIMEOUTS timeouts;
+		if (!GetCommTimeouts(m_hComPort, &timeouts))
+		{
+			CloseHandle(m_hComPort);
+
+			throw std::runtime_error(fmt::format("[SerialPort] {}: GetCommTimeouts failed - {}", portName, GetSystemLastErrorMessage()));
+		}
+
+		timeouts.ReadIntervalTimeout = 0x64;
 		
+		if (!SetCommTimeouts(m_hComPort, &timeouts))
+		{
+			CloseHandle(m_hComPort);
+
+			throw std::runtime_error(fmt::format("[SerialPort] {}: SetCommTimeouts failed - {}", portName, GetSystemLastErrorMessage()));
+		}
 	}
 
 	SerialPort::~SerialPort()

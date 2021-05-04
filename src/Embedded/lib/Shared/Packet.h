@@ -103,83 +103,84 @@ namespace dcclite
 	
 	*/
 
-	class Packet
+	template <uint8_t SIZE>
+	class BasePacket
 	{
 		public:
-			inline Packet() = default;
+			inline BasePacket() = default;
 
-			inline Packet(const uint8_t *data, uint8_t len)
+			inline BasePacket(const uint8_t *data, uint8_t len)
 			{
-				assert(len < PACKET_MAX_SIZE);
+				assert(len < SIZE);
 				memcpy(&m_arData[0], data, len);
 			}
 
-			Packet(const Packet &rhs):				
-				m_iIndex{ rhs.m_iIndex }
+			BasePacket(const BasePacket &rhs):
+				m_u8Index{ rhs.m_u8Index }
 			{
 				memcpy(m_arData, rhs.m_arData, sizeof(m_arData));
 			}
 
-			Packet(Packet &&) = delete;
+			BasePacket(BasePacket &&) = delete;
 
-			Packet &operator=(const Packet &) = delete;					
+			BasePacket &operator=(const BasePacket &) = delete;
 
 			inline void Write8(uint8_t byte) noexcept
 			{
-				assert(m_iIndex + 1 < PACKET_MAX_SIZE);
+				assert(m_u8Index + 1 < SIZE);
 
-				m_arData[m_iIndex++] = byte;
+				m_arData[m_u8Index++] = byte;
 			}
 
 			inline void Write16(uint16_t data) noexcept
 			{
-				assert(m_iIndex + 2 < PACKET_MAX_SIZE);
+				assert(m_u8Index + 2 < SIZE);
 
-				memcpy(&m_arData[m_iIndex], &data, sizeof(data));				
-				m_iIndex += sizeof(data);
+				memcpy(&m_arData[m_u8Index], &data, sizeof(data));
+				m_u8Index += sizeof(data);
 			}
 			
 			inline void Write32(uint32_t data)
 			{
-				assert(m_iIndex + sizeof(data) < PACKET_MAX_SIZE);
+				assert(m_u8Index + sizeof(data) < SIZE);
 
-				memcpy(&m_arData[m_iIndex], &data, sizeof(data));
-				m_iIndex += sizeof(data);
+				memcpy(&m_arData[m_u8Index], &data, sizeof(data));
+				m_u8Index += sizeof(data);
 			}
 
 			inline void Write64(uint64_t data)
 			{
-				assert(m_iIndex + sizeof(data) < PACKET_MAX_SIZE);
+				assert(m_u8Index + sizeof(data) < SIZE);
 
-				memcpy(&m_arData[m_iIndex], &data, sizeof(data));
-				m_iIndex += sizeof(data);
+				memcpy(&m_arData[m_u8Index], &data, sizeof(data));
+				m_u8Index += sizeof(data);
 			}
 
 			inline void Write(const Guid &guid) noexcept
 			{
-				assert(m_iIndex + sizeof(guid.m_bId) < PACKET_MAX_SIZE);
+				assert(m_u8Index + sizeof(guid.m_bId) < SIZE);
 
-				memcpy(&m_arData[m_iIndex], guid.m_bId, sizeof(guid.m_bId));
-				m_iIndex += sizeof(guid.m_bId);				
+				memcpy(&m_arData[m_u8Index], guid.m_bId, sizeof(guid.m_bId));
+				m_u8Index += sizeof(guid.m_bId);
 			}
 
 			template <size_t BITS>
 			inline void Write(const BitPack<BITS> &bitPack)
 			{
-				assert(m_iIndex + bitPack.GetNumBytes() < PACKET_MAX_SIZE);
+				assert(m_u8Index + bitPack.GetNumBytes() < SIZE);
 
-				memcpy(&m_arData[m_iIndex], bitPack.GetRaw(), bitPack.GetNumBytes());
-				m_iIndex += bitPack.GetNumBytes();
+				memcpy(&m_arData[m_u8Index], bitPack.GetRaw(), bitPack.GetNumBytes());
+				m_u8Index += bitPack.GetNumBytes();
 			}
 
 			inline Guid ReadGuid()
 			{
 				Guid guid;
 
-				assert(m_iIndex + sizeof(guid.m_bId) < PACKET_MAX_SIZE);
+				assert(m_u8Index + sizeof(guid.m_bId) < SIZE);
 
-				memcpy(guid.m_bId, &m_arData[m_iIndex], sizeof(guid.m_bId));
-				m_iIndex += sizeof(guid.m_bId);
+				memcpy(guid.m_bId, &m_arData[m_u8Index], sizeof(guid.m_bId));
+				m_u8Index += sizeof(guid.m_bId);
 
 				return guid;
 			}
@@ -187,33 +188,45 @@ namespace dcclite
 			template <size_t NBITS>
 			inline void ReadBitPack(dcclite::BitPack<NBITS> &dest)
 			{
-				assert(m_iIndex + sizeof(dest.GetNumBytes()) < PACKET_MAX_SIZE);
+				assert(m_u8Index + sizeof(dest.GetNumBytes()) < SIZE);
 
-				dest.Set(m_arData + m_iIndex);
-				m_iIndex += dest.GetNumBytes();
+				dest.Set(m_arData + m_u8Index);
+				m_u8Index += dest.GetNumBytes();
 			}
 
 			template <typename T>
 			inline T Read()
 			{				
-				assert(m_iIndex + sizeof(T) < PACKET_MAX_SIZE);
+				assert(m_u8Index + sizeof(T) < SIZE);
 
 				T num;
 
-				memcpy(&num, &m_arData[m_iIndex], sizeof(T));
-				m_iIndex += sizeof(T);
+				memcpy(&num, &m_arData[m_u8Index], sizeof(T));
+				m_u8Index += sizeof(T);
 
 				return num;
 			}
 
-			inline unsigned int GetSize() const noexcept
+			inline uint8_t ReadByte()
 			{
-				return m_iIndex;
+				return Read<uint8_t>();
+			}
+
+			inline uint8_t GetSize() const noexcept
+			{
+				return m_u8Index;
 			}
 
 			inline const uint8_t *GetData() const noexcept
 			{
-				return &m_arData[0];
+				return m_arData;
+			}
+
+			inline void Seek(unsigned int pos)
+			{
+				assert(pos < SIZE);
+
+				m_u8Index = pos;
 			}
 
 			/// <summary>
@@ -221,13 +234,31 @@ namespace dcclite
 			/// </summary>						
 			inline void Reset() noexcept
 			{
-				m_iIndex = 0;
+				m_u8Index = 0;
 			}
 
 		private:
-			uint8_t m_arData[PACKET_MAX_SIZE];
+			uint8_t m_arData[SIZE];
 
-			unsigned int				m_iIndex = 0;
+			uint8_t				m_u8Index = 0;
+	};
+
+	class Packet : public BasePacket<PACKET_MAX_SIZE>
+	{
+		public:
+			inline Packet() = default;
+
+			inline Packet(const uint8_t *data, uint8_t len):
+				BasePacket{data, len}
+			{
+				//empty
+			}
+
+			Packet(const Packet & rhs) :
+				BasePacket{rhs}				
+			{
+				//empty
+			}
 	};
 
 	class PacketBuilder
