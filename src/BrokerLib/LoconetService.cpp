@@ -52,17 +52,6 @@ static constexpr auto MAX_SLOTS = 120;
 
 static constexpr auto SLOT_STAT_SPEED_STEPS_BITS = (BIT_0 | BIT_1);	//011 = send 128 speed mode packets
 
-enum class SlotStatUsage : uint8_t
-{
-	FREE =		0x00,
-	COMMON =	BIT_0,
-	IDLE =		BIT_1,
-	IN_USE =	BIT_0 | BIT_1
-};
-
-//    D5 D4
-// 00 1  1    0000
-static constexpr auto SLOT_STAT_USAGE_MASK = 0x30;
 
 /**
 D7 - 0; always 0
@@ -80,6 +69,8 @@ static constexpr auto SLOT_SPEED_F4 = BIT_3;
 static constexpr auto SLOT_SPEED_F3 = BIT_2;
 static constexpr auto SLOT_SPEED_F2 = BIT_1;
 static constexpr auto SLOT_SPEED_F1 = BIT_0;
+
+static constexpr auto MAX_SLOT_FUNCTIONS = 10;
 
 typedef dcclite::BasePacket<MAX_LN_MESSAGE_LEN> MiniPacket_t;
 
@@ -149,104 +140,288 @@ class LoconetMessageWriter
 		uint8_t m_uMsgLen = 2;
 };
 
-struct Slot
+///////////////////////////////////////////////////////////////////////////////
+//
+// Loconet Slot
+//
+///////////////////////////////////////////////////////////////////////////////
+
+
+class Slot
 {
-	dcclite::broker::DccAddress m_LocomotiveAddress;
+	public:
+		enum class States
+		{
+			//Those values match the bitmask used by loconet on bits D4 and D5
+			FREE = 0x00,
+			COMMON = BIT_4,
+			IDLE = BIT_5,
+			IN_USE = BIT_4 | BIT_5
+		};	
 
-	uint8_t m_u8Stat = SLOT_STAT_SPEED_STEPS_BITS;
+		bool IsFree() const noexcept
+		{
+			return m_eState == States::FREE;
+		}	
 
-	//Set default as forward and directional lighting
-	uint8_t m_u8Dirf = SLOT_SPEED_DIR_BIT | SLOT_SPEED_F0; 	
+		bool IsInUse() const noexcept
+		{
+			return m_eState == States::IN_USE;
+		}
 
-	bool IsFree() const
-	{
-		return this->GetSlotUsageBits() == SlotStatUsage::FREE;
-	}	
+		void GotoState_Common(const dcclite::broker::DccAddress addr) noexcept
+		{
+			m_eState = States::COMMON;
+			m_tLocomotiveAddress = addr;
+		}
 
-	bool IsInUse() const
-	{
-		return this->GetSlotUsageBits() == SlotStatUsage::IN_USE;
-	}
+		void GotoState_InUse() noexcept
+		{
+			m_eState = States::IN_USE;
+		}
 
-	void SetSlotUsage(SlotStatUsage usage)
-	{
-		if (usage == this->GetSlotUsageBits())
-			return;
+		States GetState() const noexcept
+		{
+			return m_eState;
+		}
 
-		uint8_t flags = static_cast<uint8_t>(usage) << 4;
+		const dcclite::broker::DccAddress &GetLocomotiveAddress() const noexcept
+		{
+			return m_tLocomotiveAddress;
+		}
 
-		m_u8Stat = (m_u8Stat & (~SLOT_STAT_USAGE_MASK)) | flags;
-	}
+		bool IsForwardDir() const noexcept
+		{
+			return m_fForward;
+		}
+
+		void SetForward(bool v) noexcept
+		{
+			m_fForward = v;
+		}		
+
+		const bool *GetFunctions() const noexcept
+		{
+			return m_fFunctions;
+		}
+
+		uint8_t GetSpeed() const noexcept 
+		{
+			return m_uSpeed;
+		}
+
+		void SetSpeed(const uint8_t speed) noexcept
+		{
+			m_uSpeed = speed;
+		}
+
+		void ForceState(const States newState) noexcept
+		{
+			m_eState = newState;
+		}
 
 	private:
+		dcclite::broker::DccAddress m_tLocomotiveAddress;
+		States m_eState = States::FREE;
+
+		uint8_t m_uSpeed = { 0 };
+
+		bool m_fForward = { true };
+
+		bool m_fFunctions[MAX_SLOT_FUNCTIONS] = { false };
+
+#if 0
 		inline SlotStatUsage GetSlotUsageBits() const
 		{
 			//BITS D4 D5 - 00110000
 			return static_cast<SlotStatUsage>((m_u8Stat >> 4) & 0x03);
 		}
-
-		
+#endif		
 };
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Helpers
+//
+///////////////////////////////////////////////////////////////////////////////
+
+//    D5 D4
+// 00 1  1    0000
+static constexpr auto SLOT_STAT_USAGE_MASK = 0x30;
+
+static uint8_t BuildSlotStatByte(const Slot &slot) noexcept
+{
+	//;011=send 128 speed mode packets
+	return  BIT_0 | BIT_1 | static_cast<uint8_t>(slot.GetState());
+}
+
+static uint8_t BuildSlotDirfByte(const Slot &slot) noexcept
+{
+	auto functions = slot.GetFunctions();
+
+	//D7 - 0; always 0
+	//D6 - SL_XCNT; reserved, set 0
+	//D5 - SL_DIR; 1 = loco direction FORWARD
+	//D4 - SL_F0; 1 = Directional lighting ON
+	//D3 - SL_F4; 1 = F4 ON
+	//D2 - SL_F3; 1 = F3 ON
+	//D1 - SL_F2; 1 = F2 ON
+	//D0 - SL_F1; 1 = F1 ON
+	return
+		(slot.IsForwardDir() ? BIT_5 : 0) |
+		(functions[0] ? BIT_4 : 0) |
+		(functions[4] ? BIT_3 : 0) |
+		(functions[3] ? BIT_2 : 0) |
+		(functions[2] ? BIT_1 : 0) |
+		(functions[1] ? BIT_0 : 0);
+}
+
+static Slot::States ParseStatByte(const uint8_t stat) noexcept
+{
+	return static_cast<Slot::States>(stat & SLOT_STAT_USAGE_MASK);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// SlotManager - Yes! A Manager!
+//
+///////////////////////////////////////////////////////////////////////////////
 
 class SlotManager
 {
 	public:
 		SlotManager();
 
-		std::optional<uint8_t> AcquireLocomotive(const dcclite::broker::DccAddress address);
-
-		const Slot &GetSlot(uint8_t slot) const;	
+		std::optional<uint8_t> AcquireLocomotive(const dcclite::broker::DccAddress address);		
 
 		void SetSlotToInUse(uint8_t slot);
 
+		void SetLocomotiveSpeed(const uint8_t slot, const uint8_t speed) noexcept;
+
+		LoconetMessageWriter MakeMessage_SlotReadData(const uint8_t slot) const;
+
+		void ForceSlotState(const uint8_t slot, const Slot::States state);
+
+	private:
+		const Slot &GetSlot(const uint8_t slot) const;
+		Slot *TryGetLocomotiveSlot(const uint8_t slot);		
+
 	private:
 		std::array<Slot, MAX_SLOTS> m_arSlots;
+
+		std::array<dcclite::Clock::TimePoint_t, MAX_SLOTS> m_arSlotsTimeout;
 };
 
 SlotManager::SlotManager()
 {	
-	for (auto it : m_arSlots)
-	{
-		it.SetSlotUsage(SlotStatUsage::FREE);
-	}
-
 	//dispatch slot - never use
-	m_arSlots[0].SetSlotUsage(SlotStatUsage::IN_USE);
+	m_arSlots[0].GotoState_InUse();
 }
 
 std::optional<uint8_t> SlotManager::AcquireLocomotive(const dcclite::broker::DccAddress address)
 {
 	auto it = std::find_if(m_arSlots.begin(), m_arSlots.end(), [address](Slot &slot)
 		{			
-			return !slot.IsFree() && !slot.IsInUse() && (slot.m_LocomotiveAddress == address);
+			return !slot.IsFree() && !slot.IsInUse() && (slot.GetLocomotiveAddress() == address);
 		}
 	);
 
+	//address not found?
 	if (it == m_arSlots.end())
-	{
+	{		
+		//look for a free slot
 		it = std::find_if(m_arSlots.begin(), m_arSlots.end(), [](Slot &slot) {return slot.IsFree(); });
 		if (it == m_arSlots.end())
 			return false;
 
-		it->SetSlotUsage(SlotStatUsage::COMMON);
-		it->m_LocomotiveAddress = address;
+		//Found it, use...
+		it->GotoState_Common(address);		
 	}
 
+	//return index
 	return it - m_arSlots.begin();
 }
 
-const Slot &SlotManager::GetSlot(uint8_t slot) const
+const Slot &SlotManager::GetSlot(const uint8_t slot) const
 {	
 	return m_arSlots.at(slot);
 }
 
+Slot *SlotManager::TryGetLocomotiveSlot(const uint8_t slot)
+{
+	if (slot == 0)
+	{
+		dcclite::Log::Error("[SlotManager::TryGetLocomotiveSlot] Slot 0 is not a locomotive, it is a dispatcher slot");
+
+		return nullptr;
+	}
+
+	if (slot >= MAX_SLOTS)
+	{
+		dcclite::Log::Error("[SlotManager::TryGetLocomotiveSlot] Slot {} is outside locomotive range, trying to access special slot?", slot);
+
+		return nullptr;
+	}
+
+	return &m_arSlots[slot];
+}
+
+
 void SlotManager::SetSlotToInUse(uint8_t slot)
 {
-	m_arSlots.at(slot).SetSlotUsage(SlotStatUsage::IN_USE);
+	m_arSlots.at(slot).GotoState_InUse();
 }
+
+LoconetMessageWriter SlotManager::MakeMessage_SlotReadData(const uint8_t slotIndex) const
+{
+	auto &slot = this->GetSlot(slotIndex);
+
+	//<0xE7>,<0E>,<SLOT#>,<STAT>,<ADR>,<SPD>,<DIRF>,<TRK> <SS2>, <ADR2>, <SND>, <ID1>, <ID2>, <CHK>
+	LoconetMessageWriter msg(OPC_SL_RD_DATA);
+
+	const auto rawLocoAddress = slot.GetLocomotiveAddress().GetAddress();
+
+	msg.WriteByte(slotIndex);
+	msg.WriteByte(BuildSlotStatByte(slot));			//STAT
+	msg.WriteByte(rawLocoAddress & 0x7F);			//ADDR
+	msg.WriteByte(slot.GetSpeed() & 0x7F);			//SPD
+	msg.WriteByte(BuildSlotDirfByte(slot));			//DIRF
+	msg.WriteByte(0x01);							//TRK
+	msg.WriteByte(0);								//SS2
+	msg.WriteByte((rawLocoAddress >> 7) & 0x7F);	//ADDR2
+	msg.WriteByte(0);								//SND
+	msg.WriteByte(0);								//Id1
+	msg.WriteByte(0);								//Id2
+
+	return msg;
+}
+
+void SlotManager::SetLocomotiveSpeed(const uint8_t slot, const uint8_t speed) noexcept
+{
+	auto pSlot = this->TryGetLocomotiveSlot(slot);
+
+	if (!pSlot)
+		return;
+
+	pSlot->SetSpeed(speed);
+}
+
+void SlotManager::ForceSlotState(const uint8_t slot, const Slot::States state)
+{
+	m_arSlots.at(slot).ForceState(state);	
+}
+
 
 namespace dcclite::broker
 {
+
+	///////////////////////////////////////////////////////////////////////////////
+	//
+	// MessageDispatcher
+	//
+	///////////////////////////////////////////////////////////////////////////////
+
 
 	class MessageDispatcher
 	{
@@ -315,6 +490,12 @@ namespace dcclite::broker
 		port.Write(m_clOutputPacket);
 	}
 
+	///////////////////////////////////////////////////////////////////////////////
+	//
+	// LoconetServiceImpl
+	//
+	///////////////////////////////////////////////////////////////////////////////
+
 	class LoconetServiceImpl : public LoconetService
 	{
 		public:
@@ -328,8 +509,6 @@ namespace dcclite::broker
 			static std::unique_ptr<Service> Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
 		private:
-			LoconetMessageWriter MakeSlotReadDataMsg(uint8_t slot);
-
 			void DispatchLnMessage(LoconetMessageWriter &msg);
 
 			void ParseMessage(const uint8_t opcode, MiniPacket_t &payload);
@@ -374,31 +553,7 @@ namespace dcclite::broker
 	void LoconetServiceImpl::Initialize()
 	{
 		//empty
-	}
-
-	LoconetMessageWriter LoconetServiceImpl::MakeSlotReadDataMsg(uint8_t slotIndex)
-	{
-		auto &slot = m_clSlotManager.GetSlot(slotIndex);
-
-		//<0xE7>,<0E>,<SLOT#>,<STAT>,<ADR>,<SPD>,<DIRF>,<TRK> <SS2>, <ADR2>, <SND>, <ID1>, <ID2>, <CHK>
-		LoconetMessageWriter msg(OPC_SL_RD_DATA);
-
-		const auto rawLocoAddress = slot.m_LocomotiveAddress.GetAddress();
-
-		msg.WriteByte(slotIndex);
-		msg.WriteByte(slot.m_u8Stat);					//STAT
-		msg.WriteByte(rawLocoAddress & 0x7F);			//ADDR
-		msg.WriteByte(0);								//SPD
-		msg.WriteByte(slot.m_u8Dirf);					//DIRF
-		msg.WriteByte(0x01);							//TRK
-		msg.WriteByte(0);								//SS2
-		msg.WriteByte((rawLocoAddress >> 7) & 0x7F);	//ADDR2
-		msg.WriteByte(0);								//SND
-		msg.WriteByte(0);								//Id1
-		msg.WriteByte(0);								//Id2
-
-		return msg;
-	}
+	}	
 
 	void LoconetServiceImpl::DispatchLnMessage(LoconetMessageWriter &msg)
 	{
@@ -415,6 +570,7 @@ namespace dcclite::broker
 					uint8_t speed = payload.ReadByte();					
 
 					Log::Trace("[LoconetServiceImpl::Update] Setting speed {} for slot {}", speed, slot);
+					m_clSlotManager.SetLocomotiveSpeed(slot, speed);
 				}
 				break;
 
@@ -428,7 +584,7 @@ namespace dcclite::broker
 					{
 						m_clSlotManager.SetSlotToInUse(src);
 
-						auto msg = this->MakeSlotReadDataMsg(src);
+						auto msg = m_clSlotManager.MakeMessage_SlotReadData(src);
 
 						this->DispatchLnMessage(msg);
 
@@ -446,9 +602,11 @@ namespace dcclite::broker
 					uint8_t slot = payload.ReadByte();
 
 					if (slot >= MAX_SLOTS)
+					{
+						Log::Error("[LoconetServiceImpl::ParseMessage] OPC_RQ_SL_DATA: requesting for invalid slot {}", slot);
 						break;
-
-					auto response = this->MakeSlotReadDataMsg(slot);
+					}
+					auto response = m_clSlotManager.MakeMessage_SlotReadData(slot);
 
 					this->DispatchLnMessage(response);
 
@@ -458,13 +616,15 @@ namespace dcclite::broker
 
 			case OPC_SLOT_STAT1:
 				{
-					uint8_t slot = payload.ReadByte();					
+					const uint8_t slot = payload.ReadByte();					
 
 					if (slot >= MAX_SLOTS)
 						break;
 
-					uint8_t stat = payload.ReadByte();
-					Log::Trace("[LoconetServiceImpl::Update] Write slot {} stat1 {:#x}", slot, stat);
+					const uint8_t stat = payload.ReadByte();
+					Log::Trace("[LoconetServiceImpl::Update] Write slot {} stat1 {:#b}", slot, stat);
+
+					m_clSlotManager.ForceSlotState(slot, ParseStatByte(stat));
 				}
 				break;
 
@@ -495,7 +655,7 @@ namespace dcclite::broker
 					}
 					else
 					{
-						auto msg = this->MakeSlotReadDataMsg(slot.value());
+						auto msg = m_clSlotManager.MakeMessage_SlotReadData(slot.value());
 
 						this->DispatchLnMessage(msg);
 					}
@@ -535,9 +695,9 @@ namespace dcclite::broker
 
 	void LoconetServiceImpl::Update(const dcclite::Clock& clock)
 	{	
-		if (m_tNextPurgeTicks <= clock.Now())
+		if (m_tNextPurgeTicks <= clock.Ticks())
 		{
-			m_tNextPurgeTicks = clock.Now() + PURGE_INTERVAL;
+			m_tNextPurgeTicks = clock.Ticks() + PURGE_INTERVAL;			
 
 			Log::Trace("[LoconetServiceImpl::Update] Purging slots");
 		}

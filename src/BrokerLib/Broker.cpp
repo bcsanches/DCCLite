@@ -77,7 +77,7 @@ namespace dcclite::broker
 
 		m_pServices = static_cast<FolderObject *>(m_clRoot.AddChild(
 			std::make_unique<FolderObject>(SpecialFolders::GetName(SpecialFolders::Folders::ServicesId)))
-			);
+		);
 
 		this->LoadConfig();
 	}

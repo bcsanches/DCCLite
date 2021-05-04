@@ -215,7 +215,7 @@ namespace dcclite::broker
 	void SignalDecoder::Update(const dcclite::Clock &clock)
 	{
 		if (m_pclCurrentState)
-			m_pclCurrentState->Update(*this, clock.Now());
+			m_pclCurrentState->Update(*this, clock.Ticks());
 	}
 
 	void SignalDecoder::State_TurnOff::Update(SignalDecoder &self, const dcclite::Clock::TimePoint_t time)

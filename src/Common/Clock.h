@@ -34,12 +34,14 @@ namespace dcclite
 				return std::chrono::duration_cast<std::chrono::milliseconds>(m_CurrentTime - m_StartTime);
 			}
 
-			inline TimePoint_t Now() const noexcept
+			inline TimePoint_t Ticks() const noexcept
 			{
-				return m_CurrentTime;
+				return m_RunTime;
 			}
 
 		private:			
+			TimePoint_t m_RunTime;
+
 			TimePoint_t m_StartTime;
 			TimePoint_t m_CurrentTime;
 			TimePoint_t m_PreviousTime;

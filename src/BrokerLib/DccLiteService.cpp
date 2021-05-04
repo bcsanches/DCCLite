@@ -266,7 +266,7 @@ namespace dcclite::broker
 			}
 		}
 
-		netDevice->AcceptConnection(clock.Now(), senderAddress, remoteSessionToken, remoteConfigToken);
+		netDevice->AcceptConnection(clock.Ticks(), senderAddress, remoteSessionToken, remoteConfigToken);
 	}
 
 	NetworkDevice *DccLiteService::TryFindPacketDestination(dcclite::Packet &packet)
@@ -296,7 +296,7 @@ namespace dcclite::broker
 
 		dcclite::Guid configToken = packet.ReadGuid();
 
-		dev->OnPacket(packet, clock.Now(), msgType, senderAddress, configToken);
+		dev->OnPacket(packet, clock.Ticks(), msgType, senderAddress, configToken);
 	}
 
 

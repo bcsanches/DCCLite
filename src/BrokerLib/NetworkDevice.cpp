@@ -692,7 +692,7 @@ namespace dcclite::broker
 		if (m_eStatus != Status::ONLINE)
 			return;
 
-		auto time = clock.Now();
+		auto time = clock.Ticks();
 
 		//Did remoted device timedout?
 		if (!this->CheckTimeout(time))

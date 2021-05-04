@@ -23,11 +23,15 @@ namespace dcclite
 	{
 		auto t = DefaultClock_t::now();
 
-		if (t - m_CurrentTime < min)
+		auto delta = t - m_CurrentTime;
+
+		if (delta < min)
 			return false;
 
 		m_PreviousTime = m_CurrentTime;
-		m_CurrentTime = t;		
+		m_CurrentTime = t;	
+
+		m_RunTime += delta;
 
 		return true;
 	}
