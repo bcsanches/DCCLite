@@ -7,6 +7,8 @@
 #include <optional>
 #include <deque>
 
+#include "magic_enum.hpp"
+
 #include "Clock.h"
 #include "DccAddress.h"
 #include "Packet.h"
@@ -218,7 +220,7 @@ class Slot
 		void ForceState(const States newState) noexcept
 		{
 			m_eState = newState;
-		}
+		}		
 
 	private:
 		dcclite::broker::DccAddress m_tLocomotiveAddress;
@@ -281,7 +283,6 @@ static Slot::States ParseStatByte(const uint8_t stat) noexcept
 	return static_cast<Slot::States>(stat & SLOT_STAT_USAGE_MASK);
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // SlotManager - Yes! A Manager!
@@ -293,19 +294,23 @@ class SlotManager
 	public:
 		SlotManager();
 
-		std::optional<uint8_t> AcquireLocomotive(const dcclite::broker::DccAddress address);		
+		std::optional<uint8_t> AcquireLocomotive(const dcclite::broker::DccAddress address, const dcclite::Clock::TimePoint_t ticks);
 
-		void SetSlotToInUse(uint8_t slot);
+		void SetSlotToInUse(uint8_t slot, const dcclite::Clock::TimePoint_t ticks);
 
-		void SetLocomotiveSpeed(const uint8_t slot, const uint8_t speed) noexcept;
+		void SetLocomotiveSpeed(const uint8_t slot, const uint8_t speed, const dcclite::Clock::TimePoint_t ticks) noexcept;
 
 		LoconetMessageWriter MakeMessage_SlotReadData(const uint8_t slot) const;
 
-		void ForceSlotState(const uint8_t slot, const Slot::States state);
+		void ForceSlotState(const uint8_t slot, const Slot::States state, const dcclite::Clock::TimePoint_t ticks);
+
+		void Serialize(dcclite::JsonOutputStream_t &stream) const;
 
 	private:
 		const Slot &GetSlot(const uint8_t slot) const;
 		Slot *TryGetLocomotiveSlot(const uint8_t slot);		
+
+		void RefreshSlotTimeout(const uint8_t slot, const dcclite::Clock::TimePoint_t ticks) noexcept;
 
 	private:
 		std::array<Slot, MAX_SLOTS> m_arSlots;
@@ -319,7 +324,7 @@ SlotManager::SlotManager()
 	m_arSlots[0].GotoState_InUse();
 }
 
-std::optional<uint8_t> SlotManager::AcquireLocomotive(const dcclite::broker::DccAddress address)
+std::optional<uint8_t> SlotManager::AcquireLocomotive(const dcclite::broker::DccAddress address, const dcclite::Clock::TimePoint_t ticks)
 {
 	auto it = std::find_if(m_arSlots.begin(), m_arSlots.end(), [address](Slot &slot)
 		{			
@@ -339,8 +344,10 @@ std::optional<uint8_t> SlotManager::AcquireLocomotive(const dcclite::broker::Dcc
 		it->GotoState_Common(address);		
 	}
 
-	//return index
-	return it - m_arSlots.begin();
+	auto index = it - m_arSlots.begin();
+	this->RefreshSlotTimeout(index, ticks);
+	
+	return index;
 }
 
 const Slot &SlotManager::GetSlot(const uint8_t slot) const
@@ -368,9 +375,10 @@ Slot *SlotManager::TryGetLocomotiveSlot(const uint8_t slot)
 }
 
 
-void SlotManager::SetSlotToInUse(uint8_t slot)
+void SlotManager::SetSlotToInUse(uint8_t slot, const dcclite::Clock::TimePoint_t ticks)
 {
 	m_arSlots.at(slot).GotoState_InUse();
+	this->RefreshSlotTimeout(slot, ticks);
 }
 
 LoconetMessageWriter SlotManager::MakeMessage_SlotReadData(const uint8_t slotIndex) const
@@ -397,19 +405,43 @@ LoconetMessageWriter SlotManager::MakeMessage_SlotReadData(const uint8_t slotInd
 	return msg;
 }
 
-void SlotManager::SetLocomotiveSpeed(const uint8_t slot, const uint8_t speed) noexcept
+void SlotManager::SetLocomotiveSpeed(const uint8_t slot, const uint8_t speed, const dcclite::Clock::TimePoint_t ticks) noexcept
 {
 	auto pSlot = this->TryGetLocomotiveSlot(slot);
 
 	if (!pSlot)
 		return;
 
-	pSlot->SetSpeed(speed);
+	pSlot->SetSpeed(speed);	
+	this->RefreshSlotTimeout(slot, ticks);
+	
 }
 
-void SlotManager::ForceSlotState(const uint8_t slot, const Slot::States state)
+void SlotManager::ForceSlotState(const uint8_t slot, const Slot::States state, const dcclite::Clock::TimePoint_t ticks)
 {
 	m_arSlots.at(slot).ForceState(state);	
+
+	this->RefreshSlotTimeout(slot, ticks);
+}
+
+void SlotManager::RefreshSlotTimeout(const uint8_t slot, const dcclite::Clock::TimePoint_t ticks) noexcept
+{
+	m_arSlotsTimeout[slot] = ticks + PURGE_INTERVAL;
+}
+
+void SlotManager::Serialize(dcclite::JsonOutputStream_t &stream) const
+{
+	auto slotsData = stream.AddArray("slots");
+
+	for (auto &slot : m_arSlots)
+	{
+		auto slotData = slotsData.AddObject();
+
+		slotData.AddStringValue("state", magic_enum::enum_name(slot.GetState()));
+		slotData.AddIntValue("speed", slot.GetSpeed());
+		slotData.AddIntValue("locomotiveAddress", slot.GetLocomotiveAddress().GetAddress());
+		slotData.AddBool("forward", slot.IsForwardDir());
+	}
 }
 
 
@@ -508,10 +540,12 @@ namespace dcclite::broker
 
 			static std::unique_ptr<Service> Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
+			void Serialize(JsonOutputStream_t &stream) const override;
+
 		private:
 			void DispatchLnMessage(LoconetMessageWriter &msg);
 
-			void ParseMessage(const uint8_t opcode, MiniPacket_t &payload);
+			void ParseMessage(const uint8_t opcode, MiniPacket_t &payload, const dcclite::Clock::TimePoint_t ticks);
 
 		private:
 			SlotManager m_clSlotManager;
@@ -560,7 +594,7 @@ namespace dcclite::broker
 		m_clMessageDispatcher.Send(msg, m_clSerialPort);		
 	}
 
-	void LoconetServiceImpl::ParseMessage(const uint8_t opcode, MiniPacket_t &payload)
+	void LoconetServiceImpl::ParseMessage(const uint8_t opcode, MiniPacket_t &payload, const dcclite::Clock::TimePoint_t ticks)
 	{
 		switch (opcode)
 		{
@@ -570,7 +604,7 @@ namespace dcclite::broker
 					uint8_t speed = payload.ReadByte();					
 
 					Log::Trace("[LoconetServiceImpl::Update] Setting speed {} for slot {}", speed, slot);
-					m_clSlotManager.SetLocomotiveSpeed(slot, speed);
+					m_clSlotManager.SetLocomotiveSpeed(slot, speed, ticks);
 				}
 				break;
 
@@ -582,7 +616,7 @@ namespace dcclite::broker
 					//is a null move)
 					if (src == dest)
 					{
-						m_clSlotManager.SetSlotToInUse(src);
+						m_clSlotManager.SetSlotToInUse(src, ticks);
 
 						auto msg = m_clSlotManager.MakeMessage_SlotReadData(src);
 
@@ -624,7 +658,7 @@ namespace dcclite::broker
 					const uint8_t stat = payload.ReadByte();
 					Log::Trace("[LoconetServiceImpl::Update] Write slot {} stat1 {:#b}", slot, stat);
 
-					m_clSlotManager.ForceSlotState(slot, ParseStatByte(stat));
+					m_clSlotManager.ForceSlotState(slot, ParseStatByte(stat), ticks);
 				}
 				break;
 
@@ -644,7 +678,7 @@ namespace dcclite::broker
 
 					uint16_t address = (high << 7) + low;
 
-					auto slot = m_clSlotManager.AcquireLocomotive(DccAddress{ address });
+					auto slot = m_clSlotManager.AcquireLocomotive(DccAddress{ address }, ticks);
 					if (!slot)
 					{
 						LoconetMessageWriter msg{ OPC_LONG_ACK };
@@ -695,6 +729,7 @@ namespace dcclite::broker
 
 	void LoconetServiceImpl::Update(const dcclite::Clock& clock)
 	{	
+		auto ticks = clock.Ticks();
 		if (m_tNextPurgeTicks <= clock.Ticks())
 		{
 			m_tNextPurgeTicks = clock.Ticks() + PURGE_INTERVAL;			
@@ -707,8 +742,8 @@ namespace dcclite::broker
 
 		//Do we have any incoming message?
 		if (!m_clInputPacket.IsDataReady())
-			return;
-		
+			return;			
+
 		auto numBytesRead = m_clInputPacket.GetDataSize();	
 		if (numBytesRead)
 		{					
@@ -751,7 +786,7 @@ namespace dcclite::broker
 
 				MiniPacket_t packet(msg, nextMsg - msg);
 
-				this->ParseMessage(opcode, packet);
+				this->ParseMessage(opcode, packet, ticks);
 			
 				msg = nextMsg;
 				numBytesRead -= msgLen;
@@ -760,6 +795,13 @@ namespace dcclite::broker
 
 		//grab more data
 		m_clSerialPort.Read(m_clInputPacket);
+	}
+
+	void LoconetServiceImpl::Serialize(JsonOutputStream_t &stream) const
+	{
+		LoconetService::Serialize(stream);
+
+		m_clSlotManager.Serialize(stream);
 	}
 
 	LoconetService::LoconetService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :
@@ -772,4 +814,6 @@ namespace dcclite::broker
 	{
 		return std::make_unique<LoconetServiceImpl>(name, broker, params, project);
 	}
+
+
 }

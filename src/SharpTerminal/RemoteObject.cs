@@ -297,6 +297,10 @@ namespace SharpTerminal
                     obj = new RemoteLocationManager(name, className, path, id, parentInternalId, objectDef);
                     break;
 
+                case "LoconetService":
+                    obj = new RemoteLoconetService(name, className, path, id, parentInternalId, objectDef);
+                    break;
+
                 default:
                     obj = objectDef["isFolder"] ? new RemoteFolder(name, className, path, id, parentInternalId) : new RemoteObject(name, className, path, id, parentInternalId);
                     break;

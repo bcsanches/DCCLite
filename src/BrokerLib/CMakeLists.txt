@@ -64,6 +64,7 @@ target_include_directories(BrokerLib
     PUBLIC ${DCCLite_SOURCE_DIR}/src/Embedded/lib/Shared
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/fmt/include
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/spdlog/include
+    PRIVATE ${DCCLite_SOURCE_DIR}/contrib/magic_enum/include
 )
 
 if(WIN32)
