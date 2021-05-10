@@ -17,7 +17,7 @@
 namespace dcclite::broker
 {
 
-	class DccppClient: private IDccLiteServiceListener
+	class DccppClient: private IObjectManagerListener
 	{
 		public:
 			DccppClient(DccLiteService& dccLite, const NetworkAddress address, Socket&& socket);
@@ -38,8 +38,9 @@ namespace dcclite::broker
 
 			bool Update();
 
-		private:
-			void OnDccLiteEvent(const DccLiteEvent &event) override;
+		private:			
+
+			void OnObjectManagerEvent(const ObjectManagerEvent &event) override;
 
 			void ParseStatusCommand(dcclite::Parser &parser, const std::string &msg);
 			bool ParseSensorCommand(dcclite::Parser &parser, const std::string &msg);
@@ -348,12 +349,12 @@ namespace dcclite::broker
 	}
 
 
-	void DccppClient::OnDccLiteEvent(const DccLiteEvent &event)
-	{
-		if (event.m_tType != DccLiteEvent::DECODER_STATE_CHANGE)
+	void DccppClient::OnObjectManagerEvent(const ObjectManagerEvent &event)
+	{		
+		if (event.m_kType != ObjectManagerEvent::ITEM_CHANGED)
 			return;
 	
-		auto remoteDecoder = dynamic_cast<const RemoteDecoder *>(event.m_stDecoder.m_pclDecoder);
+		auto remoteDecoder = dynamic_cast<const RemoteDecoder *>(event.m_pclItem);
 
 		if(remoteDecoder)
 			m_clMessenger.Send(m_clAddress, CreateDecoderStateResponse(*remoteDecoder));	

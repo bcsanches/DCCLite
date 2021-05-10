@@ -143,9 +143,20 @@ namespace dcclite
 	};
 
 	typedef ObjectPath Path_t;
-	typedef JsonCreator::Object<JsonCreator::StringWriter> JsonOutputStream_t;	
+	typedef JsonCreator::Object<JsonCreator::StringWriter> JsonOutputStream_t;
 
-	class IObject
+	class IItem
+	{
+		public:
+			virtual ~IItem()
+			{
+				//empty
+			}
+
+			virtual void Serialize(JsonOutputStream_t &stream) const = 0;
+	};
+
+	class IObject: public IItem
 	{
 		friend class FolderObject;
 
@@ -173,7 +184,7 @@ namespace dcclite
 
 			void SerializeIdentification(JsonOutputStream_t &stream) const;
 
-			virtual void Serialize(JsonOutputStream_t &stream) const;
+			void Serialize(JsonOutputStream_t &stream) const override;
 
 			inline FolderObject *GetParent() const noexcept
 			{

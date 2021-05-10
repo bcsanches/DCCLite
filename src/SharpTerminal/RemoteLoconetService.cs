@@ -4,24 +4,83 @@ using System.Windows.Forms;
 
 namespace SharpTerminal
 {   
-    public class RemoteLoconetSlot
+    public class RemoteLoconetSlot: NotifyPropertyBase
     {        
-        public int LocomotiveAddress { get; set; }
+        public int Index
+        {
+            get { return m_iIndex; }
+            set
+            {
+                this.UpdateProperty(ref m_iIndex, value);
+            }
+        }
 
-        public int Speed { get; set; }
+        public int LocomotiveAddress
+        {
+            get
+            {
+                return m_iLocomotiveAddress;
+            }
 
-        public bool Forward;
+            set
+            {
+                this.UpdateProperty(ref m_iLocomotiveAddress, value);
+            }
+        }
 
-        public String State;
+        public int Speed
+        {
+            get
+            {
+                return m_iSpeed;
+
+            }
+            set
+            {
+                this.UpdateProperty(ref m_iSpeed, value);
+            }
+        }
+
+        public bool Forward
+        {
+            get
+            {
+                return m_fForward;
+            }
+            set
+            {
+                this.UpdateProperty(ref m_fForward, value);
+            }
+        }
+
+        public String State
+        {
+            get
+            {
+                return m_strState;
+            }
+
+            set
+            {
+                this.UpdateProperty(ref m_strState, value);
+            }
+        }
         
 
-        public RemoteLoconetSlot(string state, int locomotiveAddress, int speed, bool forward)
+        public RemoteLoconetSlot(int index, string state, int locomotiveAddress, int speed, bool forward)
         {
+            Index = index;
             State = state;
             LocomotiveAddress = locomotiveAddress;
             Speed = speed;
             Forward = forward;
         }
+
+        private int m_iLocomotiveAddress;
+        private int m_iSpeed;
+        private bool m_fForward;
+        private string m_strState;
+        private int m_iIndex;
     }
 
     public class RemoteLoconetService: RemoteFolder
@@ -38,28 +97,42 @@ namespace SharpTerminal
         {
             base.OnUpdateState(objectDef);
 
-            if (!objectDef.ContainsKey("slots"))
-                return;
-
-            var slotsData = objectDef["slots"];
-
-            if(slotsData.Count == 0)
+            if (objectDef.ContainsKey("slot"))
             {
-                return;
+                var slotDeltaData = objectDef["slot"];
+                int index = (int)slotDeltaData["index"];
+
+                var slotDef = slotDeltaData["data"];
+
+                var slot = Slots[index];
+
+                slot.State = slotDef["state"];
+                slot.LocomotiveAddress = (int)slotDef["locomotiveAddress"];
+                slot.Speed = (int)slotDef["speed"];
+                slot.Forward = (bool)slotDef["forward"];
             }
-
-            Slots = new RemoteLoconetSlot[slotsData.Count];
-
-            for(int i = 0;i < slotsData.Count; ++i)
+            else if (objectDef.ContainsKey("slots"))
             {
-                var slotDef = slotsData[i];
+                var slotsData = objectDef["slots"];
 
-                var state = slotDef["state"];
-                var locomotiveAddress = (int)slotDef["locomotiveAddress"];
-                var speed = (int)slotDef["speed"];
-                var forward = (bool)slotDef["forward"];
+                if (slotsData.Count == 0)
+                {
+                    return;
+                }
 
-                Slots[i] = new RemoteLoconetSlot(state, locomotiveAddress, speed, forward);
+                Slots = new RemoteLoconetSlot[slotsData.Count];
+
+                for (int i = 0; i < slotsData.Count; ++i)
+                {
+                    var slotDef = slotsData[i];
+
+                    var state = slotDef["state"];
+                    var locomotiveAddress = (int)slotDef["locomotiveAddress"];
+                    var speed = (int)slotDef["speed"];
+                    var forward = (bool)slotDef["forward"];
+
+                    Slots[i] = new RemoteLoconetSlot(i, state, locomotiveAddress, speed, forward);
+                }
             }
         }
         

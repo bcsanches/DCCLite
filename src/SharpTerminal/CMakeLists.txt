@@ -19,6 +19,7 @@ add_executable(SharpTerminal
   Form1.resx
   IConsole.cs
   ITerminalClientListener.cs
+  NotifyPropertyBase.cs
   ObjectsTreeViewUserControl.cs
   ObjectsTreeViewUserControl.Designer.cs
   ObjectsTreeViewUserControl.resx  
@@ -53,6 +54,8 @@ add_executable(SharpTerminal
   ${ICON_RESOURCE_DISCONNECTED_DRIVE}
   ${ICON_RESOURCE_FOLDER}
   ${ICON_RESOURCE_FILE_GEAR}
+  
+  SharpTerminal.RemoteLoconetSlot.datasource
 )
 
 set_property(TARGET SharpTerminal PROPERTY VS_DOTNET_TARGET_FRAMEWORK_VERSION "v4.7.2")

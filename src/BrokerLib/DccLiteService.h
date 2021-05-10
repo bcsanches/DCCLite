@@ -57,10 +57,7 @@ namespace dcclite::broker
 				Service::Serialize(stream);
 
 				//nothing
-			}
-
-			void AddListener(IDccLiteServiceListener &listener);
-			void RemoveListener(IDccLiteServiceListener &listener);
+			}			
 
 			//
 			//DECODERS Management
@@ -87,12 +84,7 @@ namespace dcclite::broker
 
 			NetworkDevice *TryFindDeviceSession(const dcclite::Guid &guid);
 
-			NetworkDevice *TryFindPacketDestination(dcclite::Packet &packet);	
-
-			void DispatchEvent(const DccLiteEvent &event) const;
-
-			void NotifyItemCreated(const dcclite::IObject &item) const;
-			void NotifyItemDestroyed(const dcclite::IObject &item) const;
+			NetworkDevice *TryFindPacketDestination(dcclite::Packet &packet);							
 
 		private:
 			//
@@ -134,8 +126,6 @@ namespace dcclite::broker
 			FolderObject *m_pSessions;
 
 			LocationManager *m_pLocations;
-
-			std::vector<IDccLiteServiceListener *> m_vecListeners;
 	};
 }
 

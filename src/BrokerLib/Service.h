@@ -10,7 +10,9 @@
 
 #pragma once
 
+#include <functional>
 #include <string>
+#include <vector>
 
 #include "Object.h"
 
@@ -28,6 +30,52 @@ namespace dcclite::broker
 	class Project;
 	class Service;
 
+
+	class ObjectManagerEvent
+	{		
+		public:
+
+			typedef std::function<void(JsonOutputStream_t &stream)> SerializeDeltaProc_t;
+
+			enum EventType
+			{
+				ITEM_CREATED,
+				ITEM_DESTROYED,
+
+				ITEM_CHANGED
+			};
+
+
+			ObjectManagerEvent(EventType ev, const Service &manager, const IItem *item, SerializeDeltaProc_t serializeDeltaProc = nullptr):
+				m_kType(ev),
+				m_rclManager(manager),
+				m_pclItem(item),
+				m_pfnSerializeDeltaProc(serializeDeltaProc)
+			{
+				//empty
+			}
+
+		public:
+			const EventType m_kType;
+
+			const Service &m_rclManager;
+
+			const IItem *m_pclItem;
+
+			const SerializeDeltaProc_t m_pfnSerializeDeltaProc;
+	};
+
+	class IObjectManagerListener
+	{
+		public:
+			virtual void OnObjectManagerEvent(const ObjectManagerEvent &event) = 0;
+
+			virtual ~IObjectManagerListener()
+			{
+				//empty
+			}
+	};
+
 	class Service: public dcclite::FolderObject
 	{
 		public:
@@ -36,6 +84,9 @@ namespace dcclite::broker
 			virtual ~Service() {}
 
 			virtual void Update(const dcclite::Clock& clock) { ; }
+
+			void AddListener(IObjectManagerListener &listener);
+			void RemoveListener(IObjectManagerListener &listener);
 	
 		protected:
 			Service(std::string name, Broker &broker, const rapidjson::Value &params, const Project &project):
@@ -61,10 +112,20 @@ namespace dcclite::broker
 				//nothing
 			}	
 
+			void NotifyItemChanged(const dcclite::IItem &item, ObjectManagerEvent::SerializeDeltaProc_t proc = nullptr) const;
+
+			void NotifyItemCreated(const dcclite::IItem &item) const;
+			void NotifyItemDestroyed(const dcclite::IItem &item) const;
+
+		private:
+			void DispatchEvent(const ObjectManagerEvent &event) const;
+
 		protected:		
 			Broker& m_rclBroker;
 
 			const Project &m_rclProject;
+
+			std::vector<IObjectManagerListener *> m_vecListeners;
 	};
 }
 

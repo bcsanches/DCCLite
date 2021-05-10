@@ -16,6 +16,14 @@ namespace SharpTerminal
             if (slots == null)
                 return;
 
+
+            for (int i = 0; i < slots.Length; ++i)
+            {
+                m_bsDataSource.Add(slots[i]);
+            }
+                //m_bsDataSource = slots;
+
+            /*
             m_gridMain.Rows.Add(slots.Length);
 
             for (int i = 0; i < slots.Length; ++i)
@@ -29,6 +37,7 @@ namespace SharpTerminal
                 row.Cells[3].Value = slot.Forward ? "FWD" : "BWD";
                 row.Cells[4].Value = slot.Speed.ToString();
             }
+            */
         }
     }
 }

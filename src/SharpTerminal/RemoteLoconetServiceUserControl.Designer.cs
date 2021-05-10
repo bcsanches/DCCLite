@@ -28,17 +28,20 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.Windows.Forms.GroupBox groupBox1;
             this.m_gridMain = new System.Windows.Forms.DataGridView();
+            this.m_bsDataSource = new System.Windows.Forms.BindingSource(this.components);
             this.m_lbTitle = new System.Windows.Forms.Label();
-            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Slot = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.locomotiveAddressDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.speedDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.forwardDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.stateDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             groupBox1 = new System.Windows.Forms.GroupBox();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.m_gridMain)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.m_bsDataSource)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -56,13 +59,15 @@
             // 
             // m_gridMain
             // 
+            this.m_gridMain.AutoGenerateColumns = false;
             this.m_gridMain.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.m_gridMain.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.Column1,
-            this.Column2,
-            this.Column4,
-            this.Column3,
-            this.Column5});
+            this.Slot,
+            this.locomotiveAddressDataGridViewTextBoxColumn,
+            this.speedDataGridViewTextBoxColumn,
+            this.forwardDataGridViewCheckBoxColumn,
+            this.stateDataGridViewTextBoxColumn});
+            this.m_gridMain.DataSource = this.m_bsDataSource;
             this.m_gridMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.m_gridMain.Location = new System.Drawing.Point(3, 16);
             this.m_gridMain.MultiSelect = false;
@@ -71,6 +76,10 @@
             this.m_gridMain.RowHeadersVisible = false;
             this.m_gridMain.Size = new System.Drawing.Size(503, 184);
             this.m_gridMain.TabIndex = 0;
+            // 
+            // m_bsDataSource
+            // 
+            this.m_bsDataSource.DataSource = typeof(SharpTerminal.RemoteLoconetSlot);
             // 
             // m_lbTitle
             // 
@@ -82,44 +91,41 @@
             this.m_lbTitle.TabIndex = 1;
             this.m_lbTitle.Text = "Loconet Service";
             // 
-            // Column1
+            // Slot
             // 
-            this.Column1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.Column1.HeaderText = "Slot";
-            this.Column1.Name = "Column1";
-            this.Column1.ReadOnly = true;
-            this.Column1.Width = 50;
+            this.Slot.DataPropertyName = "Index";
+            this.Slot.HeaderText = "Slot";
+            this.Slot.Name = "Slot";
+            this.Slot.ReadOnly = true;
             // 
-            // Column2
+            // locomotiveAddressDataGridViewTextBoxColumn
             // 
-            this.Column2.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.Column2.HeaderText = "State";
-            this.Column2.Name = "Column2";
-            this.Column2.ReadOnly = true;
-            this.Column2.Width = 57;
+            this.locomotiveAddressDataGridViewTextBoxColumn.DataPropertyName = "LocomotiveAddress";
+            this.locomotiveAddressDataGridViewTextBoxColumn.HeaderText = "Address";
+            this.locomotiveAddressDataGridViewTextBoxColumn.Name = "locomotiveAddressDataGridViewTextBoxColumn";
+            this.locomotiveAddressDataGridViewTextBoxColumn.ReadOnly = true;
             // 
-            // Column4
+            // speedDataGridViewTextBoxColumn
             // 
-            this.Column4.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.Column4.HeaderText = "Locomotive";
-            this.Column4.Name = "Column4";
-            this.Column4.ReadOnly = true;
+            this.speedDataGridViewTextBoxColumn.DataPropertyName = "Speed";
+            this.speedDataGridViewTextBoxColumn.HeaderText = "Speed";
+            this.speedDataGridViewTextBoxColumn.Name = "speedDataGridViewTextBoxColumn";
+            this.speedDataGridViewTextBoxColumn.ReadOnly = true;
             // 
-            // Column3
+            // forwardDataGridViewCheckBoxColumn
             // 
-            this.Column3.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.Column3.HeaderText = "Direction";
-            this.Column3.Name = "Column3";
-            this.Column3.ReadOnly = true;
-            this.Column3.Width = 74;
+            this.forwardDataGridViewCheckBoxColumn.DataPropertyName = "Forward";
+            this.forwardDataGridViewCheckBoxColumn.HeaderText = "Forward";
+            this.forwardDataGridViewCheckBoxColumn.Name = "forwardDataGridViewCheckBoxColumn";
+            this.forwardDataGridViewCheckBoxColumn.ReadOnly = true;
             // 
-            // Column5
+            // stateDataGridViewTextBoxColumn
             // 
-            this.Column5.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-            this.Column5.HeaderText = "Speed";
-            this.Column5.Name = "Column5";
-            this.Column5.ReadOnly = true;
-            this.Column5.Width = 63;
+            this.stateDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.stateDataGridViewTextBoxColumn.DataPropertyName = "State";
+            this.stateDataGridViewTextBoxColumn.HeaderText = "State";
+            this.stateDataGridViewTextBoxColumn.Name = "stateDataGridViewTextBoxColumn";
+            this.stateDataGridViewTextBoxColumn.ReadOnly = true;
             // 
             // RemoteLoconetServiceUserControl
             // 
@@ -131,6 +137,7 @@
             this.Size = new System.Drawing.Size(515, 242);
             groupBox1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.m_gridMain)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.m_bsDataSource)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -140,10 +147,11 @@
 
         private System.Windows.Forms.DataGridView m_gridMain;
         private System.Windows.Forms.Label m_lbTitle;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column4;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column3;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column5;
+        private System.Windows.Forms.BindingSource m_bsDataSource;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Slot;
+        private System.Windows.Forms.DataGridViewTextBoxColumn locomotiveAddressDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn speedDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn forwardDataGridViewCheckBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn stateDataGridViewTextBoxColumn;
     }
 }

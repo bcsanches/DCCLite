@@ -97,32 +97,6 @@ namespace dcclite::broker
 		this->RemoveChild(m_pDevices->GetName());
 	}
 
-	void DccLiteService::DispatchEvent(const DccLiteEvent &event) const
-	{
-		for (auto listener : m_vecListeners)
-		{
-			listener->OnDccLiteEvent(event);
-		}	
-	}
-
-	void DccLiteService::NotifyItemCreated(const dcclite::IObject &item) const
-	{
-		DccLiteEvent event;
-		event.m_tType = DccLiteEvent::ITEM_CREATED;
-		event.m_stItem.m_pclItem = &item;
-
-		this->DispatchEvent(event);
-	}
-
-	void DccLiteService::NotifyItemDestroyed(const dcclite::IObject &item) const
-	{
-		DccLiteEvent event;
-		event.m_tType = DccLiteEvent::ITEM_DESTROYED;
-		event.m_stItem.m_pclItem = &item;
-
-		this->DispatchEvent(event);
-	}
-
 	void DccLiteService::Device_DestroyDecoder(Decoder &dec)
 	{
 		//send mesage before we destroy it
@@ -314,25 +288,15 @@ namespace dcclite::broker
 
 		this->NotifyItemCreated(*session);
 
-		DccLiteEvent event;
-		event.m_tType = DccLiteEvent::DEVICE_CONNECTED;
-		event.m_stDevice.m_pclDevice = &dev;
-
-		this->DispatchEvent(event);	
+		this->NotifyItemChanged(dev);		
 	}
 
 	void DccLiteService::Device_UnregisterSession(NetworkDevice& dev, const dcclite::Guid &sessionToken)
 	{	
 		auto session = m_pSessions->RemoveChild(dcclite::GuidToString(sessionToken));	
-
-		{
-			DccLiteEvent event;
-			event.m_tType = DccLiteEvent::DEVICE_DISCONNECTED;
-			event.m_stDevice.m_pclDevice = &dev;
-
-			this->DispatchEvent(event);
-		}	
-
+		
+		this->NotifyItemChanged(dev);
+					
 		this->NotifyItemDestroyed(*session);
 	}
 
@@ -405,24 +369,9 @@ namespace dcclite::broker
 		return vecDecoders;
 	}
 
-
-	void DccLiteService::AddListener(IDccLiteServiceListener &listener)
-	{
-		m_vecListeners.push_back(&listener);
-	}
-
-	void DccLiteService::RemoveListener(IDccLiteServiceListener &listener)
-	{
-		m_vecListeners.erase(std::remove(m_vecListeners.begin(), m_vecListeners.end(), &listener), m_vecListeners.end());	
-	}
-
 	void DccLiteService::Decoder_OnStateChanged(Decoder& decoder)
 	{
-		DccLiteEvent event;
-		event.m_tType = DccLiteEvent::DECODER_STATE_CHANGE;
-		event.m_stDecoder.m_pclDecoder = &decoder;
-
-		this->DispatchEvent(event);	
+		this->NotifyItemChanged(decoder);		
 	}
 
 	void DccLiteService::Update(const dcclite::Clock &clock)

@@ -369,7 +369,7 @@ namespace dcclite::broker
 
 
 
-	class TerminalClient: private IDccLiteServiceListener
+	class TerminalClient: private IObjectManagerListener
 	{
 		public:
 			TerminalClient(TerminalService &owner, TerminalCmdHost &cmdHost, const NetworkAddress address, Socket &&socket);
@@ -391,11 +391,11 @@ namespace dcclite::broker
 			bool Update();
 
 		private:
-			void OnDccLiteEvent(const DccLiteEvent &event) override;
+			void OnObjectManagerEvent(const ObjectManagerEvent &event) override;
 
 			void RegisterListeners();
 
-			void SendItemPropertyValueChangedNotification(const IObject &obj);
+			void SendItemPropertyValueChangedNotification(const ObjectManagerEvent &event);
 
 			FolderObject *TryGetServicesFolder() const;	
 
@@ -440,11 +440,11 @@ namespace dcclite::broker
 		while (enumerator.MoveNext())
 		{
 			auto *obj = enumerator.TryGetCurrent();
-			auto *dccService = dynamic_cast<DccLiteService *>(obj);
-			if (dccService == nullptr)
+			auto *service = dynamic_cast<Service *>(obj);
+			if (service == nullptr)
 				continue;
 
-			dccService->RemoveListener(*this);
+			service->RemoveListener(*this);
 		}
 	}
 
@@ -489,11 +489,14 @@ namespace dcclite::broker
 		while (enumerator.MoveNext())
 		{
 			auto *obj = enumerator.TryGetCurrent();
-			auto *dccService = dynamic_cast<DccLiteService *>(obj);
-			if(dccService == nullptr)
+			auto *service = dynamic_cast<Service *>(obj);
+			if (service == nullptr)
+			{
+				dcclite::Log::Warn("[TerminalClient::RegisterListeners] Object {} is not a service, it is {}", obj->GetName(), obj->GetTypeName());
 				continue;
+			}
 
-			dccService->AddListener(*this);
+			service->AddListener(*this);
 		}
 	}
 
@@ -541,38 +544,30 @@ namespace dcclite::broker
 		return MakeRpcMessage(id, nullptr, "result", filler);
 	}
 
-	void TerminalClient::SendItemPropertyValueChangedNotification(const IObject &obj)
+	void TerminalClient::SendItemPropertyValueChangedNotification(const ObjectManagerEvent &event)
 	{	
 		m_clMessenger.Send(
 			m_clAddress, 
 			MakeRpcNotificationMessage(
 				-1,
 				"On-ItemPropertyValueChanged",
-				[&obj](JsonOutputStream_t &params)
+				[&event](JsonOutputStream_t &params)
 				{
-					obj.Serialize(params);
+					event.m_pfnSerializeDeltaProc ? event.m_pfnSerializeDeltaProc(params) : event.m_pclItem->Serialize(params);					
 				}
 			)
 		);
 	}
 
-	void TerminalClient::OnDccLiteEvent(const DccLiteEvent &event)
+	void TerminalClient::OnObjectManagerEvent(const ObjectManagerEvent &event)
 	{
-		switch (event.m_tType)
+		switch (event.m_kType)
 		{
-			case DccLiteEvent::DECODER_STATE_CHANGE:
-				SendItemPropertyValueChangedNotification(*event.m_stDecoder.m_pclDecoder);
-				break;
+			case ObjectManagerEvent::ITEM_CHANGED:				
+				SendItemPropertyValueChangedNotification(event);
+				break;				
 
-			case DccLiteEvent::DEVICE_CONNECTED:
-				SendItemPropertyValueChangedNotification(*event.m_stDevice.m_pclDevice);
-				break;
-
-			case DccLiteEvent::DEVICE_DISCONNECTED:
-				SendItemPropertyValueChangedNotification(*event.m_stDevice.m_pclDevice);
-				break;
-
-			case DccLiteEvent::ITEM_CREATED:
+			case ObjectManagerEvent::ITEM_CREATED:
 				m_clMessenger.Send(
 					m_clAddress,
 					MakeRpcNotificationMessage(
@@ -580,13 +575,13 @@ namespace dcclite::broker
 						"On-ItemCreated",
 						[&event](JsonOutputStream_t &params)
 						{
-							event.m_stItem.m_pclItem->Serialize(params);
+							event.m_pclItem->Serialize(params);
 						}
 					)
 				);
 				break;
 
-			case DccLiteEvent::ITEM_DESTROYED:
+			case ObjectManagerEvent::ITEM_DESTROYED:
 				m_clMessenger.Send(
 					m_clAddress,
 					MakeRpcNotificationMessage(
@@ -594,7 +589,7 @@ namespace dcclite::broker
 						"On-ItemDestroyed",
 						[&event](JsonOutputStream_t &params)
 						{
-							event.m_stItem.m_pclItem->Serialize(params);
+							event.m_pclItem->Serialize(params);
 						}
 					)
 				);
