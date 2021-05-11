@@ -72,6 +72,6 @@ target_include_directories(Common
   PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/JsonCreator/include
   PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/rapidjson/include
           ${DCCLite_SOURCE_DIR}/contrib/spdlog/include
-          ${DCCLite_SOURCE_DIR}/src/Embedded/lib/Shared
+  PUBLIC  ${DCCLite_SOURCE_DIR}/src/Embedded/lib/Shared
   PRIVATE ${DCCLite_SOURCE_DIR}/contrib/magic_enum/include	
 )

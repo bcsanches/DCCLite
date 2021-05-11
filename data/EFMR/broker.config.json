@@ -109,7 +109,8 @@
     {
         "class": "LoconetService",
         "name": "loconet",
-        "port": "COM4"
+        "port": "COM4",
+        "engineDriverServerAddress": "127.0.0.1:2560"
     }  
   ]
 }

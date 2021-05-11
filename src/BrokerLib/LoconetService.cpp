@@ -11,6 +11,7 @@
 
 #include "Clock.h"
 #include "DccAddress.h"
+#include "NetMessenger.h"
 #include "Packet.h"
 #include "SerialPort.h"
 
@@ -302,6 +303,20 @@ static Slot::States ParseStatByte(const uint8_t stat) noexcept
 {
 	return static_cast<Slot::States>(stat & SLOT_STAT_USAGE_MASK);
 }
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Throttle
+//
+///////////////////////////////////////////////////////////////////////////////
+
+class Throttle
+{
+	public:
+
+	private:
+		dcclite::NetMessenger m_clMessenger;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -635,12 +650,15 @@ namespace dcclite::broker
 			MessageDispatcher m_clMessageDispatcher;
 
 			dcclite::Clock::TimePoint_t m_tNextPurgeTicks;
+
+			dcclite::NetworkAddress m_aEngineDriverServerAddress;			
 	};
 
 
 	LoconetServiceImpl::LoconetServiceImpl(const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
 		LoconetService(name, broker, params, project),
-		m_clSerialPort(params["port"].GetString())		
+		m_clSerialPort(params["port"].GetString()),
+		m_aEngineDriverServerAddress{ dcclite::NetworkAddress::ParseAddress(params["engineDriverServerAddress"].GetString()) }
 	{				
 		dcclite::Log::Info("[LoconetService] Started, listening on port {}", params["port"].GetString());
 

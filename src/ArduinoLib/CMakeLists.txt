@@ -29,5 +29,5 @@ target_compile_features(ArduinoLib PUBLIC cxx_std_17)
 
 target_include_directories(ArduinoLib PRIVATE ${DCCLite_SOURCE_DIR}/src/Common)
 
-target_link_libraries(ArduinoLib PUBLIC Common fmt)
+target_link_libraries(ArduinoLib PUBLIC Common fmt SharedLib)
 

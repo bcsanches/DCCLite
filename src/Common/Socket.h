@@ -89,6 +89,8 @@ namespace dcclite
 				return (m_uAddress != rhs.m_uAddress) || (m_uPort != rhs.m_uPort);
 			}
 
+			static NetworkAddress ParseAddress(const std::string_view address);
+
 		private:
 			std::uint_fast32_t m_uAddress;
 			Port_t m_uPort;

@@ -11,6 +11,7 @@
 #include "Socket.h"
 
 #include "LogUtils.h"
+#include "Parser.h"
 
 #include <cassert>
 #include <stdexcept>
@@ -57,6 +58,37 @@ static const dcclite::Socket::Handler_t NULL_SOCKET = -1;
 
 namespace dcclite
 {
+	NetworkAddress NetworkAddress::ParseAddress(const std::string_view address)
+	{
+		Parser parser(address.data());
+
+		uint8_t numbers[4];
+
+		for (int i = 0; i < 4; ++i)
+		{
+			int a;
+			if (parser.GetNumber(a) != Tokens::NUMBER)
+				throw std::invalid_argument(fmt::format("[NetworkAddress::ParseAddress] Error parsing address {}, expected number", address));
+
+			numbers[i] = a;
+
+			if (i == 3)
+				break;
+			
+			if (parser.GetToken(nullptr, 0) != Tokens::DOT)			
+				throw std::invalid_argument(fmt::format("[NetworkAddress::ParseAddress] Error parsing address {}, expected dot", address));			
+		}
+
+		if(parser.GetToken(nullptr, 0) != Tokens::COLON)
+			throw std::invalid_argument(fmt::format("[NetworkAddress::ParseAddress] Error parsing address {}, expected colon", address));
+
+		int port;
+		if(parser.GetNumber(port) != Tokens::NUMBER)
+			throw std::invalid_argument(fmt::format("[NetworkAddress::ParseAddress] Error parsing address {}, expected port number", address));
+
+		return NetworkAddress{ numbers[0], numbers[1], numbers[2], numbers[3], static_cast<uint16_t>(port) };
+	}
+
 	static sockaddr_in MakeAddr(const NetworkAddress &address)
 	{						
 		sockaddr_in addr;

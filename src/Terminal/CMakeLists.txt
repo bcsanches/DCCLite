@@ -11,6 +11,6 @@ target_include_directories(Terminal
     ${DCCLite_SOURCE_DIR}/src/Common    
 )
 
-target_link_libraries(Terminal PRIVATE Common fmt)
+target_link_libraries(Terminal PRIVATE Common fmt SharedLib)
 
 

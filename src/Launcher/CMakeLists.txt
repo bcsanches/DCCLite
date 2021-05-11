@@ -18,6 +18,7 @@ if(WIN32)
     target_link_libraries(Launcher 
 		PRIVATE Common 		
 		PRIVATE fmt
+        PRIVATE SharedLib
 	)
 
 	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
@@ -25,7 +26,8 @@ if(WIN32)
 else(WIN32)
 	
 	target_link_libraries(Launcher 		
-		Common 		
+		Common 	
+        SharedLib	
 		stdc++fs 
 		fmt 		
 	)
