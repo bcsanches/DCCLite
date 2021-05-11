@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Json;
+using System.Text;
 using System.Windows.Forms;
 
 namespace SharpTerminal
-{   
-    public class RemoteLoconetSlot: NotifyPropertyBase
+{    
+    public class RemoteLoconetSlot: NotifyPropertyBase    
     {        
         public int Index
         {
@@ -65,15 +66,48 @@ namespace SharpTerminal
                 this.UpdateProperty(ref m_strState, value);
             }
         }
+
+        public string FunctionsLabel
+        {
+            get
+            {
+                StringBuilder builder = new StringBuilder();
+
+                string separator = "";
+                for(int i = 0; i < m_fFunctions.Length; ++i)
+                {
+                    if (!m_fFunctions[i])
+                        continue;
+
+                    builder.Append(separator);
+                    builder.Append("F" + i.ToString());
+
+                    separator = ", ";
+                }
+
+                return builder.ToString();
+            }
+        }
+
+        public bool []Functions
+        {
+            set
+            {
+                m_fFunctions = value;
+
+                this.OnPropertyUpdated(nameof(OnPropertyUpdated));
+            }
+        }
         
 
-        public RemoteLoconetSlot(int index, string state, int locomotiveAddress, int speed, bool forward)
+        public RemoteLoconetSlot(int index, string state, int locomotiveAddress, int speed, bool forward, bool []functions)
         {
             Index = index;
             State = state;
             LocomotiveAddress = locomotiveAddress;
             Speed = speed;
             Forward = forward;
+            m_fFunctions = functions;
         }
 
         private int m_iLocomotiveAddress;
@@ -81,6 +115,7 @@ namespace SharpTerminal
         private bool m_fForward;
         private string m_strState;
         private int m_iIndex;
+        private bool []m_fFunctions;
     }
 
     public class RemoteLoconetService: RemoteFolder
@@ -91,6 +126,19 @@ namespace SharpTerminal
             base(name, className, path, internalId, parentInternalId)
         {
             this.UpdateState(objectDef);
+        }
+
+        private bool[] ParseFunctions(JsonValue objectDef)
+        {
+            var functionsData = objectDef["functions"];
+            bool[] functions = new bool[functionsData.Count];
+
+            for (int k = 0; k < functions.Length; ++k)
+            {
+                functions[k] = functionsData[k];
+            }
+
+            return functions;
         }
 
         protected override void OnUpdateState(JsonValue objectDef)
@@ -110,6 +158,9 @@ namespace SharpTerminal
                 slot.LocomotiveAddress = (int)slotDef["locomotiveAddress"];
                 slot.Speed = (int)slotDef["speed"];
                 slot.Forward = (bool)slotDef["forward"];
+                
+                slot.Functions = this.ParseFunctions(slotDef);
+
             }
             else if (objectDef.ContainsKey("slots"))
             {
@@ -131,7 +182,7 @@ namespace SharpTerminal
                     var speed = (int)slotDef["speed"];
                     var forward = (bool)slotDef["forward"];
 
-                    Slots[i] = new RemoteLoconetSlot(i, state, locomotiveAddress, speed, forward);
+                    Slots[i] = new RemoteLoconetSlot(i, state, locomotiveAddress, speed, forward, this.ParseFunctions(slotDef));
                 }
             }
         }

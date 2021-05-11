@@ -30,10 +30,12 @@ enum Bits : uint8_t
 //based on https://www.digitrax.com/static/apps/cms/media/documents/loconet/loconetpersonaledition.pdf
 enum Opcodes : uint8_t
 {
-	OPC_MOVE_SLOTS_ERROR = 0x3A,
-	OPC_LOCO_ADR_ERROR = 0x3F,
+	OPC_ERROR_MOVE_SLOTS = 0x3A,
+	OPC_ERROR_LOCO_ADR = 0x3F,
 
-	OPC_LOCO_SPD = 0xA0,
+	OPC_LOCO_SPD = 0xA0,	
+	OPC_LOCO_DIRF = 0xA1,
+	OPC_LOCO_SND = 0xA2,
 	OPC_LONG_ACK = 0xB4,
 	OPC_SLOT_STAT1 = 0xB5,
 	OPC_MOVE_SLOTS = 0xBA,
@@ -42,8 +44,10 @@ enum Opcodes : uint8_t
 
 	//See JMRI - PR3Adapter.java configure()
 	OPD_UNDOC_SETMS100 = 0xD3,
+	OPC_UNDOC_PANEL_QUERY = 0xDF,
 
 	OPC_SL_RD_DATA = 0xE7,
+	OPC_IMM_PACKET = 0xED,
 	OPC_WR_SL_DATA = 0xEF
 };
 
@@ -215,6 +219,14 @@ class Slot
 			return m_fFunctions;
 		}
 
+		void SetFunctions(const bool *beginFunction, const bool *endFunction, uint8_t beginIndex) noexcept
+		{
+			assert((endFunction - beginFunction) <= MAX_SLOT_FUNCTIONS);
+			
+			for (; beginFunction != endFunction; ++beginFunction, ++beginIndex)
+				m_fFunctions[beginIndex] = *beginFunction;
+		}
+
 		uint8_t GetSpeed() const noexcept 
 		{
 			return m_uSpeed;
@@ -308,6 +320,9 @@ class SlotManager
 		void SetSlotFree(uint8_t slot);
 
 		void SetLocomotiveSpeed(const uint8_t slot, const uint8_t speed, const dcclite::Clock::TimePoint_t ticks) noexcept;
+
+		void SetForward(const uint8_t slot, const bool forward, const dcclite::Clock::TimePoint_t ticks);
+		void SetFunctions(const uint8_t slot, const bool *beginFunction, const bool *endFunction, uint8_t beginIndex, const dcclite::Clock::TimePoint_t ticks);
 
 		LoconetMessageWriter MakeMessage_SlotReadData(const uint8_t slot) const;
 
@@ -434,6 +449,28 @@ void SlotManager::SetLocomotiveSpeed(const uint8_t slot, const uint8_t speed, co
 	
 }
 
+void SlotManager::SetForward(const uint8_t slot, const bool forward, const dcclite::Clock::TimePoint_t ticks)
+{
+	auto pSlot = this->TryGetLocomotiveSlot(slot);
+
+	if (!pSlot)
+		return;
+
+	pSlot->SetForward(forward);
+	this->RefreshSlotTimeout(slot, ticks);
+}
+
+void SlotManager::SetFunctions(const uint8_t slot, const bool *beginFunction, const bool *endFunction, uint8_t beginIndex, const dcclite::Clock::TimePoint_t ticks)
+{
+	auto pSlot = this->TryGetLocomotiveSlot(slot);
+
+	if (!pSlot)
+		return;
+
+	pSlot->SetFunctions(beginFunction, endFunction, beginIndex);
+	this->RefreshSlotTimeout(slot, ticks);
+}
+
 void SlotManager::ForceSlotState(const uint8_t slot, const Slot::States state, const dcclite::Clock::TimePoint_t ticks)
 {
 	m_arSlots.at(slot).ForceState(state);	
@@ -459,6 +496,12 @@ void SlotManager::SerializeSlot(const Slot &slot, dcclite::JsonOutputStream_t &s
 	slotData.AddIntValue("speed", slot.GetSpeed());
 	slotData.AddIntValue("locomotiveAddress", slot.GetLocomotiveAddress().GetAddress());
 	slotData.AddBool("forward", slot.IsForwardDir());
+	auto functionsStream = slotData.AddArray("functions");
+
+	auto f = slot.GetFunctions();
+
+	for (int i = 0; i < MAX_SLOT_FUNCTIONS; ++i)
+		functionsStream.AddBool(f[i]);
 }
 
 void SlotManager::Serialize(dcclite::JsonOutputStream_t &stream) const
@@ -579,6 +622,9 @@ namespace dcclite::broker
 
 			void NotifySlotChanged(uint8_t slotIndex) const;
 
+			void ParseLocomotiveDirf(const uint8_t slot, const uint8_t dirf, const dcclite::Clock::TimePoint_t ticks);
+			void ParseLocomotiveSnd(const uint8_t slot, const uint8_t snd, const dcclite::Clock::TimePoint_t ticks);
+
 		private:
 			SlotManager m_clSlotManager;
 
@@ -637,10 +683,76 @@ namespace dcclite::broker
 		m_clMessageDispatcher.Send(msg, m_clSerialPort);		
 	}
 
+	void LoconetServiceImpl::ParseLocomotiveDirf(const uint8_t slot, const uint8_t dirf, const dcclite::Clock::TimePoint_t ticks)
+	{
+		bool forward = dirf & BIT_5;
+
+		bool functions[5];
+		functions[0] = dirf & BIT_4;
+		functions[1] = dirf & BIT_0;
+		functions[2] = dirf & BIT_1;
+		functions[3] = dirf & BIT_2;
+		functions[4] = dirf & BIT_3;
+
+		m_clSlotManager.SetForward(slot, forward, ticks);
+		m_clSlotManager.SetFunctions(slot, functions, functions + 5, 0, ticks);
+
+		this->NotifySlotChanged(slot);
+	}
+
+	void LoconetServiceImpl::ParseLocomotiveSnd(const uint8_t slot, const uint8_t snd, const dcclite::Clock::TimePoint_t ticks)
+	{
+		bool functions[4];
+
+		//F5
+		functions[0] = snd & BIT_0;
+
+		//F6
+		functions[1] = snd & BIT_1;
+
+		//F7
+		functions[2] = snd & BIT_2;
+
+		//F8
+		functions[3] = snd & BIT_3;
+
+		m_clSlotManager.SetFunctions(slot, functions, functions + 4, 5, ticks);
+		this->NotifySlotChanged(slot);
+	}
+
 	void LoconetServiceImpl::ParseMessage(const uint8_t opcode, MiniPacket_t &payload, const dcclite::Clock::TimePoint_t ticks)
 	{
 		switch (opcode)
 		{
+			case Opcodes::OPC_IMM_PACKET:
+				{
+					payload.ReadByte();	//0x0D
+					payload.ReadByte();	//0x7F
+
+
+				}
+				break;
+
+			case Opcodes::OPC_LOCO_DIRF:
+				{
+					uint8_t slot = payload.ReadByte();
+					uint8_t dirf = payload.ReadByte();
+
+					Log::Trace("[LoconetServiceImpl::Update] Setting DIRF {} for slot {}", dirf, slot);
+					this->ParseLocomotiveDirf(slot, dirf, ticks);
+				}
+				break;
+
+			case Opcodes::OPC_LOCO_SND:
+				{
+					uint8_t slot = payload.ReadByte();
+					uint8_t snd = payload.ReadByte();
+
+					Log::Trace("[LoconetServiceImpl::Update] Setting SND {} for slot {}", snd, slot);
+					this->ParseLocomotiveSnd(slot, snd, ticks);
+				}
+				break;
+
 			case Opcodes::OPC_LOCO_SPD:
 				{
 					uint8_t slot = payload.ReadByte();					
@@ -686,7 +798,7 @@ namespace dcclite::broker
 					else
 					{
 						Log::Error("[LoconetServiceImpl::ParseMessage] MoveSlots: movement not supported, src: {}, dest: {}", src, dest);					
-						this->DispatchLnLongAckMessage(OPC_MOVE_SLOTS_ERROR, 0);
+						this->DispatchLnLongAckMessage(OPC_ERROR_MOVE_SLOTS, 0);
 					}
 				}
 				break;
@@ -751,7 +863,7 @@ namespace dcclite::broker
 					{
 						Log::Error("[LoconetServiceImpl::ParseMessage] OPC_LOCO_ADR: No free slot for address {}", address);
 
-						this->DispatchLnLongAckMessage(OPC_LOCO_ADR_ERROR, 0);												
+						this->DispatchLnLongAckMessage(OPC_ERROR_LOCO_ADR, 0);
 					}
 					else
 					{
@@ -784,6 +896,7 @@ namespace dcclite::broker
 				break;
 
 			case Opcodes::OPD_UNDOC_SETMS100:
+			case Opcodes::OPC_UNDOC_PANEL_QUERY:
 				//ignore
 				break;
 

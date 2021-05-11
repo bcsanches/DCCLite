@@ -38,6 +38,7 @@
             this.speedDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.forwardDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.stateDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.FunctionsLabel = new System.Windows.Forms.DataGridViewTextBoxColumn();
             groupBox1 = new System.Windows.Forms.GroupBox();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.m_gridMain)).BeginInit();
@@ -66,7 +67,8 @@
             this.locomotiveAddressDataGridViewTextBoxColumn,
             this.speedDataGridViewTextBoxColumn,
             this.forwardDataGridViewCheckBoxColumn,
-            this.stateDataGridViewTextBoxColumn});
+            this.stateDataGridViewTextBoxColumn,
+            this.FunctionsLabel});
             this.m_gridMain.DataSource = this.m_bsDataSource;
             this.m_gridMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.m_gridMain.Location = new System.Drawing.Point(3, 16);
@@ -97,6 +99,7 @@
             this.Slot.HeaderText = "Slot";
             this.Slot.Name = "Slot";
             this.Slot.ReadOnly = true;
+            this.Slot.Width = 40;
             // 
             // locomotiveAddressDataGridViewTextBoxColumn
             // 
@@ -104,6 +107,7 @@
             this.locomotiveAddressDataGridViewTextBoxColumn.HeaderText = "Address";
             this.locomotiveAddressDataGridViewTextBoxColumn.Name = "locomotiveAddressDataGridViewTextBoxColumn";
             this.locomotiveAddressDataGridViewTextBoxColumn.ReadOnly = true;
+            this.locomotiveAddressDataGridViewTextBoxColumn.Width = 60;
             // 
             // speedDataGridViewTextBoxColumn
             // 
@@ -111,6 +115,7 @@
             this.speedDataGridViewTextBoxColumn.HeaderText = "Speed";
             this.speedDataGridViewTextBoxColumn.Name = "speedDataGridViewTextBoxColumn";
             this.speedDataGridViewTextBoxColumn.ReadOnly = true;
+            this.speedDataGridViewTextBoxColumn.Width = 60;
             // 
             // forwardDataGridViewCheckBoxColumn
             // 
@@ -118,14 +123,23 @@
             this.forwardDataGridViewCheckBoxColumn.HeaderText = "Forward";
             this.forwardDataGridViewCheckBoxColumn.Name = "forwardDataGridViewCheckBoxColumn";
             this.forwardDataGridViewCheckBoxColumn.ReadOnly = true;
+            this.forwardDataGridViewCheckBoxColumn.Width = 60;
             // 
             // stateDataGridViewTextBoxColumn
             // 
-            this.stateDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
             this.stateDataGridViewTextBoxColumn.DataPropertyName = "State";
             this.stateDataGridViewTextBoxColumn.HeaderText = "State";
             this.stateDataGridViewTextBoxColumn.Name = "stateDataGridViewTextBoxColumn";
             this.stateDataGridViewTextBoxColumn.ReadOnly = true;
+            this.stateDataGridViewTextBoxColumn.Width = 60;
+            // 
+            // FunctionsLabel
+            // 
+            this.FunctionsLabel.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.FunctionsLabel.DataPropertyName = "FunctionsLabel";
+            this.FunctionsLabel.HeaderText = "Functions";
+            this.FunctionsLabel.Name = "FunctionsLabel";
+            this.FunctionsLabel.ReadOnly = true;
             // 
             // RemoteLoconetServiceUserControl
             // 
@@ -153,5 +167,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn speedDataGridViewTextBoxColumn;
         private System.Windows.Forms.DataGridViewCheckBoxColumn forwardDataGridViewCheckBoxColumn;
         private System.Windows.Forms.DataGridViewTextBoxColumn stateDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn FunctionsLabel;
     }
 }
