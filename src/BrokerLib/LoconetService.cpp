@@ -77,7 +77,9 @@ static constexpr auto SLOT_SPEED_F3 = BIT_2;
 static constexpr auto SLOT_SPEED_F2 = BIT_1;
 static constexpr auto SLOT_SPEED_F1 = BIT_0;
 
-static constexpr auto MAX_SLOT_FUNCTIONS = 10;
+static constexpr auto MAX_SLOT_FUNCTIONS = 32;
+
+typedef dcclite::BitPack<32> Functions_t;
 
 typedef dcclite::BasePacket<MAX_LN_MESSAGE_LEN> MiniPacket_t;
 
@@ -169,6 +171,11 @@ class Slot
 			IN_USE = BIT_4 | BIT_5
 		};	
 
+		Slot()
+		{
+			m_arFunctions.ClearAll();
+		}
+
 		bool IsFree() const noexcept
 		{
 			return m_eState == States::FREE;
@@ -220,9 +227,9 @@ class Slot
 			m_fForward = v;
 		}		
 
-		const bool *GetFunctions() const noexcept
+		const Functions_t &GetFunctions() const noexcept
 		{
-			return m_fFunctions;
+			return m_arFunctions;
 		}
 
 		void SetFunctions(const bool *beginFunction, const bool *endFunction, uint8_t beginIndex) noexcept
@@ -230,7 +237,7 @@ class Slot
 			assert((endFunction - beginFunction) <= MAX_SLOT_FUNCTIONS);
 			
 			for (; beginFunction != endFunction; ++beginFunction, ++beginIndex)
-				m_fFunctions[beginIndex] = *beginFunction;
+				m_arFunctions.SetBitValue(beginIndex, *beginFunction);
 		}
 
 		uint8_t GetSpeed() const noexcept 
@@ -256,15 +263,7 @@ class Slot
 
 		bool m_fForward = { true };
 
-		bool m_fFunctions[MAX_SLOT_FUNCTIONS] = { false };
-
-#if 0
-		inline SlotStatUsage GetSlotUsageBits() const
-		{
-			//BITS D4 D5 - 00110000
-			return static_cast<SlotStatUsage>((m_u8Stat >> 4) & 0x03);
-		}
-#endif		
+		Functions_t m_arFunctions;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -502,13 +501,14 @@ void SlotManager::SerializeSlot(const Slot &slot, dcclite::JsonOutputStream_t &s
 	slotData.AddStringValue("state", magic_enum::enum_name(slot.GetState()));
 	slotData.AddIntValue("speed", slot.GetSpeed());
 	slotData.AddIntValue("locomotiveAddress", slot.GetLocomotiveAddress().GetAddress());
-	slotData.AddBool("forward", slot.IsForwardDir());
-	auto functionsStream = slotData.AddArray("functions");
+	slotData.AddBool("forward", slot.IsForwardDir());	
 
 	auto f = slot.GetFunctions();
 
-	for (int i = 0; i < MAX_SLOT_FUNCTIONS; ++i)
-		functionsStream.AddBool(f[i]);
+	int32_t functionsData;
+	memcpy(&functionsData, f.GetRaw(), sizeof(functionsData));
+
+	slotData.AddIntValue("functions", functionsData);
 }
 
 void SlotManager::Serialize(dcclite::JsonOutputStream_t &stream) const

@@ -6,7 +6,9 @@ using System.Windows.Forms;
 namespace SharpTerminal
 {    
     public class RemoteLoconetSlot: NotifyPropertyBase    
-    {        
+    {
+        public const int MAX_FUNCTIONS = 32;
+
         public int Index
         {
             get { return m_iIndex; }
@@ -130,12 +132,13 @@ namespace SharpTerminal
 
         private bool[] ParseFunctions(JsonValue objectDef)
         {
-            var functionsData = objectDef["functions"];
-            bool[] functions = new bool[functionsData.Count];
-
+            var functionsData = (int)objectDef["functions"];
+            bool[] functions = new bool[RemoteLoconetSlot.MAX_FUNCTIONS];
+            
             for (int k = 0; k < functions.Length; ++k)
             {
-                functions[k] = functionsData[k];
+                functions[k] = (functionsData & 0x01) == 1;
+                functionsData >>= 1;
             }
 
             return functions;
