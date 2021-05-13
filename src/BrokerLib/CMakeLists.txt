@@ -21,6 +21,7 @@ set(BrokerLib_SRCS
     SpecialFolders.cpp
     TerminalCmd.cpp
     TerminalService.cpp
+    ThrottleService.cpp
     TurnoutDecoder.cpp
     VirtualDevice.cpp
 )
@@ -49,6 +50,7 @@ set(BrokerLib_HDRS
     SpecialFolders.h
     TerminalCmd.h
     TerminalService.h
+    ThrottleService.h
     TurnoutDecoder.h
     VirtualDevice.h
 )

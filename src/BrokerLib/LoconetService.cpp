@@ -2,8 +2,6 @@
 
 #include <Log.h>
 
-#include <Windows.h>
-
 #include <optional>
 #include <deque>
 
@@ -11,7 +9,6 @@
 
 #include "Clock.h"
 #include "DccAddress.h"
-#include "NetMessenger.h"
 #include "Packet.h"
 #include "SerialPort.h"
 
@@ -54,7 +51,7 @@ enum Opcodes : uint8_t
 
 using namespace std::chrono_literals;
 
-static auto constexpr PURGE_INTERVAL = 60s;
+static auto constexpr PURGE_INTERVAL = 100s;
 static auto constexpr PURGE_TIMEOUT = 200s;
 
 static constexpr auto MAX_LN_MESSAGE_LEN = 20;
@@ -88,6 +85,9 @@ uint8_t DefaultMsgSizes(const Opcodes opcode)
 {
 	switch(opcode)
 	{
+		case OPC_LONG_ACK:
+			return 4;			
+
 		case OPC_SL_RD_DATA:
 			return 0x0E;
 
@@ -177,6 +177,11 @@ class Slot
 		bool IsInUse() const noexcept
 		{
 			return m_eState == States::IN_USE;
+		}
+
+		void GotoState_Common() noexcept
+		{
+			m_eState = States::COMMON;			
 		}
 
 		void GotoState_Common(const dcclite::broker::DccAddress addr) noexcept
@@ -306,20 +311,6 @@ static Slot::States ParseStatByte(const uint8_t stat) noexcept
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Throttle
-//
-///////////////////////////////////////////////////////////////////////////////
-
-class Throttle
-{
-	public:
-
-	private:
-		dcclite::NetMessenger m_clMessenger;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-//
 // SlotManager - Yes! A Manager!
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -346,6 +337,8 @@ class SlotManager
 		void Serialize(dcclite::JsonOutputStream_t &stream) const;
 		inline void SerializeSlot(const uint8_t slotIndex, dcclite::JsonOutputStream_t &stream) const;
 
+		void PurgeSlots(const dcclite::Clock::TimePoint_t ticks, std::function<void (uint8_t)> callback) noexcept;
+
 	private:
 		const Slot &GetSlot(const uint8_t slot) const;
 		Slot *TryGetLocomotiveSlot(const uint8_t slot);		
@@ -370,7 +363,7 @@ std::optional<uint8_t> SlotManager::AcquireLocomotive(const dcclite::broker::Dcc
 {
 	auto it = std::find_if(m_arSlots.begin(), m_arSlots.end(), [address](Slot &slot)
 		{			
-			return !slot.IsFree() && !slot.IsInUse() && (slot.GetLocomotiveAddress() == address);
+			return !slot.IsFree() && (slot.GetLocomotiveAddress() == address);
 		}
 	);
 
@@ -386,8 +379,7 @@ std::optional<uint8_t> SlotManager::AcquireLocomotive(const dcclite::broker::Dcc
 		it->GotoState_Common(address);		
 	}
 
-	auto index = it - m_arSlots.begin();
-	this->RefreshSlotTimeout(index, ticks);
+	auto index = it - m_arSlots.begin();	
 	
 	return index;
 }
@@ -495,7 +487,7 @@ void SlotManager::ForceSlotState(const uint8_t slot, const Slot::States state, c
 
 void SlotManager::RefreshSlotTimeout(const uint8_t slot, const dcclite::Clock::TimePoint_t ticks) noexcept
 {
-	m_arSlotsTimeout[slot] = ticks + PURGE_INTERVAL;
+	m_arSlotsTimeout[slot] = ticks + PURGE_TIMEOUT;
 }
 
 void SlotManager::SerializeSlot(const uint8_t slotIndex, dcclite::JsonOutputStream_t &stream) const
@@ -529,6 +521,20 @@ void SlotManager::Serialize(dcclite::JsonOutputStream_t &stream) const
 
 		this->SerializeSlot(slot, slotData);		
 	}
+}
+
+void SlotManager::PurgeSlots(const dcclite::Clock::TimePoint_t ticks, std::function<void(uint8_t)> callback) noexcept
+{	
+	for(unsigned i = 0; i < m_arSlots.size(); ++i)	
+	{
+		if (m_arSlots[i].IsInUse() && (m_arSlotsTimeout[i] <= ticks))
+		{
+			m_arSlots[i].GotoState_Common();
+
+			callback(i);
+		}
+	}
+
 }
 
 
@@ -649,16 +655,13 @@ namespace dcclite::broker
 
 			MessageDispatcher m_clMessageDispatcher;
 
-			dcclite::Clock::TimePoint_t m_tNextPurgeTicks;
-
-			dcclite::NetworkAddress m_aEngineDriverServerAddress;			
+			dcclite::Clock::TimePoint_t m_tNextPurgeTicks;	
 	};
 
 
 	LoconetServiceImpl::LoconetServiceImpl(const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
 		LoconetService(name, broker, params, project),
-		m_clSerialPort(params["port"].GetString()),
-		m_aEngineDriverServerAddress{ dcclite::NetworkAddress::ParseAddress(params["engineDriverServerAddress"].GetString()) }
+		m_clSerialPort(params["port"].GetString())		
 	{				
 		dcclite::Log::Info("[LoconetService] Started, listening on port {}", params["port"].GetString());
 
@@ -913,6 +916,7 @@ namespace dcclite::broker
 				}
 				break;
 
+			case Opcodes::OPC_LONG_ACK:
 			case Opcodes::OPD_UNDOC_SETMS100:
 			case Opcodes::OPC_UNDOC_PANEL_QUERY:
 				//ignore
@@ -930,9 +934,15 @@ namespace dcclite::broker
 		auto ticks = clock.Ticks();
 		if (m_tNextPurgeTicks <= clock.Ticks())
 		{
-			m_tNextPurgeTicks = clock.Ticks() + PURGE_INTERVAL;			
-
 			Log::Trace("[LoconetServiceImpl::Update] Purging slots");
+			
+			m_clSlotManager.PurgeSlots(ticks, [this](uint8_t slot)
+				{
+					this->NotifySlotChanged(slot);
+				}
+			);
+
+			m_tNextPurgeTicks = clock.Ticks() + PURGE_INTERVAL;						
 		}
 
 		//pump outgoing messages
