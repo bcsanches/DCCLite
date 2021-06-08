@@ -13,82 +13,96 @@
 
 #include <Arduino.h>
 
-class EpromStream
+
+
+#define LUMP_NAME_SIZE 8
+
+namespace Storage
 {
-  private:
-    explicit EpromStream(unsigned int index);
-
-    friend struct Storage;
-	friend class LumpWriter;
-
-    uint32_t m_uIndex;
-
-	//for lump writer
-	void Skip(uint32_t bytes);
-	void Seek(uint32_t pos);
-
-  public:
-  	void Get(char &ch);
-    void Get(unsigned char &byte);	
-
-	uint32_t GetIndex() const
+	class EpromStream
 	{
-		return m_uIndex;
-	}
+		private:
+			friend class LumpWriter;
 
-#ifndef WIN32
-    void Get(unsigned short &number);
-#endif
-	void Get(uint16_t &number);
+			uint32_t m_uIndex;
 
-	unsigned int Get(char *name, unsigned int nameSize);
+			//for lump writer		
+			void Seek(uint32_t pos);
 
-	void Put(char ch);
-    void Put(unsigned char byte);
+		public:
+			explicit EpromStream(unsigned int index);
 
-#ifndef WIN32
-    void Put(unsigned short number);
-#endif
+			void Get(char &ch);
+			void Get(unsigned char &byte);
 
-	void Put(uint16_t number);
+			uint32_t GetIndex() const
+			{
+				return m_uIndex;
+			}
 
-	template <typename T>
-	unsigned int PutData(const T &data);
+			void Skip(uint32_t bytes);
 
-#if 0 //CHECK THIS
-    void Put(const char *str);
-#endif
+	#ifndef WIN32
+			void Get(unsigned short &number);
+	#endif
+			void Get(uint16_t &number);
 
-};
+			unsigned int Get(char *name, unsigned int nameSize);
 
-class LumpWriter
-{
-	private:
-		const char *m_pszName;
-		EpromStream &m_rStream;
+			void Put(char ch);
+			void Put(unsigned char byte);
 
-		uint16_t	m_uStartIndex;
+	#ifndef WIN32
+			void Put(unsigned short number);
+	#endif
 
-		bool 		m_fNameFromRam;
+			void Put(uint16_t number);
 
-	public:
-		LumpWriter(EpromStream &stream, const char *lumpName, bool nameFromRam = true);
+			template <typename T>
+			unsigned int PutData(const T &data);
 
-		~LumpWriter();
-};
+	#if 0 //CHECK THIS
+			void Put(const char *str);
+	#endif
 
-struct Storage
-{
-  static int LoadConfig();
+	};
 
-  static void LoadDecoders(uint32_t position);
+	struct Lump
+	{
+		char		m_archName[LUMP_NAME_SIZE];
 
-  static void SaveConfig();
+		//size in bytes of the lump data
+		uint16_t 	m_uLength;
+	};
 
-  static void Dump();
-  static void DumpHex();
 
-  static void UpdateField(unsigned int index, unsigned char byte);
+	class LumpWriter
+	{
+		private:
+			const char *m_pszName;
+			EpromStream &m_rStream;
+
+			uint16_t	m_uStartIndex;
+
+			bool 		m_fNameFromRam;
+
+		public:
+			LumpWriter(EpromStream &stream, const char *lumpName, bool nameFromRam = true);
+
+			~LumpWriter();
+	};
+
+	extern bool LoadConfig();	
+
+	extern void SaveConfig();
+
+	extern void Dump();
+	extern void DumpHex();
+
+	extern void UpdateField(unsigned int index, unsigned char byte);
+
+	extern bool Custom_LoadModules(const Storage::Lump &lump, EpromStream &stream);
+	extern void Custom_SaveModules(EpromStream &stream);
 };
 
 #endif

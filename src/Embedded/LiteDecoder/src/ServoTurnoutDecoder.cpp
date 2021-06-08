@@ -41,7 +41,7 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(dcclite::Packet& packet) :
 	this->Init(powerPin, frogPin);
 }
 
-ServoTurnoutDecoder::ServoTurnoutDecoder(EpromStream& stream) :
+ServoTurnoutDecoder::ServoTurnoutDecoder(Storage::EpromStream& stream) :
 	Decoder::Decoder(stream)
 {	
 	dcclite::PinType_t pin;
@@ -72,7 +72,7 @@ ServoTurnoutDecoder::~ServoTurnoutDecoder()
 }
 
 
-void ServoTurnoutDecoder::SaveConfig(EpromStream& stream)
+void ServoTurnoutDecoder::SaveConfig(Storage::EpromStream& stream)
 {
 	Decoder::SaveConfig(stream);
 

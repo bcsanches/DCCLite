@@ -14,7 +14,10 @@
 
 #include "NetUdp.h"
 
-class EpromStream;
+namespace Storage
+{
+	class EpromStream;
+}
 
 namespace dcclite
 {
@@ -23,10 +26,8 @@ namespace dcclite
 
 namespace Session
 {
-	extern void LoadConfig(EpromStream &stream);
-	extern void SaveConfig(EpromStream &stream);
-
-	extern bool Init();
+	extern void LoadConfig(Storage::EpromStream &stream);
+	extern void SaveConfig(Storage::EpromStream &stream);	
 
 	extern bool Configure(const uint8_t *srvIp, uint16_t srvport);
 

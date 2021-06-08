@@ -28,7 +28,7 @@ OutputDecoder::OutputDecoder(dcclite::Packet &packet) :
 	this->Init();
 }
 
-OutputDecoder::OutputDecoder(EpromStream &stream):
+OutputDecoder::OutputDecoder(Storage::EpromStream &stream):
 	Decoder::Decoder(stream)
 {	
 	dcclite::PinType_t pin;
@@ -43,7 +43,7 @@ OutputDecoder::OutputDecoder(EpromStream &stream):
 }
 
 
-void OutputDecoder::SaveConfig(EpromStream &stream)
+void OutputDecoder::SaveConfig(Storage::EpromStream &stream)
 {
 	Decoder::SaveConfig(stream);	
 

@@ -25,11 +25,11 @@ class SensorDecoder : public Decoder
 
 	public:
 		explicit SensorDecoder(dcclite::Packet& packet);
-		explicit SensorDecoder(EpromStream& stream);
+		explicit SensorDecoder(Storage::EpromStream& stream);
 
 		bool Update(const unsigned long ticks) override;
 
-		void SaveConfig(EpromStream& stream) override;
+		void SaveConfig(Storage::EpromStream& stream) override;
 
 		dcclite::DecoderTypes GetType() const override
 		{

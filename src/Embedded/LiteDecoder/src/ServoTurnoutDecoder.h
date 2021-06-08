@@ -47,10 +47,10 @@ class ServoTurnoutDecoder : public Decoder
 
 	public:
 		explicit ServoTurnoutDecoder(dcclite::Packet& packet);
-		explicit ServoTurnoutDecoder(EpromStream& stream);
+		explicit ServoTurnoutDecoder(Storage::EpromStream& stream);
 		~ServoTurnoutDecoder();
 
-		void SaveConfig(EpromStream& stream) override;
+		void SaveConfig(Storage::EpromStream& stream) override;
 
 		dcclite::DecoderTypes GetType() const override
 		{

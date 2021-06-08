@@ -64,7 +64,7 @@ static bool g_fForceStateRefresh = false;
 //
 //
 
-void Session::LoadConfig(EpromStream &stream)
+void Session::LoadConfig(Storage::EpromStream &stream)
 {
 	for (int i = 0; i < 4; ++i)
 		stream.Get(g_u8ServerIp[i]);
@@ -74,7 +74,7 @@ void Session::LoadConfig(EpromStream &stream)
 	Session::LogStatus();
 }
 
-void Session::SaveConfig(EpromStream &stream)
+void Session::SaveConfig(Storage::EpromStream &stream)
 {
 	for (int i = 0; i < 4; ++i)
 		stream.Put(g_u8ServerIp[i]);

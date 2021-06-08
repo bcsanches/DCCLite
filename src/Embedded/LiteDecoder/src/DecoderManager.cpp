@@ -105,7 +105,7 @@ void DecoderManager::DestroyAll()
 	}
 }
 
-void DecoderManager::SaveConfig(EpromStream &stream)
+void DecoderManager::SaveConfig(Storage::EpromStream &stream)
 {	
 	const dcclite::Guid &token = Session::GetConfigToken();
 
@@ -175,7 +175,7 @@ void DecoderManager::SaveConfig(EpromStream &stream)
 	stream.Put(static_cast<uint8_t>(dcclite::DecoderTypes::DEC_NULL));
 }
 
-void DecoderManager::LoadConfig(EpromStream &stream)
+void DecoderManager::LoadConfig(Storage::EpromStream &stream)
 {
 	DestroyAll();
 

@@ -169,7 +169,7 @@ namespace Console
 
 	extern void Update();
 
-	extern bool ParseCustomCommand(const char *command);
+	extern bool Custom_ParseCommand(const char *command);
 };
 
 #endif

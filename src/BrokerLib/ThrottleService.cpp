@@ -11,9 +11,17 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-class Throttle
+class Throttle: public dcclite::IObject
 {
 	public:
+#if 0
+		Throttle(std::string name, const dcclite::NetworkAddress &serverAddress) :
+			IObject(std::move(name)),
+			m_clMessenger()
+		{
+			//empty
+		}
+#endif
 
 	private:
 		dcclite::NetMessenger m_clMessenger;

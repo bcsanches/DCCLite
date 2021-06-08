@@ -32,9 +32,11 @@ set_property(TARGET gmock PROPERTY FOLDER "contrib")
 set_property(TARGET gmock_main PROPERTY FOLDER "contrib")
 set_property(TARGET lfwatch PROPERTY FOLDER "contrib")
 
-set_property(TARGET ArduinoLib PROPERTY FOLDER "Embedded")
+set_property(TARGET ArduinoLib PROPERTY FOLDER "Emulator")
+set_property(TARGET Emulator PROPERTY FOLDER "Emulator")
+
+set_property(TARGET DecodersCommonLib PROPERTY FOLDER "Embedded")
 set_property(TARGET SharedLib PROPERTY FOLDER "Embedded")
-set_property(TARGET Emulator PROPERTY FOLDER "Embedded")
 set_property(TARGET LiteDecoderLib PROPERTY FOLDER "Embedded")
 set_property(TARGET StandAloneDecoderLib PROPERTY FOLDER "Embedded")
 

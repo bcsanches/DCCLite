@@ -36,7 +36,7 @@ SensorDecoder::SensorDecoder(dcclite::Packet& packet) :
 	this->Init(pin);
 }
 
-SensorDecoder::SensorDecoder(EpromStream& stream) :
+SensorDecoder::SensorDecoder(Storage::EpromStream& stream) :
 	Decoder::Decoder(stream)
 {
 	dcclite::PinType_t pin;
@@ -50,7 +50,7 @@ SensorDecoder::SensorDecoder(EpromStream& stream) :
 }
 
 
-void SensorDecoder::SaveConfig(EpromStream& stream)
+void SensorDecoder::SaveConfig(Storage::EpromStream& stream)
 {
 	Decoder::SaveConfig(stream);
 

@@ -15,7 +15,11 @@
 #include "Packet.h"
 
 class Decoder;
-class EpromStream;
+
+namespace Storage
+{
+	class EpromStream;
+}
 
 namespace dcclite
 {
@@ -29,8 +33,8 @@ namespace DecoderManager
 	void Destroy(const uint8_t slot);
 	void DestroyAll();
 
-	void SaveConfig(EpromStream &stream);
-	void LoadConfig(EpromStream &stream);
+	void SaveConfig(Storage::EpromStream &stream);
+	void LoadConfig(Storage::EpromStream &stream);
 
 	/**
 	Updates all decoders with the bitpack.

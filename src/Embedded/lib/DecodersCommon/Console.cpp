@@ -105,7 +105,7 @@ static void Parse(const char *command)
 #endif
 
 	}
-    else if(!Console::ParseCustomCommand(command))	
+    else if(!Console::Custom_ParseCommand(command))
 	{
 		Console::SendLogEx(MODULE_NAME, FSTR_NOK, ' ', command);
 	}

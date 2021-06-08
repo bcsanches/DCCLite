@@ -12,7 +12,10 @@
 
 #include "SharedLibDefs.h"
 
-class EpromStream;
+namespace Storage
+{
+	class EpromStream;
+}
 
 namespace dcclite
 {
@@ -23,7 +26,7 @@ class Decoder
 {	
 	public:
 		explicit Decoder(dcclite::Packet &packet);
-		explicit Decoder(EpromStream &stream) {}
+		explicit Decoder(Storage::EpromStream &stream) {}
 
 		Decoder(const Decoder &) = delete;
 		Decoder(const Decoder &&) = delete;
@@ -53,7 +56,7 @@ class Decoder
 
 		virtual ~Decoder() = default;
 
-		virtual void SaveConfig(EpromStream &stream)
+		virtual void SaveConfig(Storage::EpromStream &stream)
 		{
 			//empty
 		}		

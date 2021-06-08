@@ -45,7 +45,7 @@ enum States
 
 //<nodeName> <mac> <port> <srvipv4>		
 
-void NetUdp::LoadConfig(EpromStream &stream)
+void NetUdp::LoadConfig(Storage::EpromStream &stream)
 {
 	for(int i = 0;i < MAX_NODE_NAME; ++i)
 		stream.Get(g_szNodeName[i]);
@@ -62,7 +62,7 @@ void NetUdp::LoadConfig(EpromStream &stream)
 	NetUdp::LogStatus();
 }
 
-void NetUdp::SaveConfig(EpromStream &stream)
+void NetUdp::SaveConfig(Storage::EpromStream &stream)
 {
 	for(int i = 0;i < MAX_NODE_NAME; ++i)
 		stream.Put(g_szNodeName[i]);

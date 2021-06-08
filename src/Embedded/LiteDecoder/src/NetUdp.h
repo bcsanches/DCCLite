@@ -13,7 +13,11 @@
 
 #include <Arduino.h>
 
-class EpromStream;
+namespace Storage
+{
+	class EpromStream;
+}
+
 
 namespace NetUdp
 {
@@ -24,8 +28,8 @@ namespace NetUdp
 		const char *data,   ///< UDP payload data
 		unsigned int len);
 
-	extern void LoadConfig(EpromStream &stream);
-	extern void SaveConfig(EpromStream &stream);
+	extern void LoadConfig(Storage::EpromStream &stream);
+	extern void SaveConfig(Storage::EpromStream &stream);
 
 	extern bool Configure(const char *nodeName, uint16_t port, const uint8_t *mac);
 

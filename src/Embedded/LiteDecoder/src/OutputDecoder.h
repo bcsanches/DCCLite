@@ -23,9 +23,9 @@ class OutputDecoder : public Decoder
 
 	public:
 		explicit OutputDecoder(dcclite::Packet &packet);
-		explicit OutputDecoder(EpromStream &stream);
+		explicit OutputDecoder(Storage::EpromStream &stream);
 
-		void SaveConfig(EpromStream &stream) override;
+		void SaveConfig(Storage::EpromStream &stream) override;
 
 		bool IsOutputDecoder() const override
 		{

@@ -24,16 +24,18 @@ static unsigned long g_uStartTime = 0;
 static unsigned long g_uFrameCount = 0;
 static float g_uFps = 0;
 
+static unsigned short g_uDecodersPosition = 0;
+
 bool g_fNetReady = false;
 
 const char CmdCfgName[] PROGMEM = { "cfg" };
 const char CmdDumpName[] PROGMEM = { "dump" };
 const char CmdHDumpName[] PROGMEM = { "hdump" };
 const char MainModuleName[] PROGMEM = { "LITE_DECODER" };
-#define MODULE_NAME FlashStr(MainModuleName)
 
+#define MODULE_NAME Console::FlashStr(MainModuleName)
 
-bool Console::ParseCustomCommand(const char *command)
+bool Console::Custom_ParseCommand(const char *command)
 {
 	if (strncmp_P(command, CmdCfgName, 3) == 0)
 	{
@@ -121,12 +123,86 @@ bool Console::ParseCustomCommand(const char *command)
 	return false;
 }
 
+static const char DecodersStorageId[] PROGMEM = { "DECS011" };
+static const char NetUdpStorageId[] PROGMEM = { "NetU002" };
+static const char SessionStorageId[] PROGMEM = { "Sson001" };
+
+bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream &stream)
+{
+	if (strncmp_P(lump.m_archName, DecodersStorageId, strlen_P(DecodersStorageId)) == 0)
+	{
+		g_uDecodersPosition = stream.GetIndex() - sizeof(Storage::Lump);
+		stream.Skip(lump.m_uLength);
+
+		Console::SendLogEx(MODULE_NAME, FSTR_DECODERS, ' ', "cfg", ' ', g_uDecodersPosition);
+	}
+
+	if (strncmp_P(lump.m_archName, NetUdpStorageId, strlen_P(NetUdpStorageId)) == 0)
+	{
+		Console::SendLogEx(MODULE_NAME, "net", "udp", ' ', "cfg");
+		NetUdp::LoadConfig(stream);
+
+		return true;
+	}
+
+	if (strncmp_P(lump.m_archName, SessionStorageId, strlen_P(SessionStorageId)) == 0)
+	{
+		Console::SendLogEx(MODULE_NAME, FSTR_SESSION, ' ', "cfg");
+
+		Session::LoadConfig(stream);
+
+		return true;
+	}
+
+	return false;
+}
+
+void Storage::Custom_SaveModules(Storage::EpromStream &stream)
+{
+	{
+		LumpWriter netLump(stream, NetUdpStorageId, false);
+
+		NetUdp::SaveConfig(stream);
+	}
+
+	{
+		LumpWriter sessionLump(stream, SessionStorageId, false);
+
+		Session::SaveConfig(stream);
+	}
+
+	{
+		LumpWriter decodersLump(stream, DecodersStorageId, false);
+
+		DecoderManager::SaveConfig(stream);
+	}
+}
+
+void Storage_LoadDecoders(uint32_t position)
+{
+	Storage::EpromStream stream(position);
+
+	Storage::Lump lump;
+
+	stream.Get(lump.m_archName, sizeof(lump.m_archName));
+	stream.Get(lump.m_uLength);
+
+	if (strncmp_P(lump.m_archName, DecodersStorageId, strlen_P(DecodersStorageId)) != 0)
+	{
+		Console::SendLogEx(MODULE_NAME, FSTR_UNKNOWN, ' ', FSTR_LUMP, ' ', lump.m_archName);
+
+		return;
+	}
+
+	DecoderManager::LoadConfig(stream);
+}
+
 void setup()
 {
 	Console::Init();
 	Blinker::Init();
 
-	const int decodersStoragePos = Storage::LoadConfig();
+	Storage::LoadConfig();
 
 	g_fNetReady = NetUdp::Init(Session::GetReceiverCallback());
 
@@ -134,9 +210,9 @@ void setup()
 
 	Blinker::Play(Blinker::Animations::OK);		
 
-	if(decodersStoragePos > 0)
+	if(g_uDecodersPosition > 0)
 	{
-		Storage::LoadDecoders(decodersStoragePos);
+		Storage_LoadDecoders(g_uDecodersPosition);
 	}
 
 	Console::SendLogEx(FSTR_SETUP, " ", FSTR_OK);
