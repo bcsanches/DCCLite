@@ -2,6 +2,8 @@
 set(DecodersCommonLib_SRCS
     Console.cpp
 	Decoder.cpp
+    ServoTurnoutDecoder.cpp
+    Storage.cpp
     Strings.cpp
 )
 
@@ -9,9 +11,12 @@ set(DecodersCommonLib_HDRS
     Console.h
     Decoder.h
     Pin.h
+    ServoTurnoutDecoder.h
+    Storage.h
     Strings.h
 )
 
+add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 
 
 add_library(DecodersCommonLib  ${DecodersCommonLib_SRCS} ${DecodersCommonLib_HDRS})

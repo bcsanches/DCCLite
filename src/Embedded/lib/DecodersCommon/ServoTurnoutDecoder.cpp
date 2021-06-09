@@ -64,6 +64,15 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(Storage::EpromStream& stream) :
 	this->Init(powerPin, frogPin);
 }
 
+ServoTurnoutDecoder::ServoTurnoutDecoder(uint8_t flags, dcclite::PinType_t pin, uint8_t range, uint8_t ticks, dcclite::PinType_t powerPin, dcclite::PinType_t frogPin):		
+	m_clPin{ pin },
+	m_fFlags{ flags },	
+	m_uRange{ range },
+	m_uTicks{ ticks }
+{
+	this->Init(powerPin, frogPin);
+}
+
 ServoTurnoutDecoder::~ServoTurnoutDecoder()
 {
 	m_clServo.detach();

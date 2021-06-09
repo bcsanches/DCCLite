@@ -24,13 +24,16 @@ namespace dcclite
 
 class Decoder
 {	
-	public:
+	protected:
+		Decoder() = default;
 		explicit Decoder(dcclite::Packet &packet);
 		explicit Decoder(Storage::EpromStream &stream) {}
 
 		Decoder(const Decoder &) = delete;
 		Decoder(const Decoder &&) = delete;
 		Decoder &operator=(const Decoder &) = delete;
+
+	public:
 
 		virtual dcclite::DecoderTypes GetType() const = 0;
 		virtual bool IsOutputDecoder() const = 0;

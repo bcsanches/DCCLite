@@ -7,9 +7,7 @@ set(LiteDecoderLib_SRCS
   NetUdp.cpp
   OutputDecoder.cpp
   SensorDecoder.cpp
-  ServoTurnoutDecoder.cpp
   Session.cpp
-  Storage.cpp
 )
 
 set(LiteDecoderLib_HDRS
@@ -19,10 +17,8 @@ set(LiteDecoderLib_HDRS
   main.h
   NetUdp.h
   OutputDecoder.h  
-  SensorDecoder.h
-  ServoTurnoutDecoder.h
-  Session.h
-  Storage.h
+  SensorDecoder.h  
+  Session.h  
 )
 
 add_compile_definitions(LITEDECODERLIB_EXPORTS)

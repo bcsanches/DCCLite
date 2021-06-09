@@ -48,6 +48,7 @@ class ServoTurnoutDecoder : public Decoder
 	public:
 		explicit ServoTurnoutDecoder(dcclite::Packet& packet);
 		explicit ServoTurnoutDecoder(Storage::EpromStream& stream);
+		explicit ServoTurnoutDecoder(uint8_t flags, dcclite::PinType_t pin, uint8_t range, uint8_t ticks, dcclite::PinType_t powerPin = dcclite::NullPin, dcclite::PinType_t frogPin = dcclite::NullPin);
 		~ServoTurnoutDecoder();
 
 		void SaveConfig(Storage::EpromStream& stream) override;

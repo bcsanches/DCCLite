@@ -12,36 +12,41 @@
 
 #include "main.h"
 
+#include "ServoTurnoutDecoder.h"
 
-static unsigned long g_uStartTime = 0;
-static unsigned long g_uFrameCount = 0;
+constexpr auto MAX_DECODERS = 14;
+
+static unsigned long g_uLastFrameTime = 0;
+static unsigned long g_uTicks = 0;
 static float g_uFps = 0;
 
-bool g_fNetReady = false;
+static Decoder *g_pclDecoders[MAX_DECODERS];
 
 void setup()
-{	
-	g_uStartTime = millis();
+{		
+	g_pclDecoders[0] = new ServoTurnoutDecoder(
+		0,			//flags
+		{ 10 },		//pin
+		15,			//range
+		10,		//ticks
+		{ 11 },		//powerPin
+		{ 12 }		//frogPin
+	);
+
+	g_uLastFrameTime = millis();
 }
 
 void loop() 
-{	
-	++g_uFrameCount;
-
+{		
 	auto currentTime = millis();
 	int seconds = 0;
 
-	while((currentTime - g_uStartTime) >= 1000)
+	auto ticks = currentTime - g_uLastFrameTime;
+	if (ticks == 0)
+		return;
+
+	for (int i = 0; i < MAX_DECODERS; ++i)
 	{
-		++seconds;
-		g_uStartTime += 1000;
+		g_pclDecoders[i]->Update(ticks);
 	}
-
-	if(seconds > 0)
-	{
-		g_uFps = g_uFrameCount / static_cast<float>(seconds);
-		g_uFrameCount = 0;
-
-		//Console::sendLog("main", "fps %d", (int)g_fps);
-	}	
 }
