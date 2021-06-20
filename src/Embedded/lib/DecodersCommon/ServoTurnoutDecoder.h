@@ -70,6 +70,11 @@ class ServoTurnoutDecoder : public Decoder
 			return this->State2DecoderState() == dcclite::DecoderStates::ACTIVE;
 		}
 
+		dcclite::DecoderStates GetDecoderState() const
+		{
+			return this->State2DecoderState();
+		}
+
 		bool IsSyncRequired() const override
 		{
 			return false;
@@ -77,16 +82,23 @@ class ServoTurnoutDecoder : public Decoder
 
 		bool Update(const unsigned long ticks) override;
 
+		inline bool IsMoving() const noexcept
+		{
+			const auto state = this->GetState();
+
+			return (state == States::CLOSING) || (state == States::THROWNING);
+		}
+
 	private:
-		void Init(const dcclite::PinType_t powerPin, const dcclite::PinType_t frogPin);
+		void Init(const dcclite::PinType_t powerPin, const dcclite::PinType_t frogPin) noexcept;
 		
-		void TurnOnPower(const unsigned long ticks);
-		void TurnOffPower();
+		void TurnOnPower(const unsigned long ticks) noexcept;
+		void TurnOffPower() noexcept;
 
-		States GetState() const;
-		void SetState(const States newState);
+		States GetState() const noexcept;
+		void SetState(const States newState) noexcept;
 
-		inline States GetStateGoal() const
+		inline States GetStateGoal() const noexcept
 		{
 			const auto state = this->GetState();
 
@@ -97,13 +109,13 @@ class ServoTurnoutDecoder : public Decoder
 				return States::THROWN;
 
 			return state;
-		}				
+		}						
 
-		void OperateThrown(const unsigned long ticks);
-		void OperateClose(const unsigned long ticks);
+		void OperateThrown(const unsigned long ticks) noexcept;
+		void OperateClose(const unsigned long ticks) noexcept;
 
-		States DecoderState2State(dcclite::DecoderStates state) const;
-		dcclite::DecoderStates State2DecoderState() const;
+		States DecoderState2State(dcclite::DecoderStates state) const noexcept;
+		dcclite::DecoderStates State2DecoderState() const noexcept;
 
-		bool StateUpdate(const uint8_t desiredPosition, const States desiredState, const int moveDirection, const unsigned long ticks);
+		bool StateUpdate(const uint8_t desiredPosition, const States desiredState, const int moveDirection, const unsigned long ticks) noexcept;
 };

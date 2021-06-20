@@ -97,7 +97,7 @@ void ServoTurnoutDecoder::SaveConfig(Storage::EpromStream& stream)
 	stream.Put(m_uTicks);
 }
 
-void ServoTurnoutDecoder::TurnOnPower(const unsigned long ticks)
+void ServoTurnoutDecoder::TurnOnPower(const unsigned long ticks) noexcept
 {
 	m_clServo.attach(m_clPin.Raw());
 	SERVO_WRITE(m_clServo, m_uServoPos);
@@ -111,7 +111,7 @@ void ServoTurnoutDecoder::TurnOnPower(const unsigned long ticks)
 	m_uNextThink = ticks + POWER_WAIT_TICKS;
 }
 
-void ServoTurnoutDecoder::TurnOffPower()
+void ServoTurnoutDecoder::TurnOffPower() noexcept
 {
 	if (m_clPowerPin)		
 	{
@@ -125,7 +125,7 @@ void ServoTurnoutDecoder::TurnOffPower()
 	//Console::SendLogEx("SERVO", "POWEROFF");
 }
 
-void ServoTurnoutDecoder::Init(const dcclite::PinType_t powerPin, const dcclite::PinType_t frogPin)
+void ServoTurnoutDecoder::Init(const dcclite::PinType_t powerPin, const dcclite::PinType_t frogPin) noexcept
 {
 	using namespace dcclite;	
 	
@@ -177,7 +177,7 @@ void ServoTurnoutDecoder::Init(const dcclite::PinType_t powerPin, const dcclite:
 #endif	
 }
 
-dcclite::DecoderStates ServoTurnoutDecoder::State2DecoderState() const
+dcclite::DecoderStates ServoTurnoutDecoder::State2DecoderState() const noexcept
 {
 	auto state = this->GetState();
 
@@ -196,7 +196,7 @@ dcclite::DecoderStates ServoTurnoutDecoder::State2DecoderState() const
 	return active ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE;
 }
 
-ServoTurnoutDecoder::States ServoTurnoutDecoder::DecoderState2State(dcclite::DecoderStates state) const
+ServoTurnoutDecoder::States ServoTurnoutDecoder::DecoderState2State(dcclite::DecoderStates state) const noexcept
 {
 	bool activate = state == dcclite::DecoderStates::ACTIVE;
 	activate = (m_fFlags & dcclite::SRVT_INVERTED_OPERATION) ? !activate : activate;
@@ -228,7 +228,7 @@ bool ServoTurnoutDecoder::AcceptServerState(const dcclite::DecoderStates decoder
 	return true;
 }
 
-bool ServoTurnoutDecoder::StateUpdate(const uint8_t desiredPosition, const States desiredState, const int moveDirection, const unsigned long ticks)
+bool ServoTurnoutDecoder::StateUpdate(const uint8_t desiredPosition, const States desiredState, const int moveDirection, const unsigned long ticks) noexcept
 {
 	//first check desired position, we may reach it right on initial state
 	if (m_uServoPos == desiredPosition)
@@ -297,14 +297,14 @@ bool ServoTurnoutDecoder::Update(const unsigned long ticks)
 	}		
 }
 
-ServoTurnoutDecoder::States ServoTurnoutDecoder::GetState() const
+ServoTurnoutDecoder::States ServoTurnoutDecoder::GetState() const noexcept
 {
 	uint8_t value = (m_fFlags & dcclite::SRVT_STATE_BITS);
 
 	return static_cast<States>(value);
 }
 
-void ServoTurnoutDecoder::SetState(const States newState)
+void ServoTurnoutDecoder::SetState(const States newState) noexcept
 {
 	uint8_t bits = static_cast<uint8_t>(newState) & dcclite::SRVT_STATE_BITS;
 
@@ -312,14 +312,14 @@ void ServoTurnoutDecoder::SetState(const States newState)
 	m_fFlags |= bits;	
 }
 
-void ServoTurnoutDecoder::OperateThrown(const unsigned long ticks)
+void ServoTurnoutDecoder::OperateThrown(const unsigned long ticks) noexcept
 {
 	this->TurnOnPower(ticks);
 
 	this->SetState(States::THROWNING);
 }
 
-void ServoTurnoutDecoder::OperateClose(const unsigned long ticks)
+void ServoTurnoutDecoder::OperateClose(const unsigned long ticks) noexcept
 {
 	this->TurnOnPower(ticks);
 
