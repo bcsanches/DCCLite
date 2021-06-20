@@ -110,7 +110,8 @@
         "class": "LoconetService",
         "name": "loconet",
         "port": "COM4",
-        "engineDriverServerAddress": "127.0.0.1:2560"
+        "engineDriverServerAddress": "127.0.0.1:2560",
+        "ignoreOnLoadFailure":true
     }  
   ]
 }

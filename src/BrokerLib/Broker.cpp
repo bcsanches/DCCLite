@@ -13,6 +13,7 @@
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
+#include <string>
 
 #include <fmt/format.h>
 #include <rapidjson/document.h>
@@ -113,7 +114,27 @@ namespace dcclite::broker
 
 		for (auto &serviceData : services.GetArray())
 		{
-			auto service = CreateBrokerService(*this, serviceData, m_clProject);
+			std::unique_ptr<Service> service;
+			try
+			{
+				service = CreateBrokerService(*this, serviceData, m_clProject);
+			}
+			catch (std::exception &ex)
+			{
+				auto ignoreServiceFlag = serviceData.FindMember("ignoreOnLoadFailure");
+				if ((ignoreServiceFlag != serviceData.MemberEnd()) && (ignoreServiceFlag->value.GetBool()))
+				{
+					auto nameData = serviceData.FindMember("name");
+
+					const char *name = nameData != serviceData.MemberEnd() ? nameData->value.GetString() : "NO NAME SET";
+
+					Log::Error("[Broker::LoadConfig] Failed to load {}, but ignoring due to \"ignoreOnLoadFailure\" being set, exception: {}", name, ex.what());
+
+					continue;
+				}
+
+				throw;
+			}			
 
 			m_pServices->AddChild(std::move(service));
 		}
