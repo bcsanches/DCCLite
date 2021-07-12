@@ -14,12 +14,26 @@
 #include <SharedLibDefs.h>
 #include <Packet.h>
 
-#include "Config.h"
 #include "Console.h"
 #include "Storage.h"
 
 const char SensorModuleName[] PROGMEM = {"SensorDecoder"} ;
 #define MODULE_NAME Console::FlashStr(SensorModuleName)
+
+//#define DCCLITE_DBG
+
+SensorDecoder::SensorDecoder(uint8_t flags, dcclite::PinType_t pin, uint8_t activateDelay, uint8_t deactivateDelay):
+	m_fFlags{flags},
+	m_uActivateDelay{ activateDelay },
+	m_uDeactivateDelay{deactivateDelay}
+
+{
+#ifdef DCCLITE_DBG
+	Console::SendLogEx("[SENSOR_DECODER]", "constructor");
+#endif
+
+	this->Init(pin);
+}
 
 SensorDecoder::SensorDecoder(dcclite::Packet& packet) :
 	Decoder::Decoder(packet)
@@ -114,14 +128,20 @@ bool SensorDecoder::Update(const unsigned long ticks)
 		return false;
 	}
 
+#ifdef DCCLITE_DBG
+	Console::SendLogEx("[SENSOR_DECODER]", "noise");
+#endif
+
 	if((!coolDown) && (!delay))
 	{
 		//are we starting a state change?
 		m_fFlags |= dcclite::SNRD_COOLDOWN;
 
-		m_uCoolDownTicks = ticks + Config::g_cfgCoolDownTimeoutTicks;
+		m_uCoolDownTicks = ticks + CFG_COOLDOWN_TIMEOUT_TICKS;
 
-		//Console::SendLogEx("[SENSOR_DECODER]", "LOCAL", ' ', "COOLDOWN");
+#ifdef DCCLITE_DBG
+		Console::SendLogEx("[SENSOR_DECODER]", "LOCAL", ' ', "COOLDOWN");
+#endif
 
 		return false;
 	}
@@ -136,8 +156,8 @@ bool SensorDecoder::Update(const unsigned long ticks)
 			m_uCoolDownTicks = ticks + delayTicks;
 			m_fFlags |= dcclite::SNRD_DELAY;
 
-#if 0
-			Console::SendLogEx("[SENSOR_DECODER]", "DELAY", ' ', delayTicks);
+#ifdef DCCLITE_DBG
+			Console::SendLogEx("[SENSOR_DECODER]", "DELAY", ' ', (int)delayTicks);
 #endif
 
 			return false;
@@ -148,7 +168,11 @@ bool SensorDecoder::Update(const unsigned long ticks)
 	if(m_fFlags & dcclite::SNRD_ACTIVE)
 		m_fFlags &= ~dcclite::SNRD_ACTIVE;
 	else
-		m_fFlags |= dcclite::SNRD_ACTIVE;
+		m_fFlags |= dcclite::SNRD_ACTIVE;	
+
+#ifdef DCCLITE_DBG
+	Console::SendLogEx("[SENSOR_DECODER]", "STAGE", ' ', "CHANGE");
+#endif
 
 	return true;		
 }

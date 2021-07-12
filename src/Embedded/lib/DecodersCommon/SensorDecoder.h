@@ -13,6 +13,8 @@
 #include "Decoder.h"
 #include "Pin.h"
 
+#define CFG_COOLDOWN_TIMEOUT_TICKS 25
+
 class SensorDecoder : public Decoder
 {
 	private:		
@@ -24,6 +26,7 @@ class SensorDecoder : public Decoder
 		unsigned long m_uCoolDownTicks = 0;
 
 	public:
+		explicit SensorDecoder(uint8_t flags, dcclite::PinType_t pin, uint8_t activateDelay = 0, uint8_t deactivateDelay = 0);
 		explicit SensorDecoder(dcclite::Packet& packet);
 		explicit SensorDecoder(Storage::EpromStream& stream);
 

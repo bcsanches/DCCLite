@@ -8,11 +8,21 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "Config.h"
+#pragma once
 
-namespace Config
-{
-	uint16_t g_cfgTimeoutTicks = 15000;
-	uint16_t g_cfgPingTicks = 4500;
-	uint16_t g_cfgStateTicks = 50;	
-}
+#ifdef WIN32
+	#ifdef QUERALTLIB_EXPORTS  
+	#define QUERALTLIB_API __declspec(dllexport)   
+	#else  
+	#define QUERALTLIB_API __declspec(dllimport)   
+	#endif
+#else
+	#define QUERALTLIB_API
+#endif
+
+
+extern "C" QUERALTLIB_API void setup();
+extern "C" QUERALTLIB_API void loop();
+
+
+

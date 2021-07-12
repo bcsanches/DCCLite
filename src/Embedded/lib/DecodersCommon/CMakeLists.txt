@@ -2,6 +2,8 @@
 set(DecodersCommonLib_SRCS
     Console.cpp
 	Decoder.cpp
+    LocalDecoderManager.cpp
+    SensorDecoder.cpp
     ServoTurnoutDecoder.cpp
     Storage.cpp
     Strings.cpp
@@ -10,7 +12,9 @@ set(DecodersCommonLib_SRCS
 set(DecodersCommonLib_HDRS
     Console.h
     Decoder.h
+    LocalDecoderManager.h
     Pin.h
+    SensorDecoder.h
     ServoTurnoutDecoder.h
     Storage.h
     Strings.h

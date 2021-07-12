@@ -38,6 +38,7 @@ set_property(TARGET Emulator PROPERTY FOLDER "Emulator")
 set_property(TARGET DecodersCommonLib PROPERTY FOLDER "Embedded")
 set_property(TARGET SharedLib PROPERTY FOLDER "Embedded")
 set_property(TARGET LiteDecoderLib PROPERTY FOLDER "Embedded")
+set_property(TARGET QueraltLib PROPERTY FOLDER "Embedded")
 set_property(TARGET StandAloneDecoderLib PROPERTY FOLDER "Embedded")
 
 set_property(TARGET Launcher PROPERTY FOLDER "Tools")
