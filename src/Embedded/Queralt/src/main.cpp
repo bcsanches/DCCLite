@@ -38,162 +38,46 @@ void Storage::Custom_SaveModules(EpromStream &stream)
 
 }
 
-struct RouteNode
-{
-	int m_iTurnoutIndex;
-	dcclite::DecoderStates m_kState;
-};
-
-
-static RouteNode g_stRoutes[] = {
-	//route 0
-	{0, dcclite::DecoderStates::INACTIVE},
-	{1, dcclite::DecoderStates::INACTIVE},
-	{-1, dcclite::DecoderStates::INACTIVE},
-
-	//route 1
-	{0, dcclite::DecoderStates::INACTIVE},
-	{1, dcclite::DecoderStates::ACTIVE},
-	{-1, dcclite::DecoderStates::INACTIVE},
-
-	//end
-	{-1, dcclite::DecoderStates::INACTIVE}
-};	
-
-static RouteNode *g_pstRoutes[MAX_ROUTES] = { nullptr };
-
-class RouteManager
-{
-	public:
-		RouteManager():
-			m_iCurrentRoute{ 0 },
-			m_iCurrentRouteNode{ 0 },
-			m_iNextRoute{ -1 }
-		{
-			//empty
-		}		
-
-		void Init()
-		{
-			//try to find which route is set
-			for (int i = 0; i < MAX_ROUTES; ++i)
-			{
-				RouteNode *node;
-				
-				for (node = g_pstRoutes[i]; node->m_iTurnoutIndex >= 0; ++node)
-				{
-					auto turnout = static_cast<ServoTurnoutDecoder *>(LocalDecoderManager::TryGetDecoder(node->m_iTurnoutIndex));
-					if (turnout->GetDecoderState() != node->m_kState)
-						break;
-				}
-
-				//found end?
-				if (node->m_iTurnoutIndex < 0)
-				{
-					m_iCurrentRoute = i;
-					m_iCurrentRouteNode = 0;
-
-					break;
-				}
-			}
-		}
-
-		void Update()
-		{
-			//Current route set and next route set?
-			if ((g_pstRoutes[m_iCurrentRoute][m_iCurrentRouteNode].m_iTurnoutIndex < 0) && (m_iNextRoute >= 0))
-			{				
-				//Yes! Set to next route
-				m_iCurrentRoute = m_iNextRoute;
-				m_iCurrentRouteNode = 0;		
-
-				//clear next route
-				m_iNextRoute = -1;
-			}
-
-			auto &currentNode = g_pstRoutes[m_iCurrentRoute][m_iCurrentRouteNode];
-
-			//Current route node is end?
-			if (currentNode.m_iTurnoutIndex < 0)
-				return;
-
-			auto currentNodeTurnout = static_cast<ServoTurnoutDecoder *>(LocalDecoderManager::TryGetDecoder(currentNode.m_iTurnoutIndex));
-
-			//Is it moving?
-			if (currentNodeTurnout->IsMoving())
-			{
-				//wait it finishes
-				return;
-			}
-
-			//Is turnout in desired position?
-			if (currentNodeTurnout->GetDecoderState() != currentNode.m_kState)
-			{
-				//set position and check again
-				currentNodeTurnout->AcceptServerState(currentNode.m_kState);
-
-				return;
-			}
-
-			//Turnout is in current position, so next frame, set next turnout state
-			++m_iCurrentRouteNode;
-		}
-
-		void SetNextRoute(int routeIndex)
-		{
-			m_iNextRoute = routeIndex;			
-		}
-
-	private:
-		int m_iCurrentRoute;
-		int m_iCurrentRouteNode;
-
-		int m_iNextRoute;
-};
-
-bool g_fStable = false;
-RouteManager g_clRouteManager;
-
-SensorDecoder *g_Sensor;
-
 void setup()
 {		
 	Console::Init();
 
-	LocalDecoderManager::CreateServoTurnout(
-		0,			//flags
-		{ 10 },		//pin
-		15,			//range
-		10,			//ticks
-		{ 11 },		//powerPin
-		{ 12 }		//frogPin
-	);
-
-	g_Sensor = LocalDecoderManager::CreateSensor(
-		0,
-		{9},
-		0,
-		0
-	);
-
-	int baseIndex = 0;
-	for (int i = 0; ; ++i)
 	{
-		g_pstRoutes[baseIndex++] = g_stRoutes + i;
+		auto turnout = LocalDecoderManager::CreateServoTurnout(
+			dcclite::SRVT_INVERTED_OPERATION | dcclite::SRVT_INVERTED_POWER,	//flags
+			{ 10 },																//pin
+			25,																	//range
+			20,																	//ticks
+			{7},																//powerPin
+			dcclite::NullPin													//frogPin
+		);
 
-		//skip current turnout
-		++i;
+		auto sensor1 = LocalDecoderManager::CreateSensor(
+			dcclite::SNRD_PULL_UP | dcclite::SNRD_INVERTED,	//flags
+			{ 9 },											//pin
+			0,												//activate Delay (msec)
+			0												//deactivate Delay (msec)
+		);
 
-		//search for end marker
-		while (g_stRoutes[i].m_iTurnoutIndex >= 0)
-			++i;
+		LocalDecoderManager::CreateButton(*sensor1, *turnout, LocalDecoderManager::kTOGGLE);
 
-		//advance
-		++i;
+		auto sensor2 = LocalDecoderManager::CreateSensor(
+			dcclite::SNRD_PULL_UP | dcclite::SNRD_INVERTED,	//flags
+			{ 11 },											//pin
+			0,												//activate Delay (msec)
+			0												//deactivate Delay (msec)
+		);
 
-		//end marker? (double -1)
-		if (g_stRoutes[i].m_iTurnoutIndex < 0)
-			break;
+		LocalDecoderManager::CreateButton(*sensor2, *turnout, LocalDecoderManager::kTHROW);
+
+		auto sensor3 = LocalDecoderManager::CreateSensor(
+			dcclite::SNRD_PULL_UP | dcclite::SNRD_INVERTED,	//flags
+			{ 12 },											//pin
+			0,												//activate Delay (msec)
+			0												//deactivate Delay (msec)
+		);
+
+		LocalDecoderManager::CreateButton(*sensor3, *turnout, LocalDecoderManager::kCLOSE);
 	}
 
 	g_uLastFrameTime = millis();
@@ -208,25 +92,4 @@ void loop()
 		return;	
 
 	LocalDecoderManager::Update(ticks);	
-
-	if(g_Sensor->IsActive())
-	{
-		Console::Send("Hello");
-	}
-
-#if 0
-	if (!g_fStable)
-	{
-		for (int i = 0; i < MAX_DECODERS; ++i)
-		{
-			if (g_pclTurnouts[i]->IsMoving())
-				return;
-		}
-
-		g_fStable = true;
-		g_clRouteManager.Init();
-	}
-
-	g_clRouteManager.Update();
-#endif
 }

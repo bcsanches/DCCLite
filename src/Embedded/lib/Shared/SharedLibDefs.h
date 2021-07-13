@@ -41,7 +41,13 @@ namespace dcclite
 		ACTIVE
 	};
 
-	inline const char *DecoderStateName(const DecoderStates state)
+	inline DecoderStates operator!(const DecoderStates state) noexcept
+	{
+		return state == DecoderStates::ACTIVE ? DecoderStates::INACTIVE : DecoderStates::ACTIVE;
+	}
+
+
+	inline const char *DecoderStateName(const DecoderStates state) noexcept
 	{
 		return state == DecoderStates::ACTIVE ? "ACTIVE" : "INACTIVE";
 	}

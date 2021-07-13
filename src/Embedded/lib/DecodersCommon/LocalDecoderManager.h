@@ -18,6 +18,14 @@ class ServoTurnoutDecoder;
 
 namespace LocalDecoderManager
 {
+
+	enum ButtonActions
+	{
+		kTHROW = 0x01,
+		kCLOSE = 0x02,
+		kTOGGLE = kTHROW | kCLOSE
+	};
+
 	ServoTurnoutDecoder *CreateServoTurnout(
 		uint8_t flags,
 		dcclite::PinType_t pin,
@@ -33,6 +41,8 @@ namespace LocalDecoderManager
 		uint8_t activateDelay = 0,
 		uint8_t deactivateDelay = 0
 	);
+
+	void CreateButton(SensorDecoder &sensor, ServoTurnoutDecoder &target, ButtonActions actions);
 	
 	bool Update(const unsigned long ticks);
 

@@ -99,8 +99,8 @@ void ServoTurnoutDecoder::SaveConfig(Storage::EpromStream& stream)
 
 void ServoTurnoutDecoder::TurnOnPower(const unsigned long ticks) noexcept
 {
-	m_clServo.attach(m_clPin.Raw());
 	SERVO_WRITE(m_clServo, m_uServoPos);
+	m_clServo.attach(m_clPin.Raw());	
 
 	if (m_clPowerPin)		
 	{
@@ -141,18 +141,19 @@ void ServoTurnoutDecoder::Init(const dcclite::PinType_t powerPin, const dcclite:
 		m_clFrogPin.Attach(frogPin, Pin::MODE_OUTPUT);		
 	}
 		
-	States desiredState = this->GetStateGoal();
+	States desiredState = this->GetStateGoal();	
 
 	// sets status to 0 (INACTIVE) is bit 1 of iFlag=0, otherwise set to value of bit 2 of iFlag
 	//m_fStatus = bitRead(m_fFlags, 1) ? bitRead(m_fFlags, 2) : 0;
 	if (m_fFlags & SRVT_IGNORE_SAVED_STATE)
 	{		
-		desiredState = (m_fFlags & SRVT_ACTIVATE_ON_POWER_UP) ? States::THROWN : States::CLOSED;
-		if (m_fFlags & SRVT_INVERTED_OPERATION)
-		{
-			desiredState = desiredState == States::THROWN ? States::CLOSED : States::THROWN;
-		}
+		desiredState = (m_fFlags & SRVT_ACTIVATE_ON_POWER_UP) ? States::THROWN : States::CLOSED;		
 	}	
+
+	if (m_fFlags & SRVT_INVERTED_OPERATION)
+	{
+		desiredState = desiredState == States::THROWN ? States::CLOSED : States::THROWN;
+	}
 	
 	if (desiredState == States::THROWN)
 	{
@@ -163,10 +164,7 @@ void ServoTurnoutDecoder::Init(const dcclite::PinType_t powerPin, const dcclite:
 	{
 		m_uServoPos = 0;
 		this->OperateClose(millis());
-	}
-
-	m_clServo.attach(m_clPin.Raw());	
-	SERVO_WRITE(m_clServo, m_uServoPos);
+	}		
 
 #if 0
 	Console::SendLogEx("[ServoTurnout]", ' ', "PIN: ", m_tPin);
@@ -234,7 +232,7 @@ bool ServoTurnoutDecoder::StateUpdate(const uint8_t desiredPosition, const State
 	if (m_uServoPos == desiredPosition)
 	{
 		//make sure we are in position, on init state we may not, so we write it again
-		SERVO_WRITE(m_clServo, m_uServoPos);
+		SERVO_WRITE(m_clServo, m_uServoPos); 
 
 		m_uNextThink = ticks + POWER_OFF_TICKS;
 
