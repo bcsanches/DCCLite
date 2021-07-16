@@ -251,7 +251,7 @@ bool ServoTurnoutDecoder::StateUpdate(const uint8_t desiredPosition, const State
 		//Store current state on eprom, so we can reload.
 		if ((m_uFlagsStorageIndex) && (!(m_fFlags & dcclite::SRVT_IGNORE_SAVED_STATE)))
 		{
-			Console::SendLogEx("[SERVO]", "updated ", m_uFlagsStorageIndex);
+			//Console::SendLogEx("[SERVO]", "updated ", m_uFlagsStorageIndex);
 			Storage::UpdateField(m_uFlagsStorageIndex, m_fFlags);
 		}			
 

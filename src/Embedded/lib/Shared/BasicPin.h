@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include <SharedLibDefs.h>
+#include "SharedLibDefs.h"
 
 namespace dcclite
 {

@@ -44,8 +44,11 @@ void setup()
 	LocalDecoderManager::Init();
 
 	{
+		//
+		//CRIANDO UM DESVIO
+		//
 		auto turnout = LocalDecoderManager::CreateServoTurnout(
-			dcclite::SRVT_INVERTED_OPERATION | dcclite::SRVT_INVERTED_POWER,	//flags - opções do servo
+			dcclite::SRVT_INVERTED_OPERATION,									//flags - opções do servo
 			{ 10 },																//pin - pino do servo
 			25,																	//range - quantos graus movimenta
 			20,																	//ticks - quantos milisegundos entre cada grau
@@ -53,6 +56,9 @@ void setup()
 			dcclite::NullPin													//frogPin - pino para ligar / desligar rele do frog (opcional)
 		);
 
+		//
+		//CRIANDO UM SENSOR QUE VAI MONITORAR UMA ENTRADA DO ARDUINO
+		//
 		auto sensor1 = LocalDecoderManager::CreateSensor(
 			dcclite::SNRD_PULL_UP | dcclite::SNRD_INVERTED,	//flags						flags
 			{ 9 },											//pin						pino do sensor
@@ -60,12 +66,16 @@ void setup()
 			0												//deactivate Delay (msec)	espera para desligar (opcional)
 		);
 
-		//Cria um botao que alterna o desvio
+		//Cria um botao que alterna o desvio de um lado para o outro quando pressionado
 		LocalDecoderManager::CreateButton(
 			*sensor1, 										//sensor do botão
 			*turnout, 										//desvio que ele opera
 			LocalDecoderManager::kTOGGLE					//o que fazer quando botão apertado: toggle - alterna
 		);
+
+		//
+		//CRIANDO OUTRO SENSOR QUE VAI MONITORAR UMA ENTRADA DO ARDUINO
+		//
 
 		auto sensor2 = LocalDecoderManager::CreateSensor(
 			dcclite::SNRD_PULL_UP | dcclite::SNRD_INVERTED,	//flags
@@ -74,7 +84,12 @@ void setup()
 			0												//deactivate Delay (msec)
 		);
 
+		//Este botão apenas faz THROW no desvio
 		LocalDecoderManager::CreateButton(*sensor2, *turnout, LocalDecoderManager::kTHROW);
+
+		//
+		//CRIANDO OUTRO SENSOR QUE VAI MONITORAR UMA ENTRADA DO ARDUINO
+		//
 
 		auto sensor3 = LocalDecoderManager::CreateSensor(
 			dcclite::SNRD_PULL_UP | dcclite::SNRD_INVERTED,	//flags
@@ -83,6 +98,7 @@ void setup()
 			0												//deactivate Delay (msec)
 		);
 
+		//Este botão apenas faz CLOSE no desvio
 		LocalDecoderManager::CreateButton(*sensor3, *turnout, LocalDecoderManager::kCLOSE);
 	}
 

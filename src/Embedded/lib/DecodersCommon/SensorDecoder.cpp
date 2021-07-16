@@ -11,10 +11,10 @@
 #include "SensorDecoder.h"
 
 #include <Arduino.h>
-#include <SharedLibDefs.h>
-#include <Packet.h>
 
 #include "Console.h"
+#include "Packet.h"
+#include "SharedLibDefs.h"
 #include "Storage.h"
 
 const char SensorModuleName[] PROGMEM = {"SensorDecoder"} ;

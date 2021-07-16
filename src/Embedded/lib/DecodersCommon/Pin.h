@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include <BasicPin.h>
+#include "BasicPin.h"
 
 #include <Arduino.h>
 
