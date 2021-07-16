@@ -73,7 +73,7 @@ bool Storage::LoadConfig()
 
     EpromStream stream(0);	
 
-    stream.Get(header.m_archName, sizeof(header.m_archName));
+    stream.GetString(header.m_archName, sizeof(header.m_archName));
     stream.Get(header.m_uLength);	
 
     if(strncmp_P(header.m_archName, StorageMagic, strlen_P(StorageMagic)))
@@ -93,7 +93,7 @@ bool Storage::LoadConfig()
 
 		for (;;)
 		{
-			stream.Get(lump.m_archName, sizeof(lump.m_archName));
+			stream.GetString(lump.m_archName, sizeof(lump.m_archName));
 			stream.Get(lump.m_uLength);			
 #if 1			
 #endif
@@ -193,7 +193,15 @@ namespace Storage
 		m_uIndex += sizeof(number);
 	}
 
-	unsigned int EpromStream::Get(char *name, unsigned int nameSize)
+	void EpromStream::GetRaw(uint8_t *data,uint16_t size)
+	{
+		for(uint16_t i = 0; i < size; ++i)
+		{
+			data[i] = EEPROM.read(m_uIndex++);			
+		}		
+	}
+
+	unsigned int EpromStream::GetString(char *name, unsigned int nameSize)
 	{
 		if (!nameSize)
 			return 0;
@@ -269,6 +277,16 @@ namespace Storage
 		EEPROM.put(m_uIndex, data);
 
 		m_uIndex += sizeof(T);
+
+		return index;
+	}
+
+	unsigned int EpromStream::PutRawData(const uint8_t *data, uint16_t size)
+	{
+		auto index = m_uIndex;
+
+		for (uint16_t i = 0; i < size; ++i)
+			EEPROM.put(m_uIndex++, data[i]);		
 
 		return index;
 	}

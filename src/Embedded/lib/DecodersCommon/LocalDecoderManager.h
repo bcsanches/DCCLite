@@ -47,4 +47,8 @@ namespace LocalDecoderManager
 	bool Update(const unsigned long ticks);
 
 	Decoder *TryGetDecoder(const uint8_t slot);
+
+	void Init();
+
+	void PostInit();
 }

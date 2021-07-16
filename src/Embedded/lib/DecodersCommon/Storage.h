@@ -47,7 +47,8 @@ namespace Storage
 	#endif
 			void Get(uint16_t &number);
 
-			unsigned int Get(char *name, unsigned int nameSize);
+			unsigned int GetString(char *name, unsigned int nameSize);
+			void GetRaw(uint8_t *data, uint16_t size);
 
 			void Put(char ch);
 			void Put(unsigned char byte);
@@ -60,6 +61,8 @@ namespace Storage
 
 			template <typename T>
 			unsigned int PutData(const T &data);
+			
+			unsigned int PutRawData(const uint8_t *data, uint16_t size);
 
 	#if 0 //CHECK THIS
 			void Put(const char *str);

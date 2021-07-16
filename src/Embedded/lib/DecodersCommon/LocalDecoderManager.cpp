@@ -11,6 +11,7 @@
 #include "LocalDecoderManager.h"
 
 #include "Console.h"
+#include "Storage.h"
 #include "SensorDecoder.h"
 #include "ServoTurnoutDecoder.h"
 
@@ -36,6 +37,10 @@ static const char FStrNoButtons[] PROGMEM = { "Out of buttons" };
 static Decoder *g_pDecoders[MAX_DECODERS] = { 0 };
 
 static uint8_t g_iNextSlot = 0;
+
+static Storage::EpromStream *g_pLoadStream = nullptr;
+
+#define EPROM_HEADER_SIZE 32
 
 //
 //
@@ -79,23 +84,29 @@ void Button::Update()
 	//Sensor was pressed, now released... ok nothing to do
 	if (buttonPreviousState)
 	{
-		Console::Send("Button released");
+		Console::SendLn("Button released");
 
 		return;
-	}
-
-	Console::Send("Button pressed");
+	}	
 
 	//
 	//if we reached here, button was pressed on this frame, so call the target....
 	if (m_kAction == LocalDecoderManager::kTHROW)
+	{	
+		Console::Send("Button pressed - Throw");
 		m_rclTarget.AcceptServerState(dcclite::DecoderStates::ACTIVE);
+	}
 	else if (m_kAction == LocalDecoderManager::kCLOSE)
+	{
+		Console::Send("Button pressed - Close");
 		m_rclTarget.AcceptServerState(dcclite::DecoderStates::INACTIVE);
+	}		
 	else
 	{
 		auto state = m_rclTarget.GetDecoderState();
 		state = !state;
+
+		Console::Send("Button pressed - Toggle");
 
 		m_rclTarget.AcceptServerState(state);
 	}
@@ -127,7 +138,7 @@ ServoTurnoutDecoder *LocalDecoderManager::CreateServoTurnout(
 		return nullptr;
 	}
 
-	auto *turnout = new ServoTurnoutDecoder(flags, pin, range, ticks, powerPin, frogPin);
+	auto *turnout = g_pLoadStream ? new ServoTurnoutDecoder(*g_pLoadStream) : new ServoTurnoutDecoder(flags, pin, range, ticks, powerPin, frogPin);
 
 	g_pDecoders[g_iNextSlot++] = turnout;	
 
@@ -149,7 +160,7 @@ SensorDecoder *LocalDecoderManager::CreateSensor(
 		return nullptr;
 	}
 
-	auto *sensor = new SensorDecoder(flags, pin, activateDelay, deactivateDelay);
+	auto *sensor = g_pLoadStream ? new SensorDecoder(*g_pLoadStream) : new SensorDecoder(flags, pin, activateDelay, deactivateDelay);
 
 	g_pDecoders[g_iNextSlot++] = sensor;
 
@@ -165,6 +176,7 @@ void LocalDecoderManager::CreateButton(SensorDecoder &sensor, ServoTurnoutDecode
 		return;
 	}
 
+	Console::SendLogEx(MODULE_NAME, "Added button", ' ', g_iNextButton);
 	g_pButtons[g_iNextButton++] = new Button(sensor, target, actions);
 }
 
@@ -192,3 +204,70 @@ bool LocalDecoderManager::Update(const unsigned long ticks)
 	return stateChanged;
 }
 
+struct Header
+{
+	char m_u8Buffer[EPROM_HEADER_SIZE];
+};
+
+static void InitHeader(Header &header)
+{
+	memset(&header, 0, sizeof(header));
+	strncpy(header.m_u8Buffer, __DATE__, 16);
+	strncpy(header.m_u8Buffer + 16, __TIME__, 16);
+}
+
+void LocalDecoderManager::Init()
+{
+	Header header;
+	
+	InitHeader(header);	
+
+	g_pLoadStream = new Storage::EpromStream{ 0 };	
+
+	Header storageData;
+	g_pLoadStream->GetRaw(reinterpret_cast<uint8_t *>(storageData.m_u8Buffer), sizeof(storageData.m_u8Buffer));
+	
+	if (memcmp(storageData.m_u8Buffer, header.m_u8Buffer, sizeof(storageData.m_u8Buffer)) == 0)
+	{
+		Console::SendLogEx(MODULE_NAME, "Found valid eprom data");		
+	}
+	else
+	{
+		Console::SendLogEx(MODULE_NAME, "NO eprom data");
+		Console::SendLogEx(MODULE_NAME, storageData.m_u8Buffer, storageData.m_u8Buffer+16);
+
+		delete g_pLoadStream;
+		g_pLoadStream = nullptr;
+	}
+	
+}
+
+void LocalDecoderManager::PostInit()
+{
+	if (g_pLoadStream)
+	{
+		//nothing to do
+		delete g_pLoadStream;
+		g_pLoadStream = nullptr;
+
+		Console::SendLogEx(MODULE_NAME, "Post Init OK");
+		return;
+	}
+
+	Console::SendLogEx(MODULE_NAME, "Initializing eprom");
+
+	Header header;	
+	InitHeader(header);	
+
+	Storage::EpromStream stream{ 0 };
+
+	stream.PutRawData(reinterpret_cast<uint8_t *>(header.m_u8Buffer), sizeof(header));
+	Console::SendLogEx(MODULE_NAME, header.m_u8Buffer, header.m_u8Buffer+16);	
+
+	for (int i = 0; i < g_iNextSlot; ++i)
+	{
+		g_pDecoders[i]->SaveConfig(stream);
+	}
+
+	Console::SendLogEx(MODULE_NAME, "Saved ", g_iNextSlot, " decoders ", (int)stream.GetIndex());	
+}

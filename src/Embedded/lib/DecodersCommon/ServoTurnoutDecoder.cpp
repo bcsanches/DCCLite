@@ -38,7 +38,7 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(dcclite::Packet& packet) :
 	m_uRange = packet.Read<uint8_t>();
 	m_uTicks = packet.Read<uint8_t>();
 
-	this->Init(powerPin, frogPin);
+	this->Init(powerPin, frogPin, false);
 }
 
 ServoTurnoutDecoder::ServoTurnoutDecoder(Storage::EpromStream& stream) :
@@ -61,7 +61,7 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(Storage::EpromStream& stream) :
 	stream.Get(m_uRange);
 	stream.Get(m_uTicks);	
 
-	this->Init(powerPin, frogPin);
+	this->Init(powerPin, frogPin, false);
 }
 
 ServoTurnoutDecoder::ServoTurnoutDecoder(uint8_t flags, dcclite::PinType_t pin, uint8_t range, uint8_t ticks, dcclite::PinType_t powerPin, dcclite::PinType_t frogPin):		
@@ -70,7 +70,7 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(uint8_t flags, dcclite::PinType_t pin, 
 	m_uRange{ range },
 	m_uTicks{ ticks }
 {
-	this->Init(powerPin, frogPin);
+	this->Init(powerPin, frogPin, true);
 }
 
 ServoTurnoutDecoder::~ServoTurnoutDecoder()
@@ -125,7 +125,7 @@ void ServoTurnoutDecoder::TurnOffPower() noexcept
 	//Console::SendLogEx("SERVO", "POWEROFF");
 }
 
-void ServoTurnoutDecoder::Init(const dcclite::PinType_t powerPin, const dcclite::PinType_t frogPin) noexcept
+void ServoTurnoutDecoder::Init(const dcclite::PinType_t powerPin, const dcclite::PinType_t frogPin, bool checkInversion) noexcept
 {
 	using namespace dcclite;	
 	
@@ -148,9 +148,11 @@ void ServoTurnoutDecoder::Init(const dcclite::PinType_t powerPin, const dcclite:
 	if (m_fFlags & SRVT_IGNORE_SAVED_STATE)
 	{		
 		desiredState = (m_fFlags & SRVT_ACTIVATE_ON_POWER_UP) ? States::THROWN : States::CLOSED;		
-	}	
 
-	if (m_fFlags & SRVT_INVERTED_OPERATION)
+		checkInversion = true; 		
+	}		
+
+	if ((checkInversion) && (m_fFlags & SRVT_INVERTED_OPERATION))
 	{
 		desiredState = desiredState == States::THROWN ? States::CLOSED : States::THROWN;
 	}
@@ -248,7 +250,10 @@ bool ServoTurnoutDecoder::StateUpdate(const uint8_t desiredPosition, const State
 
 		//Store current state on eprom, so we can reload.
 		if ((m_uFlagsStorageIndex) && (!(m_fFlags & dcclite::SRVT_IGNORE_SAVED_STATE)))
+		{
+			Console::SendLogEx("[SERVO]", "updated ", m_uFlagsStorageIndex);
 			Storage::UpdateField(m_uFlagsStorageIndex, m_fFlags);
+		}			
 
 		//Console::SendLogEx("[SERVO]", "finished", m_uServoPos);
 

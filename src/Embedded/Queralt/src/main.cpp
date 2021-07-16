@@ -41,25 +41,31 @@ void Storage::Custom_SaveModules(EpromStream &stream)
 void setup()
 {		
 	Console::Init();
+	LocalDecoderManager::Init();
 
 	{
 		auto turnout = LocalDecoderManager::CreateServoTurnout(
-			dcclite::SRVT_INVERTED_OPERATION | dcclite::SRVT_INVERTED_POWER,	//flags
-			{ 10 },																//pin
-			25,																	//range
-			20,																	//ticks
-			{7},																//powerPin
-			dcclite::NullPin													//frogPin
+			dcclite::SRVT_INVERTED_OPERATION | dcclite::SRVT_INVERTED_POWER,	//flags - opções do servo
+			{ 10 },																//pin - pino do servo
+			25,																	//range - quantos graus movimenta
+			20,																	//ticks - quantos milisegundos entre cada grau
+			{7},																//powerPin - pino para ligar / desligar o relé do servo (opcional)
+			dcclite::NullPin													//frogPin - pino para ligar / desligar rele do frog (opcional)
 		);
 
 		auto sensor1 = LocalDecoderManager::CreateSensor(
-			dcclite::SNRD_PULL_UP | dcclite::SNRD_INVERTED,	//flags
-			{ 9 },											//pin
-			0,												//activate Delay (msec)
-			0												//deactivate Delay (msec)
+			dcclite::SNRD_PULL_UP | dcclite::SNRD_INVERTED,	//flags						flags
+			{ 9 },											//pin						pino do sensor
+			0,												//activate Delay (msec)		espera para ligar (opcional)
+			0												//deactivate Delay (msec)	espera para desligar (opcional)
 		);
 
-		LocalDecoderManager::CreateButton(*sensor1, *turnout, LocalDecoderManager::kTOGGLE);
+		//Cria um botao que alterna o desvio
+		LocalDecoderManager::CreateButton(
+			*sensor1, 										//sensor do botão
+			*turnout, 										//desvio que ele opera
+			LocalDecoderManager::kTOGGLE					//o que fazer quando botão apertado: toggle - alterna
+		);
 
 		auto sensor2 = LocalDecoderManager::CreateSensor(
 			dcclite::SNRD_PULL_UP | dcclite::SNRD_INVERTED,	//flags
@@ -81,6 +87,8 @@ void setup()
 	}
 
 	g_uLastFrameTime = millis();
+
+	LocalDecoderManager::PostInit();
 }
 
 void loop() 

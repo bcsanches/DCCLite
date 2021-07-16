@@ -184,7 +184,7 @@ void Storage_LoadDecoders(uint32_t position)
 
 	Storage::Lump lump;
 
-	stream.Get(lump.m_archName, sizeof(lump.m_archName));
+	stream.GetString(lump.m_archName, sizeof(lump.m_archName));
 	stream.Get(lump.m_uLength);
 
 	if (strncmp_P(lump.m_archName, DecodersStorageId, strlen_P(DecodersStorageId)) != 0)

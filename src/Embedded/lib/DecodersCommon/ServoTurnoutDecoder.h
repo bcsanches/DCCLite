@@ -90,7 +90,7 @@ class ServoTurnoutDecoder : public Decoder
 		}
 
 	private:
-		void Init(const dcclite::PinType_t powerPin, const dcclite::PinType_t frogPin) noexcept;
+		void Init(const dcclite::PinType_t powerPin, const dcclite::PinType_t frogPin, bool checkInversion) noexcept;
 		
 		void TurnOnPower(const unsigned long ticks) noexcept;
 		void TurnOffPower() noexcept;
