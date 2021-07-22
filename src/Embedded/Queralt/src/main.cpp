@@ -52,7 +52,7 @@ void setup()
 			{ 10 },																//pin - pino do servo
 			10,																	//range - quantos graus movimenta
 			20,																	//ticks - quantos milisegundos entre cada grau
-			{7},																//powerPin - pino para ligar / desligar o relé do servo (opcional)
+			dcclite::NullPin,													//powerPin - pino para ligar / desligar o relé do servo (opcional)
 			dcclite::NullPin													//frogPin - pino para ligar / desligar rele do frog (opcional)
 		);
 
