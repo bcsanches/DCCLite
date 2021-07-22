@@ -89,9 +89,10 @@
         "address": "1406",
         "pin": 31,
         "inverted": false,
-        "powerPin": 67,
+        "powerPin": 69,
         "frogPin": 68,
-        "invertedFrog": true,
+        "range":25,
+        "invertedFrog": false,
         "invertedPower": true,
         "operationTime": 3000
     }

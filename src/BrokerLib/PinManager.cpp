@@ -59,22 +59,22 @@ namespace dcclite::broker
 		vecPins[52].m_pszSpecialName = "SCK";
 		vecPins[53].m_pszSpecialName = "SS";
 
-		vecPins[54].m_pszSpecialName = "A01";
-		vecPins[55].m_pszSpecialName = "A02";
-		vecPins[56].m_pszSpecialName = "A03";
-		vecPins[57].m_pszSpecialName = "A04";
-		vecPins[58].m_pszSpecialName = "A05";
-		vecPins[59].m_pszSpecialName = "A06";
-		vecPins[60].m_pszSpecialName = "A07";
-		vecPins[61].m_pszSpecialName = "A08";
-		vecPins[62].m_pszSpecialName = "A09";
-		vecPins[63].m_pszSpecialName = "A10";
-		vecPins[64].m_pszSpecialName = "A11";
-		vecPins[65].m_pszSpecialName = "A12";
-		vecPins[66].m_pszSpecialName = "A13";
-		vecPins[67].m_pszSpecialName = "A14";
-		vecPins[68].m_pszSpecialName = "A15";
-		vecPins[69].m_pszSpecialName = "A16";
+		vecPins[54].m_pszSpecialName = "A00";
+		vecPins[55].m_pszSpecialName = "A01";
+		vecPins[56].m_pszSpecialName = "A02";
+		vecPins[57].m_pszSpecialName = "A03";
+		vecPins[58].m_pszSpecialName = "A04";
+		vecPins[59].m_pszSpecialName = "A05";
+		vecPins[60].m_pszSpecialName = "A06";
+		vecPins[61].m_pszSpecialName = "A07";
+		vecPins[62].m_pszSpecialName = "A08";
+		vecPins[63].m_pszSpecialName = "A09";
+		vecPins[64].m_pszSpecialName = "A10";
+		vecPins[65].m_pszSpecialName = "A11";
+		vecPins[66].m_pszSpecialName = "A12";
+		vecPins[67].m_pszSpecialName = "A13";
+		vecPins[68].m_pszSpecialName = "A14";
+		vecPins[69].m_pszSpecialName = "A15";
 	}
 
 
@@ -94,11 +94,11 @@ namespace dcclite::broker
 		vecPins[12].m_pszSpecialName = "MISO";
 		vecPins[13].m_pszSpecialName = "SCK";
 
-		vecPins[14].m_pszSpecialName = "A01";
-		vecPins[15].m_pszSpecialName = "A02";
-		vecPins[16].m_pszSpecialName = "A03";
-		vecPins[17].m_pszSpecialName = "A04";
-		vecPins[18].m_pszSpecialName = "A05";
+		vecPins[14].m_pszSpecialName = "A00";
+		vecPins[15].m_pszSpecialName = "A01";
+		vecPins[16].m_pszSpecialName = "A02";
+		vecPins[17].m_pszSpecialName = "A03";
+		vecPins[18].m_pszSpecialName = "A04";
 	}
 
 	PinManager::PinManager(ArduinoBoards board)
