@@ -82,5 +82,17 @@
         "invertedFrog": true,
         "invertedPower": true,
         "operationTime": 3000
+    },
+    {
+        "name": "TC_T10",
+        "class": "ServoTurnout",
+        "address": "1406",
+        "pin": 31,
+        "inverted": false,
+        "powerPin": 67,
+        "frogPin": 68,
+        "invertedFrog": true,
+        "invertedPower": true,
+        "operationTime": 3000
     }
 ]

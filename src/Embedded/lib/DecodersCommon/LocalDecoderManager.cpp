@@ -38,6 +38,9 @@ static Decoder *g_pDecoders[MAX_DECODERS] = { 0 };
 
 static uint8_t g_iNextSlot = 0;
 
+static const char *g_psDate = "";
+static const char *g_psTime = "";
+
 static Storage::EpromStream *g_pLoadStream = nullptr;
 
 #define EPROM_HEADER_SIZE 32
@@ -212,12 +215,18 @@ struct Header
 static void InitHeader(Header &header)
 {
 	memset(&header, 0, sizeof(header));
-	strncpy(header.m_u8Buffer, __DATE__, 16);
-	strncpy(header.m_u8Buffer + 16, __TIME__, 16);
+	strncpy(header.m_u8Buffer, g_psDate, 16);
+	strncpy(header.m_u8Buffer + 16, g_psTime, 16);
 }
 
-void LocalDecoderManager::Init()
+void LocalDecoderManager::Init(const char *time, const char *date)
 {
+	assert(time);
+	assert(date);
+
+	g_psTime = time;
+	g_psDate = date;
+
 	Header header;
 	
 	InitHeader(header);	

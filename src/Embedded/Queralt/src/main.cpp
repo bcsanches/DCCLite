@@ -41,7 +41,7 @@ void Storage::Custom_SaveModules(EpromStream &stream)
 void setup()
 {		
 	Console::Init();
-	LocalDecoderManager::Init();
+	LocalDecoderManager::Init(__TIME__, __DATE__);
 
 	{
 		//
@@ -50,7 +50,7 @@ void setup()
 		auto turnout = LocalDecoderManager::CreateServoTurnout(
 			dcclite::SRVT_INVERTED_OPERATION,									//flags - opções do servo
 			{ 10 },																//pin - pino do servo
-			25,																	//range - quantos graus movimenta
+			10,																	//range - quantos graus movimenta
 			20,																	//ticks - quantos milisegundos entre cada grau
 			{7},																//powerPin - pino para ligar / desligar o relé do servo (opcional)
 			dcclite::NullPin													//frogPin - pino para ligar / desligar rele do frog (opcional)

@@ -48,7 +48,7 @@ namespace LocalDecoderManager
 
 	Decoder *TryGetDecoder(const uint8_t slot);
 
-	void Init();
+	void Init(const char *time, const char *date);
 
 	void PostInit();
 }
