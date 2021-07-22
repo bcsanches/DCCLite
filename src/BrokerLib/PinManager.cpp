@@ -105,16 +105,16 @@ namespace dcclite::broker
 	{
 		switch (board)
 		{
-		case ArduinoBoards::MEGA:
-			ArduinoMega_FillPins(m_vecPins);
-			break;
+			case ArduinoBoards::MEGA:
+				ArduinoMega_FillPins(m_vecPins);
+				break;
 
-		case ArduinoBoards::UNO:
-			ArduinoUno_FillPins(m_vecPins);
-			break;
+			case ArduinoBoards::UNO:
+				ArduinoUno_FillPins(m_vecPins);
+				break;
 
-		default:
-			throw std::logic_error(fmt::format("[PinManager::PinManager] Unknown board: {}", board));
+			default:
+				throw std::logic_error(fmt::format("[PinManager::PinManager] Unknown board: {}", board));
 		}
 	}
 
