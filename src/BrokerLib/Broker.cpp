@@ -25,6 +25,7 @@
 #include "LoconetService.h"
 #include "TerminalCmd.h"
 #include "TerminalService.h"
+#include "ThrottleService.h"
 #include "SpecialFolders.h"
 
 #include "DccLiteService.h"
@@ -57,6 +58,10 @@ namespace dcclite::broker
 		else if (strcmp(className, "Terminal") == 0)
 		{
 			return std::make_unique<TerminalService>(name, broker, data, project);
+		}
+		else if (strcmp(className, "ThrottleService") == 0)
+		{
+			return ThrottleService::Create(name, broker, data, project);
 		}
 
 		throw std::runtime_error(fmt::format("error: unknown service type {}", className));

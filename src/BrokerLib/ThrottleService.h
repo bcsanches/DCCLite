@@ -15,6 +15,11 @@
 
 namespace dcclite::broker
 { 
+	class IThrottle
+	{
+
+	};
+
 
 	class ThrottleService: public Service
 	{	

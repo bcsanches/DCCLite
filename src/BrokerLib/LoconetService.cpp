@@ -10,6 +10,7 @@
 #include "Clock.h"
 #include "DccAddress.h"
 #include "Packet.h"
+#include "ThrottleService.h"
 #include "SerialPort.h"
 
 enum Bits : uint8_t
@@ -41,7 +42,8 @@ enum Opcodes : uint8_t
 	OPC_LOCO_ADR = 0xBF,
 
 	//See JMRI - PR3Adapter.java configure()
-	OPD_UNDOC_SETMS100 = 0xD3,
+	OPC_UNDOC_SETMS100 = 0xD3,
+	OPC_PANEL_RESPONSE = 0xD7,
 	OPC_UNDOC_PANEL_QUERY = 0xDF,
 
 	OPC_SL_RD_DATA = 0xE7,
@@ -96,7 +98,7 @@ uint8_t DefaultMsgSizes(const Opcodes opcode)
 		case OPC_WR_SL_DATA:
 			return 14;
 
-		case OPD_UNDOC_SETMS100:
+		case OPC_UNDOC_SETMS100:
 			return 6;
 
 		default:
@@ -193,7 +195,8 @@ class Slot
 
 		void GotoState_Common(const dcclite::broker::DccAddress addr) noexcept
 		{
-			m_eState = States::COMMON;
+			this->GotoState_Common();
+			
 			m_tLocomotiveAddress = addr;
 		}
 
@@ -256,14 +259,16 @@ class Slot
 		}		
 
 	private:
-		dcclite::broker::DccAddress m_tLocomotiveAddress;
+		dcclite::broker::DccAddress m_tLocomotiveAddress;			
+		std::unique_ptr<dcclite::broker::IThrottle> m_upThrottle;
+
+		Functions_t m_arFunctions;
+
 		States m_eState = States::FREE;
 
 		uint8_t m_uSpeed = { 0 };
 
 		bool m_fForward = { true };
-
-		Functions_t m_arFunctions;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -665,7 +670,7 @@ namespace dcclite::broker
 	{				
 		dcclite::Log::Info("[LoconetService] Started, listening on port {}", params["port"].GetString());
 
-		LoconetMessageWriter msg(OPD_UNDOC_SETMS100);
+		LoconetMessageWriter msg(OPC_UNDOC_SETMS100);
 
 		msg.WriteByte(0x10);
 		msg.WriteByte(3);
@@ -917,7 +922,8 @@ namespace dcclite::broker
 				break;
 
 			case Opcodes::OPC_LONG_ACK:
-			case Opcodes::OPD_UNDOC_SETMS100:
+			case Opcodes::OPC_UNDOC_SETMS100:
+			case Opcodes::OPC_PANEL_RESPONSE:
 			case Opcodes::OPC_UNDOC_PANEL_QUERY:
 				//ignore
 				break;

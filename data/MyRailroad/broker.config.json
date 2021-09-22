@@ -8,7 +8,7 @@
       "devices": [
         {
           "name": "TestDevice",
-          "class": "ArduinoLeonard"
+          "class": "ArduinoMega"
         }
       ]
     },

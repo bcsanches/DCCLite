@@ -1,0 +1,21 @@
+{
+  "name": "EFMR",
+  "services": [    
+    {
+      "class": "Terminal",
+      "name": "terminal",
+      "port": 4191
+    },
+    {
+        "class": "LoconetService",
+        "name": "loconet",
+        "port": "COM4",        
+        "ignoreOnLoadFailure":false
+    },
+    {
+        "class":"ThrottleService",
+        "name":"throttleService",
+        "serverAddress": "127.0.0.1:2560"
+    }
+  ]
+}
