@@ -51,7 +51,9 @@ namespace dcclite::broker
 
 			static std::unique_ptr<Service> Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
-			void Serialize(JsonOutputStream_t &stream) const override;		
+			void Serialize(JsonOutputStream_t &stream) const override;	
+
+			std::unique_ptr<IThrottle> CreateThrottle(DccAddress locomotiveAddress) override;
 
 		private:
 			dcclite::NetworkAddress m_clServerAddress;
@@ -95,6 +97,12 @@ namespace dcclite::broker
 	std::unique_ptr<Service> ThrottleService::Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project)
 	{
 		return std::make_unique<ThrottleServiceImpl>(name, broker, params, project);
+	}
+
+
+	std::unique_ptr<IThrottle> ThrottleServiceImpl::CreateThrottle(DccAddress locomotiveAddress)
+	{
+		return nullptr;
 	}
 
 

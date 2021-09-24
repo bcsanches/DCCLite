@@ -13,11 +13,14 @@
 
 #include "Service.h"
 
+#include "DccAddress.h"
+
 namespace dcclite::broker
 { 
 	class IThrottle
 	{
-
+		public:
+			virtual ~IThrottle() = 0;
 	};
 
 
@@ -30,8 +33,17 @@ namespace dcclite::broker
 			{
 				//empty
 			}
-		
 
+			//
+			// Main interface
+			//
+
+			virtual std::unique_ptr<IThrottle> CreateThrottle(DccAddress locomotiveAddress) = 0;
+
+			//
+			//
+			//
+		
 			static std::unique_ptr<Service> Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
 			const char *GetTypeName() const noexcept override

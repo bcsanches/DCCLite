@@ -9,12 +9,13 @@
     {
         "class": "LoconetService",
         "name": "loconet",
-        "port": "COM4",        
+        "port": "COM4",     
+        "throttleService": "ThrottleService"    
         "ignoreOnLoadFailure":false
     },
     {
         "class":"ThrottleService",
-        "name":"throttleService",
+        "name":"ThrottleService",
         "serverAddress": "127.0.0.1:2560"
     }
   ]
