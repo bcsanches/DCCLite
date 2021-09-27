@@ -11,6 +11,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+
+
 class Throttle: public dcclite::IObject
 {
 	public:
@@ -24,7 +26,48 @@ class Throttle: public dcclite::IObject
 #endif
 
 	private:
+		void GotoConnectingState();
+		void GotoConnectedState();
+
+	private:
 		dcclite::NetMessenger m_clMessenger;
+
+		struct State
+		{
+
+		};
+
+		struct ConnectingState: State
+		{
+			private:
+				dcclite::Socket m_clSocket;
+
+			public:
+				ConnectingState(const dcclite::NetworkAddress &serverAddress)
+				{
+					if (!m_clSocket.StartConnection(serverAddress))
+						throw std::runtime_error("[Throttle::ConnectingState] Cannot start connection");
+				}
+
+				void Update(Throttle &self)
+				{
+					auto status = m_clSocket.GetConnectionProgress();
+					if (status == dcclite::Socket::Status::DISCONNECTED)
+					{
+						self.GotoConnectingState();
+					}
+					else if (status == dcclite::Socket::Status::OK)
+					{
+						self.GotoConnectedState();
+					}
+				}
+		};
+
+		struct ConnectedState: State
+		{
+
+		};
+
 };
 
 
