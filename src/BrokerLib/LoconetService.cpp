@@ -7,6 +7,7 @@
 
 #include "magic_enum.hpp"
 
+#include "Broker.h"
 #include "Clock.h"
 #include "DccAddress.h"
 #include "Packet.h"
@@ -84,6 +85,8 @@ static constexpr auto MAX_SLOT_FUNCTIONS = 32;
 typedef dcclite::BitPack<32> Functions_t;
 
 typedef dcclite::BasePacket<MAX_LN_MESSAGE_LEN> MiniPacket_t;
+
+static dcclite::broker::ThrottleService *g_pclThrottleService = nullptr;
 
 uint8_t DefaultMsgSizes(const Opcodes opcode)
 {
@@ -190,7 +193,9 @@ class Slot
 
 		void GotoState_Common() noexcept
 		{
-			m_eState = States::COMMON;			
+			m_eState = States::COMMON;		
+
+			m_upThrottle.reset();
 		}
 
 		void GotoState_Common(const dcclite::broker::DccAddress addr) noexcept
@@ -203,11 +208,15 @@ class Slot
 		void GotoState_InUse() noexcept
 		{
 			m_eState = States::IN_USE;
+
+			m_upThrottle = g_pclThrottleService->CreateThrottle(m_tLocomotiveAddress);
 		}
 
 		void GotoState_Free() noexcept
 		{
 			m_eState = States::FREE;
+
+			m_upThrottle.reset();
 		}
 
 		States GetState() const noexcept
@@ -660,13 +669,16 @@ namespace dcclite::broker
 
 			MessageDispatcher m_clMessageDispatcher;
 
+			std::string m_strThrottleServiceName;
+
 			dcclite::Clock::TimePoint_t m_tNextPurgeTicks;	
 	};
 
 
 	LoconetServiceImpl::LoconetServiceImpl(const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
 		LoconetService(name, broker, params, project),
-		m_clSerialPort(params["port"].GetString())		
+		m_clSerialPort(params["port"].GetString()),
+		m_strThrottleServiceName(params["throttleServiceName"].GetString())
 	{				
 		dcclite::Log::Info("[LoconetService] Started, listening on port {}", params["port"].GetString());
 
@@ -690,7 +702,10 @@ namespace dcclite::broker
 
 	void LoconetServiceImpl::Initialize()
 	{
-		//empty
+		g_pclThrottleService = static_cast<ThrottleService *>(m_rclBroker.TryFindService(m_strThrottleServiceName));
+
+		if (!g_pclThrottleService)
+			throw std::runtime_error(fmt::format("[LoconetServiceImpl::Initialize] Cannot find throttle service instance: {}", m_strThrottleServiceName));
 	}	
 
 	void LoconetServiceImpl::DispatchLnLongAckMessage(const Opcodes opcode, const uint8_t responseCode)

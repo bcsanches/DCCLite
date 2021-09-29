@@ -11,6 +11,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+
+
 class Throttle: public dcclite::IObject
 {
 	public:
@@ -24,7 +26,48 @@ class Throttle: public dcclite::IObject
 #endif
 
 	private:
+		void GotoConnectingState();
+		void GotoConnectedState();
+
+	private:
 		dcclite::NetMessenger m_clMessenger;
+
+		struct State
+		{
+
+		};
+
+		struct ConnectingState: State
+		{
+			private:
+				dcclite::Socket m_clSocket;
+
+			public:
+				ConnectingState(const dcclite::NetworkAddress &serverAddress)
+				{
+					if (!m_clSocket.StartConnection(serverAddress))
+						throw std::runtime_error("[Throttle::ConnectingState] Cannot start connection");
+				}
+
+				void Update(Throttle &self)
+				{
+					auto status = m_clSocket.GetConnectionProgress();
+					if (status == dcclite::Socket::Status::DISCONNECTED)
+					{
+						self.GotoConnectingState();
+					}
+					else if (status == dcclite::Socket::Status::OK)
+					{
+						self.GotoConnectedState();
+					}
+				}
+		};
+
+		struct ConnectedState: State
+		{
+
+		};
+
 };
 
 
@@ -49,7 +92,9 @@ namespace dcclite::broker
 
 			static std::unique_ptr<Service> Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
-			void Serialize(JsonOutputStream_t &stream) const override;		
+			void Serialize(JsonOutputStream_t &stream) const override;	
+
+			std::unique_ptr<IThrottle> CreateThrottle(DccAddress locomotiveAddress) override;
 
 		private:
 			dcclite::NetworkAddress m_clServerAddress;
@@ -88,6 +133,12 @@ namespace dcclite::broker
 	std::unique_ptr<Service> ThrottleService::Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project)
 	{
 		return std::make_unique<ThrottleServiceImpl>(name, broker, params, project);
+	}
+
+
+	std::unique_ptr<IThrottle> ThrottleServiceImpl::CreateThrottle(DccAddress locomotiveAddress)
+	{
+		return nullptr;
 	}
 
 

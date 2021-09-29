@@ -215,17 +215,17 @@ namespace dcclite::broker
 	{
 		switch (msgType)
 		{
-		case dcclite::MsgTypes::CONFIG_ACK:
-			this->OnPacket_ConfigAck(self, packet, time, msgType, remoteAddress, remoteConfigToken);
-			break;
+			case dcclite::MsgTypes::CONFIG_ACK:
+				this->OnPacket_ConfigAck(self, packet, time, msgType, remoteAddress, remoteConfigToken);
+				break;
 
-		case dcclite::MsgTypes::CONFIG_FINISHED:
-			this->OnPacket_ConfigFinished(self, packet, time, msgType, remoteAddress, remoteConfigToken);
-			break;
+			case dcclite::MsgTypes::CONFIG_FINISHED:
+				this->OnPacket_ConfigFinished(self, packet, time, msgType, remoteAddress, remoteConfigToken);
+				break;
 
-		default:
-			State::OnPacket(self, packet, time, msgType, remoteAddress, remoteConfigToken);
-			break;
+			default:
+				State::OnPacket(self, packet, time, msgType, remoteAddress, remoteConfigToken);
+				break;
 		}
 	}
 
