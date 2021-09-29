@@ -255,8 +255,21 @@ namespace dcclite
 		return listen(m_hHandle, backlog) == 0;
 	}
 
+	bool Socket::StartConnection(Port_t port, Type type, const NetworkAddress &server)
+	{
+		if (!this->Open(port, type))
+			return false;
+
+		return this->StartConnection(server);
+	}
+
 	bool Socket::StartConnection(const NetworkAddress &serverAddress)
 	{
+		if (m_hHandle == NULL_SOCKET)
+		{
+			throw std::logic_error("[Socket::StartConnection] m_hHandler == NULL_SOCKET, call open first!!!");
+		}
+
 		auto addr = MakeAddr(serverAddress);
 
 		auto rc = connect(m_hHandle, reinterpret_cast<const sockaddr *>(&addr), sizeof(addr));

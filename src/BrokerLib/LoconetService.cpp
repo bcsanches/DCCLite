@@ -181,6 +181,11 @@ class Slot
 			m_arFunctions.ClearAll();
 		}
 
+		~Slot()
+		{
+			this->ReleaseThrottle();
+		}
+
 		bool IsFree() const noexcept
 		{
 			return m_eState == States::FREE;
@@ -195,7 +200,7 @@ class Slot
 		{
 			m_eState = States::COMMON;		
 
-			m_upThrottle.reset();
+			this->ReleaseThrottle();
 		}
 
 		void GotoState_Common(const dcclite::broker::DccAddress addr) noexcept
@@ -205,18 +210,24 @@ class Slot
 			m_tLocomotiveAddress = addr;
 		}
 
+		//HACK for slot 0
+		void GotoState_Reserved() noexcept
+		{
+			m_eState = States::IN_USE;
+		}
+
 		void GotoState_InUse() noexcept
 		{
 			m_eState = States::IN_USE;
 
-			m_upThrottle = g_pclThrottleService->CreateThrottle(m_tLocomotiveAddress);
+			m_pclThrottle = &g_pclThrottleService->CreateThrottle(m_tLocomotiveAddress);
 		}
 
 		void GotoState_Free() noexcept
 		{
 			m_eState = States::FREE;
 
-			m_upThrottle.reset();
+			this->ReleaseThrottle();
 		}
 
 		States GetState() const noexcept
@@ -268,8 +279,18 @@ class Slot
 		}		
 
 	private:
+		void ReleaseThrottle()
+		{
+			if (!g_pclThrottleService)
+				return;
+
+			g_pclThrottleService->ReleaseThrottle(*m_pclThrottle);
+			m_pclThrottle = nullptr;
+		}
+
+	private:
 		dcclite::broker::DccAddress m_tLocomotiveAddress;			
-		std::unique_ptr<dcclite::broker::IThrottle> m_upThrottle;
+		dcclite::broker::IThrottle *m_pclThrottle;
 
 		Functions_t m_arFunctions;
 
@@ -369,7 +390,7 @@ class SlotManager
 SlotManager::SlotManager()
 {	
 	//dispatch slot - never use
-	m_arSlots[0].GotoState_InUse();
+	m_arSlots[0].GotoState_Reserved();
 }
 
 std::optional<uint8_t> SlotManager::AcquireLocomotive(const dcclite::broker::DccAddress address, const dcclite::Clock::TimePoint_t ticks)
@@ -678,7 +699,7 @@ namespace dcclite::broker
 	LoconetServiceImpl::LoconetServiceImpl(const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
 		LoconetService(name, broker, params, project),
 		m_clSerialPort(params["port"].GetString()),
-		m_strThrottleServiceName(params["throttleServiceName"].GetString())
+		m_strThrottleServiceName(params["throttleService"].GetString())
 	{				
 		dcclite::Log::Info("[LoconetService] Started, listening on port {}", params["port"].GetString());
 

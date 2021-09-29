@@ -10,7 +10,7 @@
         "class": "LoconetService",
         "name": "loconet",
         "port": "COM4",     
-        "throttleService": "ThrottleService"    
+        "throttleService": "ThrottleService",  
         "ignoreOnLoadFailure":false
     },
     {

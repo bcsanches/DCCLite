@@ -133,6 +133,7 @@ namespace dcclite
 
 			bool Listen(int backlog = 8);
 			bool StartConnection(const NetworkAddress &server);
+			bool StartConnection(Port_t port, Type type, const NetworkAddress &server);
 
 			Status GetConnectionProgress();
 

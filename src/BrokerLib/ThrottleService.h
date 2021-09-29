@@ -38,7 +38,9 @@ namespace dcclite::broker
 			// Main interface
 			//
 
-			virtual std::unique_ptr<IThrottle> CreateThrottle(DccAddress locomotiveAddress) = 0;
+			virtual IThrottle &CreateThrottle(DccAddress locomotiveAddress) = 0;
+
+			virtual void ReleaseThrottle(IThrottle &throttle) = 0;
 
 			//
 			//

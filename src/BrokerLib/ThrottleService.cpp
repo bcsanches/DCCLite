@@ -2,6 +2,8 @@
 
 #include <Log.h>
 
+#include <variant>
+
 #include "FmtUtils.h"
 #include "NetMessenger.h"
 
@@ -16,25 +18,40 @@
 class Throttle: public dcclite::IObject
 {
 	public:
-#if 0
-		Throttle(std::string name, const dcclite::NetworkAddress &serverAddress) :
-			IObject(std::move(name)),
-			m_clMessenger()
+#if 1
+		Throttle(const dcclite::NetworkAddress &serverAddress, dcclite::broker::DccAddress locomotiveAddress) :
+			IObject(std::move(locomotiveAddress.ToString())),
+			m_vState{ ConnectingState {serverAddress} },
+			m_tLocomotiveAddress{locomotiveAddress}
 		{
-			//empty
+			m_pclCurrentState = std::get_if<ConnectingState>(&m_vState);
 		}
 #endif
 
-	private:
-		void GotoConnectingState();
-		void GotoConnectedState();
+		const char *GetTypeName() const noexcept override
+		{
+			return "Throttle";
+		}
+
+		void Update(const dcclite::Clock &clock)
+		{
+			m_pclCurrentState->Update(*this);
+		}
 
 	private:
-		dcclite::NetMessenger m_clMessenger;
+		void GotoConnectingState()
+		{
+		}
 
-		struct State
+		void GotoConnectedState()
 		{
 
+		}
+
+	private:		
+		struct State
+		{
+			virtual void Update(Throttle &self) = 0;
 		};
 
 		struct ConnectingState: State
@@ -45,7 +62,7 @@ class Throttle: public dcclite::IObject
 			public:
 				ConnectingState(const dcclite::NetworkAddress &serverAddress)
 				{
-					if (!m_clSocket.StartConnection(serverAddress))
+					if (!m_clSocket.StartConnection(0, dcclite::Socket::Type::STREAM, serverAddress))
 						throw std::runtime_error("[Throttle::ConnectingState] Cannot start connection");
 				}
 
@@ -65,17 +82,25 @@ class Throttle: public dcclite::IObject
 
 		struct ConnectedState: State
 		{
+			private:
+				//dcclite::NetMessenger m_clMessenger;
 
+			public:
+				void Update(Throttle &self)
+				{
+				}
 		};
+
+		std::variant< ConnectingState, ConnectedState> m_vState;
+		State *m_pclCurrentState = nullptr;
+
+		dcclite::broker::DccAddress m_tLocomotiveAddress;
 
 };
 
 
 namespace dcclite::broker
 {
-
-	
-
 	///////////////////////////////////////////////////////////////////////////////
 	//
 	// ThrottleServiceImpl
@@ -94,7 +119,8 @@ namespace dcclite::broker
 
 			void Serialize(JsonOutputStream_t &stream) const override;	
 
-			std::unique_ptr<IThrottle> CreateThrottle(DccAddress locomotiveAddress) override;
+			IThrottle &CreateThrottle(DccAddress locomotiveAddress) override;
+			void ReleaseThrottle(IThrottle &throttle) override;
 
 		private:
 			dcclite::NetworkAddress m_clServerAddress;
@@ -116,7 +142,13 @@ namespace dcclite::broker
 
 	void ThrottleServiceImpl::Update(const dcclite::Clock& clock)
 	{	
-		
+		auto enumerator = this->GetEnumerator();
+		while (enumerator.MoveNext())
+		{
+			auto throttle = enumerator.TryGetCurrent<Throttle>();
+
+			throttle->Update(clock);
+		}
 	}
 
 	void ThrottleServiceImpl::Serialize(JsonOutputStream_t &stream) const
@@ -136,9 +168,16 @@ namespace dcclite::broker
 	}
 
 
-	std::unique_ptr<IThrottle> ThrottleServiceImpl::CreateThrottle(DccAddress locomotiveAddress)
+	IThrottle &ThrottleServiceImpl::CreateThrottle(DccAddress locomotiveAddress)
 	{
-		return nullptr;
+		auto throttle = dynamic_cast<IThrottle *>(this->AddChild(std::make_unique<Throttle>(this->m_clServerAddress, locomotiveAddress )));
+
+		return *throttle;
+	}
+
+	void ThrottleServiceImpl::ReleaseThrottle(IThrottle &throttle)
+	{
+		//this->RemoveChild(throttle.GetName());
 	}
 
 
