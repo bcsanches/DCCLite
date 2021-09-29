@@ -47,8 +47,6 @@ namespace dcclite::broker
 
 			void Update(const dcclite::Clock &clock) override;
 
-			void Initialize() override;
-
 			static std::unique_ptr<Service> Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
 			void Serialize(JsonOutputStream_t &stream) const override;		
@@ -70,11 +68,6 @@ namespace dcclite::broker
 	{
 		//empty
 	}
-
-	void ThrottleServiceImpl::Initialize()
-	{
-		//empty
-	}		
 
 	void ThrottleServiceImpl::Update(const dcclite::Clock& clock)
 	{	
