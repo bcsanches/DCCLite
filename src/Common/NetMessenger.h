@@ -13,6 +13,7 @@
 #include <deque>
 #include <string>
 #include <tuple>
+#include <vector>
 
 #include "Socket.h"
 
@@ -22,6 +23,7 @@ namespace dcclite
 	{
 		public:
 			NetMessenger(Socket &&socket, const char *separator = "\r\n");
+			NetMessenger(Socket &&socket, const char *separators[]);
 			NetMessenger(NetMessenger&& rhs) = default;
 
 			NetMessenger &operator=(NetMessenger&& rhs) noexcept = default;
@@ -39,8 +41,20 @@ namespace dcclite
 		private:
 			Socket m_clSocket;
 
-			const char			*m_pszSeparator;
-			size_t		m_szSeparatorLength;
+			struct Separator
+			{
+				Separator(const char *string, size_t length) :
+					m_szString(string),
+					m_szLength(length)
+				{
+					//empty
+				}
+
+				const char	*m_szString;
+				size_t		m_szLength;
+			};
+
+			std::vector<Separator> m_vecSeparators;			
 
 			std::deque<std::string> m_lstMessages;
 

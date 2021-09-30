@@ -45,7 +45,13 @@ class Throttle: public dcclite::IObject
 
 		void GotoConnectedState()
 		{
+			auto connectingState = std::get_if<ConnectingState>(&m_vState);
 
+			if (!connectingState)
+				throw std::logic_error("[Throttle::GotoConnectedState] Invalid state, must be in connecting state");
+
+			m_vState = ConnectedState{ std::move(connectingState->m_clSocket) };
+			m_pclCurrentState = std::get_if<ConnectedState>(&m_vState);
 		}
 
 	private:		
@@ -55,10 +61,7 @@ class Throttle: public dcclite::IObject
 		};
 
 		struct ConnectingState: State
-		{
-			private:
-				dcclite::Socket m_clSocket;
-
+		{							
 			public:
 				ConnectingState(const dcclite::NetworkAddress &serverAddress)
 				{
@@ -78,16 +81,40 @@ class Throttle: public dcclite::IObject
 						self.GotoConnectedState();
 					}
 				}
+
+				dcclite::Socket m_clSocket;
 		};
 
 		struct ConnectedState: State
 		{
 			private:
-				//dcclite::NetMessenger m_clMessenger;
+				dcclite::NetMessenger m_clMessenger;
 
 			public:
+
+				ConnectedState(dcclite::Socket socket) :
+					m_clMessenger{ std::move(socket), "\n"}
+				{
+					//empty
+				}
+
 				void Update(Throttle &self)
 				{
+					for(;;)
+					{
+						auto [status, msg] = m_clMessenger.Poll();
+
+						if (status == dcclite::Socket::Status::DISCONNECTED)
+						{
+							self.GotoConnectingState();
+							break;
+						}
+						else if (status == dcclite::Socket::Status::WOULD_BLOCK)
+							break;
+
+						dcclite::Log::Trace("Got: {}", msg);
+					}
+					
 				}
 		};
 

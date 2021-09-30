@@ -10,17 +10,34 @@
 
 #include "NetMessenger.h"
 
+#include <algorithm>
 #include <string.h>
 
 namespace dcclite
 {
-	NetMessenger::NetMessenger(Socket &&socket, const char *separator) :
-		m_clSocket(std::move(socket)),
-		m_pszSeparator(separator),
-		m_szSeparatorLength(strlen(separator))
+	NetMessenger::NetMessenger(Socket &&socket, const char *separator) :			
+		m_clSocket(std::move(socket))
 	{
 		if (!separator)
 			throw new std::logic_error("[NetMessenger] separator cannot be null");
+		
+		m_vecSeparators.push_back(Separator{ separator, strlen(separator) });		
+	}
+
+	NetMessenger::NetMessenger(Socket &&socket, const char *separators[]) :
+		m_clSocket(std::move(socket))		
+	{
+		if (!separators)
+			throw new std::logic_error("[NetMessenger] separator cannot be null");
+
+		for (int i = 0; separators[i]; ++i)		
+			m_vecSeparators.push_back(Separator{ separators[i], strlen(separators[i]) });			
+
+		std::sort(m_vecSeparators.begin(), m_vecSeparators.end(), [](const Separator &lhs, const Separator &rhs)
+			{
+				return rhs.m_szLength < lhs.m_szLength;					
+			}
+		);
 	}
 
 	std::tuple<Socket::Status, std::string> NetMessenger::Poll()
