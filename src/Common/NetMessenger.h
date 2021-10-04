@@ -23,7 +23,7 @@ namespace dcclite
 	{
 		public:
 			NetMessenger(Socket &&socket, const char *separator = "\r\n");
-			NetMessenger(Socket &&socket, const char *separators[]);
+			NetMessenger(Socket &&socket, std::initializer_list<const char *> separators);
 			NetMessenger(NetMessenger&& rhs) = default;
 
 			NetMessenger &operator=(NetMessenger&& rhs) noexcept = default;

@@ -24,14 +24,14 @@ namespace dcclite
 		m_vecSeparators.push_back(Separator{ separator, strlen(separator) });		
 	}
 
-	NetMessenger::NetMessenger(Socket &&socket, const char *separators[]) :
+	NetMessenger::NetMessenger(Socket &&socket, std::initializer_list<const char *> separators) :
 		m_clSocket(std::move(socket))		
 	{
-		if (!separators)
-			throw new std::logic_error("[NetMessenger] separator cannot be null");
+		if (separators.size() == 0)
+			throw new std::logic_error("[NetMessenger] separator cannot be empty");
 
-		for (int i = 0; separators[i]; ++i)		
-			m_vecSeparators.push_back(Separator{ separators[i], strlen(separators[i]) });			
+		for(auto sep : separators)		
+			m_vecSeparators.push_back(Separator{ sep, strlen(sep) });
 
 		std::sort(m_vecSeparators.begin(), m_vecSeparators.end(), [](const Separator &lhs, const Separator &rhs)
 			{
@@ -53,12 +53,15 @@ namespace dcclite
 		{
 			m_strIncomingMessage.append(tmpBuffer, size);
 			
-			for (auto pos = m_strIncomingMessage.find(m_pszSeparator); pos != std::string::npos; pos = m_strIncomingMessage.find(m_pszSeparator))
-			{								
-				m_lstMessages.emplace_back(m_strIncomingMessage.substr(0, pos));
+			for (auto &separator : m_vecSeparators)
+			{
+				for (auto pos = m_strIncomingMessage.find(separator.m_szString); pos != std::string::npos; pos = m_strIncomingMessage.find(separator.m_szString))
+				{
+					m_lstMessages.emplace_back(m_strIncomingMessage.substr(0, pos));
 
-				m_strIncomingMessage.erase(0, pos + m_szSeparatorLength);
-			}
+					m_strIncomingMessage.erase(0, pos + separator.m_szLength);
+				}
+			}			
 		}
 
 		return this->PollInternalQueue();		

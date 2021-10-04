@@ -93,7 +93,7 @@ class Throttle: public dcclite::IObject
 			public:
 
 				ConnectedState(dcclite::Socket socket) :
-					m_clMessenger{ std::move(socket), "\n"}
+					m_clMessenger{ std::move(socket), {"\r\n", "\r", "\n"} }
 				{
 					//empty
 				}
