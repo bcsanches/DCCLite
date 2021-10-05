@@ -52,7 +52,8 @@ namespace dcclite
 		if (status == Socket::Status::OK)
 		{
 			m_strIncomingMessage.append(tmpBuffer, size);
-			
+		
+NEXT_MSG:
 			for (auto &separator : m_vecSeparators)
 			{
 				for (auto pos = m_strIncomingMessage.find(separator.m_szString); pos != std::string::npos; pos = m_strIncomingMessage.find(separator.m_szString))
@@ -60,6 +61,8 @@ namespace dcclite
 					m_lstMessages.emplace_back(m_strIncomingMessage.substr(0, pos));
 
 					m_strIncomingMessage.erase(0, pos + separator.m_szLength);
+
+					goto NEXT_MSG;
 				}
 			}			
 		}

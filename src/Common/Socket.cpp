@@ -382,6 +382,51 @@ namespace dcclite
 		return true;
 	}
 
+	std::tuple<Socket::Status, size_t> Socket::Send(const void *data, size_t size)
+	{
+		assert(m_hHandle != NULL_SOCKET);
+
+		auto bytesSent = send(m_hHandle, (const char *)data, size, 0);
+		
+#if PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+		if (bytesSent < 0)
+		{
+			switch (errono)
+			{
+				case EAGAIN:
+				case EWOULDBLOCK:
+					return std::make_tuple(Status::WOULD_BLOCK, 0);
+
+				case ECONNRESET:
+					return std::make_tuple(Status::DISCONNECTED, 0);
+
+				default:
+					throw std::logic_error(fmt::format("[Socket::Send] Failed to send: {}", errono));
+			}			
+		}
+			
+#elif PLATFORM == PLATFORM_WINDOWS
+		if (bytesSent == SOCKET_ERROR)
+		{
+			auto error = WSAGetLastError();
+			switch (error)
+			{
+				case WSAEWOULDBLOCK:
+					return std::make_tuple(Status::WOULD_BLOCK, 0);
+
+				case WSAECONNRESET:
+					return std::make_tuple(Status::DISCONNECTED, 0);
+
+				default:
+					throw std::logic_error(fmt::format("[Socket::Send] Failed to send: {}", error));
+			}
+#endif			
+		}
+
+		return std::make_tuple(Status::OK, bytesSent);
+	}
+
+
 	std::tuple<Socket::Status, size_t> Socket::Receive(NetworkAddress &sender, void *data, size_t size)
 	{	
 		assert(m_hHandle != NULL_SOCKET);

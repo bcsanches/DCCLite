@@ -144,6 +144,7 @@ namespace dcclite
 			bool IsOpen() const;
 
 			bool Send(const NetworkAddress &destination, const void *data, size_t size);
+			std::tuple<Status, size_t> Send(const void *data, size_t size);
 
 			std::tuple<Status, size_t> Receive(NetworkAddress &sender, void *data, size_t size);
 			std::tuple<Status, size_t> Receive(void *data, size_t size);
