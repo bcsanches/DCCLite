@@ -56,7 +56,7 @@ TEST(NetMessenger, NetMessengerBasic)
 	}
 
 	//construct it using smallers separators first
-	NetMessenger messenger{ std::move(client), {"\r", "\n", "\r\n"} };
+	NetMessenger messenger{ std::move(client), "\r\n"};
 	
 	{
 		auto [status, msg] = messenger.Poll();
@@ -89,7 +89,7 @@ TEST(NetMessenger, NetMessengerBasic)
 		ASSERT_TRUE(msg.compare("abc") == 0);
 	}
 
-	//if will download the first part of the message
+	//Check if it will download the first part of the message
 	{
 		auto [status, sz] = server.Send("abc", 3);
 		ASSERT_EQ(status, Socket::Status::OK);
@@ -127,7 +127,7 @@ TEST(NetMessenger, NetMessengerBasic)
 
 	//send lots of messages
 	{
-		auto msg = "abc\rxyz\rppp\r";
+		auto msg = "abc\r\nxyz\r\nppp\r\n";
 		auto [status, sz] = server.Send(msg, strlen(msg));
 		ASSERT_EQ(status, Socket::Status::OK);
 	}

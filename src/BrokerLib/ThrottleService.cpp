@@ -14,13 +14,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-
 class Throttle: public dcclite::IObject
 {
 	public:
 #if 1
 		Throttle(const dcclite::NetworkAddress &serverAddress, dcclite::broker::DccAddress locomotiveAddress) :
 			IObject(std::move(locomotiveAddress.ToString())),
+			m_clServerAddress{serverAddress},
 			m_vState{ ConnectingState {serverAddress} },
 			m_tLocomotiveAddress{locomotiveAddress}
 		{
@@ -41,16 +41,35 @@ class Throttle: public dcclite::IObject
 	private:
 		void GotoConnectingState()
 		{
+			m_vState = ConnectingState{ m_clServerAddress };
+			m_pclCurrentState = std::get_if<ErrorState>(&m_vState);
 		}
 
-		void GotoConnectedState()
+		void GotoErrorState(std::string reason)
+		{
+			m_vState = ErrorState{std::move(reason)};
+			m_pclCurrentState = std::get_if<ErrorState>(&m_vState);
+		}
+
+		void GotoHandShakeState()
 		{
 			auto connectingState = std::get_if<ConnectingState>(&m_vState);
 
 			if (!connectingState)
-				throw std::logic_error("[Throttle::GotoConnectedState] Invalid state, must be in connecting state");
+				throw std::logic_error("[Throttle::GotoHandShakeState] Invalid state, must be in ConnectingState state");
 
-			m_vState = ConnectedState{ std::move(connectingState->m_clSocket) };
+			m_vState = HandShakeState{ std::move(connectingState->m_clSocket) };
+			m_pclCurrentState = std::get_if<HandShakeState>(&m_vState);
+		}
+
+		void GotoConnectedState(const char *separator, const char *initialBuffer = "")
+		{
+			auto handShakeState = std::get_if<HandShakeState>(&m_vState);
+
+			if (!handShakeState)
+				throw std::logic_error("[Throttle::GotoConnectedState] Invalid state, must be in handShakeState state");
+
+			m_vState = ConnectedState{ std::move(handShakeState->m_clSocket), separator, initialBuffer };
 			m_pclCurrentState = std::get_if<ConnectedState>(&m_vState);
 		}
 
@@ -58,6 +77,19 @@ class Throttle: public dcclite::IObject
 		struct State
 		{
 			virtual void Update(Throttle &self) = 0;
+		};
+
+		struct ErrorState : State
+		{
+			ErrorState(std::string reason)
+			{
+				dcclite::Log::Error(reason.c_str());
+			}
+
+			void Update(Throttle &self) override
+			{
+				//empty
+			}
 		};
 
 		struct ConnectingState: State
@@ -74,15 +106,118 @@ class Throttle: public dcclite::IObject
 					auto status = m_clSocket.GetConnectionProgress();
 					if (status == dcclite::Socket::Status::DISCONNECTED)
 					{
-						self.GotoConnectingState();
+						self.GotoErrorState(fmt::format("[Throttle::ConnectingState] Disconnected on GetConnectionProgress"));
 					}
 					else if (status == dcclite::Socket::Status::OK)
 					{
-						self.GotoConnectedState();
+						self.GotoHandShakeState();
 					}
 				}
 
 				dcclite::Socket m_clSocket;
+		};
+
+		struct HandShakeState : State
+		{
+			HandShakeState(dcclite::Socket socket) :
+				m_clSocket{ std::move(socket) }
+			{
+				//empty
+			}
+
+			void Update(Throttle &self)
+			{
+				char buffer[6];
+
+
+				if (!m_fGotVersion)
+				{
+					auto [status, size] = m_clSocket.Receive(buffer, 5);
+					if (status == dcclite::Socket::Status::WOULD_BLOCK)
+						return;
+
+					if (status == dcclite::Socket::Status::DISCONNECTED)
+					{
+						self.GotoErrorState(fmt::format("[Throttle::HandShakeState] Disconnected on reading version"));
+
+						return;
+					}
+
+					//got something
+					if (strncmp(buffer, "VN2.0", 5))
+					{
+						//zero terminate, so we can log it
+						buffer[5] = '\0';
+						
+						self.GotoErrorState(fmt::format("[Throttle::HandShakeState] Expected VN2.0 in incomming buffer, but got {}", buffer));
+					}
+
+					m_fGotVersion = true;
+				}
+								
+				//stupid JMRI does not have a consistent line termination, so we try to detect it...
+				//it can be \n or \r or \r\n
+				if (!m_fLookForward)
+				{
+					auto [status, size] = m_clSocket.Receive(buffer, 1);
+					if (status == dcclite::Socket::Status::WOULD_BLOCK)
+						return;
+
+					if (status == dcclite::Socket::Status::DISCONNECTED)
+					{
+						self.GotoErrorState(fmt::format("[Throttle::HandShakeState] Disconnected on reading LookForward"));
+
+						return;
+					}
+
+					//we got something, lets check
+					if (buffer[0] == '\n')
+					{						
+						self.GotoConnectedState("\n");
+						
+						return;
+					}
+					else if (buffer[0] == '\r')
+					{
+						//try again later, because it can be \r or \r\n, so we must look one byte forward...
+						m_fLookForward = true;						
+					}
+					else
+					{												
+						self.GotoErrorState(fmt::format("[Throttle::HandShakeState] Invalid line termination, got {:x}", buffer[0]));
+
+						return;
+					}
+				}
+				else
+				{
+					auto [status, size] = m_clSocket.Receive(buffer, 1);
+					if (status == dcclite::Socket::Status::WOULD_BLOCK)
+						return;
+
+					if (status == dcclite::Socket::Status::DISCONNECTED)
+					{
+						self.GotoErrorState(fmt::format("[Throttle::HandShakeState] Disconnected when reading LookForward"));
+
+						return;
+					}
+
+					if (buffer[0] == '\n')
+					{
+						self.GotoConnectedState("\r\n");
+					}
+					else
+					{
+						//not a separator, so it should be some input, add it to the messenger buffer and finish handshake
+						buffer[1] = '\0';
+						self.GotoConnectedState("\r", buffer);
+					}
+				}				
+			}
+
+			dcclite::Socket m_clSocket;
+			bool m_fGotVersion = false;
+			bool m_fLookForward = false;
 		};
 
 		struct ConnectedState: State
@@ -92,8 +227,8 @@ class Throttle: public dcclite::IObject
 
 			public:
 
-				ConnectedState(dcclite::Socket socket) :
-					m_clMessenger{ std::move(socket), {"\r\n", "\r", "\n"} }
+				ConnectedState(dcclite::Socket socket, const char *separator, const char *initialBuffer) :
+					m_clMessenger{ std::move(socket), separator, initialBuffer }
 				{
 					//empty
 				}
@@ -118,10 +253,12 @@ class Throttle: public dcclite::IObject
 				}
 		};
 
-		std::variant< ConnectingState, ConnectedState> m_vState;
+		std::variant< ConnectingState, HandShakeState, ConnectedState, ErrorState> m_vState;
 		State *m_pclCurrentState = nullptr;
 
 		dcclite::broker::DccAddress m_tLocomotiveAddress;
+
+		const dcclite::NetworkAddress m_clServerAddress;
 
 };
 
@@ -204,7 +341,8 @@ namespace dcclite::broker
 
 	void ThrottleServiceImpl::ReleaseThrottle(IThrottle &throttle)
 	{
-		//this->RemoveChild(throttle.GetName());
+		auto &t = dynamic_cast<Throttle &>(throttle);
+		this->RemoveChild(t.GetName());
 	}
 
 

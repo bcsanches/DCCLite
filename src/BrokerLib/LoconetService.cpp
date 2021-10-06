@@ -281,7 +281,7 @@ class Slot
 	private:
 		void ReleaseThrottle()
 		{
-			if (!g_pclThrottleService)
+			if ((!g_pclThrottleService) || (!m_pclThrottle))
 				return;
 
 			g_pclThrottleService->ReleaseThrottle(*m_pclThrottle);
@@ -290,7 +290,7 @@ class Slot
 
 	private:
 		dcclite::broker::DccAddress m_tLocomotiveAddress;			
-		dcclite::broker::IThrottle *m_pclThrottle;
+		dcclite::broker::IThrottle *m_pclThrottle = nullptr;
 
 		Functions_t m_arFunctions;
 
@@ -560,7 +560,7 @@ void SlotManager::Serialize(dcclite::JsonOutputStream_t &stream) const
 
 void SlotManager::PurgeSlots(const dcclite::Clock::TimePoint_t ticks, std::function<void(uint8_t)> callback) noexcept
 {	
-	for(unsigned i = 0; i < m_arSlots.size(); ++i)	
+	for(unsigned i = 1; i < m_arSlots.size(); ++i)	
 	{
 		if (m_arSlots[i].IsInUse() && (m_arSlotsTimeout[i] <= ticks))
 		{

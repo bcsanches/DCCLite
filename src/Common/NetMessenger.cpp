@@ -15,29 +15,32 @@
 
 namespace dcclite
 {
-	NetMessenger::NetMessenger(Socket &&socket, const char *separator) :			
+	NetMessenger::NetMessenger(Socket &&socket, const char *separator, const char *initialBuffer) :			
 		m_clSocket(std::move(socket))
 	{
 		if (!separator)
 			throw new std::logic_error("[NetMessenger] separator cannot be null");
 		
-		m_vecSeparators.push_back(Separator{ separator, strlen(separator) });		
-	}
+		m_pszSeparator = separator;
+		m_uSeparatorLength = strlen(separator);
 
-	NetMessenger::NetMessenger(Socket &&socket, std::initializer_list<const char *> separators) :
-		m_clSocket(std::move(socket))		
+		if (initialBuffer)
+		{
+			m_strIncomingMessage.append(initialBuffer);
+
+			this->ParseIncomingMessage();
+		}
+	}	
+
+	void NetMessenger::ParseIncomingMessage()
 	{
-		if (separators.size() == 0)
-			throw new std::logic_error("[NetMessenger] separator cannot be empty");
+		for (auto pos = m_strIncomingMessage.find(m_pszSeparator); pos != std::string::npos; pos = m_strIncomingMessage.find(m_pszSeparator))
+		{
+			if(pos)
+				m_lstMessages.emplace_back(m_strIncomingMessage.substr(0, pos));
 
-		for(auto sep : separators)		
-			m_vecSeparators.push_back(Separator{ sep, strlen(sep) });
-
-		std::sort(m_vecSeparators.begin(), m_vecSeparators.end(), [](const Separator &lhs, const Separator &rhs)
-			{
-				return rhs.m_szLength < lhs.m_szLength;					
-			}
-		);
+			m_strIncomingMessage.erase(0, pos + m_uSeparatorLength);
+		}
 	}
 
 	std::tuple<Socket::Status, std::string> NetMessenger::Poll()
@@ -52,19 +55,8 @@ namespace dcclite
 		if (status == Socket::Status::OK)
 		{
 			m_strIncomingMessage.append(tmpBuffer, size);
-		
-NEXT_MSG:
-			for (auto &separator : m_vecSeparators)
-			{
-				for (auto pos = m_strIncomingMessage.find(separator.m_szString); pos != std::string::npos; pos = m_strIncomingMessage.find(separator.m_szString))
-				{
-					m_lstMessages.emplace_back(m_strIncomingMessage.substr(0, pos));
-
-					m_strIncomingMessage.erase(0, pos + separator.m_szLength);
-
-					goto NEXT_MSG;
-				}
-			}			
+					
+			this->ParseIncomingMessage();
 		}
 
 		return this->PollInternalQueue();		
