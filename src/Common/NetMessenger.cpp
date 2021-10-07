@@ -70,6 +70,18 @@ namespace dcclite
 		return m_clSocket.Send(destination, "\r\n", 2);
 	}
 
+	bool NetMessenger::Send(std::string_view msg)
+	{
+		{
+			auto [status, size] = m_clSocket.Send(msg.data(), msg.length());
+			if (status == Socket::Status::DISCONNECTED)
+				return false;
+		}
+
+		auto [status, size] = m_clSocket.Send("\r\n", 2);
+		return status != Socket::Status::DISCONNECTED;
+	}
+
 	std::tuple<Socket::Status, std::string> NetMessenger::PollInternalQueue()
 	{
 		if (m_lstMessages.empty())

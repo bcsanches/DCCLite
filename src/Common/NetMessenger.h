@@ -33,6 +33,7 @@ namespace dcclite
 			std::tuple<Socket::Status, std::string> Poll();
 
 			bool Send(const NetworkAddress &destination, std::string_view msg);
+			bool Send(std::string_view msg);
 
 		private:
 			std::tuple<Socket::Status, std::string> PollInternalQueue();

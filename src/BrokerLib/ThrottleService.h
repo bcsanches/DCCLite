@@ -20,7 +20,10 @@ namespace dcclite::broker
 	class IThrottle
 	{
 		public:
-			virtual ~IThrottle() = 0;
+			virtual ~IThrottle()
+			{
+				//emtpy
+			}
 	};
 
 

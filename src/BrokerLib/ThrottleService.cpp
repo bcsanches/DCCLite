@@ -4,8 +4,10 @@
 
 #include <variant>
 
+#include "Clock.h"
 #include "FmtUtils.h"
 #include "NetMessenger.h"
+#include "Parser.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -14,17 +16,17 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 
-class Throttle: public dcclite::IObject
+class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 {
 	public:
 #if 1
 		Throttle(const dcclite::NetworkAddress &serverAddress, dcclite::broker::DccAddress locomotiveAddress) :
 			IObject(std::move(locomotiveAddress.ToString())),
 			m_clServerAddress{serverAddress},
-			m_vState{ ConnectingState {serverAddress} },
+			m_vState{ ConnectState {serverAddress} },
 			m_tLocomotiveAddress{locomotiveAddress}
 		{
-			m_pclCurrentState = std::get_if<ConnectingState>(&m_vState);
+			m_pclCurrentState = std::get_if<ConnectState>(&m_vState);
 		}
 #endif
 
@@ -35,13 +37,13 @@ class Throttle: public dcclite::IObject
 
 		void Update(const dcclite::Clock &clock)
 		{
-			m_pclCurrentState->Update(*this);
+			m_pclCurrentState->Update(*this, clock.Ticks());
 		}
 
 	private:
-		void GotoConnectingState()
+		void GotoConnectState()
 		{
-			m_vState = ConnectingState{ m_clServerAddress };
+			m_vState = ConnectState{ m_clServerAddress };
 			m_pclCurrentState = std::get_if<ErrorState>(&m_vState);
 		}
 
@@ -53,7 +55,7 @@ class Throttle: public dcclite::IObject
 
 		void GotoHandShakeState()
 		{
-			auto connectingState = std::get_if<ConnectingState>(&m_vState);
+			auto connectingState = std::get_if<ConnectState>(&m_vState);
 
 			if (!connectingState)
 				throw std::logic_error("[Throttle::GotoHandShakeState] Invalid state, must be in ConnectingState state");
@@ -62,21 +64,32 @@ class Throttle: public dcclite::IObject
 			m_pclCurrentState = std::get_if<HandShakeState>(&m_vState);
 		}
 
-		void GotoConnectedState(const char *separator, const char *initialBuffer = "")
+		void GotoConfiguringState(const char *separator, const char *initialBuffer = "")
 		{
 			auto handShakeState = std::get_if<HandShakeState>(&m_vState);
 
 			if (!handShakeState)
-				throw std::logic_error("[Throttle::GotoConnectedState] Invalid state, must be in handShakeState state");
+				throw std::logic_error("[Throttle::GotoConfiguringState] Invalid state, must be in handShakeState state");
+			
+			m_vState.emplace<ConfiguringState>( *this, dcclite::NetMessenger{std::move(handShakeState->m_clSocket), separator, initialBuffer});
+			m_pclCurrentState = std::get_if<ConfiguringState>(&m_vState);
+		}
 
-			m_vState = ConnectedState{ std::move(handShakeState->m_clSocket), separator, initialBuffer };
+		void GotoConnectedState()
+		{
+			auto configuringState = std::get_if<ConfiguringState>(&m_vState);
+
+			if (!configuringState)
+				throw std::logic_error("[Throttle::GotoConnectedState] Invalid state, must be in ConfiguringState state");
+
+			m_vState.emplace<ConnectedState>(std::move(*configuringState));
 			m_pclCurrentState = std::get_if<ConnectedState>(&m_vState);
 		}
 
 	private:		
 		struct State
 		{
-			virtual void Update(Throttle &self) = 0;
+			virtual void Update(Throttle &self, const dcclite::Clock::TimePoint_t time) = 0;
 		};
 
 		struct ErrorState : State
@@ -86,27 +99,27 @@ class Throttle: public dcclite::IObject
 				dcclite::Log::Error(reason.c_str());
 			}
 
-			void Update(Throttle &self) override
+			void Update(Throttle &self, const dcclite::Clock::TimePoint_t time) override
 			{
 				//empty
 			}
 		};
 
-		struct ConnectingState: State
+		struct ConnectState: State
 		{							
 			public:
-				ConnectingState(const dcclite::NetworkAddress &serverAddress)
+				ConnectState(const dcclite::NetworkAddress &serverAddress)
 				{
 					if (!m_clSocket.StartConnection(0, dcclite::Socket::Type::STREAM, serverAddress))
-						throw std::runtime_error("[Throttle::ConnectingState] Cannot start connection");
+						throw std::runtime_error("[Throttle::ConnectState] Cannot start connection");
 				}
 
-				void Update(Throttle &self)
+				void Update(Throttle &self, const dcclite::Clock::TimePoint_t time)
 				{
 					auto status = m_clSocket.GetConnectionProgress();
 					if (status == dcclite::Socket::Status::DISCONNECTED)
 					{
-						self.GotoErrorState(fmt::format("[Throttle::ConnectingState] Disconnected on GetConnectionProgress"));
+						self.GotoErrorState(fmt::format("[Throttle::ConnectState] Disconnected on GetConnectionProgress"));
 					}
 					else if (status == dcclite::Socket::Status::OK)
 					{
@@ -125,7 +138,7 @@ class Throttle: public dcclite::IObject
 				//empty
 			}
 
-			void Update(Throttle &self)
+			void Update(Throttle &self, const dcclite::Clock::TimePoint_t time)
 			{
 				char buffer[6];
 
@@ -150,6 +163,8 @@ class Throttle: public dcclite::IObject
 						buffer[5] = '\0';
 						
 						self.GotoErrorState(fmt::format("[Throttle::HandShakeState] Expected VN2.0 in incomming buffer, but got {}", buffer));
+
+						return;
 					}
 
 					m_fGotVersion = true;
@@ -173,7 +188,7 @@ class Throttle: public dcclite::IObject
 					//we got something, lets check
 					if (buffer[0] == '\n')
 					{						
-						self.GotoConnectedState("\n");
+						self.GotoConfiguringState("\n");
 						
 						return;
 					}
@@ -204,13 +219,13 @@ class Throttle: public dcclite::IObject
 
 					if (buffer[0] == '\n')
 					{
-						self.GotoConnectedState("\r\n");
+						self.GotoConfiguringState("\r\n");
 					}
 					else
 					{
 						//not a separator, so it should be some input, add it to the messenger buffer and finish handshake
 						buffer[1] = '\0';
-						self.GotoConnectedState("\r", buffer);
+						self.GotoConfiguringState("\r", buffer);
 					}
 				}				
 			}
@@ -220,20 +235,102 @@ class Throttle: public dcclite::IObject
 			bool m_fLookForward = false;
 		};
 
-		struct ConnectedState: State
+		struct OnlineState : State
 		{
-			private:
+			protected:
 				dcclite::NetMessenger m_clMessenger;
 
-			public:
+				std::chrono::seconds m_uHeartBeatInterval;
+				dcclite::Clock::TimePoint_t m_tNextHeartBeat;
 
-				ConnectedState(dcclite::Socket socket, const char *separator, const char *initialBuffer) :
-					m_clMessenger{ std::move(socket), separator, initialBuffer }
+			protected:
+				OnlineState(dcclite::NetMessenger &&other) :
+					m_clMessenger{ std::move(other) }
 				{
 					//empty
 				}
 
-				void Update(Throttle &self)
+				OnlineState(OnlineState &&other) :
+					m_clMessenger{ std::move(other.m_clMessenger) },
+					m_uHeartBeatInterval{ other.m_uHeartBeatInterval },
+					m_tNextHeartBeat{ other.m_tNextHeartBeat }
+				{
+					//empty
+				}
+
+			public:				
+				void Update(Throttle &self, const dcclite::Clock::TimePoint_t time) override
+				{
+					using namespace std::chrono_literals;
+
+					if (m_uHeartBeatInterval == 0s)
+						return;
+
+					if (m_tNextHeartBeat <= time)
+					{
+						m_clMessenger.Send("*");
+
+						m_tNextHeartBeat = time + m_uHeartBeatInterval;
+					}
+				}
+		};
+
+		struct ConfiguringState : OnlineState
+		{			
+			public:				
+				ConfiguringState(const Throttle &self, dcclite::NetMessenger &&messenger) :
+					OnlineState{ std::move(messenger) }
+				{
+					m_clMessenger.Send(fmt::format("H{}", fmt::ptr(&self)));
+					m_clMessenger.Send(fmt::format("N{} {}", "DCCLite", fmt::ptr (&self)));
+				}
+
+				void Update(Throttle &self, const dcclite::Clock::TimePoint_t time) override
+				{
+					for (;;)
+					{
+						auto [status, message] = m_clMessenger.Poll();
+						if (status == dcclite::Socket::Status::WOULD_BLOCK)
+							break;
+
+						if (status == dcclite::Socket::Status::DISCONNECTED)
+						{
+							self.GotoErrorState("[Throttle::ConfiguringState::Update] Disconnected");
+							break;
+						}
+
+						if (message[0] == '*')
+						{
+							dcclite::Parser parser{ message.c_str() + 1};
+
+							int heartBeat;
+							if(parser.GetNumber(heartBeat) != dcclite::Tokens::NUMBER)
+							{
+								self.GotoErrorState(fmt::format("[Throttle::ConfiguringState::Update] Expected heartbeat seconds, but got: {}", message));
+
+								break;
+							}
+
+							m_uHeartBeatInterval = std::chrono::seconds{ heartBeat };
+							m_tNextHeartBeat = time + m_uHeartBeatInterval;
+						}
+
+					}
+					
+				}
+		};
+
+		struct ConnectedState: OnlineState
+		{			
+			public:
+
+				ConnectedState(OnlineState &&other) :
+					OnlineState{std::move(other)}
+				{
+					//empty
+				}
+
+				void Update(Throttle &self, const dcclite::Clock::TimePoint_t time) override
 				{
 					for(;;)
 					{
@@ -241,7 +338,7 @@ class Throttle: public dcclite::IObject
 
 						if (status == dcclite::Socket::Status::DISCONNECTED)
 						{
-							self.GotoConnectingState();
+							self.GotoConnectState();
 							break;
 						}
 						else if (status == dcclite::Socket::Status::WOULD_BLOCK)
@@ -253,7 +350,7 @@ class Throttle: public dcclite::IObject
 				}
 		};
 
-		std::variant< ConnectingState, HandShakeState, ConnectedState, ErrorState> m_vState;
+		std::variant< ConnectState, HandShakeState, ConfiguringState, ConnectedState, ErrorState> m_vState;
 		State *m_pclCurrentState = nullptr;
 
 		dcclite::broker::DccAddress m_tLocomotiveAddress;
