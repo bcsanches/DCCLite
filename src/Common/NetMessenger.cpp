@@ -32,6 +32,16 @@ namespace dcclite
 		}
 	}	
 
+	NetMessenger::NetMessenger(NetMessenger &&rhs) noexcept:
+		m_clSocket{ std::move(rhs.m_clSocket) },
+		m_pszSeparator{rhs.m_pszSeparator},
+		m_uSeparatorLength{rhs.m_uSeparatorLength},
+		m_lstMessages{ std::move(rhs.m_lstMessages) },
+		m_strIncomingMessage{ std::move(rhs.m_strIncomingMessage) }	
+	{
+		//empty
+	}
+
 	void NetMessenger::ParseIncomingMessage()
 	{
 		for (auto pos = m_strIncomingMessage.find(m_pszSeparator); pos != std::string::npos; pos = m_strIncomingMessage.find(m_pszSeparator))

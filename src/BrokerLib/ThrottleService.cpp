@@ -2,10 +2,12 @@
 
 #include <Log.h>
 
+#include <fmt/chrono.h>
 #include <variant>
 
 #include "Clock.h"
 #include "FmtUtils.h"
+#include "LoconetService.h"
 #include "NetMessenger.h"
 #include "Parser.h"
 
@@ -20,11 +22,12 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 {
 	public:
 #if 1
-		Throttle(const dcclite::NetworkAddress &serverAddress, dcclite::broker::DccAddress locomotiveAddress) :
-			IObject(std::move(locomotiveAddress.ToString())),
+		Throttle(const dcclite::NetworkAddress &serverAddress, const dcclite::broker::ILoconetSlot &owner) :
+			IObject(std::move(fmt::format("slot[{}][{}]", owner.GetId(), owner.GetLocomotiveAddress().GetAddress()))),
 			m_clServerAddress{serverAddress},
 			m_vState{ ConnectState {serverAddress} },
-			m_tLocomotiveAddress{locomotiveAddress}
+			m_tLocomotiveAddress{ owner.GetLocomotiveAddress() },
+			m_rclOwnerSlot{ owner }
 		{
 			m_pclCurrentState = std::get_if<ConnectState>(&m_vState);
 		}
@@ -40,17 +43,41 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 			m_pclCurrentState->Update(*this, clock.Ticks());
 		}
 
+		void OnSpeedChange() override
+		{			
+			if (m_pclConnectedState)
+				m_pclConnectedState->SetSpeed(m_rclOwnerSlot.GetSpeed());
+		}
+
+		void OnForwardChange() override
+		{	
+			if (m_pclConnectedState)
+				m_pclConnectedState->SetForward(m_rclOwnerSlot.IsForwardDir());
+		}
+
+		void OnFunctionChange(const uint8_t begin, const uint8_t end) override
+		{
+			if (!m_pclConnectedState)
+				return;
+
+			m_pclConnectedState->OnFunctionChange(begin, end, m_rclOwnerSlot.GetFunctions());
+		}
+
 	private:
 		void GotoConnectState()
 		{
 			m_vState = ConnectState{ m_clServerAddress };
 			m_pclCurrentState = std::get_if<ErrorState>(&m_vState);
+
+			m_pclConnectedState = nullptr;
 		}
 
 		void GotoErrorState(std::string reason)
 		{
 			m_vState = ErrorState{std::move(reason)};
 			m_pclCurrentState = std::get_if<ErrorState>(&m_vState);
+
+			m_pclConnectedState = nullptr;
 		}
 
 		void GotoHandShakeState()
@@ -62,28 +89,35 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 
 			m_vState = HandShakeState{ std::move(connectingState->m_clSocket) };
 			m_pclCurrentState = std::get_if<HandShakeState>(&m_vState);
+
+			m_pclConnectedState = nullptr;
 		}
 
-		void GotoConfiguringState(const char *separator, const char *initialBuffer = "")
+		void GotoConfiguringThrottleIdState(const char *separator, const char *initialBuffer = "")
 		{
 			auto handShakeState = std::get_if<HandShakeState>(&m_vState);
 
 			if (!handShakeState)
-				throw std::logic_error("[Throttle::GotoConfiguringState] Invalid state, must be in handShakeState state");
+				throw std::logic_error("[Throttle::GotoConfiguringThrottleIdState] Invalid state, must be in handShakeState state");
 			
-			m_vState.emplace<ConfiguringState>( *this, dcclite::NetMessenger{std::move(handShakeState->m_clSocket), separator, initialBuffer});
-			m_pclCurrentState = std::get_if<ConfiguringState>(&m_vState);
+			dcclite::Log::Debug("[Throttle::GotoConfiguringState] Detected line ending as {} - entering configuring state", separator[0] == '\n' ? "\\n" : separator[1] ? "\\r\\n" : "\\r");
+			
+			m_vState.emplace<ConfiguringThrottleIdState>( *this, dcclite::NetMessenger{std::move(handShakeState->m_clSocket), separator, initialBuffer});
+			m_pclCurrentState = std::get_if<ConfiguringThrottleIdState>(&m_vState);
+
+			m_pclConnectedState = nullptr;
 		}
 
 		void GotoConnectedState()
 		{
-			auto configuringState = std::get_if<ConfiguringState>(&m_vState);
+			auto configuringState = std::get_if<ConfiguringThrottleIdState>(&m_vState);
 
 			if (!configuringState)
 				throw std::logic_error("[Throttle::GotoConnectedState] Invalid state, must be in ConfiguringState state");
 
-			m_vState.emplace<ConnectedState>(std::move(*configuringState));
-			m_pclCurrentState = std::get_if<ConnectedState>(&m_vState);
+			auto tmp = std::move(*configuringState);
+			m_vState.emplace<ConnectedState>(*this, std::move(tmp));
+			m_pclCurrentState = m_pclConnectedState = std::get_if<ConnectedState>(&m_vState);			 
 		}
 
 	private:		
@@ -112,6 +146,8 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 				{
 					if (!m_clSocket.StartConnection(0, dcclite::Socket::Type::STREAM, serverAddress))
 						throw std::runtime_error("[Throttle::ConnectState] Cannot start connection");
+
+					dcclite::Log::Debug("[Throttle::ConnectState] Connecting to {}", serverAddress);
 				}
 
 				void Update(Throttle &self, const dcclite::Clock::TimePoint_t time)
@@ -123,6 +159,8 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 					}
 					else if (status == dcclite::Socket::Status::OK)
 					{
+						dcclite::Log::Debug("[Throttle::ConnectState] Connected to server, starting handshake");
+
 						self.GotoHandShakeState();
 					}
 				}
@@ -141,7 +179,6 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 			void Update(Throttle &self, const dcclite::Clock::TimePoint_t time)
 			{
 				char buffer[6];
-
 
 				if (!m_fGotVersion)
 				{
@@ -188,7 +225,7 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 					//we got something, lets check
 					if (buffer[0] == '\n')
 					{						
-						self.GotoConfiguringState("\n");
+						self.GotoConfiguringThrottleIdState("\n");
 						
 						return;
 					}
@@ -219,13 +256,13 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 
 					if (buffer[0] == '\n')
 					{
-						self.GotoConfiguringState("\r\n");
+						self.GotoConfiguringThrottleIdState("\r\n");
 					}
 					else
 					{
 						//not a separator, so it should be some input, add it to the messenger buffer and finish handshake
 						buffer[1] = '\0';
-						self.GotoConfiguringState("\r", buffer);
+						self.GotoConfiguringThrottleIdState("\r", buffer);
 					}
 				}				
 			}
@@ -275,14 +312,14 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 				}
 		};
 
-		struct ConfiguringState : OnlineState
+		struct ConfiguringThrottleIdState : OnlineState
 		{			
 			public:				
-				ConfiguringState(const Throttle &self, dcclite::NetMessenger &&messenger) :
+				ConfiguringThrottleIdState(const Throttle &self, dcclite::NetMessenger &&messenger) :
 					OnlineState{ std::move(messenger) }
-				{
-					m_clMessenger.Send(fmt::format("H{}", fmt::ptr(&self)));
-					m_clMessenger.Send(fmt::format("N{} {}", "DCCLite", fmt::ptr (&self)));
+				{					
+					m_clMessenger.Send(fmt::format("HU{}", self.GetName()));
+					m_clMessenger.Send(fmt::format("N{} {}", "DCCLite", self.GetName()));					
 				}
 
 				void Update(Throttle &self, const dcclite::Clock::TimePoint_t time) override
@@ -313,28 +350,132 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 
 							m_uHeartBeatInterval = std::chrono::seconds{ heartBeat };
 							m_tNextHeartBeat = time + m_uHeartBeatInterval;
-						}
 
-					}
-					
+							dcclite::Log::Debug("[Throttle::ConnectState] Heartbeat set to {} (server requested)", m_uHeartBeatInterval);
+
+							//
+							//when the heartbeat arrives, we satisfy the config state
+							self.GotoConnectedState();
+
+							//we will be dead, so return...
+							return;
+						}
+						else if (message[0] == 'H')
+						{
+							switch (message[1])
+							{
+								case 'M':
+									dcclite::Log::Error("[Throttle::ConfiguringState]{} got error message from server: {}", self.GetName(), message.c_str() + 2);
+									break;
+
+								case 'm':
+									dcclite::Log::Info("[Throttle::ConfiguringState]{} server info: {}", self.GetName(), message.c_str() + 2);
+									break;
+
+								case 'T':
+								case 't':
+									dcclite::Log::Trace("[Throttle::ConfiguringState]{} server type message: {}", self.GetName(), message.c_str() + 2);
+									break;
+
+								default:
+									dcclite::Log::Error("[Throttle::ConfiguringState]{} server unknown message: {}", self.GetName(), message);
+									break;
+							}
+						}						
+						else if (message.compare(0, 3, "PFT") == 0)
+						{
+							dcclite::Log::Trace("[Throttle::ConfiguringState]{} fast clock: {}", self.GetName(), message.c_str() + 3);
+						}
+						else if (message.compare(0, 3, "PPA") == 0)
+						{
+							dcclite::Log::Trace("[Throttle::ConfiguringState]{} track power: {}", self.GetName(), message[3] == '1' ? "ON" : "OFF");
+						}
+						else if (message.compare(0, 3, "PRL") == 0)
+						{
+							dcclite::Log::Trace("[Throttle::ConfiguringState]{} routes list message: {}", self.GetName(), message.c_str() + 3);
+						}
+						else if (message.compare(0, 3, "PRT") == 0)
+						{
+							dcclite::Log::Trace("[Throttle::ConfiguringState]{} routes types message: {}", self.GetName(), message.c_str() + 3);
+						}
+						else if (message.compare(0, 3, "PTL") == 0)
+						{
+							dcclite::Log::Trace("[Throttle::ConfiguringState]{} turnout list message: {}", self.GetName(), message.c_str() + 3);
+						}
+						else if (message.compare(0, 3, "PTT") == 0)
+						{
+							dcclite::Log::Trace("[Throttle::ConfiguringState]{} turnout labels message: {}", self.GetName(), message.c_str() + 3);
+						}
+						else if (message.compare(0, 2, "PW") == 0)
+						{
+							dcclite::Log::Trace("[Throttle::ConfiguringState]{} web port: {}", self.GetName(), message.c_str() + 2);
+						}
+						else if (message.compare(0, 2, "RC") == 0)
+						{
+							dcclite::Log::Trace("[Throttle::ConfiguringState]{} consist info message: {}", self.GetName(), message.c_str() + 2);
+						}
+						else if (message.compare(0, 2, "RL") == 0)
+						{
+							dcclite::Log::Trace("[Throttle::ConfiguringState]{} roster list message: {}", self.GetName(), message.c_str() + 2);
+						}
+						else
+						{
+							dcclite::Log::Error("[Throttle::ConfiguringState] {} Unknown response: {}", self.GetName(), message);
+						}
+					}					
 				}
 		};
 
 		struct ConnectedState: OnlineState
 		{			
 			public:
-
-				ConnectedState(OnlineState &&other) :
-					OnlineState{std::move(other)}
+				ConnectedState(Throttle &self, OnlineState &&other) :
+					OnlineState{std::move(other)},
+					m_tPreviousFunctions{ self.m_rclOwnerSlot.GetFunctions() }
 				{
-					//empty
+					auto locoAddress = self.m_rclOwnerSlot.GetLocomotiveAddress().GetAddress();
+					auto locoId = fmt::format("{}{}", locoAddress < 128 ? 'S' : 'L', locoAddress);
+
+					m_clMessenger.Send(fmt::format("MT+{0}<;>{0}", locoId));					 
+				}
+
+				void SetSpeed(std::uint8_t speed)
+				{
+					m_clMessenger.Send(fmt::format("MTA*<;>V{}", speed));
+				}
+
+				void SetForward(bool forward)
+				{
+					m_clMessenger.Send(fmt::format("MTA*<;>R{}", forward ? '1' : '0'));
+				}
+
+				void SetFunction(int index, bool pushed)
+				{
+					const auto message = fmt::format("MTA*<;>F{}{}", pushed ? 1 : 0, index);
+					m_clMessenger.Send(message);
+
+					dcclite::Log::Debug("[Throttle::ConnectedState] Sent: {}", message);
+				}
+
+				void OnFunctionChange(uint8_t beginIndex, uint8_t endIndex, const dcclite::broker::LoconetSlotFunctions_t &functions)
+				{
+					for (; beginIndex != endIndex; ++beginIndex)
+					{
+						if (functions[beginIndex] != m_tPreviousFunctions[beginIndex])
+						{
+							const bool bitValue = functions[beginIndex];
+
+							m_tPreviousFunctions.SetBitValue(beginIndex, bitValue);
+							this->SetFunction(beginIndex, bitValue);
+						}
+					}
 				}
 
 				void Update(Throttle &self, const dcclite::Clock::TimePoint_t time) override
 				{
 					for(;;)
 					{
-						auto [status, msg] = m_clMessenger.Poll();
+						auto [status, message] = m_clMessenger.Poll();
 
 						if (status == dcclite::Socket::Status::DISCONNECTED)
 						{
@@ -344,19 +485,32 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 						else if (status == dcclite::Socket::Status::WOULD_BLOCK)
 							break;
 
-						dcclite::Log::Trace("Got: {}", msg);
+						if (message.compare(0, 2, "MT") == 0)
+						{
+							//multithrottle response
+							dcclite::Log::Debug("[Throttle::ConfiguringState] {} {}", self.GetName(), message);
+						}
+						else
+						{
+							dcclite::Log::Error("[Throttle::ConnectedState] {} Unknown response: {}", self.GetName(), message);
+						}						
 					}
 					
 				}
+
+			private:
+				dcclite::broker::LoconetSlotFunctions_t m_tPreviousFunctions;
 		};
 
-		std::variant< ConnectState, HandShakeState, ConfiguringState, ConnectedState, ErrorState> m_vState;
-		State *m_pclCurrentState = nullptr;
+		std::variant< ConnectState, HandShakeState, ConfiguringThrottleIdState, ConnectedState, ErrorState> m_vState;
+		State									*m_pclCurrentState = nullptr;
+		ConnectedState							*m_pclConnectedState = nullptr;
 
-		dcclite::broker::DccAddress m_tLocomotiveAddress;
+		dcclite::broker::DccAddress				m_tLocomotiveAddress;
 
-		const dcclite::NetworkAddress m_clServerAddress;
-
+		const dcclite::NetworkAddress			m_clServerAddress;
+		
+		const dcclite::broker::ILoconetSlot		&m_rclOwnerSlot;		
 };
 
 
@@ -380,7 +534,7 @@ namespace dcclite::broker
 
 			void Serialize(JsonOutputStream_t &stream) const override;	
 
-			IThrottle &CreateThrottle(DccAddress locomotiveAddress) override;
+			IThrottle &CreateThrottle(const ILoconetSlot &owner) override;
 			void ReleaseThrottle(IThrottle &throttle) override;
 
 		private:
@@ -429,9 +583,9 @@ namespace dcclite::broker
 	}
 
 
-	IThrottle &ThrottleServiceImpl::CreateThrottle(DccAddress locomotiveAddress)
+	IThrottle &ThrottleServiceImpl::CreateThrottle(const ILoconetSlot &owner)
 	{
-		auto throttle = dynamic_cast<IThrottle *>(this->AddChild(std::make_unique<Throttle>(this->m_clServerAddress, locomotiveAddress )));
+		auto throttle = dynamic_cast<IThrottle *>(this->AddChild(std::make_unique<Throttle>(this->m_clServerAddress, owner )));
 
 		return *throttle;
 	}

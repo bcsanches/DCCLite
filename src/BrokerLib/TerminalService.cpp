@@ -661,7 +661,7 @@ namespace dcclite::broker
 						cmd->Run(m_clContext, resultObj, id, doc);
 					});
 
-					dcclite::Log::Trace("response {}", response);
+					//dcclite::Log::Trace("response {}", response);
 				}
 				catch (TerminalCmdException &ex)
 				{
@@ -674,7 +674,7 @@ namespace dcclite::broker
 
 				if (!m_clMessenger.Send(m_clAddress, response))
 				{
-					dcclite::Log::Error("message for {} not sent, contents: {}", m_clAddress.GetIpString(), response);
+					dcclite::Log::Error("[TerminalClient::Update] message for {} not sent, contents: {}", m_clAddress.GetIpString(), response);
 				}
 			}
 		}

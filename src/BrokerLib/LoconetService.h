@@ -13,8 +13,55 @@
 
 #include "Service.h"
 
+#include "DccAddress.h"
+#include "Packet.h"
+
 namespace dcclite::broker
 { 
+	typedef dcclite::BitPack<32> LoconetSlotFunctions_t;
+
+	class ILoconetSlot
+	{
+		public:
+			virtual ~ILoconetSlot() = default;
+
+			uint8_t GetId() const noexcept
+			{
+				return m_uId;
+			}
+
+			const dcclite::broker::DccAddress &GetLocomotiveAddress() const noexcept
+			{
+				return m_tLocomotiveAddress;
+			}
+
+			bool IsForwardDir() const noexcept
+			{
+				return m_fForward;
+			}
+
+			uint8_t GetSpeed() const noexcept
+			{
+				return m_uSpeed;
+			}
+
+			const LoconetSlotFunctions_t &GetFunctions() const noexcept
+			{
+				return m_arFunctions;
+			}
+
+		protected:
+			LoconetSlotFunctions_t m_arFunctions;
+
+			dcclite::broker::DccAddress m_tLocomotiveAddress;
+
+			//the id is useful for logging and debugging
+			uint8_t m_uId = { 0 };			
+
+			uint8_t m_uSpeed = { 0 };
+
+			bool m_fForward = { true };
+	};
 
 	class LoconetService: public Service
 	{	

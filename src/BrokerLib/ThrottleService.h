@@ -17,6 +17,8 @@
 
 namespace dcclite::broker
 { 
+	class ILoconetSlot;
+
 	class IThrottle
 	{
 		public:
@@ -24,6 +26,11 @@ namespace dcclite::broker
 			{
 				//emtpy
 			}
+
+			virtual void OnSpeedChange() = 0;
+			virtual void OnForwardChange() = 0;
+
+			virtual void OnFunctionChange(const uint8_t begin, const uint8_t end) = 0;
 	};
 
 
@@ -41,7 +48,7 @@ namespace dcclite::broker
 			// Main interface
 			//
 
-			virtual IThrottle &CreateThrottle(DccAddress locomotiveAddress) = 0;
+			virtual IThrottle &CreateThrottle(const ILoconetSlot &owner) = 0;
 
 			virtual void ReleaseThrottle(IThrottle &throttle) = 0;
 

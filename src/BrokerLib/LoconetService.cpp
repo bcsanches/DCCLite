@@ -9,8 +9,6 @@
 
 #include "Broker.h"
 #include "Clock.h"
-#include "DccAddress.h"
-#include "Packet.h"
 #include "ThrottleService.h"
 #include "SerialPort.h"
 
@@ -81,8 +79,6 @@ static constexpr auto SLOT_SPEED_F2 = BIT_1;
 static constexpr auto SLOT_SPEED_F1 = BIT_0;
 
 static constexpr auto MAX_SLOT_FUNCTIONS = 32;
-
-typedef dcclite::BitPack<32> Functions_t;
 
 typedef dcclite::BasePacket<MAX_LN_MESSAGE_LEN> MiniPacket_t;
 
@@ -164,7 +160,9 @@ class LoconetMessageWriter
 ///////////////////////////////////////////////////////////////////////////////
 
 
-class Slot
+
+
+class Slot: public dcclite::broker::ILoconetSlot
 {
 	public:
 		enum class States
@@ -184,7 +182,18 @@ class Slot
 		~Slot()
 		{
 			this->ReleaseThrottle();
+		}		
+
+		void SetId(const uint8_t id) noexcept 
+		{
+			m_uId = id;
 		}
+
+		//
+		//
+		// STATE management
+		//
+		//
 
 		bool IsFree() const noexcept
 		{
@@ -198,6 +207,8 @@ class Slot
 
 		void GotoState_Common() noexcept
 		{
+			dcclite::Log::Debug("[Slot[{}]::GotoState_Common] from {}", this->GetId(),  magic_enum::enum_name(m_eState));
+
 			m_eState = States::COMMON;		
 
 			this->ReleaseThrottle();
@@ -205,6 +216,8 @@ class Slot
 
 		void GotoState_Common(const dcclite::broker::DccAddress addr) noexcept
 		{
+			dcclite::Log::Debug("[Slot[{}]::GotoState_Common] from {}, new address {}", this->GetId(), magic_enum::enum_name(m_eState), addr);
+
 			this->GotoState_Common();
 			
 			m_tLocomotiveAddress = addr;
@@ -218,13 +231,26 @@ class Slot
 
 		void GotoState_InUse() noexcept
 		{
+			dcclite::Log::Debug("[Slot[{}]::GotoState_InUse] from {}", this->GetId(), magic_enum::enum_name(m_eState));
+
 			m_eState = States::IN_USE;
 
-			m_pclThrottle = &g_pclThrottleService->CreateThrottle(m_tLocomotiveAddress);
+			/*
+				sometimes a loconet throttle may simple ask to re - use a slot, so do not re - create a network throttle.
+
+				This happens when the throttle simple ask a null move before freeing a slot (setting it to common state)
+
+				This can be forced rapid clicking on the "loco" button on a loconet throttle, sometimes it fires a "null move" 
+				message before firing a "setStat1" that will set a slot to common state
+			*/
+			if(!m_pclThrottle)
+				m_pclThrottle = &g_pclThrottleService->CreateThrottle(*this);			
 		}
 
 		void GotoState_Free() noexcept
 		{
+			dcclite::Log::Debug("[Slot[{}]::GotoState_Free] from {}", this->GetId(), magic_enum::enum_name(m_eState));
+
 			m_eState = States::FREE;
 
 			this->ReleaseThrottle();
@@ -235,48 +261,40 @@ class Slot
 			return m_eState;
 		}
 
-		const dcclite::broker::DccAddress &GetLocomotiveAddress() const noexcept
-		{
-			return m_tLocomotiveAddress;
-		}
+		//
+		//
+		// Locomotive state controls
+		//
+		//		
 
-		bool IsForwardDir() const noexcept
-		{
-			return m_fForward;
-		}
 
 		void SetForward(bool v) noexcept
 		{
 			m_fForward = v;
-		}		
 
-		const Functions_t &GetFunctions() const noexcept
-		{
-			return m_arFunctions;
-		}
+			if (m_pclThrottle)
+				m_pclThrottle->OnForwardChange();
+		}				
 
-		void SetFunctions(const bool *beginFunction, const bool *endFunction, uint8_t beginIndex) noexcept
+		void SetFunctions(const bool *beginFunction, const bool *endFunction, const uint8_t beginIndex) noexcept
 		{
 			assert((endFunction - beginFunction) <= MAX_SLOT_FUNCTIONS);
 			
-			for (; beginFunction != endFunction; ++beginFunction, ++beginIndex)
-				m_arFunctions.SetBitValue(beginIndex, *beginFunction);
-		}
+			auto index = beginIndex;
+			for (; beginFunction != endFunction; ++beginFunction, ++index)
+				m_arFunctions.SetBitValue(index, *beginFunction);
 
-		uint8_t GetSpeed() const noexcept 
-		{
-			return m_uSpeed;
-		}
+			if (m_pclThrottle)
+				m_pclThrottle->OnFunctionChange(beginIndex, index);
+		}		
 
 		void SetSpeed(const uint8_t speed) noexcept
 		{
 			m_uSpeed = speed;
-		}
 
-		void ForceState(const States newState) noexcept
-		{
-			m_eState = newState;
-		}		
+			if (m_pclThrottle)
+				m_pclThrottle->OnSpeedChange();
+		}			
 
 	private:
 		void ReleaseThrottle()
@@ -288,17 +306,10 @@ class Slot
 			m_pclThrottle = nullptr;
 		}
 
-	private:
-		dcclite::broker::DccAddress m_tLocomotiveAddress;			
-		dcclite::broker::IThrottle *m_pclThrottle = nullptr;
+	private:		
+		dcclite::broker::IThrottle *m_pclThrottle = nullptr;		
 
-		Functions_t m_arFunctions;
-
-		States m_eState = States::FREE;
-
-		uint8_t m_uSpeed = { 0 };
-
-		bool m_fForward = { true };
+		States m_eState = States::FREE;		
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -330,7 +341,7 @@ static uint8_t BuildSlotDirfByte(const Slot &slot) noexcept
 	//D1 - SL_F2; 1 = F2 ON
 	//D0 - SL_F1; 1 = F1 ON
 	return
-		(slot.IsForwardDir() ? BIT_5 : 0) |
+		(slot.IsForwardDir() ? 0 : BIT_5) |
 		(functions[0] ? BIT_4 : 0) |
 		(functions[4] ? BIT_3 : 0) |
 		(functions[3] ? BIT_2 : 0) |
@@ -391,6 +402,9 @@ SlotManager::SlotManager()
 {	
 	//dispatch slot - never use
 	m_arSlots[0].GotoState_Reserved();
+
+	for (int i = 0; i < MAX_SLOTS; ++i)
+		m_arSlots[i].SetId(i);
 }
 
 std::optional<uint8_t> SlotManager::AcquireLocomotive(const dcclite::broker::DccAddress address, const dcclite::Clock::TimePoint_t ticks)
@@ -514,7 +528,26 @@ void SlotManager::SetFunctions(const uint8_t slot, const bool *beginFunction, co
 
 void SlotManager::ForceSlotState(const uint8_t slot, const Slot::States state, const dcclite::Clock::TimePoint_t ticks)
 {
-	m_arSlots.at(slot).ForceState(state);	
+	auto &slotHandle = m_arSlots.at(slot);
+
+	switch(state)
+	{
+		case Slot::States::COMMON:
+			slotHandle.GotoState_Common();
+			break;
+
+		case Slot::States::FREE:
+			slotHandle.GotoState_Free();
+			break;
+
+		case Slot::States::IN_USE:
+			slotHandle.GotoState_InUse();
+			break;
+
+		default:
+			dcclite::Log::Error("[SlotManager::ForceSlotState] Force slot {} state to {} not supported.", slot, state);
+			break;
+	}	
 
 	this->RefreshSlotTimeout(slot, ticks);
 }
@@ -737,7 +770,6 @@ namespace dcclite::broker
 		msg.WriteByte(responseCode);
 
 		this->DispatchLnMessage(msg);
-
 	}
 
 	void LoconetServiceImpl::DispatchLnMessage(LoconetMessageWriter &msg)
@@ -747,7 +779,7 @@ namespace dcclite::broker
 
 	void LoconetServiceImpl::ParseLocomotiveDirf(const uint8_t slot, const uint8_t dirf, const dcclite::Clock::TimePoint_t ticks)
 	{
-		bool forward = dirf & BIT_5;
+		bool forward = !(dirf & BIT_5);
 
 		bool functions[5];
 		functions[0] = dirf & BIT_4;
@@ -835,13 +867,15 @@ namespace dcclite::broker
 					//is a null move)
 					if (src == dest)
 					{
+						Log::Trace("[LoconetServiceImpl::ParseMessage] MoveSlots: null move {} started", src);
+
 						m_clSlotManager.SetSlotToInUse(src, ticks);
 
 						auto msg = m_clSlotManager.MakeMessage_SlotReadData(src);
 
 						this->DispatchLnMessage(msg);
 
-						Log::Trace("[LoconetServiceImpl::ParseMessage] MoveSlots: null move {}", src);
+						Log::Trace("[LoconetServiceImpl::ParseMessage] MoveSlots: null move {} completed", src);
 						this->NotifySlotChanged(src);
 					}
 					else if (dest == 0)
