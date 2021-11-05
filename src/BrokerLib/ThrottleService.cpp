@@ -63,6 +63,14 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 			m_pclConnectedState->OnFunctionChange(begin, end, m_rclOwnerSlot.GetFunctions());
 		}
 
+		void OnEmergencyStop() override
+		{
+			if (!m_pclConnectedState)
+				return;
+
+			m_pclConnectedState->OnEmergencyStop();
+		}
+
 	private:
 		void GotoConnectState()
 		{
@@ -451,7 +459,7 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 
 				void SetFunction(int index, bool pushed)
 				{
-					const auto message = fmt::format("MTA*<;>F{}{}", pushed ? 1 : 0, index);
+					const auto message = fmt::format("MTA*<;>F{}{:02}", pushed ? 1 : 0, index);
 					m_clMessenger.Send(message);
 
 					dcclite::Log::Debug("[Throttle::ConnectedState] Sent: {}", message);
@@ -469,6 +477,11 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 							this->SetFunction(beginIndex, bitValue);
 						}
 					}
+				}
+
+				void OnEmergencyStop()
+				{
+					m_clMessenger.Send("MTA*<;>X");
 				}
 
 				void Update(Throttle &self, const dcclite::Clock::TimePoint_t time) override

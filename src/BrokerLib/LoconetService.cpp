@@ -294,7 +294,15 @@ class Slot: public dcclite::broker::ILoconetSlot
 
 			if (m_pclThrottle)
 				m_pclThrottle->OnSpeedChange();
-		}			
+		}		
+
+		void EmergencyStop() noexcept
+		{
+			m_uSpeed = 0;
+
+			if (m_pclThrottle)
+				m_pclThrottle->OnEmergencyStop();
+		}
 
 	private:
 		void ReleaseThrottle()
@@ -371,6 +379,8 @@ class SlotManager
 		void SetSlotFree(uint8_t slot);
 
 		void SetLocomotiveSpeed(const uint8_t slot, const uint8_t speed, const dcclite::Clock::TimePoint_t ticks) noexcept;
+
+		void EmergencyStop(const uint8_t slot, const dcclite::Clock::TimePoint_t ticks) noexcept;
 
 		void SetForward(const uint8_t slot, const bool forward, const dcclite::Clock::TimePoint_t ticks);
 		void SetFunctions(const uint8_t slot, const bool *beginFunction, const bool *endFunction, uint8_t beginIndex, const dcclite::Clock::TimePoint_t ticks);
@@ -502,6 +512,17 @@ void SlotManager::SetLocomotiveSpeed(const uint8_t slot, const uint8_t speed, co
 	pSlot->SetSpeed(speed);	
 	this->RefreshSlotTimeout(slot, ticks);
 	
+}
+
+void SlotManager::EmergencyStop(const uint8_t slot, const dcclite::Clock::TimePoint_t ticks) noexcept
+{
+	auto pSlot = this->TryGetLocomotiveSlot(slot);
+
+	if (!pSlot)
+		return;
+
+	pSlot->EmergencyStop();
+	this->RefreshSlotTimeout(slot, ticks);
 }
 
 void SlotManager::SetForward(const uint8_t slot, const bool forward, const dcclite::Clock::TimePoint_t ticks)
@@ -852,8 +873,19 @@ namespace dcclite::broker
 					uint8_t slot = payload.ReadByte();					
 					uint8_t speed = payload.ReadByte();					
 
-					Log::Trace("[LoconetServiceImpl::Update] Setting speed {} for slot {}", speed, slot);
-					m_clSlotManager.SetLocomotiveSpeed(slot, speed, ticks);
+					//Loconet speed 1 means "emergency stop", so handle it
+					if (speed == 1)
+					{
+						Log::Trace("[LoconetServiceImpl::Update] Emergency stop for slot {}", slot);
+
+						m_clSlotManager.EmergencyStop(slot, ticks);
+					}
+					else
+					{
+						Log::Trace("[LoconetServiceImpl::Update] Setting speed {} for slot {}", speed, slot);
+						m_clSlotManager.SetLocomotiveSpeed(slot, speed, ticks);
+					}
+					
 
 					this->NotifySlotChanged(slot);
 				}

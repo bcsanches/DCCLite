@@ -31,6 +31,8 @@ namespace dcclite::broker
 			virtual void OnForwardChange() = 0;
 
 			virtual void OnFunctionChange(const uint8_t begin, const uint8_t end) = 0;
+
+			virtual void OnEmergencyStop() = 0;
 	};
 
 
