@@ -29,7 +29,7 @@ class TerminalClient
 	public:
 		TerminalClient(Socket &&socket);
 		TerminalClient(const TerminalClient &client) = delete;
-		TerminalClient(TerminalClient &&other);
+		TerminalClient(TerminalClient &&other) noexcept;
 
 		TerminalClient &operator=(TerminalClient &&other) noexcept
 		{

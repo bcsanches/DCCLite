@@ -110,8 +110,13 @@
         "class": "LoconetService",
         "name": "loconet",
         "port": "COM4",
-        "engineDriverServerAddress": "127.0.0.1:2560",
+        "throttleService": "throttleService",
         "ignoreOnLoadFailure":true
-    }  
+    },
+    {
+        "class":"ThrottleService",
+        "name":"throttleService",
+        "serverAddress": "127.0.0.1:12090"
+    }
   ]
 }

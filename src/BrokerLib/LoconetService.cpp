@@ -779,7 +779,7 @@ namespace dcclite::broker
 
 	void LoconetServiceImpl::ParseLocomotiveDirf(const uint8_t slot, const uint8_t dirf, const dcclite::Clock::TimePoint_t ticks)
 	{
-		bool forward = !(dirf & BIT_5);
+		bool forward = (dirf & BIT_5) == 0;
 
 		bool functions[5];
 		functions[0] = dirf & BIT_4;
