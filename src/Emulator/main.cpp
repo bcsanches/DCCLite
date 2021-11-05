@@ -31,7 +31,7 @@ class TerminalClient
 		TerminalClient(const TerminalClient &client) = delete;
 		TerminalClient(TerminalClient &&other);
 
-		TerminalClient &operator=(TerminalClient &&other)
+		TerminalClient &operator=(TerminalClient &&other) noexcept
 		{
 			if (this != &other)
 			{
@@ -53,7 +53,7 @@ TerminalClient::TerminalClient(Socket &&socket) :
 	//emtpy
 }
 
-TerminalClient::TerminalClient(TerminalClient &&other) :
+TerminalClient::TerminalClient(TerminalClient &&other) noexcept :
 	m_clMessenger(std::move(other.m_clMessenger))
 {
 	//empty
