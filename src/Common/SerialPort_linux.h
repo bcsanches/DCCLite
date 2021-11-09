@@ -10,8 +10,66 @@
 
 #pragma once
 
+#include <string_view>
+
 namespace dcclite
 {
+	constexpr auto DATA_PACKET_SIZE = 512;
 
+	class SerialPort
+	{
+		public:
+			class DataPacket
+			{
+				public:
+					DataPacket();
+					~DataPacket();
+
+					bool IsDataReady();
+
+					unsigned int GetDataSize() const
+					{
+						return m_uDataSize;
+					}
+
+					const uint8_t* GetData() const
+					{
+						return m_u8Data;
+					}
+
+					unsigned int GetNumFreeBytes() const
+					{
+						return DATA_PACKET_SIZE - m_uDataSize;
+					}
+
+					/**
+						This actually reset data size counter
+
+						Usually is only called after a Write is complete, so you can re-use the packet for writing more data
+
+					*/
+					void Clear();
+
+					void WriteData(const uint8_t* data, unsigned int dataSize);
+
+				private:
+					uint8_t m_u8Data[DATA_PACKET_SIZE];
+					unsigned int m_uDataSize = { 0 };					
+
+					bool m_fWaiting = false;
+
+					friend class SerialPort;
+				};
+
+		public:
+			SerialPort(std::string_view portName);
+			~SerialPort();
+
+			void Read(DataPacket& packet);
+			void Write(DataPacket& packet);
+
+		private:			
+			std::string m_strName;
+	};
 } //end of namespace dcclite
 
