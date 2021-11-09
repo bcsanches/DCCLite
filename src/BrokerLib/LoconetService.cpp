@@ -159,10 +159,6 @@ class LoconetMessageWriter
 // Loconet Slot
 //
 ///////////////////////////////////////////////////////////////////////////////
-
-
-
-
 class Slot: public dcclite::broker::ILoconetSlot
 {
 	public:
@@ -1150,6 +1146,4 @@ namespace dcclite::broker
 	{
 		return std::make_unique<LoconetServiceImpl>(name, broker, params, project);
 	}
-
-
 }
