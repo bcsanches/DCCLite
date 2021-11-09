@@ -102,7 +102,7 @@ uint8_t DefaultMsgSizes(const Opcodes opcode)
 			return 6;
 
 		default:
-			throw std::exception(fmt::format("[LoconetService::DefaultMsgSizes] Unknown opcode: {}", opcode).c_str());
+			throw std::domain_error(fmt::format("[LoconetService::DefaultMsgSizes] Unknown opcode: {}", opcode).c_str());
 	}
 }
 
@@ -123,7 +123,7 @@ class LoconetMessageWriter
 		void WriteByte(const uint8_t byte)
 		{
 			if (m_tPacket.GetSize() >= m_uMsgLen - 1)
-				throw std::exception(fmt::format("[LoconetService::WriteByte] Buffer overflow").c_str());
+				throw std::overflow_error(fmt::format("[LoconetService::WriteByte] Buffer overflow").c_str());
 
 			m_tPacket.Write8(byte & 0x7F);			
 		}
