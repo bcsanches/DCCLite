@@ -2,6 +2,7 @@
 
 #include <Log.h>
 
+#include <exception>
 #include <optional>
 #include <deque>
 
