@@ -10,3 +10,9 @@ image:
   
 build_script:
   - cmd: Scripts\build_ci_win.cmd
+  - sh: 
+    test -d ./build && echo "build exists" || mkdir build
+    cd build
+    cmake ..
+    cmake --build ./ --target Broker
+    cmake --build ./ --target Launcher
