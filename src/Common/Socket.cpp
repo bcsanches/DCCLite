@@ -391,9 +391,9 @@ namespace dcclite
 #if PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
 		if (bytesSent < 0)
 		{
-			switch (errono)
+			switch (errno)
 			{
-				case EAGAIN:
+				//case EAGAIN:
 				case EWOULDBLOCK:
 					return std::make_tuple(Status::WOULD_BLOCK, 0);
 
@@ -401,7 +401,7 @@ namespace dcclite
 					return std::make_tuple(Status::DISCONNECTED, 0);
 
 				default:
-					throw std::logic_error(fmt::format("[Socket::Send] Failed to send: {}", errono));
+					throw std::logic_error(fmt::format("[Socket::Send] Failed to send: {}", errno));
 			}			
 		}
 			
@@ -420,9 +420,9 @@ namespace dcclite
 				default:
 					throw std::logic_error(fmt::format("[Socket::Send] Failed to send: {}", error));
 			}
-#endif			
 		}
-
+#endif			
+		
 		return std::make_tuple(Status::OK, bytesSent);
 	}
 
