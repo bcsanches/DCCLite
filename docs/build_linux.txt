@@ -1,0 +1,2 @@
+Necessary:
+apt-get install uuid-dev

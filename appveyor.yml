@@ -10,7 +10,7 @@ image:
   
 build_script:
   - cmd: Scripts\build_ci_win.cmd
-  - sh: 
+  - sh: apt-get install uuid-dev 
   - sh: git submodule update --init
   - sh: git submodule update --init --recursive
   - sh: test -d ./build && echo "build exists" || mkdir build
