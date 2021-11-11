@@ -12,18 +12,18 @@
 
 #include <string_view>
 
+#include "SerialPort.h"
+
 namespace dcclite
 {
-	constexpr auto DATA_PACKET_SIZE = 512;
-
 	class SerialPort
 	{
 		public:
 			class DataPacket
 			{
 				public:
-					DataPacket();
-					~DataPacket();
+					DataPacket() = default;
+					~DataPacket() = default;
 
 					bool IsDataReady();
 
@@ -53,7 +53,7 @@ namespace dcclite
 					void WriteData(const uint8_t* data, unsigned int dataSize);
 
 				private:
-					uint8_t m_u8Data[DATA_PACKET_SIZE];
+					uint8_t m_u8Data[SERIAL_PORT_DATA_PACKET_SIZE];
 					unsigned int m_uDataSize = { 0 };					
 
 					bool m_fWaiting = false;
@@ -70,6 +70,8 @@ namespace dcclite
 
 		private:			
 			std::string m_strName;
+
+			int m_iPortHandle;
 	};
 } //end of namespace dcclite
 

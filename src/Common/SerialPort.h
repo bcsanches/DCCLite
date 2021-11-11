@@ -10,6 +10,11 @@
 
 #pragma once
 
+namespace dcclite
+{
+	constexpr auto SERIAL_PORT_DATA_PACKET_SIZE = 512;
+}
+
 #ifdef WIN32
 #include "SerialPort_win.h"
 #else

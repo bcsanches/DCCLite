@@ -16,6 +16,7 @@ else(WIN32)
 		ConsoleUtils_linux.cpp
 		GuidUtils_linux.cpp
 		Sha1_linux.cpp
+		SerialPort_linux.cpp
 	)
     
     set(CommonPlatHeaders
