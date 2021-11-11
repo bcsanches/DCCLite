@@ -92,6 +92,7 @@ else(WIN32)
 		fmt 
 		uuid 		
         lfwatch
+        dl
 	)
 
 endif(WIN32)
