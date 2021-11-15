@@ -30,6 +30,8 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 			m_rclOwnerSlot{ owner }
 		{
 			m_pclCurrentState = std::get_if<ConnectState>(&m_vState);
+
+			assert(m_pclCurrentState);
 		}
 #endif
 
@@ -75,7 +77,9 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 		void GotoConnectState()
 		{
 			m_vState = ConnectState{ m_clServerAddress };
-			m_pclCurrentState = std::get_if<ErrorState>(&m_vState);
+			m_pclCurrentState = std::get_if<ConnectState>(&m_vState);
+
+			assert(m_pclCurrentState);
 
 			m_pclConnectedState = nullptr;
 		}
@@ -84,6 +88,8 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 		{
 			m_vState = ErrorState{std::move(reason)};
 			m_pclCurrentState = std::get_if<ErrorState>(&m_vState);
+
+			assert(m_pclCurrentState);
 
 			m_pclConnectedState = nullptr;
 		}
@@ -97,6 +103,8 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 
 			m_vState = HandShakeState{ std::move(connectingState->m_clSocket) };
 			m_pclCurrentState = std::get_if<HandShakeState>(&m_vState);
+
+			assert(m_pclCurrentState);
 
 			m_pclConnectedState = nullptr;
 		}
@@ -113,6 +121,8 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 			m_vState.emplace<ConfiguringThrottleIdState>( *this, dcclite::NetMessenger{std::move(handShakeState->m_clSocket), separator, initialBuffer});
 			m_pclCurrentState = std::get_if<ConfiguringThrottleIdState>(&m_vState);
 
+			assert(m_pclCurrentState);
+
 			m_pclConnectedState = nullptr;
 		}
 
@@ -125,7 +135,9 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 
 			auto tmp = std::move(*configuringState);
 			m_vState.emplace<ConnectedState>(*this, std::move(tmp));
-			m_pclCurrentState = m_pclConnectedState = std::get_if<ConnectedState>(&m_vState);			 
+			m_pclCurrentState = m_pclConnectedState = std::get_if<ConnectedState>(&m_vState);	
+
+			assert(m_pclCurrentState);
 		}
 
 	private:		
@@ -459,7 +471,7 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 
 				void SetFunction(int index, bool pushed)
 				{
-					const auto message = fmt::format("MTA*<;>F{}{:02}", pushed ? 1 : 0, index);
+					const auto message = fmt::format("MTA*<;>f{}{:02}", pushed ? 1 : 0, index);
 					m_clMessenger.Send(message);
 
 					dcclite::Log::Debug("[Throttle::ConnectedState] Sent: {}", message);
