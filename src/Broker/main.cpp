@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 		dcclite::LogInit("DccLiteBroker.log");
 
 #ifndef DEBUG
-		dcclite::LogGetDefault()->set_level(spdlog::level::trace);
+		dcclite::LogGetDefault()->set_level(spdlog::level::info);
 #endif
 
 		dcclite::Log::Info("DCClite {} {}", BUILD_NUM, __DATE__);
