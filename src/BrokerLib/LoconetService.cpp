@@ -1,3 +1,16 @@
+// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
+// file at the top-level directory of this distribution.
+// 
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// 
+// This Source Code Form is "Incompatible With Secondary Licenses", as
+// defined by the Mozilla Public License, v. 2.0.
+//
+// LocoNet is a registered trademark of Digitrax Inc.
+//
+
 #include "LoconetService.h"
 
 #include <Log.h>
@@ -732,6 +745,8 @@ namespace dcclite::broker
 			void ParseLocomotiveDirf(const uint8_t slot, const uint8_t dirf, const dcclite::Clock::TimePoint_t ticks);
 			void ParseLocomotiveSnd(const uint8_t slot, const uint8_t snd, const dcclite::Clock::TimePoint_t ticks);
 
+			void ResetPr3();
+
 		private:
 			SlotManager m_clSlotManager;
 
@@ -744,6 +759,8 @@ namespace dcclite::broker
 			std::string m_strThrottleServiceName;
 
 			dcclite::Clock::TimePoint_t m_tNextPurgeTicks;	
+
+			uint8_t m_uErrorCount = 0;
 	};
 
 
@@ -754,14 +771,7 @@ namespace dcclite::broker
 	{				
 		dcclite::Log::Info("[LoconetService] Started, listening on port {}", params["port"].GetString());
 
-		LoconetMessageWriter msg(OPC_UNDOC_SETMS100);
-
-		msg.WriteByte(0x10);
-		msg.WriteByte(3);
-		msg.WriteByte(0);
-		msg.WriteByte(0);
-
-		this->DispatchLnMessage(msg);
+		this->ResetPr3();
 
 		m_clSerialPort.Read(m_clInputPacket);
 	}
@@ -771,6 +781,19 @@ namespace dcclite::broker
 	{
 		//empty
 	}
+
+	void LoconetServiceImpl::ResetPr3()
+	{
+		LoconetMessageWriter msg(OPC_UNDOC_SETMS100);
+
+		msg.WriteByte(0x10);
+		msg.WriteByte(3);
+		msg.WriteByte(0);
+		msg.WriteByte(0);
+
+		this->DispatchLnMessage(msg);
+	}
+
 
 	void LoconetServiceImpl::Initialize()
 	{
@@ -1086,9 +1109,21 @@ namespace dcclite::broker
 				{
 					Log::Warn("[LoconetServiceImpl::Update] Checksum mismatch, ignoring message");
 
+					++m_uErrorCount;
+
+					if (m_uErrorCount == 5)
+					{
+						//is Pr3 lost? Try to reset it...
+						this->ResetPr3();
+
+						Log::Error("[LoconetServiceImpl::Update] too many errors reading Pr3 {} - resetting it...", m_uErrorCount);
+						m_uErrorCount = 0;
+					}
+
 					return;
 				}
 
+				m_uErrorCount = 0;
 				auto nextMsg = msg + msgLen;
 
 				//skip size byte

@@ -22,6 +22,7 @@
 
 #include "Log.h"
 
+#include "BonjourService.h"
 #include "LoconetService.h"
 #include "TerminalCmd.h"
 #include "TerminalService.h"
@@ -84,6 +85,8 @@ namespace dcclite::broker
 		m_pServices = static_cast<FolderObject *>(m_clRoot.AddChild(
 			std::make_unique<FolderObject>(SpecialFolders::GetName(SpecialFolders::Folders::ServicesId)))
 		);
+
+		m_pServices->AddChild(BonjourService::Create("bonjour", *this, m_clProject));
 
 		this->LoadConfig();
 	}

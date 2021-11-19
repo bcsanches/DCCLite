@@ -158,7 +158,7 @@ namespace dcclite
 		return *this;
 	}
 
-	bool Socket::Open(Port_t port, Type type)
+	bool Socket::Open(Port_t port, Type type, uint32_t flags)
 	{
 		assert(g_iCount > 0);
 
@@ -172,7 +172,7 @@ namespace dcclite
 
 		if (m_hHandle == NULL_SOCKET)
 		{
-			LogGetDefault()->error("Failed to create socket.");
+			LogGetDefault()->error("[Socket::Open] Failed to create socket.");
 			return false;
 		}
 
@@ -181,7 +181,7 @@ namespace dcclite
 		int nonBlocking = 1;
 		if (fcntl(m_hHandle, F_SETFL, O_NONBLOCK, nonBlocking) == -1)
 		{
-			LogGetDefault()->error("Failed to set socket to non-blocking mode.");			
+			LogGetDefault()->error("[Socket::Open] Failed to set socket to non-blocking mode.");			
 			return false;
 		}
 
@@ -192,7 +192,7 @@ namespace dcclite
 		{
 			this->Close();
 
-			LogGetDefault()->error("Failed to set socket to non-blocking mode.");
+			LogGetDefault()->error("[Socket::Open] Failed to set socket to non-blocking mode.");
 			return false;
 		}
 
@@ -201,17 +201,29 @@ namespace dcclite
 		{
 			this->Close();
 
-			LogGetDefault()->error("Failed enable NO_DELAY.");
+			LogGetDefault()->error("[Socket::Open] Failed to enable NO_DELAY.");
 			return false;
 		}
 
-		char broadcast = 1;
+		const char broadcast = 1;
 		if ((type == Type::DATAGRAM) && (setsockopt(m_hHandle, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast)) != 0))
 		{
 			this->Close();
 
-			LogGetDefault()->error("Failed enable SO_BROADCAST.");
+			LogGetDefault()->error("[Socket::Open] Failed to enable SO_BROADCAST.");
 			return false;
+		}
+
+		if (flags & Flags::FLAG_ADDRESS_REUSE)
+		{
+			const char reuseaddr = 1;
+			if (setsockopt(m_hHandle, SOL_SOCKET, SO_REUSEADDR, &reuseaddr, sizeof(reuseaddr)) != 0)
+			{
+				this->Close();
+
+				LogGetDefault()->error("[Socket::Open] Failed to enable SO_REUSEADDR.");
+				return false;
+			}
 		}
 
 		#else
@@ -227,7 +239,12 @@ namespace dcclite
 		{
 			this->Close();
 
-			LogGetDefault()->error("Failed to bind socket.");
+#if PLATFORM == PLATFORM_WINDOWS
+			auto error = WSAGetLastError();
+			LogGetDefault()->error("[Socket::Open] Failed to bind socket {}.", error);
+#else
+			LogGetDefault()->error("[Socket::Open] Failed to bind socket.");
+#endif
 			return false;
 		}
 

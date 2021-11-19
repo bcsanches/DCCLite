@@ -1,6 +1,7 @@
 
 set(BrokerLib_SRCS
-	Broker.cpp    
+	BonjourService.cpp
+    Broker.cpp    
     DccAddress.cpp
     DccLiteService.cpp  
     DccppService.cpp
@@ -27,6 +28,7 @@ set(BrokerLib_SRCS
 )
 
 set(BrokerLib_HDRS
+    BonjourService.h
 	Broker.h
     DccAddress.h
     DccLiteService.h  

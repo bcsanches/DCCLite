@@ -35,7 +35,7 @@ namespace SharpTerminal
             base.OnLoad(e);
 
             mRequestManager.ConnectionStateChanged += mRequestManager_ConnectionStateChanged;
-            mRequestManager.BeginConnect("localhost", 4190);
+            mRequestManager.BeginConnect("localhost", 4191);
 
             SetStatus("Connecting");            
         }        

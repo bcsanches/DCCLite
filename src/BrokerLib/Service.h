@@ -97,6 +97,14 @@ namespace dcclite::broker
 				//empty
 			}
 
+			Service(std::string name, Broker& broker, const Project& project) :
+				FolderObject(std::move(name)),
+				m_rclBroker(broker),
+				m_rclProject(project)
+			{
+				//empty
+			}
+
 			Service(const Service &) = delete;
 			Service(Service &&) = delete;		
 

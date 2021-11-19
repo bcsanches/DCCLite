@@ -112,6 +112,11 @@ namespace dcclite
 				DATAGRAM
 			};
 
+			enum Flags
+			{
+				FLAG_ADDRESS_REUSE = 0x01
+			};
+
 #ifdef DCCLITE64
 			typedef std::int64_t Handler_t;
 #else
@@ -129,7 +134,7 @@ namespace dcclite
 
 			Socket &operator=(Socket &&other) noexcept;
 
-			bool Open(Port_t port, Type type);
+			bool Open(Port_t port, Type type, uint32_t flags = 0);
 
 			bool Listen(int backlog = 8);
 			bool StartConnection(const NetworkAddress &server);

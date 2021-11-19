@@ -72,7 +72,7 @@
         "operationTime": 3000
     },
     {
-        "name": "TC_T08",
+        "name": "TC_T16",
         "class": "ServoTurnout",
         "address": "1405",
         "pin": 29,
@@ -84,7 +84,7 @@
         "operationTime": 3000
     },
     {
-        "name": "TC_T10",
+        "name": "TC_T08",
         "class": "ServoTurnout",
         "address": "1406",
         "pin": 31,
