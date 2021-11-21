@@ -29,37 +29,33 @@ namespace dcclite
 {
 	typedef std::uint_fast16_t Port_t;
 
-	class NetworkAddress
+	class IpAddress
 	{
 		public:
-			NetworkAddress() :
-				m_uAddress{ 0 },
-				m_uPort{ 0 }
+			inline IpAddress() noexcept:
+				m_uAddress{ 0 }
 			{
 				//empty
 			}
 
-			NetworkAddress(const NetworkAddress &rhs) = default;			
-
-			inline NetworkAddress(std::uint_fast8_t a, std::uint_fast8_t b, std::uint_fast8_t c, std::uint_fast8_t d, Port_t port):
-				m_uAddress{ (std::uint32_t{ a } << 24) | (std::uint32_t{ b } << 16) | (std::uint32_t{ c } << 8) | std::uint32_t{ d } },
-				m_uPort{ port }
+			IpAddress(const IpAddress& rhs) noexcept = default;
+			inline IpAddress(std::uint_fast8_t a, std::uint_fast8_t b, std::uint_fast8_t c, std::uint_fast8_t d) noexcept :
+				m_uAddress{ (std::uint32_t{ a } << 24) | (std::uint32_t{ b } << 16) | (std::uint32_t{ c } << 8) | std::uint32_t{ d } }
 			{
 				//empty
 			}
 
-			NetworkAddress(std::uint_fast32_t address, Port_t port) :
-				m_uAddress{ address },
-				m_uPort{ port }
+			inline IpAddress(std::uint_fast32_t address) noexcept:
+				m_uAddress{ address }
 			{
-				//emtpy
+
 			}
 
-			NetworkAddress &operator=(const NetworkAddress &rhs) = default;			
+			IpAddress& operator=(const IpAddress& rhs) noexcept = default;
 
-			inline std::uint32_t GetAddress() const { return m_uAddress; }
+			inline std::uint32_t GetAddress() const noexcept { return m_uAddress; }
 
-			inline std::string GetIpString() const
+			inline std::string GetIpString() const noexcept
 			{
 				std::stringstream stream;
 
@@ -72,27 +68,72 @@ namespace dcclite
 				return stream.str();
 			}
 
-			inline std::uint_fast8_t GetA() const { return static_cast<std::uint_fast8_t>((m_uAddress >> 24) & 0x000000FF); }
-			inline std::uint_fast8_t GetB() const { return static_cast<std::uint_fast8_t>((m_uAddress >> 16) & 0x000000FF); }
-			inline std::uint_fast8_t GetC() const { return static_cast<std::uint_fast8_t>((m_uAddress >> 8) & 0x000000FF); }
-			inline std::uint_fast8_t GetD() const { return static_cast<std::uint_fast8_t>((m_uAddress >> 0) & 0x000000FF); }
+			inline std::uint_fast8_t GetA() const noexcept { return static_cast<std::uint_fast8_t>((m_uAddress >> 24) & 0x000000FF); }
+			inline std::uint_fast8_t GetB() const noexcept { return static_cast<std::uint_fast8_t>((m_uAddress >> 16) & 0x000000FF); }
+			inline std::uint_fast8_t GetC() const noexcept { return static_cast<std::uint_fast8_t>((m_uAddress >> 8) & 0x000000FF); }
+			inline std::uint_fast8_t GetD() const noexcept { return static_cast<std::uint_fast8_t>((m_uAddress >> 0) & 0x000000FF); }
+
+			inline bool operator==(const IpAddress& rhs) const noexcept
+			{
+				return (m_uAddress == rhs.m_uAddress);
+			}
+
+			inline bool operator!=(const IpAddress& rhs) const noexcept
+			{
+				return (m_uAddress != rhs.m_uAddress);
+			}			
+
+		private:
+			std::uint_fast32_t m_uAddress;
+
+	};
+
+	class NetworkAddress: public IpAddress
+	{
+		public:
+			inline NetworkAddress() noexcept :				
+				m_uPort{ 0 }
+			{
+				//empty
+			}
+
+			NetworkAddress(const NetworkAddress &rhs) = default;			
+
+			inline NetworkAddress(std::uint_fast8_t a, std::uint_fast8_t b, std::uint_fast8_t c, std::uint_fast8_t d, Port_t port):
+				IpAddress{a, b, c, d},				
+				m_uPort{ port }
+			{
+				//empty
+			}
+
+			inline NetworkAddress(std::uint_fast32_t address, Port_t port) noexcept:
+				IpAddress{ address },				
+				m_uPort{ port }
+			{
+				//emtpy
+			}
+
+			NetworkAddress &operator=(const NetworkAddress &rhs) = default;			
 
 			inline Port_t GetPort() const { return m_uPort; }
 
 			inline bool operator==(const NetworkAddress &rhs) const noexcept
 			{
-				return (m_uAddress == rhs.m_uAddress) && (m_uPort == rhs.m_uPort);
+				const IpAddress &a = *this, &b = rhs;
+
+				return (a == b) && (m_uPort == rhs.m_uPort);
 			}
 
 			inline bool operator!=(const NetworkAddress &rhs) const noexcept
 			{
-				return (m_uAddress != rhs.m_uAddress) || (m_uPort != rhs.m_uPort);
+				const IpAddress& a = *this, & b = rhs;
+
+				return (a != b) || (m_uPort != rhs.m_uPort);				
 			}
 
 			static NetworkAddress ParseAddress(const std::string_view address);
 
-		private:
-			std::uint_fast32_t m_uAddress;
+		private:			
 			Port_t m_uPort;
 	};
 
@@ -153,6 +194,8 @@ namespace dcclite
 
 			std::tuple<Status, size_t> Receive(NetworkAddress &sender, void *data, size_t size);
 			std::tuple<Status, size_t> Receive(void *data, size_t size);
+
+			bool JoinMulticastGroup(const IpAddress &address);
 
 		private:
 			Handler_t m_hHandle;

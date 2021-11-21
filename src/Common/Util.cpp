@@ -16,12 +16,14 @@
 
 #ifndef WIN32
 #include <dlfcn.h>
+#include <netinet/in.h>
 #else
 #include <windows.h>
+#include <winsock.h>
 #endif
 
 
-bool dcclite::TryHexStrToBinary(std::uint8_t dest[], size_t destSize, std::string_view str)
+bool dcclite::TryHexStrToBinary(std::uint8_t dest[], size_t destSize, std::string_view str) noexcept
 {
 	size_t dataIndex = 0;	
 
@@ -55,7 +57,7 @@ bool dcclite::TryHexStrToBinary(std::uint8_t dest[], size_t destSize, std::strin
 	return true;
 }
 
-std::string_view dcclite::StrTrim(std::string_view str)
+std::string_view dcclite::StrTrim(std::string_view str) noexcept
 {
 	auto newBegin = str.begin();
 	for (auto end = str.end(); (newBegin != end) && (*newBegin == ' '); ++newBegin);
@@ -71,7 +73,7 @@ std::string_view dcclite::StrTrim(std::string_view str)
 	return str.substr(newBegin - str.begin(), newEnd - newBegin);
 }
 
-std::string dcclite::GetSystemLastErrorMessage()
+std::string dcclite::GetSystemLastErrorMessage() noexcept
 {
 #ifndef WIN32
 	auto errorMsg = dlerror();
@@ -99,4 +101,24 @@ std::string dcclite::GetSystemLastErrorMessage()
 
 	return ret;	
 #endif
+}
+
+std::uint32_t dcclite::htonl(const std::uint32_t v) noexcept
+{
+	return ::htonl(v);
+}
+
+std::uint16_t dcclite::htons(const std::uint16_t v) noexcept
+{
+	return ::htons(v);
+}
+
+std::uint16_t dcclite::ntohs(const std::uint16_t v) noexcept
+{
+	return ::ntohs(v);
+}
+
+std::uint32_t dcclite::ntohl(const std::uint32_t v) noexcept
+{
+	return ::ntohl(v);
 }

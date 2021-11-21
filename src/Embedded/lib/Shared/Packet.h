@@ -93,30 +93,22 @@ namespace dcclite
 			default:
 				return nullptr;
 		}
-	}
+	}	
 
-	/**
-	Basic packet format:
-
-	ID MSG_TYPE SESSION_TOKEN CONFIG_TOKEN MSG
-	
-	
-	*/
-
-	template <uint8_t SIZE>
+	template <uint32_t SIZE, typename LENSIZE = uint8_t >
 	class BasePacket
 	{
 		public:
-			inline BasePacket() = default;
+			inline BasePacket() noexcept = default;
 
-			inline BasePacket(const uint8_t *data, uint8_t len)
+			inline BasePacket(const uint8_t *data, LENSIZE len) noexcept
 			{
 				assert(len < SIZE);
 				memcpy(&m_arData[0], data, len);
 			}
 
-			BasePacket(const BasePacket &rhs):
-				m_u8Index{ rhs.m_u8Index }
+			BasePacket(const BasePacket &rhs) noexcept:
+				m_uIndex{ rhs.m_uIndex }
 			{
 				memcpy(m_arData, rhs.m_arData, sizeof(m_arData));
 			}
@@ -127,94 +119,106 @@ namespace dcclite
 
 			inline void Write8(uint8_t byte) noexcept
 			{
-				assert(m_u8Index + 1 < SIZE);
+				assert(m_uIndex + 1 < SIZE);
 
-				m_arData[m_u8Index++] = byte;
+				m_arData[m_uIndex++] = byte;
 			}
 
 			inline void Write16(uint16_t data) noexcept
 			{
-				assert(m_u8Index + 2 < SIZE);
+				assert(m_uIndex + 2 < SIZE);
 
-				memcpy(&m_arData[m_u8Index], &data, sizeof(data));
-				m_u8Index += sizeof(data);
+				m_arData[m_uIndex++] = ((uint8_t *)(&data))[0];
+				m_arData[m_uIndex++] = ((uint8_t *)(&data))[1];
 			}
 			
-			inline void Write32(uint32_t data)
+			inline void Write32(const uint32_t data) noexcept
 			{
-				assert(m_u8Index + sizeof(data) < SIZE);
+				assert(m_uIndex + sizeof(data) < SIZE);
 
-				memcpy(&m_arData[m_u8Index], &data, sizeof(data));
-				m_u8Index += sizeof(data);
+				m_arData[m_uIndex++] = ((uint8_t *)(&data))[0];
+				m_arData[m_uIndex++] = ((uint8_t *)(&data))[1];
+				m_arData[m_uIndex++] = ((uint8_t *)(&data))[2];
+				m_arData[m_uIndex++] = ((uint8_t *)(&data))[3];				
 			}
 
-			inline void Write64(uint64_t data)
+			inline void Write64(uint64_t data) noexcept
 			{
-				assert(m_u8Index + sizeof(data) < SIZE);
+				assert(m_uIndex + sizeof(data) < SIZE);
 
-				memcpy(&m_arData[m_u8Index], &data, sizeof(data));
-				m_u8Index += sizeof(data);
+				m_arData[m_uIndex++] = ((uint8_t *)(&data))[0];
+				m_arData[m_uIndex++] = ((uint8_t *)(&data))[1];
+				m_arData[m_uIndex++] = ((uint8_t *)(&data))[2];
+				m_arData[m_uIndex++] = ((uint8_t *)(&data))[3];
+				m_arData[m_uIndex++] = ((uint8_t *)(&data))[4];
+				m_arData[m_uIndex++] = ((uint8_t *)(&data))[5];
+				m_arData[m_uIndex++] = ((uint8_t *)(&data))[6];
+				m_arData[m_uIndex++] = ((uint8_t *)(&data))[7];
 			}
 
 			inline void Write(const Guid &guid) noexcept
 			{
-				assert(m_u8Index + sizeof(guid.m_bId) < SIZE);
+				assert(m_uIndex + sizeof(guid.m_bId) < SIZE);
 
-				memcpy(&m_arData[m_u8Index], guid.m_bId, sizeof(guid.m_bId));
-				m_u8Index += sizeof(guid.m_bId);
+				memcpy(&m_arData[m_uIndex], guid.m_bId, sizeof(guid.m_bId));
+				m_uIndex += sizeof(guid.m_bId);
 			}
 
 			template <size_t BITS>
-			inline void Write(const BitPack<BITS> &bitPack)
+			inline void Write(const BitPack<BITS> &bitPack) noexcept
 			{
-				assert(m_u8Index + bitPack.GetNumBytes() < SIZE);
+				assert(m_uIndex + bitPack.GetNumBytes() < SIZE);
 
-				memcpy(&m_arData[m_u8Index], bitPack.GetRaw(), bitPack.GetNumBytes());
-				m_u8Index += bitPack.GetNumBytes();
+				memcpy(&m_arData[m_uIndex], bitPack.GetRaw(), bitPack.GetNumBytes());
+				m_uIndex += bitPack.GetNumBytes();
 			}
 
-			inline Guid ReadGuid()
+			inline Guid ReadGuid() noexcept
 			{
 				Guid guid;
 
-				assert(m_u8Index + sizeof(guid.m_bId) < SIZE);
+				assert(m_uIndex + sizeof(guid.m_bId) < SIZE);
 
-				memcpy(guid.m_bId, &m_arData[m_u8Index], sizeof(guid.m_bId));
-				m_u8Index += sizeof(guid.m_bId);
+				memcpy(guid.m_bId, &m_arData[m_uIndex], sizeof(guid.m_bId));
+				m_uIndex += sizeof(guid.m_bId);
 
 				return guid;
 			}
 
 			template <size_t NBITS>
-			inline void ReadBitPack(dcclite::BitPack<NBITS> &dest)
+			inline void ReadBitPack(dcclite::BitPack<NBITS> &dest) noexcept
 			{
-				assert(m_u8Index + sizeof(dest.GetNumBytes()) < SIZE);
+				assert(m_uIndex + sizeof(dest.GetNumBytes()) < SIZE);
 
-				dest.Set(m_arData + m_u8Index);
-				m_u8Index += dest.GetNumBytes();
+				dest.Set(m_arData + m_uIndex);
+				m_uIndex += dest.GetNumBytes();
 			}
 
 			template <typename T>
-			inline T Read()
+			inline T Read() noexcept
 			{				
-				assert(m_u8Index + sizeof(T) < SIZE);
-
+				assert(m_uIndex + sizeof(T) < SIZE);
+				
 				T num;
 
-				memcpy(&num, &m_arData[m_u8Index], sizeof(T));
-				m_u8Index += sizeof(T);
+				uint8_t *dst = (uint8_t *) &num;
+
+				for (int i = 0; i < sizeof(num); ++i)
+					dst[i] = m_arData[m_uIndex + i];
+				
+				m_uIndex += sizeof(T);
 
 				return num;
 			}
 
-			inline uint8_t ReadByte()
+			inline uint8_t ReadByte() noexcept
 			{
 				return Read<uint8_t>();
-			}
+			}						
 
-			inline uint8_t GetSize() const noexcept
+			inline LENSIZE GetSize() const noexcept
 			{
-				return m_u8Index;
+				return m_uIndex;
 			}
 
 			inline const uint8_t *GetData() const noexcept
@@ -222,11 +226,11 @@ namespace dcclite
 				return m_arData;
 			}
 
-			inline void Seek(unsigned int pos)
+			inline void Seek(LENSIZE pos) noexcept
 			{
 				assert(pos < SIZE);
 
-				m_u8Index = pos;
+				m_uIndex = pos;
 			}
 
 			/// <summary>
@@ -234,13 +238,23 @@ namespace dcclite
 			/// </summary>						
 			inline void Reset() noexcept
 			{
-				m_u8Index = 0;
+				m_uIndex = 0;
+			}
+
+			inline uint8_t *GetRaw() noexcept
+			{
+				return m_arData;
+			}
+
+			inline LENSIZE GetCapacity() const noexcept
+			{
+				return SIZE;
 			}
 
 		private:
 			uint8_t m_arData[SIZE];
 
-			uint8_t				m_u8Index = 0;
+			LENSIZE				m_uIndex = 0;
 	};
 
 	class Packet : public BasePacket<PACKET_MAX_SIZE>
@@ -261,6 +275,13 @@ namespace dcclite
 			}
 	};
 
+	/**
+		Basic packet format:
+
+		ID MSG_TYPE SESSION_TOKEN CONFIG_TOKEN MSG
+
+
+		*/
 	class PacketBuilder
 	{
 		public:

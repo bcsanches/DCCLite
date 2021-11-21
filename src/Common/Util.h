@@ -14,9 +14,28 @@
 
 namespace dcclite
 {
-	bool TryHexStrToBinary(std::uint8_t dest[], size_t destSize, std::string_view str);
+	bool TryHexStrToBinary(std::uint8_t dest[], size_t destSize, std::string_view str) noexcept;
 
-	std::string_view StrTrim(std::string_view str);
+	/**
+	* Returns a view to a string without leading and trailing white spaces
+	* 
+	* It may return an empty string: std::string_view("")
+	
+	*/
+	std::string_view StrTrim(std::string_view str) noexcept;
 
-	std::string GetSystemLastErrorMessage();
+	std::string GetSystemLastErrorMessage() noexcept;
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	//
+	// Networking helpers
+	//
+	// 
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	std::uint32_t htonl(const std::uint32_t v) noexcept;
+	std::uint16_t htons(const std::uint16_t v) noexcept;
+
+	std::uint16_t ntohs(const std::uint16_t v) noexcept;
+	std::uint32_t ntohl(const std::uint32_t v) noexcept;
 }

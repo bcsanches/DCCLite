@@ -553,4 +553,34 @@ namespace dcclite
 
 		return std::make_tuple(Status::OK, result);
 	}
+
+
+	bool Socket::JoinMulticastGroup(const IpAddress &address)
+	{
+		struct ip_mreq imr;
+
+		imr.imr_interface.S_un.S_addr = 0;
+		imr.imr_multiaddr.S_un.S_un_b.s_b1 = address.GetA();
+		imr.imr_multiaddr.S_un.S_un_b.s_b2 = address.GetB();
+		imr.imr_multiaddr.S_un.S_un_b.s_b3 = address.GetC();
+		imr.imr_multiaddr.S_un.S_un_b.s_b4 = address.GetD();
+
+		auto ret = setsockopt(m_hHandle, IPPROTO_IP, IP_ADD_MEMBERSHIP, reinterpret_cast<char *>(&imr), sizeof(imr));
+
+#if PLATFORM == PLATFORM_WINDOWS
+		if (ret == SOCKET_ERROR)
+		{
+			auto error = WSAGetLastError();
+
+			LogGetDefault()->error("[Socket::JoinMulticastGroup] setsockopt failed with IP_ADD_MEMBERSHIP {}.", error);
+
+			return false;
+		}
+
+		return true;
+#else
+		return ret >= 0;
+#endif
+	}
+
 }

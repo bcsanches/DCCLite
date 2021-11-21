@@ -4,6 +4,7 @@ set(UnitTest_SRCS
     NetMessengerTest.cpp
     NmraUtilUnitTest.cpp
   ObjectPathUnitTest.cpp
+  PacketTest.cpp
   ParserUnitTest.cpp
   ProjectUnitTest.cpp
   ServoTurnoutDecoderTest.cpp
