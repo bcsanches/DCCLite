@@ -213,15 +213,7 @@ READ_NAME_AGAIN:
 				*   is that a pointer? 
 				*/								
 				if (nameLen & 0xC0)
-				{					
-					if (previousIndex >= 0)
-					{
-						Log::Error("[BonjourServiceImpl::Update] Got packet with recursive pointers, is this allowed? Packet dropped");
-
-						//drop packet
-						return;
-					}
-
+				{										
 					//strip first two bits out and shift high byte
 					nameLen = (~0xC0) & nameLen;
 					nameLen <<= 8;
@@ -238,7 +230,9 @@ READ_NAME_AGAIN:
 						return;
 					}					
 
-					previousIndex = packet.GetSize();
+					//if first pointer, save current position
+					if(previousIndex < 0)
+						previousIndex = packet.GetSize();
 
 					packet.Seek(nameLen);
 
