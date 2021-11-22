@@ -19,7 +19,7 @@
 
 namespace dcclite::broker
 {
-	static const NetworkAddress g_clDnsAddress{ 224, 0, 0, 251, 5353 };
+	static const NetworkAddress g_clDnsAddress{ 224, 0, 0, 251, 5353 };	
 
 	class NetworkPacket
 	{
@@ -31,6 +31,11 @@ namespace dcclite::broker
 				m_clPacket.Reset();
 
 				return socket.Receive(m_clPacket.GetRaw(), m_clPacket.GetCapacity());				
+			}
+
+			inline uint32_t ReadDoubleWord() noexcept
+			{
+				return dcclite::ntohl(m_clPacket.Read<uint32_t>());
 			}
 
 			inline uint16_t ReadWord() noexcept
@@ -92,17 +97,29 @@ namespace dcclite::broker
 		}
 	};	
 
-	struct QName
+	struct Label
 	{		
-		char m_szStr[256];
+		char m_szStr[64];
 	};
+
+	typedef std::vector<Label> LabelsVector_t;
 
 	struct QSection
 	{
-		std::vector<QName> m_vecNames;
+		LabelsVector_t m_vecLabels;
 
 		uint16_t m_uQType;
 		uint16_t m_uQClass;
+	};
+
+	struct ResourceRecord
+	{
+		LabelsVector_t m_vecLabels;
+
+		uint16_t m_uType;
+		uint16_t m_uClass;
+		uint32_t m_uTTL;
+		uint16_t m_uLength;
 	};
 
 
@@ -120,7 +137,13 @@ namespace dcclite::broker
 
 			void Update(const dcclite::Clock &clock) override;			
 
-			void Serialize(JsonOutputStream_t &stream) const override;				
+			void Serialize(JsonOutputStream_t &stream) const override;		
+
+			void Register(std::string_view serviceName, NetworkProtocol protocol, uint16_t port) override;
+
+		private:
+			void ParsePacket(NetworkPacket &packet);
+			LabelsVector_t ParseName(NetworkPacket &packet);
 
 		private:		
 			dcclite::Socket m_clSocket;
@@ -147,29 +170,47 @@ namespace dcclite::broker
 		//empty
 	}
 
-	void BonjourServiceImpl::Update(const dcclite::Clock& clock)
-	{	
-		NetworkPacket packet;		
-				
-		auto [status, size] = packet.Receive(m_clSocket);
+	void BonjourServiceImpl::Register(std::string_view serviceName, NetworkProtocol protocol, uint16_t port)
+	{			
+		//should we use a regex?
+		const auto len = serviceName.length();
+		if (len > 63)
+		{
+			throw std::length_error(fmt::format("[BonjourServiceImpl::Register] Service name cannot exceed 63 characters: {}", serviceName));
+		}
 
-		if (status != dcclite::Socket::Status::OK)
-			return;
+		if (len == 0)
+		{
+			throw std::invalid_argument(fmt::format("[BonjourServiceImpl::Register] Service must have a name"));
+		}
 
-		//corrupted packet?
-		if (size < sizeof(DnsHeader))
-			return;
+		if (serviceName.find_first_of('.', 0) != std::string_view::npos)
+		{
+			throw std::invalid_argument(fmt::format("[BonjourServiceImpl::Register] Service name cannot contain '.' (dots): {}", serviceName));
+		}
 
-		DnsHeader header;
+		if (serviceName.find_first_of(' ', 0) != std::string_view::npos)
+		{
+			throw std::invalid_argument(fmt::format("[BonjourServiceImpl::Register] Service name cannot contain ' ' (whitespace): {}", serviceName));
+		}
 
-		header.m_uId = packet.ReadWord();
-		header.m_uFlags = packet.ReadWord();
-		header.m_uQDCount = packet.ReadWord();
-		header.m_uANCount = packet.ReadWord();
-		header.m_uNSCount = packet.ReadWord();
-		header.m_uARCount = packet.ReadWord();
+		if ((serviceName[0] == '-') || (serviceName[len - 1] == '-'))
+		{
+			throw std::invalid_argument(fmt::format("[BonjourServiceImpl::Register] Service name cannot starts or ends with '-' (hifen): {}", serviceName));
+		}
+		
+		for (auto ch : serviceName)
+		{
+			if (((ch >= 'a') && (ch <= 'z')) || ((ch >= 'A') && (ch <= 'Z')) || ((ch >= '0') && (ch <= '9')) || (ch == '-'))
+				continue;
 
-		dcclite::Log::Trace("[BonjourServiceImpl::Update] got packet");
+			throw std::invalid_argument(fmt::format("[BonjourServiceImpl::Register] Service contains invalid characters, only letters and numbers allowed: {}", serviceName));
+		}
+	}
+
+	LabelsVector_t BonjourServiceImpl::ParseName(NetworkPacket &packet)
+	{
+		LabelsVector_t results;
 
 		/**
 		* The compression scheme allows a domain name in a message to be
@@ -180,96 +221,203 @@ namespace dcclite::broker
 		*	- a pointer
 		*
 		*	- a sequence of labels ending with a pointer
-		*/		
+		*/
+		int previousIndex = -1;
+		
+		for (int nameCount = 0;; ++nameCount)
+		{
 
-		int previousIndex = -1;		
-		for(int i = 0;i < header.m_uQDCount; ++i)
+READ_NAME_AGAIN:
+			uint16_t nameLen = packet.ReadByte();
+			if (0 == nameLen)
+			{
+				//restore position if we were following a pointer
+				if (previousIndex >= 0)
+				{
+					packet.Seek(previousIndex);
+					previousIndex = -1;
+				}
+				break;
+			}
+
+			/**
+			* The pointer takes the form of a two octet sequence:
+			*
+			*	+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+			*	| 1  1|                OFFSET                   |
+			*	+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+			*
+			*   is that a pointer?
+			*/
+			if (nameLen & 0xC0)
+			{
+				//strip first two bits out and shift high byte
+				nameLen = (~0xC0) & nameLen;
+				nameLen <<= 8;
+
+				//read next byte and concatenate it
+				nameLen = nameLen | packet.ReadByte();
+
+				//insane check and does not trust network, does it make sense?
+				if (nameLen >= packet.GetSize())
+				{
+					Log::Error("[BonjourServiceImpl::Update] Got packet with pointer jumping forward, does it makes sense? Packet dropped");
+
+					//drop packet, so return a empty result
+					return LabelsVector_t{};
+				}
+
+				//if first pointer, save current position
+				if (previousIndex < 0)
+					previousIndex = packet.GetSize();
+
+				packet.Seek(nameLen);
+
+				goto READ_NAME_AGAIN;
+			}
+
+			results.resize(nameCount + 1);
+
+			char *name = results[nameCount].m_szStr;
+
+			for (int j = 0; j < nameLen; ++j)
+				name[j] = packet.ReadByte();
+
+			name[nameLen] = '\0';
+
+			dcclite::Log::Trace("Name: {}", name);
+		}
+
+		return results;
+	}
+
+	void BonjourServiceImpl::ParsePacket(NetworkPacket &packet)
+	{
+		DnsHeader header;
+
+		header.m_uId = packet.ReadWord();
+		header.m_uFlags = packet.ReadWord();
+
+#if 0
+		//we do not care about responses...
+		if (header.IsResponse())
+			return;
+#endif
+
+		header.m_uQDCount = packet.ReadWord();
+		header.m_uANCount = packet.ReadWord();
+		header.m_uNSCount = packet.ReadWord();
+		header.m_uARCount = packet.ReadWord();
+
+		dcclite::Log::Trace("[BonjourServiceImpl::Update] got packet");
+		
+		for (int i = 0; i < header.m_uQDCount; ++i)
 		{
 			dcclite::Log::Trace("[BonjourServiceImpl::Update] QSection");
 			QSection qsection;
 
-			for (int nameCount = 0;;++nameCount)
-			{
-READ_NAME_AGAIN:
-				uint16_t nameLen = packet.ReadByte();
-				if (0 == nameLen)
-				{
-					//restore position if we were following a pointer
-					if (previousIndex >= 0)
-					{
-						packet.Seek(previousIndex);
-						previousIndex = -1;
-					}
-					break;
-				}
+			qsection.m_vecLabels = this->ParseName(packet);
 
-				/**
-				* The pointer takes the form of a two octet sequence:
-				*
-				*	+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-				*	| 1  1|                OFFSET                   |
-				*	+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-				*
-				*   is that a pointer? 
-				*/								
-				if (nameLen & 0xC0)
-				{										
-					//strip first two bits out and shift high byte
-					nameLen = (~0xC0) & nameLen;
-					nameLen <<= 8;
-
-					//read next byte and concatenate it
-					nameLen = nameLen | packet.ReadByte();
-					
-					//insane check and does not trust network, does it make sense?
-					if (nameLen >= packet.GetSize())
-					{
-						Log::Error("[BonjourServiceImpl::Update] Got packet with pointer jumping forward, does it makes sense? Packet dropped");
-
-						//drop packet
-						return;
-					}					
-
-					//if first pointer, save current position
-					if(previousIndex < 0)
-						previousIndex = packet.GetSize();
-
-					packet.Seek(nameLen);
-
-					goto READ_NAME_AGAIN;
-				}
-
-				qsection.m_vecNames.resize(nameCount + 1);
-
-				char *name = qsection.m_vecNames[nameCount].m_szStr;
-
-				for (int j = 0; j < nameLen; ++j)
-					name[j] = packet.ReadByte();
-
-				name[nameLen] = '\0';				
-
-				dcclite::Log::Trace("Name: {}", name);
-			}
+			//if labels are empty, something happened, so drop packet...
+			if (qsection.m_vecLabels.empty())
+				return;			
 
 			uint16_t qtype = packet.ReadWord();
-			uint16_t qclass = packet.ReadWord();			
+			uint16_t qclass = packet.ReadWord();
 		}
 
-		if (header.m_uARCount)
+		while (header.m_uANCount)
 		{
-			dcclite::Log::Trace("[BonjourServiceImpl::Update] m_uARCount");
-			uint8_t nameLen = packet.ReadByte();
+			ResourceRecord record;
 
-#if 0
-			std::string name;
-			name.reserve(nameLen);
+			dcclite::Log::Trace("[BonjourServiceImpl::Update] RRecord - m_uANCount");
 
-			for (int i = 0; i < nameLen; ++i)
-				name[0] = packet.ReadByte();
+			record.m_vecLabels = this->ParseName(packet);
 
-			dcclite::Log::Trace("Got Answer: {}", name);
-#endif
+			record.m_uType = packet.ReadWord();
+			record.m_uClass = packet.ReadWord();
+			record.m_uTTL = packet.ReadDoubleWord();
+			record.m_uLength = packet.ReadWord();
+
+			//PTR?
+			if (record.m_uType == 12)
+			{
+				dcclite::Log::Trace("[BonjourServiceImpl::Update] Answer names:");
+
+				LabelsVector_t labels = this->ParseName(packet);
+			}	
+			//https://www.rfc-editor.org/rfc/rfc2782.html
+			else if (record.m_uType == 33)
+			{
+				//skip data
+				packet.Seek(packet.GetSize() + record.m_uLength);
+			}
+			else
+			{
+				//skip data
+				packet.Seek(packet.GetSize() + record.m_uLength);
+			}
+
+			--header.m_uANCount;
 		}
+
+		while (header.m_uNSCount)
+		{
+			ResourceRecord record;
+
+			dcclite::Log::Trace("[BonjourServiceImpl::Update] RRecord - NSCount");
+
+			record.m_vecLabels = this->ParseName(packet);
+
+			record.m_uType = packet.ReadWord();
+			record.m_uClass = packet.ReadWord();
+			record.m_uTTL = packet.ReadDoubleWord();
+			record.m_uLength = packet.ReadWord();
+
+			//skip data
+			packet.Seek(packet.GetSize() + record.m_uLength);
+
+			--header.m_uNSCount;
+		}
+
+		while (header.m_uARCount)
+		{
+			ResourceRecord record;
+
+			dcclite::Log::Trace("[BonjourServiceImpl::Update] RRecord - m_uARCount");
+
+			record.m_vecLabels = this->ParseName(packet);
+
+			record.m_uType = packet.ReadWord();
+			record.m_uClass = packet.ReadWord();
+			record.m_uTTL = packet.ReadDoubleWord();
+			record.m_uLength = packet.ReadWord();
+
+			//skip data
+			packet.Seek(packet.GetSize() + record.m_uLength);
+
+			--header.m_uARCount;
+		}
+	}
+
+	void BonjourServiceImpl::Update(const dcclite::Clock& clock)
+	{	
+		NetworkPacket packet;
+
+		//Limit processing per frame in case something is flooding the network....
+		for (auto packetCount = 0; packetCount < 8; ++packetCount)
+		{
+			auto [status, size] = packet.Receive(m_clSocket);
+
+			if (status != dcclite::Socket::Status::OK)
+				return;
+
+			//corrupted packet?
+			if (size < sizeof(DnsHeader))
+				continue;
+
+			this->ParsePacket(packet);
+		}								
 	}
 
 	void BonjourServiceImpl::Serialize(JsonOutputStream_t &stream) const

@@ -16,6 +16,12 @@
 
 namespace dcclite::broker
 { 
+	enum class NetworkProtocol
+	{
+		TCP,
+		UDP
+	};
+
 	class BonjourService: public Service
 	{	
 		public:
@@ -25,6 +31,8 @@ namespace dcclite::broker
 			{
 				//empty
 			}			
+
+			virtual void Register(std::string_view serviceName, NetworkProtocol protocol, uint16_t port) = 0;
 
 			//
 			//
