@@ -24,6 +24,25 @@ namespace dcclite
 		// We have a pending IO operation, check what is going on
 		//
 
+		fd_set set;
+
+		FD_ZERO(&set);
+		FD_SET(this->m_iPortHandle, &set);
+
+		timeval tval = { 0 };
+
+		auto result = select(FD_SETSIZE, &set, nullptr, nullptr, &tval);
+
+		if(result < 0)
+		{
+			throw std::runtime_error("[SerialPort::DataPacket::IsDataReady] select failed");
+		}
+
+		if (result == 0)
+			return false;
+
+
+
 		DWORD numBytesTransferred = 0;
 		if (!GetOverlappedResultEx(m_hComPort, &m_stOverlapped, &numBytesTransferred, 0, FALSE))
 		{
@@ -91,30 +110,28 @@ namespace dcclite
 		options.c_cflag &= ~CSIZE;
 		options.c_cflag |= CS8;
 		
-		dcb.fOutxCtsFlow = FALSE;
-		dcb.fOutxDsrFlow = FALSE;
-		dcb.fDtrControl = DTR_CONTROL_DISABLE;
-		dcb.fDsrSensitivity = FALSE;
-		dcb.fTXContinueOnXoff = FALSE;
-		dcb.fOutX = FALSE;
-		dcb.fInX = FALSE;
-		dcb.fErrorChar = FALSE;
-		dcb.fNull = FALSE;
-		dcb.fRtsControl = RTS_CONTROL_DISABLE;	
-		dcb.fAbortOnError = FALSE;
-		dcb.XonLim = 0;
-		dcb.XoffLim = 0;
-		dcb.ByteSize = 8;
-		dcb.Parity = NOPARITY;
-		dcb.StopBits = ONESTOPBIT;
+		//
+		//Disable CTS
+		options.c_cflag &= ~CNEW_RTSCTS;
 
-		/**
-		dcb.XonChar = (char)0x8d;
-		dcb.XoffChar = (char)0x96;
-		dcb.ErrorChar = (char)0xF6;
-		dcb.EofChar = (char)0x20;
-		dcb.EvtChar = (char)0x00;		
-		*/
+		//
+		//Disable parity
+		options.c_cflag &= ~PARENB;
+
+		//
+		//One stop bit
+		options.c_cflag &= ~CSTOPB;
+
+		//
+		//Disable DTR, DSR, TX (TIOCM_ST)
+		int status;
+
+		ioctl(m_iPortHandle, TIOCMGET, &status);
+
+		status &= ~(TIOCM_DTR | TIOCM_DSR | TIOCM_ST);
+
+		ioctl(m_iPortHandle, TIOCMSET, status);
+										
 
 		//enable the changes
 		if (tcsetattr(m_iPortHandle, TCSANOW, &options))
@@ -123,14 +140,7 @@ namespace dcclite
 			close(m_iPortHandle);
 
 			throw std::runtime_error(fmt::format("[SerialPort] {}: Call to tcsetattr failed - {}", portName, localError));
-		}
-
-		if (!SetCommState(m_hComPort, &dcb))
-		{
-			CloseHandle(m_hComPort);
-
-			throw std::runtime_error(fmt::format("[SerialPort] {}: Cannot update CommState - {}", portName, GetSystemLastErrorMessage()));
-		}
+		}		
 
 		COMMTIMEOUTS timeouts;
 		if (!GetCommTimeouts(m_hComPort, &timeouts))

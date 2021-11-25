@@ -61,6 +61,8 @@ namespace dcclite
 
 					bool m_fWaiting = false;
 
+					int m_iPortHandle;
+
 					friend class SerialPort;
 				};
 
