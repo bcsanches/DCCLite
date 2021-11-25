@@ -9,6 +9,8 @@
 // defined by the Mozilla Public License, v. 2.0.
 #include "SerialPort_linux.h"
 
+#include <termios.h>
+
 #include <fmt/format.h>
 
 namespace dcclite
@@ -68,28 +70,27 @@ namespace dcclite
 	SerialPort::SerialPort(std::string_view portName):
 		m_strName(portName)
 	{
-		m_iPortHandle = open(portName, O_RDWR);
+		m_iPortHandle = open(portName, O_RDWR | O_NOCTTY | O_NONBLOCK);
 		if (m_iPortHandle < 0)
 			throw std::runtime_error(fmt::format("[SerialPort] {}: Error opening port - {}", portName, strerror(errno)));
 
-		DCB dcb;
+		termios options;
 
-		//  Initialize the DCB structure.
-		SecureZeroMemory(&dcb, sizeof(DCB));
-		dcb.DCBlength = sizeof(DCB);
+		//get current port settings
+		tcgetattr(m_iPortHandle, &options);
 
-		if (!GetCommState(m_hComPort, &dcb))
-		{
-			CloseHandle(m_hComPort);
+		//
+		//set BAUD Rate
+		cfsetispeed(&options, B57600);
+		cfsetospeed(&options, B57600);
 
-			throw std::runtime_error(fmt::format("[SerialPort] {}: Cannot read DCB data - {}", portName, GetSystemLastErrorMessage()));
-		}
-
-		DCB old = dcb;
-
-		dcb.BaudRate = CBR_57600;
-		dcb.fBinary = TRUE;
-		dcb.fParity = NOPARITY;
+		//
+		//No parity
+		options.c_cflag &= ~PARENB
+		options.c_cflag &= ~CSTOPB
+		options.c_cflag &= ~CSIZE;
+		options.c_cflag |= CS8;
+		
 		dcb.fOutxCtsFlow = FALSE;
 		dcb.fOutxDsrFlow = FALSE;
 		dcb.fDtrControl = DTR_CONTROL_DISABLE;
@@ -114,6 +115,15 @@ namespace dcclite
 		dcb.EofChar = (char)0x20;
 		dcb.EvtChar = (char)0x00;		
 		*/
+
+		//enable the changes
+		if (tcsetattr(m_iPortHandle, TCSANOW, &options))
+		{
+			int localError = errno;
+			close(m_iPortHandle);
+
+			throw std::runtime_error(fmt::format("[SerialPort] {}: Call to tcsetattr failed - {}", portName, localError));
+		}
 
 		if (!SetCommState(m_hComPort, &dcb))
 		{
