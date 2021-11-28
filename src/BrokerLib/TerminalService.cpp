@@ -21,6 +21,7 @@
 
 #include <rapidjson/document.h>
 
+#include "BonjourService.h"
 #include "Broker.h"
 #include "DccLiteService.h"
 #include "NetworkDevice.h"
@@ -738,13 +739,15 @@ namespace dcclite::broker
 		}
 
 		dcclite::Log::Info("[TerminalService] Started, listening on port {}", port);
-	}
 
+		auto bonjourService = static_cast<BonjourService *>(m_rclBroker.TryFindService(BONJOUR_SERVICE_NAME));
+		bonjourService->Register("terminal", "dcclitet", NetworkProtocol::TCP, port, 36);
+	}
 
 	TerminalService::~TerminalService()
 	{
 		//empty
-	}
+	}	
 
 	void TerminalService::Update(const dcclite::Clock &clock)
 	{

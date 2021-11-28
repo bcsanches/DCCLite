@@ -2,6 +2,7 @@
 
 #include <Log.h>
 
+#include "BonjourService.h"
 #include "Broker.h"
 #include "Decoder.h"
 #include "DccLiteService.h"
@@ -577,6 +578,9 @@ namespace dcclite::broker
 		}
 
 		dcclite::Log::Info("[DccppService] Started, listening on port {}", port);
+
+		auto bonjourService = static_cast<BonjourService *>(m_rclBroker.TryFindService(BONJOUR_SERVICE_NAME));
+		bonjourService->Register(this->GetName(), "dccpp", NetworkProtocol::TCP, port, 36);
 	}
 
 	void DccppServiceImpl::Initialize()

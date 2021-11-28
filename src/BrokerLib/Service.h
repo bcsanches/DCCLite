@@ -79,7 +79,7 @@ namespace dcclite::broker
 	class Service: public dcclite::FolderObject
 	{
 		public:
-			virtual void Initialize() {};
+			virtual void Initialize() {};			
 
 			virtual ~Service() {}
 
@@ -129,7 +129,7 @@ namespace dcclite::broker
 			void DispatchEvent(const ObjectManagerEvent &event) const;
 
 		protected:		
-			Broker& m_rclBroker;
+			Broker &m_rclBroker;
 
 			const Project &m_rclProject;
 

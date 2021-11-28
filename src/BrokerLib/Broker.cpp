@@ -86,7 +86,7 @@ namespace dcclite::broker
 			std::make_unique<FolderObject>(SpecialFolders::GetName(SpecialFolders::Folders::ServicesId)))
 		);
 
-		m_pServices->AddChild(BonjourService::Create("bonjour", *this, m_clProject));
+		m_pServices->AddChild(BonjourService::Create(BONJOUR_SERVICE_NAME, *this, m_clProject));
 
 		this->LoadConfig();
 	}

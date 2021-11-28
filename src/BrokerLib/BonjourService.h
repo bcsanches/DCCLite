@@ -22,6 +22,8 @@ namespace dcclite::broker
 		UDP
 	};
 
+	constexpr auto BONJOUR_SERVICE_NAME = "bonjour";
+
 	class BonjourService: public Service
 	{	
 		public:
@@ -32,7 +34,7 @@ namespace dcclite::broker
 				//empty
 			}			
 
-			virtual void Register(std::string_view serviceName, NetworkProtocol protocol, uint16_t port) = 0;
+			virtual void Register(const std::string_view instanceName, const std::string_view serviceName, const NetworkProtocol protocol, const uint16_t port, const uint32_t ttl) = 0;
 
 			//
 			//
