@@ -9,7 +9,12 @@
 // defined by the Mozilla Public License, v. 2.0.
 #include "SerialPort_linux.h"
 
+#include <fcntl.h>
+#include <sys/ioctl.h>
 #include <termios.h>
+#include <unistd.h>
+
+#include <string_view>
 
 #include <fmt/format.h>
 
@@ -42,23 +47,12 @@ namespace dcclite
 			return false;
 
 
+		int numBytesTransferred = read(m_iPortHandle, m_u8Data, DATA_PACKET_SIZE);
 
-		DWORD numBytesTransferred = 0;
-		if (!GetOverlappedResultEx(m_hComPort, &m_stOverlapped, &numBytesTransferred, 0, FALSE))
-		{
-			auto error = GetLastError();
+		//should not happen... but...
+		if (numBytesTransferred == 0)
+			return false;
 
-			//operation still in progress
-			if (error == ERROR_IO_INCOMPLETE)
-				return false;
-
-			//push it back
-			SetLastError(error);
-			throw std::runtime_error(fmt::format("[SerialPort::DataPacket::IsDataReady] GetOverlappedResultEx failed: {}", GetSystemLastErrorMessage()));
-		}
-
-		//
-		//we got some data
 		m_fWaiting = false;
 		m_uDataSize = numBytesTransferred;
 
@@ -88,8 +82,8 @@ namespace dcclite
 
 	SerialPort::SerialPort(std::string_view portName):
 		m_strName(portName)
-	{
-		m_iPortHandle = open(portName, O_RDWR | O_NOCTTY | O_NONBLOCK);
+	{		
+		m_iPortHandle = open(m_strName.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
 		if (m_iPortHandle < 0)
 			throw std::runtime_error(fmt::format("[SerialPort] {}: Error opening port - {}", portName, strerror(errno)));
 
@@ -105,14 +99,14 @@ namespace dcclite
 
 		//
 		//No parity
-		options.c_cflag &= ~PARENB
-		options.c_cflag &= ~CSTOPB
+		options.c_cflag &= ~PARENB;
+		options.c_cflag &= ~CSTOPB;
 		options.c_cflag &= ~CSIZE;
 		options.c_cflag |= CS8;
 		
 		//
 		//Disable CTS
-		options.c_cflag &= ~CNEW_RTSCTS;
+		options.c_cflag &= ~CRTSCTS;
 
 		//
 		//Disable parity
@@ -121,6 +115,9 @@ namespace dcclite
 		//
 		//One stop bit
 		options.c_cflag &= ~CSTOPB;
+
+		options.c_cc[VMIN] = 1;
+		options.c_cc[VTIME] = 0x64;
 
 		//
 		//Disable DTR, DSR, TX (TIOCM_ST)
@@ -132,7 +129,6 @@ namespace dcclite
 
 		ioctl(m_iPortHandle, TIOCMSET, status);
 										
-
 		//enable the changes
 		if (tcsetattr(m_iPortHandle, TCSANOW, &options))
 		{
@@ -142,29 +138,14 @@ namespace dcclite
 			throw std::runtime_error(fmt::format("[SerialPort] {}: Call to tcsetattr failed - {}", portName, localError));
 		}		
 
-		COMMTIMEOUTS timeouts;
-		if (!GetCommTimeouts(m_hComPort, &timeouts))
-		{
-			CloseHandle(m_hComPort);
-
-			throw std::runtime_error(fmt::format("[SerialPort] {}: GetCommTimeouts failed - {}", portName, GetSystemLastErrorMessage()));
-		}
-
-		timeouts.ReadIntervalTimeout = 0x64;
-		
-		if (!SetCommTimeouts(m_hComPort, &timeouts))
-		{
-			CloseHandle(m_hComPort);
-
-			throw std::runtime_error(fmt::format("[SerialPort] {}: SetCommTimeouts failed - {}", portName, GetSystemLastErrorMessage()));
-		}
+		//
+		//make read non blocking
+		fcntl(m_iPortHandle, F_SETFL, FNDELAY);
 	}
 
 	SerialPort::~SerialPort()
-	{
-		//Cancel any pending overlapped operation
-		CancelIo(m_hComPort);		
-		CloseHandle(m_hComPort);
+	{		
+		close(m_iPortHandle);		
 	}
 
 	void SerialPort::Write(DataPacket &packet)
@@ -180,23 +161,18 @@ namespace dcclite
 		if (!dataSize)
 			return;
 
-		DWORD bytesWritten = 0;
-		if (!WriteFile(m_hComPort, packet.GetData(), dataSize, &bytesWritten, &packet.m_stOverlapped))
+		auto bytesWritten = write(m_iPortHandle, packet.GetData(), packet.GetDataSize());
+		packet.m_fWaiting = false;
+
+		if (bytesWritten < 0)
 		{
-			auto errorCode = GetLastError();
-			if (errorCode != ERROR_IO_PENDING)
-			{
-				SetLastError(errorCode);
-
-				throw std::runtime_error(fmt::format("[SerialPort::Write] {}: Error ASYNC writing to port - {}", m_strName, GetSystemLastErrorMessage()));
-			}
-
-			//we must wait
+			if (errno != EWOULDBLOCK)
+				throw std::runtime_error(fmt::format("[SerialPortal::Write] {}: Write failed, error: {}", m_strName, errno));
+			
+			//try later...
 			packet.m_fWaiting = true;
-			packet.m_hComPort = m_hComPort;
+			packet.m_iPortHandle = this->m_iPortHandle;				
 		}		
-
-		//if above if not entered, data went thought, nothing left to do
 	}
 
 	void SerialPort::Read(DataPacket &packet)
@@ -208,25 +184,19 @@ namespace dcclite
 
 		packet.m_uDataSize = 0;
 
-		DWORD dwBytesRead;
-		if (!ReadFile(m_hComPort, packet.m_u8Data, sizeof(packet.m_u8Data), &dwBytesRead, &packet.m_stOverlapped))
+		auto bytesRead = read(m_iPortHandle, packet.m_u8Data, sizeof(packet.m_u8Data));
+		if (bytesRead < 0)
 		{
-			auto errorCode = GetLastError();
-			if (errorCode != ERROR_IO_PENDING)
-			{
-				SetLastError(errorCode);
-
-				throw std::runtime_error(fmt::format("[SerialPort::AsyncRead] {}: Error ASYNC reading from port - {}", m_strName, GetSystemLastErrorMessage()));
-			}
-
+			if (errno != EWOULDBLOCK)
+				throw std::runtime_error(fmt::format("[SerialPortal::Read] {}: Read failed, error: {}", m_strName, errno));
+			
+			//try later...
 			packet.m_fWaiting = true;
-			packet.m_hComPort = m_hComPort;
+			packet.m_iPortHandle = this->m_iPortHandle;			
 		}
 		else
 		{
-			//some data was read
-			packet.m_uDataSize = dwBytesRead;
-		}
+			packet.m_uDataSize = bytesRead;
+		}		
 	}
-
 }

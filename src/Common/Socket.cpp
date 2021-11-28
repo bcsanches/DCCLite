@@ -557,7 +557,8 @@ namespace dcclite
 
 	bool Socket::JoinMulticastGroup(const IpAddress &address)
 	{
-		struct ip_mreq imr;
+#if PLATFORM == PLATFORM_WINDOWS
+		ip_mreq imr;
 
 		imr.imr_interface.S_un.S_addr = 0;
 		imr.imr_multiaddr.S_un.S_un_b.s_b1 = address.GetA();
@@ -567,7 +568,6 @@ namespace dcclite
 
 		auto ret = setsockopt(m_hHandle, IPPROTO_IP, IP_ADD_MEMBERSHIP, reinterpret_cast<char *>(&imr), sizeof(imr));
 
-#if PLATFORM == PLATFORM_WINDOWS
 		if (ret == SOCKET_ERROR)
 		{
 			auto error = WSAGetLastError();
@@ -579,7 +579,15 @@ namespace dcclite
 
 		return true;
 #else
-		return ret >= 0;
+		ip_mreqn mreq;
+
+		mreq.imr_address.s_addr = INADDR_ANY;
+		mreq.imr_ifindex = 0;
+		mreq.imr_multiaddr.s_addr = address.GetAddress();
+
+		auto ret = setsockopt(m_hHandle, IPPROTO_IP, IP_ADD_MEMBERSHIP, reinterpret_cast<char *>(&mreq), sizeof(mreq));
+
+		return ret == 0;
 #endif
 	}
 
