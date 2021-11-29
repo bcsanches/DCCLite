@@ -859,6 +859,7 @@ READ_NAME_AGAIN:
 			writer.WriteWord(QCLASS_IN);
 			writer.WriteDoubleWord(service.second.m_uTtl);
 
+			//write a zero length, we will update it later with the position
 			auto lengthPos = writer.GetSize();
 			writer.WriteWord(0);
 
@@ -866,10 +867,12 @@ READ_NAME_AGAIN:
 			writer.WriteName(ProtocolCanonicalName(service.second.m_tProtocol));
 			writer.WriteName(LOCAL_DOMAIN_NAME);
 
+			//mark end of names
 			writer.WriteByte(0);
-
+			
 			auto finalPos = writer.GetSize();
 
+			//update length and return to current position
 			writer.Seek(lengthPos);
 			writer.WriteWord(finalPos - lengthPos - 2);
 			writer.Seek(finalPos);
