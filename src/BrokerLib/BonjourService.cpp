@@ -33,6 +33,8 @@ https://datatracker.ietf.org/doc/html/rfc6335 -> Internet Assigned Numbers Autho
 #include "Socket.h"
 #include "Util.h"
 
+//#define NO_ENDIANNESS
+
 namespace dcclite::broker
 {
 	static const NetworkAddress g_clDnsAddress{ 224, 0, 0, 251, 5353 };
@@ -61,12 +63,20 @@ namespace dcclite::broker
 
 			inline uint32_t ReadDoubleWord() noexcept
 			{
+#ifdef NO_ENDIANNESS
+				return m_clPacket.Read<uint32_t>();
+#else
 				return dcclite::ntohl(m_clPacket.Read<uint32_t>());
+#endif
 			}
 
 			inline uint16_t ReadWord() noexcept
 			{
+#ifdef NO_ENDIANNESS
+				return m_clPacket.Read<uint16_t>();
+#else
 				return dcclite::ntohs(m_clPacket.Read<uint16_t>());
+#endif
 			}
 
 			inline uint8_t ReadByte() noexcept
@@ -86,12 +96,21 @@ namespace dcclite::broker
 
 			void WriteDoubleWord(uint32_t w)
 			{
+#ifdef NO_ENDIANNESS
+				m_clPacket.Write32(w);
+#else
 				m_clPacket.Write32(dcclite::htonl(w));
+#endif
+
 			}
 
 			void WriteWord(uint16_t w)
 			{
+#ifdef NO_ENDIANNESS
+				m_clPacket.Write16(w);
+#else
 				m_clPacket.Write16(dcclite::htons(w));
+#endif
 			}
 
 			void WriteByte(uint8_t b)
@@ -131,7 +150,8 @@ namespace dcclite::broker
 	struct DnsHeader
 	{
 		uint16_t m_uId;
-		uint16_t m_uFlags;
+		uint8_t m_uFlags0;
+		uint8_t m_uFlags1;
 		uint16_t m_uQDCount;
 		uint16_t m_uANCount;
 		uint16_t m_uNSCount;
@@ -139,26 +159,22 @@ namespace dcclite::broker
 
 		inline bool IsResponse() const noexcept
 		{
-			return m_uFlags & 0x80;
+			return m_uFlags0 & 0x80;
 		}
 
 		inline void SetResponseBit() noexcept
 		{
-			m_uFlags |= 0x80; //bit 7
+			m_uFlags0 |= 0x80; //bit 7
 		}
 
 		inline void SetAuthorityBit() noexcept 
 		{
-			m_uFlags |= 0x04; //bit 2
+			m_uFlags0 |= 0x04; //bit 2
 		}
 	};
+	
 
-	struct Label
-	{
-		char m_szStr[64];
-	};
-
-	typedef std::vector<Label> LabelsVector_t;
+	typedef std::vector<std::string_view> LabelsVector_t;
 
 	struct QSection
 	{
@@ -184,7 +200,7 @@ namespace dcclite::broker
 		
 		for(const auto &it : vec)
 		{			
-			output.append(it.m_szStr);
+			output.append(it);
 			output.append(1, '.');
 		}		
 
@@ -233,7 +249,7 @@ namespace fmt
 		template <typename FormatContext>
 		auto format(const dcclite::broker::QSection &q, FormatContext &ctx)
 		{		
-			return format_to(ctx.out(), "{}", LabelsVector2String(q.m_vecLabels));
+			return format_to(ctx.out(), "{}", dcclite::broker::LabelsVector2String(q.m_vecLabels));
 		}
 	};
 
@@ -246,7 +262,7 @@ namespace fmt
 		template <typename FormatContext>
 		auto format(const dcclite::broker::ResourceRecord &rr, FormatContext &ctx)
 		{
-			return format_to(ctx.out(), "{}", LabelsVector2String(rr.m_vecLabels));
+			return format_to(ctx.out(), "{}", dcclite::broker::LabelsVector2String(rr.m_vecLabels));
 		}
 	};
 }
@@ -467,12 +483,12 @@ namespace dcclite::broker
 		}
 
 		//not a query for local name?
-		if (strcmp(qsection.m_vecLabels[numLabels - 1].m_szStr, LOCAL_DOMAIN_NAME))
+		if (qsection.m_vecLabels[numLabels - 1].compare(LOCAL_DOMAIN_NAME))
 			return;
 
 		//
 		// detect _services._dns-sd._udp.local.
-		if ((strcmp(qsection.m_vecLabels[2].m_szStr, "_udp") == 0) && (strcmp(qsection.m_vecLabels[1].m_szStr, "_dns-sd") == 0) && (strcmp(qsection.m_vecLabels[0].m_szStr, "_services") == 0))
+		if ((qsection.m_vecLabels[2].compare("_udp") == 0) && (qsection.m_vecLabels[1].compare("_dns-sd") == 0) && (qsection.m_vecLabels[0].compare("_services") == 0))
 		{
 			//list all services
 			Log::Trace("[[BonjourServiceImpl::ParseQuery] received a _services._dns-sd._udp.local.");
@@ -555,16 +571,10 @@ READ_NAME_AGAIN:
 				goto READ_NAME_AGAIN;
 			}
 
-			results.resize(nameCount + 1);
+			results.push_back(std::string_view(reinterpret_cast<const char *>(packet.GetData() + packet.GetSize()), nameLen));
+			packet.Seek(packet.GetSize() + nameLen);			
 
-			char *name = results[nameCount].m_szStr;
-
-			for (int j = 0; j < nameLen; ++j)
-				name[j] = tolower(packet.ReadByte());
-
-			name[nameLen] = '\0';
-
-			dcclite::Log::Trace("Name: {}", name);
+			dcclite::Log::Trace("Name: {}", results[results.size()-1]);
 		}
 
 		return results;
@@ -575,7 +585,8 @@ READ_NAME_AGAIN:
 		DnsHeader header;
 
 		header.m_uId = packet.ReadWord();
-		header.m_uFlags = packet.ReadWord();
+		header.m_uFlags0 = packet.ReadByte();
+		header.m_uFlags1 = packet.ReadByte();
 
 #if 0
 		//we do not care about responses...
@@ -683,7 +694,7 @@ READ_NAME_AGAIN:
 
 	void BonjourServiceImpl::Update(const dcclite::Clock& clock)
 	{	
-		NetworkPacket packet;
+		NetworkPacket packet;		
 
 		auto numServices = m_mapServices.size();
 
@@ -721,7 +732,8 @@ READ_NAME_AGAIN:
 			DnsMesssageWriter(const DnsHeader &header)
 			{
 				m_clPacket.WriteWord(header.m_uId);
-				m_clPacket.WriteWord(header.m_uFlags);
+				m_clPacket.WriteByte(header.m_uFlags0);
+				m_clPacket.WriteByte(header.m_uFlags1);
 				m_clPacket.WriteWord(header.m_uQDCount);
 				m_clPacket.WriteWord(header.m_uANCount);
 				m_clPacket.WriteWord(header.m_uNSCount);
@@ -732,7 +744,7 @@ READ_NAME_AGAIN:
 			{
 				for (auto it : names)
 				{
-					this->WriteName(it.m_szStr);
+					this->WriteName(it);
 				}
 
 				m_clPacket.WriteByte(0);

@@ -36,6 +36,19 @@ TEST(Packet, Base)
 	packet.Write64(0xAABBCCDDBEEFDEAF);
 	ASSERT_EQ(packet.GetSize(), 16);
 
+	packet.Write32(36);
+	ASSERT_EQ(packet.GetSize(), 20);
+
+#if 0
+	union
+	{
+		uint32_t i;
+		char data[4];
+	} u;
+
+	u.i = 0xAABBCCDD;
+#endif
+
 	/**
 		'  J  o  h  n  '
 	  hex  4A 6F 68 6E
@@ -44,7 +57,7 @@ TEST(Packet, Base)
 	*/
 
 	packet.Write32(0x6E686F4A); // John 
-	ASSERT_EQ(packet.GetSize(), 20);
+	ASSERT_EQ(packet.GetSize(), 24);
 
 	packet.Reset();
 	ASSERT_EQ(packet.GetSize(), 0);
@@ -63,6 +76,9 @@ TEST(Packet, Base)
 
 	ASSERT_EQ(packet.Read<uint64_t>(), 0xAABBCCDDBEEFDEAF);
 	ASSERT_EQ(packet.GetSize(), 16);
+
+	ASSERT_EQ(packet.Read<uint32_t>(), 36);
+	ASSERT_EQ(packet.GetSize(), 20);	
 
 	char name[5];
 	
