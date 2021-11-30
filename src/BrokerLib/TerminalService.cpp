@@ -740,8 +740,8 @@ namespace dcclite::broker
 
 		dcclite::Log::Info("[TerminalService] Started, listening on port {}", port);
 
-		auto bonjourService = static_cast<BonjourService *>(m_rclBroker.TryFindService(BONJOUR_SERVICE_NAME));
-		bonjourService->Register("terminal", "dcclitet", NetworkProtocol::TCP, port, 36);
+		if(auto bonjourService = static_cast<BonjourService *>(m_rclBroker.TryFindService(BONJOUR_SERVICE_NAME)))
+			bonjourService->Register("terminal", "dcclitet", NetworkProtocol::TCP, port, 36);
 	}
 
 	TerminalService::~TerminalService()

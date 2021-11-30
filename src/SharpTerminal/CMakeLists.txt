@@ -49,6 +49,10 @@ add_executable(SharpTerminal
   Properties/Resources.resx
   Properties/Settings.Designer.cs
   Properties/Settings.settings
+  
+  ServerSelectionForm.cs
+  ServerSelectionForm.Designer.cs
+  ServerSelectionForm.resx
 
   ${ICON_RESOURCE_CONNECTED_DRIVE}
   ${ICON_RESOURCE_DISCONNECTED_DRIVE}
@@ -99,6 +103,10 @@ csharp_set_windows_forms_properties(
     RemoteLoconetServiceUserControl.cs
     RemoteLoconetServiceUserControl.Designer.cs
     RemoteLoconetServiceUserControl.resx
+    
+    ServerSelectionForm.cs
+    ServerSelectionForm.Designer.cs
+    ServerSelectionForm.resx
 )
 
 set_property(TARGET SharpTerminal PROPERTY VS_DOTNET_REFERENCES
@@ -110,10 +118,11 @@ set_property(TARGET SharpTerminal PROPERTY VS_DOTNET_REFERENCES
     "System.Deployment"
     "System.Drawing"
     "System.Json"
-    "System.Net.Http"
+    "System.Net.Http"    
     "System.Windows.Forms"    
     "System.Xml"
-    "System.Xml.Linq"
+    "System.Xml.Linq"    
 )
 
 set_property(TARGET SharpTerminal PROPERTY VS_PACKAGE_REFERENCES "System.Json")
+

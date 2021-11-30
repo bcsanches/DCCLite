@@ -162,6 +162,7 @@ namespace SharpTerminal
 
         private void SenderWorker(Object param)
         {
+            var cancellationToken = mCancellationTokenSource.Token;
             try
             {
                 mClient.Connect(mHost, mHostPort);
@@ -174,9 +175,7 @@ namespace SharpTerminal
                 return;
             }
 
-            SetState(ConnectionState.OK, null);            
-
-            var cancellationToken = mCancellationTokenSource.Token;
+            SetState(ConnectionState.OK, null);                        
 
             mReceiverThread = new Thread(ReceiverWorker);
             mReceiverThread.Start();
@@ -267,6 +266,7 @@ namespace SharpTerminal
             {
                 if (disposing)
                 {
+                    mCancellationTokenSource.Cancel();
                     mCancellationTokenSource.Dispose();
                     mClient.Dispose();
                 }

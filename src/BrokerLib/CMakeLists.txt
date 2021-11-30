@@ -25,6 +25,7 @@ set(BrokerLib_SRCS
     ThrottleService.cpp
     TurnoutDecoder.cpp
     VirtualDevice.cpp
+    ZeroconfService.cpp
 )
 
 set(BrokerLib_HDRS
@@ -55,6 +56,7 @@ set(BrokerLib_HDRS
     ThrottleService.h
     TurnoutDecoder.h
     VirtualDevice.h
+    ZeroconfService.h
 )
 
 add_library(BrokerLib  ${BrokerLib_SRCS} ${BrokerLib_HDRS})

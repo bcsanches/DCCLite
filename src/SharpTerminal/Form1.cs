@@ -34,6 +34,11 @@ namespace SharpTerminal
         {
             base.OnLoad(e);
 
+            using (var dialog = new ServerSelectionForm())
+            {
+                dialog.ShowDialog();
+            }
+
             mRequestManager.ConnectionStateChanged += mRequestManager_ConnectionStateChanged;
             mRequestManager.BeginConnect("localhost", 4191);
 
@@ -46,9 +51,12 @@ namespace SharpTerminal
 
             //avoid deadlock on invoke, so we disable the listenning
             mRequestManager.ConnectionStateChanged -= mRequestManager_ConnectionStateChanged;
+            ucConsole.RequestManager = null;
+            ucTreeView.RequestManager = null;
 
-            //close connections
-            mRequestManager.Stop();
+            //close connections            
+            //mRequestManager.Stop();
+            //mRequestManager.Dispose();            
         }        
 
         private void mRequestManager_ConnectionStateChanged(RequestManager sender, ConnectionStateEventArgs args)

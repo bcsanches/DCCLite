@@ -28,6 +28,7 @@
 #include "TerminalService.h"
 #include "ThrottleService.h"
 #include "SpecialFolders.h"
+#include "ZeroconfService.h"
 
 #include "DccLiteService.h"
 #include "DccppService.h"
@@ -84,9 +85,9 @@ namespace dcclite::broker
 
 		m_pServices = static_cast<FolderObject *>(m_clRoot.AddChild(
 			std::make_unique<FolderObject>(SpecialFolders::GetName(SpecialFolders::Folders::ServicesId)))
-		);
+		);		
 
-		m_pServices->AddChild(BonjourService::Create(BONJOUR_SERVICE_NAME, *this, m_clProject));
+		m_pServices->AddChild(ZeroconfService::Create(ZEROCONF_SERVICE_NAME, *this, m_clProject));
 
 		this->LoadConfig();
 	}
@@ -108,7 +109,7 @@ namespace dcclite::broker
 		rapidjson::IStreamWrapper isw(configFile);
 		rapidjson::Document data;
 		data.ParseStream(isw);
-
+		
 		m_clProject.SetName(data["name"].GetString());
 
 		const auto &services = data["services"];
@@ -117,6 +118,10 @@ namespace dcclite::broker
 		{
 			throw std::runtime_error("error: invalid config, expected services array");
 		}
+
+		auto bonjourSetting = data.FindMember("bonjourService");
+		if ((bonjourSetting != data.MemberEnd()) && (bonjourSetting->value.GetBool()))
+			m_pServices->AddChild(BonjourService::Create(BONJOUR_SERVICE_NAME, *this, m_clProject));
 
 		dcclite::Log::Debug("Processing config services {}", services.Size());
 

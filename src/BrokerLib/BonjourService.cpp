@@ -63,20 +63,12 @@ namespace dcclite::broker
 
 			inline uint32_t ReadDoubleWord() noexcept
 			{
-#ifdef NO_ENDIANNESS
-				return m_clPacket.Read<uint32_t>();
-#else
 				return dcclite::ntohl(m_clPacket.Read<uint32_t>());
-#endif
 			}
 
 			inline uint16_t ReadWord() noexcept
 			{
-#ifdef NO_ENDIANNESS
-				return m_clPacket.Read<uint16_t>();
-#else
 				return dcclite::ntohs(m_clPacket.Read<uint16_t>());
-#endif
 			}
 
 			inline uint8_t ReadByte() noexcept
@@ -96,21 +88,12 @@ namespace dcclite::broker
 
 			void WriteDoubleWord(uint32_t w)
 			{
-#ifdef NO_ENDIANNESS
-				m_clPacket.Write32(w);
-#else
 				m_clPacket.Write32(dcclite::htonl(w));
-#endif
-
 			}
 
 			void WriteWord(uint16_t w)
 			{
-#ifdef NO_ENDIANNESS
-				m_clPacket.Write16(w);
-#else
 				m_clPacket.Write16(dcclite::htons(w));
-#endif
 			}
 
 			void WriteByte(uint8_t b)
@@ -235,8 +218,17 @@ namespace dcclite::broker
 				throw std::out_of_range(fmt::format("[ProtocolCanonicalName] New protocol? What {} - {}", protocol, magic_enum::enum_name(protocol)));
 		}
 	}
-}
 
+	static std::optional<NetworkProtocol> ProtocolFromName(const std::string_view name)
+	{
+		if (name.compare("_udp") == 0)
+			return NetworkProtocol::UDP;
+		else if (name.compare("_tcp") == 0)
+			return NetworkProtocol::TCP;
+		else
+			return std::optional<NetworkProtocol>{};
+	}
+}
 
 namespace fmt
 {
@@ -486,9 +478,17 @@ namespace dcclite::broker
 		if (qsection.m_vecLabels[numLabels - 1].compare(LOCAL_DOMAIN_NAME))
 			return;
 
+		auto protocol = ProtocolFromName(qsection.m_vecLabels[numLabels - 2]);
+		if (!protocol.has_value())
+		{
+			Log::Error("[BonjourServiceImpl::ParseQuery] Unknown protocol {}", qsection.m_vecLabels[numLabels - 2]);
+
+			return;
+		}
+
 		//
 		// detect _services._dns-sd._udp.local.
-		if ((qsection.m_vecLabels[2].compare("_udp") == 0) && (qsection.m_vecLabels[1].compare("_dns-sd") == 0) && (qsection.m_vecLabels[0].compare("_services") == 0))
+		if ((protocol.value() == NetworkProtocol::UDP) && (qsection.m_vecLabels[1].compare("_dns-sd") == 0) && (qsection.m_vecLabels[0].compare("_services") == 0))
 		{
 			//list all services
 			Log::Trace("[[BonjourServiceImpl::ParseQuery] received a _services._dns-sd._udp.local.");
@@ -500,6 +500,14 @@ namespace dcclite::broker
 
 		//
 		//Not a generic query, so lookup local services
+		ServiceKey key{ qsection.m_vecLabels[numLabels - 3], protocol.value() };
+
+		auto it = m_mapServices.find(key);
+		if (it == m_mapServices.end())
+			return;
+
+		//
+		//Service found, advertise it
 
 	}
 
@@ -571,7 +579,15 @@ READ_NAME_AGAIN:
 				goto READ_NAME_AGAIN;
 			}
 
-			results.push_back(std::string_view(reinterpret_cast<const char *>(packet.GetData() + packet.GetSize()), nameLen));
+			//
+			//names are case insensitive, so make all lower case
+			char *str = const_cast<char *>(reinterpret_cast<const char *>(packet.GetData())) + packet.GetSize();
+			for (int i = 0; i < nameLen; ++i)
+				str[i] = tolower(str[i]);
+
+			std::string_view name{ str, nameLen };			
+
+			results.push_back(name);
 			packet.Seek(packet.GetSize() + nameLen);			
 
 			dcclite::Log::Trace("Name: {}", results[results.size()-1]);
