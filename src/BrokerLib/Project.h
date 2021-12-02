@@ -45,7 +45,12 @@ namespace dcclite::broker
 				m_strName = name;
 			}
 
-			inline const dcclite::fs::path &GetRoot() const
+			inline const std::string &GetName() const noexcept
+			{
+				return m_strName;
+			}
+
+			inline const dcclite::fs::path &GetRoot() const noexcept
 			{
 				return m_pthRoot;
 			}

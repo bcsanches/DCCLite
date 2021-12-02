@@ -12,6 +12,7 @@
 #pragma once
 
 #include "Service.h"
+#include "Socket.h"
 
 namespace dcclite::broker
 { 
@@ -27,7 +28,7 @@ namespace dcclite::broker
 				//empty
 			}			
 
-			virtual void Register(const Service &service, const uint16_t port) = 0;
+			virtual void Register(const std::string_view serviceName, const uint16_t port) = 0;
 
 			//
 			//

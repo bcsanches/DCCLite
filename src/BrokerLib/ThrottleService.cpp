@@ -558,15 +558,22 @@ namespace dcclite::broker
 	//
 	///////////////////////////////////////////////////////////////////////////////
 
+	static const char *DetermineServerAddress(const rapidjson::Value &params)
+	{
+		auto it = params.FindMember("serverAddress");
+		if (it == params.MemberEnd())
+			return "127.0.0.1:12090";
+		else
+			return it->value.GetString();
+	}
+
 	class ThrottleServiceImpl : public ThrottleService
 	{
 		public:
 			ThrottleServiceImpl(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
 			~ThrottleServiceImpl() override;
 
-			void Update(const dcclite::Clock &clock) override;
-
-			static std::unique_ptr<Service> Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+			void Update(const dcclite::Clock &clock) override;			
 
 			void Serialize(JsonOutputStream_t &stream) const override;	
 
@@ -580,7 +587,7 @@ namespace dcclite::broker
 
 	ThrottleServiceImpl::ThrottleServiceImpl(const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
 		ThrottleService(name, broker, params, project),		
-		m_clServerAddress{ dcclite::NetworkAddress::ParseAddress(params["serverAddress"].GetString()) }
+		m_clServerAddress{ dcclite::NetworkAddress::ParseAddress(DetermineServerAddress(params)) }
 	{				
 		dcclite::Log::Info("[ThrottleServiceImpl] Started, server at {}", m_clServerAddress);		
 	}

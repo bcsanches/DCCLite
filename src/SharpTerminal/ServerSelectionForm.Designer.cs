@@ -26,7 +26,10 @@ namespace SharpTerminal
             if (disposing)
             {
                 if(components != null)
-                    components.Dispose();                
+                    components.Dispose();
+
+                if (mClient != null)
+                    mClient.Dispose();
             }
             base.Dispose(disposing);
         }
@@ -39,15 +42,20 @@ namespace SharpTerminal
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.Windows.Forms.GroupBox groupBox1;
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.mServicesGrid = new System.Windows.Forms.DataGridView();
             this.Server = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Address = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.m_btnCancel = new System.Windows.Forms.Button();
             this.m_btnOK = new System.Windows.Forms.Button();
+            this.mBackgroundWorker = new System.ComponentModel.BackgroundWorker();
+            this.mTimer = new System.Windows.Forms.Timer(this.components);
+            this.m_lblCountdown = new System.Windows.Forms.Label();
+            this.mCountdownTimer = new System.Windows.Forms.Timer(this.components);
             groupBox1 = new System.Windows.Forms.GroupBox();
             groupBox1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.mServicesGrid)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -55,7 +63,7 @@ namespace SharpTerminal
             groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            groupBox1.Controls.Add(this.dataGridView1);
+            groupBox1.Controls.Add(this.mServicesGrid);
             groupBox1.Location = new System.Drawing.Point(12, 12);
             groupBox1.Name = "groupBox1";
             groupBox1.Size = new System.Drawing.Size(390, 268);
@@ -63,23 +71,26 @@ namespace SharpTerminal
             groupBox1.TabStop = false;
             groupBox1.Text = "Available servers:";
             // 
-            // dataGridView1
+            // mServicesGrid
             // 
-            this.dataGridView1.AllowUserToAddRows = false;
-            this.dataGridView1.AllowUserToDeleteRows = false;
-            this.dataGridView1.AllowUserToResizeRows = false;
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.mServicesGrid.AllowUserToAddRows = false;
+            this.mServicesGrid.AllowUserToDeleteRows = false;
+            this.mServicesGrid.AllowUserToResizeRows = false;
+            this.mServicesGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.mServicesGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.Server,
             this.Address});
-            this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dataGridView1.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
-            this.dataGridView1.Location = new System.Drawing.Point(3, 16);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.ReadOnly = true;
-            this.dataGridView1.RowHeadersVisible = false;
-            this.dataGridView1.Size = new System.Drawing.Size(384, 249);
-            this.dataGridView1.TabIndex = 0;
+            this.mServicesGrid.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.mServicesGrid.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
+            this.mServicesGrid.Location = new System.Drawing.Point(3, 16);
+            this.mServicesGrid.MultiSelect = false;
+            this.mServicesGrid.Name = "mServicesGrid";
+            this.mServicesGrid.ReadOnly = true;
+            this.mServicesGrid.RowHeadersVisible = false;
+            this.mServicesGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.mServicesGrid.Size = new System.Drawing.Size(384, 249);
+            this.mServicesGrid.TabIndex = 0;
+            this.mServicesGrid.SelectionChanged += new System.EventHandler(this.mServicesGrid_SelectionChanged);
             // 
             // Server
             // 
@@ -111,12 +122,38 @@ namespace SharpTerminal
             // 
             this.m_btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.m_btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
+            this.m_btnOK.Enabled = false;
             this.m_btnOK.Location = new System.Drawing.Point(246, 286);
             this.m_btnOK.Name = "m_btnOK";
             this.m_btnOK.Size = new System.Drawing.Size(75, 23);
             this.m_btnOK.TabIndex = 2;
             this.m_btnOK.Text = "&OK";
             this.m_btnOK.UseVisualStyleBackColor = true;
+            // 
+            // mBackgroundWorker
+            // 
+            this.mBackgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.mBackgroundWorker_DoWork);
+            this.mBackgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.mBackgroundWorker_ProgressChanged);
+            // 
+            // mTimer
+            // 
+            this.mTimer.Interval = 1000;
+            this.mTimer.Tick += new System.EventHandler(this.mTimer_Tick);
+            // 
+            // m_lblCountdown
+            // 
+            this.m_lblCountdown.AutoSize = true;
+            this.m_lblCountdown.Location = new System.Drawing.Point(12, 291);
+            this.m_lblCountdown.Name = "m_lblCountdown";
+            this.m_lblCountdown.Size = new System.Drawing.Size(94, 13);
+            this.m_lblCountdown.TabIndex = 3;
+            this.m_lblCountdown.Text = "Auto connect in ...";
+            this.m_lblCountdown.Visible = false;
+            // 
+            // mCountdownTimer
+            // 
+            this.mCountdownTimer.Interval = 1000;
+            this.mCountdownTimer.Tick += new System.EventHandler(this.mCountdownTimer_Tick);
             // 
             // ServerSelectionForm
             // 
@@ -125,24 +162,33 @@ namespace SharpTerminal
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.m_btnCancel;
             this.ClientSize = new System.Drawing.Size(414, 321);
+            this.Controls.Add(this.m_lblCountdown);
             this.Controls.Add(this.m_btnOK);
             this.Controls.Add(this.m_btnCancel);
             this.Controls.Add(groupBox1);
+            this.KeyPreview = true;
             this.Name = "ServerSelectionForm";
             this.Text = "Select server";
+            this.Click += new System.EventHandler(this.ServerSelectionForm_Click);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ServerSelectionForm_KeyDown);
             groupBox1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.mServicesGrid)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
 
-        private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.DataGridView mServicesGrid;
         private System.Windows.Forms.DataGridViewTextBoxColumn Server;
         private System.Windows.Forms.DataGridViewTextBoxColumn Address;
         private System.Windows.Forms.Button m_btnCancel;
         private System.Windows.Forms.Button m_btnOK;
+        private System.ComponentModel.BackgroundWorker mBackgroundWorker;
+        private System.Windows.Forms.Timer mTimer;
+        private System.Windows.Forms.Label m_lblCountdown;
+        private System.Windows.Forms.Timer mCountdownTimer;
     }
 }
 
