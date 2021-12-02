@@ -62,7 +62,7 @@ add_executable(SharpTerminal
   SharpTerminal.RemoteLoconetSlot.datasource
 )
 
-set_property(TARGET SharpTerminal PROPERTY VS_DOTNET_TARGET_FRAMEWORK_VERSION "v4.7.2")
+set_property(TARGET SharpTerminal PROPERTY VS_DOTNET_TARGET_FRAMEWORK_VERSION "v4.8")
 set_property(TARGET SharpTerminal PROPERTY WIN32_EXECUTABLE TRUE)
 
 set(CMAKE_CSharp_FLAGS "/langversion:latest")
@@ -126,3 +126,4 @@ set_property(TARGET SharpTerminal PROPERTY VS_DOTNET_REFERENCES
 
 set_property(TARGET SharpTerminal PROPERTY VS_PACKAGE_REFERENCES "System.Json")
 
+install(FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/System.Json.dll DESTINATION bin)

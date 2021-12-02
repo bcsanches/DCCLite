@@ -44,7 +44,7 @@ namespace dcclite::broker
 	ZeroconfServiceImpl::ZeroconfServiceImpl(const std::string& name, Broker &broker, const Project& project):
 		ZeroconfService(name, broker, project)
 	{				
-		if (!m_clSocket.Open(9381, dcclite::Socket::Type::DATAGRAM))
+		if (!m_clSocket.Open(9381, dcclite::Socket::Type::DATAGRAM, dcclite::Socket::FLAG_ADDRESS_REUSE))
 		{
 			throw std::runtime_error("[ZeroconfServiceImpl] Cannot open port 9381 for listening");
 		}

@@ -119,14 +119,14 @@ namespace dcclite
 
 			inline void Write8(uint8_t byte) noexcept
 			{
-				assert(m_uIndex + 1 < SIZE);
+				assert((m_uIndex + 1u) < SIZE);
 
 				m_arData[m_uIndex++] = byte;
 			}
 
 			inline void Write16(uint16_t data) noexcept
 			{
-				assert(m_uIndex + 2 < SIZE);
+				assert((m_uIndex + 2u) < SIZE);
 
 				m_arData[m_uIndex++] = ((uint8_t *)(&data))[0];
 				m_arData[m_uIndex++] = ((uint8_t *)(&data))[1];
@@ -203,7 +203,7 @@ namespace dcclite
 
 				uint8_t *dst = (uint8_t *) &num;
 
-				for (int i = 0; i < sizeof(num); ++i)
+				for (LENSIZE i = 0; i < sizeof(num); ++i)
 					dst[i] = m_arData[m_uIndex + i];
 				
 				m_uIndex += sizeof(T);

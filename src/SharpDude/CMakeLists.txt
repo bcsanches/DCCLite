@@ -19,7 +19,7 @@ add_executable(SharpDude
   Properties/Settings.settings
 )
 
-set_property(TARGET SharpDude PROPERTY VS_DOTNET_TARGET_FRAMEWORK_VERSION "v4.7.2")
+set_property(TARGET SharpDude PROPERTY VS_DOTNET_TARGET_FRAMEWORK_VERSION "v4.8")
 set_property(TARGET SharpDude PROPERTY WIN32_EXECUTABLE TRUE)
 
 set(CMAKE_CSharp_FLAGS "/langversion:latest")

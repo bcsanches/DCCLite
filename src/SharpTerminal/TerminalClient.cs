@@ -162,6 +162,9 @@ namespace SharpTerminal
 
         private void SenderWorker(Object param)
         {
+            if (mCancellationTokenSource.IsCancellationRequested)
+                return;
+
             var cancellationToken = mCancellationTokenSource.Token;
             try
             {

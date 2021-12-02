@@ -20,26 +20,26 @@ namespace SharpTerminal
 {
     public partial class ServerSelectionForm : Form
     {
-        private UdpClient mClient = new();
+        private UdpClient           mClient = new();
 
-        private List<ServiceInfo> m_lstServices = new();
+        private List<ServiceInfo>   m_lstServices = new();
 
-        const uint      PACKET_MAGIC_NUMBER = 0xABCDDCCA;
-	    const byte      PACKET_VERSION = 0x01;
+        const uint                  PACKET_MAGIC_NUMBER = 0xABCDDCCA;
+	    const byte                  PACKET_VERSION = 0x01;
 
-        const int       PACKET_MINIMUM_SIZE = 10;
+        const int                   PACKET_MINIMUM_SIZE = 10;
 
-        const ushort    ZEROCONF_PORT = 9381;
+        const ushort                ZEROCONF_PORT = 9381;
 
-        const string    SERVICE_NAME = "TerminalService";
+        const string                SERVICE_NAME = "TerminalService";
 
-        bool            mFirstService = true;
+        bool                        mFirstService = true;
 
-        uint            mCountdown = 5;
+        uint                        mCountdown = 5;
 
-        ServiceInfo     mSelectedService;
+        public ServiceInfo          mSelectedService;
 
-        class ServiceInfo
+        public class ServiceInfo
         {
             public string      mServerName;
             public IPAddress   mAddress;

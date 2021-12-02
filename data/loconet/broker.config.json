@@ -1,5 +1,5 @@
 {
-  "name": "EFMR",
+  "name": "Loconet Tester",
   "services": [    
     {
       "class": "Terminal",

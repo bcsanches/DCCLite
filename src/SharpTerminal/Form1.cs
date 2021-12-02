@@ -33,16 +33,22 @@ namespace SharpTerminal
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-
+            
             using (var dialog = new ServerSelectionForm())
             {
-                dialog.ShowDialog();
+                if (dialog.ShowDialog() == DialogResult.Cancel)
+                {
+                    this.Close();
+                    return;
+                }
+
+                mRequestManager.ConnectionStateChanged += mRequestManager_ConnectionStateChanged;
+                mRequestManager.BeginConnect(dialog.mSelectedService.mAddress.ToString(), dialog.mSelectedService.mPort);
+
+                SetStatus("Connecting");
+
             }
 
-            mRequestManager.ConnectionStateChanged += mRequestManager_ConnectionStateChanged;
-            mRequestManager.BeginConnect("localhost", 4191);
-
-            SetStatus("Connecting");            
         }        
 
         protected override void OnFormClosed(FormClosedEventArgs e)
