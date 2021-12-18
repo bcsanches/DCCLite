@@ -11,6 +11,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -31,11 +32,17 @@ namespace SharpTerminal
 
         const ushort                ZEROCONF_PORT = 9381;
 
+        const int                   TIMER_INTERVAL = 250;
+
+        const int                   DEFAULT_COUNTDOWN_SECS = 5;
+
+        const int                   DEFAULT_TTL = TIMER_INTERVAL * 4 * (DEFAULT_COUNTDOWN_SECS + 1);        
+
         const string                SERVICE_NAME = "TerminalService";
 
         bool                        mFirstService = true;
 
-        uint                        mCountdown = 5;
+        uint                        mCountdown = DEFAULT_COUNTDOWN_SECS;
 
         public ServiceInfo          mSelectedService;
 
@@ -44,6 +51,8 @@ namespace SharpTerminal
             public string      mServerName;
             public IPAddress   mAddress;
             public ushort      mPort;
+
+            public int          mTTL;
         };
 
         public ServerSelectionForm()
@@ -59,6 +68,8 @@ namespace SharpTerminal
             mClient.Client.Bind(new IPEndPoint(IPAddress.Any, 0));
 
             this.SendQuery();
+
+            mTimer.Interval = TIMER_INTERVAL;
             mTimer.Start();
 
             mBackgroundWorker.WorkerReportsProgress = true;
@@ -144,7 +155,8 @@ namespace SharpTerminal
                         {
                             mAddress = endPoint.Address,
                             mPort = reader.ReadUInt16(),
-                            mServerName = ReadString(reader)
+                            mServerName = ReadString(reader),
+                            mTTL = DEFAULT_TTL
                         };
 
                         mBackgroundWorker.ReportProgress(0, info);
@@ -161,7 +173,36 @@ namespace SharpTerminal
 
         private void mTimer_Tick(object sender, EventArgs e)
         {
-            this.SendQuery();            
+            this.SendQuery();
+
+            bool expired = false;
+            foreach (var info in m_lstServices)
+            {
+                info.mTTL -= mTimer.Interval;
+
+                if (info.mTTL <= 0)
+                { 
+                    foreach(DataGridViewRow row in mServicesGrid.Rows)
+                    {
+                        if(row.Tag == info)
+                        {
+                            mServicesGrid.Rows.Remove(row);
+                            
+                            break;
+                        }
+                    }
+                    
+                    expired = true;
+                }                    
+            }
+
+            if (expired)
+            {
+                m_lstServices.RemoveAll(x => x.mTTL <= 0);
+
+                this.StopCountdown();
+                this.mServicesGrid_SelectionChanged(sender, e);
+            }                
         }
 
         private void UpdateCountdownLabel()
@@ -180,10 +221,16 @@ namespace SharpTerminal
         {
             var newService = (ServiceInfo)e.UserState;
 
+            //
+            //Do we already know about this service? If yes, just update the TTL
             foreach(var service in m_lstServices)
             {
                 if ((service.mPort == newService.mPort) && (service.mAddress.Equals(newService.mAddress)) && (service.mServerName.Equals(newService.mServerName)))
+                {
+                    service.mTTL = newService.mTTL;
+
                     return;
+                }                    
             }
 
             m_lstServices.Add(newService);
@@ -196,14 +243,16 @@ namespace SharpTerminal
             row.Cells[1].Value = newService.mAddress.ToString() + ":" + newService.mPort;
             row.Tag = newService;
 
-            if(mFirstService)
+            //Always update selected service because when the  service expires and it is removed list can get empty
+            // and refill again, so we always update it, not only for mFirstService
+            UpdateSelectedService();
+
+            if (mFirstService)
             {
                 mFirstService = false;
 
                 mCountdownTimer.Start();
-                UpdateCountdownLabel();
-
-                UpdateSelectedService();
+                UpdateCountdownLabel();                
             }
             else
             {
@@ -213,18 +262,11 @@ namespace SharpTerminal
 
         private void UpdateSelectedService()
         {
-            if(mServicesGrid.SelectedRows.Count == 0)
-            {
-                mSelectedService = null;
+            mSelectedService = mServicesGrid.SelectedRows.Count == 0 ? null : (ServiceInfo)mServicesGrid.SelectedRows[0].Tag;
 
-                m_btnOK.Enabled = false;                
-            }
-            else
-            {
-                mSelectedService = (ServiceInfo)mServicesGrid.SelectedRows[0].Tag;
-                m_btnOK.Enabled = true;
-            }
-            
+            //always check the mSelectedService, because when we add a new row to the datagrid, the Tag is not set yet, but 
+            //the event is fired, so make sure we have a valid SelectedService for enabling btnOK
+            m_btnOK.Enabled = mSelectedService != null;
         }
 
         private void mCountdownTimer_Tick(object sender, EventArgs e)
