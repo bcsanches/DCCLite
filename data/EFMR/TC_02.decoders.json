@@ -95,5 +95,18 @@
         "invertedFrog": false,
         "invertedPower": true,
         "operationTime": 3000
+    },
+    {
+        "name": "TC_T15",
+        "class": "ServoTurnout",
+        "address": "1407",
+        "pin": 33,
+        "inverted": false,
+        "powerPin": 67,
+        "frogPin": 66,
+        "range":25,
+        "invertedFrog": false,
+        "invertedPower": true,
+        "operationTime": 3000
     }
 ]
