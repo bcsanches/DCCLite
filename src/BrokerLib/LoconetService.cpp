@@ -234,6 +234,8 @@ class Slot: public dcclite::broker::ILoconetSlot
 		{
 			dcclite::Log::Debug("[Slot[{}]::GotoState_Common] from {}", this->GetId(),  magic_enum::enum_name(m_eState));
 
+			assert(!this->IsSlave());
+
 			m_eState = States::COMMON;		
 
 			this->ReleaseThrottle();
@@ -241,6 +243,8 @@ class Slot: public dcclite::broker::ILoconetSlot
 
 		void GotoState_Common(const dcclite::broker::DccAddress addr) noexcept
 		{
+			assert(!this->IsSlave());
+
 			dcclite::Log::Debug("[Slot[{}]::GotoState_Common] from {}, new address {}", this->GetId(), magic_enum::enum_name(m_eState), addr);
 
 			this->GotoState_Common();
@@ -251,11 +255,15 @@ class Slot: public dcclite::broker::ILoconetSlot
 		//HACK for slot 0
 		void GotoState_Reserved() noexcept
 		{
+			assert(!this->IsSlave());
+
 			m_eState = States::IN_USE;
 		}
 
 		void GotoState_InUse() noexcept
 		{
+			assert(!this->IsSlave());
+
 			dcclite::Log::Debug("[Slot[{}]::GotoState_InUse] from {}", this->GetId(), magic_enum::enum_name(m_eState));
 
 			m_eState = States::IN_USE;
@@ -274,6 +282,8 @@ class Slot: public dcclite::broker::ILoconetSlot
 
 		void GotoState_Free() noexcept
 		{
+			assert(!this->IsSlave());
+
 			dcclite::Log::Debug("[Slot[{}]::GotoState_Free] from {}", this->GetId(), magic_enum::enum_name(m_eState));
 
 			m_eState = States::FREE;
@@ -294,7 +304,11 @@ class Slot: public dcclite::broker::ILoconetSlot
 
 
 		void SetForward(bool v) noexcept
-		{
+		{	
+			//ignore
+			if (this->IsSlave())
+				return;
+
 			m_fForward = v;
 
 			if (m_pclThrottle)
@@ -315,6 +329,10 @@ class Slot: public dcclite::broker::ILoconetSlot
 
 		void SetSpeed(const uint8_t speed) noexcept
 		{
+			//ignore
+			if (this->IsSlave())
+				return;
+
 			m_uSpeed = speed;
 
 			if (m_pclThrottle)
@@ -323,6 +341,10 @@ class Slot: public dcclite::broker::ILoconetSlot
 
 		void EmergencyStop() noexcept
 		{
+			//ignore
+			if (this->IsSlave())
+				return;
+
 			m_uSpeed = 0;
 
 			if (m_pclThrottle)
@@ -377,6 +399,27 @@ class Slot: public dcclite::broker::ILoconetSlot
 			{
 				m_eConsistState = ConsistStates::FREE;
 			}
+		}
+
+		inline bool IsSlave() const noexcept
+		{
+			return (m_eConsistState == ConsistStates::CONSIST_SUB_MEMBER) || (m_eConsistState == ConsistStates::MID_CONSIST);
+		}
+
+		inline bool IsConsistTop() const noexcept
+		{
+			return m_eConsistState == ConsistStates::CONSIST_TOP;
+		}
+
+		void RelinkSlave(Slot &slave)
+		{
+			assert(m_eConsistState == ConsistStates::CONSIST_TOP);
+			assert(m_eState == States::IN_USE);
+
+			assert(slave.m_eConsistState == ConsistStates::MID_CONSIST);
+			assert(slave.m_eState == States::IN_USE);
+
+			m_pclThrottle->AddSlave(slave);
 		}
 
 	private:
@@ -476,7 +519,7 @@ class SlotManager
 		void PurgeSlots(const dcclite::Clock::TimePoint_t ticks, std::function<void (uint8_t)> callback) noexcept;
 
 		bool LinkSlots(const uint8_t slaveSlot, const uint8_t masterSlot);
-		bool UnlinkSlots(const uint8_t slaveSlot, const uint8_t masterSlot);
+		bool UnlinkSlots(const uint8_t slaveSlot, const uint8_t masterSlot, const dcclite::Clock::TimePoint_t ticks);
 
 	private:
 		const Slot &GetSlot(const uint8_t slot) const;
@@ -553,7 +596,22 @@ Slot *SlotManager::TryGetLocomotiveSlot(const uint8_t slot)
 
 void SlotManager::SetSlotToInUse(uint8_t slot, const dcclite::Clock::TimePoint_t ticks)
 {
-	m_arSlots.at(slot).GotoState_InUse();
+	auto &slotHandle = m_arSlots.at(slot);
+	slotHandle.GotoState_InUse();
+
+	if (slotHandle.IsConsistTop())
+	{
+		//
+		//need to relink all slaves
+		for (auto &it : m_arSlots)
+		{
+			if (it.IsSlave() && (it.GetSpeed() == slot))
+			{
+				slotHandle.RelinkSlave(it);
+			}
+		}
+	}
+
 	this->RefreshSlotTimeout(slot, ticks);
 }
 
@@ -635,6 +693,10 @@ void SlotManager::ForceSlotState(const uint8_t slot, const Slot::States state, c
 {
 	auto &slotHandle = m_arSlots.at(slot);
 
+	//cannot change slave slot state...
+	if (slotHandle.IsSlave())
+		return;
+
 	switch(state)
 	{
 		case Slot::States::COMMON:
@@ -646,7 +708,7 @@ void SlotManager::ForceSlotState(const uint8_t slot, const Slot::States state, c
 			break;
 
 		case Slot::States::IN_USE:
-			slotHandle.GotoState_InUse();
+			this->SetSlotToInUse(slot, ticks);
 			break;
 
 		default:
@@ -701,7 +763,7 @@ void SlotManager::PurgeSlots(const dcclite::Clock::TimePoint_t ticks, std::funct
 {	
 	for(unsigned i = 1; i < m_arSlots.size(); ++i)	
 	{
-		if (m_arSlots[i].IsInUse() && (m_arSlotsTimeout[i] <= ticks))
+		if (m_arSlots[i].IsInUse() && (!m_arSlots[i].IsSlave()) && (m_arSlotsTimeout[i] <= ticks))
 		{
 			m_arSlots[i].GotoState_Common();
 
@@ -767,7 +829,7 @@ bool SlotManager::LinkSlots(const uint8_t slaveSlotIndex, const uint8_t masterSl
 	return true;
 }
 
-bool SlotManager::UnlinkSlots(const uint8_t slaveSlotIndex, const uint8_t masterSlotIndex)
+bool SlotManager::UnlinkSlots(const uint8_t slaveSlotIndex, const uint8_t masterSlotIndex, const dcclite::Clock::TimePoint_t ticks)
 {
 	if ((slaveSlotIndex < 1) || (slaveSlotIndex >= MAX_SLOTS))
 	{
@@ -808,6 +870,9 @@ bool SlotManager::UnlinkSlots(const uint8_t slaveSlotIndex, const uint8_t master
 	}
 
 	masterSlot.RemoveSlave(slaveSlot);
+
+	this->RefreshSlotTimeout(slaveSlotIndex, ticks);
+	this->RefreshSlotTimeout(masterSlotIndex, ticks);
 
 	return true;
 }
@@ -1161,14 +1226,7 @@ namespace dcclite::broker
 					const uint8_t stat = payload.ReadByte();
 					Log::Trace("[LoconetServiceImpl::Update] Write slot {} stat1 {:#b}", slot, stat);
 
-					auto [slotState, consistState] = ParseStatByte(stat);
-					if (consistState != Slot::ConsistStates::FREE)
-					{
-						Log::Error("[LoconetServiceImpl::ParseMessage] OPC_SLOT_STAT1: cannot force slot state {} because consist is not free", slot);
-
-						DispatchLnLongAckMessage(Opcodes::OPC_RQ_SL_DATA, 0);
-						break;
-					}
+					auto [slotState, consistState] = ParseStatByte(stat);										
 
 					m_clSlotManager.ForceSlotState(slot, slotState, ticks);
 					this->NotifySlotChanged(slot);
@@ -1199,7 +1257,7 @@ namespace dcclite::broker
 					const uint8_t slaveSlot = payload.ReadByte();
 					const uint8_t masterSlot = payload.ReadByte();
 
-					if (!m_clSlotManager.UnlinkSlots(slaveSlot, masterSlot))
+					if (!m_clSlotManager.UnlinkSlots(slaveSlot, masterSlot, ticks))
 					{
 						DispatchLnLongAckMessage(Opcodes::OPC_UNLINK_SLOTS, 0);
 					}
