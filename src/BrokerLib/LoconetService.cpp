@@ -42,26 +42,30 @@ enum Bits : uint8_t
 //based on https://www.digitrax.com/static/apps/cms/media/documents/loconet/loconetpersonaledition.pdf
 enum Opcodes : uint8_t
 {
-	OPC_ERROR_MOVE_SLOTS = 0x3A,
-	OPC_ERROR_LOCO_ADR = 0x3F,
+	OPC_ERROR_MOVE_SLOTS =	0x3A,
+	OPC_ERROR_LOCO_ADR =	0x3F,
 
-	OPC_LOCO_SPD = 0xA0,	
-	OPC_LOCO_DIRF = 0xA1,
-	OPC_LOCO_SND = 0xA2,
-	OPC_LONG_ACK = 0xB4,
-	OPC_SLOT_STAT1 = 0xB5,
-	OPC_MOVE_SLOTS = 0xBA,
-	OPC_RQ_SL_DATA = 0xBB,
-	OPC_LOCO_ADR = 0xBF,
+	OPC_LOCO_SPD =			0xA0,	
+	OPC_LOCO_DIRF =			0xA1,
+	OPC_LOCO_SND =			0xA2,
+	OPC_LONG_ACK =			0xB4,
+	OPC_SLOT_STAT1 =		0xB5,
+
+	OPC_UNLINK_SLOTS =		0xB8,
+	OPC_LINK_SLOTS =		0xB9,
+
+	OPC_MOVE_SLOTS =		0xBA,
+	OPC_RQ_SL_DATA =		0xBB,
+	OPC_LOCO_ADR =			0xBF,
 
 	//See JMRI - PR3Adapter.java configure()
-	OPC_UNDOC_SETMS100 = 0xD3,
-	OPC_PANEL_RESPONSE = 0xD7,
+	OPC_UNDOC_SETMS100 =	0xD3,
+	OPC_PANEL_RESPONSE =	0xD7,
 	OPC_UNDOC_PANEL_QUERY = 0xDF,
 
-	OPC_SL_RD_DATA = 0xE7,
-	OPC_IMM_PACKET = 0xED,
-	OPC_WR_SL_DATA = 0xEF
+	OPC_SL_RD_DATA =		0xE7,
+	OPC_IMM_PACKET =		0xED,
+	OPC_WR_SL_DATA =		0xEF
 };
 
 using namespace std::chrono_literals;
@@ -91,6 +95,9 @@ static constexpr auto SLOT_SPEED_F4 = BIT_3;
 static constexpr auto SLOT_SPEED_F3 = BIT_2;
 static constexpr auto SLOT_SPEED_F2 = BIT_1;
 static constexpr auto SLOT_SPEED_F1 = BIT_0;
+
+static constexpr auto SLOT_CONSIST_UP_BIT	= BIT_6;
+static constexpr auto SLOT_CONSIST_DOWN_BIT = BIT_3;
 
 static constexpr auto MAX_SLOT_FUNCTIONS = 32;
 
@@ -184,6 +191,14 @@ class Slot: public dcclite::broker::ILoconetSlot
 			IN_USE = BIT_4 | BIT_5
 		};	
 
+		enum class ConsistStates
+		{
+			FREE = 0x00,
+			MID_CONSIST = SLOT_CONSIST_DOWN_BIT | SLOT_CONSIST_UP_BIT,
+			CONSIST_TOP = SLOT_CONSIST_DOWN_BIT,
+			CONSIST_SUB_MEMBER = SLOT_CONSIST_UP_BIT
+		};
+
 		Slot()
 		{
 			m_arFunctions.ClearAll();
@@ -254,7 +269,7 @@ class Slot: public dcclite::broker::ILoconetSlot
 				message before firing a "setStat1" that will set a slot to common state
 			*/
 			if(!m_pclThrottle)
-				m_pclThrottle = &g_pclThrottleService->CreateThrottle(*this);			
+				m_pclThrottle = &g_pclThrottleService->CreateThrottle(*this);
 		}
 
 		void GotoState_Free() noexcept
@@ -314,6 +329,56 @@ class Slot: public dcclite::broker::ILoconetSlot
 				m_pclThrottle->OnEmergencyStop();
 		}
 
+		//
+		//
+		// Consisting
+		//
+		//
+		inline ConsistStates GetConsistState() const noexcept
+		{
+			return m_eConsistState;
+		}
+
+		void AddSlave(uint8_t selfIndex, Slot &slave)
+		{
+			assert((m_eConsistState == ConsistStates::FREE) || (m_eConsistState == ConsistStates::CONSIST_TOP));
+			assert(m_eState == States::IN_USE);
+
+			assert(slave.m_eConsistState == ConsistStates::FREE);
+			assert(slave.m_eState == States::IN_USE);
+
+			m_eConsistState = ConsistStates::CONSIST_TOP;
+					
+			slave.m_eConsistState = ConsistStates::MID_CONSIST;
+			
+			slave.ReleaseThrottle();
+			slave.m_uSpeed = selfIndex;
+
+			m_pclThrottle->AddSlave(slave);
+		}
+
+		void RemoveSlave(Slot &slave)
+		{
+			assert(m_eConsistState == ConsistStates::CONSIST_TOP);
+			assert(m_eState == States::IN_USE);
+
+			assert(slave.m_eConsistState == ConsistStates::MID_CONSIST);
+			assert(slave.m_eState == States::IN_USE);
+
+			slave.m_eConsistState = ConsistStates::FREE;
+			m_pclThrottle->RemoveSlave(slave);
+
+			assert(slave.m_pclThrottle == nullptr);
+			slave.m_uSpeed = 0;
+			slave.m_pclThrottle = &g_pclThrottleService->CreateThrottle(slave);
+
+			//All slaves are gone?
+			if (!m_pclThrottle->HasSlaves())
+			{
+				m_eConsistState = ConsistStates::FREE;
+			}
+		}
+
 	private:
 		void ReleaseThrottle()
 		{
@@ -328,6 +393,8 @@ class Slot: public dcclite::broker::ILoconetSlot
 		dcclite::broker::IThrottle *m_pclThrottle = nullptr;		
 
 		States m_eState = States::FREE;		
+
+		ConsistStates m_eConsistState = ConsistStates::FREE;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -339,11 +406,12 @@ class Slot: public dcclite::broker::ILoconetSlot
 //    D5 D4
 // 00 1  1    0000
 static constexpr auto SLOT_STAT_USAGE_MASK = 0x30;
+static constexpr auto SLOT_CONSIST_STATE_MASK = SLOT_CONSIST_UP_BIT | SLOT_CONSIST_DOWN_BIT;
 
 static uint8_t BuildSlotStatByte(const Slot &slot) noexcept
 {
 	//;011=send 128 speed mode packets
-	return  BIT_0 | BIT_1 | static_cast<uint8_t>(slot.GetState());
+	return  BIT_0 | BIT_1 | static_cast<uint8_t>(slot.GetState()) | static_cast<uint8_t>(slot.GetConsistState());
 }
 
 static uint8_t BuildSlotDirfByte(const Slot &slot) noexcept
@@ -367,9 +435,12 @@ static uint8_t BuildSlotDirfByte(const Slot &slot) noexcept
 		(functions[1] ? BIT_0 : 0);
 }
 
-static Slot::States ParseStatByte(const uint8_t stat) noexcept
+static std::tuple<Slot::States, Slot::ConsistStates> ParseStatByte(const uint8_t stat) noexcept
 {
-	return static_cast<Slot::States>(stat & SLOT_STAT_USAGE_MASK);
+	return std::make_tuple(
+		static_cast<Slot::States>(stat & SLOT_STAT_USAGE_MASK),
+		static_cast<Slot::ConsistStates>(stat & SLOT_CONSIST_STATE_MASK)
+	);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -403,6 +474,9 @@ class SlotManager
 		inline void SerializeSlot(const uint8_t slotIndex, dcclite::JsonOutputStream_t &stream) const;
 
 		void PurgeSlots(const dcclite::Clock::TimePoint_t ticks, std::function<void (uint8_t)> callback) noexcept;
+
+		bool LinkSlots(const uint8_t slaveSlot, const uint8_t masterSlot);
+		bool UnlinkSlots(const uint8_t slaveSlot, const uint8_t masterSlot);
 
 	private:
 		const Slot &GetSlot(const uint8_t slot) const;
@@ -598,6 +672,7 @@ void SlotManager::SerializeSlot(const uint8_t slotIndex, dcclite::JsonOutputStre
 void SlotManager::SerializeSlot(const Slot &slot, dcclite::JsonOutputStream_t &slotData) const
 {
 	slotData.AddStringValue("state", magic_enum::enum_name(slot.GetState()));
+	slotData.AddStringValue("consit", magic_enum::enum_name(slot.GetConsistState()));
 	slotData.AddIntValue("speed", slot.GetSpeed());
 	slotData.AddIntValue("locomotiveAddress", slot.GetLocomotiveAddress().GetAddress());
 	slotData.AddBool("forward", slot.IsForwardDir());	
@@ -636,6 +711,107 @@ void SlotManager::PurgeSlots(const dcclite::Clock::TimePoint_t ticks, std::funct
 
 }
 
+bool SlotManager::LinkSlots(const uint8_t slaveSlotIndex, const uint8_t masterSlotIndex)
+{
+	if ((slaveSlotIndex < 1) || (slaveSlotIndex >= MAX_SLOTS))
+	{
+		dcclite::Log::Error("[SlotManager::LinkSlots] slaveSlotIndex {} is invalid", slaveSlotIndex);
+
+		return false;
+	}
+
+	if ((masterSlotIndex < 1) || (masterSlotIndex >= MAX_SLOTS))
+	{
+		dcclite::Log::Error("[SlotManager::LinkSlots] masterSlotIndex {} is invalid", masterSlotIndex);
+
+		return false;
+	}
+
+	auto &slaveSlot = m_arSlots[slaveSlotIndex];
+	auto &masterSlot = m_arSlots[masterSlotIndex];
+
+	if(slaveSlot.GetState() != Slot::States::IN_USE)
+	{
+		dcclite::Log::Error("[SlotManager::LinkSlots] slaveSlot {} is not in IN_USE state", slaveSlotIndex);
+
+		return false;
+	}
+
+	//
+	//
+	//no consists of consists support for now
+	if (slaveSlot.GetConsistState() != Slot::ConsistStates::FREE)
+	{
+		dcclite::Log::Error("[SlotManager::LinkSlots] slaveSlot {} is not in CONSIST_FREE", slaveSlotIndex);
+
+		return false;
+	}
+
+	if (masterSlot.GetState() != Slot::States::IN_USE)
+	{
+		dcclite::Log::Error("[SlotManager::LinkSlots] masterSlot {} is not in IN_USE state", masterSlotIndex);
+
+		return false;
+	}
+
+	auto masterConsistState = masterSlot.GetConsistState();
+	if ((masterConsistState != Slot::ConsistStates::FREE) && (masterConsistState != Slot::ConsistStates::CONSIST_TOP))
+	{
+		dcclite::Log::Error("[SlotManager::LinkSlots] masterSlot {} must be in FREE or TOP state, but it is in {}", masterSlotIndex, magic_enum::enum_name(masterConsistState));
+
+		return false;
+	}
+
+	masterSlot.AddSlave(masterSlotIndex, slaveSlot);
+
+	return true;
+}
+
+bool SlotManager::UnlinkSlots(const uint8_t slaveSlotIndex, const uint8_t masterSlotIndex)
+{
+	if ((slaveSlotIndex < 1) || (slaveSlotIndex >= MAX_SLOTS))
+	{
+		dcclite::Log::Error("[SlotManager::UnlinkSlots] slaveSlotIndex {} is invalid", slaveSlotIndex);
+
+		return false;
+	}
+
+	if ((masterSlotIndex < 1) || (masterSlotIndex >= MAX_SLOTS))
+	{
+		dcclite::Log::Error("[SlotManager::UnlinkSlots] masterSlotIndex {} is invalid", masterSlotIndex);
+
+		return false;
+	}
+
+	auto &slaveSlot = m_arSlots[slaveSlotIndex];
+	auto &masterSlot = m_arSlots[masterSlotIndex];
+
+	if (slaveSlot.GetConsistState() != Slot::ConsistStates::MID_CONSIST)
+	{
+		dcclite::Log::Error("[SlotManager::UnlinkSlots] slaveSlot {} is not a slave", slaveSlotIndex);
+
+		return false;
+	}
+
+	if (masterSlot.GetConsistState() != Slot::ConsistStates::CONSIST_TOP)
+	{
+		dcclite::Log::Error("[SlotManager::UnlinkSlots] masterSlot {} is not a TOP", masterSlotIndex);
+
+		return false;
+	}
+
+	if (slaveSlot.GetSpeed() != masterSlotIndex)
+	{
+		dcclite::Log::Error("[SlotManager::UnlinkSlots] slaveSlot {} does not belong to {}, but to {}", slaveSlotIndex, masterSlotIndex, slaveSlot.GetSpeed());
+
+		return false;
+	}
+
+	masterSlot.RemoveSlave(slaveSlot);
+
+	return true;
+}
+
 
 namespace dcclite::broker
 {
@@ -655,7 +831,7 @@ namespace dcclite::broker
 			void Update(SerialPort &port);
 
 		private:
-			void SendData(const uint8_t *data, unsigned size, SerialPort &port);
+			void SendData(const uint8_t *data, const unsigned size, SerialPort &port);
 
 			void PumpMessages(SerialPort &port);
 
@@ -703,7 +879,7 @@ namespace dcclite::broker
 		this->PumpMessages(port);
 	}
 
-	void MessageDispatcher::SendData(const uint8_t *data, unsigned int size, SerialPort &port)
+	void MessageDispatcher::SendData(const uint8_t *data, const unsigned size, SerialPort &port)
 	{
 		if (!m_clOutputPacket.IsDataReady())
 			throw std::logic_error("[MessageDispatcher::SendData] Do not call me when m_clOutputPacket is busy");
@@ -985,8 +1161,55 @@ namespace dcclite::broker
 					const uint8_t stat = payload.ReadByte();
 					Log::Trace("[LoconetServiceImpl::Update] Write slot {} stat1 {:#b}", slot, stat);
 
-					m_clSlotManager.ForceSlotState(slot, ParseStatByte(stat), ticks);
+					auto [slotState, consistState] = ParseStatByte(stat);
+					if (consistState != Slot::ConsistStates::FREE)
+					{
+						Log::Error("[LoconetServiceImpl::ParseMessage] OPC_SLOT_STAT1: cannot force slot state {} because consist is not free", slot);
+
+						DispatchLnLongAckMessage(Opcodes::OPC_RQ_SL_DATA, 0);
+						break;
+					}
+
+					m_clSlotManager.ForceSlotState(slot, slotState, ticks);
 					this->NotifySlotChanged(slot);
+				}
+				break;
+
+			case Opcodes::OPC_LINK_SLOTS:
+				{
+					const uint8_t slaveSlot = payload.ReadByte();
+					const uint8_t masterSlot = payload.ReadByte();
+
+					if (!m_clSlotManager.LinkSlots(slaveSlot, masterSlot))
+					{
+						DispatchLnLongAckMessage(Opcodes::OPC_LINK_SLOTS, 0);
+					}
+					else
+					{						
+						this->DispatchLnMessage(m_clSlotManager.MakeMessage_SlotReadData(slaveSlot));						
+						this->DispatchLnMessage(m_clSlotManager.MakeMessage_SlotReadData(masterSlot));
+
+						Log::Trace("[LoconetServiceImpl::Update] Linked slot {} to {}", slaveSlot, masterSlot);
+					}
+				}
+				break;
+
+			case OPC_UNLINK_SLOTS:
+				{
+					const uint8_t slaveSlot = payload.ReadByte();
+					const uint8_t masterSlot = payload.ReadByte();
+
+					if (!m_clSlotManager.UnlinkSlots(slaveSlot, masterSlot))
+					{
+						DispatchLnLongAckMessage(Opcodes::OPC_UNLINK_SLOTS, 0);
+					}
+					else
+					{
+						this->DispatchLnMessage(m_clSlotManager.MakeMessage_SlotReadData(slaveSlot));
+						this->DispatchLnMessage(m_clSlotManager.MakeMessage_SlotReadData(masterSlot));
+
+						Log::Trace("[LoconetServiceImpl::Update] Linked slot {} to {}", slaveSlot, masterSlot);
+					}
 				}
 				break;
 
@@ -1024,16 +1247,16 @@ namespace dcclite::broker
 				break;
 
 			case Opcodes::OPC_SL_RD_DATA:
-				{
-#if 0						
-					uint8_t slot = *msg;
+				{						
+					uint8_t slot = payload.ReadByte();
 
 					if (slot >= MAX_SLOTS)
 						//ignore for now
 						return;
 
-					//ignore
+					//ignore				
 					return;
+#if 0
 
 					Log::Trace("[RD_DATA] Slot: {}", slot);
 					auto msg = this->MakeSlotReadDataMsg(slot);

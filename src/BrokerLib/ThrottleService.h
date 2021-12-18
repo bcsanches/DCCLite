@@ -33,6 +33,11 @@ namespace dcclite::broker
 			virtual void OnFunctionChange(const uint8_t begin, const uint8_t end) = 0;
 
 			virtual void OnEmergencyStop() = 0;
+
+			virtual void AddSlave(const ILoconetSlot &slot) = 0;
+			virtual void RemoveSlave(const ILoconetSlot &slot) = 0;
+
+			virtual bool HasSlaves() const noexcept = 0;
 	};
 
 

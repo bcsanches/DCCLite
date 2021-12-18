@@ -25,6 +25,12 @@ namespace dcclite::broker
 		public:
 			virtual ~ILoconetSlot() = default;
 
+			ILoconetSlot(const ILoconetSlot &rhs) = delete;
+			ILoconetSlot(ILoconetSlot &&rhs) = delete;
+
+			ILoconetSlot &operator=(const ILoconetSlot &rhs) = delete;
+			ILoconetSlot &&operator=(const ILoconetSlot &&rhs) = delete;
+
 			uint8_t GetId() const noexcept
 			{
 				return m_uId;
@@ -49,6 +55,9 @@ namespace dcclite::broker
 			{
 				return m_arFunctions;
 			}
+
+		protected:
+			ILoconetSlot() { ; }
 
 		protected:
 			LoconetSlotFunctions_t m_arFunctions;
