@@ -1243,9 +1243,12 @@ namespace dcclite::broker
 						DispatchLnLongAckMessage(Opcodes::OPC_LINK_SLOTS, 0);
 					}
 					else
-					{						
-						this->DispatchLnMessage(m_clSlotManager.MakeMessage_SlotReadData(slaveSlot));						
-						this->DispatchLnMessage(m_clSlotManager.MakeMessage_SlotReadData(masterSlot));
+					{			
+						auto response1 = m_clSlotManager.MakeMessage_SlotReadData(slaveSlot);
+						this->DispatchLnMessage(response1);						
+
+						auto response2 = m_clSlotManager.MakeMessage_SlotReadData(masterSlot);
+						this->DispatchLnMessage(response2);
 
 						Log::Trace("[LoconetServiceImpl::Update] Linked slot {} to {}", slaveSlot, masterSlot);
 					}
@@ -1263,8 +1266,11 @@ namespace dcclite::broker
 					}
 					else
 					{
-						this->DispatchLnMessage(m_clSlotManager.MakeMessage_SlotReadData(slaveSlot));
-						this->DispatchLnMessage(m_clSlotManager.MakeMessage_SlotReadData(masterSlot));
+						auto r1 = m_clSlotManager.MakeMessage_SlotReadData(slaveSlot);
+						this->DispatchLnMessage(r1);
+
+						auto r2 = m_clSlotManager.MakeMessage_SlotReadData(masterSlot);
+						this->DispatchLnMessage(r2);
 
 						Log::Trace("[LoconetServiceImpl::Update] Linked slot {} to {}", slaveSlot, masterSlot);
 					}
