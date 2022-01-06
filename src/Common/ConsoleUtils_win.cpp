@@ -90,6 +90,14 @@ namespace dcclite
 
 		SetConsoleScreenBufferInfoEx(hStdout, &bufferInfo);	
 
+#if 1
+		if (!SetConsoleOutputCP(CP_UTF8))
+		{
+			LogGetDefault()->error("SetConsoleOutputCP failed");
+			return false;
+		}
+#endif
+
 		return true;
 	}
 }

@@ -81,20 +81,53 @@ std::string dcclite::GetSystemLastErrorMessage() noexcept
 	return std::string(errorMsg);
 
 #elif defined WIN32
-	LPVOID lpMsgBuf;
-	FormatMessage(
+	LPWSTR lpMsgBuf;
+	auto numWChars = FormatMessageW(
 		FORMAT_MESSAGE_ALLOCATE_BUFFER |
 		FORMAT_MESSAGE_FROM_SYSTEM |
 		FORMAT_MESSAGE_IGNORE_INSERTS,
 		NULL,
 		GetLastError(),
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPTSTR)&lpMsgBuf,
+		(LPWSTR)&lpMsgBuf,
 		0,
 		NULL
 	);
 
-	std::string ret{ static_cast<char *>(lpMsgBuf) };
+	if (!numWChars)
+		return "GetSystemLastErrorMessage::FormatMessageW failed";
+
+	auto requiredStrSize = WideCharToMultiByte(
+		CP_UTF8,
+		0,					// no flags
+		lpMsgBuf,
+		numWChars,
+		nullptr,
+		0,
+		nullptr,
+		nullptr
+	);
+
+	if (!requiredStrSize)
+	{
+		// Free the buffer.
+		LocalFree(lpMsgBuf);
+
+		return "GetSystemLastErrorMessage::WideCharToMultiByte failed";
+	}
+
+	std::string ret( requiredStrSize, '\0' );
+
+	WideCharToMultiByte(
+		CP_UTF8,
+		0,					// no flags
+		lpMsgBuf,
+		numWChars,
+		&ret[0],
+		requiredStrSize,
+		nullptr,
+		nullptr
+	);	
 
 	// Free the buffer.
 	LocalFree(lpMsgBuf);
