@@ -12,8 +12,10 @@
 
 #include "Decoder.h"
 
+#include<functional>
 #include <set>
 #include <variant>
+#include <vector>
 
 #include <Clock.h>
 

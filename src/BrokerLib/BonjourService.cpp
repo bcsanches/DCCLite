@@ -215,7 +215,7 @@ namespace dcclite::broker
 				return "_udp";
 
 			default:
-				throw std::out_of_range(fmt::format("[ProtocolCanonicalName] New protocol? What {} - {}", protocol, magic_enum::enum_name(protocol)));
+				throw std::out_of_range(fmt::format("[ProtocolCanonicalName] New protocol? What {}", magic_enum::enum_name(protocol)));
 		}
 	}
 

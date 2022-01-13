@@ -15,6 +15,7 @@
 #include <stdexcept>
 
 #include <fmt/format.h>
+#include <magic_enum.hpp>
 
 namespace dcclite::broker
 {
@@ -114,7 +115,7 @@ namespace dcclite::broker
 				break;
 
 			default:
-				throw std::logic_error(fmt::format("[PinManager::PinManager] Unknown board: {}", board));
+				throw std::logic_error(fmt::format("[PinManager::PinManager] Unknown board: {}", magic_enum::enum_name(board)));
 		}
 	}
 

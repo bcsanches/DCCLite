@@ -712,7 +712,7 @@ void SlotManager::ForceSlotState(const uint8_t slot, const Slot::States state, c
 			break;
 
 		default:
-			dcclite::Log::Error("[SlotManager::ForceSlotState] Force slot {} state to {} not supported.", slot, state);
+			dcclite::Log::Error("[SlotManager::ForceSlotState] Force slot {} state to {} not supported.", slot, magic_enum::enum_name(state));
 			break;
 	}	
 
