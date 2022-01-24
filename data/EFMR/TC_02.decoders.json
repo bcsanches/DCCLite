@@ -11,7 +11,7 @@
     {
         "name": "TC_PL24",
         "class": "Output",
-        "address": "1301",
+        "address": "1324",
         "pin": 17,
         "inverted": false,
         "ignoreSavedState": true,
@@ -20,7 +20,7 @@
     {
         "name": "TC_PL22A",
         "class": "Output",
-        "address": "1302",
+        "address": "1322",
         "pin": 16,
         "inverted": false,
         "ignoreSavedState": true,
@@ -29,7 +29,7 @@
     {
         "name": "TC_PL28",
         "class": "Output",
-        "address": "1303",
+        "address": "1328",
         "pin": 15,
         "inverted": false,
         "ignoreSavedState": true,
@@ -50,7 +50,7 @@
     {
         "name": "TC_T04",
         "class": "ServoTurnout",
-        "address": "1403",
+        "address": "1404",
         "pin": 25,
         "inverted": true,
         "powerPin": 36,
@@ -62,7 +62,7 @@
     {
         "name": "TC_T06",
         "class": "ServoTurnout",
-        "address": "1404",
+        "address": "1406",
         "pin": 27,
         "inverted": true,
         "powerPin": 42,
@@ -74,7 +74,7 @@
     {
         "name": "TC_T16",
         "class": "ServoTurnout",
-        "address": "1405",
+        "address": "1416",
         "pin": 29,
         "inverted": false,
         "powerPin": 46,
@@ -86,7 +86,7 @@
     {
         "name": "TC_T08",
         "class": "ServoTurnout",
-        "address": "1406",
+        "address": "1408",
         "pin": 31,
         "inverted": false,
         "powerPin": 69,
@@ -99,7 +99,7 @@
     {
         "name": "TC_T15",
         "class": "ServoTurnout",
-        "address": "1407",
+        "address": "1415",
         "pin": 33,
         "inverted": false,
         "powerPin": 67,

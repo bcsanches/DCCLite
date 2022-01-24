@@ -95,8 +95,7 @@ bool Storage::LoadConfig()
 		{
 			stream.GetString(lump.m_archName, sizeof(lump.m_archName));
 			stream.Get(lump.m_uLength);			
-#if 1			
-#endif
+
 			if (Storage::Custom_LoadModules(lump, stream))
 				continue;
 
@@ -110,6 +109,10 @@ bool Storage::LoadConfig()
 			Console::SendLogEx(MODULE_NAME, FSTR_UNKNOWN, ' ', FSTR_LUMP, ' ', lump.m_archName);
 
 			stream.Skip(lump.m_uLength);
+
+			if (stream.GetIndex() >= EEPROM.length())
+				break;
+
 			continue;			
 		}
     }
