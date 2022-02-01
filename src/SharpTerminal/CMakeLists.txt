@@ -26,9 +26,9 @@ add_executable(SharpTerminal
   Program.cs
   RequestManager.cs
   RemoteDecoder.cs
-  RemoteDecoderUserControl.cs
-  RemoteDecoderUserControl.Designer.cs
-  RemoteDecoderUserControl.resx
+  RemoteObjectUserControl.cs
+  RemoteObjectUserControl.Designer.cs
+  RemoteObjectUserControl.resx
   RemoteDevice.cs  
   RemoteDeviceUserControl.cs
   RemoteDeviceUserControl.Designer.cs
@@ -94,9 +94,9 @@ csharp_set_windows_forms_properties(
     ObjectsTreeViewUserControl.Designer.cs
     ObjectsTreeViewUserControl.resx    
     
-    RemoteDecoderUserControl.cs
-    RemoteDecoderUserControl.Designer.cs
-    RemoteDecoderUserControl.resx
+    RemoteObjectUserControl.cs
+    RemoteObjectUserControl.Designer.cs
+    RemoteObjectUserControl.resx
 
     RemoteDeviceUserControl.cs
     RemoteDeviceUserControl.Designer.cs

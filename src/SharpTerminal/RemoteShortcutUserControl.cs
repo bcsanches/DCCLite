@@ -36,12 +36,6 @@ namespace SharpTerminal
                 return;
 
             var control = obj.CreateControl();
-            if (control == null)
-            {
-                m_lbLoadingMessage.Text = "Object " + mRemoteShortcut.Target + "loaded - no control";
-
-                return;
-            }                
 
             mPanel.Controls.Remove(m_lbLoadingMessage);
 

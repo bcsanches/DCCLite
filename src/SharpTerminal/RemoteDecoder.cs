@@ -80,11 +80,6 @@ namespace SharpTerminal
         }
 
         public string DeviceName { get; }
-
-        public override Control CreateControl()
-        {
-            return new RemoteDecoderUserControl(this);
-        }
     }
 
     public class RemoteSignalDecoder : RemoteDecoder

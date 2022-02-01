@@ -1,6 +1,6 @@
 ﻿namespace SharpTerminal
 {
-    partial class RemoteDecoderUserControl
+    partial class RemoteObjectUserControl
     {
         /// <summary> 
         /// Required designer variable.
@@ -13,7 +13,7 @@
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            mDecoder.PropertyChanged -= RemoteDecoder_PropertyChanged;
+            mObject.PropertyChanged -= RemoteDecoder_PropertyChanged;
 
             if (disposing && (components != null))
             {
@@ -49,6 +49,7 @@
             this.mPropertyGrid.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.mPropertyGrid.Enabled = false;
             this.mPropertyGrid.Location = new System.Drawing.Point(7, 36);
             this.mPropertyGrid.Name = "mPropertyGrid";
             this.mPropertyGrid.Size = new System.Drawing.Size(505, 203);

@@ -313,12 +313,10 @@ namespace SharpTerminal
                 control.Dispose();
             }
 
-            if (!(e.Node.Tag is RemoteObject remoteObject))
+            if (e.Node.Tag is not RemoteObject remoteObject)
                 return;
 
-            var newControl = remoteObject.CreateControl();
-            if (newControl == null)
-                return;
+            var newControl = remoteObject.CreateControl();            
 
             MainDisplayPanel.Controls.Add(newControl);
             newControl.Dock = DockStyle.Fill;

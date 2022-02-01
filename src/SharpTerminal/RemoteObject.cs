@@ -75,7 +75,7 @@ namespace SharpTerminal
 
         public virtual Control CreateControl()
         {
-            return null;
+            return new RemoteObjectUserControl(this);
         }
     }
 
