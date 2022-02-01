@@ -332,7 +332,7 @@ bool DecoderManager::Update(const unsigned long ticks)
 		if (!g_pDecoders[i])
 			continue;
 
-		stateChanged |= g_pDecoders[i]->Update(ticks);
+		stateChanged = g_pDecoders[i]->Update(ticks) || stateChanged;
 	}
 
 	return stateChanged;

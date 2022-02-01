@@ -21,7 +21,7 @@ namespace SharpTerminal
     public delegate void RemoteObjectStateChanged(RemoteObject sender, EventArgs args);
     public delegate void RemoteFolderChildEvent(RemoteObject sender, RemoteFolderChildEventArgs args);
 
-    public class RemoteObject
+    public class RemoteObject: NotifyPropertyBase
     {        
         public string Name { get; }
         public string ClassName { get; }
@@ -151,7 +151,7 @@ namespace SharpTerminal
 
     public class RemoteShortcut: RemoteObject
     {
-        readonly string mTarget;
+        public string Target { get; }
 
         public RemoteShortcut(string name, string className, string path, ulong internalId, ulong parentInternalId, string target):
             base(name, className, path, internalId, parentInternalId)
@@ -159,7 +159,11 @@ namespace SharpTerminal
             if (string.IsNullOrWhiteSpace(target))
                 throw new ArgumentNullException(nameof(target));
 
-            mTarget = target;
+            Target = target;
+        }
+        public override Control CreateControl()
+        {
+            return new RemoteShortcutUserControl(this);
         }
     }    
 

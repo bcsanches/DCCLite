@@ -60,5 +60,4 @@ namespace dcclite::broker
 		packet.Write8(m_clPin.Raw());
 		packet.Write8(this->GetDccppFlags());
 	}
-
 }

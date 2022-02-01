@@ -414,25 +414,25 @@ static void OnlineTick(const unsigned long ticks, const bool stateChangeDetected
 		StatesBitPack_t states;
 		StatesBitPack_t changedStates;						
 
-#if 0
-		if(g_fForceStateRefresh)
-			Console::SendLogEx("SESSION", "State FORCE");
+#if 1
+		if(stateChangeDetectedHint)
+			Console::SendLogEx("SESSION", "State stateChangeDetectedHint");
 #endif
 
-		if (g_fForceStateRefresh)		
+		if (g_fForceStateRefresh || stateChangeDetectedHint)
 			DecoderManager::WriteStates(changedStates, states);					
 		else
 			//If any delta, set flag so we dispatch the packet
 			g_fForceStateRefresh = DecoderManager::ProduceStatesDelta(changedStates, states);
 
-		if (g_fForceStateRefresh)
+		if (g_fForceStateRefresh || stateChangeDetectedHint)
 		{
 			dcclite::Packet pkt;
 			PacketBuilder builder{ pkt, MsgTypes::STATE, g_SessionToken, g_ConfigToken };
 
 			pkt.Write64(++g_uDecodersStateSequence);
 			pkt.Write(changedStates);
-			pkt.Write(states);
+			pkt.Write(states);			
 
 			NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);			
 
@@ -477,7 +477,7 @@ static void OnStatePacket(dcclite::Packet &packet)
 
 	*/	
 
-	g_fForceStateRefresh = DecoderManager::ReceiveServerStates(changedStates, states);	
+	g_fForceStateRefresh = DecoderManager::ReceiveServerStates(changedStates, states) || g_fForceStateRefresh;
 }
 
 static void OnSyncPacket(dcclite::Packet &packet)

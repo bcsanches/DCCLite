@@ -12,6 +12,8 @@
 
 #include <Log.h>
 
+#include "IDccLiteService.h"
+
 namespace dcclite::broker
 {
 
@@ -27,6 +29,15 @@ namespace dcclite::broker
 			);
 
 			m_kRequestedState = newState;
+
+			m_rclManager.Decoder_OnStateChanged(*this);
 		}
+	}
+
+	void OutputDecoder::Serialize(dcclite::JsonOutputStream_t& stream) const
+	{
+		RemoteDecoder::Serialize(stream);
+
+		stream.AddBool("requestedState", m_kRequestedState == dcclite::DecoderStates::ACTIVE);
 	}
 }

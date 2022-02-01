@@ -26,7 +26,10 @@ add_executable(SharpTerminal
   Program.cs
   RequestManager.cs
   RemoteDecoder.cs
-  RemoteDevice.cs
+  RemoteDecoderUserControl.cs
+  RemoteDecoderUserControl.Designer.cs
+  RemoteDecoderUserControl.resx
+  RemoteDevice.cs  
   RemoteDeviceUserControl.cs
   RemoteDeviceUserControl.Designer.cs
   RemoteDeviceUserControl.resx
@@ -42,6 +45,9 @@ add_executable(SharpTerminal
   RemoteLoconetServiceUserControl.Designer.cs
   RemoteLoconetServiceUserControl.resx
   RemoteObject.cs
+  RemoteShortcutUserControl.cs
+  RemoteShortcutUserControl.Designer.cs
+  RemoteShortcutUserControl.resx
   TerminalClient.cs
   
   Properties/AssemblyInfo.cs
@@ -87,6 +93,10 @@ csharp_set_windows_forms_properties(
     ObjectsTreeViewUserControl.cs
     ObjectsTreeViewUserControl.Designer.cs
     ObjectsTreeViewUserControl.resx    
+    
+    RemoteDecoderUserControl.cs
+    RemoteDecoderUserControl.Designer.cs
+    RemoteDecoderUserControl.resx
 
     RemoteDeviceUserControl.cs
     RemoteDeviceUserControl.Designer.cs
@@ -103,6 +113,10 @@ csharp_set_windows_forms_properties(
     RemoteLoconetServiceUserControl.cs
     RemoteLoconetServiceUserControl.Designer.cs
     RemoteLoconetServiceUserControl.resx
+    
+    RemoteShortcutUserControl.cs
+    RemoteShortcutUserControl.Designer.cs
+    RemoteShortcutUserControl.resx
     
     ServerSelectionForm.cs
     ServerSelectionForm.Designer.cs

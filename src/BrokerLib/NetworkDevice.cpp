@@ -25,10 +25,10 @@ namespace dcclite::broker
 	using namespace std::chrono_literals;
 
 	static auto constexpr TIMEOUT = 10s;
-	static auto constexpr CONFIG_RETRY_TIME = 300ms;
+	static auto constexpr CONFIG_RETRY_TIME = 100ms;
 	static auto constexpr STATE_TIMEOUT = 250ms;
 
-	static auto constexpr SYNC_TIMEOUT = 250ms;
+	static auto constexpr SYNC_TIMEOUT = 100ms;
 
 
 	class DevicePacket : public dcclite::Packet
@@ -361,7 +361,7 @@ namespace dcclite::broker
 	NetworkDevice::OnlineState::OnlineState()
 	{
 		m_tLastStateSent.ClearAll();
-		m_tLastStateSentTime = {};
+		m_tLastStateSentTimeout = {};
 	}
 
 	void NetworkDevice::OnlineState::SendStateDelta(NetworkDevice &self, const bool sendSensorsState, const dcclite::Clock::TimePoint_t time)
@@ -370,7 +370,7 @@ namespace dcclite::broker
 		dcclite::BitPack<dcclite::MAX_DECODERS_STATES_PER_PACKET> changedStates;
 
 		bool stateChanged = false;
-		bool sensorDetected = false;
+		bool sensorDetected = false;		
 
 		const unsigned numDecoders = static_cast<unsigned>(std::min(self.m_vecDecoders.size(), size_t{ dcclite::MAX_DECODERS_STATES_PER_PACKET }));
 		for (unsigned i = 0; i < numDecoders; ++i)
@@ -387,7 +387,7 @@ namespace dcclite::broker
 
 				auto stateChange = outputDecoder->GetPendingStateChange();
 				if (!stateChange)
-					continue;
+					continue;				
 
 				//dcclite::Log::Debug("SendStateDelta: change for {}", outputDecoder->GetName());
 
@@ -414,7 +414,7 @@ namespace dcclite::broker
 		{
 			//force it to true for cases where statechanged is false (meaning that no output changed state) 
 			//and sendSensorState is true....
-			stateChanged = true;
+			stateChanged = true;			
 
 			for (unsigned i = 0; i < numDecoders; ++i)
 			{
@@ -438,9 +438,11 @@ namespace dcclite::broker
 		}
 
 		if (stateChanged)
-		{
-			if ((m_tLastStateSent == states) && ((time - m_tLastStateSentTime) < STATE_TIMEOUT))
+		{			
+			if ((m_tLastStateSent == states) && (time < m_tLastStateSentTimeout))
+			{				
 				return;
+			}				
 
 			DevicePacket pkt{ dcclite::MsgTypes::STATE, self.m_SessionToken, self.m_ConfigToken };
 
@@ -450,8 +452,10 @@ namespace dcclite::broker
 
 			self.m_clDccService.Device_SendPacket(self.m_RemoteAddress, pkt);
 
-			m_tLastStateSentTime = time;
+			m_tLastStateSentTimeout = time + STATE_TIMEOUT;
 			m_tLastStateSent = states;
+
+			//Log::Debug("[NetworkDevice::OnlineState::SendStateDelta] Sent {} sensor {}", m_uOutgoingStatePacketId, sendSensorsState);
 		}
 	}
 
@@ -475,7 +479,7 @@ namespace dcclite::broker
 
 			self.RefreshTimeout(time);
 
-			dcclite::Log::Debug("[{}::Device::OnPacket_Ping] ping", self.GetName());
+			dcclite::Log::Debug("[{}::Device::OnPacket] ping", self.GetName());
 
 			return;
 		}
@@ -500,6 +504,8 @@ namespace dcclite::broker
 
 		packet.ReadBitPack(changedStates);
 		packet.ReadBitPack(states);
+		
+		//dcclite::Log::Debug("[{}::Device::OnPacket] m_uOutgoingStatePacketAck {}", self.GetName(), m_uOutgoingStatePacketAck);
 
 		bool stateRefresh = false;
 

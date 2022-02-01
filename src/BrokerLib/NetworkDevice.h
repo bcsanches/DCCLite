@@ -234,7 +234,7 @@ namespace dcclite::broker
 				private:
 					void SendStateDelta(NetworkDevice &self, const bool sendSensorsState, const dcclite::Clock::TimePoint_t time);
 
-					dcclite::Clock::TimePoint_t m_tLastStateSentTime;
+					dcclite::Clock::TimePoint_t m_tLastStateSentTimeout;
 					dcclite::StatesBitPack_t	m_tLastStateSent;
 
 					uint64_t			m_uLastReceivedStatePacketId = 0;

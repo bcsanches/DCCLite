@@ -13,7 +13,38 @@ namespace SharpTerminal
         public int Address { get; }
         public string LocationHint { get; }
 
-        public bool Broken { get; set; }
+        private bool mBroken;
+        private bool mRequestedState;
+        private bool mRemoteState;
+
+        public bool Broken
+        {
+            get { return mBroken; }
+            set
+            {
+                this.UpdateProperty(ref mBroken, value);
+            }
+        }
+
+        public bool RequestedState
+        {
+            get { return mRequestedState; }
+
+            set
+            {
+                this.UpdateProperty(ref mRequestedState, value);
+            }
+        }
+
+        public bool RemoteState 
+        { 
+            get { return mRemoteState; }
+
+            set
+            {
+                this.UpdateProperty(ref mRemoteState, value);
+            }
+        }
 
         public RemoteDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
             base(name, className, path, internalId, parentInternalId)
@@ -25,12 +56,35 @@ namespace SharpTerminal
             if (objectDef.ContainsKey("locationHint"))
                 LocationHint = objectDef["locationHint"];
 
+            this.ParseState(objectDef);
+        }
+
+        protected override void OnUpdateState(JsonValue objectDef)
+        {
+            base.OnUpdateState(objectDef);
+
+            this.ParseState(objectDef);
+        }
+
+        private void ParseState(JsonValue objectDef)
+        {                                    
             //Only remote decoders supports broken
             if (objectDef.ContainsKey("broken"))
                 Broken = objectDef["broken"];
+
+            if (objectDef.ContainsKey("remoteActive"))
+                RemoteState = objectDef["remoteActive"];
+
+            if (objectDef.ContainsKey("requestedState"))
+                RequestedState = objectDef["requestedState"];
         }
 
         public string DeviceName { get; }
+
+        public override Control CreateControl()
+        {
+            return new RemoteDecoderUserControl(this);
+        }
     }
 
     public class RemoteSignalDecoder : RemoteDecoder
