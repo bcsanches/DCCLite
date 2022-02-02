@@ -11,10 +11,10 @@ namespace SharpTerminal
     {
         RequestManager mRequestManager;
 
-        private List<string> mUsedCmds = new List<string>();
+        private readonly List<string> mUsedCmds = new();
         private int m_iCurrentCmd = 0;
 
-        private List<string> mKnownCmds = new List<string>();    
+        private List<string> mKnownCmds = new();    
         
         internal RequestManager RequestManager
         {
