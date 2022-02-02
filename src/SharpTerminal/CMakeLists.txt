@@ -7,6 +7,9 @@ set(ICON_RESOURCE_CONNECTED_DRIVE "Resources/connected_drive.png")
 set(ICON_RESOURCE_DISCONNECTED_DRIVE "Resources/disconnected_drive.png")
 set(ICON_RESOURCE_FOLDER "Resources/folder.png")
 set(ICON_RESOURCE_FILE_GEAR "Resources/file_gear.png")
+set(ICON_RESOURCE_SENSOR_OFF "Resources/sensor_off.png")
+set(ICON_RESOURCE_SENSOR_ON "Resources/sensor_on.png")
+set(ICON_RESOURCE_SIGNAL "Resources/signal.png")
 
 add_executable(SharpTerminal 
   App.config

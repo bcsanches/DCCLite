@@ -112,6 +112,7 @@ namespace dcclite
 		IObject::Serialize(stream);
 
 		stream.AddStringValue("target", m_rTarget.GetPath().string());
+		stream.AddStringValue("targetClassName", m_rTarget.GetTypeName());
 	}
 
 	FolderObject::FolderObject(std::string name):
