@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Json;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -52,15 +51,20 @@ namespace SharpTerminal
             ParentInternalId = parentInternalId;
         }
 
-        public void UpdateState(JsonValue def)
+        protected void FireStateChangedEvent()
         {
-            this.OnUpdateState(def);
-
             if (StateChanged != null)
             {
                 var args = new EventArgs();
                 StateChanged(this, args);
             }
+        }
+
+        public void UpdateState(JsonValue def)
+        {
+            this.OnUpdateState(def);
+
+            this.FireStateChangedEvent();
         }
 
         protected virtual void OnUpdateState(JsonValue def)
@@ -151,7 +155,11 @@ namespace SharpTerminal
 
     public class RemoteShortcut: RemoteObject
     {
-        public string Target { get; }
+        public string TargetName { get; }
+
+        private readonly System.Threading.SynchronizationContext mSyncContext;
+        private Task<RemoteObject> mTargetLoaderTask;
+        private RemoteObject mTarget;
 
         public RemoteShortcut(string name, string className, string path, ulong internalId, ulong parentInternalId, string target):
             base(name, className, path, internalId, parentInternalId)
@@ -159,11 +167,71 @@ namespace SharpTerminal
             if (string.IsNullOrWhiteSpace(target))
                 throw new ArgumentNullException(nameof(target));
 
-            Target = target;
+            TargetName = target;
+
+            mSyncContext = System.Threading.SynchronizationContext.Current;
+
+            mTargetLoaderTask = RemoteObjectManager.GetRemoteObjectAsync(target);            
+            mTargetLoaderTask.ContinueWith((previous) =>
+                {
+                    lock (this)
+                    {
+                        mTarget = previous.Result;                        
+                        mTargetLoaderTask = null;
+
+                        mTarget.StateChanged += MTarget_StateChanged;
+                        mTarget.PropertyChanged += MTarget_PropertyChanged;
+
+                        if(mSyncContext != null)
+                        {
+                            mSyncContext.Post((object o) =>
+                                {
+                                    this.FireStateChangedEvent();
+                                },
+                                null
+                            );
+                        }
+                        else
+                        {
+                            this.FireStateChangedEvent();
+                        }
+                    }
+                }
+            );
         }
+
+        private void MTarget_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            this.FireStateChangedEvent();
+        }
+
+        private void MTarget_StateChanged(RemoteObject sender, EventArgs args)
+        {
+            this.FireStateChangedEvent();
+        }
+
         public override Control CreateControl()
         {
             return new RemoteShortcutUserControl(this);
+        }
+
+        public Task<RemoteObject> GetTargetAsync()
+        {
+            lock(this)
+            {
+                if (mTargetLoaderTask != null)
+                    return mTargetLoaderTask;
+
+                return Task.FromResult(mTarget);
+            }
+        }
+
+        public override string TryGetIconName()
+        {            
+            lock(this)
+            {
+                return mTarget?.TryGetIconName();                
+            }
         }
     }    
 

@@ -20,7 +20,7 @@ namespace SharpTerminal
 
             m_lbTitle.Text += " - " + remoteShortcut.Name;
 
-            m_lbLoadingMessage.Text = "Loading " + remoteShortcut.Target;
+            m_lbLoadingMessage.Text = "Loading " + remoteShortcut.TargetName;
         }
 
         protected override async void OnLoad(EventArgs e)
@@ -31,9 +31,13 @@ namespace SharpTerminal
             if (mRemoteShortcut == null)
                 return;
 
-            var obj = await RemoteObjectManager.GetRemoteObjectAsync(mRemoteShortcut.Target);
+            var obj = await mRemoteShortcut.GetTargetAsync();
             if (obj == null)
+            {
+                m_lbLoadingMessage.Text = "Failed to load " + mRemoteShortcut.TargetName;
+
                 return;
+            }                
 
             var control = obj.CreateControl();
 

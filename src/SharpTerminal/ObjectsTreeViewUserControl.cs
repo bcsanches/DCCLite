@@ -197,30 +197,7 @@ namespace SharpTerminal
             {
 
             }                        
-        }
-
-        private void FillServices(JsonArray objects)
-        {
-            if (mTreeView.InvokeRequired)
-            {
-                this.Invoke(new MethodInvoker(delegate { this.FillServices(objects); }));
-            }
-            else
-            {
-                mTreeView.SuspendLayout();
-                try
-                {
-                    foreach (var item in objects)
-                    {
-                        var remoteObject = RemoteObjectManager.LoadObject(item);
-                    }
-                }
-                finally
-                {
-                    mTreeView.ResumeLayout();
-                }
-            }
-        }
+        }        
 
         private void AddNewNode(RemoteObject remoteObject, TreeNode parent)
         {
