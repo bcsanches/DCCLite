@@ -156,7 +156,7 @@ namespace SharpTerminal
                     break;
 
                 case "/disconnect":
-                    mRequestManager.Stop();
+                    mRequestManager.Disconnect();
                     break;                
 
                 case "/mac":
@@ -239,13 +239,8 @@ namespace SharpTerminal
         #region ConsoleText
 
         private void Console_Println(string text)
-        {
-            if (m_tbConsole.InvokeRequired)
-            {
-                this.Invoke(new MethodInvoker(delegate { this.Console_Println(text); }));
-            }
-            else
-                m_tbConsole.AppendText(text + Environment.NewLine);
+        {            
+            m_tbConsole.AppendText(text + Environment.NewLine);
         }
 
         private void Console_Clear()
@@ -256,66 +251,52 @@ namespace SharpTerminal
         #endregion
 
         void IResponseHandler.OnError(string msg, int id)
-        {
-            if (this.InvokeRequired)
-            {
-                this.Invoke(new MethodInvoker(delegate { ((IResponseHandler)this).OnError(msg, id); }));
-            }
-            else
-            {
-                Console_Println("Call failed for " + id + ": " + msg);
-            }
+        {         
+            Console_Println("Call failed for " + id + ": " + msg);            
         }
 
         void IResponseHandler.OnResponse(JsonValue response, int id)
-        {
-            if (this.InvokeRequired)
+        {            
+            if (response.JsonType == JsonType.Object)
             {
-                this.Invoke(new MethodInvoker(delegate { ((IResponseHandler)this).OnResponse(response, id); }));
+                var responseObj = (JsonObject)response;
+
+                switch ((string)responseObj["classname"])
+                {
+                    case "ChildItem":
+                        Console_Println("Contents of " + responseObj["location"]);
+                        {
+                            var items = (JsonArray)responseObj["children"];
+                            foreach (var item in items)
+                            {
+                                Console_Println(item["name"]);
+                            }
+                        }
+                        break;
+
+                    case "CmdList":
+                        {
+                            var items = (JsonArray)responseObj["cmds"];
+                            foreach (var item in items)
+                            {
+                                Console_Println(item["name"]);
+                            }
+                        }
+                        break;
+
+                    case "Location":
+                        Console_Println(responseObj["location"]);
+                        break;
+
+                    default:
+                        Console_Println(response.ToString());
+                        break;
+                }
             }
             else
             {
-                if (response.JsonType == JsonType.Object)
-                {
-                    var responseObj = (JsonObject)response;
-
-                    switch ((string)responseObj["classname"])
-                    {
-                        case "ChildItem":
-                            Console_Println("Contents of " + responseObj["location"]);
-                            {
-                                var items = (JsonArray)responseObj["children"];
-                                foreach (var item in items)
-                                {
-                                    Console_Println(item["name"]);
-                                }
-                            }
-                            break;
-
-                        case "CmdList":
-                            {
-                                var items = (JsonArray)responseObj["cmds"];
-                                foreach (var item in items)
-                                {
-                                    Console_Println(item["name"]);
-                                }
-                            }
-                            break;
-
-                        case "Location":
-                            Console_Println(responseObj["location"]);
-                            break;
-
-                        default:
-                            Console_Println(response.ToString());
-                            break;
-                    }
-                }
-                else
-                {
-                    Console_Println(response.ToString());
-                }
-            }
+                Console_Println(response.ToString());
+            }            
         }
 
         //
@@ -416,24 +397,17 @@ namespace SharpTerminal
         }
 
         private void OnConnectionStatusChanged(ConnectionState state, Exception ex)
-        {
-            if (this.InvokeRequired)
+        {            
+            switch (state)
             {
-                this.Invoke(new MethodInvoker(delegate { this.OnConnectionStatusChanged(state, ex); }));
-            }
-            else
-            {
-                switch (state)
-                {
-                    case ConnectionState.OK:                        
-                        KnownCmds_RetrieveRemoteCmds();
-                        break;
+                case ConnectionState.OK:                        
+                    KnownCmds_RetrieveRemoteCmds();
+                    break;
 
-                    case ConnectionState.DISCONNECTED:
-                        KnownCmds_ClearRemoteCmds();
-                        break;
-                }
-            }
+                case ConnectionState.DISCONNECTED:
+                    KnownCmds_ClearRemoteCmds();
+                    break;
+            }            
         }
 
         void IConsole.Println(string text)

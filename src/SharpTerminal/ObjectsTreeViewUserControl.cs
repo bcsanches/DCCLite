@@ -166,44 +166,37 @@ namespace SharpTerminal
         }
 
         private async void mRequestManager_ConnectionStateChanged(RequestManager sender, ConnectionStateEventArgs args)
-        {
-            if(mTreeView.InvokeRequired)
+        {            
+            if (args.State == ConnectionState.OK)
             {
-                this.Invoke(new MethodInvoker(delegate { this.mRequestManager_ConnectionStateChanged(sender, args); }));
+                mTreeView.Nodes.Clear();
+
+                var rootFolder = (RemoteFolder) await RemoteObjectManager.GetRemoteObjectAsync("/");
+
+                var brokerNode = mTreeView.Nodes.Add("Broker");
+                brokerNode.Name = "Broker";
+                brokerNode.Tag = rootFolder;
+
+                var children = await rootFolder.LoadChildrenAsync(mRequestManager);
+                if (children != null)
+                    FillTree(brokerNode, children);
+
+                var servicesFolder = (RemoteFolder)await RemoteObjectManager.GetRemoteObjectAsync("/services");
+                var services = await servicesFolder.LoadChildrenAsync(mRequestManager);
+
+                var locationService = services.Where(x => x.Name == "locationManager").FirstOrDefault();
+                if (locationService != null)
+                {                                        
+                    var locationNode = mTreeView.Nodes.Add("locations");
+                    locationNode.Tag = locationService;
+
+                    RegisterNode(locationService, locationNode);                        
+                }
             }
-            else
+            else if (args.State == ConnectionState.DISCONNECTED)
             {
-                if (args.State == ConnectionState.OK)
-                {
-                    mTreeView.Nodes.Clear();
 
-                    var rootFolder = (RemoteFolder) await RemoteObjectManager.GetRemoteObjectAsync("/");
-
-                    var brokerNode = mTreeView.Nodes.Add("Broker");
-                    brokerNode.Name = "Broker";
-                    brokerNode.Tag = rootFolder;
-
-                    var children = await rootFolder.LoadChildrenAsync(mRequestManager);
-                    if (children != null)
-                        FillTree(brokerNode, children);
-
-                    var servicesFolder = (RemoteFolder)await RemoteObjectManager.GetRemoteObjectAsync("/services");
-                    var services = await servicesFolder.LoadChildrenAsync(mRequestManager);
-
-                    var locationService = services.Where(x => x.Name == "locationManager").FirstOrDefault();
-                    if (locationService != null)
-                    {                                        
-                        var locationNode = mTreeView.Nodes.Add("locations");
-                        locationNode.Tag = locationService;
-
-                        RegisterNode(locationService, locationNode);                        
-                    }
-                }
-                else if (args.State == ConnectionState.DISCONNECTED)
-                {
-
-                }
-            }            
+            }                        
         }
 
         private void FillServices(JsonArray objects)

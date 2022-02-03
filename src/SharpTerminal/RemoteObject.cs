@@ -169,8 +169,8 @@ namespace SharpTerminal
 
     static class RemoteObjectManager
     {
-        static Dictionary<ulong, RemoteObject> gObjects = new Dictionary<ulong, RemoteObject>();
-        static Dictionary<string, RemoteObject> gObjectsByPath = new Dictionary<string, RemoteObject>();
+        static Dictionary<ulong, RemoteObject> gObjects = new();
+        static Dictionary<string, RemoteObject> gObjectsByPath = new();
 
         private static RequestManager mRequestManager;        
 

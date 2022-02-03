@@ -61,7 +61,10 @@ namespace SharpTerminal
 
         public void Reconnect()
         {
-            Stop();
+            if (string.IsNullOrWhiteSpace(mHost))
+                throw new InvalidOperationException("Cannot recoonect, did you call BegingConnect?");
+
+            Disconnect();
 
             mClient = new();
             mClient.NoDelay = true;
@@ -222,7 +225,7 @@ namespace SharpTerminal
             }
         }        
 
-        public void Stop()
+        public void Disconnect()
         {
             mCancellationTokenSource.Cancel();
 

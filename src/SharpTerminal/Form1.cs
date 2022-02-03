@@ -18,11 +18,14 @@ namespace SharpTerminal
     {
         readonly IConsole mConsole;
 
-        private readonly RequestManager mRequestManager = new RequestManager();        
+        private readonly RequestManager mRequestManager;
 
         public Console()
         {
             InitializeComponent();
+
+            //Creates here, so it has a SyncContext
+            mRequestManager = new();
 
             mConsole = ucConsole;
             ucConsole.RequestManager = mRequestManager;

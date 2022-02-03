@@ -94,12 +94,15 @@ namespace SharpTerminal
         {
             public IResponseHandler mHandler;
 
+            public SynchronizationContext mContext;
+
             public DateTime mTime;
 
             public RequestInfo(IResponseHandler handler)
             {
                 mHandler = handler ?? throw new ArgumentNullException(nameof(handler));
 
+                mContext = SynchronizationContext.Current;                
 #if DEBUG
                 mTime = DateTime.Now + new TimeSpan(1, 0, 3);
 #else
@@ -114,12 +117,16 @@ namespace SharpTerminal
 
         readonly Dictionary<int, RequestInfo> mRequests = new();
 
+        private SynchronizationContext mSyncContext;
+
         public event ConnectionStateChangedEventHandler ConnectionStateChanged;
         public event RpcNotificationArrivedEventHandler RpcNotificationArrived;
 
         public RequestManager()
         {
             mClient.Listener = this;
+
+            mSyncContext = SynchronizationContext.Current;
         }
 
         public ConnectionState State
@@ -132,71 +139,15 @@ namespace SharpTerminal
             mClient.BeginConnect(host, port);
         }
 
-        public void Stop()
+        public void Disconnect()
         {
-            mClient.Stop();
+            mClient.Disconnect();
         }
 
         public void Reconnect()
         {
             mClient.Reconnect();
-        }
-
-        public void OnStatusChanged(ConnectionState state, object param)
-        {
-            if(ConnectionStateChanged != null)
-            { 
-                var args = new ConnectionStateEventArgs(state, param as Exception);
-
-                ConnectionStateChanged(this, args);
-            }
-        }
-
-        public void OnMessageReceived(string msg)
-        {
-            var jsonObject = (JsonObject) JsonObject.Parse(msg);
-
-            if (!jsonObject.TryGetValue("id", out var idValue))
-            {
-                if(RpcNotificationArrived != null)
-                {
-                    var args = new RpcNotificationEventArgs(jsonObject);
-                    RpcNotificationArrived(this, args);
-                }
-
-                return;
-            }
-            
-            int id = int.Parse(idValue.ToString());
-
-            lock(this)
-            {                
-                if (!mRequests.TryGetValue(id, out var request))
-                {
-                    throw new Exception("Request response " + id + " not found, data: " + msg);
-                }
-
-                if(jsonObject.TryGetValue("error", out JsonValue errorValue))
-                {
-                    request.mHandler.OnError(((JsonObject)errorValue)["message"].ToString(), id);
-                }
-                else
-                {
-                    request.mHandler.OnResponse(jsonObject["result"], id);
-                }
-                
-                mRequests.Remove(id);
-
-                var expiredCalls = mRequests.Where(pair => pair.Value.mTime <= DateTime.Now).Select(pair => pair).ToArray();
-
-                foreach(var pair in expiredCalls)
-                {
-                    pair.Value.mHandler.OnError("timeout", pair.Key);
-
-                    mRequests.Remove(pair.Key);
-                }
-            }            
-        }        
+        }             
 
         public int DispatchRequest(string[] vargs, IResponseHandler handler)
         {
@@ -253,6 +204,118 @@ namespace SharpTerminal
         public void Dispose()
         {
             ((IDisposable)mClient).Dispose();
+        }
+
+        void ITerminalClientListener.OnStatusChanged(ConnectionState state, object param)
+        {
+            if (ConnectionStateChanged != null)
+            {
+                if(mSyncContext != null)
+                {
+                    mSyncContext.Post((object param) =>
+                        {
+                            var args = new ConnectionStateEventArgs(state, param as Exception);
+
+                            ConnectionStateChanged(this, args);
+                        },
+                        null
+                    );                        
+                }
+                else
+                {
+                    var args = new ConnectionStateEventArgs(state, param as Exception);
+
+                    ConnectionStateChanged(this, args);
+                }                
+            }
+        }
+
+        void ITerminalClientListener.OnMessageReceived(string msg)
+        {
+            var jsonObject = (JsonObject)JsonObject.Parse(msg);
+
+            if (!jsonObject.TryGetValue("id", out var idValue))
+            {
+                if (RpcNotificationArrived != null)
+                {
+                    if(mSyncContext != null)
+                    {
+                        mSyncContext.Post((object param) =>
+                            {
+                                var args = new RpcNotificationEventArgs(jsonObject);
+                                RpcNotificationArrived(this, args);
+                            }, 
+                            jsonObject
+                        );
+                    }
+                    else
+                    {
+                        var args = new RpcNotificationEventArgs(jsonObject);
+                        RpcNotificationArrived(this, args);
+                    }                    
+                }
+
+                return;
+            }
+
+            int id = int.Parse(idValue.ToString());
+
+            lock (this)
+            {
+                if (!mRequests.TryGetValue(id, out var request))
+                {
+                    throw new Exception("Request response " + id + " not found, data: " + msg);
+                }
+
+                mRequests.Remove(id);
+
+                if (jsonObject.TryGetValue("error", out JsonValue errorValue))
+                {
+
+                    if(request.mContext != null)
+                    {
+                        request.mContext.Post((object state) =>
+                            {
+                                var r = (RequestInfo)state;
+
+                                r.mHandler.OnError(((JsonObject)errorValue)["message"].ToString(), id);
+                            },
+                            request
+                        );
+                    }
+                    else
+                    {
+                        request.mHandler.OnError(((JsonObject)errorValue)["message"].ToString(), id);
+                    }                    
+                }
+                else
+                {
+                    if (request.mContext != null)
+                    {
+                        request.mContext.Post((object state) =>
+                            {
+                                var r = (RequestInfo)state;
+
+                                r.mHandler.OnResponse(jsonObject["result"], id);
+                            },
+                            request
+                        );
+                    }
+                    else
+                    {
+                        request.mHandler.OnResponse(jsonObject["result"], id);
+                    }
+                }                
+
+                var expiredCalls = mRequests.Where(pair => pair.Value.mTime <= DateTime.Now).Select(pair => pair).ToArray();
+
+                foreach (var pair in expiredCalls)
+                {
+                    mRequests.Remove(pair.Key);
+
+                    pair.Value.mHandler.OnError("timeout", pair.Key);                    
+                }
+            }
         }
     }
 }
