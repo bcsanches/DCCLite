@@ -36,13 +36,13 @@ namespace SharpTerminal
         private string mHost;
         private int mHostPort;
 
-        private CancellationTokenSource mCancellationTokenSource = new CancellationTokenSource();
+        private CancellationTokenSource mCancellationTokenSource = new();
 
-        private BlockingCollection<string> mSendQueue = new BlockingCollection<string>();        
+        private readonly BlockingCollection<string> mSendQueue = new();        
 
         public TerminalClient()
         {
-            mClient = new TcpClient();
+            mClient = new ();
             mClient.NoDelay = true;            
         }        
 
@@ -63,7 +63,7 @@ namespace SharpTerminal
         {
             Stop();
 
-            mClient = new TcpClient();
+            mClient = new();
             mClient.NoDelay = true;
 
             Connect();
@@ -81,7 +81,7 @@ namespace SharpTerminal
                 throw new InvalidOperationException("mReceiverThread running? WTF");
             }
             
-            mSenderThread = new Thread(SenderWorker);
+            mSenderThread = new(SenderWorker);
             mSenderThread.Start();
 
             SetState(ConnectionState.CONNECTING, null);
@@ -180,7 +180,7 @@ namespace SharpTerminal
 
             SetState(ConnectionState.OK, null);                        
 
-            mReceiverThread = new Thread(ReceiverWorker);
+            mReceiverThread = new(ReceiverWorker);
             mReceiverThread.Start();
 
             var stream = mClient.GetStream();
@@ -231,7 +231,7 @@ namespace SharpTerminal
             JoinWorkerThread(mSenderThread);
             JoinWorkerThread(mReceiverThread);
 
-            mCancellationTokenSource = new CancellationTokenSource();
+            mCancellationTokenSource = new();
 
             SetState(ConnectionState.DISCONNECTED, null);
         }

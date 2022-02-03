@@ -48,7 +48,7 @@ namespace SharpTerminal
 
     internal class TaskReponseHandler : IResponseHandler, IDisposable
     {
-        EventWaitHandle mWaitHandler = new EventWaitHandle(false, EventResetMode.ManualReset);
+        readonly EventWaitHandle mWaitHandler = new (false, EventResetMode.ManualReset);
 
         string mErrorMessage;
         JsonValue mResponse;
@@ -108,11 +108,11 @@ namespace SharpTerminal
             }
         }
 
-        readonly TerminalClient mClient = new TerminalClient();
+        readonly TerminalClient mClient = new();
 
         private int m_iRequestCount = 1;
 
-        readonly Dictionary<int, RequestInfo> mRequests = new Dictionary<int, RequestInfo>();
+        readonly Dictionary<int, RequestInfo> mRequests = new();
 
         public event ConnectionStateChangedEventHandler ConnectionStateChanged;
         public event RpcNotificationArrivedEventHandler RpcNotificationArrived;
@@ -242,14 +242,12 @@ namespace SharpTerminal
 
         public async Task<JsonValue> RequestAsync(string[] vargs)
         {
-            using (var handler = new TaskReponseHandler())
-            {
-                var task = new Task<JsonValue>(() => { return handler.DoTask(this, vargs); });
+            using var handler = new TaskReponseHandler();
+            var task = new Task<JsonValue>(() => { return handler.DoTask(this, vargs); });
 
-                task.Start();
+            task.Start();
 
-                return await task;
-            }                           
+            return await task;
         }
 
         public void Dispose()
