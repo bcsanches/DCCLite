@@ -239,6 +239,7 @@ namespace SharpTerminal
     {
         static Dictionary<ulong, RemoteObject> gObjects = new();
         static Dictionary<string, RemoteObject> gObjectsByPath = new();
+        static Dictionary<string, Task<JsonValue>> gActiveTasks = new();
 
         private static RequestManager mRequestManager;        
 
@@ -269,39 +270,53 @@ namespace SharpTerminal
 
         private static void HandleRpcItemPropertyValueChanged(JsonValue parameters)
         {
-            var remoteObject = TryGetCachedRemoteObjectFromRpc(parameters);
-            if (remoteObject == null)
-                return;
+            lock(gObjects)
+            {
+                var remoteObject = TryGetCachedRemoteObjectFromRpc(parameters);
+                if (remoteObject == null)
+                    return;
 
-            remoteObject.UpdateState(parameters);
+                remoteObject.UpdateState(parameters);
+            }
+            
         }
 
         private static void HandleRpcItemDestroyed(JsonValue parameters)
         {
-            ulong id = parameters["internalId"];
-
-            var remoteObject = TryGetCachedRemoteObjectFromRpc(parameters);
-            if (remoteObject == null)
-                return;
-
-            gObjects.Remove(id);
-            gObjectsByPath.Remove(remoteObject.Path);
-
-            if((remoteObject.ParentInternalId > 0) && (gObjects.TryGetValue(remoteObject.ParentInternalId, out var parentObject)))
+            lock (gObjects)
             {
-                var parentFolder = (RemoteFolder)parentObject;
+                ulong id = parameters["internalId"];
 
-                parentFolder.OnChildDestroyed(remoteObject);
+                var remoteObject = TryGetCachedRemoteObjectFromRpc(parameters);
+                if (remoteObject == null)
+                    return;
+
+                gObjects.Remove(id);
+                gObjectsByPath.Remove(remoteObject.Path);
+
+                if ((remoteObject.ParentInternalId > 0) && (gObjects.TryGetValue(remoteObject.ParentInternalId, out var parentObject)))
+                {
+                    var parentFolder = (RemoteFolder)parentObject;
+
+                    parentFolder.OnChildDestroyed(remoteObject);
+                }
             }
+
+            
         }
 
         private static void HandleRpcItemCreated(JsonValue parameters)
         {
             ulong parentId = parameters["parentInternalId"];
 
-            if (!gObjects.TryGetValue(parentId, out RemoteObject remoteParent))
-                return;
+            RemoteObject remoteParent;
 
+            lock(gObjects)
+            {
+                if (!gObjects.TryGetValue(parentId, out remoteParent))
+                    return;
+            }
+            
             var folder = (RemoteFolder)remoteParent;
 
             folder.OnChildCreated(parameters);
@@ -389,32 +404,62 @@ namespace SharpTerminal
 
         internal static async Task<RemoteObject> GetRemoteObjectAsync(string path)
         {
-            if(gObjectsByPath.TryGetValue(path, out RemoteObject obj))
+            Task<JsonValue> currentTask;
+
+            lock (gObjects)
             {
-                return obj;
+                if (gObjectsByPath.TryGetValue(path, out RemoteObject obj))
+                {
+                    return obj;
+                }
+
+                if(!gActiveTasks.TryGetValue(path, out currentTask))
+                {
+                    currentTask = mRequestManager.RequestAsync(new string[] { "Get-Item", path });
+
+                    gActiveTasks.Add(path, currentTask);
+                }
             }
 
-            var response = await mRequestManager.RequestAsync(new string[] { "Get-Item", path });
+            var response = await currentTask;
 
             var responseObj = response["item"];
 
-            return RegisterObject(responseObj);
+            lock(gObjects)
+            {
+                gActiveTasks.Remove(path);
+
+                //Perhaps other thread registered it?
+                if (gObjectsByPath.TryGetValue(path, out RemoteObject obj))
+                {
+                    obj.UpdateState(responseObj);
+
+                    return obj;
+                }                
+
+                return RegisterObject(responseObj);
+            }            
         }
 
         internal static RemoteObject LoadObject(JsonValue objectDef)
         {
             ulong id = objectDef["internalId"];
 
-            if (gObjects.TryGetValue(id, out RemoteObject obj))
+            lock(gObjects)
             {
-                obj.UpdateState(objectDef);
-            }
-            else
-            {
-                obj = RegisterObject(objectDef);
-            }
+                if (gObjects.TryGetValue(id, out RemoteObject obj))
+                {
+                    obj.UpdateState(objectDef);
+                }
+                else
+                {
+                    //we may have a Task in progress loading the same object, but we ignore this case
+                    //The task data will be handled later or discarded
+                    obj = RegisterObject(objectDef);
+                }
 
-            return obj;
+                return obj;
+            }            
         }
     }
 }
