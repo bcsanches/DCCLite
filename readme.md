@@ -36,7 +36,7 @@ This tool can be integrated with [JMRI][12] for easily controlling your devices.
 
 Why not use DCC++?
 
-Until the current date (December 2019) [DCC++][14] does not have an easy or standard way to serve multiples Arduinos for a large model railroad. Right now, only for controlling my model railroad staging yard I need four Arduinos for turnouts.
+Until the current date (February 2022) [DCC++][14] does not have an easy or standard way to serve multiples Arduinos for a large model railroad. Right now, only for controlling my model railroad staging yard I need four Arduinos just for turnouts.
 
 So, DCC++ does not allow me:
 - Have multiple Arduinos working together on the same layout / network
