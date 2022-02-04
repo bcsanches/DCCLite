@@ -1,18 +1,22 @@
+# DccLite
+
+## Build Status
+
 | Build | Status (github) |
 |-------|-----------------|
 | MSVC  | [![Build status](https://ci.appveyor.com/api/projects/status/vk4a1wgr532h5nlc/branch/master?svg=true)](https://ci.appveyor.com/project/bcsanches/dcclite/branch/master)|
 
-What's DccLite
+## What's DccLite
 --------------
 
 DccLite is an open source software for controlling a model railroad. It is loosely based on [DCC++][6], but it does not implement a full command station like it. This software is aimed for those who need to control model railroad accessories, like turnouts, lights, read input from sensors, etc.
 
-User Documentation
+## User Documentation
 ------------------
 
 If you would like to know more, please visit our (working in progress) wiki at: [DCCLite Documentation](https://github.com/bcsanches/DCCLite/wiki)
 
-Features
+## Features
 ------------------
 Support to a infinite (depends on your network) number of IOT devices connected to the server for controlling model railroad devices.
 
@@ -27,11 +31,32 @@ The main design goal of DCCLite is to be easy as possible to config and speciall
 
 Another design goal is to allow the installation of the Arduino boards as close as possible to where they are needed. If you have a yard throat with several turnouts and signals, instead of running cables all over the place, you can put a single arduino mega (or perhaps two) close to it. For controlling it, you just need to provide power and connect it to a Ethernet cable connected to your local network. No need for running dozens (or even hundres) of wires from the devices to the Arduino meters away.
 
-JMRI
+### JMRI
 ------------------
 This tool can be integrated with JMRI for easily controlling your devices. The Broker server emulates a DCC++ connection and JMRI will think that it is simple talking with a DCC++ device. But diferent of a regular DCC++ device, DccLite can be composed of several Arduino boards spread all over your model railroad talking with your PC throught an Ethernet network.  
 
-Dependencies
+### DCC++
+-------
+Why not use DCC++?
+
+Until the current date (December 2019) DCC++ does not have an easy or standard way to serve multiples Arduinos for a large model railroad. Right now, only for controlling my model railroad staging yard I need four Arduinos for turnouts.
+
+So, DCC++ does not allow me:
+- Have multiple Arduinos working together on the same layout / network
+- Allow simple configuration throught config files and without needing to use serial port commands
+- Configure and use Servos on Turnouts
+
+On the other side, this project is not aimed as a replacement for DCC++, but also as a independent system for controlling model railroad devices. It does not include code or support for controlling trains, like DCC++.
+
+### DCC++EX
+--------
+So, why not use DCC++Ex?
+
+This project started before DCC++EX and also before their Automation (EX-Rail) project. Probably most of the DccLite functionality is covered there, but it still requires to compile and keep uploading code on a Arduino or any other IOT device, as DccLite you can simple do this from a config file and let the server software (Broker) automagically upload this to the IOT device. Much simple and easier process for fine tunning your model railroad.
+
+I do not claim that this way of doing things is better or worse for any solution you choose. But, the DccLite is my preferred method and works fine for me.
+
+## Dependencies
 ------------
 
 This code needs the following libraries to be built:
@@ -45,31 +70,9 @@ This code needs the following libraries to be built:
 - [RapidJson][1]
 - [spdlog][4]
 - [wxWidgets][11] - Optional, only for building native apps (still in development)
+ 
 
-
-
-DCC++
--------
-Why not use DCC++?
-
-Until the current date (December 2019) DCC++ does not have an easy or standard way to serve multiples Arduinos for a large model railroad. Right now, only for controlling my model railroad staging yard I need four Arduinos for turnouts.
-
-So, DCC++ does not allow me:
-- Have multiple Arduinos working together on the same layout / network
-- Allow simple configuration throught config files and without needing to use serial port commands
-- Configure and use Servos on Turnouts
-
-On the other side, this project is not aimed as a replacement for DCC++, but also as a independent system for controlling model railroad devices. It does not include code or support for controlling trains, like DCC++.
-
-DCC++EX
---------
-So, why not use DCC++Ex?
-
-This project started before DCC++EX and also before their Automation (EX-Rail) project. Probably most of the DccLite functionality is covered there, but it still requires to compile and keep uploading code on a Arduino or any other IOT device, as DccLite you can simple do this from a config file and let the server software (Broker) automagically upload this to the IOT device. Much simple and easier process for fine tunning your model railroad.
-
-I do not claim that this way of doing things is better or worse for any solution you choose. But, the DccLite is my preferred method and works fine for me. 
-
-License
+## License
 -------
 
 All code is licensed under the [MPLv2 License][5].
