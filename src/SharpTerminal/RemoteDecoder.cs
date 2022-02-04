@@ -109,4 +109,18 @@ namespace SharpTerminal
             return RemoteState ? DefaultIcons.SENSOR_ON_ICON : DefaultIcons.SENSOR_OFF_ICON;
         }
     }
+
+    public class RemoteOutputDecoder : RemoteDecoder
+    {
+        public RemoteOutputDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
+            base(name, className, path, internalId, parentInternalId, objectDef)
+        {
+
+        }
+
+        public override string TryGetIconName()
+        {
+            return RemoteState ? DefaultIcons.LAMP_ON_ICON : DefaultIcons.LAMP_OFF_ICON;
+        }
+    }
 }

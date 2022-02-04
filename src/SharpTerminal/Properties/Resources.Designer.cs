@@ -133,5 +133,23 @@ namespace Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+
+        public static System.Drawing.Bitmap lamp_off
+        {
+            get
+            {
+                object obj = ResourceManager.GetObject("lamp_off", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+
+        public static System.Drawing.Bitmap lamp_on
+        {
+            get
+            {
+                object obj = ResourceManager.GetObject("lamp_on", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }
