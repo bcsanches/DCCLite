@@ -12,6 +12,8 @@ set(ICON_RESOURCE_LAMP_ON "Resources/lamp_on.png")
 set(ICON_RESOURCE_SENSOR_OFF "Resources/sensor_off.png")
 set(ICON_RESOURCE_SENSOR_ON "Resources/sensor_on.png")
 set(ICON_RESOURCE_SIGNAL "Resources/signal.png")
+set(ICON_RESOURCE_TURNOUT_OFF "Resources/turnout_off.png")
+set(ICON_RESOURCE_TURNOUT_ON "Resources/turnout_on.png")
 
 add_executable(SharpTerminal 
   App.config

@@ -151,5 +151,23 @@ namespace Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+
+        public static System.Drawing.Bitmap turnout_off
+        {
+            get
+            {
+                object obj = ResourceManager.GetObject("turnout_off", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+
+        public static System.Drawing.Bitmap turnout_on
+        {
+            get
+            {
+                object obj = ResourceManager.GetObject("turnout_on", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }

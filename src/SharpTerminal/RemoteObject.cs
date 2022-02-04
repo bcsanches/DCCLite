@@ -359,10 +359,13 @@ namespace SharpTerminal
                     obj = new RemoteShortcut(name, className, path, id, parentInternalId, objectDef["target"]);
                     break;
 
-                case "Decoder":                                
+                case "Decoder":
+                    obj = new RemoteDecoder(name, className, path, id, parentInternalId, objectDef);
+                    break;
+
                 case "ServoTurnoutDecoder":
                 case "TurnoutDecoder":
-                    obj = new RemoteDecoder(name, className, path, id, parentInternalId, objectDef);
+                    obj = new RemoteTurnoutDecoder(name, className, path, id, parentInternalId, objectDef);
                     break;                
 
                 case "SensorDecoder":
