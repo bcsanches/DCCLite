@@ -30,13 +30,13 @@ Another design goal is to allow the installation of the Arduino boards as close 
 
 ### JMRI
 
-This tool can be integrated with JMRI for easily controlling your devices. The Broker server emulates a DCC++ connection and JMRI will think that it is simple talking with a DCC++ device. But diferent of a regular DCC++ device, DccLite can be composed of several Arduino boards spread all over your model railroad talking with your PC throught an Ethernet network.  
+This tool can be integrated with [JMRI][12] for easily controlling your devices. The Broker server emulates a DCC++ connection and JMRI will think that it is simple talking with a DCC++ device. But diferent of a regular DCC++ device, DccLite can be composed of several Arduino boards spread all over your model railroad talking with your PC throught an Ethernet network.  
 
 ### DCC++
 
 Why not use DCC++?
 
-Until the current date (December 2019) DCC++ does not have an easy or standard way to serve multiples Arduinos for a large model railroad. Right now, only for controlling my model railroad staging yard I need four Arduinos for turnouts.
+Until the current date (December 2019) [DCC++][14] does not have an easy or standard way to serve multiples Arduinos for a large model railroad. Right now, only for controlling my model railroad staging yard I need four Arduinos for turnouts.
 
 So, DCC++ does not allow me:
 - Have multiple Arduinos working together on the same layout / network
@@ -47,7 +47,7 @@ On the other side, this project is not aimed as a replacement for DCC++, but als
 
 ### DCC++EX
 
-So, why not use DCC++Ex and EX-Rail?
+So, why not use [DCC++Ex][13] and EX-Rail?
 
 This project started before DCC++EX and also before their Automation (EX-Rail) project. Probably most of the DccLite functionality is covered there, but it still requires to compile and keep uploading code on a Arduino or any other IOT device, as DccLite you can simple do this from a config file and let the server software (Broker) automagically upload this to the IOT device. Much simple and easier process for fine tunning your model railroad.
 
@@ -62,7 +62,7 @@ This code needs the following libraries to be built:
 - [GoogleTest][9]
 - [JsonCreator][2]
 - [lfwatch][7]
-- [magicenum] [10]
+- [magicenum][10]
 - [RapidJson][1]
 - [spdlog][4]
 - [wxWidgets][11] - Optional, only for building native apps (still in development)
@@ -83,3 +83,6 @@ All code is licensed under the [MPLv2 License][5].
 [9]: https://github.com/google/googletest
 [10]: https://github.com/Neargye/magic_enum
 [11]: https://github.com/wxWidgets/wxWidgets
+[12]: https://www.jmri.org/
+[13]: https://dcc-ex.com/
+[14]: https://github.com/DccPlusPlus/BaseStation/wiki
