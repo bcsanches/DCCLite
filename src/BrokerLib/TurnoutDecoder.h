@@ -93,7 +93,8 @@ namespace dcclite::broker
 			dcclite::BasicPin	m_clPowerPin;
 			dcclite::BasicPin	m_clFrogPin;
 
-			std::uint8_t				m_uRange = dcclite::SERVO_DEFAULT_RANGE;
+			std::uint8_t				m_uStartPos = 0;
+			std::uint8_t				m_uEndPos = dcclite::SERVO_DEFAULT_RANGE;			
 			std::chrono::milliseconds	m_tOperationTime = std::chrono::milliseconds{1000};
 
 			bool m_fInvertedOperation = false;

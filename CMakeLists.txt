@@ -4,8 +4,8 @@ cmake_minimum_required (VERSION 3.14)
 project (DCCLite)
 
 set(VERSION_MAJOR "0" )
-set(VERSION_MINOR "5" )
-set(VERSION_PATCH "2" )
+set(VERSION_MINOR "6" )
+set(VERSION_PATCH "0" )
 set(DCCLITE_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
 add_compile_definitions(DCCLITE_VERSION=\"${DCCLITE_VERSION}\")

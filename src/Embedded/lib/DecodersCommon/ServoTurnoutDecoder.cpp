@@ -35,7 +35,8 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(dcclite::Packet& packet) :
 	auto powerPin = packet.Read<dcclite::PinType_t>();	
 	auto frogPin = packet.Read<dcclite::PinType_t>();
 	
-	m_uRange = packet.Read<uint8_t>();
+	m_uStartPos = packet.Read<uint8_t>();
+	m_uEndPos = packet.Read<uint8_t>();
 	m_uTicks = packet.Read<uint8_t>();
 
 	this->Init(powerPin, frogPin, false);
@@ -58,7 +59,8 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(Storage::EpromStream& stream) :
 	dcclite::PinType_t frogPin;
 	stream.Get(frogPin);	
 
-	stream.Get(m_uRange);
+	stream.Get(m_uStartPos);
+	stream.Get(m_uEndPos);
 	stream.Get(m_uTicks);	
 
 	this->Init(powerPin, frogPin, false);
@@ -67,7 +69,8 @@ ServoTurnoutDecoder::ServoTurnoutDecoder(Storage::EpromStream& stream) :
 ServoTurnoutDecoder::ServoTurnoutDecoder(uint8_t flags, dcclite::PinType_t pin, uint8_t range, uint8_t ticks, dcclite::PinType_t powerPin, dcclite::PinType_t frogPin):		
 	m_clPin{ pin },
 	m_fFlags{ flags },	
-	m_uRange{ range },
+	m_uStartPos{ 0 },
+	m_uEndPos{ range },
 	m_uTicks{ ticks }
 {
 	this->Init(powerPin, frogPin, true);
@@ -93,7 +96,8 @@ void ServoTurnoutDecoder::SaveConfig(Storage::EpromStream& stream)
 	stream.Put(m_clPowerPin.Raw());
 	stream.Put(m_clFrogPin.Raw());
 	
-	stream.Put(m_uRange);
+	stream.Put(m_uStartPos);
+	stream.Put(m_uEndPos);
 	stream.Put(m_uTicks);
 }
 
@@ -159,12 +163,12 @@ void ServoTurnoutDecoder::Init(const dcclite::PinType_t powerPin, const dcclite:
 	
 	if (desiredState == States::THROWN)
 	{
-		m_uServoPos = m_uRange;
+		m_uServoPos = m_uEndPos;
 		this->OperateThrown(millis());
 	}
 	else
 	{
-		m_uServoPos = 0;
+		m_uServoPos = m_uStartPos;
 		this->OperateClose(millis());
 	}		
 
@@ -292,11 +296,11 @@ bool ServoTurnoutDecoder::Update(const unsigned long ticks)
 	}
 	else if (state == States::CLOSING)
 	{
-		return this->StateUpdate(0, States::CLOSED, -1, ticks);
+		return this->StateUpdate(m_uStartPos, States::CLOSED, -1, ticks);
 	}
 	else
 	{
-		return this->StateUpdate(m_uRange, States::THROWN, 1, ticks);
+		return this->StateUpdate(m_uEndPos, States::THROWN, 1, ticks);
 	}		
 }
 

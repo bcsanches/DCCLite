@@ -32,7 +32,8 @@ class ServoTurnoutDecoder : public Decoder
 		Pin			m_clPowerPin;
 		Pin			m_clFrogPin;		
 
-		uint8_t		m_uRange;
+		uint8_t		m_uStartPos;
+		uint8_t		m_uEndPos;
 		uint8_t		m_uTicks;
 
 		enum class States: uint8_t

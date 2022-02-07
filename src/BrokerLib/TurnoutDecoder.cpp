@@ -63,7 +63,26 @@ namespace dcclite::broker
 		m_fInvertedPower = invertedPower != params.MemberEnd() ? invertedPower->value.GetBool() : false;
 
 		auto range = params.FindMember("range");
-		m_uRange = range != params.MemberEnd() ? range->value.GetUint() : m_uRange;
+		if (range != params.MemberEnd())
+		{
+			m_uEndPos = range->value.GetUint();
+		}
+		else
+		{
+			auto startPos = params.FindMember("startPos");
+
+			if (startPos != params.MemberEnd())
+			{
+				m_uStartPos = startPos->value.GetUint();
+				m_uEndPos = params["endPos"].GetUint();				
+
+				if (m_uStartPos > m_uEndPos)
+					std::swap(m_uStartPos, m_uEndPos);
+
+				if (m_uStartPos == m_uEndPos)
+					throw std::logic_error(fmt::format("[ServoTurnoutDecoder::ServoTurnoutDecoder] {}: startPos must be < than endPos", this->GetName()));
+			}			
+		}		
 
 		auto operationTime = params.FindMember("operationTime");
 		m_tOperationTime = operationTime != params.MemberEnd() ? std::chrono::milliseconds{ operationTime->value.GetUint() } : m_tOperationTime;
@@ -98,9 +117,10 @@ namespace dcclite::broker
 
 		packet.Write8(m_clPowerPin.Raw());
 		packet.Write8(m_clFrogPin.Raw());
-		packet.Write8(m_uRange);
+		packet.Write8(m_uStartPos);
+		packet.Write8(m_uEndPos);
 
-		auto ticks = m_tOperationTime.count() / m_uRange;
+		auto ticks = m_tOperationTime.count() / (m_uEndPos - m_uStartPos);
 		packet.Write8(ticks > 255 ? 255 : static_cast<uint8_t>(ticks));
 	}
 

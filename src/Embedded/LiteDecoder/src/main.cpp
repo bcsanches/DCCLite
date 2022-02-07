@@ -103,6 +103,8 @@ bool Console::Custom_ParseCommand(const char *command)
 
 		Storage::SaveConfig();
 		Console::SendLogEx(MODULE_NAME, FSTR_OK);
+
+		return true;
 	}
 	else if (strncmp_P(command, CmdDumpName, 4) == 0)
 	{
@@ -123,7 +125,7 @@ bool Console::Custom_ParseCommand(const char *command)
 	return false;
 }
 
-static const char DecodersStorageId[] PROGMEM = { "DECS011" };
+static const char DecodersStorageId[] PROGMEM = { "DECS012" };
 static const char NetUdpStorageId[] PROGMEM = { "NetU002" };
 static const char SessionStorageId[] PROGMEM = { "Sson001" };
 
@@ -135,6 +137,8 @@ bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream
 		stream.Skip(lump.m_uLength);
 
 		Console::SendLogEx(MODULE_NAME, FSTR_DECODERS, ' ', "cfg", ' ', g_uDecodersPosition);
+
+		return true;
 	}
 
 	if (strncmp_P(lump.m_archName, NetUdpStorageId, strlen_P(NetUdpStorageId)) == 0)
