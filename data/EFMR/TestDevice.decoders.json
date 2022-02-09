@@ -24,8 +24,8 @@
     "address":"0100",
     "pin": 10,
     "inverted": false,    
-    "operationTime":1000,
-    "startPos":36,
-    "endPos":90
+    "operationTime":4000,
+    "startPos":48,
+    "endPos":105
   }
 ]
