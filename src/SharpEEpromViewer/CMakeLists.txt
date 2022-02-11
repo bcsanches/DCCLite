@@ -9,6 +9,7 @@ add_executable(SharpEEpromViewer
   MainForm.Designer.cs
   MainForm.resx    
   Program.cs  
+  Storage.cs
   
   Properties/AssemblyInfo.cs
   Properties/Resources.Designer.cs

@@ -43,7 +43,7 @@ enum States
 	LOOKING_UP
 };
 
-//<nodeName> <mac> <port> <srvipv4>		
+//<nodeName> <mac> <port>
 
 void NetUdp::LoadConfig(Storage::EpromStream &stream)
 {

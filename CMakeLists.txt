@@ -54,7 +54,7 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 if (${DCCLITE_GUI_TOOLS})
     set_property(TARGET wxrc PROPERTY FOLDER "contrib/wxWidgets/Utilities")
-    #set_property(TARGET clean_cotire PROPERTY FOLDER "contrib/wxWidgets/cotire")
+    set_property(TARGET clean_cotire PROPERTY FOLDER "contrib/wxWidgets/cotire")
     
     set_property(TARGET wxadv PROPERTY FOLDER "contrib/wxWidgets/Libraries")
     set_property(TARGET wxaui PROPERTY FOLDER "contrib/wxWidgets/Libraries")
