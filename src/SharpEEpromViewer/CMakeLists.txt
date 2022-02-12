@@ -3,8 +3,12 @@ project(SharpEEpromViewer VERSION 0.1.0 LANGUAGES CSharp)
 
 include(CSharpUtilities)
 
+set(ICON_RESOURCE_FOLDER "Resources/folder.png")
+set(ICON_RESOURCE_FILE_GEAR "Resources/file_gear.png")
+
 add_executable(SharpEEpromViewer 
   App.config    
+  DefaultIcons.cs
   MainForm.cs
   MainForm.Designer.cs
   MainForm.resx    
@@ -16,6 +20,9 @@ add_executable(SharpEEpromViewer
   Properties/Resources.resx
   Properties/Settings.Designer.cs
   Properties/Settings.settings
+  
+  ${ICON_RESOURCE_FOLDER}
+  ${ICON_RESOURCE_FILE_GEAR}
 )
 
 set_property(TARGET SharpEEpromViewer PROPERTY VS_DOTNET_TARGET_FRAMEWORK_VERSION "v4.8")
@@ -34,7 +41,7 @@ csharp_set_windows_forms_properties(
     Properties/Resources.Designer.cs
     Properties/Resources.resx
     Properties/Settings.Designer.cs
-    Properties/Settings.settings            
+    Properties/Settings.settings                   
 )
 
 set_property(TARGET SharpEEpromViewer PROPERTY VS_DOTNET_REFERENCES

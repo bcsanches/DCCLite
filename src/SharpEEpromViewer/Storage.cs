@@ -28,7 +28,9 @@ namespace SharpEEPromViewer
         public readonly string Name;
         public readonly UInt16 Size;
 
-        public List<Lump> mChilds;
+        public List<Lump> mChildren;
+
+        public IEnumerable<Lump> Children { get { return mChildren; } }
 
         public const int LUMP_HEADER_SIZE = 10;
 
@@ -40,10 +42,10 @@ namespace SharpEEPromViewer
 
         protected void AddChild(Lump lump)
         {
-            if (mChilds == null)
-                mChilds = new List<Lump>();
+            if (mChildren == null)
+                mChildren = new List<Lump>();
 
-            mChilds.Add(lump);
+            mChildren.Add(lump);
         }
 
         public static Lump Create(BinaryReader reader)

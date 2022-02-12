@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SharpDude.Properties
+namespace SharpEEPromViewer.Properties
 {
 
 

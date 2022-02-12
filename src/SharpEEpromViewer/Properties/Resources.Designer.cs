@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SharpDude.Properties
+namespace SharpEEPromViewer.Properties
 {
 
 
@@ -44,7 +44,7 @@ namespace SharpDude.Properties
             {
                 if ((resourceMan == null))
                 {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SharpDude.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -65,6 +65,27 @@ namespace SharpDude.Properties
             set
             {
                 resourceCulture = value;
+            }
+        }
+
+        public static System.Drawing.Bitmap file_gear
+        {
+            get
+            {
+                object obj = ResourceManager.GetObject("file_gear", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap folder
+        {
+            get
+            {
+                object obj = ResourceManager.GetObject("folder", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }

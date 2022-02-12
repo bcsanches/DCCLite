@@ -10,6 +10,9 @@ namespace SharpEEPromViewer
         {
             InitializeComponent();
 
+            DefaultIcons.LoadIcons(mImageList);
+            mTreeView.ImageList = mImageList;
+
             if (param != null)
                 this.LoadEEProm(param);
                 
@@ -27,9 +30,20 @@ namespace SharpEEPromViewer
             this.LoadEEProm(fileStream);
         }
 
-        private void FillTree_r()
+        private void FillTree_r(TreeNode parent, Lump lump)
         {
+            if (lump.Children == null)
+                return;
 
+            foreach(var child in lump.Children)
+            {
+                var node = parent.Nodes.Add(child.Name);
+
+                node.ImageKey = DefaultIcons.FOLDER_ICON;
+                node.SelectedImageKey = DefaultIcons.FOLDER_ICON;
+
+                FillTree_r(node, child);
+            }            
         }
 
         private void LoadEEProm(Stream stream)
@@ -48,7 +62,15 @@ namespace SharpEEPromViewer
             //so far it appears that the EEProm is fine, so clear and load
             this.Clear();
 
-            mTreeView.Nodes.Add(lump.Name);            
+            mTreeView.Nodes.Add(lump.Name);
+
+            var node = mTreeView.Nodes[0];
+            node.ImageKey = DefaultIcons.FOLDER_ICON;
+            node.SelectedImageKey = DefaultIcons.FOLDER_ICON;
+
+            FillTree_r(node, lump);
+
+            node.ExpandAll();
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)

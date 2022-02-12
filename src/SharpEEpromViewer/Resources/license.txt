@@ -1,0 +1,7 @@
+connected_drive.png -> https://freeicons.io/server-icons/server-icon-3465#
+disconnected_drive.png -> https://freeicons.io/server-icons/server-icon-3466#
+folder.png -> https://freeicons.io/office-and-workstation-icons-5/folder-icon-18881#
+file_gear.png -> https://freeicons.io/regular-life-icons/file-exe-icon-17813#
+signal.png -> https://freeicons.io/traffic-signals/traffic-signal-red-green-yellow-signal-road-signals-trafficsignals-road-cars-stopwork-stop-icon-44908# By Shivani https://freeicons.io/profile/5596
+lamp_off.png -> https://freeicons.io/test/creative-idea-bulb-icon-948 ->                                     Icon by <a href="https://freeicons.io/profile/3">icon king1</a> on <a href="https://freeicons.io">freeicons.io</a>
+lamp_on.png -> derived from lamp_off.png                                
