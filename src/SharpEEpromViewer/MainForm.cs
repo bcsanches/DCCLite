@@ -35,6 +35,20 @@ namespace SharpEEPromViewer
             node.ImageKey = DefaultIcons.FOLDER_ICON;
             node.SelectedImageKey = DefaultIcons.FOLDER_ICON;
             node.Tag = lump;
+
+            var items = lump.Items;
+            if (items == null)
+                return;
+
+
+            foreach(var item in items)
+            {
+                var itemNode = node.Nodes.Add(item.GetType().Name);
+                itemNode.Tag = item;
+
+                itemNode.ImageKey = DefaultIcons.FILE_GEAR_ICON;
+                itemNode.SelectedImageKey = DefaultIcons.FILE_GEAR_ICON;
+            }
         }
 
         private static void FillTree_r(TreeNode parent, Lump lump)
@@ -115,7 +129,7 @@ namespace SharpEEPromViewer
             if (selectedNode == null)            
                 return;
                         
-            var inspector = new ObjectInspectorUserControl((Lump)selectedNode.Tag);
+            var inspector = new ObjectInspectorUserControl(selectedNode.Tag);
             mSplitContainer.Panel2.Controls.Clear();
 
             inspector.Dock = DockStyle.Fill;

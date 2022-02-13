@@ -10,10 +10,157 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 
 namespace SharpEEPromViewer
 {
+    class Item
+    {
+        public byte Slot { get; }
+        public UInt16 Size { get; }
+        
+
+        protected Item(byte slot, UInt16 size)            
+        {
+            Size = size;
+        }
+    }
+
+    class Decoder: Item
+    {
+        public byte Pin { get; }
+
+        protected Decoder(byte slot, UInt16 size, byte pin):
+            base(slot, size)
+        {
+            Pin = pin;
+        }
+    }
+
+    class OutputDecoder : Decoder
+    {
+        public bool IsInverted { get; }
+        public bool ShouldIgnoreSaveState { get; }
+
+        public bool ShouldActivateOnPowerUp { get; }
+
+        [Flags]
+        enum Flags : byte
+        {
+            OUTD_INVERTED_OPERATION = 0x01,
+            OUTD_IGNORE_SAVED_STATE = 0x02,
+		    OUTD_ACTIVATE_ON_POWER_UP = 0x04
+        }
+
+        public OutputDecoder(byte slot, BinaryReader reader):
+            base(slot, 2, reader.ReadByte())
+        {
+            var flags = (Flags)reader.ReadByte();
+
+            IsInverted = (flags & Flags.OUTD_INVERTED_OPERATION) == Flags.OUTD_INVERTED_OPERATION;
+            ShouldIgnoreSaveState = (flags & Flags.OUTD_IGNORE_SAVED_STATE) == Flags.OUTD_IGNORE_SAVED_STATE;
+            ShouldActivateOnPowerUp = (flags & Flags.OUTD_ACTIVATE_ON_POWER_UP) == Flags.OUTD_ACTIVATE_ON_POWER_UP;
+        }
+    }
+
+    class SensorDecoder: Decoder
+    {
+
+        public bool HasPullUp { get; }
+        public bool IsInverted { get; }
+
+        [Description("Delay to send activate event in seconds")]
+        public byte ActivateDelay { get; }
+
+        [Description("Delay to send deactivate event in seconds")]
+        public byte DeactivateDelay { get; }
+
+        [Flags]
+        enum Flags: byte
+        {
+            SNRD_PULL_UP = 0x01,
+            SNRD_INVERTED = 0x02
+        }
+
+        public SensorDecoder(byte slot, BinaryReader reader):
+            base(slot, 4, reader.ReadByte())
+        {
+            Flags flags = (Flags)reader.ReadByte();
+
+            HasPullUp = (flags & Flags.SNRD_PULL_UP) == Flags.SNRD_PULL_UP;
+            IsInverted = (flags & Flags.SNRD_INVERTED) == Flags.SNRD_INVERTED;
+
+            ActivateDelay = reader.ReadByte();
+            DeactivateDelay = reader.ReadByte();
+        }
+    }
+
+    class ServoTurnoutDecoder: Decoder
+    {
+        [Flags]
+        enum Flags: byte
+        {
+            SRVT_INVERTED_OPERATION = 0x04,
+            SRVT_IGNORE_SAVED_STATE = 0x08,
+            SRVT_ACTIVATE_ON_POWER_UP = 0x10,
+            SRVT_INVERTED_FROG = 0x20,
+            SRVT_INVERTED_POWER = 0x40
+        }
+
+        public bool IsInverted { get; }
+        public bool ShouldIgnoreSaveState { get; }
+        public bool ShouldActivateOnPowerUp { get; }
+
+        public bool IsFrogInverted { get; }
+        public bool IsPowerInverted { get; }
+
+        public byte? PowerPin { get; }
+        public byte? FrogPin { get; }
+
+        public byte StartPos { get; }
+
+        public byte EndPos { get; }
+
+        [Description("Delay in milliseconds between each degree")]
+        public byte Ticks { get; }
+
+        [Description("Calculated: total range in degrees")]
+        public int Range { get; }
+
+        [Description("Calculated: total movement time (in milliseconds)")]
+        public int TotalTime { get; }
+
+        private static byte? ReadOptionalPin(BinaryReader reader)
+        {
+            var v = reader.ReadByte();
+
+            //128 indicates null pin
+            return v == 128 ? null : v;
+        }
+
+        public ServoTurnoutDecoder(byte slot, BinaryReader reader):
+            base(slot, 7, reader.ReadByte())
+        {
+            var flags = (Flags)reader.ReadByte();
+
+            IsInverted = (flags & Flags.SRVT_INVERTED_OPERATION) == Flags.SRVT_INVERTED_OPERATION;
+            ShouldIgnoreSaveState = (flags & Flags.SRVT_IGNORE_SAVED_STATE) == Flags.SRVT_IGNORE_SAVED_STATE;
+            ShouldActivateOnPowerUp = (flags & Flags.SRVT_ACTIVATE_ON_POWER_UP) == Flags.SRVT_ACTIVATE_ON_POWER_UP;
+            IsFrogInverted = (flags & Flags.SRVT_INVERTED_FROG) == Flags.SRVT_INVERTED_FROG;
+            IsPowerInverted = (flags & Flags.SRVT_INVERTED_POWER) == Flags.SRVT_INVERTED_POWER;
+
+            PowerPin = ReadOptionalPin(reader);
+            FrogPin = ReadOptionalPin(reader);
+            StartPos = reader.ReadByte();
+            EndPos = reader.ReadByte();
+            Ticks = reader.ReadByte();
+
+            Range = EndPos - StartPos;
+            TotalTime = Range * Ticks;
+        }
+    }
+
     class Lump
     {
         static Dictionary<string, Type> gKnownTypes = new()
@@ -29,6 +176,10 @@ namespace SharpEEPromViewer
         public UInt16 Size { get; }
 
         public List<Lump> mChildren;
+
+        public List<Item> mItems;
+
+        public IEnumerable<Item> Items { get { return mItems; } }
 
         public IEnumerable<Lump> Children { get { return mChildren; } }
 
@@ -46,6 +197,14 @@ namespace SharpEEPromViewer
                 mChildren = new List<Lump>();
 
             mChildren.Add(lump);
+        }
+
+        protected void AddItem(Item item)
+        {
+            if(mItems == null)
+                mItems = new List<Item>();
+
+            mItems.Add(item);
         }
 
         public static Lump Create(BinaryReader reader)
@@ -130,6 +289,22 @@ namespace SharpEEPromViewer
 
     class DecodersLump : Lump
     {
+        enum DecoderTypes : byte
+        {
+            DEC_NULL = 0,
+		    DEC_OUTPUT = 1,
+		    DEC_SENSOR = 2,
+		    DEC_SERVO_TURNOUT = 3,
+		    DEC_SIGNAL = 4			//Only virtual, not implemented on Arduino
+	    };
+
+        static Dictionary<DecoderTypes, Type> gKnownTypes = new()
+        {
+            { DecoderTypes.DEC_OUTPUT,          typeof(OutputDecoder) },
+            { DecoderTypes.DEC_SENSOR,          typeof(SensorDecoder) },
+            { DecoderTypes.DEC_SERVO_TURNOUT,   typeof(ServoTurnoutDecoder) },
+        };        
+
         public Guid Guid { get; }
 
         public DecodersLump(string name, UInt16 size, BinaryReader reader) :
@@ -140,8 +315,43 @@ namespace SharpEEPromViewer
 
             Guid = new Guid(reader.ReadBytes(16));
 
+            var bytesLeft = size - 16;
+            
+            for(; ;)
+            {
+                --bytesLeft;
+                var decType = (DecoderTypes)reader.ReadByte();
+                if (decType == DecoderTypes.DEC_NULL)
+                    break;
+
+                Type decoderClassType;
+                if (!gKnownTypes.TryGetValue(decType, out decoderClassType))
+                    throw new ArgumentOutOfRangeException("dectype not suppported: " + decType.ToString());
+
+                --bytesLeft;
+                var decQuantity = reader.ReadByte();
+
+                for(var i = 0; i < decQuantity; ++i)
+                {
+                    --bytesLeft;
+                    var slot = reader.ReadByte();
+
+                    var decoder = (Decoder) System.Activator.CreateInstance(decoderClassType, slot, reader);
+
+                    bytesLeft -= decoder.Size;
+
+                    this.AddItem(decoder);
+                }
+
+            }            
+
+            if(bytesLeft != 0)
+            {
+                throw new ArgumentOutOfRangeException("bytes left...");
+            }
+
             //skip...
-            reader.ReadBytes(size - 16);
+            //reader.ReadBytes(size - 16);
         }
     }
 

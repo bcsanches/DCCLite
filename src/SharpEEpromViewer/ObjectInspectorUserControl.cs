@@ -11,13 +11,13 @@ namespace SharpEEPromViewer
             InitializeComponent();
         }
 
-        internal ObjectInspectorUserControl(Lump obj) :
+        internal ObjectInspectorUserControl(object obj) :
             this()
         {
             if(obj == null)
                 throw new System.ArgumentNullException(nameof(obj));
 
-            m_lbTitle.Text += obj.Name;
+            m_lbTitle.Text += (obj is Lump lump) ? lump.Name : obj.GetType().Name;
 
             mPropertyGrid.SelectedObject = obj;            
         }
