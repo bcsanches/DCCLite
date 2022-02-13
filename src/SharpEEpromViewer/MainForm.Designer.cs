@@ -36,13 +36,13 @@
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.mSplitContainer = new System.Windows.Forms.SplitContainer();
             this.mTreeView = new System.Windows.Forms.TreeView();
             this.mImageList = new System.Windows.Forms.ImageList(this.components);
             this.menuStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
-            this.splitContainer1.Panel1.SuspendLayout();
-            this.splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.mSplitContainer)).BeginInit();
+            this.mSplitContainer.Panel1.SuspendLayout();
+            this.mSplitContainer.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -52,7 +52,7 @@
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(604, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(624, 24);
             this.menuStrip1.TabIndex = 4;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -100,26 +100,27 @@
             this.aboutToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             this.aboutToolStripMenuItem.Text = "About";
             // 
-            // splitContainer1
+            // mSplitContainer
             // 
-            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer1.Location = new System.Drawing.Point(0, 24);
-            this.splitContainer1.Name = "splitContainer1";
+            this.mSplitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.mSplitContainer.Location = new System.Drawing.Point(0, 24);
+            this.mSplitContainer.Name = "mSplitContainer";
             // 
-            // splitContainer1.Panel1
+            // mSplitContainer.Panel1
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.mTreeView);
-            this.splitContainer1.Size = new System.Drawing.Size(604, 487);
-            this.splitContainer1.SplitterDistance = 201;
-            this.splitContainer1.TabIndex = 5;
+            this.mSplitContainer.Panel1.Controls.Add(this.mTreeView);
+            this.mSplitContainer.Size = new System.Drawing.Size(624, 417);
+            this.mSplitContainer.SplitterDistance = 207;
+            this.mSplitContainer.TabIndex = 5;
             // 
             // mTreeView
             // 
             this.mTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mTreeView.Location = new System.Drawing.Point(0, 0);
             this.mTreeView.Name = "mTreeView";
-            this.mTreeView.Size = new System.Drawing.Size(201, 487);
+            this.mTreeView.Size = new System.Drawing.Size(207, 417);
             this.mTreeView.TabIndex = 0;
+            this.mTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.mTreeView_AfterSelect);
             // 
             // mImageList
             // 
@@ -131,18 +132,18 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(604, 511);
-            this.Controls.Add(this.splitContainer1);
+            this.ClientSize = new System.Drawing.Size(624, 441);
+            this.Controls.Add(this.mSplitContainer);
             this.Controls.Add(this.menuStrip1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MainMenuStrip = this.menuStrip1;
+            this.MinimumSize = new System.Drawing.Size(640, 480);
             this.Name = "MainForm";
             this.Text = "EEProm Viewer";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            this.splitContainer1.Panel1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
-            this.splitContainer1.ResumeLayout(false);
+            this.mSplitContainer.Panel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.mSplitContainer)).EndInit();
+            this.mSplitContainer.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -157,7 +158,7 @@
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
-        private System.Windows.Forms.SplitContainer splitContainer1;
+        private System.Windows.Forms.SplitContainer mSplitContainer;
         private System.Windows.Forms.TreeView mTreeView;
         private System.Windows.Forms.ImageList mImageList;
     }

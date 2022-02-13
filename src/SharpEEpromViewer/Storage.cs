@@ -25,8 +25,8 @@ namespace SharpEEPromViewer
             { "ENDEND1\0", typeof(MarkerLump) }
         };
 
-        public readonly string Name;
-        public readonly UInt16 Size;
+        public string Name { get; }
+        public UInt16 Size { get; }
 
         public List<Lump> mChildren;
 
@@ -55,7 +55,8 @@ namespace SharpEEPromViewer
 
             Type foundType;
             if (!gKnownTypes.TryGetValue(name, out foundType))
-                foundType = typeof(UnknownLump);
+                throw new NotImplementedException();
+                //foundType = typeof(UnknownLump);
 
             var size = reader.ReadUInt16();
 
@@ -93,9 +94,9 @@ namespace SharpEEPromViewer
 
     class NetworkLump : Lump
     {
-        public readonly string NodeName;
-        public readonly System.Net.NetworkInformation.PhysicalAddress Mac;
-        public readonly UInt16 SrcPort;
+        public string NodeName { get; }
+        public System.Net.NetworkInformation.PhysicalAddress Mac { get; }
+        public UInt16 SrcPort { get; }
 
         public NetworkLump(string name, UInt16 size, BinaryReader reader) :
             base(name, size)
@@ -113,8 +114,8 @@ namespace SharpEEPromViewer
 
     class SessionLump : Lump
     {
-        public readonly System.Net.IPAddress IP;
-        public readonly UInt16 ServerPort;
+        public System.Net.IPAddress IP { get; }
+        public UInt16 ServerPort { get; }
 
         public SessionLump(string name, UInt16 size, BinaryReader reader) :
             base(name, size)
@@ -129,7 +130,7 @@ namespace SharpEEPromViewer
 
     class DecodersLump : Lump
     {
-        public readonly Guid Guid;
+        public Guid Guid { get; }
 
         public DecodersLump(string name, UInt16 size, BinaryReader reader) :
             base(name, size)

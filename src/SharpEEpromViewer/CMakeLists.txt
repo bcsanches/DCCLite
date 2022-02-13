@@ -11,7 +11,10 @@ add_executable(SharpEEpromViewer
   DefaultIcons.cs
   MainForm.cs
   MainForm.Designer.cs
-  MainForm.resx    
+  MainForm.resx
+  ObjectInspectorUserControl.cs
+  ObjectInspectorUserControl.Designer.cs
+  ObjectInspectorUserControl.resx    
   Program.cs  
   Storage.cs
   
@@ -35,6 +38,10 @@ csharp_set_windows_forms_properties(
     MainForm.Designer.cs
     MainForm.resx
     
+    ObjectInspectorUserControl.cs
+    ObjectInspectorUserControl.Designer.cs
+    ObjectInspectorUserControl.resx
+    
     Program.cs
     
     Properties/AssemblyInfo.cs
@@ -51,6 +58,7 @@ set_property(TARGET SharpEEpromViewer PROPERTY VS_DOTNET_REFERENCES
     "System.Data"
     "System.Data.DataSetExtensions"
     "System.Deployment"
+    "System.Design"
     "System.Drawing"    
     "System.Net.Http"
     "System.Windows.Forms"    

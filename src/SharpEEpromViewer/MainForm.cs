@@ -30,7 +30,14 @@ namespace SharpEEPromViewer
             this.LoadEEProm(fileStream);
         }
 
-        private void FillTree_r(TreeNode parent, Lump lump)
+        private static void ConfigureNode(TreeNode node, Lump lump)
+        {
+            node.ImageKey = DefaultIcons.FOLDER_ICON;
+            node.SelectedImageKey = DefaultIcons.FOLDER_ICON;
+            node.Tag = lump;
+        }
+
+        private static void FillTree_r(TreeNode parent, Lump lump)
         {
             if (lump.Children == null)
                 return;
@@ -39,8 +46,7 @@ namespace SharpEEPromViewer
             {
                 var node = parent.Nodes.Add(child.Name);
 
-                node.ImageKey = DefaultIcons.FOLDER_ICON;
-                node.SelectedImageKey = DefaultIcons.FOLDER_ICON;
+                ConfigureNode(node, child);
 
                 FillTree_r(node, child);
             }            
@@ -65,9 +71,9 @@ namespace SharpEEPromViewer
             mTreeView.Nodes.Add(lump.Name);
 
             var node = mTreeView.Nodes[0];
-            node.ImageKey = DefaultIcons.FOLDER_ICON;
-            node.SelectedImageKey = DefaultIcons.FOLDER_ICON;
 
+            ConfigureNode(node, lump);
+            
             FillTree_r(node, lump);
 
             node.ExpandAll();
@@ -98,6 +104,22 @@ namespace SharpEEPromViewer
         private void Clear()
         {
             mTreeView.Nodes.Clear();
+        }
+
+        private void mTreeView_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            var selectedNode = mTreeView.SelectedNode;
+
+            mSplitContainer.Panel2.Controls.Clear();
+
+            if (selectedNode == null)            
+                return;
+                        
+            var inspector = new ObjectInspectorUserControl((Lump)selectedNode.Tag);
+            mSplitContainer.Panel2.Controls.Clear();
+
+            inspector.Dock = DockStyle.Fill;
+            mSplitContainer.Panel2.Controls.Add(inspector);
         }
     }
 }
