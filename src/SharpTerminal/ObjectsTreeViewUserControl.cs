@@ -138,22 +138,15 @@ namespace SharpTerminal
 
         private void UpdateNodesIcon(RemoteObject remoteObject)
         {
-            if(this.InvokeRequired)
-            {
-                this.Invoke(new MethodInvoker(delegate { this.UpdateNodesIcon(remoteObject); }));                
-            }
-            else
-            {
-                if (!mObjectsNodes.TryGetValue(remoteObject.InternalId, out var nodes))
-                    return;
+            if (!mObjectsNodes.TryGetValue(remoteObject.InternalId, out var nodes))
+                return;
 
-                var customIcon = remoteObject.TryGetIconName();
+            var customIcon = remoteObject.TryGetIconName();
 
-                foreach (var node in nodes)
-                {
-                    node.ImageKey = customIcon;
-                    node.SelectedImageKey = customIcon;
-                }
+            foreach (var node in nodes)
+            {
+                node.ImageKey = customIcon;
+                node.SelectedImageKey = customIcon;
             }            
         }
 

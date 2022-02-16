@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <functional>
 #include <string>
 #include <variant>
 
@@ -24,6 +25,24 @@
 
 namespace dcclite::broker
 { 
+	class NetworkTask
+	{
+		public:
+			//
+			// When the task finishes, success or not, this must return true			
+			//
+			virtual bool HasFinished() const noexcept = 0;
+
+			//
+			// When the task fails to complete, this must return true (results must be ignored / discarded)
+			//
+			virtual bool HasFailed() const noexcept = 0;
+
+	};	
+
+	typedef std::vector<uint8_t> DownloadEEPromTaskResult_t;	
+
+	class NetworkTaskImpl;
 
 	class NetworkDevice: public Device, public INetworkDevice_DecoderServices
 	{
@@ -49,21 +68,18 @@ namespace dcclite::broker
 
 			void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteConfigToken);		
 		
+			[[nodiscard]]
 			inline const dcclite::Guid &GetConfigToken() noexcept
 			{
 				return m_ConfigToken;
-			}
-
-			inline bool IsOnline() const noexcept
-			{
-				return m_eStatus == Status::ONLINE;
-			}
+			}						
 
 			//
 			//IObject
 			//
 			//
 
+			[[nodiscard]]
 			const char *GetTypeName() const noexcept override
 			{
 				return "NetworkDevice";
@@ -76,6 +92,7 @@ namespace dcclite::broker
 			//
 			//
 		
+			[[nodiscard]]
 			INetworkDevice_DecoderServices *TryGetINetworkDevice() noexcept override
 			{
 				return this;
@@ -96,25 +113,49 @@ namespace dcclite::broker
 				m_clPinManager.UnregisterPin(decoder, pin);
 			}	
 
+			//
+			//
+			// Tasks
+			//
+			//
+
+			[[nodiscard]]
+			std::shared_ptr<NetworkTask> StartDownloadEEPromTask(DownloadEEPromTaskResult_t &resultsStorage);
+
+			bool IsConnectionStable() const noexcept;
+
 		protected:
 			void OnUnload() override;
 
 			void CheckLoadedDecoder(Decoder &decoder) override;
 
-		private:
+		private:			
+			[[nodiscard]]
+			inline bool IsOnline() const noexcept
+			{
+				return m_eStatus == Status::ONLINE;
+			}
+
+			[[nodiscard]]
 			bool CheckSessionConfig(const dcclite::Guid remoteConfigToken, const dcclite::NetworkAddress remoteAddress);
+
+			[[nodiscard]]
 			bool CheckSession(const dcclite::NetworkAddress remoteAddress);
 
 			void GoOffline();
 			void Disconnect();
 
 			void RefreshTimeout(const dcclite::Clock::TimePoint_t time);
+
+			[[nodiscard]]
 			bool CheckTimeout(const dcclite::Clock::TimePoint_t time);				
 		
 			void ClearState();
 			void GotoSyncState();
 			void GotoOnlineState();
-			void GotoConfigState(const dcclite::Clock::TimePoint_t time);						
+			void GotoConfigState(const dcclite::Clock::TimePoint_t time);		
+
+			void AbortPendingTasks();
 
 		private:						
 			PinManager				m_clPinManager;		
@@ -145,6 +186,8 @@ namespace dcclite::broker
 				);
 
 				virtual void Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time) = 0;
+
+				[[nodiscard]]
 				virtual const char *GetName() const = 0;				
 			};		
 
@@ -250,6 +293,16 @@ namespace dcclite::broker
 		
 			std::variant< NullState, ConfigState, SyncState, OnlineState> m_vState;
 			State *m_pclCurrentState = nullptr;
+
+			//
+			//
+			//
+			//
+			//
+			friend class DownloadEEPromTask;
+
+			uint32_t							m_u32TaskId = 0;
+			std::weak_ptr<DownloadEEPromTask>	m_wpTask;
 
 			/**
 			Registered is a device that is stored on config.

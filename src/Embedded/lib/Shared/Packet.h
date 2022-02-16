@@ -34,7 +34,16 @@ namespace dcclite
 		MSG_PONG,			
 		STATE,
 		SYNC,
-		DISCONNECT
+		DISCONNECT,
+		TASK_REQUEST,
+		TASK_DATA
+	};
+
+	enum class NetworkTaskTypes: uint8_t
+	{
+		RESERVED0,
+
+		TASK_DOWNLOAD_EEPROM
 	};
 
 	constexpr uint32_t PACKET_ID = 0xBEEFFEED;

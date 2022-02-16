@@ -11,7 +11,9 @@
 
 #pragma once
 
+#include <memory>
 #include <string_view>
+#include <variant>
 
 #include "Object.h"
 
@@ -170,6 +172,25 @@ namespace dcclite::broker
 			}		
 	};
 
+	class TerminalCmdFiber
+	{
+		public:
+			typedef JsonCreator::Object<JsonCreator::StringWriter> Result_t;
+
+		public:
+			TerminalCmdFiber(const CmdId_t id) :
+				m_tId(id)
+			{
+				//empty
+			}
+
+			virtual bool Run(TerminalContext& context) noexcept = 0;
+
+		protected:
+			const CmdId_t m_tId;
+
+	};
+
 
 	/**
 
@@ -180,6 +201,7 @@ namespace dcclite::broker
 	{
 		public:
 			typedef JsonCreator::Object<JsonCreator::StringWriter> Result_t;
+			typedef std::variant<std::string, std::unique_ptr<TerminalCmdFiber>> CmdResult_t;
 
 		public:
 			TerminalCmd(std::string name);
@@ -189,7 +211,8 @@ namespace dcclite::broker
 
 			~TerminalCmd();
 
-			virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request) = 0;	
+			[[nodiscard]]
+			virtual CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) = 0;
 
 			virtual const char *GetTypeName() const noexcept
 			{

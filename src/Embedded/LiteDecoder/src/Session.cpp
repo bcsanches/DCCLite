@@ -498,6 +498,50 @@ static void OnSyncPacket(dcclite::Packet &packet)
 	NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
 }
 
+static void OnTaskRequestPacket(dcclite::Packet &packet)
+{
+	using namespace dcclite;
+
+	NetworkTaskTypes taskType = static_cast<NetworkTaskTypes>(packet.ReadByte());
+
+	if(taskType != NetworkTaskTypes::TASK_DOWNLOAD_EEPROM)
+	{
+		Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', "task", ' ',  static_cast<int>(taskType));
+
+		return;
+	}
+
+	const uint32_t taskId = packet.Read<uint32_t>();
+
+	uint8_t sliceNumber = packet.ReadByte();
+
+	const auto storageSize = Storage::Length();
+
+	constexpr uint8_t SLICE_SIZE = 64;
+
+	//
+	//write out the data
+	packet.Reset();
+	dcclite::PacketBuilder builder{ packet, MsgTypes::TASK_DATA, g_SessionToken, g_ConfigToken };	
+
+	packet.Write32(taskId);
+	packet.Write8(sliceNumber);
+	packet.Write8(static_cast<uint8_t>(storageSize / SLICE_SIZE));		//numSlices
+	packet.Write8(SLICE_SIZE);						//sliceSize
+
+	Storage::EpromStream stream(sliceNumber * SLICE_SIZE);
+	
+	for (int i = 0; i < SLICE_SIZE; ++i)
+	{
+		uint8_t data;
+
+		stream.Get(data);
+		packet.Write8(data);
+	}
+
+	NetUdp::SendPacket(packet.GetData(), packet.GetSize(), g_u8ServerIp, g_uSrvPort);
+}
+
 static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 {		
 	PingManager::Reset(millis());	
@@ -524,6 +568,10 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 
 		case dcclite::MsgTypes::SYNC:
 			OnSyncPacket(packet);
+			break;
+
+		case dcclite::MsgTypes::TASK_REQUEST:
+			OnTaskRequestPacket(packet);
 			break;
 
 		default:

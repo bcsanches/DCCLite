@@ -40,6 +40,39 @@ namespace dcclite::broker
 
 	using namespace dcclite;
 
+	static std::string MakeRpcMessage(CmdId_t id, std::string_view *methodName, std::string_view nestedObjName, std::function<void(JsonOutputStream_t &object)> filler)
+	{
+		JsonCreator::StringWriter messageWriter;
+
+		{
+			auto messageObj = JsonCreator::MakeObject(messageWriter);
+
+			messageObj.AddStringValue(JSONRPC_KEY, JSONRPC_VERSION);
+
+			if (id >= 0)
+			{
+				messageObj.AddIntValue("id", id);
+			}
+
+			if (methodName)
+				messageObj.AddStringValue("method", *methodName);
+
+			if (filler)
+			{
+				auto params = messageObj.AddObject(nestedObjName);
+
+				filler(params);
+			}
+		}
+
+		return messageWriter.GetString();
+	}
+
+	static std::string MakeRpcResultMessage(const CmdId_t id, std::function<void(JsonOutputStream_t &object)> filler)
+	{
+		return MakeRpcMessage(id, nullptr, "result", filler);
+	}
+
 
 	class GetChildItemCmd : public TerminalCmd
 	{
@@ -50,7 +83,7 @@ namespace dcclite::broker
 				//empty
 			}
 
-			virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
+			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
 			{
 				auto item = context.GetItem();
 				if (!item->IsFolder())
@@ -75,22 +108,25 @@ namespace dcclite::broker
 					}
 
 					folder = static_cast<FolderObject *>(item);
-				}			
+				}		
 
-				results.AddStringValue("classname", "ChildItem");
-				results.AddStringValue("location", folder->GetPath().string());
-
-				auto dataArray = results.AddArray("children");
-												
-				auto enumerator = folder->GetEnumerator();
-
-				while (enumerator.MoveNext())
+				return MakeRpcResultMessage(id, [folder](Result_t &results) 
 				{
-					item = enumerator.TryGetCurrent();
+					results.AddStringValue("classname", "ChildItem");
+					results.AddStringValue("location", folder->GetPath().string());
 
-					auto itemObject = dataArray.AddObject();
-					item->Serialize(itemObject);				
-				}
+					auto dataArray = results.AddArray("children");
+
+					auto enumerator = folder->GetEnumerator();
+
+					while (enumerator.MoveNext())
+					{
+						auto item = enumerator.TryGetCurrent();
+
+						auto itemObject = dataArray.AddObject();
+						item->Serialize(itemObject);
+					}
+				});
 			}
 	};
 
@@ -103,7 +139,7 @@ namespace dcclite::broker
 				//empty
 			}
 
-			virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
+			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
 			{
 				auto item = context.GetItem();
 				if (!item->IsFolder())
@@ -123,13 +159,17 @@ namespace dcclite::broker
 				if (!item)
 				{
 					throw TerminalCmdException(fmt::format("Invalid location {}", locationParam), id);
-				}			
+				}	
 
-				results.AddStringValue("classname", "Item");
-				results.AddStringValue("location", item->GetPath().string());
+				return MakeRpcResultMessage(id, [item](Result_t &results)
+					{
+						results.AddStringValue("classname", "Item");
+						results.AddStringValue("location", item->GetPath().string());
 
-				auto dataObj = results.AddObject("item");			
-				item->Serialize(dataObj);			
+						auto dataObj = results.AddObject("item");
+						item->Serialize(dataObj);
+					}
+				);
 			}
 	};
 
@@ -142,7 +182,7 @@ namespace dcclite::broker
 				//empty
 			}
 
-			virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
+			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
 			{
 				auto item = context.GetItem();
 				if (!item->IsFolder())
@@ -173,13 +213,16 @@ namespace dcclite::broker
 						throw TerminalCmdException(fmt::format("Path {} led to an IObject, not IFolder", destinationPath), id);
 					}
 
-
 					context.SetLocation(destinationObj->GetPath());
 					item = destinationObj;
 				}
-		
-				results.AddStringValue("classname", "Location");
-				results.AddStringValue("location", item->GetPath().string());
+
+				return MakeRpcResultMessage(id, [item](Result_t &results)
+					{
+						results.AddStringValue("classname", "Location");
+						results.AddStringValue("location", item->GetPath().string());
+					}
+				);
 			}
 	};
 
@@ -192,7 +235,7 @@ namespace dcclite::broker
 				//empty
 			}
 
-			virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
+			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
 			{
 				auto item = this->GetParent();
 
@@ -200,27 +243,58 @@ namespace dcclite::broker
 
 				auto folder = static_cast<FolderObject*>(item);
 
-				results.AddStringValue("classname", "CmdList");			
+				return MakeRpcResultMessage(id, [folder](Result_t &results)
+					{
+						results.AddStringValue("classname", "CmdList");
 
-				auto dataArray = results.AddArray("cmds");
+						auto dataArray = results.AddArray("cmds");
 
-				auto enumerator = folder->GetEnumerator();
+						auto enumerator = folder->GetEnumerator();
 
-				while (enumerator.MoveNext())
-				{
-					auto cmd = enumerator.TryGetCurrent();
+						while (enumerator.MoveNext())
+						{
+							auto cmd = enumerator.TryGetCurrent();
 
-					auto itemObject = dataArray.AddObject();
-					cmd->Serialize(itemObject);
-				}			
+							auto itemObject = dataArray.AddObject();
+							cmd->Serialize(itemObject);
+						}
+					}
+				);				
 			}
 	};
 
-	class DecoderCmdBase : public TerminalCmd
+	class DccSystemCmdBase : public TerminalCmd
+	{
+		protected:
+			DccSystemCmdBase(std::string name) :
+				TerminalCmd(std::move(name))
+			{
+				//empty
+			}
+
+			DccLiteService &GetService(const TerminalContext& context, const CmdId_t id, std::string_view dccSystemName)
+			{				
+				auto& root = static_cast<FolderObject&>(context.GetItem()->GetRoot());
+
+				ObjectPath path = { SpecialFolders::GetPath(SpecialFolders::Folders::ServicesId) };
+				path.append(dccSystemName);
+
+				auto *service = dynamic_cast<DccLiteService *>(root.TryNavigate(path));
+				if (service == nullptr)
+				{
+					throw TerminalCmdException(fmt::format("DCC System {} not found", dccSystemName), id);
+				}
+
+				return *service;
+			}
+
+	};
+
+	class DecoderCmdBase : public DccSystemCmdBase
 	{
 		protected:
 			DecoderCmdBase(std::string name) :
-				TerminalCmd(std::move(name))
+				DccSystemCmdBase(std::move(name))
 			{
 				//empty
 			}
@@ -236,18 +310,9 @@ namespace dcclite::broker
 				auto dccSystemName = paramsIt->value[0].GetString();
 				auto decoderId = paramsIt->value[1].GetString();
 
-				auto &root = static_cast<FolderObject &>(context.GetItem()->GetRoot());
+				auto &service = GetService(context, id, dccSystemName);
 
-				ObjectPath path = { SpecialFolders::GetPath(SpecialFolders::Folders::ServicesId) };
-				path.append(dccSystemName);
-
-				auto *service = dynamic_cast<DccLiteService *>(root.TryNavigate(path));
-				if (service == nullptr)
-				{
-					throw TerminalCmdException(fmt::format("DCC System {} not found", dccSystemName), id);
-				}
-
-				auto *decoder = service->TryFindDecoder(decoderId);
+				auto *decoder = service.TryFindDecoder(decoderId);
 				if (decoder == nullptr)
 				{
 					throw TerminalCmdException(fmt::format("Decoder {} not found on DCC System {}", decoderId, dccSystemName), id);
@@ -279,14 +344,18 @@ namespace dcclite::broker
 				//empty
 			}
 
-			virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
+			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
 			{			
 				auto outputDecoder = this->FindOutputDecoder(context, id, request);
 
 				outputDecoder->Activate("ActivateItemCmd");
 
-				results.AddStringValue("classname", "string");
-				results.AddStringValue("msg", "OK");
+				return MakeRpcResultMessage(id, [](Result_t &results)
+					{
+						results.AddStringValue("classname", "string");
+						results.AddStringValue("msg", "OK");
+					}
+				);				
 			}
 	};
 
@@ -299,14 +368,18 @@ namespace dcclite::broker
 				//empty
 			}
 
-			virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
+			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
 			{
 				auto outputDecoder = this->FindOutputDecoder(context, id, request);
 
 				outputDecoder->Deactivate("DeactivateItemCmd");
 
-				results.AddStringValue("classname", "string");
-				results.AddStringValue("msg", "OK");
+				return MakeRpcResultMessage(id, [](Result_t &results)
+					{
+						results.AddStringValue("classname", "string");
+						results.AddStringValue("msg", "OK");
+					}
+				);
 			}
 	};
 
@@ -319,14 +392,18 @@ namespace dcclite::broker
 				//empty
 			}
 
-			virtual void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request)
+			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
 			{
 				auto outputDecoder = this->FindOutputDecoder(context, id, request);
 
 				outputDecoder->ToggleState("FlipItemCmd");
 
-				results.AddStringValue("classname", "string");
-				results.AddStringValue("msg", fmt::format("OK: {}", dcclite::DecoderStateName(outputDecoder->GetRequestedState())));
+				return MakeRpcResultMessage(id, [outputDecoder](Result_t &results)
+					{
+						results.AddStringValue("classname", "string");
+						results.AddStringValue("msg", fmt::format("OK: {}", dcclite::DecoderStateName(outputDecoder->GetRequestedState())));
+					}
+				);
 			}
 	};
 
@@ -339,7 +416,7 @@ namespace dcclite::broker
 				//empty
 			}
 
-			void Run(TerminalContext &context, Result_t &results, const CmdId_t id, const rapidjson::Document &request) override
+			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
 			{
 				auto [decoder, dccSystemName, decoderName] = this->FindDecoder(context, id, request);
 
@@ -362,10 +439,87 @@ namespace dcclite::broker
 					throw TerminalCmdException(fmt::format("Invalid aspect name {}", aspectName), id);
 				}
 
-				signalDecoder->SetAspect(aspect.value(), this->GetName().data());				
+				signalDecoder->SetAspect(aspect.value(), this->GetName().data());		
 
-				results.AddStringValue("classname", "string");
-				results.AddStringValue("msg", fmt::format("OK: {}", aspectName));
+				return MakeRpcResultMessage(id, [aspectName](Result_t &results)
+					{
+						results.AddStringValue("classname", "string");
+						results.AddStringValue("msg", fmt::format("OK: {}", aspectName));
+					}
+				);
+			}
+	};
+
+	class ReadEEPromFiber : public TerminalCmdFiber
+	{
+		public:
+			ReadEEPromFiber(const CmdId_t id, NetworkDevice &device):
+				TerminalCmdFiber(id),
+				m_spTask{ device.StartDownloadEEPromTask(m_vecEEPromData)}
+			{
+				if (!m_spTask)
+					throw TerminalCmdException("No task provided for ReadEEPromFiber", id);
+			}
+
+			bool Run(TerminalContext& context) noexcept override
+			{
+				if (m_spTask->HasFailed())
+				{
+
+					return false;
+				}
+
+				if (m_spTask->HasFinished())
+				{
+
+					return false;
+				}
+
+				//still working...
+				return true;
+			}
+
+		private:
+			DownloadEEPromTaskResult_t m_vecEEPromData;
+
+			std::shared_ptr<NetworkTask> m_spTask;
+	};
+
+	class ReadEEPromCmd : public DccSystemCmdBase
+	{
+		public:
+			ReadEEPromCmd(std::string name = "Read-EEProm"):
+				DccSystemCmdBase(std::move(name))
+			{
+				//empty
+			}
+
+			CmdResult_t Run(TerminalContext& context, const CmdId_t id, const rapidjson::Document& request) override
+			{
+				auto paramsIt = request.FindMember("params");
+				if (paramsIt->value.Size() < 2)
+				{
+					throw TerminalCmdException(fmt::format("Usage: {} <dccSystem> <device>", this->GetName()), id);
+				}				
+
+				auto systemName = paramsIt->value[0].GetString();
+				auto deviceName = paramsIt->value[1].GetString();
+
+				auto& service = this->GetService(context, id, systemName);
+
+				auto device = service.TryFindDeviceByName(deviceName);
+				if (device == nullptr)
+				{
+					throw TerminalCmdException(fmt::format("Device {} not found on {} system", deviceName, systemName), id);
+				}
+
+				auto networkDevice = dynamic_cast<NetworkDevice *>(device);
+				if (networkDevice == nullptr)
+				{
+					throw TerminalCmdException(fmt::format("Device {} on {} system is NOT a network device", deviceName, systemName), id);
+				}				
+
+				return std::make_unique< ReadEEPromFiber>(id, *networkDevice);
 			}
 	};
 
@@ -406,6 +560,8 @@ namespace dcclite::broker
 			TerminalService &m_rclOwner;
 			TerminalContext m_clContext;
 			TerminalCmdHost &m_rclCmdHost;
+
+			std::list<std::shared_ptr<TerminalCmdFiber>> m_lstFibers;
 
 			const NetworkAddress	m_clAddress;
 	};
@@ -500,36 +656,7 @@ namespace dcclite::broker
 
 			service->AddListener(*this);
 		}
-	}
-
-	std::string MakeRpcMessage(CmdId_t id, std::string_view *methodName, std::string_view nestedObjName, std::function<void(JsonOutputStream_t &object)> filler)
-	{
-		JsonCreator::StringWriter messageWriter;
-
-		{
-			auto messageObj = JsonCreator::MakeObject(messageWriter);
-
-			messageObj.AddStringValue(JSONRPC_KEY, JSONRPC_VERSION);
-
-			if (id >= 0)
-			{
-				messageObj.AddIntValue("id", id);
-			}
-
-			if (methodName)
-				messageObj.AddStringValue("method", *methodName);
-
-			if (filler)
-			{
-				auto params = messageObj.AddObject(nestedObjName);
-
-				filler(params);
-			}
-		}
-
-		return messageWriter.GetString();
-
-	}
+	}	
 
 	std::string MakeRpcNotificationMessage(CmdId_t id, std::string_view methodName, std::function<void(JsonOutputStream_t &object)> filler)
 	{
@@ -539,12 +666,7 @@ namespace dcclite::broker
 	static std::string MakeRpcErrorResponse(const CmdId_t id, const std::string &msg)
 	{
 		return MakeRpcMessage(id, nullptr, "error", [&, msg](JsonOutputStream_t &params) { params.AddStringValue("message", msg); });
-	}
-
-	static std::string MakeRpcResultMessage(const CmdId_t id, std::function<void(JsonOutputStream_t &object)> filler)
-	{
-		return MakeRpcMessage(id, nullptr, "result", filler);
-	}
+	}	
 
 	void TerminalClient::SendItemPropertyValueChangedNotification(const ObjectManagerEvent &event)
 	{	
@@ -601,6 +723,18 @@ namespace dcclite::broker
 
 	bool TerminalClient::Update()
 	{
+		for(auto it = m_lstFibers.begin(), end = m_lstFibers.end(); it != end;)
+		{
+			auto current = it;
+			++it;
+
+			if (!(*current)->Run(m_clContext))
+			{
+				//fiber has finished
+				m_lstFibers.erase(current);
+			}
+		}
+
 		for (;;)
 		{
 			auto[status, msg] = m_clMessenger.Poll();
@@ -613,8 +747,9 @@ namespace dcclite::broker
 
 			if (status == Socket::Status::OK)
 			{
-				std::string response;
+				TerminalCmd::CmdResult_t result;
 
+				int cmdId = -1;
 				try
 				{
 					//dcclite::Log::Trace("Received {}", msg);
@@ -647,37 +782,40 @@ namespace dcclite::broker
 						throw TerminalCmdException(fmt::format("No method id in: {}", msg), -1);
 					}				
 
-					int id = idKey->value.GetInt();								
+					cmdId = idKey->value.GetInt();
 
 					auto cmd = m_rclCmdHost.TryFindCmd(methodName);
 					if (cmd == nullptr)
 					{
 						dcclite::Log::Error("Invalid cmd: {}", methodName);
-						throw TerminalCmdException(fmt::format("Invalid cmd name: {}", methodName), id);					
+						throw TerminalCmdException(fmt::format("Invalid cmd name: {}", methodName), cmdId);
 
 						continue;
-					}
+					}					
 
-					response = MakeRpcResultMessage(id, [cmd, this, id, &doc](dcclite::JsonOutputStream_t &resultObj)
-					{
-						cmd->Run(m_clContext, resultObj, id, doc);
-					});
-
-					//dcclite::Log::Trace("response {}", response);
+					result = cmd->Run(m_clContext, cmdId, doc);					
 				}
 				catch (TerminalCmdException &ex)
 				{
-					response = MakeRpcErrorResponse(ex.GetId(), ex.what());
+					result = MakeRpcErrorResponse(ex.GetId(), ex.what());
 				}
 				catch (std::exception &ex)
 				{
-					response = MakeRpcErrorResponse(-1, ex.what());
+					result = MakeRpcErrorResponse(cmdId, ex.what());
 				}
 
-				if (!m_clMessenger.Send(m_clAddress, response))
+				if (std::holds_alternative<std::string>(result))
 				{
-					dcclite::Log::Error("[TerminalClient::Update] message for {} not sent, contents: {}", m_clAddress.GetIpString(), response);
+					auto const &response = std::get<std::string>(result);
+					if (!m_clMessenger.Send(m_clAddress, response))
+					{
+						dcclite::Log::Error("[TerminalClient::Update] message for {} not sent, contents: {}", m_clAddress.GetIpString(), response);
+					}
 				}
+				else
+				{
+					m_lstFibers.push_back(std::get<std::unique_ptr<TerminalCmdFiber>>(std::move(result)));
+				}				
 			}
 		}
 	
@@ -726,6 +864,10 @@ namespace dcclite::broker
 
 		{
 			cmdHost->AddCmd(std::make_unique<SetAspectCmd>());
+		}
+
+		{
+			cmdHost->AddCmd(std::make_unique<ReadEEPromCmd>());
 		}
 
 		const auto port = params["port"].GetInt();

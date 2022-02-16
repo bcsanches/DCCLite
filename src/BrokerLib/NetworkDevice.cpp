@@ -10,6 +10,8 @@
 
 #include "NetworkDevice.h"
 
+#include <magic_enum.hpp>
+
 #include "BitPack.h"
 #include "IDccLiteService.h"
 #include "FmtUtils.h"
@@ -42,6 +44,298 @@ namespace dcclite::broker
 
 	//
 	//
+	// TASKS
+	//
+	//
+	//
+
+	/**
+	* TASK_DATA Packet format
+
+	/**
+	* Packet format
+
+									1  1  1  1  1  1
+	  0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
+	+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+	|                    TASKID                     |
+	|												| 32 bits (uint32) - consumed by network device for finding the task
+	+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+		
+	|                                               |
+	//                  TASK DATA                   //
+	|                                               |
+	+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+	
+
+	*/	
+
+	class NetworkTaskImpl: public NetworkTask
+	{
+		protected:
+			NetworkTaskImpl(const uint32_t taskId):
+				m_u32TaskId{ taskId }
+			{
+				//empty
+			}
+
+		public:
+			virtual void Abort() noexcept = 0;
+
+			//
+			// Do some work, returns true if still has pending work. 
+			//
+			[[nodiscard]]
+			virtual bool Update(NetworkDevice &owner, const dcclite::Clock::TimePoint_t time) noexcept = 0;
+
+			[[nodiscard]]
+			inline uint32_t GetTaskId() const noexcept
+			{
+				return m_u32TaskId;
+			}
+
+		protected:
+			const uint32_t m_u32TaskId;
+	};
+
+	/**
+	* DownloadEEPromTask Packet format
+
+								
+	  0  1  2  3  4  5  6  7  
+	+--+--+--+--+--+--+--+--+
+	|       SEQUENCE        |
+	+--+--+--+--+--+--+--+--+
+	|      NUM SLICES       |
+	+--+--+--+--+--+--+--+--+
+	|      SLICE SIZE       |
+	+--+--+--+--+--+--+--+--+
+	|                       |
+	//        SLICE         //
+	|                       |
+	+--+--+--+--+--+--+--+--+
+
+	*/
+
+	static auto constexpr DOWNLOAD_RETRY_TIMEOUT = 100ms;
+
+
+	class DownloadEEPromTask: public NetworkTaskImpl
+	{
+		public:
+			DownloadEEPromTask(NetworkDevice &owner, const uint32_t taskId, DownloadEEPromTaskResult_t &results):
+				NetworkTaskImpl{taskId},
+				m_rOwner{owner},
+				m_vecResults{ results }
+			{
+				//empty
+			}
+
+			bool HasFinished() const noexcept override
+			{
+				return m_fFinished;
+			}
+
+			bool HasFailed() const noexcept override
+			{
+				return m_fFailed;
+			}
+
+			void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time);
+
+			bool Update(NetworkDevice &owner, const dcclite::Clock::TimePoint_t time) noexcept override;
+
+			void Abort() noexcept override;
+
+		private:
+			void ReadSlice(dcclite::Packet &packet, const uint8_t sliceSize, const uint8_t sequence);
+
+			void RequestSlice(NetworkDevice &owner, const dcclite::Clock::TimePoint_t time, const uint8_t sliceNum);
+
+		private:
+			enum class States
+			{
+				WAITING_CONNECTION,
+				START_DOWNLOAD,
+				DOWNLOADING				
+			};
+
+			friend class NetworkDevice;
+
+			NetworkDevice				&m_rOwner;
+			DownloadEEPromTaskResult_t	&m_vecResults;		
+			std::vector<bool>			m_vecSlicesAck;			
+
+			States	m_kState = States::WAITING_CONNECTION;		
+
+			dcclite::Clock::TimePoint_t m_tWaitTimeout;
+
+			bool m_fAborted = false;
+			bool m_fFinished = false;
+			bool m_fFailed = false;
+	};
+
+	void DownloadEEPromTask::Abort() noexcept
+	{
+		m_fAborted = true;
+		m_fFailed = true;
+	}	
+
+	void DownloadEEPromTask::ReadSlice(dcclite::Packet &packet, const uint8_t sliceSize, const uint8_t sequence)
+	{
+		for (auto i = 0; i < sliceSize; ++i)
+		{
+			m_vecResults[(sliceSize * sequence) + i] = packet.ReadByte();
+		}
+		m_vecSlicesAck[sequence] = true;		
+
+		Log::Info("[DownloadEEPromTask::Update] Received {} bytes for slice {}", sliceSize, sequence);
+	}
+
+	void DownloadEEPromTask::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time)
+	{
+		switch (m_kState)
+		{
+			//We should not get messages on this state...
+			case States::WAITING_CONNECTION:
+				return;
+
+			case States::START_DOWNLOAD:
+				{
+					auto sequence = packet.ReadByte();
+					auto numSlices = packet.ReadByte();
+					auto sliceSize = packet.ReadByte();
+
+					if (sequence >= numSlices)
+					{
+						//corrupted data?
+						dcclite::Log::Error("[DownloadEEPromTask::OnPacket] sequence({}) >= numSlices({})", sequence, numSlices);
+
+						return;
+					}					
+
+					m_vecResults.resize(numSlices * sliceSize);
+					m_vecSlicesAck.resize(numSlices);
+
+					Log::Info("[DownloadEEPromTask::Update] Downloading {} bytes / {} slices", m_vecResults.size(), numSlices);
+
+					this->ReadSlice(packet, sliceSize, sequence);
+
+					m_kState = States::DOWNLOADING;
+
+					//force restart
+					m_tWaitTimeout = time;
+				}
+				break;
+
+			case States::DOWNLOADING:
+				{
+					auto sequence = packet.ReadByte();
+					auto numSlices = packet.ReadByte();
+					auto sliceSize = packet.ReadByte();
+
+					if (sequence >= numSlices)
+					{
+						//corrupted data?
+						dcclite::Log::Error("[DownloadEEPromTask::OnPacket] sequence({}) >= numSlices({})", sequence, numSlices);
+
+						return;
+					}
+
+					//already got this packet?
+					if (m_vecSlicesAck[sequence])
+						return;
+
+					this->ReadSlice(packet, sliceSize, sequence);					
+
+					//force restart
+					m_tWaitTimeout = time;
+				}
+				break;
+		}
+	}
+
+	void DownloadEEPromTask::RequestSlice(NetworkDevice &owner, const dcclite::Clock::TimePoint_t time, const uint8_t sliceNum)
+	{
+		DevicePacket packet{ dcclite::MsgTypes::TASK_REQUEST, owner.m_SessionToken, owner.m_ConfigToken };
+
+		packet.Write8(static_cast<uint8_t>(NetworkTaskTypes::TASK_DOWNLOAD_EEPROM));
+		packet.Write32(m_u32TaskId);
+
+		//slice number
+		packet.Write8(static_cast<uint8_t>(sliceNum));
+
+		owner.m_clDccService.Device_SendPacket(owner.m_RemoteAddress, packet);
+
+		m_tWaitTimeout = time + DOWNLOAD_RETRY_TIMEOUT;
+	}
+
+	bool DownloadEEPromTask::Update(NetworkDevice &owner, const dcclite::Clock::TimePoint_t time) noexcept
+	{
+		assert(!m_fAborted);
+		assert(!m_fFailed);
+		assert(!m_fFinished);
+		
+		switch (m_kState)
+		{
+			case States::WAITING_CONNECTION:				
+				//Wait for a stable connection (after config, sync, etc)
+				if (!m_rOwner.IsConnectionStable())
+					return true;
+
+				m_kState = States::START_DOWNLOAD;		
+				Log::Info("[DownloadEEPromTask::Update] {}: Requesting data", owner.GetName(), m_vecResults.size());
+
+				[[fallthrough]];
+			case States::START_DOWNLOAD:
+
+				//too soon?
+				if (m_tWaitTimeout <= time)
+				{
+					//slice number, request 0... always valid
+					this->RequestSlice(owner, time, 0);
+				}				
+				return true;				
+
+			case States::DOWNLOADING:
+				//too soon?
+				if (m_tWaitTimeout > time)
+					return true;
+
+				{
+					assert(m_vecSlicesAck.size() < 256);
+
+					//check for missing slices
+					for (size_t i = 0, sz = m_vecSlicesAck.size(); i < sz; ++i)
+					{
+						if (m_vecSlicesAck[i])
+							continue;
+
+						this->RequestSlice(owner, time, static_cast<uint8_t>(i));
+
+						return true;
+					}
+
+					//
+					// received all packets...
+					m_fFinished = true;
+
+					Log::Info("[DownloadEEPromTask::Update] {}: finished download of {} bytes", owner.GetName(), m_vecResults.size());
+
+					return false;
+				}
+				break;
+
+			default:
+				//WTF?
+				Log::Error("[DownloadEEPromTask::Update] Invalid state {}", magic_enum::enum_name(m_kState));
+
+				m_fFailed = true;
+				return false;
+				break;
+		}		
+	}
+
+	//
+	//
 	// DEVICE CONSTRUCTION / DESTRUCTION
 	//
 	//
@@ -66,7 +360,7 @@ namespace dcclite::broker
 	}
 
 	NetworkDevice::~NetworkDevice()
-	{
+	{		
 		this->Unload();
 	}
 
@@ -484,6 +778,23 @@ namespace dcclite::broker
 			return;
 		}
 
+		if (msgType == dcclite::MsgTypes::TASK_DATA)
+		{
+			auto taskId = packet.Read<uint32_t>();
+
+			auto task = self.m_wpTask.lock();
+			if ((task) && (task->GetTaskId() == taskId))
+			{
+				task->OnPacket(packet, time);
+			}
+			else
+			{
+				dcclite::Log::Warn("[{}::Device::OnPacket] task data, but not task running or task not found for id {}", self.GetName(), taskId);
+			}
+
+			return;
+		}
+
 		if (msgType != dcclite::MsgTypes::STATE)
 		{
 			State::OnPacket(self, packet, time, msgType, remoteAddress, remoteConfigToken);
@@ -578,6 +889,7 @@ namespace dcclite::broker
 		m_SessionToken = dcclite::Guid{};
 
 		this->ClearState();
+		this->AbortPendingTasks();
 
 		dcclite::Log::Warn("[{}::Device::GoOffline] Is OFFLINE", this->GetName());
 	}
@@ -707,6 +1019,12 @@ namespace dcclite::broker
 			return;
 		}
 
+		auto task = m_wpTask.lock();
+		if ((task) && (!task->Update(*this, time)))
+		{
+			m_wpTask.reset();
+		}
+
 		m_pclCurrentState->Update(*this, time);
 	}
 
@@ -744,5 +1062,35 @@ namespace dcclite::broker
 		m_pclCurrentState = std::get_if<ConfigState>(&m_vState);
 
 		dcclite::Log::Trace("[{}::Device::GotoConfigState] Entered", this->GetName());
+	}	
+
+	bool NetworkDevice::IsConnectionStable() const noexcept
+	{
+		//
+		//make sure we are connected and on online state (sync and config are not valids)
+		return dynamic_cast<NetworkDevice::OnlineState *>(m_pclCurrentState);		
+	}
+
+	void NetworkDevice::AbortPendingTasks()
+	{
+		auto task = m_wpTask.lock();
+
+		if (task)
+		{
+			task->Abort();
+			m_wpTask.reset();
+		}			
+	}
+
+	std::shared_ptr<NetworkTask> NetworkDevice::StartDownloadEEPromTask(DownloadEEPromTaskResult_t &resultsStorage)
+	{
+		if (!m_wpTask.expired())
+			throw std::logic_error("[NetworkDevice::StartDownloadEEPromTask] Only a single task per time supported");
+						
+		auto task = std::make_shared<DownloadEEPromTask>(*this, ++m_u32TaskId, resultsStorage);
+
+		m_wpTask = task;
+
+		return task;
 	}
 }

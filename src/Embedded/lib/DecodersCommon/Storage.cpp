@@ -60,7 +60,10 @@ void Storage::DumpHex()
 	Console::SendLn("");
 }
 
-
+extern size_t Storage::Length() noexcept
+{
+	return EEPROM.length();
+}
 
 bool Storage::LoadConfig()
 {	

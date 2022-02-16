@@ -64,8 +64,15 @@ namespace dcclite::broker
 			//
 			//
 
-			Decoder* TryFindDecoder(const DccAddress address) const;
+			Decoder *TryFindDecoder(const DccAddress address) const;
 			Decoder *TryFindDecoder(std::string_view id) const override;
+
+			//
+			//
+			// DEVICES management
+			//
+			//			
+			Device *TryFindDeviceByName(std::string_view name);
 
 			//This returns only pure outputs, turnouts are ignored
 			std::vector<SimpleOutputDecoder *> FindAllSimpleOutputDecoders();
@@ -78,9 +85,7 @@ namespace dcclite::broker
 			void OnNet_Discovery(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet);
 			void OnNet_Hello(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet);		
 
-			void OnNet_Packet(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType);
-
-			Device *TryFindDeviceByName(std::string_view name);
+			void OnNet_Packet(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType);			
 
 			NetworkDevice *TryFindDeviceSession(const dcclite::Guid &guid);
 

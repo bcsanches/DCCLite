@@ -106,6 +106,8 @@ namespace Storage
 
 	extern bool Custom_LoadModules(const Storage::Lump &lump, EpromStream &stream);
 	extern void Custom_SaveModules(EpromStream &stream);
+
+	extern size_t Length() noexcept;
 };
 
 #endif
