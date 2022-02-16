@@ -12,6 +12,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <string_view>
 #include <variant>
 
@@ -184,7 +185,8 @@ namespace dcclite::broker
 				//empty
 			}
 
-			virtual bool Run(TerminalContext& context) noexcept = 0;
+			[[nodiscard]]
+			virtual std::optional<std::string> Run(TerminalContext& context) noexcept = 0;
 
 		protected:
 			const CmdId_t m_tId;

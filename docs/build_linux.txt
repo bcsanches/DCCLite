@@ -1,2 +1,3 @@
 Necessary:
 apt-get install uuid-dev
+apt-get install libssl-dev

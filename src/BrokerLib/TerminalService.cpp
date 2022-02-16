@@ -11,6 +11,7 @@
 
 #include "TerminalService.h"
 
+#include <future>
 #include <sstream>
 #include <stdexcept>
 
@@ -66,6 +67,16 @@ namespace dcclite::broker
 		}
 
 		return messageWriter.GetString();
+	}
+
+	std::string MakeRpcNotificationMessage(CmdId_t id, std::string_view methodName, std::function<void(JsonOutputStream_t &object)> filler)
+	{
+		return MakeRpcMessage(id, &methodName, "params", filler);
+	}
+
+	static std::string MakeRpcErrorResponse(const CmdId_t id, const std::string &msg)
+	{
+		return MakeRpcMessage(id, nullptr, "error", [&, msg](JsonOutputStream_t &params) { params.AddStringValue("message", msg); });
 	}
 
 	static std::string MakeRpcResultMessage(const CmdId_t id, std::function<void(JsonOutputStream_t &object)> filler)
@@ -461,25 +472,37 @@ namespace dcclite::broker
 					throw TerminalCmdException("No task provided for ReadEEPromFiber", id);
 			}
 
-			bool Run(TerminalContext& context) noexcept override
+			std::optional<std::string> Run(TerminalContext& context) noexcept override
 			{
-				if (m_spTask->HasFailed())
+				if (m_spTask)
 				{
+					if (m_spTask->HasFailed())
+					{
+						return MakeRpcErrorResponse(m_tId, "Download task failed");
+					}
 
-					return false;
+					if (m_spTask->HasFinished())
+					{
+						m_spTask.reset();
+
+						auto future = std::async(SaveEEprom, m_vecEEPromData);
+
+						return std::nullopt;
+					}
 				}
-
-				if (m_spTask->HasFinished())
-				{
-
-					return false;
-				}
+				
 
 				//still working...
-				return true;
+				return std::nullopt;
 			}
 
 		private:
+			static void SaveEEprom(const DownloadEEPromTaskResult_t &data)
+			{
+
+			}
+
+		private:			
 			DownloadEEPromTaskResult_t m_vecEEPromData;
 
 			std::shared_ptr<NetworkTask> m_spTask;
@@ -656,17 +679,7 @@ namespace dcclite::broker
 
 			service->AddListener(*this);
 		}
-	}	
-
-	std::string MakeRpcNotificationMessage(CmdId_t id, std::string_view methodName, std::function<void(JsonOutputStream_t &object)> filler)
-	{
-		return MakeRpcMessage(id, &methodName, "params", filler);	
-	}
-
-	static std::string MakeRpcErrorResponse(const CmdId_t id, const std::string &msg)
-	{
-		return MakeRpcMessage(id, nullptr, "error", [&, msg](JsonOutputStream_t &params) { params.AddStringValue("message", msg); });
-	}	
+	}		
 
 	void TerminalClient::SendItemPropertyValueChangedNotification(const ObjectManagerEvent &event)
 	{	
