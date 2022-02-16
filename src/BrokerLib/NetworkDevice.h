@@ -302,7 +302,7 @@ namespace dcclite::broker
 			friend class DownloadEEPromTask;
 
 			uint32_t							m_u32TaskId = 0;
-			std::weak_ptr<DownloadEEPromTask>	m_wpTask;
+			std::weak_ptr<NetworkTaskImpl>		m_wpTask;
 
 			/**
 			Registered is a device that is stored on config.
