@@ -81,10 +81,15 @@ namespace dcclite::broker
 			virtual void Abort() noexcept = 0;
 
 			//
+			//
+			//
+			virtual void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) = 0;
+
+			//
 			// Do some work, returns true if still has pending work. 
 			//
 			[[nodiscard]]
-			virtual bool Update(NetworkDevice &owner, const dcclite::Clock::TimePoint_t time) noexcept = 0;
+			virtual bool Update(NetworkDevice &owner, const dcclite::Clock::TimePoint_t time) noexcept = 0;			
 
 			[[nodiscard]]
 			inline uint32_t GetTaskId() const noexcept
@@ -139,7 +144,7 @@ namespace dcclite::broker
 				return m_fFailed;
 			}
 
-			void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time);
+			void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) override;
 
 			bool Update(NetworkDevice &owner, const dcclite::Clock::TimePoint_t time) noexcept override;
 

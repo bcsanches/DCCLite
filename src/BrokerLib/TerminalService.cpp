@@ -11,6 +11,7 @@
 
 #include "TerminalService.h"
 
+#include <list>
 #include <future>
 #include <sstream>
 #include <stdexcept>
