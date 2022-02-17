@@ -288,8 +288,20 @@ namespace SharpTerminal
                         Console_Println(responseObj["location"]);
                         break;
 
-                    case "ReadEEPromResult":
-                        Console_Println("Stored EEPROM at " + responseObj["filepath"]);
+                    case "ReadEEPromResult":                        
+                        {
+                            var filePath = responseObj["filepath"];
+                            Console_Println("Stored EEPROM at " + filePath);
+
+                            var process = new System.Diagnostics.Process();
+                            process.StartInfo.FileName = "SharpEEpromViewer.exe";
+                            //process.StartInfo.WorkingDirectory = System.IO.Path.GetDirectoryName(mAvrDude.GetName());
+                            process.StartInfo.Arguments = filePath;
+                            process.StartInfo.UseShellExecute = false;
+
+                            process.Start();                            
+                        }
+
                         break;
 
                     default:

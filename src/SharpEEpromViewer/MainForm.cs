@@ -14,8 +14,7 @@ namespace SharpEEPromViewer
             mTreeView.ImageList = mImageList;
 
             if (param != null)
-                this.LoadEEProm(param);
-                
+                this.LoadEEProm(param);                
         }        
 
         private void btnExit_Click(object sender, EventArgs e)
@@ -28,6 +27,8 @@ namespace SharpEEPromViewer
             using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
 
             this.LoadEEProm(fileStream);
+
+            this.Text = filePath;
         }
 
         private static void ConfigureNode(TreeNode node, Lump lump)
