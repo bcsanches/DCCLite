@@ -308,16 +308,20 @@ namespace dcclite::broker
 				{
 					assert(m_vecSlicesAck.size() < 256);
 
+					int packetCount = 0;
+
 					//check for missing slices
 					for (size_t i = 0, sz = m_vecSlicesAck.size(); i < sz; ++i)
 					{
 						if (m_vecSlicesAck[i])
 							continue;
 
-						this->RequestSlice(owner, time, static_cast<uint8_t>(i));
-
-						return true;
+						++packetCount;
+						this->RequestSlice(owner, time, static_cast<uint8_t>(i));						
 					}
+
+					if (packetCount)
+						return true;
 
 					//
 					// received all packets...
