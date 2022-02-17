@@ -11,8 +11,10 @@
 
 #include "TerminalService.h"
 
+#include <chrono>
 #include <list>
 #include <future>
+#include <fstream>
 #include <sstream>
 #include <stdexcept>
 
@@ -33,6 +35,8 @@
 #include "SpecialFolders.h"
 #include "TerminalCmd.h"
 #include "ZeroconfService.h"
+
+#include <thread>
 
 namespace dcclite::broker
 {
@@ -467,10 +471,15 @@ namespace dcclite::broker
 		public:
 			ReadEEPromFiber(const CmdId_t id, NetworkDevice &device):
 				TerminalCmdFiber(id),
-				m_spTask{ device.StartDownloadEEPromTask(m_vecEEPromData)}
+				m_spTask{ device.StartDownloadEEPromTask(m_vecEEPromData)}				
 			{
 				if (!m_spTask)
 					throw TerminalCmdException("No task provided for ReadEEPromFiber", id);
+				
+				std::string fileName{ device.GetName() };
+				fileName.append(".rom");
+				
+				m_pathRomFileName = device.GetProject().GetAppFilePath(fileName);				
 			}
 
 			std::optional<std::string> Run(TerminalContext& context) noexcept override
@@ -486,27 +495,52 @@ namespace dcclite::broker
 					{
 						m_spTask.reset();
 
-						auto future = std::async(SaveEEprom, m_vecEEPromData);
-
-						return std::nullopt;
-					}
+						m_Future = std::async(SaveEEprom, std::ref(m_vecEEPromData), std::ref(m_pathRomFileName));						
+					}					
 				}
-				
+				else
+				{
+					using namespace std::chrono_literals;
 
-				//still working...
+					if (m_Future.wait_for(0s) == std::future_status::ready)
+					{
+						return MakeRpcResultMessage(m_tId, [this](Result_t &results)
+							{
+								results.AddStringValue("classname", "ReadEEPromResult");
+								results.AddStringValue("filepath", m_pathRomFileName.string());
+							}
+						);
+					}					
+				}	
+
 				return std::nullopt;
 			}
 
 		private:
-			static void SaveEEprom(const DownloadEEPromTaskResult_t &data)
+			static void SaveEEprom(const DownloadEEPromTaskResult_t &data, const dcclite::fs::path &fileName)
 			{
+				dcclite::Log::Info("[ReadEEPromFiber::SaveEEprom] Saving EEPROM at {}", fileName.string());
 
+				std::ofstream epromFile(fileName, std::ios::binary);
+				if (!epromFile)
+				{
+					dcclite::Log::Error("[ReadEEPromFiber::SaveEEprom] cannot create {}", fileName.string());
+
+					return;
+				}				
+
+				epromFile.write(reinterpret_cast<const char *>(&data.front()), data.size());
+				dcclite::Log::Info("[ReadEEPromFiber::SaveEEprom] Finished saving EEPROM at {}", fileName.string());
 			}
 
 		private:			
 			DownloadEEPromTaskResult_t m_vecEEPromData;
 
 			std::shared_ptr<NetworkTask> m_spTask;
+
+			dcclite::fs::path m_pathRomFileName;
+
+			std::future<void> m_Future;
 	};
 
 	class ReadEEPromCmd : public DccSystemCmdBase
@@ -742,8 +776,14 @@ namespace dcclite::broker
 			auto current = it;
 			++it;
 
-			if (!(*current)->Run(m_clContext))
+			auto result = (*current)->Run(m_clContext);
+			if (result)
 			{
+				if (!m_clMessenger.Send(m_clAddress, result.value()))
+				{
+					dcclite::Log::Error("[TerminalClient::Update] fiber result for {} not sent, contents: {}", m_clAddress.GetIpString(), result.value());
+				}
+
 				//fiber has finished
 				m_lstFibers.erase(current);
 			}

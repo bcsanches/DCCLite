@@ -288,6 +288,10 @@ namespace SharpTerminal
                         Console_Println(responseObj["location"]);
                         break;
 
+                    case "ReadEEPromResult":
+                        Console_Println("Stored EEPROM at " + responseObj["filepath"]);
+                        break;
+
                     default:
                         Console_Println(response.ToString());
                         break;

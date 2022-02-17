@@ -48,6 +48,11 @@ namespace dcclite::broker
 				return this->GetName();
 			}
 
+			inline const Project &GetProject() const noexcept
+			{
+				return m_rclProject;
+			}
+
 		protected:
 			void Load();
 			void Unload();

@@ -7,7 +7,7 @@
     "pullup":true,
     "inverted":true,
     "activateDelay":0,
-    "deactivateDelay":1
+    "deactivateDelay":2
   },  
   {
     "name": "TestATrack01",

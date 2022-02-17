@@ -23,10 +23,6 @@
 namespace dcclite::broker
 { 
 
-	//add drives?
-			//add Providers?
-			//Add HomeLocation for Providers?
-
 			/*
 			Providers:
 				- ItemProviders
