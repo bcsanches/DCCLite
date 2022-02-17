@@ -28,6 +28,7 @@ else(WIN32)
 
 	target_link_libraries(Broker 
 		BrokerLib
+        pthread
 	)
 
 endif(WIN32)
