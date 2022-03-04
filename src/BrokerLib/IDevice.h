@@ -16,7 +16,6 @@
 
 namespace dcclite::broker
 {
-
 	class Decoder;
 	class RemoteDecoder;
 	class INetworkDevice_DecoderServices;

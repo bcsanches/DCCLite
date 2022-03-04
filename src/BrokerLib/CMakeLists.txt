@@ -11,6 +11,7 @@ set(BrokerLib_SRCS
     LocationManager.cpp
     LoconetService.cpp  
     NetworkDevice.cpp
+    NetworkDeviceTasks.cpp
     OutputDecoder.cpp
     PinManager.cpp
     Project.cpp
@@ -42,6 +43,7 @@ set(BrokerLib_HDRS
     LocationManager.h
     LoconetService.h
     NetworkDevice.h
+    NetworkDeviceTasks.h
     OutputDecoder.h
     PinManager.h
     Project.h

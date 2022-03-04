@@ -17,6 +17,7 @@
 #include "IDccLiteService.h"
 #include "Device.h"
 #include "IDevice.h"
+#include "NetworkDeviceTasks.h"
 #include "Packet.h"
 #include "PinManager.h"
 #include "Socket.h"
@@ -24,27 +25,8 @@
 #include <rapidjson/document.h>
 
 namespace dcclite::broker
-{ 
-	class NetworkTask
-	{
-		public:
-			//
-			// When the task finishes, success or not, this must return true			
-			//
-			virtual bool HasFinished() const noexcept = 0;
-
-			//
-			// When the task fails to complete, this must return true (results must be ignored / discarded)
-			//
-			virtual bool HasFailed() const noexcept = 0;
-
-	};	
-
-	typedef std::vector<uint8_t> DownloadEEPromTaskResult_t;	
-
-	class NetworkTaskImpl;
-
-	class NetworkDevice: public Device, public INetworkDevice_DecoderServices
+{ 	
+	class NetworkDevice: public Device, private INetworkDevice_DecoderServices, private detail::INetworkDevice_TaskServices
 	{
 		public:
 			enum class Status
@@ -110,12 +92,22 @@ namespace dcclite::broker
 
 			//
 			//
+			//INetworkDevice_TaskServices
+			//
+			//
+
+			void TaskServices_FillPacketHeader(dcclite::Packet &packet) const noexcept override;
+
+			void TaskServices_SendPacket(dcclite::Packet &packet) override;			
+
+			bool IsConnectionStable() const noexcept;
+
+			//
+			//
 			// Tasks
 			//
 			//			
-			[[nodiscard]] std::shared_ptr<NetworkTask> StartDownloadEEPromTask(DownloadEEPromTaskResult_t &resultsStorage);
-
-			bool IsConnectionStable() const noexcept;
+			[[nodiscard]] std::shared_ptr<NetworkTask> StartDownloadEEPromTask(DownloadEEPromTaskResult_t &resultsStorage);			
 
 		protected:
 			void OnUnload() override;
@@ -286,11 +278,9 @@ namespace dcclite::broker
 			//
 			//
 			//
-			//
-			friend class DownloadEEPromTask;
-
-			uint32_t							m_u32TaskId = 0;
-			std::weak_ptr<NetworkTaskImpl>		m_wpTask;
+			//			
+			uint32_t								m_u32TaskId = 0;
+			std::weak_ptr<detail::NetworkTaskImpl>	m_wpTask;
 
 			/**
 			Registered is a device that is stored on config.
