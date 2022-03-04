@@ -1,17 +1,50 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Json;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Json;
+
 
 namespace SharpTerminal
 {
+    public class RemoteDecoderCmdAction : IRemoteObjectAction
+    {
+        private string mDescription;
+        private string mLabel;
+
+        private string mCmd;
+
+        public RemoteDecoderCmdAction(string cmd, string label, string description)
+        {
+            mDescription = description;
+            mLabel = label ?? throw new System.ArgumentNullException(nameof(label));
+            mCmd = cmd ?? throw new System.ArgumentNullException(nameof(cmd));
+        }
+
+        public void Execute(IConsole console, RemoteObject target)
+        {
+            var decoder = (RemoteDecoder)target;
+
+            string[] args = new string[3] { mCmd, decoder.SystemName, decoder.Name };
+            console.ProcessCmd(args);
+        }
+
+        public string GetDescription()
+        {
+            return mDescription;
+        }
+
+        public string GetLabel()
+        {
+            return mLabel;
+        }
+    }
+
+
     public class RemoteDecoder : RemoteObject
     {
+        protected static IRemoteObjectAction g_FlipAction = new RemoteDecoderCmdAction("Flip-Item", "Flip", "Activate / deactivate the item");
+
         public int Address { get; }
         public string LocationHint { get; }
+
+        public string SystemName { get; }
 
         private bool mBroken;
         private bool mRequestedState;
@@ -55,6 +88,8 @@ namespace SharpTerminal
 
             if (objectDef.ContainsKey("locationHint"))
                 LocationHint = objectDef["locationHint"];
+
+            SystemName = objectDef["systemName"];
 
             this.ParseState(objectDef);
         }
@@ -111,7 +146,7 @@ namespace SharpTerminal
     }
 
     public class RemoteOutputDecoder : RemoteDecoder
-    {
+    {        
         public RemoteOutputDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
             base(name, className, path, internalId, parentInternalId, objectDef)
         {
@@ -121,6 +156,11 @@ namespace SharpTerminal
         public override string TryGetIconName()
         {
             return RemoteState ? DefaultIcons.LAMP_ON_ICON : DefaultIcons.LAMP_OFF_ICON;
+        }
+
+        public override IRemoteObjectAction[] GetActions()
+        {
+            return new IRemoteObjectAction[1]{ g_FlipAction };
         }
     }
 
@@ -135,6 +175,11 @@ namespace SharpTerminal
         public override string TryGetIconName()
         {
             return RemoteState ? DefaultIcons.TURNOUT_ON_ICON : DefaultIcons.TURNOUT_OFF_ICON;
+        }
+
+        public override IRemoteObjectAction[] GetActions()
+        {
+            return new IRemoteObjectAction[1] { g_FlipAction };
         }
     }
 }

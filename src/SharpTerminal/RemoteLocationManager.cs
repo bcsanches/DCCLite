@@ -52,7 +52,7 @@ namespace SharpTerminal
             }
         }
 
-        public override Control CreateControl()
+        public override Control CreateControl(IConsole console)
         {
             return new RemoteLocationManagerUserControl(mMismatches);
         }
@@ -90,7 +90,7 @@ namespace SharpTerminal
             }
         }
 
-        public override Control CreateControl()
+        public override Control CreateControl(IConsole console)
         {
             return new RemoteLocationUserControl(this.Name, mBeginAddress, mEndAddress, mRemoteDecoders);
         }

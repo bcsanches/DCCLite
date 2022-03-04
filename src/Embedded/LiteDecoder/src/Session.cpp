@@ -19,6 +19,7 @@
 #include "DecoderManager.h"
 #include "NetUdp.h"
 #include "Packet.h"
+#include "ServoProgrammer.h"
 #include "SharedLibDefs.h"
 #include "Storage.h"
 #include "Strings.h"
@@ -36,6 +37,8 @@ enum class ConnectionStates: uint8_t
 	CONFIGURING,	
 	ONLINE
 };
+
+static void GotoOfflineState();
 
 static dcclite::Guid g_SessionToken;
 static dcclite::Guid g_ConfigToken;
@@ -119,7 +122,7 @@ namespace PingManager
 			//Server is dead?
 			Console::SendLogEx(MODULE_NAME, "srv", ' ',  FSTR_TIMEOUT);
 
-			g_eConnectionState = ConnectionStates::OFFLINE;
+			GotoOfflineState();			
 
 			return true;
 		}
@@ -150,7 +153,6 @@ namespace PingManager
 		}
 	}
 }
-
 
 
 //
@@ -195,6 +197,13 @@ void Session::ReplaceConfigToken(const dcclite::Guid &configToken)
 // OFFLINE STATE
 //
 //
+
+static void GotoOfflineState()
+{
+	ServoProgrammer::Stop();
+
+	g_eConnectionState = ConnectionStates::OFFLINE;
+}
 
 static void OfflineTick(const unsigned long ticks)
 {	
@@ -665,7 +674,7 @@ static void ReceiveCallback(
 	{
 		Console::SendLogEx(MODULE_NAME, FSTR_DISCONNECT, ' ', FSTR_OFFLINE);
 
-		g_eConnectionState = ConnectionStates::OFFLINE;
+		GotoOfflineState();		
 		return;
 	}
 
@@ -707,7 +716,7 @@ static void ReceiveCallback(
 	{
 		Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', "cfg", ' ', "id", ',', ' ', "to", ' ', FSTR_OFFLINE);
 
-		g_eConnectionState = ConnectionStates::OFFLINE;
+		GotoOfflineState();		
 		return;
 	}
 

@@ -13,6 +13,7 @@ namespace SharpTerminal
     public partial class ObjectsTreeViewUserControl : UserControl
     {
         RequestManager mRequestManager;
+        IConsole mConsole;
         readonly Dictionary<ulong, List<TreeNode>> mObjectsNodes = new Dictionary<ulong, List<TreeNode>>();
 
         public Panel MainDisplayPanel
@@ -39,6 +40,14 @@ namespace SharpTerminal
                 {
                     mRequestManager.ConnectionStateChanged += mRequestManager_ConnectionStateChanged;
                 }
+            }
+        }
+
+        internal IConsole Console
+        {
+            set
+            {
+                mConsole = value;
             }
         }
 
@@ -279,7 +288,7 @@ namespace SharpTerminal
             if (e.Node.Tag is not RemoteObject remoteObject)
                 return;
 
-            var newControl = remoteObject.CreateControl();            
+            var newControl = remoteObject.CreateControl(mConsole);            
 
             MainDisplayPanel.Controls.Add(newControl);
             newControl.Dock = DockStyle.Fill;

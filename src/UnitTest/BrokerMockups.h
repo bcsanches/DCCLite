@@ -62,4 +62,9 @@ class DecoderServicesMockup : public dcclite::broker::IDccLite_DecoderServices
 		{
 			return nullptr;
 		}
+
+		[[nodiscard]] std::string_view Decoder_GetSystemName() const noexcept override
+		{
+			return "dccsystem";
+		}
 };

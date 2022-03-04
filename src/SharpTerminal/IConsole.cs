@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace SharpTerminal
 {
-    interface IConsole
+    public interface IConsole
     {
+        void ProcessCmd(string[] vargs);
+
         void Println(string text);
         void Clear();
     }

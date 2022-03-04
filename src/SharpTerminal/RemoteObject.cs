@@ -20,6 +20,14 @@ namespace SharpTerminal
     public delegate void RemoteObjectStateChanged(RemoteObject sender, EventArgs args);
     public delegate void RemoteFolderChildEvent(RemoteObject sender, RemoteFolderChildEventArgs args);
 
+    public interface IRemoteObjectAction
+    {
+        public string GetLabel();
+        public string GetDescription();
+
+        public void Execute(IConsole console, RemoteObject target);
+    }
+
     public class RemoteObject: NotifyPropertyBase
     {        
         public string Name { get; }
@@ -77,9 +85,14 @@ namespace SharpTerminal
             return null;
         }
 
-        public virtual Control CreateControl()
+        public virtual Control CreateControl(IConsole console)
         {
-            return new RemoteObjectUserControl(this);
+            return new RemoteObjectUserControl(console, this);
+        }
+
+        public virtual IRemoteObjectAction[] GetActions()
+        {
+            return null;
         }
     }
 
@@ -210,9 +223,9 @@ namespace SharpTerminal
             this.FireStateChangedEvent();
         }
 
-        public override Control CreateControl()
+        public override Control CreateControl(IConsole console)
         {
-            return new RemoteShortcutUserControl(this);
+            return new RemoteShortcutUserControl(console, this);
         }
 
         public Task<RemoteObject> GetTargetAsync()

@@ -32,6 +32,7 @@
         {
             this.m_lbTitle = new System.Windows.Forms.Label();
             this.mPropertyGrid = new System.Windows.Forms.PropertyGrid();
+            this.m_pnlButtons = new System.Windows.Forms.FlowLayoutPanel();
             this.SuspendLayout();
             // 
             // m_lbTitle
@@ -52,17 +53,27 @@
             this.mPropertyGrid.Enabled = false;
             this.mPropertyGrid.Location = new System.Drawing.Point(7, 36);
             this.mPropertyGrid.Name = "mPropertyGrid";
-            this.mPropertyGrid.Size = new System.Drawing.Size(505, 203);
+            this.mPropertyGrid.Size = new System.Drawing.Size(505, 240);
             this.mPropertyGrid.TabIndex = 2;
             // 
-            // RemoteDecoderUserControl
+            // m_pnlButtons
+            // 
+            this.m_pnlButtons.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_pnlButtons.Location = new System.Drawing.Point(7, 282);
+            this.m_pnlButtons.Name = "m_pnlButtons";
+            this.m_pnlButtons.Size = new System.Drawing.Size(505, 29);
+            this.m_pnlButtons.TabIndex = 3;
+            // 
+            // RemoteObjectUserControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.m_pnlButtons);
             this.Controls.Add(this.mPropertyGrid);
             this.Controls.Add(this.m_lbTitle);
-            this.Name = "RemoteDecoderUserControl";
-            this.Size = new System.Drawing.Size(515, 242);
+            this.Name = "RemoteObjectUserControl";
+            this.Size = new System.Drawing.Size(515, 314);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -71,5 +82,6 @@
         #endregion
         private System.Windows.Forms.Label m_lbTitle;
         private System.Windows.Forms.PropertyGrid mPropertyGrid;
+        private System.Windows.Forms.FlowLayoutPanel m_pnlButtons;
     }
 }

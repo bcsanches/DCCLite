@@ -38,6 +38,7 @@ namespace dcclite::broker
 
 		stream.AddIntValue("address", m_iAddress.GetAddress());
 		stream.AddStringValue("deviceName", m_rclDevice.GetDeviceName());
+		stream.AddStringValue("systemName", m_rclManager.Decoder_GetSystemName());
 
 		if (!m_strLocationHint.empty())
 			stream.AddStringValue("locationHint", m_strLocationHint);

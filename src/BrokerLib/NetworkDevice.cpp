@@ -87,12 +87,10 @@ namespace dcclite::broker
 
 			//
 			// Do some work, returns true if still has pending work. 
-			//
-			[[nodiscard]]
-			virtual bool Update(NetworkDevice &owner, const dcclite::Clock::TimePoint_t time) noexcept = 0;			
-
-			[[nodiscard]]
-			inline uint32_t GetTaskId() const noexcept
+			//			
+			[[nodiscard]] virtual bool Update(NetworkDevice &owner, const dcclite::Clock::TimePoint_t time) noexcept = 0;
+			
+			[[nodiscard]] inline uint32_t GetTaskId() const noexcept
 			{
 				return m_u32TaskId;
 			}
@@ -342,6 +340,22 @@ namespace dcclite::broker
 				break;
 		}		
 	}
+
+	//
+	//
+	// Servo Programmer Task
+	//
+	//
+
+	class ServoTurnoutProgrammerTask: NetworkTaskImpl
+	{
+		public:
+			ServoTurnoutProgrammerTask(NetworkDevice &owner, const uint32_t taskId, ServoTurnoutDecoder &decoder):
+				NetworkTaskImpl(owner, taskId)
+			{
+
+			}
+	};
 
 	//
 	//

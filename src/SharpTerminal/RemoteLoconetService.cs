@@ -190,7 +190,7 @@ namespace SharpTerminal
             }
         }
         
-        public override Control CreateControl()
+        public override Control CreateControl(IConsole console)
         {
             return new RemoteLoconetServiceUserControl(this, Slots);
         }

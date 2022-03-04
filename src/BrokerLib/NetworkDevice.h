@@ -67,9 +67,8 @@ namespace dcclite::broker
 			void AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::NetworkAddress remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken);
 
 			void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteConfigToken);		
-		
-			[[nodiscard]]
-			inline const dcclite::Guid &GetConfigToken() noexcept
+					
+			[[nodiscard]] inline const dcclite::Guid &GetConfigToken() noexcept
 			{
 				return m_ConfigToken;
 			}						
@@ -77,10 +76,8 @@ namespace dcclite::broker
 			//
 			//IObject
 			//
-			//
-
-			[[nodiscard]]
-			const char *GetTypeName() const noexcept override
+			//			
+			[[nodiscard]] const char *GetTypeName() const noexcept override
 			{
 				return "NetworkDevice";
 			}
@@ -90,10 +87,8 @@ namespace dcclite::broker
 			//
 			//IDevice_DecoderServices
 			//
-			//
-		
-			[[nodiscard]]
-			INetworkDevice_DecoderServices *TryGetINetworkDevice() noexcept override
+			//					
+			[[nodiscard]] INetworkDevice_DecoderServices *TryGetINetworkDevice() noexcept override
 			{
 				return this;
 			}
@@ -117,10 +112,8 @@ namespace dcclite::broker
 			//
 			// Tasks
 			//
-			//
-
-			[[nodiscard]]
-			std::shared_ptr<NetworkTask> StartDownloadEEPromTask(DownloadEEPromTaskResult_t &resultsStorage);
+			//			
+			[[nodiscard]] std::shared_ptr<NetworkTask> StartDownloadEEPromTask(DownloadEEPromTaskResult_t &resultsStorage);
 
 			bool IsConnectionStable() const noexcept;
 
@@ -129,26 +122,22 @@ namespace dcclite::broker
 
 			void CheckLoadedDecoder(Decoder &decoder) override;
 
-		private:			
-			[[nodiscard]]
-			inline bool IsOnline() const noexcept
+		private:						
+			[[nodiscard]] inline bool IsOnline() const noexcept
 			{
 				return m_eStatus == Status::ONLINE;
 			}
-
-			[[nodiscard]]
-			bool CheckSessionConfig(const dcclite::Guid remoteConfigToken, const dcclite::NetworkAddress remoteAddress);
-
-			[[nodiscard]]
-			bool CheckSession(const dcclite::NetworkAddress remoteAddress);
+			
+			[[nodiscard]] bool CheckSessionConfig(const dcclite::Guid remoteConfigToken, const dcclite::NetworkAddress remoteAddress);
+			
+			[[nodiscard]] bool CheckSession(const dcclite::NetworkAddress remoteAddress);
 
 			void GoOffline();
 			void Disconnect();
 
 			void RefreshTimeout(const dcclite::Clock::TimePoint_t time);
-
-			[[nodiscard]]
-			bool CheckTimeout(const dcclite::Clock::TimePoint_t time);				
+			
+			[[nodiscard]] bool CheckTimeout(const dcclite::Clock::TimePoint_t time);
 		
 			void ClearState();
 			void GotoSyncState();
@@ -186,9 +175,8 @@ namespace dcclite::broker
 				);
 
 				virtual void Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time) = 0;
-
-				[[nodiscard]]
-				virtual const char *GetName() const = 0;				
+				
+				[[nodiscard]] virtual const char *GetName() const = 0;
 			};		
 
 			struct ConfigState: State
@@ -213,7 +201,7 @@ namespace dcclite::broker
 
 				void Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time) override;
 
-				const char *GetName() const override { return "ConfigState"; }
+				[[nodiscard]] const char *GetName() const override { return "ConfigState"; }
 
 				private:				
 					void SendDecoderConfigPacket(const NetworkDevice &self, const size_t index) const;
@@ -254,7 +242,7 @@ namespace dcclite::broker
 
 				void Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time) override;
 
-				const char *GetName() const override { return "SyncState"; }
+				[[nodiscard]] const char *GetName() const override { return "SyncState"; }
 			};
 
 			struct OnlineState: State
@@ -272,7 +260,7 @@ namespace dcclite::broker
 
 				void Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time) override;
 
-				const char *GetName() const override { return "OnlineState"; }
+				[[nodiscard]] const char *GetName() const override { return "OnlineState"; }
 
 				private:
 					void SendStateDelta(NetworkDevice &self, const bool sendSensorsState, const dcclite::Clock::TimePoint_t time);

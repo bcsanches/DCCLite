@@ -29,7 +29,10 @@ namespace SharpTerminal
 
             mConsole = ucConsole;
             ucConsole.RequestManager = mRequestManager;
+
             ucTreeView.RequestManager = mRequestManager;
+            ucTreeView.Console = mConsole;
+
             RemoteObjectManager.SetRequestManager(mRequestManager);
         }
 

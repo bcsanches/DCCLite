@@ -214,16 +214,22 @@ namespace SharpTerminal
             {
                 var vargs = cmd.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-                //local command?
-                if (input[0] == '/')
-                {
-                    ProcessLocalCmd(vargs);
-                }
-                else
-                {
-                    ProcessRemoteCmd(vargs);
-                }
+                ProcessCmd(vargs);
+                
             }            
+        }
+
+        public void ProcessCmd(string[] vargs)
+        {
+            //local command?
+            if (vargs[0][0] == '/')
+            {
+                ProcessLocalCmd(vargs);
+            }
+            else
+            {
+                ProcessRemoteCmd(vargs);
+            }
         }
 
         private void m_btnClear_Click(object sender, EventArgs e)

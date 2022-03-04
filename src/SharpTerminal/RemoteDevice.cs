@@ -87,7 +87,7 @@ namespace SharpTerminal
             return Connected ? DefaultIcons.CONNECTED_DRIVE_ICON : DefaultIcons.DISCONNECTED_DRIVE_ICON;
         }
 
-        public override Control CreateControl()
+        public override Control CreateControl(IConsole console)
         {
             return new RemoteDeviceUserControl(this, Pins);
         }

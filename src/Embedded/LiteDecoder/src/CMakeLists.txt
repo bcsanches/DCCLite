@@ -5,7 +5,8 @@ set(LiteDecoderLib_SRCS
   DecoderManager.cpp
   main.cpp
   NetUdp.cpp
-  OutputDecoder.cpp  
+  OutputDecoder.cpp
+  ServoProgrammer.cpp  
   Session.cpp
 )
 
@@ -15,7 +16,8 @@ set(LiteDecoderLib_HDRS
   DecoderManager.h  
   main.h
   NetUdp.h
-  OutputDecoder.h    
+  OutputDecoder.h
+  ServoProgrammer.h    
   Session.h  
 )
 

@@ -20,10 +20,10 @@ class Decoder;
 #ifdef ARDUINO_AVR_MEGA2560
 #define MAX_DECODERS 48
 #else
-#define MAX_DECODERS 16
+constexpr auto MAX_DECODERS = 16;
 #endif
 
-#define MAX_BUTTONS 32
+constexpr auto MAX_BUTTONS = 32;
 
 static const char LocalDecoderManagerModuleName[] PROGMEM = { "LDecMgr" };
 #define MODULE_NAME Console::FlashStr(LocalDecoderManagerModuleName)

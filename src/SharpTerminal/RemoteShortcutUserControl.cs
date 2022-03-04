@@ -7,16 +7,18 @@ namespace SharpTerminal
     public partial class RemoteShortcutUserControl : UserControl
     {
         private readonly RemoteShortcut mRemoteShortcut;
+        private readonly IConsole mConsole;
 
         public RemoteShortcutUserControl()
         {
             InitializeComponent();
         }
 
-        public RemoteShortcutUserControl(RemoteShortcut remoteShortcut) :
+        public RemoteShortcutUserControl(IConsole console, RemoteShortcut remoteShortcut) :
             this()
         {
             mRemoteShortcut = remoteShortcut ?? throw new ArgumentNullException(nameof(remoteShortcut));
+            mConsole = console ?? throw new ArgumentNullException(nameof(console));
 
             m_lbTitle.Text += " - " + remoteShortcut.Name;
 
@@ -39,7 +41,7 @@ namespace SharpTerminal
                 return;
             }                
 
-            var control = obj.CreateControl();
+            var control = obj.CreateControl(mConsole);
 
             mPanel.Controls.Remove(m_lbLoadingMessage);
 
