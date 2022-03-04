@@ -71,8 +71,9 @@ namespace dcclite::broker
 	class NetworkTaskImpl: public NetworkTask
 	{
 		protected:
-			NetworkTaskImpl(const uint32_t taskId):
-				m_u32TaskId{ taskId }
+			NetworkTaskImpl(NetworkDevice &owner, const uint32_t taskId):
+				m_u32TaskId{ taskId },
+				m_rOwner{ owner }
 			{
 				//empty
 			}
@@ -97,6 +98,8 @@ namespace dcclite::broker
 
 		protected:
 			const uint32_t m_u32TaskId;
+
+			NetworkDevice &m_rOwner;
 	};
 
 	/**
@@ -125,8 +128,7 @@ namespace dcclite::broker
 	{
 		public:
 			DownloadEEPromTask(NetworkDevice &owner, const uint32_t taskId, DownloadEEPromTaskResult_t &results):
-				NetworkTaskImpl{taskId},
-				m_rOwner{owner},
+				NetworkTaskImpl{owner, taskId},
 				m_vecResults{ results }
 			{
 				//empty
@@ -162,8 +164,7 @@ namespace dcclite::broker
 			};
 
 			friend class NetworkDevice;
-
-			NetworkDevice				&m_rOwner;
+			
 			DownloadEEPromTaskResult_t	&m_vecResults;		
 			std::vector<bool>			m_vecSlicesAck;			
 
@@ -346,6 +347,8 @@ namespace dcclite::broker
 	// Servo Programmer Task
 	//
 	//
+
+	class ServoTurnoutDecoder;
 
 	class ServoTurnoutProgrammerTask: NetworkTaskImpl
 	{
