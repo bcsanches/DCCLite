@@ -55,6 +55,11 @@ add_executable(SharpTerminal
   RemoteShortcutUserControl.cs
   RemoteShortcutUserControl.Designer.cs
   RemoteShortcutUserControl.resx
+  
+  ServoTurnoutProgramerForm.cs
+  ServoTurnoutProgramerForm.Designer.cs
+  ServoTurnoutProgramerForm.resx
+  
   TerminalClient.cs
   
   Properties/AssemblyInfo.cs
@@ -135,6 +140,10 @@ csharp_set_windows_forms_properties(
     ServerSelectionForm.cs
     ServerSelectionForm.Designer.cs
     ServerSelectionForm.resx
+    
+    ServoTurnoutProgramerForm.cs
+    ServoTurnoutProgramerForm.Designer.cs
+    ServoTurnoutProgramerForm.resx
 )
 
 set_property(TARGET SharpTerminal PROPERTY VS_DOTNET_REFERENCES

@@ -3,27 +3,18 @@
 
 namespace SharpTerminal
 {
-    public class RemoteDecoderCmdAction : IRemoteObjectAction
+    public abstract class RemoteDecoderCmdBaseAction: IRemoteObjectAction
     {
         private string mDescription;
         private string mLabel;
 
-        private string mCmd;
-
-        public RemoteDecoderCmdAction(string cmd, string label, string description)
+        public RemoteDecoderCmdBaseAction(string label, string description)
         {
             mDescription = description;
-            mLabel = label ?? throw new System.ArgumentNullException(nameof(label));
-            mCmd = cmd ?? throw new System.ArgumentNullException(nameof(cmd));
+            mLabel = label ?? throw new System.ArgumentNullException(nameof(label));            
         }
 
-        public void Execute(IConsole console, RemoteObject target)
-        {
-            var decoder = (RemoteDecoder)target;
-
-            string[] args = new string[3] { mCmd, decoder.SystemName, decoder.Name };
-            console.ProcessCmd(args);
-        }
+        public abstract void Execute(IConsole console, RemoteObject target);
 
         public string GetDescription()
         {
@@ -34,6 +25,25 @@ namespace SharpTerminal
         {
             return mLabel;
         }
+    }
+
+    public class RemoteDecoderCmdAction : RemoteDecoderCmdBaseAction
+    {        
+        private string mCmd;
+
+        public RemoteDecoderCmdAction(string cmd, string label, string description):
+            base(label, description)
+        {            
+            mCmd = cmd ?? throw new System.ArgumentNullException(nameof(cmd));
+        }
+
+        public override void Execute(IConsole console, RemoteObject target)
+        {
+            var decoder = (RemoteDecoder)target;
+
+            string[] args = new string[3] { mCmd, decoder.SystemName, decoder.Name };
+            console.ProcessCmd(args);
+        }        
     }
 
 
@@ -166,6 +176,8 @@ namespace SharpTerminal
 
     public class RemoteTurnoutDecoder: RemoteDecoder
     {
+        protected static IRemoteObjectAction gProgrammerAction = new ServoProgrammerAction("Program", "Program the turnout servo");
+
         public RemoteTurnoutDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
             base(name, className, path, internalId, parentInternalId, objectDef)
         {
@@ -179,7 +191,7 @@ namespace SharpTerminal
 
         public override IRemoteObjectAction[] GetActions()
         {
-            return new IRemoteObjectAction[1] { g_FlipAction };
+            return new IRemoteObjectAction[2] { g_FlipAction, gProgrammerAction };
         }
     }
 }
