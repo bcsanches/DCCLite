@@ -10,6 +10,7 @@ set(UnitTest_SRCS
   ServoTurnoutDecoderTest.cpp
   SignalDecoderTest.cpp
   SocketTest.cpp
+  ThinkerTest.cpp
   UtilUnitTest.cpp
 )
 

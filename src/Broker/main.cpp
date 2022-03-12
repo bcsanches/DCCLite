@@ -17,11 +17,11 @@
 
 #include "Clock.h"
 #include "ConsoleUtils.h"
-#include "FileWatcher.h"
 #include "Log.h"
 #include "LogUtils.h"
 #include "PathUtils.h"
 #include "TerminalCmd.h"
+#include "Thinker.h"
 
 #include <spdlog/logger.h>
 
@@ -71,9 +71,8 @@ int main(int argc, char **argv)
 				std::this_thread::sleep_for(std::chrono::milliseconds{ 10 });
 				continue;
 			}			
-
-			FileWatcher::PumpEvents();
-			broker.Update(clock);
+			
+			dcclite::broker::Thinker::UpdateThinkers(clock.Ticks());			
 		}			
 	}	
 	catch (std::exception &ex)

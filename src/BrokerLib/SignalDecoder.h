@@ -61,7 +61,7 @@ namespace dcclite::broker
 
 			void SetAspect(const dcclite::SignalAspects aspect, const char *requester);
 
-			void Update(const dcclite::Clock &clock);
+			void Update(const dcclite::Clock::TimePoint_t ticks);
 
 		private:
 			void ForEachHead(const std::vector<std::string> &heads, const dcclite::SignalAspects aspect, std::function<bool(OutputDecoder &)> proc) const;

@@ -15,6 +15,7 @@
 #include "TurnoutDecoder.h"
 #include "ZeroconfService.h"
 
+using namespace std::chrono_literals;
 
 namespace dcclite::broker
 {
@@ -536,17 +537,18 @@ namespace dcclite::broker
 			~DccppServiceImpl() override
 			{
 				//empty
-			}
+			}			
 
-			void Update(const dcclite::Clock &clock) override;
+			void Initialize() override;			
 
-			void Initialize() override;
-
-			static std::unique_ptr<Service> Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+		private:
+			void Think(const dcclite::Clock::TimePoint_t ticks);
 
 		private:
 			std::string		m_strDccServiceName;
 			DccLiteService *m_pclDccService = nullptr;
+
+			Thinker			m_tThinker;
 
 			//
 			//Network communication
@@ -559,7 +561,8 @@ namespace dcclite::broker
 
 	DccppServiceImpl::DccppServiceImpl(const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
 		DccppService(name, broker, params, project),
-		m_strDccServiceName(params["system"].GetString())
+		m_strDccServiceName(params["system"].GetString()),
+		m_tThinker{ {}, THINKER_MF_LAMBDA(Think)}
 	{
 		//standard port used by DCC++
 		int port = 2560;
@@ -595,8 +598,10 @@ namespace dcclite::broker
 			throw std::runtime_error(fmt::format("[DccppService::Initialize] Cannot find dcc service: {}", m_strDccServiceName));
 	}
 
-	void DccppServiceImpl::Update(const dcclite::Clock& clock)
+	void DccppServiceImpl::Think(const dcclite::Clock::TimePoint_t ticks)
 	{
+		m_tThinker.SetNext(ticks + 100ms);
+
 		auto [status, socket, address] = m_clSocket.TryAccept();
 
 		if (status == Socket::Status::OK)

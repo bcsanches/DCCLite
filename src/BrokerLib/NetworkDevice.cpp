@@ -52,7 +52,7 @@ namespace dcclite::broker
 		Device(std::move(name), dccService, params, project),
 		m_clPinManager(DecodeBoardName(params["class"].GetString())),
 		m_eStatus(Status::OFFLINE),
-		m_fRegistered(true)
+		m_fRegistered(true)		
 	{
 		this->Load();
 	}
@@ -713,27 +713,25 @@ namespace dcclite::broker
 		m_pclCurrentState->OnPacket(*this, packet, time, msgType, remoteAddress, remoteConfigToken);
 	}
 
-	void NetworkDevice::Update(const dcclite::Clock &clock)
+	void NetworkDevice::Update(const dcclite::Clock::TimePoint_t ticks)
 	{
 		if (m_eStatus != Status::ONLINE)
-			return;
-
-		auto time = clock.Ticks();
+			return;		
 
 		//Did remoted device timedout?
-		if (!this->CheckTimeout(time))
+		if (!this->CheckTimeout(ticks))
 		{
 			//yes, ok get out and wait for it to come back
 			return;
 		}
 
 		auto task = m_wpTask.lock();
-		if ((task) && (!task->Update(*this, time)))
+		if ((task) && (!task->Update(*this, ticks)))
 		{
 			m_wpTask.reset();
 		}
 
-		m_pclCurrentState->Update(*this, time);
+		m_pclCurrentState->Update(*this, ticks);
 	}
 
 	void NetworkDevice::ClearState()

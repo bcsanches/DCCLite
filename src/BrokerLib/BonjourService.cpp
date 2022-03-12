@@ -31,7 +31,10 @@ https://datatracker.ietf.org/doc/html/rfc6335 -> Internet Assigned Numbers Autho
 
 #include "Packet.h"
 #include "Socket.h"
+#include "Thinker.h"
 #include "Util.h"
+
+using namespace std::chrono_literals;
 
 //#define NO_ENDIANNESS
 
@@ -312,9 +315,7 @@ namespace dcclite::broker
 	{
 		public:
 			BonjourServiceImpl(const std::string &name, Broker &broker, const Project &project);
-			~BonjourServiceImpl() override;
-
-			void Update(const dcclite::Clock &clock) override;			
+			~BonjourServiceImpl() override;			
 
 			void Serialize(JsonOutputStream_t &stream) const override;		
 
@@ -333,15 +334,20 @@ namespace dcclite::broker
 
 			void SendServiceList(const DnsHeader &header, const QSection &query);
 
+			void Think(const dcclite::Clock::TimePoint_t tp);
+
 		private:		
 			dcclite::Socket m_clSocket;
 
 			std::map< ServiceKey, ServiceRecord> m_mapServices;
+
+			Thinker m_tUpdater;
 	};
 
 
 	BonjourServiceImpl::BonjourServiceImpl(const std::string& name, Broker &broker, const Project& project):
-		BonjourService(name, broker, project)
+		BonjourService(name, broker, project),
+		m_tUpdater{ {}, THINKER_MF_LAMBDA(Think) }
 	{				
 		if (!m_clSocket.Open(g_clDnsAddress.GetPort(), dcclite::Socket::Type::DATAGRAM, dcclite::Socket::FLAG_ADDRESS_REUSE))
 		{
@@ -708,7 +714,7 @@ READ_NAME_AGAIN:
 		}
 	}
 
-	void BonjourServiceImpl::Update(const dcclite::Clock& clock)
+	void BonjourServiceImpl::Think(const dcclite::Clock::TimePoint_t tp)
 	{	
 		NetworkPacket packet;		
 
@@ -731,7 +737,9 @@ READ_NAME_AGAIN:
 				continue;
 
 			this->ParsePacket(packet);
-		}								
+		}	
+
+		m_tUpdater.SetNext(tp + 100ms);
 	}
 
 	void BonjourServiceImpl::Serialize(JsonOutputStream_t &stream) const

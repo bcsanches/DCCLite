@@ -30,7 +30,7 @@ namespace dcclite::broker
 	}
 
 
-	void VirtualDevice::Update(const dcclite::Clock &clock)
+	void VirtualDevice::Update(const dcclite::Clock::TimePoint_t ticks)
 	{		
 		for (auto it : m_vecDecoders)
 		{
@@ -38,7 +38,7 @@ namespace dcclite::broker
 			if (!decoder)
 				continue;
 
-			decoder->Update(clock);
+			decoder->Update(ticks);
 		}
 	}
 

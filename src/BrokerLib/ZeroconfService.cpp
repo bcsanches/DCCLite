@@ -14,8 +14,12 @@
 #include <magic_enum.hpp>
 
 #include <Log.h>
+
 #include "Packet.h"
 #include "Project.h"
+#include "Thinker.h"
+
+using namespace std::chrono_literals;
 
 namespace dcclite::broker
 {		
@@ -23,9 +27,7 @@ namespace dcclite::broker
 	{
 		public:
 			ZeroconfServiceImpl(const std::string &name, Broker &broker, const Project &project);
-			~ZeroconfServiceImpl() override;
-
-			void Update(const dcclite::Clock &clock) override;			
+			~ZeroconfServiceImpl() override;			
 
 			void Serialize(JsonOutputStream_t &stream) const override;		
 
@@ -34,7 +36,11 @@ namespace dcclite::broker
 		private:
 			void SendReply(const NetworkAddress &destination, const std::string_view serviceName, const uint16_t port);
 
+			void Think(const dcclite::Clock::TimePoint_t ticks);
+
 		private:		
+			Thinker m_tThinker;
+
 			std::map<std::string_view, uint16_t> m_mapServices;
 
 			dcclite::Socket m_clSocket;
@@ -42,7 +48,8 @@ namespace dcclite::broker
 
 
 	ZeroconfServiceImpl::ZeroconfServiceImpl(const std::string& name, Broker &broker, const Project& project):
-		ZeroconfService(name, broker, project)
+		ZeroconfService(name, broker, project),
+		m_tThinker{ {}, THINKER_MF_LAMBDA(Think) }
 	{				
 		if (!m_clSocket.Open(9381, dcclite::Socket::Type::DATAGRAM, dcclite::Socket::FLAG_ADDRESS_REUSE))
 		{
@@ -96,8 +103,10 @@ namespace dcclite::broker
 		FLAG_QUERY = 0x01
 	};
 
-	void ZeroconfServiceImpl::Update(const dcclite::Clock& clock)
+	void ZeroconfServiceImpl::Think(const dcclite::Clock::TimePoint_t ticks)
 	{	
+		m_tThinker.SetNext(ticks + 500ms);
+
 		dcclite::BasePacket<MAX_PACKET_SIZE> packet;
 		NetworkAddress sender;
 
@@ -105,7 +114,7 @@ namespace dcclite::broker
 		//Process 16 requests per frame, to avoid flooding
 		for (int packetCount = 0; packetCount < 16; ++packetCount)
 		{
-			auto [status, size] = m_clSocket.Receive(sender, packet.GetRaw(), packet.GetCapacity());
+			auto [status, size] = m_clSocket.Receive(sender, packet.GetRaw(), packet.GetCapacity(), true);
 			if (status != Socket::Status::OK)
 				break;
 
@@ -200,14 +209,14 @@ namespace dcclite::broker
 	}
 
 	void ZeroconfServiceImpl::Register(const std::string_view serviceName, const uint16_t port)
-	{
+	{		
 		if (serviceName.length() > MAX_SERVICE_NAME)
-			throw std::invalid_argument(fmt::format("[ZeroconfServiceImpl::Register] Name length cannot be greater than {} - {}", MAX_SERVICE_NAME, serviceName));
+			throw std::invalid_argument(fmt::format("[ZeroconfServiceImpl::Register] Name length cannot be greater than {} - {}", MAX_SERVICE_NAME, serviceName));		
 
 		auto result = m_mapServices.emplace(std::make_pair(serviceName, port));
 
 		if (!result.second)
-			throw std::runtime_error(fmt::format("[ZeroconfServiceImpl::Register] Service {} already registered with port {}", serviceName, result.first->second));		
+			throw std::runtime_error(fmt::format("[ZeroconfServiceImpl::Register] Service {} already registered with port {}", serviceName, result.first->second));				
 	}
 
 	

@@ -36,7 +36,7 @@ namespace dcclite::broker
 
 			virtual ~Device();
 
-			virtual void Update(const dcclite::Clock &clock) = 0;
+			virtual void Update(const dcclite::Clock::TimePoint_t tp) = 0;
 
 			//
 			// IDeviceDEcoderServices

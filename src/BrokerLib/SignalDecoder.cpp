@@ -212,10 +212,10 @@ namespace dcclite::broker
 		m_rclManager.Decoder_OnStateChanged(*this);
 	}
 
-	void SignalDecoder::Update(const dcclite::Clock &clock)
+	void SignalDecoder::Update(const dcclite::Clock::TimePoint_t ticks)
 	{
 		if (m_pclCurrentState)
-			m_pclCurrentState->Update(*this, clock.Ticks());
+			m_pclCurrentState->Update(*this, ticks);
 	}
 
 	void SignalDecoder::State_TurnOff::Update(SignalDecoder &self, const dcclite::Clock::TimePoint_t time)

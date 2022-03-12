@@ -444,7 +444,7 @@ namespace dcclite
 	}
 
 
-	std::tuple<Socket::Status, size_t> Socket::Receive(NetworkAddress &sender, void *data, size_t size)
+	std::tuple<Socket::Status, size_t> Socket::Receive(NetworkAddress &sender, void *data, const size_t size, const bool truncate)
 	{	
 		assert(m_hHandle != NULL_SOCKET);
 
@@ -474,7 +474,8 @@ namespace dcclite
 
 				case WSAEMSGSIZE:
 				default:
-					throw std::runtime_error("receive overflow");					
+					if(!truncate)
+						throw std::runtime_error("receive overflow");					
 			}
 		}
 #elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX

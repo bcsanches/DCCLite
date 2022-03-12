@@ -21,6 +21,7 @@
 #include "Packet.h"
 #include "PinManager.h"
 #include "Socket.h"
+#include "Thinker.h"
 
 #include <rapidjson/document.h>
 
@@ -44,7 +45,7 @@ namespace dcclite::broker
 
 			~NetworkDevice();
 
-			void Update(const dcclite::Clock &clock) override;
+			void Update(const dcclite::Clock::TimePoint_t ticks) override;
 
 			void AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::NetworkAddress remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken);
 
@@ -280,7 +281,7 @@ namespace dcclite::broker
 			//
 			//			
 			uint32_t								m_u32TaskId = 0;
-			std::weak_ptr<detail::NetworkTaskImpl>	m_wpTask;
+			std::weak_ptr<detail::NetworkTaskImpl>	m_wpTask;			
 
 			/**
 			Registered is a device that is stored on config.

@@ -26,6 +26,7 @@
 #include "LoconetService.h"
 #include "TerminalCmd.h"
 #include "TerminalService.h"
+#include "Thinker.h"
 #include "ThrottleService.h"
 #include "SpecialFolders.h"
 #include "ZeroconfService.h"
@@ -157,16 +158,6 @@ namespace dcclite::broker
 		while (enumerator.MoveNext())
 		{
 			enumerator.TryGetCurrent<Service>()->Initialize();
-		}
-	}
-
-	void Broker::Update(const dcclite::Clock &clock)
-	{
-		auto enumerator = m_pServices->GetEnumerator();
-
-		while (enumerator.MoveNext())
-		{
-			enumerator.TryGetCurrent<Service>()->Update(clock);
 		}
 	}
 

@@ -27,6 +27,8 @@
 #include "TurnoutDecoder.h"
 #include "VirtualDevice.h"
 
+using namespace std::chrono_literals;
+
 namespace dcclite::broker
 {
 	std::unique_ptr<Decoder> TryCreateDecoder(const std::string &className, DccAddress address, std::string name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params)
@@ -45,7 +47,8 @@ namespace dcclite::broker
 
 
 	DccLiteService::DccLiteService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :
-		Service(name, broker, params, project)	
+		Service(name, broker, params, project),
+		m_tThinker{ {}, THINKER_MF_LAMBDA(Think) }
 	{
 		m_pDecoders = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("decoders")));
 		m_pAddresses = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("addresses")));
@@ -175,7 +178,7 @@ namespace dcclite::broker
 		return static_cast<NetworkDevice *>(m_pSessions->TryResolveChild(dcclite::GuidToString(guid)));
 	}
 
-	void DccLiteService::OnNet_Discovery(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet)
+	void DccLiteService::OnNet_Discovery(const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet)
 	{
 		dcclite::Log::Info("[{}::DccLiteService::OnNet_Hello] received discovery from {}, sending reply", this->GetName(), senderAddress);
 
@@ -187,7 +190,7 @@ namespace dcclite::broker
 		this->Device_SendPacket(senderAddress, pkt);
 	}
 
-	void DccLiteService::OnNet_Hello(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet)
+	void DccLiteService::OnNet_Hello(const dcclite::Clock::TimePoint_t tp, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet)
 	{
 		auto remoteSessionToken = packet.ReadGuid();
 		auto remoteConfigToken = packet.ReadGuid();
@@ -240,7 +243,7 @@ namespace dcclite::broker
 			}
 		}
 
-		netDevice->AcceptConnection(clock.Ticks(), senderAddress, remoteSessionToken, remoteConfigToken);
+		netDevice->AcceptConnection(tp, senderAddress, remoteSessionToken, remoteConfigToken);
 	}
 
 	NetworkDevice *DccLiteService::TryFindPacketDestination(dcclite::Packet &packet)
@@ -258,7 +261,7 @@ namespace dcclite::broker
 		return dev;
 	}
 
-	void DccLiteService::OnNet_Packet(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType)
+	void DccLiteService::OnNet_Packet(const dcclite::Clock::TimePoint_t tp, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType)
 	{
 		auto dev = TryFindPacketDestination(packet);
 		if (!dev)
@@ -270,7 +273,7 @@ namespace dcclite::broker
 
 		dcclite::Guid configToken = packet.ReadGuid();
 
-		dev->OnPacket(packet, clock.Ticks(), msgType, senderAddress, configToken);
+		dev->OnPacket(packet, tp, msgType, senderAddress, configToken);
 	}
 
 
@@ -374,8 +377,10 @@ namespace dcclite::broker
 		this->NotifyItemChanged(decoder);		
 	}
 
-	void DccLiteService::Update(const dcclite::Clock &clock)
+	void DccLiteService::Think(const dcclite::Clock::TimePoint_t ticks)
 	{
+		m_tThinker.SetNext(ticks + 50ms);
+
 		std::uint8_t data[2048];
 
 		dcclite::NetworkAddress sender;
@@ -414,15 +419,15 @@ namespace dcclite::broker
 			switch (msgType)
 			{
 				case dcclite::MsgTypes::DISCOVERY:
-					this->OnNet_Discovery(clock, sender, pkt);
+					this->OnNet_Discovery(sender, pkt);
 					break;
 
 				case dcclite::MsgTypes::HELLO:
-					this->OnNet_Hello(clock, sender, pkt);
+					this->OnNet_Hello(ticks, sender, pkt);
 					break;
 
 				default:
-					this->OnNet_Packet(clock, sender, pkt, msgType);
+					this->OnNet_Packet(ticks, sender, pkt, msgType);
 					break;
 			}
 		}
@@ -432,7 +437,7 @@ namespace dcclite::broker
 		{
 			auto dev = enumerator.TryGetCurrent<Device>();
 
-			dev->Update(clock);
+			dev->Update(ticks);
 		}
 	}
 }

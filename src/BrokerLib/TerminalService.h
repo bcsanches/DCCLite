@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "Service.h"
+#include "Thinker.h"
 
 #include "Socket.h"
 
@@ -28,12 +29,15 @@ namespace dcclite::broker
 
 			std::vector<TerminalClient> m_vecClients;
 
+			Thinker m_tThinker;
+
+		private:
+			void Think(const dcclite::Clock::TimePoint_t tp);
+
 		public:
 			TerminalService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
-			virtual ~TerminalService();
-
-			void Update(const dcclite::Clock &clock) override;
+			virtual ~TerminalService();			
 
 			const char *GetTypeName() const noexcept override { return "TerminalService"; }
 	};

@@ -21,6 +21,9 @@
 #include "LoconetService.h"
 #include "NetMessenger.h"
 #include "Parser.h"
+#include "Thinker.h"
+
+using namespace std::chrono_literals;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -50,9 +53,9 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 			return "Throttle";
 		}
 
-		void Update(const dcclite::Clock &clock)
+		void Update(const dcclite::Clock::TimePoint_t ticks)
 		{
-			m_pclCurrentState->Update(*this, clock.Ticks());
+			m_pclCurrentState->Update(*this, ticks);
 		}
 
 		void OnSpeedChange() override
@@ -658,9 +661,7 @@ namespace dcclite::broker
 	{
 		public:
 			ThrottleServiceImpl(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
-			~ThrottleServiceImpl() override;
-
-			void Update(const dcclite::Clock &clock) override;			
+			~ThrottleServiceImpl() override;			
 
 			void Serialize(JsonOutputStream_t &stream) const override;	
 
@@ -668,13 +669,20 @@ namespace dcclite::broker
 			void ReleaseThrottle(IThrottle &throttle) override;
 
 		private:
+			void Think(const dcclite::Clock::TimePoint_t ticks);
+
+		private:
+			Thinker m_tThinker;
+
 			dcclite::NetworkAddress m_clServerAddress;
+			unsigned int			m_uThrottleCount = 0;
 	};
 
 
 	ThrottleServiceImpl::ThrottleServiceImpl(const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
 		ThrottleService(name, broker, params, project),		
-		m_clServerAddress{ dcclite::NetworkAddress::ParseAddress(DetermineServerAddress(params)) }
+		m_clServerAddress{ dcclite::NetworkAddress::ParseAddress(DetermineServerAddress(params)) },
+		m_tThinker{THINKER_MF_LAMBDA(Think)}
 	{				
 		dcclite::Log::Info("[ThrottleServiceImpl] Started, server at {}", m_clServerAddress);		
 	}
@@ -685,14 +693,16 @@ namespace dcclite::broker
 		//empty
 	}
 
-	void ThrottleServiceImpl::Update(const dcclite::Clock& clock)
+	void ThrottleServiceImpl::Think(const dcclite::Clock::TimePoint_t ticks)
 	{	
+		m_tThinker.SetNext(ticks + 20ms);
+
 		auto enumerator = this->GetEnumerator();
 		while (enumerator.MoveNext())
 		{
 			auto throttle = enumerator.TryGetCurrent<Throttle>();
 
-			throttle->Update(clock);
+			throttle->Update(ticks);
 		}
 	}
 
@@ -717,14 +727,24 @@ namespace dcclite::broker
 	{
 		auto throttle = dynamic_cast<IThrottle *>(this->AddChild(std::make_unique<Throttle>(this->m_clServerAddress, owner )));
 
+		if (!m_tThinker.IsScheduled())
+			m_tThinker.SetNext({});
+
+		++m_uThrottleCount;
+
 		return *throttle;
 	}
 
 	void ThrottleServiceImpl::ReleaseThrottle(IThrottle &throttle)
 	{
 		auto &t = dynamic_cast<Throttle &>(throttle);
-		this->RemoveChild(t.GetName());
+		this->RemoveChild(t.GetName());		
+
+		--m_uThrottleCount;
+		if (!m_uThrottleCount)
+		{
+			//nothing else to do... so go to sleep
+			m_tThinker.Cancel();
+		}
 	}
-
-
 }

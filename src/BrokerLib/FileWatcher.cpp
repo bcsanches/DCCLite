@@ -10,15 +10,27 @@
 
 #include "FileWatcher.h"
 
+#include "Thinker.h"
+
 #include <fmt/format.h>
 #include <Log.h>
 #include <lfwatch.h>
 #include <map>
 
-static lfw::Watcher gWatcher;
+using namespace std::chrono_literals;
 
 namespace FileWatcher
 {		
+	static void PumpEvents(const dcclite::Clock::TimePoint_t tp);
+
+	class DirectoryWatcher;
+
+	static lfw::Watcher gWatcher;
+	static dcclite::broker::Thinker g_Thinker{ PumpEvents };
+	static std::map<dcclite::fs::path, DirectoryWatcher> g_mapWatchers;
+
+	constexpr auto DEFAULT_INTERVAL = 1s;
+
 	inline uint32_t FlagBroker2Lfw(const uint32_t flags)
 	{
 		uint32_t newFlag = 0;
@@ -97,7 +109,12 @@ namespace FileWatcher
 			std::map<std::string, Handle> m_mapHandles;
 	};	
 
-	std::map<dcclite::fs::path, DirectoryWatcher> g_mapWatchers;	
+	static void PumpEvents(const dcclite::Clock::TimePoint_t tp)
+	{
+		gWatcher.update();
+
+		g_Thinker.SetNext(tp + DEFAULT_INTERVAL);
+	}	
 
 	void WatchFile(const dcclite::fs::path &fileName, const uint32_t flags, const Callback_t &callback)
 	{
@@ -118,6 +135,11 @@ namespace FileWatcher
 		}
 
 		it->second.AddHandle(fileName.filename().string(), flags, callback);
+
+		if (!g_Thinker.IsScheduled())
+		{
+			g_Thinker.SetNext(dcclite::Clock::DefaultClock_t::time_point{});
+		}
 	}
 
 	void UnwatchFile(const dcclite::fs::path &fileName)
@@ -140,13 +162,11 @@ namespace FileWatcher
 			g_mapWatchers.erase(it);
 
 			gWatcher.remove(filePath.string());
-		}			
-	}
 
-	void PumpEvents()
-	{
-		gWatcher.update();
-	}
+			if (g_mapWatchers.empty())
+				g_Thinker.Cancel();
+		}		
+	}	
 }
 
 

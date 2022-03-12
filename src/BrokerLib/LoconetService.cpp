@@ -25,6 +25,7 @@
 #include "Clock.h"
 #include "ThrottleService.h"
 #include "SerialPort.h"
+#include "Thinker.h"
 
 enum Bits : uint8_t
 {
@@ -965,9 +966,7 @@ namespace dcclite::broker
 	{
 		public:
 			LoconetServiceImpl(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
-			~LoconetServiceImpl() override;
-
-			void Update(const dcclite::Clock &clock) override;
+			~LoconetServiceImpl() override;			
 
 			void Initialize() override;
 
@@ -988,6 +987,9 @@ namespace dcclite::broker
 
 			void ResetPr3();
 
+			void Think(const dcclite::Clock::TimePoint_t ticks);
+			void PurgeThink(const dcclite::Clock::TimePoint_t ticks);
+
 		private:
 			SlotManager m_clSlotManager;
 
@@ -997,9 +999,10 @@ namespace dcclite::broker
 
 			MessageDispatcher m_clMessageDispatcher;
 
-			std::string m_strThrottleServiceName;
+			std::string m_strThrottleServiceName;			
 
-			dcclite::Clock::TimePoint_t m_tNextPurgeTicks;	
+			Thinker m_tThinker;
+			Thinker m_tPurgeThinker;
 
 			uint8_t m_uErrorCount = 0;
 	};
@@ -1008,7 +1011,9 @@ namespace dcclite::broker
 	LoconetServiceImpl::LoconetServiceImpl(const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
 		LoconetService(name, broker, params, project),
 		m_clSerialPort(params["port"].GetString()),
-		m_strThrottleServiceName(params["throttleService"].GetString())
+		m_strThrottleServiceName(params["throttleService"].GetString()),
+		m_tThinker{ {}, THINKER_MF_LAMBDA(Think)},
+		m_tPurgeThinker{ {}, THINKER_MF_LAMBDA(PurgeThink) }
 	{				
 		dcclite::Log::Info("[LoconetService] Started, listening on port {}", params["port"].GetString());
 
@@ -1344,22 +1349,22 @@ namespace dcclite::broker
 		}
 	}
 
-	void LoconetServiceImpl::Update(const dcclite::Clock& clock)
-	{	
-		auto ticks = clock.Ticks();
-		if (m_tNextPurgeTicks <= clock.Ticks())
-		{
-			Log::Trace("[LoconetServiceImpl::Update] Purging slots");
-			
-			m_clSlotManager.PurgeSlots(ticks, [this](uint8_t slot)
-				{
-					this->NotifySlotChanged(slot);
-				}
-			);
+	void LoconetServiceImpl::PurgeThink(const dcclite::Clock::TimePoint_t ticks)
+	{
+		Log::Trace("[LoconetServiceImpl::Update] Purging slots");
+		m_clSlotManager.PurgeSlots(ticks, [this](uint8_t slot)
+			{
+				this->NotifySlotChanged(slot);
+			}
+		);
 
-			m_tNextPurgeTicks = clock.Ticks() + PURGE_INTERVAL;						
-		}
+		m_tPurgeThinker.SetNext(ticks + PURGE_INTERVAL);
+	}
 
+	void LoconetServiceImpl::Think(const dcclite::Clock::TimePoint_t ticks)
+	{			
+		m_tThinker.SetNext(ticks + 20ms);
+				
 		//pump outgoing messages
 		m_clMessageDispatcher.Update(m_clSerialPort);
 

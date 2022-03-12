@@ -81,9 +81,7 @@ namespace dcclite::broker
 		public:
 			virtual void Initialize() {};			
 
-			virtual ~Service() {}
-
-			virtual void Update(const dcclite::Clock& clock) { ; }
+			virtual ~Service() {}			
 
 			void AddListener(IObjectManagerListener &listener);
 			void RemoveListener(IObjectManagerListener &listener);

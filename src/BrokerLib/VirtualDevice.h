@@ -21,7 +21,7 @@ namespace dcclite::broker
 			VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project);
 			VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const Project &project);
 
-			void Update(const dcclite::Clock &clock) override;	
+			void Update(const dcclite::Clock::TimePoint_t ticks) override;
 
 			//
 			//IObject

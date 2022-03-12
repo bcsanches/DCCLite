@@ -20,8 +20,8 @@
 #include "Guid.h"
 #include "IDccLiteService.h"
 #include "Packet.h"
-
 #include "Socket.h"
+#include "Thinker.h"
 
 namespace dcclite::broker
 {
@@ -38,9 +38,7 @@ namespace dcclite::broker
 		public:
 			DccLiteService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
-			~DccLiteService() override;
-		
-			void Update(const dcclite::Clock &clock) override;				
+			~DccLiteService() override;				
 
 			//
 			//IObject
@@ -82,14 +80,16 @@ namespace dcclite::broker
 			std::vector<TurnoutDecoder*> FindAllTurnoutDecoders();
 
 		private:
-			void OnNet_Discovery(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet);
-			void OnNet_Hello(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet);		
+			void OnNet_Discovery(const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet);
+			void OnNet_Hello(const dcclite::Clock::TimePoint_t ticks, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet);
 
-			void OnNet_Packet(const dcclite::Clock &clock, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType);			
+			void OnNet_Packet(const dcclite::Clock::TimePoint_t ticks, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType);
 
 			NetworkDevice *TryFindDeviceSession(const dcclite::Guid &guid);
 
-			NetworkDevice *TryFindPacketDestination(dcclite::Packet &packet);							
+			NetworkDevice *TryFindPacketDestination(dcclite::Packet &packet);	
+
+			void Think(const dcclite::Clock::TimePoint_t ticks);
 
 		private:
 			//
@@ -128,6 +128,8 @@ namespace dcclite::broker
 			}
 
 		private:
+			Thinker m_tThinker;
+
 			dcclite::Socket m_clSocket;		
 
 			FolderObject *m_pDecoders;

@@ -34,6 +34,4 @@ namespace FileWatcher
 	void WatchFile(const dcclite::fs::path &fileName, const uint32_t flags, const Callback_t &callback);
 
 	void UnwatchFile(const dcclite::fs::path &fileName);
-
-	void PumpEvents();
 }

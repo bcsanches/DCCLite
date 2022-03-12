@@ -38,6 +38,8 @@
 
 #include <thread>
 
+using namespace std::chrono_literals;
+
 namespace dcclite::broker
 {
 
@@ -577,7 +579,7 @@ namespace dcclite::broker
 					throw TerminalCmdException(fmt::format("Device {} on {} system is NOT a network device", deviceName, systemName), id);
 				}				
 
-				return std::make_unique< ReadEEPromFiber>(id, *networkDevice);
+				return std::make_unique<ReadEEPromFiber>(id, *networkDevice);
 			}
 	};
 
@@ -878,7 +880,8 @@ namespace dcclite::broker
 	}
 
 	TerminalService::TerminalService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :
-		Service(name, broker, params, project)	
+		Service(name, broker, params, project),
+		m_tThinker{ {}, THINKER_MF_LAMBDA(Think) }
 	{	
 		auto cmdHost = broker.GetTerminalCmdHost();
 
@@ -949,8 +952,10 @@ namespace dcclite::broker
 		//empty
 	}	
 
-	void TerminalService::Update(const dcclite::Clock &clock)
+	void TerminalService::Think(const dcclite::Clock::TimePoint_t tp)
 	{
+		m_tThinker.SetNext(tp + 100ms);
+
 		auto [status, socket, address] = m_clSocket.TryAccept();
 
 		if (status == Socket::Status::OK)
@@ -972,5 +977,4 @@ namespace dcclite::broker
 			}
 		}
 	}
-
 }
