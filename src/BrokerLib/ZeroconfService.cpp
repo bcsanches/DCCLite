@@ -38,6 +38,8 @@ namespace dcclite::broker
 
 			void Think(const dcclite::Clock::TimePoint_t ticks);
 
+			void OpenSocket();
+
 		private:		
 			Thinker m_tThinker;
 
@@ -51,16 +53,21 @@ namespace dcclite::broker
 		ZeroconfService(name, broker, project),
 		m_tThinker{ {}, THINKER_MF_LAMBDA(Think) }
 	{				
-		if (!m_clSocket.Open(9381, dcclite::Socket::Type::DATAGRAM, dcclite::Socket::FLAG_ADDRESS_REUSE))
-		{
-			throw std::runtime_error("[ZeroconfServiceImpl] Cannot open port 9381 for listening");
-		}
+		this->OpenSocket();
 	}
 	
 
 	ZeroconfServiceImpl::~ZeroconfServiceImpl()
 	{
 		//empty
+	}
+
+	void ZeroconfServiceImpl::OpenSocket()
+	{
+		if (!m_clSocket.Open(9381, dcclite::Socket::Type::DATAGRAM, dcclite::Socket::FLAG_ADDRESS_REUSE))
+		{
+			throw std::runtime_error("[ZeroconfServiceImpl] Cannot open port 9381 for listening");
+		}
 	}
 
 
@@ -114,9 +121,21 @@ namespace dcclite::broker
 		//Process 16 requests per frame, to avoid flooding
 		for (int packetCount = 0; packetCount < 16; ++packetCount)
 		{
+			packet.Reset();
+
 			auto [status, size] = m_clSocket.Receive(sender, packet.GetRaw(), packet.GetCapacity(), true);
 			if (status != Socket::Status::OK)
+			{
+				//Not sure why, but when SharpTerminal stops querying, this error may happen (just wait the countdown message to see it)
+				//The socket here is lost... so we reset it
+				if (status == Socket::Status::CONNRESET)
+				{
+					this->OpenSocket();
+				}
+
 				break;
+			}
+				
 
 			//Packet too small ?
 			if (size < PACKET_MINIMUM_SIZE)

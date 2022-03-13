@@ -76,11 +76,6 @@ namespace SharpTerminal
             mBackgroundWorker.RunWorkerAsync();
         }        
 
-        protected override void OnFormClosed(FormClosedEventArgs e)
-        {
-            base.OnFormClosed(e);            
-        }
-
         private void SendQuery()
         {
             short packetSize = 0;

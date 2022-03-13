@@ -26,6 +26,8 @@ namespace dcclite
 
 	std::string GetSystemLastErrorMessage() noexcept;
 
+	std::string GetSystemErrorMessage(const unsigned int error) noexcept;
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	//
 	//

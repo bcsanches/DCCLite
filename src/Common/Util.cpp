@@ -73,12 +73,10 @@ std::string_view dcclite::StrTrim(std::string_view str) noexcept
 	return str.substr(newBegin - str.begin(), newEnd - newBegin);
 }
 
-std::string dcclite::GetSystemLastErrorMessage() noexcept
+std::string dcclite::GetSystemErrorMessage(const unsigned int error) noexcept
 {
 #ifndef WIN32
-	auto errorMsg = dlerror();
-
-	return std::string(errorMsg);
+	return "FIXME: GetSystemErrorMessage -> not implemented";
 
 #elif defined WIN32
 	LPWSTR lpMsgBuf;
@@ -87,7 +85,7 @@ std::string dcclite::GetSystemLastErrorMessage() noexcept
 		FORMAT_MESSAGE_FROM_SYSTEM |
 		FORMAT_MESSAGE_IGNORE_INSERTS,
 		NULL,
-		GetLastError(),
+		error,
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		(LPWSTR)&lpMsgBuf,
 		0,
@@ -116,7 +114,7 @@ std::string dcclite::GetSystemLastErrorMessage() noexcept
 		return "GetSystemLastErrorMessage::WideCharToMultiByte failed";
 	}
 
-	std::string ret( requiredStrSize, '\0' );
+	std::string ret(requiredStrSize, '\0');
 
 	WideCharToMultiByte(
 		CP_UTF8,
@@ -127,12 +125,24 @@ std::string dcclite::GetSystemLastErrorMessage() noexcept
 		requiredStrSize,
 		nullptr,
 		nullptr
-	);	
+	);
 
 	// Free the buffer.
 	LocalFree(lpMsgBuf);
 
-	return ret;	
+	return ret;
+#endif
+}
+
+std::string dcclite::GetSystemLastErrorMessage() noexcept
+{
+#ifndef WIN32
+	auto errorMsg = dlerror();
+
+	return std::string(errorMsg);
+
+#elif defined WIN32
+	return GetSystemErrorMessage(GetLastError());	
 #endif
 }
 

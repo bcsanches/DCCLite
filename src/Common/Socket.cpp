@@ -12,11 +12,15 @@
 
 #include "LogUtils.h"
 #include "Parser.h"
+#include "Util.h"
 
 #include <cassert>
+#include <optional>
 #include <stdexcept>
 
 #include <spdlog/logger.h>
+
+#include <fmt/format.h>
 
 #define PLATFORM_WINDOWS  1
 #define PLATFORM_MAC      2
@@ -58,6 +62,24 @@ static const dcclite::Socket::Handler_t NULL_SOCKET = -1;
 
 namespace dcclite
 {
+	static std::optional<bool> IsUdpSocket(Socket::Handler_t h) noexcept
+	{
+#if PLATFORM == PLATFORM_WINDOWS
+		WSAPROTOCOL_INFOW info;
+		int size = sizeof(info);
+
+		auto r = getsockopt(h, SOL_SOCKET, SO_PROTOCOL_INFO, reinterpret_cast<char *>(&info), &size);
+
+		if (r == SOCKET_ERROR)
+			return {};
+		else
+			return info.iSocketType == SOCK_DGRAM;
+#else
+		return {}
+#endif
+
+	}
+
 	NetworkAddress NetworkAddress::ParseAddress(const std::string_view address)
 	{
 		Parser parser(address.data());
@@ -473,9 +495,20 @@ namespace dcclite
 					return std::make_tuple(Status::WOULD_BLOCK, 0);
 
 				case WSAEMSGSIZE:
+					if (truncate)
+					{
+						result = size;
+						break;
+					}
+					else
+						throw std::runtime_error("[Socket::Receive] receive overflow");
+
+				case WSAECONNRESET:
+					return std::make_tuple(Status::CONNRESET, 0);
+				
 				default:
-					if(!truncate)
-						throw std::runtime_error("receive overflow");					
+					throw std::runtime_error(fmt::format("[Socket::Receive] Failed to receive: {}", dcclite::GetSystemErrorMessage(result)));
+						
 			}
 		}
 #elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX

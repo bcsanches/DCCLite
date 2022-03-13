@@ -144,7 +144,8 @@ namespace dcclite
 			{
 				OK = 0,
 				WOULD_BLOCK,
-				DISCONNECTED
+				DISCONNECTED,
+				CONNRESET
 			};
 
 			enum class Type
@@ -195,7 +196,7 @@ namespace dcclite
 			std::tuple<Status, size_t> Receive(NetworkAddress &sender, void *data, const size_t size, const bool truncate = false);
 			std::tuple<Status, size_t> Receive(void *data, size_t size);
 
-			bool JoinMulticastGroup(const IpAddress &address);
+			bool JoinMulticastGroup(const IpAddress &address);		
 
 		private:
 			Handler_t m_hHandle;
