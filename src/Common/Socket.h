@@ -156,7 +156,8 @@ namespace dcclite
 
 			enum Flags
 			{
-				FLAG_ADDRESS_REUSE = 0x01
+				FLAG_ADDRESS_REUSE = 0x01,
+				FLAG_BLOCKING_MODE = 0x02
 			};
 
 #ifdef DCCLITE64

@@ -586,8 +586,7 @@ namespace dcclite::broker
 		if(auto bonjourService = static_cast<BonjourService *>(m_rclBroker.TryFindService(BONJOUR_SERVICE_NAME)))
 			bonjourService->Register(this->GetName(), "dccpp", NetworkProtocol::TCP, port, 36);
 
-		auto zeroconfService = static_cast<ZeroconfService *>(m_rclBroker.TryFindService(ZEROCONF_SERVICE_NAME));
-		zeroconfService->Register(this->GetTypeName(), port);
+		ZeroconfService::Register(this->GetTypeName(), port);
 	}
 
 	void DccppServiceImpl::Initialize()

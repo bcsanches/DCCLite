@@ -14,31 +14,14 @@
 #include "Service.h"
 #include "Socket.h"
 
-namespace dcclite::broker
-{ 
-	constexpr auto ZEROCONF_SERVICE_NAME = "zeroconf";
-
-	class ZeroconfService: public Service
-	{	
-		public:
-			ZeroconfService(const std::string &name, Broker &broker, const Project& project);
+namespace dcclite::broker::ZeroconfService
+{ 		
+	extern void Start(std::string_view projectName);
 		
-			~ZeroconfService() override
-			{
-				//empty
-			}			
-
-			virtual void Register(const std::string_view serviceName, const uint16_t port) = 0;
-
-			//
-			//
-			//
-		
-			static std::unique_ptr<Service> Create(const std::string &name, Broker &broker, const Project &project);
-
-			const char *GetTypeName() const noexcept override
-			{
-				return "ZeroconfService";
-			}
-	};
+	//
+	// Register a name to be published 
+	//
+	// It is safe to call this without a call to Start, but publishing service only happens after start is called
+	//
+	extern void Register(const std::string_view serviceName, const uint16_t port);				
 }

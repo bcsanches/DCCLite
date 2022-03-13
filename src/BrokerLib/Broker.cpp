@@ -73,7 +73,7 @@ namespace dcclite::broker
 	Broker::Broker(dcclite::fs::path projectPath) :
 		m_clRoot("root"),
 		m_clProject(std::move(projectPath))
-	{
+	{		
 		{
 			auto cmdHost = std::make_unique<TerminalCmdHost>();
 			m_pclTerminalCmdHost = cmdHost.get();
@@ -81,16 +81,16 @@ namespace dcclite::broker
 			m_clRoot.AddChild(std::move(cmdHost));
 		}
 
-
 		using namespace dcclite;
 
 		m_pServices = static_cast<FolderObject *>(m_clRoot.AddChild(
 			std::make_unique<FolderObject>(SpecialFolders::GetName(SpecialFolders::Folders::ServicesId)))
-		);		
-
-		m_pServices->AddChild(ZeroconfService::Create(ZEROCONF_SERVICE_NAME, *this, m_clProject));
+		);				
 
 		this->LoadConfig();
+
+		//Start after load, so project name is already loaded
+		ZeroconfService::Start(m_clProject.GetName());
 	}
 
 

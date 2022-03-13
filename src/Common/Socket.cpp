@@ -198,26 +198,33 @@ namespace dcclite
 			return false;
 		}
 
-		#if PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+		
 
-		int nonBlocking = 1;
-		if (fcntl(m_hHandle, F_SETFL, O_NONBLOCK, nonBlocking) == -1)
+		if (!(flags & FLAG_BLOCKING_MODE))
 		{
-			LogGetDefault()->error("[Socket::Open] Failed to set socket to non-blocking mode.");			
-			return false;
+#if PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+			int nonBlocking = 1;
+			if (fcntl(m_hHandle, F_SETFL, O_NONBLOCK, nonBlocking) == -1)
+			{
+				LogGetDefault()->error("[Socket::Open] Failed to set socket to non-blocking mode.");
+				return false;
+			}
+
+#elif PLATFORM == PLATFORM_WINDOWS
+
+			DWORD nonBlocking = 1;
+			if (ioctlsocket(m_hHandle, FIONBIO, &nonBlocking) != 0)
+			{
+				this->Close();
+
+				LogGetDefault()->error("[Socket::Open] Failed to set socket to non-blocking mode.");
+				return false;
+			}
+#endif
 		}
+		
 
-		#elif PLATFORM == PLATFORM_WINDOWS
-
-		DWORD nonBlocking = 1;
-		if (ioctlsocket(m_hHandle, FIONBIO, &nonBlocking) != 0)
-		{
-			this->Close();
-
-			LogGetDefault()->error("[Socket::Open] Failed to set socket to non-blocking mode.");
-			return false;
-		}
-
+#if PLATFORM == PLATFORM_WINDOWS
 		int noDelay = 1;
 		if ((type == Type::STREAM) && (setsockopt(m_hHandle, IPPROTO_TCP, TCP_NODELAY, (const char *)&noDelay, sizeof(int)) != 0))
 		{
@@ -248,9 +255,9 @@ namespace dcclite
 			}
 		}
 
-		#else
-		#error "plataform"
-		#endif
+#else
+#error "plataform"
+#endif
 
 		sockaddr_in address;
 		address.sin_family = AF_INET;
