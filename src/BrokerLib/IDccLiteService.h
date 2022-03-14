@@ -88,7 +88,7 @@ namespace dcclite::broker
 
 			virtual Decoder *TryFindDecoder(std::string_view id) const = 0;
 
-			virtual [[nodiscard]] std::string_view Decoder_GetSystemName() const noexcept = 0;
+			[[nodiscard]] virtual std::string_view Decoder_GetSystemName() const noexcept = 0;
 	};
 
 	class IDccLite_DeviceServices

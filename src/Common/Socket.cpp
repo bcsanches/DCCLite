@@ -224,7 +224,7 @@ namespace dcclite
 		}
 		
 
-#if PLATFORM == PLATFORM_WINDOWS
+#if 1
 		int noDelay = 1;
 		if ((type == Type::STREAM) && (setsockopt(m_hHandle, IPPROTO_TCP, TCP_NODELAY, (const char *)&noDelay, sizeof(int)) != 0))
 		{
