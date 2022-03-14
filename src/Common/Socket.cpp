@@ -568,6 +568,9 @@ namespace dcclite
 				case WSAEWOULDBLOCK:
 					return std::make_pair(Status::WOULD_BLOCK, 0);
 
+				case WSAEINTR:
+					return std::make_pair(Status::INTERRUPTED, 0);
+
 				case WSAEMSGSIZE:
 					throw std::runtime_error("receive overflow");
 
