@@ -145,7 +145,8 @@ namespace dcclite
 				OK = 0,
 				WOULD_BLOCK,
 				DISCONNECTED,
-				CONNRESET
+				CONNRESET,
+				INTERRUPTED		//Should only happens when the socket is closed during a blocking call
 			};
 
 			enum class Type

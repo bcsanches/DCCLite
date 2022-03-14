@@ -46,6 +46,10 @@ namespace dcclite::broker
 
 		dcclite::Log::Info("Creating DccLite Service: {}", name);
 
+		if (strcmp(className, "Bonjour") == 0)
+		{
+			return BonjourService::Create(name, broker, project);
+		}
 		if (strcmp(className, "DccLite") == 0)
 		{
 			return std::make_unique<DccLiteService>(name, broker, data, project);

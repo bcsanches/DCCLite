@@ -282,7 +282,7 @@ namespace dcclite::broker::detail
 
 	class ServoTurnoutDecoder;
 
-	class ServoTurnoutProgrammerTask: NetworkTaskImpl
+	class ServoTurnoutProgrammerTask: public NetworkTaskImpl
 	{
 		public:
 			ServoTurnoutProgrammerTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, ServoTurnoutDecoder &decoder):
@@ -290,11 +290,46 @@ namespace dcclite::broker::detail
 				m_rclDecoder{decoder}
 			{
 				//empty
+			}			
+
+			bool HasFinished() const noexcept override
+			{
+				return m_fFinished;
 			}
+
+			bool HasFailed() const noexcept override
+			{
+				return m_fFailed;
+			}
+
+			void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) override;
+
+			bool Update(INetworkDevice_TaskServices &owner, const dcclite::Clock::TimePoint_t time) noexcept override;
+
+			void Abort() noexcept override;
 
 		private:
 			ServoTurnoutDecoder &m_rclDecoder;
+
+			bool m_fAborted = false;
+			bool m_fFinished = false;
+			bool m_fFailed = false;
 	};
+
+	void ServoTurnoutProgrammerTask::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time)
+	{
+
+	}
+
+	bool ServoTurnoutProgrammerTask::Update(INetworkDevice_TaskServices &owner, const dcclite::Clock::TimePoint_t time) noexcept
+	{
+		return true;
+	}
+
+	void ServoTurnoutProgrammerTask::Abort() noexcept
+	{
+
+	}
 
 	//
 	//
@@ -304,5 +339,10 @@ namespace dcclite::broker::detail
 	std::shared_ptr<NetworkTaskImpl> StartDownloadEEPromTask(INetworkDevice_TaskServices &device, const uint32_t taskId, DownloadEEPromTaskResult_t &resultsStorage)
 	{		
 		return std::make_shared<DownloadEEPromTask>(device, taskId, resultsStorage);
+	}
+
+	std::shared_ptr<NetworkTaskImpl> StartServoTurnoutProgrammerTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, ServoTurnoutDecoder &decoder)
+	{
+		return std::make_shared<ServoTurnoutProgrammerTask>(owner, taskId, decoder);
 	}
 }

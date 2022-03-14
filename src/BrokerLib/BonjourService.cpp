@@ -26,12 +26,13 @@ https://datatracker.ietf.org/doc/html/rfc6335 -> Internet Assigned Numbers Autho
 #include "BonjourService.h"
 
 #include <magic_enum.hpp>
+#include <mutex>
 
 #include <Log.h>
 
+#include "Clock.h"
 #include "Packet.h"
 #include "Socket.h"
-#include "Thinker.h"
 #include "Util.h"
 
 using namespace std::chrono_literals;
@@ -334,36 +335,33 @@ namespace dcclite::broker
 
 			void SendServiceList(const DnsHeader &header, const QSection &query);
 
-			void Think(const dcclite::Clock::TimePoint_t tp);
+			[[nodiscard]] bool Think();
+
+			void NetworkProc();
 
 		private:		
 			dcclite::Socket m_clSocket;
 
-			std::map< ServiceKey, ServiceRecord> m_mapServices;
+			std::map< ServiceKey, ServiceRecord> m_mapServices;			
 
-			Thinker m_tUpdater;
+			std::thread	m_tNetworkThread;
+			std::mutex	m_mtxMapServicesLock;			
 	};
 
 
 	BonjourServiceImpl::BonjourServiceImpl(const std::string& name, Broker &broker, const Project& project):
 		BonjourService(name, broker, project),
-		m_tUpdater{ {}, THINKER_MF_LAMBDA(Think) }
+		m_tNetworkThread{ [this]() { this->NetworkProc(); }}		
 	{				
-		if (!m_clSocket.Open(g_clDnsAddress.GetPort(), dcclite::Socket::Type::DATAGRAM, dcclite::Socket::FLAG_ADDRESS_REUSE))
-		{
-			throw std::runtime_error("[BonjourServiceImpl] Cannot open port 5353 for listening");
-		}
-
-		if (!m_clSocket.JoinMulticastGroup(g_clDnsAddress))
-		{
-			throw std::runtime_error("[BonjourServiceImpl] Cannot join multicast group");
-		}
+		//empty
 	}
 	
 
 	BonjourServiceImpl::~BonjourServiceImpl()
 	{
-		//empty
+		m_clSocket.Close();
+
+		m_tNetworkThread.join();
 	}
 
 	void BonjourServiceImpl::CheckCNameSize(const std::string_view cname,const size_t maxLen)
@@ -445,6 +443,9 @@ namespace dcclite::broker
 		std::string localInstanceName = LowerCase(instanceName);
 		std::string localServiceName = serviceName[0] == '_' ? LowerCase(serviceName) : "_" + LowerCase(serviceName);
 
+
+		std::lock_guard guard{ m_mtxMapServicesLock };
+
 		auto r = m_mapServices.emplace(std::make_pair(ServiceKey{ localServiceName, protocol }, ServiceRecord{ std::move(localInstanceName), std::move(localServiceName), protocol, port, ttl }));
 		if (!r.second)
 		{
@@ -507,6 +508,8 @@ namespace dcclite::broker
 		//
 		//Not a generic query, so lookup local services
 		ServiceKey key{ qsection.m_vecLabels[numLabels - 3], protocol.value() };
+
+		std::lock_guard guard{ m_mtxMapServicesLock };
 
 		auto it = m_mapServices.find(key);
 		if (it == m_mapServices.end())
@@ -714,11 +717,39 @@ READ_NAME_AGAIN:
 		}
 	}
 
-	void BonjourServiceImpl::Think(const dcclite::Clock::TimePoint_t tp)
-	{	
-		NetworkPacket packet;		
+	void BonjourServiceImpl::NetworkProc()
+	{
+		if (!m_clSocket.Open(g_clDnsAddress.GetPort(), dcclite::Socket::Type::DATAGRAM, dcclite::Socket::FLAG_ADDRESS_REUSE | dcclite::Socket::FLAG_BLOCKING_MODE))
+		{
+			throw std::runtime_error("[BonjourServiceImpl] Cannot open port 5353 for listening");
+		}
 
-		auto numServices = m_mapServices.size();
+		if (!m_clSocket.JoinMulticastGroup(g_clDnsAddress))
+		{
+			throw std::runtime_error("[BonjourServiceImpl] Cannot join multicast group");
+		}
+
+		for (;;)
+		{
+			auto startTime = dcclite::Clock::DefaultClock_t::now();
+
+			//Was thread interrupted?
+			if (!this->Think())
+				break;
+
+			auto endTime = dcclite::Clock::DefaultClock_t::now();
+
+			if ((endTime - startTime) < 100ms)
+			{
+				//are we going too fast?
+				std::this_thread::sleep_for(100ms);
+			}
+		}
+	}
+
+	bool BonjourServiceImpl::Think()
+	{	
+		NetworkPacket packet;				
 
 		//Limit processing per frame in case something is flooding the network....
 		for (auto packetCount = 0; packetCount < 8; ++packetCount)
@@ -726,20 +757,32 @@ READ_NAME_AGAIN:
 			auto [status, size] = packet.Receive(m_clSocket);
 
 			if (status != dcclite::Socket::Status::OK)
-				return;
+			{
+				//Bonjour destructor was called and socket was closed?
+				if (status == dcclite::Socket::Status::INTERRUPTED)
+					return false;
+
+				continue;
+			}
 
 			//corrupted packet?
 			if (size < sizeof(DnsHeader))
 				continue;
 
-			//Is there any reason to parse packets if no services are registered?
-			if (numServices == 0)
-				continue;
+			{
+				std::lock_guard guard{ m_mtxMapServicesLock };
+
+				auto numServices = m_mapServices.size();
+
+				//Is there any reason to parse packets if no services are registered?
+				if (numServices == 0)
+					continue;
+			}
 
 			this->ParsePacket(packet);
 		}	
 
-		m_tUpdater.SetNext(tp + 100ms);
+		return true;
 	}
 
 	void BonjourServiceImpl::Serialize(JsonOutputStream_t &stream) const
