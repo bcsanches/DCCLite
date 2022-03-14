@@ -49,6 +49,7 @@ typedef int socklen_t;
 
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <fcntl.h>
 
 static const dcclite::Socket::Handler_t NULL_SOCKET = -1;
@@ -75,7 +76,7 @@ namespace dcclite
 		else
 			return info.iSocketType == SOCK_DGRAM;
 #else
-		return {}
+		return  std::nullopt;
 #endif
 
 	}
