@@ -25,6 +25,8 @@
 
 namespace dcclite::broker
 { 
+	class ServoTurnoutDecoder;
+
 	class NetworkTask
 	{
 		public:
@@ -105,9 +107,7 @@ namespace dcclite::broker
 				const uint32_t m_u32TaskId;
 
 				INetworkDevice_TaskServices &m_rOwner;
-		};
-
-		class ServoTurnoutDecoder;
+		};		
 
 		extern std::shared_ptr<NetworkTaskImpl> StartDownloadEEPromTask(INetworkDevice_TaskServices &device, const uint32_t taskId, DownloadEEPromTaskResult_t &resultsStorage);
 		extern std::shared_ptr<NetworkTaskImpl> StartServoTurnoutProgrammerTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, ServoTurnoutDecoder &decoder);

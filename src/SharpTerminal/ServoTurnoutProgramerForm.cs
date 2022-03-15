@@ -85,7 +85,7 @@ namespace SharpTerminal
 
             this.Text += " - " + m_clTarget.Name;
 
-            m_clConsole.ProcessCmd("Start-ServoProgrammer", target.SystemName, target.Name);
+            m_clConsole.ProcessCmd("Start-ServoProgrammer", target.SystemName, target.DeviceName, target.Name);
         }
 
         protected override void OnLoad(EventArgs e)

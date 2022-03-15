@@ -27,6 +27,8 @@
 
 namespace dcclite::broker
 { 	
+	class ServoTurnoutDecoder;
+
 	class NetworkDevice: public Device, private INetworkDevice_DecoderServices, private detail::INetworkDevice_TaskServices
 	{
 		public:
@@ -75,21 +77,7 @@ namespace dcclite::broker
 			{
 				return this;
 			}
-
-			//
-			//INetworkDevice_DecoderServices
-			//
-			//
-
-			void Decoder_RegisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage) override
-			{
-				m_clPinManager.RegisterPin(decoder, pin, usage);
-			}
-
-			void Decoder_UnregisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin) override
-			{
-				m_clPinManager.UnregisterPin(decoder, pin);
-			}	
+			
 
 			//
 			//
@@ -108,7 +96,8 @@ namespace dcclite::broker
 			// Tasks
 			//
 			//			
-			[[nodiscard]] std::shared_ptr<NetworkTask> StartDownloadEEPromTask(DownloadEEPromTaskResult_t &resultsStorage);			
+			[[nodiscard]] std::shared_ptr<NetworkTask> StartDownloadEEPromTask(DownloadEEPromTaskResult_t &resultsStorage);
+			[[nodiscard]] std::shared_ptr<NetworkTask> StartServoTurnoutProgrammerTask(const std::string_view servoDecoderName);
 
 		protected:
 			void OnUnload() override;
@@ -138,6 +127,21 @@ namespace dcclite::broker
 			void GotoConfigState(const dcclite::Clock::TimePoint_t time);		
 
 			void AbortPendingTasks();
+
+			//
+			//INetworkDevice_DecoderServices
+			//
+			//
+
+			void Decoder_RegisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage) override
+			{
+				m_clPinManager.RegisterPin(decoder, pin, usage);
+			}
+
+			void Decoder_UnregisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin) override
+			{
+				m_clPinManager.UnregisterPin(decoder, pin);
+			}
 
 		private:						
 			PinManager				m_clPinManager;		

@@ -20,6 +20,7 @@
 #include "OutputDecoder.h"
 #include "Project.h"
 #include "SensorDecoder.h"
+#include "TurnoutDecoder.h"
 
 namespace dcclite::broker
 {
@@ -805,6 +806,26 @@ namespace dcclite::broker
 
 		auto task = detail::StartDownloadEEPromTask(*this, ++m_u32TaskId, resultsStorage);								
 
+		m_wpTask = task;
+
+		return task;
+	}
+
+	std::shared_ptr<NetworkTask> NetworkDevice::StartServoTurnoutProgrammerTask(const std::string_view servoDecoderName)
+	{
+		if (!m_wpTask.expired())
+			throw std::logic_error("[NetworkDevice::StartServoTurnoutProgrammerTask] Only a single task per time supported");
+
+		auto obj = this->TryResolveChild(servoDecoderName);
+		if (!obj)
+			throw std::invalid_argument(fmt::format("[NetworkDevice::StartDownloadEEPromTask] Servo decoder {} not found", servoDecoderName));
+
+		auto servoTurnout = dynamic_cast<ServoTurnoutDecoder *>(obj);
+		if(!servoTurnout)
+			throw std::invalid_argument(fmt::format("[NetworkDevice::StartDownloadEEPromTask] Servo decoder {} is not a ServoTurnoutDecoder", servoDecoderName));
+		
+		auto task = detail::StartServoTurnoutProgrammerTask(*this, ++m_u32TaskId, *servoTurnout);
+		
 		m_wpTask = task;
 
 		return task;

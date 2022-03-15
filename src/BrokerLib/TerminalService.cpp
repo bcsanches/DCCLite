@@ -468,6 +468,12 @@ namespace dcclite::broker
 			}
 	};
 
+	//
+	//
+	// ReadEEPromCmd	
+	//
+	//
+
 	class ReadEEPromFiber : public TerminalCmdFiber
 	{
 		public:
@@ -583,7 +589,92 @@ namespace dcclite::broker
 			}
 	};
 
+	//
+	//
+	// ServoProgrammer
+	//
+	//
 
+	class ServoProgrammerFiber: public TerminalCmdFiber
+	{
+		public:
+			ServoProgrammerFiber(const CmdId_t id, NetworkDevice &device, const std::string_view servoTurnoutName):
+				TerminalCmdFiber(id),
+				m_spTask{ device.StartServoTurnoutProgrammerTask(servoTurnoutName) }
+			{
+				if (!m_spTask)
+					throw TerminalCmdException("[ServoProgrammerFiber] Task creation for ServoProgrammerFiber failed", id);
+			}
+
+			std::optional<std::string> Run(TerminalContext &context) noexcept override
+			{
+				if (m_spTask)
+				{
+					if (m_spTask->HasFailed())
+					{
+						return MakeRpcErrorResponse(m_tId, "Download task failed");
+					}
+
+					if (m_spTask->HasFinished())
+					{
+						m_spTask.reset();
+
+						//
+						//finish
+					}
+				}
+				
+				return std::nullopt;
+			}
+
+		private:			
+			std::shared_ptr<NetworkTask> m_spTask;
+	};
+
+	class StartServoProgrammerCmd: public DccSystemCmdBase
+	{
+		public:
+			StartServoProgrammerCmd(std::string name = "Start-ServoProgrammer"):
+				DccSystemCmdBase(std::move(name))
+			{
+				//empty
+			}
+
+			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
+			{
+				auto paramsIt = request.FindMember("params");
+				if (paramsIt->value.Size() < 3)
+				{
+					throw TerminalCmdException(fmt::format("Usage: {} <dccSystem> <device> <decoder>", this->GetName()), id);
+				}
+
+				auto systemName = paramsIt->value[0].GetString();
+				auto deviceName = paramsIt->value[1].GetString();
+				auto decoderName = paramsIt->value[2].GetString();
+
+				auto &service = this->GetService(context, id, systemName);
+
+				auto device = service.TryFindDeviceByName(deviceName);
+				if (device == nullptr)
+				{
+					throw TerminalCmdException(fmt::format("Device {} not found on {} system", deviceName, systemName), id);
+				}
+
+				auto networkDevice = dynamic_cast<NetworkDevice *>(device);
+				if (networkDevice == nullptr)
+				{
+					throw TerminalCmdException(fmt::format("Device {} on {} system is NOT a network device", deviceName, systemName), id);
+				}
+
+				return std::make_unique<ServoProgrammerFiber>(id, *networkDevice, decoderName);
+			}
+	};
+
+	//
+	//
+	// TerminalClient
+	//
+	//
 
 	class TerminalClient: private IObjectManagerListener
 	{
@@ -917,6 +1008,10 @@ namespace dcclite::broker
 
 		{
 			cmdHost->AddCmd(std::make_unique<FlipItemCmd>());
+		}
+
+		{
+			cmdHost->AddCmd(std::make_unique<StartServoProgrammerCmd>());
 		}
 
 		{

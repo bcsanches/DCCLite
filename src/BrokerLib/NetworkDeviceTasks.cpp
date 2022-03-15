@@ -278,14 +278,12 @@ namespace dcclite::broker::detail
 	//
 	// Servo Programmer Task
 	//
-	//
-
-	class ServoTurnoutDecoder;
+	//	
 
 	class ServoTurnoutProgrammerTask: public NetworkTaskImpl
 	{
 		public:
-			ServoTurnoutProgrammerTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, ServoTurnoutDecoder &decoder):
+			inline ServoTurnoutProgrammerTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, ServoTurnoutDecoder &decoder):
 				NetworkTaskImpl{ owner, taskId },
 				m_rclDecoder{decoder}
 			{
