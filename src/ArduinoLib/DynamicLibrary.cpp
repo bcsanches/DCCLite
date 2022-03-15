@@ -34,6 +34,13 @@ inline void CloseLib(void* handle)
 
 #define GetLibSymbol dlsym
 
+inline std::string GetOpenLibLastErrorMessage()
+{
+	auto errorMsg = dlerror();
+
+	return std::string(errorMsg);
+}
+
 #elif defined WIN32
 #include <windows.h>
 
@@ -46,6 +53,12 @@ inline void CloseLib(void *handle)
 inline void *GetLibSymbol(void *handle, const char *name)
 {
 	return GetProcAddress(static_cast<HMODULE>(handle), name);
+}
+
+//win32 has some consistency and always use GetLastError, so call the GetSystemLastErrorMessage
+inline std::string GetOpenLibLastErrorMessage()
+{
+	return GetSystemLastErrorMessage();
 }
 
 #endif
@@ -99,7 +112,7 @@ void *DynamicLibrary::GetSymbol(const char *name)
 
 void DynamicLibrary::RaiseException(const char *module, const char *dll)
 {
-	auto errMsg = dcclite::GetSystemLastErrorMessage();
+	auto errMsg = GetOpenLibLastErrorMessage();
 
 	throw std::logic_error(fmt::format("DynamicLibrary[{}] {} not found item {}", module, errMsg, dll));
 }
