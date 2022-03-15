@@ -58,7 +58,7 @@ inline void *GetLibSymbol(void *handle, const char *name)
 //win32 has some consistency and always use GetLastError, so call the GetSystemLastErrorMessage
 inline std::string GetOpenLibLastErrorMessage()
 {
-	return GetSystemLastErrorMessage();
+	return dcclite::GetSystemLastErrorMessage();
 }
 
 #endif
