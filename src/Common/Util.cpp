@@ -17,6 +17,7 @@
 #ifndef WIN32
 #include <dlfcn.h>
 #include <netinet/in.h>
+#include <string.h>
 #else
 #include <windows.h>
 #include <winsock.h>
@@ -75,8 +76,9 @@ std::string_view dcclite::StrTrim(std::string_view str) noexcept
 
 std::string dcclite::GetSystemErrorMessage(const unsigned int error) noexcept
 {
-#ifndef WIN32
-	return "FIXME: GetSystemErrorMessage -> not implemented";
+#ifndef WIN32	
+
+	return std::string(strerror(error));
 
 #elif defined WIN32
 	LPWSTR lpMsgBuf;
@@ -137,10 +139,7 @@ std::string dcclite::GetSystemErrorMessage(const unsigned int error) noexcept
 std::string dcclite::GetSystemLastErrorMessage() noexcept
 {
 #ifndef WIN32
-	auto errorMsg = dlerror();
-
-	return std::string(errorMsg);
-
+	return std::string{ GetSystemErrorMessage(errno) };
 #elif defined WIN32
 	return GetSystemErrorMessage(GetLastError());	
 #endif
