@@ -10,3 +10,28 @@
 
 #include "Misc.h"
 
+#include "Parser.h"
+
+#include <stdexcept>
+#include <sstream>
+
+namespace dcclite
+{
+	int ParseNumber(const char *str)
+	{
+		dcclite::Parser parser{ str };
+
+		int adr;
+		if (parser.GetNumber(adr) != dcclite::Tokens::NUMBER)
+		{
+			std::stringstream stream;
+
+			stream << "[dcclite::ParseNumber] String " << str << " does not contains a valid number";
+
+			throw std::runtime_error(stream.str());
+		}
+
+		return adr;
+	}
+}
+

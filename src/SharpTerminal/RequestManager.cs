@@ -191,7 +191,7 @@ namespace SharpTerminal
             }            
         }
 
-        public async Task<JsonValue> RequestAsync(string[] vargs)
+        public async Task<JsonValue> RequestAsync(params string[] vargs)
         {
             using var handler = new TaskReponseHandler();
             var task = new Task<JsonValue>(() => { return handler.DoTask(this, vargs); });

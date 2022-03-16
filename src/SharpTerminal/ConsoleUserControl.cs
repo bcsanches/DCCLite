@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Json;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace SharpTerminal
@@ -190,16 +191,16 @@ namespace SharpTerminal
             }
         }
 
-        private void ProcessRemoteCmd(string[] vargs)
+        private int ProcessRemoteCmd(IResponseHandler handler, string[] vargs)
         {
             if (mRequestManager.State != ConnectionState.OK)
             {
                 Console_Println("Cannot send command, client not connected. Try /reconnect");
 
-                return;
+                return -1;
             }
 
-            mRequestManager.DispatchRequest(vargs, this);
+            return mRequestManager.DispatchRequest(vargs, handler ?? this);
         }
 
         private void ProcessInput(string input)
@@ -219,17 +220,29 @@ namespace SharpTerminal
             }            
         }
 
-        public void ProcessCmd(string[] vargs)
+        public int ProcessCmd(string[] vargs)
+        {
+            return this.ProcessCmd(this, vargs);
+        }
+
+        public int ProcessCmd(IResponseHandler handler, string[] vargs)
         {
             //local command?
             if (vargs[0][0] == '/')
             {
                 ProcessLocalCmd(vargs);
+
+                return -1;
             }
             else
             {
-                ProcessRemoteCmd(vargs);
+                return ProcessRemoteCmd(handler, vargs);
             }
+        }
+
+        public async Task<JsonValue> RequestAsync(params string[] vargs)
+        {
+            return await mRequestManager.RequestAsync(vargs);            
         }
 
         private void m_btnClear_Click(object sender, EventArgs e)

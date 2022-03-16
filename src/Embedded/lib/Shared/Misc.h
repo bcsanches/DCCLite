@@ -31,4 +31,8 @@ namespace dcclite
 	{
 		return ((ch >= '0') && (ch <= '9')) ? 0 + (ch - '0') : ((ch >= 'a') && (ch <= 'f')) ? 0 + (ch - 'a' + 10) : ((ch >= 'A') && (ch <= 'F')) ? 0 + (ch - 'A' + 10) : -1;
 	}
+
+	//
+	//Try to parse a number, throws if string contains no number
+	int ParseNumber(const char *str);
 }

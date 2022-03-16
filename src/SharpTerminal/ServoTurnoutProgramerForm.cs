@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Json;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -66,6 +67,8 @@ namespace SharpTerminal
         private RemoteTurnoutDecoder    m_clTarget;
         private IConsole                m_clConsole;
 
+        private int m_iProgrammerTaskId;
+
         public RemoteTurnoutDecoder Target { get { return m_clTarget; } }
 
         protected ServoTurnoutProgrammerForm()
@@ -83,14 +86,35 @@ namespace SharpTerminal
 
             InitializeComponent();
 
-            this.Text += " - " + m_clTarget.Name;
-
-            m_clConsole.ProcessCmd("Start-ServoProgrammer", target.SystemName, target.DeviceName, target.Name);
+            this.Text += " - " + m_clTarget.Name;            
         }
 
-        protected override void OnLoad(EventArgs e)
+        protected override async void OnLoad(EventArgs e)
         {
-            base.OnLoad(e);            
+            base.OnLoad(e);
+
+            for(; ;)
+            {
+                try
+                {
+                    var json = await m_clConsole.RequestAsync("Start-ServoProgrammer", m_clTarget.SystemName, m_clTarget.DeviceName, m_clTarget.Name);
+
+                    if(!json.ContainsKey("response"))
+                    {
+
+                    }
+
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    if (MessageBox.Show(this, "Failed to start programming mode: " + ex.Message + ".\n Retry??", "Error", MessageBoxButtons.RetryCancel) != DialogResult.Retry)
+                    {
+                        this.DialogResult = DialogResult.Cancel;
+                        this.Close();
+                    }
+                }
+            }                                    
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
@@ -107,6 +131,6 @@ namespace SharpTerminal
             m_clOwner.Unregister(this);
 
             m_clConsole.ProcessCmd("Stop-ServoProgrammer", m_clTarget.SystemName, m_clTarget.Name);
-        }
+        }        
     }
 }

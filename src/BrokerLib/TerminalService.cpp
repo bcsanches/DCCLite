@@ -28,6 +28,7 @@
 #include "BonjourService.h"
 #include "Broker.h"
 #include "DccLiteService.h"
+#include "Misc.h"
 #include "NetMessenger.h"
 #include "NetworkDevice.h"
 #include "OutputDecoder.h"
@@ -670,6 +671,7 @@ namespace dcclite::broker
 
 				return MakeRpcResultMessage(id, [taskId](Result_t &results)
 					{
+						results.AddStringValue("classname", "TaskId"); //useless, but makes life easier to debug, we can call from the console
 						results.AddIntValue("taskId", taskId);						
 					}
 				);
@@ -692,8 +694,10 @@ namespace dcclite::broker
 				{
 					throw TerminalCmdException(fmt::format("Usage: {} <taskId>", this->GetName()), id);
 				}
+				
+				auto &taskIdData = paramsIt->value[0];
 
-				auto taskId = paramsIt->value[0].GetInt();
+				auto taskId = taskIdData.IsString() ? dcclite::ParseNumber(taskIdData.GetString()) : taskIdData.GetInt();				
 
 				auto &taskManager = context.GetTaskManager();				
 
@@ -1047,6 +1051,7 @@ namespace dcclite::broker
 
 		{
 			cmdHost->AddCmd(std::make_unique<StartServoProgrammerCmd>());
+			cmdHost->AddCmd(std::make_unique<StopServoProgrammerCmd>());
 		}
 
 		{
