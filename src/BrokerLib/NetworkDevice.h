@@ -283,9 +283,8 @@ namespace dcclite::broker
 			//
 			//
 			//
-			//			
-			uint32_t								m_u32TaskId = 0;
-			std::weak_ptr<detail::NetworkTaskImpl>	m_wpTask;			
+			//						
+			std::list<std::shared_ptr<detail::NetworkTaskImpl>> m_lstTasks;				
 
 			/**
 			Registered is a device that is stored on config.

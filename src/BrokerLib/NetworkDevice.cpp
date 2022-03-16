@@ -33,6 +33,8 @@ namespace dcclite::broker
 
 	static auto constexpr SYNC_TIMEOUT = 100ms;
 
+	static uint32_t	g_u32TaskId = 0;
+
 
 	class DevicePacket : public dcclite::Packet
 	{
@@ -489,17 +491,17 @@ namespace dcclite::broker
 
 		if (msgType == dcclite::MsgTypes::TASK_DATA)
 		{
-			auto taskId = packet.Read<uint32_t>();
-
-			auto task = self.m_wpTask.lock();
-			if ((task) && (task->GetTaskId() == taskId))
+			auto taskId = packet.Read<uint32_t>();			
+			for (auto &task : self.m_lstTasks)
 			{
-				task->OnPacket(packet, time);
+				if (task->GetTaskId() == taskId)
+				{
+					task->OnPacket(packet, time);
+					return;
+				}
 			}
-			else
-			{
-				dcclite::Log::Warn("[{}::Device::OnPacket] task data, but not task running or task not found for id {}", self.GetName(), taskId);
-			}
+			
+			dcclite::Log::Warn("[{}::Device::OnPacket] task data, but not task running or task not found for id {}", self.GetName(), taskId);			
 
 			return;
 		}
@@ -726,11 +728,17 @@ namespace dcclite::broker
 			return;
 		}
 
-		auto task = m_wpTask.lock();
-		if ((task) && (!task->Update(*this, ticks)))
+		for (auto it = m_lstTasks.begin(); it != m_lstTasks.end(); ++it)
 		{
-			m_wpTask.reset();
-		}
+			auto task = it->get();
+
+			if (task->HasFinished() || !task->Update(*this, ticks))
+			{
+				auto item = it++;
+
+				m_lstTasks.erase(item);
+			}
+		}		
 
 		m_pclCurrentState->Update(*this, ticks);
 	}
@@ -790,32 +798,23 @@ namespace dcclite::broker
 
 	void NetworkDevice::AbortPendingTasks()
 	{
-		auto task = m_wpTask.lock();
-
-		if (task)
-		{
+		for (auto &task : m_lstTasks)
 			task->Abort();
-			m_wpTask.reset();
-		}			
+
+		m_lstTasks.clear();		
 	}
 
 	std::shared_ptr<NetworkTask> NetworkDevice::StartDownloadEEPromTask(DownloadEEPromTaskResult_t &resultsStorage)
-	{
-		if (!m_wpTask.expired())
-			throw std::logic_error("[NetworkDevice::StartDownloadEEPromTask] Only a single task per time supported");
+	{		
+		auto task = detail::StartDownloadEEPromTask(*this, ++g_u32TaskId, resultsStorage);								
 
-		auto task = detail::StartDownloadEEPromTask(*this, ++m_u32TaskId, resultsStorage);								
-
-		m_wpTask = task;
+		m_lstTasks.push_back(task);		
 
 		return task;
 	}
 
 	std::shared_ptr<NetworkTask> NetworkDevice::StartServoTurnoutProgrammerTask(const std::string_view servoDecoderName)
-	{
-		if (!m_wpTask.expired())
-			throw std::logic_error("[NetworkDevice::StartServoTurnoutProgrammerTask] Only a single task per time supported");
-
+	{		
 		auto obj = this->TryResolveChild(servoDecoderName);
 		if (!obj)
 			throw std::invalid_argument(fmt::format("[NetworkDevice::StartDownloadEEPromTask] Servo decoder {} not found", servoDecoderName));
@@ -824,9 +823,9 @@ namespace dcclite::broker
 		if(!servoTurnout)
 			throw std::invalid_argument(fmt::format("[NetworkDevice::StartDownloadEEPromTask] Servo decoder {} is not a ServoTurnoutDecoder", servoDecoderName));
 		
-		auto task = detail::StartServoTurnoutProgrammerTask(*this, ++m_u32TaskId, *servoTurnout);
+		auto task = detail::StartServoTurnoutProgrammerTask(*this, ++g_u32TaskId, *servoTurnout);
 		
-		m_wpTask = task;
+		m_lstTasks.push_back(task);		
 
 		return task;
 	}

@@ -34,7 +34,7 @@ namespace dcclite::broker
 
 	dcclite::IObject *TerminalContext::GetItem() const
 	{
-		return m_rclRoot.TryNavigate(m_pthLocation);
+		return m_pclRoot->TryNavigate(m_pthLocation);
 	}
 
 	TerminalCmdHost::TerminalCmdHost():

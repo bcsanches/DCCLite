@@ -79,6 +79,7 @@ namespace dcclite::broker::detail
 			bool Update(INetworkDevice_TaskServices &owner, const dcclite::Clock::TimePoint_t time) noexcept override;
 
 			void Abort() noexcept override;
+			void Stop() noexcept override;
 
 		private:
 			void ReadSlice(dcclite::Packet &packet, const uint8_t sliceSize, const uint8_t sequence);
@@ -101,17 +102,22 @@ namespace dcclite::broker::detail
 			States	m_kState = States::WAITING_CONNECTION;		
 
 			dcclite::Clock::TimePoint_t m_tWaitTimeout;
-
-			bool m_fAborted = false;
+			
 			bool m_fFinished = false;
 			bool m_fFailed = false;
 	};
 
 	void DownloadEEPromTask::Abort() noexcept
-	{
-		m_fAborted = true;
+	{		
 		m_fFailed = true;
+		m_fFinished = true;
 	}	
+
+	void DownloadEEPromTask::Stop() noexcept
+	{
+		if(!m_fFinished)
+			this->Abort();
+	}
 
 	void DownloadEEPromTask::ReadSlice(dcclite::Packet &packet, const uint8_t sliceSize, const uint8_t sequence)
 	{
@@ -205,8 +211,7 @@ namespace dcclite::broker::detail
 	}
 
 	bool DownloadEEPromTask::Update(INetworkDevice_TaskServices &owner, const dcclite::Clock::TimePoint_t time) noexcept
-	{
-		assert(!m_fAborted);
+	{		
 		assert(!m_fFailed);
 		assert(!m_fFinished);
 		
@@ -306,10 +311,11 @@ namespace dcclite::broker::detail
 
 			void Abort() noexcept override;
 
+			void Stop() noexcept override;
+
 		private:
 			ServoTurnoutDecoder &m_rclDecoder;
-
-			bool m_fAborted = false;
+			
 			bool m_fFinished = false;
 			bool m_fFailed = false;
 	};
@@ -325,8 +331,14 @@ namespace dcclite::broker::detail
 	}
 
 	void ServoTurnoutProgrammerTask::Abort() noexcept
-	{
+	{			
+		m_fFailed = true;
+		m_fFinished = true;
+	}
 
+	void ServoTurnoutProgrammerTask::Stop() noexcept
+	{
+		m_fFinished = true;
 	}
 
 	//

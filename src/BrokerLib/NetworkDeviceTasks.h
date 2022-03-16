@@ -30,6 +30,17 @@ namespace dcclite::broker
 	class NetworkTask
 	{
 		public:
+			inline NetworkTask(const uint32_t taskId) noexcept:
+				m_u32TaskId{ taskId }
+			{
+				//empty
+			}
+
+			[[nodiscard]] inline uint32_t GetTaskId() const noexcept
+			{
+				return m_u32TaskId;
+			}
+
 			//
 			// When the task finishes, success or not, this must return true			
 			//
@@ -39,6 +50,14 @@ namespace dcclite::broker
 			// When the task fails to complete, this must return true (results must be ignored / discarded)
 			//
 			virtual bool HasFailed() const noexcept = 0;
+
+			//
+			// Ask the task to stop. It may continue futher processing for a graceful stop (that can later fail)
+			//
+			virtual void Stop() noexcept = 0;
+
+		protected:
+			const uint32_t m_u32TaskId;
 
 	};	
 
@@ -79,14 +98,14 @@ namespace dcclite::broker
 		{
 			protected:
 				NetworkTaskImpl(INetworkDevice_TaskServices &owner, const uint32_t taskId):
-					m_u32TaskId{ taskId },
+					NetworkTask{taskId},
 					m_rOwner{ owner }
 				{
 					//empty
 				}
 
 			public:
-				virtual void Abort() noexcept = 0;
+				virtual void Abort() noexcept = 0;				
 
 				//
 				//
@@ -96,16 +115,9 @@ namespace dcclite::broker
 				//
 				// Do some work, returns true if still has pending work. 
 				//			
-				[[nodiscard]] virtual bool Update(INetworkDevice_TaskServices &owner, const dcclite::Clock::TimePoint_t time) noexcept = 0;
+				[[nodiscard]] virtual bool Update(INetworkDevice_TaskServices &owner, const dcclite::Clock::TimePoint_t time) noexcept = 0;				
 
-				[[nodiscard]] inline uint32_t GetTaskId() const noexcept
-				{
-					return m_u32TaskId;
-				}
-
-			protected:
-				const uint32_t m_u32TaskId;
-
+			protected:				
 				INetworkDevice_TaskServices &m_rOwner;
 		};		
 

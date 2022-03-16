@@ -28,8 +28,8 @@
 #include "BonjourService.h"
 #include "Broker.h"
 #include "DccLiteService.h"
-#include "NetworkDevice.h"
 #include "NetMessenger.h"
+#include "NetworkDevice.h"
 #include "OutputDecoder.h"
 #include "SignalDecoder.h"
 #include "SpecialFolders.h"
@@ -90,6 +90,36 @@ namespace dcclite::broker
 	{
 		return MakeRpcMessage(id, nullptr, "result", filler);
 	}
+
+	class TaskManager
+	{
+		public:
+			TaskManager() = default;
+			TaskManager(TaskManager &&other) = default;
+			TaskManager(const TaskManager &manager) = delete;
+
+			TaskManager &operator=(TaskManager &&other) = default;
+
+			void AddTask(std::shared_ptr<NetworkTask> task)
+			{
+				m_mapNetworkTasks.insert(std::make_pair(task->GetTaskId(), task));
+			}
+
+			NetworkTask *TryFindTask(uint32_t taskId) const noexcept
+			{
+				auto it = m_mapNetworkTasks.find(taskId);
+
+				return it == m_mapNetworkTasks.end() ? nullptr : it->second.get();
+			}
+
+			inline void RemoveTask(uint32_t taskId) noexcept
+			{
+				m_mapNetworkTasks.erase(taskId);
+			}
+
+		private:
+			std::map<uint32_t, std::shared_ptr<NetworkTask>>	m_mapNetworkTasks;
+	};
 
 
 	class GetChildItemCmd : public TerminalCmd
@@ -595,42 +625,6 @@ namespace dcclite::broker
 	//
 	//
 
-	class ServoProgrammerFiber: public TerminalCmdFiber
-	{
-		public:
-			ServoProgrammerFiber(const CmdId_t id, NetworkDevice &device, const std::string_view servoTurnoutName):
-				TerminalCmdFiber(id),
-				m_spTask{ device.StartServoTurnoutProgrammerTask(servoTurnoutName) }
-			{
-				if (!m_spTask)
-					throw TerminalCmdException("[ServoProgrammerFiber] Task creation for ServoProgrammerFiber failed", id);
-			}
-
-			std::optional<std::string> Run(TerminalContext &context) noexcept override
-			{
-				if (m_spTask)
-				{
-					if (m_spTask->HasFailed())
-					{
-						return MakeRpcErrorResponse(m_tId, "Download task failed");
-					}
-
-					if (m_spTask->HasFinished())
-					{
-						m_spTask.reset();
-
-						//
-						//finish
-					}
-				}
-				
-				return std::nullopt;
-			}
-
-		private:			
-			std::shared_ptr<NetworkTask> m_spTask;
-	};
-
 	class StartServoProgrammerCmd: public DccSystemCmdBase
 	{
 		public:
@@ -666,9 +660,67 @@ namespace dcclite::broker
 					throw TerminalCmdException(fmt::format("Device {} on {} system is NOT a network device", deviceName, systemName), id);
 				}
 
-				return std::make_unique<ServoProgrammerFiber>(id, *networkDevice, decoderName);
+				auto task = networkDevice->StartServoTurnoutProgrammerTask(decoderName);
+
+				//
+				//store the task, so future cmds can reference it
+				context.GetTaskManager().AddTask(task);
+
+				const auto taskId = task->GetTaskId();
+
+				return MakeRpcResultMessage(id, [taskId](Result_t &results)
+					{
+						results.AddIntValue("taskId", taskId);						
+					}
+				);
 			}
 	};
+
+	class StopServoProgrammerCmd: public DccSystemCmdBase
+	{
+		public:
+			StopServoProgrammerCmd(std::string name = "Stop-ServoProgrammer"):
+				DccSystemCmdBase(std::move(name))
+			{
+				//empty
+			}
+
+			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
+			{
+				auto paramsIt = request.FindMember("params");
+				if (paramsIt->value.Size() < 1)
+				{
+					throw TerminalCmdException(fmt::format("Usage: {} <taskId>", this->GetName()), id);
+				}
+
+				auto taskId = paramsIt->value[0].GetInt();
+
+				auto &taskManager = context.GetTaskManager();				
+
+				auto task = taskManager.TryFindTask(taskId);
+				if (!task)
+				{
+					throw TerminalCmdException(fmt::format("{}: task {} not found", this->GetName(), taskId), id);
+				}
+
+				//
+				//tell the task to stop
+				task->Stop();
+				
+				//
+				//forget about it
+				context.GetTaskManager().RemoveTask(taskId);
+				
+				//notify client
+				return MakeRpcResultMessage(id, [](Result_t &results)
+					{
+						results.AddStringValue("classname", "string");
+						results.AddStringValue("msg", "OK");
+					}
+				);
+			}
+	};
+	
 
 	//
 	//
@@ -681,19 +733,9 @@ namespace dcclite::broker
 		public:
 			TerminalClient(TerminalService &owner, TerminalCmdHost &cmdHost, const NetworkAddress address, Socket &&socket);
 			TerminalClient(const TerminalClient &client) = delete;
-			TerminalClient(TerminalClient &&other) noexcept;
+			TerminalClient(TerminalClient &&other) = delete;
 
 			virtual ~TerminalClient();
-
-			TerminalClient &operator=(TerminalClient &&other) noexcept
-			{
-				if (this != &other)
-				{
-					m_clMessenger = std::move(other.m_clMessenger);
-				}
-
-				return *this;
-			}
 
 			bool Update();
 
@@ -707,12 +749,15 @@ namespace dcclite::broker
 			FolderObject *TryGetServicesFolder() const;	
 
 		private:
-			NetMessenger m_clMessenger;
-			TerminalService &m_rclOwner;
+			NetMessenger	m_clMessenger;			
 			TerminalContext m_clContext;
+
+			TerminalService &m_rclOwner;
 			TerminalCmdHost &m_rclCmdHost;
 
-			std::list<std::shared_ptr<TerminalCmdFiber>> m_lstFibers;
+			std::list<std::shared_ptr<TerminalCmdFiber>>			m_lstFibers;	
+
+			TaskManager												m_clTaskManager;
 
 			const NetworkAddress	m_clAddress;
 	};
@@ -721,21 +766,11 @@ namespace dcclite::broker
 		m_clMessenger(std::move(socket)),
 		m_rclOwner(owner),	
 		m_rclCmdHost(cmdHost),
-		m_clContext(static_cast<dcclite::FolderObject &>(owner.GetRoot())),
+		m_clContext(static_cast<dcclite::FolderObject &>(owner.GetRoot()), m_clTaskManager),
 		m_clAddress(address)
 	{
 		m_clContext.SetLocation(owner.GetPath());
 
-		this->RegisterListeners();
-	}
-
-	TerminalClient::TerminalClient(TerminalClient &&other) noexcept:		
-		m_clMessenger(std::move(other.m_clMessenger)),
-		m_rclOwner(other.m_rclOwner),	
-		m_clContext(std::move(other.m_clContext)),
-		m_rclCmdHost(other.m_rclCmdHost),
-		m_clAddress(other.m_clAddress)
-	{
 		this->RegisterListeners();
 	}
 
@@ -1056,14 +1091,14 @@ namespace dcclite::broker
 		{
 			dcclite::Log::Info("[TerminalService] Client connected {}", address.GetIpString());
 
-			m_vecClients.emplace_back(*this, *m_rclBroker.GetTerminalCmdHost(), address, std::move(socket));
+			m_vecClients.push_back(std::make_unique<TerminalClient>(*this, *m_rclBroker.GetTerminalCmdHost(), address, std::move(socket)));
 		}
 
 		for (size_t i = 0; i < m_vecClients.size(); ++i)
 		{
 			auto &client = m_vecClients[i];
 
-			if (!client.Update())
+			if (!client->Update())
 			{
 				dcclite::Log::Info("[TerminalService] Client disconnected");			
 

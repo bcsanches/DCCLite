@@ -70,7 +70,8 @@ namespace dcclite::broker
 	*/
 
 	typedef int CmdId_t;
-	class TerminalCmd;
+	class TaskManager;
+	class TerminalCmd;	
 
 
 	/**
@@ -82,20 +83,18 @@ namespace dcclite::broker
 	class TerminalContext
 	{
 		public:		
-			explicit TerminalContext(dcclite::FolderObject &root):
-				m_rclRoot(root)
+			explicit TerminalContext(dcclite::FolderObject &root, TaskManager &taskManager):
+				m_pclRoot(&root),
+				m_pclTaskManager(&taskManager)
 			{
 				//empty
 			}
 
 			TerminalContext(const TerminalContext &) = delete;
 
-			TerminalContext(TerminalContext &&other) noexcept:
-				m_rclRoot(other.m_rclRoot),
-				m_pthLocation(std::move(other.m_pthLocation))
-			{
-				//empty
-			}
+			TerminalContext(TerminalContext &&other) = delete;
+
+			TerminalContext &operator=(TerminalContext &&other) = default;
 
 			void SetLocation(const dcclite::Path_t &newLocation);		
 
@@ -103,6 +102,11 @@ namespace dcclite::broker
 			{
 				return m_pthLocation;
 			}		
+
+			inline TaskManager &GetTaskManager() const noexcept
+			{
+				return *m_pclTaskManager;
+			}
 
 			/**
 
@@ -112,12 +116,13 @@ namespace dcclite::broker
 			*/
 			dcclite::IObject *GetItem() const;
 
-			TerminalContext &operator=(TerminalContext &rhs) = delete;
-			TerminalContext &operator=(TerminalContext &&rhs) = delete;
+			TerminalContext &operator=(TerminalContext &rhs) = delete;			
 
 		private:
-			dcclite::FolderObject &m_rclRoot;
+			dcclite::FolderObject *m_pclRoot;
 			dcclite::Path_t m_pthLocation;
+
+			TaskManager *m_pclTaskManager;
 	};
 
 	class TerminalCmdException: public std::exception
@@ -180,9 +185,8 @@ namespace dcclite::broker
 			{
 				//empty
 			}
-
-			[[nodiscard]]
-			virtual std::optional<std::string> Run(TerminalContext& context) noexcept = 0;
+			
+			[[nodiscard]] virtual std::optional<std::string> Run(TerminalContext& context) noexcept = 0;
 
 		protected:
 			const CmdId_t m_tId;
@@ -208,9 +212,8 @@ namespace dcclite::broker
 			TerminalCmd(TerminalCmd &&) = delete;
 
 			~TerminalCmd();
-
-			[[nodiscard]]
-			virtual CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) = 0;
+			
+			[[nodiscard]] virtual CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) = 0;
 
 			virtual const char *GetTypeName() const noexcept
 			{

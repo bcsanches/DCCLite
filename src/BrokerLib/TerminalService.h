@@ -27,7 +27,7 @@ namespace dcclite::broker
 		private:		
 			dcclite::Socket m_clSocket;
 
-			std::vector<TerminalClient> m_vecClients;
+			std::vector <std::unique_ptr<TerminalClient>> m_vecClients;
 
 			Thinker m_tThinker;
 
