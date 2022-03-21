@@ -285,7 +285,7 @@ namespace dcclite::broker::detail
 	//
 	//	
 
-	class ServoTurnoutProgrammerTask: public NetworkTaskImpl
+	class ServoTurnoutProgrammerTask: public NetworkTaskImpl, public IServoProgrammerTask
 	{
 		public:
 			inline ServoTurnoutProgrammerTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, ServoTurnoutDecoder &decoder):
@@ -314,6 +314,12 @@ namespace dcclite::broker::detail
 			void Stop() noexcept override;
 
 		private:
+			void SetStartPos(const uint8_t startPos) override;
+			void SetEndPos(const uint8_t startPos) override;
+
+			void SetInverted(const bool inverted) override;
+
+		private:
 			ServoTurnoutDecoder &m_rclDecoder;
 			
 			bool m_fFinished = false;
@@ -339,6 +345,21 @@ namespace dcclite::broker::detail
 	void ServoTurnoutProgrammerTask::Stop() noexcept
 	{
 		m_fFinished = true;
+	}
+
+	void ServoTurnoutProgrammerTask::SetStartPos(const uint8_t startPos)
+	{
+
+	}
+
+	void ServoTurnoutProgrammerTask::SetEndPos(const uint8_t startPos)
+	{
+
+	}
+
+	void ServoTurnoutProgrammerTask::SetInverted(const bool inverted)
+	{
+
 	}
 
 	//

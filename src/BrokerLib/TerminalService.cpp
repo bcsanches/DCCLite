@@ -678,14 +678,40 @@ namespace dcclite::broker
 			}
 	};
 
-	class StopServoProgrammerCmd: public DccSystemCmdBase
+	class ServoProgrammerBaseCmd: public DccSystemCmdBase
 	{
-		public:
-			StopServoProgrammerCmd(std::string name = "Stop-ServoProgrammer"):
+		protected:
+			ServoProgrammerBaseCmd(std::string name):
 				DccSystemCmdBase(std::move(name))
 			{
 				//empty
 			}
+
+			NetworkTask *GetTask(TerminalContext &context, const CmdId_t id, const rapidjson::Value &taskIdData)
+			{
+				auto taskId = taskIdData.IsString() ? dcclite::ParseNumber(taskIdData.GetString()) : taskIdData.GetInt();
+
+				auto &taskManager = context.GetTaskManager();
+
+				auto task = taskManager.TryFindTask(taskId);
+				if (!task)
+				{
+					throw TerminalCmdException(fmt::format("{}: task {} not found", this->GetName(), taskId), id);
+				}
+
+				return task;
+			}
+			
+	};
+
+	class StopServoProgrammerCmd: public ServoProgrammerBaseCmd
+	{
+		public:
+			StopServoProgrammerCmd(std::string name = "Stop-ServoProgrammer"):
+				ServoProgrammerBaseCmd(std::move(name))
+			{
+				//empty
+			}			
 
 			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
 			{
@@ -694,28 +720,51 @@ namespace dcclite::broker
 				{
 					throw TerminalCmdException(fmt::format("Usage: {} <taskId>", this->GetName()), id);
 				}
-				
-				auto &taskIdData = paramsIt->value[0];
-
-				auto taskId = taskIdData.IsString() ? dcclite::ParseNumber(taskIdData.GetString()) : taskIdData.GetInt();				
-
-				auto &taskManager = context.GetTaskManager();				
-
-				auto task = taskManager.TryFindTask(taskId);
-				if (!task)
-				{
-					throw TerminalCmdException(fmt::format("{}: task {} not found", this->GetName(), taskId), id);
-				}
-
+								
+				auto task = this->GetTask(context, id, paramsIt->value[0]);
 				//
 				//tell the task to stop
 				task->Stop();
 				
 				//
 				//forget about it
-				context.GetTaskManager().RemoveTask(taskId);
+				context.GetTaskManager().RemoveTask(task->GetTaskId());
 				
 				//notify client
+				return MakeRpcResultMessage(id, [](Result_t &results)
+					{
+						results.AddStringValue("classname", "string");
+						results.AddStringValue("msg", "OK");
+					}
+				);
+			}
+	};
+
+	class EditServoProgrammerCmd: public ServoProgrammerBaseCmd
+	{
+		public:
+			EditServoProgrammerCmd(const std::string name = "Edit-ServoProgrammer"):
+				ServoProgrammerBaseCmd(std::move(name))
+			{
+				//empty
+			}
+
+			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
+			{
+				auto paramsIt = request.FindMember("params");
+				if (paramsIt->value.Size() < 2)
+				{
+					throw TerminalCmdException(fmt::format("Usage: {} <taskId> <cmdType> <params>", this->GetName()), id);
+				}
+
+				auto task = this->GetTask(context, id, paramsIt->value[0]);
+
+				auto programmerTask = dynamic_cast<dcclite::broker::IServoProgrammerTask *>(task);
+				if (!programmerTask)
+				{
+					throw TerminalCmdException(fmt::format("{}: task {} is not a programmer task", this->GetName(), task->GetTaskId()), id);
+				}
+
 				return MakeRpcResultMessage(id, [](Result_t &results)
 					{
 						results.AddStringValue("classname", "string");
@@ -1052,6 +1101,7 @@ namespace dcclite::broker
 		{
 			cmdHost->AddCmd(std::make_unique<StartServoProgrammerCmd>());
 			cmdHost->AddCmd(std::make_unique<StopServoProgrammerCmd>());
+			cmdHost->AddCmd(std::make_unique<EditServoProgrammerCmd>());
 		}
 
 		{

@@ -61,6 +61,15 @@ namespace dcclite::broker
 
 	};	
 
+	class IServoProgrammerTask
+	{
+		public:
+			virtual void SetStartPos(const uint8_t startPos) = 0;
+			virtual void SetEndPos(const uint8_t startPos) = 0;
+
+			virtual void SetInverted(const bool inverted) = 0;
+	};
+
 	typedef std::vector<uint8_t> DownloadEEPromTaskResult_t;
 
 	namespace detail
@@ -119,7 +128,7 @@ namespace dcclite::broker
 
 			protected:				
 				INetworkDevice_TaskServices &m_rOwner;
-		};		
+		};				
 
 		extern std::shared_ptr<NetworkTaskImpl> StartDownloadEEPromTask(INetworkDevice_TaskServices &device, const uint32_t taskId, DownloadEEPromTaskResult_t &resultsStorage);
 		extern std::shared_ptr<NetworkTaskImpl> StartServoTurnoutProgrammerTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, ServoTurnoutDecoder &decoder);
