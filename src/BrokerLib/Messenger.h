@@ -28,22 +28,22 @@ namespace dcclite::broker
 
 		class IEvent
 		{
-		public:
-			IEvent(IEventTarget &target):
-				m_rclTarget(target)
-			{
-				//empty
-			}
+			public:
+				IEvent(IEventTarget &target):
+					m_rclTarget(target)
+				{
+					//empty
+				}
 
-			virtual void Fire() = 0;
+				virtual void Fire() = 0;
 
-			inline IEventTarget &GetTarget() noexcept
-			{
-				return m_rclTarget;
-			}
+				inline IEventTarget &GetTarget() noexcept
+				{
+					return m_rclTarget;
+				}
 
-		private:
-			IEventTarget &m_rclTarget;
+			private:
+				IEventTarget &m_rclTarget;
 		};
 
 		void PostEvent(std::unique_ptr<IEvent> event);

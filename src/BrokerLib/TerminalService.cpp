@@ -1058,6 +1058,40 @@ namespace dcclite::broker
 		return true;
 	}
 
+	//
+	//
+	//
+	//
+	//
+
+	class TerminalServiceAcceptConnectionEvent: public Messenger::IEvent
+	{
+		public:
+			TerminalServiceAcceptConnectionEvent(TerminalService &target, const dcclite::NetworkAddress &address, Socket s):
+				IEvent(target),
+				m_clSocket{ std::move(s) },
+				m_clAddress{ address }
+
+			{
+				//empty
+			}
+
+			void Fire() override
+			{
+				static_cast<TerminalService &>(this->GetTarget()).OnAcceptConnection(m_clAddress, std::move(m_clSocket));
+			}
+
+		private:
+			Socket m_clSocket;
+			dcclite::NetworkAddress m_clAddress;
+	};
+
+	//
+	//
+	// TerminalService
+	//
+	//
+
 	TerminalService::TerminalService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :
 		Service(name, broker, params, project),
 		m_tThinker{ {}, THINKER_MF_LAMBDA(Think) }
@@ -1113,7 +1147,34 @@ namespace dcclite::broker
 		}
 
 		const auto port = params["port"].GetInt();
-		if (!m_clSocket.Open(port, dcclite::Socket::Type::STREAM))
+		
+		m_thListenThread = std::thread{ [port, this] {this->ListenThreadProc(port); } };		
+
+		if(auto bonjourService = static_cast<BonjourService *>(m_rclBroker.TryFindService(BONJOUR_SERVICE_NAME)))
+			bonjourService->Register("terminal", "dcclite", NetworkProtocol::TCP, port, 36);
+
+		ZeroconfService::Register(this->GetTypeName(), port);
+	}
+
+	TerminalService::~TerminalService()
+	{
+		m_clSocket.Close();
+
+		m_thListenThread.join();
+
+		Messenger::CancelEvents(*this);
+	}	
+
+	void TerminalService::OnAcceptConnection(const dcclite::NetworkAddress &address, dcclite::Socket &&s)
+	{
+		dcclite::Log::Info("[TerminalService] Client connected {}", address.GetIpString());
+
+		m_vecClients.push_back(std::make_unique<TerminalClient>(*this, *m_rclBroker.GetTerminalCmdHost(), address, std::move(s)));
+	}
+
+	void TerminalService::ListenThreadProc(const int port)
+	{	
+		if (!m_clSocket.Open(port, dcclite::Socket::Type::STREAM, Socket::FLAG_BLOCKING_MODE))
 		{
 			throw std::runtime_error("[TerminalService] Cannot open socket");
 		}
@@ -1125,29 +1186,26 @@ namespace dcclite::broker
 
 		dcclite::Log::Info("[TerminalService] Started, listening on port {}", port);
 
-		if(auto bonjourService = static_cast<BonjourService *>(m_rclBroker.TryFindService(BONJOUR_SERVICE_NAME)))
-			bonjourService->Register("terminal", "dcclitet", NetworkProtocol::TCP, port, 36);
+		for (;;)
+		{
+			auto [status, socket, address] = m_clSocket.TryAccept();
 
-		ZeroconfService::Register(this->GetTypeName(), port);
+			if (status != Socket::Status::OK)
+				break;
+			
+			Messenger::PostEvent(
+				std::make_unique<TerminalServiceAcceptConnectionEvent>(
+					std::ref(*this), 
+					address, 
+					std::move(socket)
+				)
+			);
+		}
 	}
-
-	TerminalService::~TerminalService()
-	{
-		//empty
-	}	
 
 	void TerminalService::Think(const dcclite::Clock::TimePoint_t tp)
 	{
-		m_tThinker.SetNext(tp + 100ms);
-
-		auto [status, socket, address] = m_clSocket.TryAccept();
-
-		if (status == Socket::Status::OK)
-		{
-			dcclite::Log::Info("[TerminalService] Client connected {}", address.GetIpString());
-
-			m_vecClients.push_back(std::make_unique<TerminalClient>(*this, *m_rclBroker.GetTerminalCmdHost(), address, std::move(socket)));
-		}
+		m_tThinker.SetNext(tp + 100ms);		
 
 		for (size_t i = 0; i < m_vecClients.size(); ++i)
 		{

@@ -12,8 +12,11 @@
 
 #include <vector>
 
+#include <thread>
+
 #include "Service.h"
 #include "Thinker.h"
+#include "Messenger.h"
 
 #include "Socket.h"
 
@@ -22,7 +25,7 @@ namespace dcclite::broker
 
 	class TerminalClient;
 
-	class TerminalService : public Service
+	class TerminalService : public Service, public Messenger::IEventTarget
 	{
 		private:		
 			dcclite::Socket m_clSocket;
@@ -31,8 +34,16 @@ namespace dcclite::broker
 
 			Thinker m_tThinker;
 
+			std::thread m_thListenThread;
+
 		private:
 			void Think(const dcclite::Clock::TimePoint_t tp);
+			
+			void ListenThreadProc(const int port);
+
+			void OnAcceptConnection(const dcclite::NetworkAddress &address, dcclite::Socket &&s);
+
+			friend class TerminalServiceAcceptConnectionEvent;
 
 		public:
 			TerminalService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);

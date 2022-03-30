@@ -732,7 +732,7 @@ namespace dcclite::broker
 		{
 			auto task = it->get();
 
-			if (task->HasFinished() || !task->Update(*this, ticks))
+			if (task->HasFinished() || task->HasFailed() || !task->Update(*this, ticks))
 			{
 				auto item = it++;
 
