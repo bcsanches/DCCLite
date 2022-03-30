@@ -45,13 +45,14 @@ namespace dcclite::broker
 			{
 				std::unique_lock<std::mutex> guard{ m_mtxEventQueueLock };
 
+				auto listLambda = [] { return !m_lstEventQueue.empty(); };
 				if (timeoutTime)
 				{
-					m_clQueueMonitor.wait_until<dcclite::Clock::DefaultClock_t>(guard, timeoutTime.value(), [] { return !m_lstEventQueue.empty(); });
+					m_clQueueMonitor.wait_until<dcclite::Clock::DefaultClock_t>(guard, timeoutTime.value(), listLambda);
 				}
 				else
 				{
-					m_clQueueMonitor.wait(guard, [] { return m_lstEventQueue.empty(); });
+					m_clQueueMonitor.wait(guard, listLambda);
 				}									
 									
 				std::swap(eventQueue, m_lstEventQueue);
