@@ -12,6 +12,8 @@
 
 #include <assert.h>
 
+#include "Log.h"
+
 namespace dcclite::broker
 {
 #if 0
@@ -37,16 +39,28 @@ namespace dcclite::broker
 
 	void Thinker::UnregisterThinker(Thinker &thinker) noexcept
 	{
-		auto **p = &g_pclThinkers;
-
-		for (; (*p) != g_pclThinkers; p = &(*p)->m_pclNext)
+		if (&thinker == g_pclThinkers)
 		{
-			//should never happen...
-			assert(*p);
+			g_pclThinkers = thinker.m_pclNext;
+
+			return;
 		}
 
-		*p = thinker.m_pclNext;
-		thinker.m_pclNext = nullptr;
+		auto prev = g_pclThinkers;
+		auto node = g_pclThinkers->m_pclNext;
+		
+		do
+		{
+			if (node == &thinker)
+			{
+				prev->m_pclNext = node->m_pclNext;
+
+				break;
+			}
+				
+			prev = node;
+			node = node->m_pclNext;
+		} while (node);		
 	}
 
 	Thinker::Thinker(Proc_t proc) noexcept:
@@ -79,7 +93,7 @@ namespace dcclite::broker
 
 	void Thinker::Cancel() noexcept
 	{
-		if (!m_pclNext)
+		if (!m_fScheduled)
 			return;
 
 		UnregisterThinker(*this);
@@ -87,18 +101,23 @@ namespace dcclite::broker
 		m_fScheduled = false;
 	}
 
-	void Thinker::UpdateThinkers(const dcclite::Clock::TimePoint_t tp)
-	{
+	std::optional<dcclite::Clock::TimePoint_t> Thinker::UpdateThinkers(const dcclite::Clock::TimePoint_t tp)
+	{		
 		while (g_pclThinkers)
 		{
 			if (g_pclThinkers->m_tTimePoint > tp)
-				break;
+			{				
+				return g_pclThinkers->m_tTimePoint;
+			}				
 
 			auto thinker = g_pclThinkers;
 			g_pclThinkers = thinker->m_pclNext;
 			thinker->m_pclNext = nullptr;
+			thinker->m_fScheduled = false;
 
 			thinker->m_pfnCallback(tp);
 		}
+
+		return std::nullopt;
 	}
 }

@@ -36,12 +36,10 @@ namespace dcclite
 
 			inline TimePoint_t Ticks() const noexcept
 			{
-				return m_RunTime;
+				return m_CurrentTime;
 			}
 
-		private:			
-			TimePoint_t m_RunTime;
-
+		private:						
 			TimePoint_t m_StartTime;
 			TimePoint_t m_CurrentTime;
 			TimePoint_t m_PreviousTime;

@@ -72,6 +72,23 @@ namespace dcclite
 		return this->PollInternalQueue();		
 	}
 
+	std::tuple<Socket::Status, std::string> NetMessenger::SyncPoll()
+	{
+		for (;;)
+		{
+			auto [status, data] = this->Poll();
+
+			if ((status == Socket::Status::OK) || (status != Socket::Status::WOULD_BLOCK))
+				return std::make_tuple(status, std::move(data));
+
+			//would block...
+			status = this->WaitData();
+
+			if (status != Socket::Status::OK)
+				return std::make_tuple(status, std::string{});
+		}		
+	}
+
 	bool NetMessenger::Send(const NetworkAddress &destination, std::string_view msg)
 	{
 		if (!m_clSocket.Send(destination, msg.data(), msg.length()))
@@ -102,5 +119,18 @@ namespace dcclite
 		m_lstMessages.pop_front();
 
 		return std::make_tuple(Socket::Status::OK, std::move(output));		
+	}
+
+	void NetMessenger::Close()
+	{
+		m_clSocket.Close();
+	}
+
+	Socket::Status NetMessenger::WaitData()
+	{
+		if (!m_lstMessages.empty())
+			return Socket::Status::OK;
+
+		return m_clSocket.WaitData();
 	}
 }

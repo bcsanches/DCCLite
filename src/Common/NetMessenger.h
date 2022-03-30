@@ -31,14 +31,19 @@ namespace dcclite
 			const NetMessenger operator=(const NetMessenger& rhs) = delete;			
 
 			std::tuple<Socket::Status, std::string> Poll();
+			std::tuple<Socket::Status, std::string> SyncPoll();
 
 			bool Send(const NetworkAddress &destination, std::string_view msg);
 			bool Send(std::string_view msg);
+
+			void Close();			
 
 		private:
 			std::tuple<Socket::Status, std::string> PollInternalQueue();
 
 			void ParseIncomingMessage();
+
+			Socket::Status WaitData();
 
 		private:
 			Socket m_clSocket;

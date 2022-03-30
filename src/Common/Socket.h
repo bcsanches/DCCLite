@@ -200,6 +200,8 @@ namespace dcclite
 
 			bool JoinMulticastGroup(const IpAddress &address);		
 
+			Status WaitData();
+
 		private:
 			Handler_t m_hHandle;
 

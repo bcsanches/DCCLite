@@ -333,7 +333,8 @@ namespace dcclite::broker::detail
 
 	bool ServoTurnoutProgrammerTask::Update(INetworkDevice_TaskServices &owner, const dcclite::Clock::TimePoint_t time) noexcept
 	{
-		return true;
+		//while not finished or not failed, keep updating...
+		return !m_fFinished || !m_fFailed;
 	}
 
 	void ServoTurnoutProgrammerTask::Abort() noexcept

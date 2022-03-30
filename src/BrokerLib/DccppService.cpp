@@ -6,6 +6,7 @@
 #include "Broker.h"
 #include "Decoder.h"
 #include "DccLiteService.h"
+#include "Messenger.h"
 #include "NetMessenger.h"
 #include "NmraUtil.h"
 #include "SignalDecoder.h"
@@ -19,13 +20,53 @@ using namespace std::chrono_literals;
 
 namespace dcclite::broker
 {
+	class DccppServiceImpl;
+	class DccppClient;
 
-	class DccppClient: private IObjectManagerListener
+#if 1	
+
+	class DccppClientEvent: public Messenger::IEvent
 	{
 		public:
-			DccppClient(DccLiteService& dccLite, const NetworkAddress address, Socket&& socket);
+			DccppClientEvent(DccppClient &target, std::string msg);
+
+			void Fire() override;
+
+		private:
+			std::string m_strMessage;
+	};
+
+	class DccppServiceClientDisconnectedEvent: public Messenger::IEvent
+	{
+		public:
+			DccppServiceClientDisconnectedEvent(DccppServiceImpl &target, DccppClient &client);
+
+			void Fire() override;
+
+		private:
+			DccppClient &m_rclClient;
+	};
+
+	class DccppServiceAcceptConnectionEvent: public Messenger::IEvent
+	{
+		public:
+			DccppServiceAcceptConnectionEvent(DccppServiceImpl &target, const dcclite::NetworkAddress address, dcclite::Socket &&socket);
+
+			void Fire() override;
+
+		private:
+			const dcclite::NetworkAddress m_clAddress;
+			dcclite::Socket m_clSocket;
+	};
+#endif
+
+	class DccppClient: private IObjectManagerListener, public Messenger::IEventTarget
+	{
+		public:
+			DccppClient(DccppServiceImpl &owner, DccLiteService &dccLite, const NetworkAddress address, Socket&& socket);
+
 			DccppClient(const DccppClient& client) = delete;
-			DccppClient(DccppClient&& other) noexcept;
+			DccppClient(DccppClient&& other) = delete;
 
 			~DccppClient() override;
 
@@ -37,12 +78,9 @@ namespace dcclite::broker
 				}
 
 				return *this;
-			}
-
-			bool Update();
+			}			
 
 		private:			
-
 			void OnObjectManagerEvent(const ObjectManagerEvent &event) override;
 
 			void ParseStatusCommand(dcclite::Parser &parser, const std::string &msg);
@@ -53,31 +91,72 @@ namespace dcclite::broker
 			bool CreateTurnoutsDefResponse(std::stringstream &stream) const;
 			bool CreateOutputsDefResponse(std::stringstream &stream) const;
 
+			void OnMessage(const std::string &msg);
+
+			void ThreadProc();		
+
+			friend class DccppClientEvent;
+
 		private:
-			NetMessenger m_clMessenger;
-			DccLiteService& m_rclSystem;
+			NetMessenger		m_clMessenger;
+			DccppServiceImpl	&m_rclOwner;
+			DccLiteService		&m_rclSystem;			
 
 			const NetworkAddress	m_clAddress;
+
+			std::thread				m_clReceiveThread;
 	};
 
-	DccppClient::DccppClient(DccLiteService &system, const NetworkAddress address, Socket&& socket) :	
+	class DccppServiceImpl: public DccppService, public Messenger::IEventTarget
+	{
+		public:
+			DccppServiceImpl(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+			~DccppServiceImpl() override;
+
+			void Initialize() override;
+
+			void OnClientDisconnected(DccppClient &client);
+
+		private:			
+			void ListenThreadProc(const int port);
+
+			void OnAcceptConnection(const dcclite::NetworkAddress &address, Socket s);
+
+			friend class DccppServiceAcceptConnectionEvent;
+
+		private:
+			std::string		m_strDccServiceName;
+			DccLiteService *m_pclDccService = nullptr;
+
+			//
+			//Network communication
+			//
+			dcclite::Socket								m_clSocket;
+
+			std::thread									m_thListenThread;
+
+			std::mutex									m_mtxClientsLock;
+			std::vector<std::unique_ptr<DccppClient>>	m_vecClients;
+	};
+
+	DccppClient::DccppClient(DccppServiceImpl &owner, DccLiteService &system, const NetworkAddress address, Socket &&socket):
 		m_clMessenger(std::move(socket), ">"),
+		m_rclOwner(owner),
 		m_rclSystem(system),
 		m_clAddress(address)
 	{
 		m_rclSystem.AddListener(*this);
-	}
 
-	DccppClient::DccppClient(DccppClient&& other) noexcept :	
-		m_clMessenger(std::move(other.m_clMessenger)),
-		m_rclSystem(other.m_rclSystem),
-		m_clAddress(other.m_clAddress)
-	{
-		//empty
+		m_clReceiveThread = std::thread{ [this] {this->ThreadProc(); } };
 	}
+	
 
 	DccppClient::~DccppClient()
 	{
+		m_clMessenger.Close();
+
+		m_clReceiveThread.join();
+
 		m_rclSystem.RemoveListener(*this);
 	}
 
@@ -363,206 +442,185 @@ namespace dcclite::broker
 			m_clMessenger.Send(m_clAddress, CreateDecoderStateResponse(*remoteDecoder));	
 	}
 
-	bool DccppClient::Update()
+	void DccppClient::OnMessage(const std::string &msg)
+	{
+		dcclite::Log::Debug("[DccppClient] Received {}", msg);
+
+		dcclite::Parser parser(msg.c_str());
+
+		char token[128];
+		if (parser.GetToken(token, sizeof(token)) != Tokens::CMD_START)
+		{
+			Log::Error("[DccppClient::OnMessage] Error parsing msg, expected TOKEN_CMD_START: {}", msg);
+
+			goto ERROR_RESPONSE;
+		}
+
+		char cmd[4];
+		auto tokenType = parser.GetToken(cmd, sizeof(cmd));
+
+		if (tokenType == Tokens::HASH)
+		{
+			//max slots, have no idea why and how it is used
+			m_clMessenger.Send(m_clAddress, "<# 0>");
+
+			return;
+		}
+
+		if (tokenType != Tokens::ID)
+		{
+			Log::Error("[DccppClient::OnMessage] Error parsing msg, expected TOKEN_ID for cmd identification: {}", msg);
+
+			goto ERROR_RESPONSE;
+		}
+
+		switch (cmd[0])
+		{
+			case 'c':
+				//current
+				m_clMessenger.Send(m_clAddress, "<a 0>");
+				break;
+
+
+			case 'M':
+				Log::Debug("[DccppClient::OnMessage] Custom packet cmd {}, msg: {}", cmd, msg);
+				if (!ParseSignalCommandM(parser, msg, m_rclSystem))
+					goto ERROR_RESPONSE;
+
+				break;
+
+			case 's':
+				this->ParseStatusCommand(parser, msg);
+				break;
+
+			case 'S':
+				if (!this->ParseSensorCommand(parser, msg))
+					goto ERROR_RESPONSE;
+				break;
+
+			case 'Q':
+				if (parser.GetToken(token, sizeof(token)) != Tokens::END_OF_BUFFER)
+				{
+					Log::Error("[DccppClient::OnMessage] Error parsing msg, expected TOKEN_EOF for: {}", msg);
+
+					goto ERROR_RESPONSE;
+				}
+				else
+				{
+					std::stringstream response;
+
+					auto sensorDecoders = m_rclSystem.FindAllSensorDecoders();
+					m_clMessenger.Send(m_clAddress, CreateSensorStateRespnse(sensorDecoders));
+				}
+				break;
+
+			case 'T':
+			case 'Z':
+			{
+				int id;
+				tokenType = parser.GetNumber(id);
+				if (tokenType == Tokens::END_OF_BUFFER)
+				{
+					std::stringstream response;
+
+					if (cmd[0] == 'T')
+						this->CreateTurnoutsDefResponse(response);
+					else
+						this->CreateOutputsDefResponse(response);
+
+
+					m_clMessenger.Send(m_clAddress, response.str());
+					break;
+				}
+
+				if (tokenType != Tokens::NUMBER)
+				{
+
+					Log::Error("[DccppClient::OnMessage] Error parsing msg, expected TOKEN_NUMBER for device id: {}", msg);
+
+					goto ERROR_RESPONSE;
+				}
+
+				int direction;
+				if (parser.GetNumber(direction) != Tokens::NUMBER)
+				{
+					Log::Error("[DccppClient::OnMessage] Error parsing msg, expected TOKEN_NUMBER for device state: {}", msg);
+
+					goto ERROR_RESPONSE;
+				}
+
+				auto *dec = m_rclSystem.TryFindDecoder(DccAddress(id));
+				if (!dec)
+				{
+					Log::Error("[DccppClient::OnMessage] Error decoder {} not found", id);
+
+					goto ERROR_RESPONSE;
+				}
+
+				auto remoteDecoder = dynamic_cast<RemoteDecoder *>(dec);
+				if ((!remoteDecoder) || (!remoteDecoder->IsOutputDecoder()))
+				{
+					Log::Error("[DccppClient::OnMessage] Error decoder {} - {} is not an output type", id, dec ? dec->GetName() : "NOT FOUND");
+
+					goto ERROR_RESPONSE;
+				}
+
+				auto *outputDecoder = static_cast<OutputDecoder *>(remoteDecoder);
+
+				auto newState = direction ? DecoderStates::ACTIVE : DecoderStates::INACTIVE;
+
+				//if no state change pending and remote state is the requested one
+				if (!outputDecoder->GetPendingStateChange() && outputDecoder->GetRemoteState() == newState)
+				{
+					//we force an output, because we should not have a incoming state, so tell JMRI that we are on requested state
+					m_clMessenger.Send(m_clAddress, CreateOutputDecoderStateResponse(*outputDecoder));
+				}
+				else
+				{
+					//now we set the new state and later, the decoder will update it and send a response to JMRI
+					outputDecoder->SetState(newState, "DccppClient");
+				}
+			}
+			break;
+
+			default:
+				Log::Error("[DccppClient::Update] Unknown cmd {}, msg>: {}", cmd, msg);
+				goto ERROR_RESPONSE;
+				break;
+		}	
+
+		return;
+
+ERROR_RESPONSE:
+		m_clMessenger.Send(m_clAddress, "<X>");			
+	}
+
+	void DccppClient::ThreadProc()
 	{
 		for (;;)
 		{
 			auto [status, msg] = m_clMessenger.Poll();
 
-			if (status == Socket::Status::DISCONNECTED)
-				return false;
-
-			if (status == Socket::Status::WOULD_BLOCK)
-				return true;
-
-			if (status == Socket::Status::OK)
-			{			
-				dcclite::Log::Debug("[DccppClient] Received {}", msg);
-
-				dcclite::Parser parser(msg.c_str());
-
-				char token[128];
-				if (parser.GetToken(token, sizeof(token)) != Tokens::CMD_START)
-				{
-					Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_CMD_START: {}", msg);
-
-					goto ERROR_RESPONSE;
-				}
-
-				char cmd[4];
-				auto tokenType = parser.GetToken(cmd, sizeof(cmd));
-
-				if (tokenType == Tokens::HASH)
-				{
-					//max slots, have no idea why and how it is used
-					m_clMessenger.Send(m_clAddress, "<# 0>");
-					continue;
-				}
+			if (status != Socket::Status::OK)
+				break;
 			
-				if (tokenType != Tokens::ID)
-				{
-					Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_ID for cmd identification: {}", msg);
-
-					goto ERROR_RESPONSE;
-				}
-
-				switch (cmd[0])
-				{				
-					case 'c':
-						//current
-						m_clMessenger.Send(m_clAddress, "<a 0>");
-						break;
-
-
-					case 'M':
-						Log::Debug("[DccppClient::Update] Custom packet cmd {}, msg: {}", cmd, msg);
-						if (!ParseSignalCommandM(parser, msg, m_rclSystem))
-							goto ERROR_RESPONSE;
-
-						break;
-
-					case 's':
-						this->ParseStatusCommand(parser, msg);
-						break;
-
-					case 'S':					
-						if (!this->ParseSensorCommand(parser, msg))
-							goto ERROR_RESPONSE;
-						break;
-
-					case 'Q':
-						if (parser.GetToken(token, sizeof(token)) != Tokens::END_OF_BUFFER)
-						{
-							Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_EOF for: {}", msg);
-
-							goto ERROR_RESPONSE;
-						}
-						else
-						{
-							std::stringstream response;
-
-							auto sensorDecoders = m_rclSystem.FindAllSensorDecoders();
-							m_clMessenger.Send(m_clAddress, CreateSensorStateRespnse(sensorDecoders));						
-						}
-						break;
-
-					case 'T':
-					case 'Z':
-						{
-							int id;
-							tokenType = parser.GetNumber(id);
-							if (tokenType == Tokens::END_OF_BUFFER)
-							{
-								std::stringstream response;
-
-								if (cmd[0] == 'T')
-									this->CreateTurnoutsDefResponse(response);
-								else
-									this->CreateOutputsDefResponse(response);
-
-
-								m_clMessenger.Send(m_clAddress, response.str());
-								break;
-							}
-
-							if (tokenType != Tokens::NUMBER)
-							{							
-
-								Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER for device id: {}", msg);
-
-								goto ERROR_RESPONSE;
-							}
-
-							int direction;
-							if (parser.GetNumber(direction) != Tokens::NUMBER)
-							{
-								Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_NUMBER for device state: {}", msg);
-
-								goto ERROR_RESPONSE;
-							}
-
-							auto *dec = m_rclSystem.TryFindDecoder(DccAddress(id));
-							if (!dec)
-							{
-								Log::Error("[DccppClient::Update] Error decoder {} not found", id);
-
-								goto ERROR_RESPONSE;
-							}
-
-							auto remoteDecoder = dynamic_cast<RemoteDecoder *>(dec);
-							if ((!remoteDecoder) || (!remoteDecoder->IsOutputDecoder()))
-							{
-								Log::Error("[DccppClient::Update] Error decoder {} - {} is not an output type", id, dec ? dec->GetName() : "NOT FOUND");
-
-								goto ERROR_RESPONSE;
-							}
-
-							auto* outputDecoder = static_cast<OutputDecoder*>(remoteDecoder);
-
-							auto newState = direction ? DecoderStates::ACTIVE : DecoderStates::INACTIVE;
-
-							//if no state change pending and remote state is the requested one
-							if (!outputDecoder->GetPendingStateChange() && outputDecoder->GetRemoteState() == newState)
-							{
-								//we force an output, because we should not have a incoming state, so tell JMRI that we are on requested state
-								m_clMessenger.Send(m_clAddress, CreateOutputDecoderStateResponse(*outputDecoder));
-							}
-							else
-							{
-								//now we set the new state and later, the decoder will update it and send a response to JMRI
-								outputDecoder->SetState(newState, "DccppClient");
-							}						
-						}
-						break;
-
-					default:
-						Log::Error("[DccppClient::Update] Unknown cmd {}, msg>: {}", cmd, msg);
-						goto ERROR_RESPONSE;
-						break;
-				}		
-			}
+			Messenger::MakeEvent<DccppClientEvent>(std::ref(*this), std::move(msg));							
 		}
 
-		return true;
-
-	ERROR_RESPONSE:
-		m_clMessenger.Send(m_clAddress, "<X>");
-		return true;
+		Messenger::MakeEvent<DccppServiceClientDisconnectedEvent>(std::ref(m_rclOwner), std::ref(*this));		
 	}
 
-	class DccppServiceImpl : public DccppService
-	{
-		public:
-			DccppServiceImpl(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
-			~DccppServiceImpl() override
-			{
-				//empty
-			}			
 
-			void Initialize() override;			
-
-		private:
-			void Think(const dcclite::Clock::TimePoint_t ticks);
-
-		private:
-			std::string		m_strDccServiceName;
-			DccLiteService *m_pclDccService = nullptr;
-
-			Thinker			m_tThinker;
-
-			//
-			//Network communication
-			//
-			dcclite::Socket m_clSocket;
-
-			std::vector<DccppClient> m_vecClients;
-	};
+	//
+	//
+	//
+	//
+	//
 
 
 	DccppServiceImpl::DccppServiceImpl(const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
 		DccppService(name, broker, params, project),
-		m_strDccServiceName(params["system"].GetString()),
-		m_tThinker{ {}, THINKER_MF_LAMBDA(Think)}
+		m_strDccServiceName(params["system"].GetString())
 	{
 		//standard port used by DCC++
 		int port = 2560;
@@ -571,22 +629,34 @@ namespace dcclite::broker
 		if (it != params.MemberEnd())
 			port = it->value.GetInt();
 
-		if (!m_clSocket.Open(port, dcclite::Socket::Type::STREAM))
+		if (!m_clSocket.Open(port, dcclite::Socket::Type::STREAM, dcclite::Socket::Flags::FLAG_BLOCKING_MODE))
 		{
 			throw std::runtime_error("[DccppService] Cannot open socket");
 		}
 
-		if (!m_clSocket.Listen())
-		{
-			throw std::runtime_error("[DccppService] Cannot put socket on listen mode");
-		}
-
-		dcclite::Log::Info("[DccppService] Started, listening on port {}", port);
+		//
+		//start listening thread
+		m_thListenThread = std::move(std::thread{ [this, port]() {this->ListenThreadProc(port); } });		
 		
 		if(auto bonjourService = static_cast<BonjourService *>(m_rclBroker.TryFindService(BONJOUR_SERVICE_NAME)))
 			bonjourService->Register(this->GetName(), "dccpp", NetworkProtocol::TCP, port, 36);
 
 		ZeroconfService::Register(this->GetTypeName(), port);
+	}
+
+	DccppServiceImpl::~DccppServiceImpl()
+	{
+		//close socket
+		m_clSocket.Close();
+
+		//wait for the thread to die...
+		m_thListenThread.join();
+
+		//kill clients now, they will fire events
+		m_vecClients.clear();
+
+		//cancel any pending events, includings clients telling us that they disconnected
+		Messenger::CancelEvents(*this);
 	}
 
 	void DccppServiceImpl::Initialize()
@@ -597,30 +667,56 @@ namespace dcclite::broker
 			throw std::runtime_error(fmt::format("[DccppService::Initialize] Cannot find dcc service: {}", m_strDccServiceName));
 	}
 
-	void DccppServiceImpl::Think(const dcclite::Clock::TimePoint_t ticks)
+	void DccppServiceImpl::OnAcceptConnection(const dcclite::NetworkAddress &address, Socket s)
 	{
-		m_tThinker.SetNext(ticks + 100ms);
+		assert(m_pclDccService);
 
-		auto [status, socket, address] = m_clSocket.TryAccept();
+		std::unique_lock<std::mutex> guard{ m_mtxClientsLock };
 
-		if (status == Socket::Status::OK)
+		auto client = std::unique_ptr<DccppClient>{ new DccppClient(*this, *m_pclDccService, address, std::move(s)) };
+
+		m_vecClients.push_back(std::move(client));
+	}
+
+	void DccppServiceImpl::ListenThreadProc(const int port)
+	{
+		if (!m_clSocket.Listen())
 		{
-			dcclite::Log::Info("[DccppService] Client connected {}", address.GetIpString());
-
-			assert(m_pclDccService);
-
-			m_vecClients.emplace_back(*m_pclDccService, address, std::move(socket));
+			throw std::runtime_error("[DccppService] Cannot put socket on listen mode");
 		}
+
+		dcclite::Log::Info("[DccppService] Started, listening on port {}", port);
+
+		for (;;)
+		{
+			auto [status, socket, address] = m_clSocket.TryAccept();
+
+			if (status == Socket::Status::OK)
+			{
+				dcclite::Log::Info("[DccppService] Client connected {}", address.GetIpString());								
+				
+				Messenger::PostEvent(std::make_unique< DccppServiceAcceptConnectionEvent>(std::ref(*this), address, std::move(socket)));
+			}
+			else if (status != Socket::Status::WOULD_BLOCK)
+				break;
+		}		
+	}
+
+	void DccppServiceImpl::OnClientDisconnected(DccppClient &client)
+	{
+		std::unique_lock<std::mutex> guard{ m_mtxClientsLock };
 
 		for (size_t i = 0; i < m_vecClients.size(); ++i)
 		{
-			auto &client = m_vecClients[i];
+			auto &c = m_vecClients[i];
 
-			if (!client.Update())
+			if (c.get() == &client)
 			{
 				dcclite::Log::Info("[DccppService] Client disconnected");
 
 				m_vecClients.erase(m_vecClients.begin() + i);
+
+				return;
 			}
 		}
 	}
@@ -635,4 +731,46 @@ namespace dcclite::broker
 	{
 		return std::make_unique<DccppServiceImpl>(name, broker, params, project);
 	}
+
+#if 1
+	DccppServiceAcceptConnectionEvent::DccppServiceAcceptConnectionEvent(DccppServiceImpl &target, const dcclite::NetworkAddress address, dcclite::Socket &&socket):
+		IEvent(target),
+		m_clAddress(address),
+		m_clSocket(std::move(socket))
+	{
+		//empty
+	}
+
+	void DccppServiceAcceptConnectionEvent::Fire()
+	{
+		static_cast<DccppServiceImpl &>(this->GetTarget()).OnAcceptConnection(m_clAddress, std::move(m_clSocket));
+	}
+
+	DccppServiceClientDisconnectedEvent::DccppServiceClientDisconnectedEvent(DccppServiceImpl &target, DccppClient &client):
+		IEvent(target),
+		m_rclClient(client)
+	{
+		//empty
+	}
+
+
+	void DccppServiceClientDisconnectedEvent::Fire()
+	{
+		static_cast<DccppServiceImpl &>(this->GetTarget()).OnClientDisconnected(m_rclClient);
+	}	
+
+	DccppClientEvent::DccppClientEvent(DccppClient &target, std::string msg):
+		IEvent(target),
+		m_strMessage(std::move(msg))
+	{
+		//empty
+	}
+
+	void DccppClientEvent::Fire()
+	{
+		static_cast<DccppClient &>(this->GetTarget()).OnMessage(m_strMessage);
+	}
+
+#endif
+
 }

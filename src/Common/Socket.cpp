@@ -390,7 +390,26 @@ namespace dcclite
 
 		if (s == NULL_SOCKET)
 		{
-			return std::make_tuple(Status::WOULD_BLOCK, Socket(), NetworkAddress());
+#if PLATFORM == PLATFORM_WINDOWS
+			auto error = WSAGetLastError();
+			switch (error)
+			{
+				case WSAEWOULDBLOCK:
+					return std::make_tuple(Status::WOULD_BLOCK, Socket(), NetworkAddress());
+
+				default:
+					return std::make_tuple(Status::INTERRUPTED, Socket(), NetworkAddress());
+			}
+#else
+			switch (errno)
+			{
+				case EWOULDBLOCK:
+					return std::make_tuple(Status::WOULD_BLOCK, Socket(), NetworkAddress());
+
+				default:
+					return std::make_tuple(Status::INTERRUPTED, Socket(), NetworkAddress());
+			}			
+#endif			
 		}
 
 		unsigned int from_address = ntohl(addr.sin_addr.s_addr);
@@ -634,6 +653,27 @@ namespace dcclite
 
 		return ret == 0;
 #endif
+	}
+
+	Socket::Status Socket::WaitData()
+	{
+		fd_set set;
+
+#if PLATFORM == PLATFORM_WINDOWS
+		set.fd_array[0] = this->m_hHandle;
+		set.fd_count = 1;
+#elif PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
+		FD_ZERO(&set);
+		FD_SET(this->m_hHandle, &set);
+#endif
+
+		timeval tval = { 0 };
+
+		int rc = select(FD_SETSIZE, &set, nullptr, nullptr, &tval);
+		if (rc <= 0)
+			return Socket::Status::INTERRUPTED;			
+
+		return Socket::Status::OK;			
 	}
 
 }

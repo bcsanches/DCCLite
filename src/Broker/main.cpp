@@ -9,9 +9,12 @@
 // defined by the Mozilla Public License, v. 2.0.
 
 
+#include <chrono>
 #include <iostream>
 #include <signal.h>
 #include <stdexcept>
+
+#include <fmt/chrono.h>
 
 #include "Broker.h"
 
@@ -19,6 +22,7 @@
 #include "ConsoleUtils.h"
 #include "Log.h"
 #include "LogUtils.h"
+#include "Messenger.h"
 #include "PathUtils.h"
 #include "TerminalCmd.h"
 #include "Thinker.h"
@@ -40,6 +44,8 @@ static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 
 int main(int argc, char **argv)
 {			
+	using namespace std::chrono_literals;
+
 	try
 	{ 
 		dcclite::PathUtils::InitAppFolders("Broker");
@@ -47,7 +53,7 @@ int main(int argc, char **argv)
 		dcclite::LogInit("DccLiteBroker.log");
 
 #ifndef DEBUG
-		dcclite::LogGetDefault()->set_level(spdlog::level::info);
+		dcclite::LogGetDefault()->set_level(spdlog::level::debug);
 #else
 		dcclite::LogGetDefault()->set_level(spdlog::level::trace);
 #endif
@@ -59,20 +65,28 @@ int main(int argc, char **argv)
 		dcclite::ConsoleTryMakeNice();
 
 		dcclite::broker::Broker broker{ (argc == 1) ? "MyRailroad" : argv[1] };
-
-		dcclite::Clock clock;
-
+		
 		dcclite::Log::Info("Ready, main loop...");
+
+		unsigned frameCount = 0;
+		auto startTime = dcclite::Clock::DefaultClock_t::now();
 		
 		while (!fExitRequested)
-		{
-			if (!clock.Tick(std::chrono::milliseconds{ 25 }))
+		{			
+			auto now = dcclite::Clock::DefaultClock_t::now();
+
+			++frameCount;			
+			if ((now - startTime) >= std::chrono::seconds{ 1 })
 			{
-				std::this_thread::sleep_for(std::chrono::milliseconds{ 10 });
-				continue;
-			}			
+				startTime += std::chrono::seconds{ 1 };
+
+				//dcclite::Log::Debug("[{}]", frameCount);
+				frameCount = 0;
+			}
 			
-			dcclite::broker::Thinker::UpdateThinkers(clock.Ticks());			
+			auto timeout = dcclite::broker::Thinker::UpdateThinkers(now);
+			
+			dcclite::broker::Messenger::PumpEvents(timeout);						
 		}			
 	}	
 	catch (std::exception &ex)

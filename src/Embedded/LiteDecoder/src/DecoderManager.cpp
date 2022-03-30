@@ -275,6 +275,9 @@ bool DecoderManager::ReceiveServerStates(const dcclite::StatesBitPack_t &changed
 		//Console::SendLogEx(MODULE_NAME, "state", ' ', "for", i, "is",' ', states[i]);
 
 		auto *decoder = g_pDecoders[i];
+		if (!decoder)
+			continue;
+
 		decoder->AcceptServerState(states[i] ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
 
 		if (decoder->IsOutputDecoder())

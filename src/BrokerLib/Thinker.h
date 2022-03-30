@@ -11,6 +11,7 @@
 #pragma once
 
 #include <functional>
+#include <optional>
 
 #include "Clock.h"
 
@@ -36,7 +37,7 @@ namespace dcclite::broker
 				return m_fScheduled;
 			}
 			
-			static void UpdateThinkers(const dcclite::Clock::TimePoint_t tp);
+			static std::optional<dcclite::Clock::TimePoint_t> UpdateThinkers(const dcclite::Clock::TimePoint_t tp);
 
 		private:
 			static void RegisterThinker(Thinker &thinker) noexcept;

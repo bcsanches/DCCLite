@@ -31,7 +31,7 @@ namespace dcclite
 		m_PreviousTime = m_CurrentTime;
 		m_CurrentTime = t;	
 
-		m_RunTime += delta;
+		//m_RunTime += delta;
 
 		return true;
 	}

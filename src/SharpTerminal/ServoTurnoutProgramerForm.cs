@@ -10,25 +10,100 @@
 
 using System;
 using System.Collections.Generic;
-using System.Json;
 using System.Linq;
 using System.Windows.Forms;
 
 namespace SharpTerminal
-{
-    public class ServoProgrammerAction: RemoteDecoderCmdBaseAction
+{    
+    public partial class ServoTurnoutProgrammerForm: Form
+    {
+        private ServoProgrammerAction   m_clOwner;
+        private RemoteTurnoutDecoder    m_clTarget;
+        private IConsole                m_clConsole;
+
+        private int m_iProgrammerTaskId = -1;
+
+        public RemoteTurnoutDecoder Target { get { return m_clTarget; } }
+
+        protected ServoTurnoutProgrammerForm()
+        {
+            InitializeComponent();                       
+        }
+
+        public ServoTurnoutProgrammerForm(ServoProgrammerAction owner, IConsole console, RemoteTurnoutDecoder target)
+        {
+            m_clOwner = owner ?? throw new ArgumentNullException(nameof(owner));
+            m_clOwner.Register(this);
+
+            m_clTarget = target ?? throw new ArgumentNullException(nameof(target));
+            m_clConsole = console ?? throw new ArgumentNullException(nameof(console));
+
+            InitializeComponent();
+
+            this.Text += " - " + m_clTarget.Name;            
+        }
+
+        protected override async void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            if (this.DesignMode)
+                return;
+
+            for(; ;)
+            {
+                try
+                {
+                    var json = await m_clConsole.RequestAsync("Start-ServoProgrammer", m_clTarget.SystemName, m_clTarget.DeviceName, m_clTarget.Name);
+
+                    if(json.ContainsKey("taskId"))
+                    {
+                        m_iProgrammerTaskId = (int)json["taskId"];
+                    }
+
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    if (MessageBox.Show(this, "Failed to start programming mode: " + ex.Message + ".\n Retry??", "Error", MessageBoxButtons.RetryCancel) != DialogResult.Retry)
+                    {
+                        this.DialogResult = DialogResult.Cancel;
+                        this.Close();
+                    }
+                }
+            }                                    
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (MessageBox.Show(this, "Are you sure? Changes will not be saved", "Are you sure?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
+                e.Cancel = true;
+
+                return;
+            }
+
+            base.OnFormClosing(e);
+
+            m_clOwner.Unregister(this);
+
+            m_clConsole.ProcessCmd("Stop-ServoProgrammer", m_iProgrammerTaskId.ToString());
+        }        
+    }
+
+    public class ServoProgrammerAction : RemoteDecoderCmdBaseAction
     {
         private List<ServoTurnoutProgrammerForm> m_lstOpenForms;
 
-        public ServoProgrammerAction(string label, string description):
+        public ServoProgrammerAction(string label, string description) :
             base(label, description)
         {
             //empty
         }
 
         public override void Execute(IConsole console, RemoteObject target)
-        {            
-            if(m_lstOpenForms != null)
+        {
+            if (m_lstOpenForms != null)
             {
                 var existingForm = (from x in m_lstOpenForms where x.Target.Name.CompareTo(target.Name) == 0 select x).FirstOrDefault();
 
@@ -61,76 +136,4 @@ namespace SharpTerminal
         }
     }
 
-    public partial class ServoTurnoutProgrammerForm: Form
-    {
-        private ServoProgrammerAction   m_clOwner;
-        private RemoteTurnoutDecoder    m_clTarget;
-        private IConsole                m_clConsole;
-
-        private int m_iProgrammerTaskId;
-
-        public RemoteTurnoutDecoder Target { get { return m_clTarget; } }
-
-        protected ServoTurnoutProgrammerForm()
-        {
-            InitializeComponent();                       
-        }
-
-        public ServoTurnoutProgrammerForm(ServoProgrammerAction owner, IConsole console, RemoteTurnoutDecoder target)
-        {
-            m_clOwner = owner ?? throw new ArgumentNullException(nameof(owner));
-            m_clOwner.Register(this);
-
-            m_clTarget = target ?? throw new ArgumentNullException(nameof(target));
-            m_clConsole = console ?? throw new ArgumentNullException(nameof(console));
-
-            InitializeComponent();
-
-            this.Text += " - " + m_clTarget.Name;            
-        }
-
-        protected override async void OnLoad(EventArgs e)
-        {
-            base.OnLoad(e);
-
-            for(; ;)
-            {
-                try
-                {
-                    var json = await m_clConsole.RequestAsync("Start-ServoProgrammer", m_clTarget.SystemName, m_clTarget.DeviceName, m_clTarget.Name);
-
-                    if(!json.ContainsKey("response"))
-                    {
-
-                    }
-
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    if (MessageBox.Show(this, "Failed to start programming mode: " + ex.Message + ".\n Retry??", "Error", MessageBoxButtons.RetryCancel) != DialogResult.Retry)
-                    {
-                        this.DialogResult = DialogResult.Cancel;
-                        this.Close();
-                    }
-                }
-            }                                    
-        }
-
-        protected override void OnFormClosing(FormClosingEventArgs e)
-        {
-            if (MessageBox.Show(this, "Are you sure? Changes will not be saved", "Are you sure?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
-            {
-                e.Cancel = true;
-
-                return;
-            }
-
-            base.OnFormClosing(e);
-
-            m_clOwner.Unregister(this);
-
-            m_clConsole.ProcessCmd("Stop-ServoProgrammer", m_clTarget.SystemName, m_clTarget.Name);
-        }        
-    }
 }

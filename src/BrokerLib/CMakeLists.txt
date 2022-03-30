@@ -10,6 +10,7 @@ set(BrokerLib_SRCS
     FileWatcher.cpp
     LocationManager.cpp
     LoconetService.cpp  
+    Messenger.cpp
     NetworkDevice.cpp
     NetworkDeviceTasks.cpp
     OutputDecoder.cpp
@@ -43,6 +44,7 @@ set(BrokerLib_HDRS
     IDevice.h
     LocationManager.h
     LoconetService.h
+    Messenger.h
     NetworkDevice.h
     NetworkDeviceTasks.h
     OutputDecoder.h
