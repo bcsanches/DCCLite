@@ -25,6 +25,23 @@
 
 namespace dcclite::broker
 { 
+	class NetworkTask;
+
+	namespace detail
+	{
+		class INetworkDevice_TaskServices
+		{
+			public:
+				virtual void TaskServices_FillPacketHeader(dcclite::Packet &packet) const noexcept = 0;
+
+				virtual void TaskServices_SendPacket(dcclite::Packet &packet) = 0;
+
+				[[nodiscard]] virtual bool IsConnectionStable() const noexcept = 0;
+
+				virtual void TaskServices_ForgetTask(NetworkTask &task) = 0;
+		};
+	}
+
 	class ServoTurnoutDecoder;	
 
 	class NetworkTask
@@ -34,15 +51,7 @@ namespace dcclite::broker
 			{
 				public:
 					virtual void OnNetworkTaskStateChanged(const NetworkTask &task) = 0;
-			};
-
-
-			inline NetworkTask(const uint32_t taskId, IObserver *observer = nullptr) noexcept:
-				m_u32TaskId{ taskId },
-				m_pclObserver{observer}
-			{
-				//empty
-			}
+			};			
 
 			[[nodiscard]] inline uint32_t GetTaskId() const noexcept
 			{
@@ -76,37 +85,59 @@ namespace dcclite::broker
 			}
 
 		protected:
+			inline NetworkTask(detail::INetworkDevice_TaskServices &owner, const uint32_t taskId, IObserver *observer = nullptr) noexcept:
+				m_rclOwner{ owner },
+				m_u32TaskId{ taskId },
+				m_pclObserver{ observer }
+			{
+				//empty
+			}
+
 			inline void NotifyObserver()
 			{
 				if (m_pclObserver)
 					m_pclObserver->OnNetworkTaskStateChanged(*this);
 			}
 
+			//
+			// The task may be deleted after this method returns
+			//
 			inline void MarkFinished()
 			{
 				m_fFinished = true;
 
-				this->NotifyObserver();
+				this->NotifyObserver();	
+				m_rclOwner.TaskServices_ForgetTask(*this);
 			}
 
+			//
+			// The task may be deleted after this method returns
+			//
 			inline void MarkFailed()
 			{
 				m_fFailed = true;
 
 				this->NotifyObserver();
+				m_rclOwner.TaskServices_ForgetTask(*this);
 			}
 
+			//
+			// The task may be deleted after this method returns
+			//
 			inline void MarkAbort()
 			{
 				m_fFailed = true;
 				m_fFinished = true;
 
 				this->NotifyObserver();
+				m_rclOwner.TaskServices_ForgetTask(*this);
 			}
 
 
 		protected:
-			const uint32_t	m_u32TaskId;
+			const uint32_t						m_u32TaskId;
+
+			detail::INetworkDevice_TaskServices	&m_rclOwner;
 
 		private:
 			IObserver		*m_pclObserver;
@@ -129,15 +160,6 @@ namespace dcclite::broker
 
 	namespace detail
 	{
-		class INetworkDevice_TaskServices
-		{
-			public:
-				virtual void TaskServices_FillPacketHeader(dcclite::Packet &packet) const noexcept = 0;
-
-				virtual void TaskServices_SendPacket(dcclite::Packet &packet) = 0;
-
-				[[nodiscard]] virtual bool IsConnectionStable() const noexcept = 0;
-		};
 
 		/**
 		* TASK_DATA Packet format
@@ -162,8 +184,7 @@ namespace dcclite::broker
 		{
 			protected:
 				NetworkTaskImpl(INetworkDevice_TaskServices &owner, const uint32_t taskId, IObserver *observer):
-					NetworkTask{taskId, observer},
-					m_rOwner{ owner }
+					NetworkTask{owner, taskId, observer}
 				{
 					//empty
 				}
@@ -174,15 +195,7 @@ namespace dcclite::broker
 				//
 				//
 				//
-				virtual void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) = 0;
-
-				//
-				// Do some work, returns true if still has pending work. 
-				//			
-				[[nodiscard]] virtual bool Update(INetworkDevice_TaskServices &owner, const dcclite::Clock::TimePoint_t time) noexcept = 0;				
-
-			protected:				
-				INetworkDevice_TaskServices &m_rOwner;
+				virtual void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) = 0;							
 		};				
 
 		extern std::shared_ptr<NetworkTaskImpl> StartDownloadEEPromTask(

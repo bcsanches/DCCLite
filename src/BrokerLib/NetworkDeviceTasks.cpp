@@ -20,6 +20,7 @@
 #include "OutputDecoder.h"
 #include "Project.h"
 #include "SensorDecoder.h"
+#include "Thinker.h"
 
 namespace dcclite::broker::detail
 {		
@@ -59,14 +60,14 @@ namespace dcclite::broker::detail
 		public:
 			DownloadEEPromTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, IObserver *observer, DownloadEEPromTaskResult_t &results):
 				NetworkTaskImpl{owner, taskId, observer },
-				m_vecResults{ results }
+				m_vecResults{ results },
+				m_clThinker{ THINKER_MF_LAMBDA(OnThink) }
 			{
-				//empty
+				//start running
+				m_clThinker.SetNext({});
 			}			
 
-			void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) override;
-
-			bool Update(INetworkDevice_TaskServices &owner, const dcclite::Clock::TimePoint_t time) noexcept override;
+			void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) override;			
 
 			void Abort() noexcept override;
 			void Stop() noexcept override;
@@ -75,6 +76,8 @@ namespace dcclite::broker::detail
 			void ReadSlice(dcclite::Packet &packet, const uint8_t sliceSize, const uint8_t sequence);
 
 			void RequestSlice(INetworkDevice_TaskServices &owner, const dcclite::Clock::TimePoint_t time, const uint8_t sliceNum);
+
+			void OnThink(const dcclite::Clock::TimePoint_t time);
 
 		private:
 			enum class States
@@ -85,13 +88,13 @@ namespace dcclite::broker::detail
 			};
 
 			friend class NetworkDevice;
+
+			Thinker						m_clThinker;
 			
 			DownloadEEPromTaskResult_t	&m_vecResults;		
 			std::vector<bool>			m_vecSlicesAck;			
 
-			States	m_kState = States::WAITING_CONNECTION;		
-
-			dcclite::Clock::TimePoint_t m_tWaitTimeout;					
+			States	m_kState = States::WAITING_CONNECTION;					
 	};
 
 	void DownloadEEPromTask::Abort() noexcept
@@ -148,7 +151,7 @@ namespace dcclite::broker::detail
 					m_kState = States::DOWNLOADING;
 
 					//force restart
-					m_tWaitTimeout = time;
+					m_clThinker.SetNext({});
 				}
 				break;
 
@@ -172,8 +175,8 @@ namespace dcclite::broker::detail
 
 					this->ReadSlice(packet, sliceSize, sequence);					
 
-					//force restart
-					m_tWaitTimeout = time;
+					//force restart ... but wait a bit, so more packets may arrive
+					m_clThinker.SetNext(time + 10ms);
 				}
 				break;
 		}
@@ -181,6 +184,8 @@ namespace dcclite::broker::detail
 
 	void DownloadEEPromTask::RequestSlice(INetworkDevice_TaskServices &owner, const dcclite::Clock::TimePoint_t time, const uint8_t sliceNum)
 	{
+		Log::Trace("[DownloadEEPromTask::Update]: requesting slice {}", (int)sliceNum);
+
 		dcclite::Packet packet;		
 
 		owner.TaskServices_FillPacketHeader(packet);		
@@ -193,10 +198,10 @@ namespace dcclite::broker::detail
 
 		owner.TaskServices_SendPacket(packet);		
 
-		m_tWaitTimeout = time + DOWNLOAD_RETRY_TIMEOUT;
+		m_clThinker.SetNext(time + DOWNLOAD_RETRY_TIMEOUT);		
 	}
 
-	bool DownloadEEPromTask::Update(INetworkDevice_TaskServices &owner, const dcclite::Clock::TimePoint_t time) noexcept
+	void DownloadEEPromTask::OnThink(const dcclite::Clock::TimePoint_t time)
 	{		
 		assert(!this->HasFailed());
 		assert(!this->HasFinished());
@@ -205,27 +210,23 @@ namespace dcclite::broker::detail
 		{
 			case States::WAITING_CONNECTION:				
 				//Wait for a stable connection (after config, sync, etc)
-				if (!m_rOwner.IsConnectionStable())
-					return true;
+				if (!m_rclOwner.IsConnectionStable())
+				{
+					m_clThinker.SetNext(time + 100ms);
+
+					return;
+				}
 
 				m_kState = States::START_DOWNLOAD;		
 				Log::Info("[DownloadEEPromTask::Update]: Requesting data {} bytes", m_vecResults.size());
 
 				[[fallthrough]];
-			case States::START_DOWNLOAD:
-
-				//too soon?
-				if (m_tWaitTimeout <= time)
-				{
-					//slice number, request 0... always valid
-					this->RequestSlice(owner, time, 0);
-				}				
-				return true;				
+			case States::START_DOWNLOAD:								
+				//slice number, request 0... always valid
+				this->RequestSlice(m_rclOwner, time, 0);
+				break;
 
 			case States::DOWNLOADING:
-				//too soon?
-				if (m_tWaitTimeout > time)
-					return true;
 
 				{
 					assert(m_vecSlicesAck.size() < 256);
@@ -239,29 +240,26 @@ namespace dcclite::broker::detail
 							continue;
 
 						++packetCount;
-						this->RequestSlice(owner, time, static_cast<uint8_t>(i));						
+						this->RequestSlice(m_rclOwner, time, static_cast<uint8_t>(i));
 					}
 
+					//Do we still have work to do?
 					if (packetCount)
-						return true;
-
-					//
-					// received all packets...
-					this->MarkFinished();
-
-					Log::Info("[DownloadEEPromTask::Update]: finished download of {} bytes", m_vecResults.size());
-
-					return false;
+						return ;
 				}
+
+				Log::Info("[DownloadEEPromTask::Update]: finished download of {} bytes", m_vecResults.size());
+
+				//
+				// received all packets...
+				this->MarkFinished();				
 				break;
 
 			default:
 				//WTF?
 				Log::Error("[DownloadEEPromTask::Update] Invalid state {}", magic_enum::enum_name(m_kState));
 
-				this->MarkFailed();
-
-				return false;				
+				this->MarkFailed();				
 		}		
 	}
 
@@ -281,9 +279,7 @@ namespace dcclite::broker::detail
 				//empty
 			}						
 
-			void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) override;
-
-			bool Update(INetworkDevice_TaskServices &owner, const dcclite::Clock::TimePoint_t time) noexcept override;
+			void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) override;			
 
 			void Abort() noexcept override;
 
@@ -302,12 +298,6 @@ namespace dcclite::broker::detail
 	void ServoTurnoutProgrammerTask::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time)
 	{
 
-	}
-
-	bool ServoTurnoutProgrammerTask::Update(INetworkDevice_TaskServices &owner, const dcclite::Clock::TimePoint_t time) noexcept
-	{
-		//while not finished or not failed, keep updating...
-		return !this->HasFinished() || !this->HasFailed();
 	}
 
 	void ServoTurnoutProgrammerTask::Abort() noexcept

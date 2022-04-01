@@ -82,6 +82,11 @@ namespace dcclite::broker
 
 	void Thinker::SetNext(dcclite::Clock::TimePoint_t tp) noexcept
 	{
+		//
+		//Sometimes they get scheduled multiple times...
+		if ((m_fScheduled) && (tp == m_tTimePoint))
+			return;
+
 		this->Cancel();
 
 		m_tTimePoint = tp;

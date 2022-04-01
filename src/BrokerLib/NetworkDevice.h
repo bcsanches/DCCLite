@@ -92,6 +92,8 @@ namespace dcclite::broker
 
 			bool IsConnectionStable() const noexcept;
 
+			void TaskServices_ForgetTask(NetworkTask &task) override;
+
 			//
 			//
 			// Tasks

@@ -726,22 +726,7 @@ namespace dcclite::broker
 		{
 			//yes, ok get out and wait for it to come back
 			return;
-		}
-
-		for (auto it = m_lstTasks.begin(); it != m_lstTasks.end(); ++it)
-		{
-			auto task = it->get();
-
-			if (task->HasFinished() || task->HasFailed() || !task->Update(*this, ticks))
-			{
-				auto item = it++;
-
-				m_lstTasks.erase(item);
-
-				if (it == m_lstTasks.end())
-					break;
-			}
-		}		
+		}				
 
 		m_pclCurrentState->Update(*this, ticks);
 	}
@@ -797,6 +782,18 @@ namespace dcclite::broker
 	void NetworkDevice::TaskServices_SendPacket(dcclite::Packet &packet)
 	{
 		m_clDccService.Device_SendPacket(m_RemoteAddress, packet);
+	}
+
+	void NetworkDevice::TaskServices_ForgetTask(NetworkTask &task)
+	{
+		auto it = std::find_if(m_lstTasks.begin(), m_lstTasks.end(), [&task](std::shared_ptr<detail::NetworkTaskImpl> &ptr) { return ptr.get() == &task; });
+
+		//
+		//It may happens that a task may finishes and removes itself and a task owner ask its to stop after it... so ignore...
+		if (it == m_lstTasks.end())
+			return;
+
+		m_lstTasks.erase(it);
 	}
 
 	void NetworkDevice::AbortPendingTasks()
