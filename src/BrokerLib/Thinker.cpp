@@ -39,28 +39,18 @@ namespace dcclite::broker
 
 	void Thinker::UnregisterThinker(Thinker &thinker) noexcept
 	{
-		if (&thinker == g_pclThinkers)
-		{
-			g_pclThinkers = thinker.m_pclNext;
-
-			return;
-		}
-
-		auto prev = g_pclThinkers;
-		auto node = g_pclThinkers->m_pclNext;
+		auto **p = &g_pclThinkers;
 		
-		do
+		while(*p)
 		{
-			if (node == &thinker)
+			if (*p == &thinker)
 			{
-				prev->m_pclNext = node->m_pclNext;
-
+				*p = thinker.m_pclNext;
 				break;
 			}
-				
-			prev = node;
-			node = node->m_pclNext;
-		} while (node);		
+
+			p = &(*p)->m_pclNext;
+		}
 	}
 
 	Thinker::Thinker(Proc_t proc) noexcept:
