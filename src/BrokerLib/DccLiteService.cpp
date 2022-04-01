@@ -91,6 +91,8 @@ namespace dcclite::broker
 
 			throw;
 		}
+
+		m_tThinker.SetNext(dcclite::Clock::DefaultClock_t::now());
 	
 	}
 

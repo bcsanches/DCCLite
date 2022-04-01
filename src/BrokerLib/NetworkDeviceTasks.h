@@ -25,13 +25,21 @@
 
 namespace dcclite::broker
 { 
-	class ServoTurnoutDecoder;
+	class ServoTurnoutDecoder;	
 
 	class NetworkTask
 	{
 		public:
-			inline NetworkTask(const uint32_t taskId) noexcept:
-				m_u32TaskId{ taskId }
+			class IObserver
+			{
+				public:
+					virtual void OnNetworkTaskStateChanged(const NetworkTask &task) = 0;
+			};
+
+
+			inline NetworkTask(const uint32_t taskId, IObserver *observer = nullptr) noexcept:
+				m_u32TaskId{ taskId },
+				m_pclObserver{observer}
 			{
 				//empty
 			}
@@ -43,21 +51,68 @@ namespace dcclite::broker
 
 			//
 			// When the task finishes, success or not, this must return true			
-			//
-			virtual bool HasFinished() const noexcept = 0;
+			//			
+			inline [[nodiscard]] bool HasFinished() const noexcept
+			{
+				return m_fFinished;
+			}			
 
 			//
 			// When the task fails to complete, this must return true (results must be ignored / discarded)
-			//
-			virtual bool HasFailed() const noexcept = 0;
+			//			
+			inline [[nodiscard]] bool HasFailed() const noexcept
+			{
+				return m_fFailed;
+			}
 
 			//
 			// Ask the task to stop. It may continue futher processing for a graceful stop (that can later fail)
 			//
 			virtual void Stop() noexcept = 0;
 
+			inline void SetObserver(IObserver *observer) noexcept
+			{
+				m_pclObserver = observer;
+			}
+
 		protected:
-			const uint32_t m_u32TaskId;
+			inline void NotifyObserver()
+			{
+				if (m_pclObserver)
+					m_pclObserver->OnNetworkTaskStateChanged(*this);
+			}
+
+			inline void MarkFinished()
+			{
+				m_fFinished = true;
+
+				this->NotifyObserver();
+			}
+
+			inline void MarkFailed()
+			{
+				m_fFailed = true;
+
+				this->NotifyObserver();
+			}
+
+			inline void MarkAbort()
+			{
+				m_fFailed = true;
+				m_fFinished = true;
+
+				this->NotifyObserver();
+			}
+
+
+		protected:
+			const uint32_t	m_u32TaskId;
+
+		private:
+			IObserver		*m_pclObserver;
+
+			bool m_fFinished = false;
+			bool m_fFailed = false;
 
 	};	
 
@@ -106,8 +161,8 @@ namespace dcclite::broker
 		class NetworkTaskImpl: public NetworkTask
 		{
 			protected:
-				NetworkTaskImpl(INetworkDevice_TaskServices &owner, const uint32_t taskId):
-					NetworkTask{taskId},
+				NetworkTaskImpl(INetworkDevice_TaskServices &owner, const uint32_t taskId, IObserver *observer):
+					NetworkTask{taskId, observer},
 					m_rOwner{ owner }
 				{
 					//empty
@@ -130,7 +185,18 @@ namespace dcclite::broker
 				INetworkDevice_TaskServices &m_rOwner;
 		};				
 
-		extern std::shared_ptr<NetworkTaskImpl> StartDownloadEEPromTask(INetworkDevice_TaskServices &device, const uint32_t taskId, DownloadEEPromTaskResult_t &resultsStorage);
-		extern std::shared_ptr<NetworkTaskImpl> StartServoTurnoutProgrammerTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, ServoTurnoutDecoder &decoder);
+		extern std::shared_ptr<NetworkTaskImpl> StartDownloadEEPromTask(
+			INetworkDevice_TaskServices	&device, 
+			const uint32_t				taskId, 
+			NetworkTask::IObserver		*observer,
+			DownloadEEPromTaskResult_t	&resultsStorage
+		);
+
+		extern std::shared_ptr<NetworkTaskImpl> StartServoTurnoutProgrammerTask(
+			INetworkDevice_TaskServices	&owner, 
+			const uint32_t				taskId, 
+			NetworkTask::IObserver		*observer,
+			ServoTurnoutDecoder			&decoder
+		);
 	}	
 }

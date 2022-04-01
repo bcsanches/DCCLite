@@ -25,6 +25,8 @@
 
 #include <rapidjson/document.h>
 
+#include "magic_enum.hpp"
+
 #include "BonjourService.h"
 #include "Broker.h"
 #include "DccLiteService.h"
@@ -43,7 +45,6 @@ using namespace std::chrono_literals;
 
 namespace dcclite::broker
 {
-
 	constexpr auto JSONRPC_KEY = "jsonrpc";
 	constexpr auto JSONRPC_VERSION = "2.0";
 
@@ -505,12 +506,13 @@ namespace dcclite::broker
 	//
 	//
 
-	class ReadEEPromFiber : public TerminalCmdFiber
+
+	class ReadEEPromFiber : public TerminalCmdFiber, private NetworkTask::IObserver, public Messenger::IEventTarget
 	{
 		public:
-			ReadEEPromFiber(const CmdId_t id, NetworkDevice &device):
-				TerminalCmdFiber(id),
-				m_spTask{ device.StartDownloadEEPromTask(m_vecEEPromData)}				
+			ReadEEPromFiber(const CmdId_t id, TerminalContext &context, NetworkDevice &device):
+				TerminalCmdFiber(id, context),
+				m_spTask{ device.StartDownloadEEPromTask(this, m_vecEEPromData)}				
 			{
 				if (!m_spTask)
 					throw TerminalCmdException("No task provided for ReadEEPromFiber", id);
@@ -519,44 +521,75 @@ namespace dcclite::broker
 				fileName.append(".rom");
 				
 				m_pathRomFileName = device.GetProject().GetAppFilePath(fileName);				
-			}
+			}	
 
-			std::optional<std::string> Run(TerminalContext& context) noexcept override
+			~ReadEEPromFiber()
 			{
-				if (m_spTask)
-				{
-					if (m_spTask->HasFailed())
-					{
-						return MakeRpcErrorResponse(m_tId, "Download task failed");
-					}
+				//
+				//Must wait, so we make sure the thread will not fire a event after it is destroyed
+				m_Future.wait();
 
-					if (m_spTask->HasFinished())
-					{
-						m_spTask.reset();
-
-						m_Future = std::async(SaveEEprom, std::ref(m_vecEEPromData), std::ref(m_pathRomFileName));						
-					}					
-				}
-				else
-				{
-					using namespace std::chrono_literals;
-
-					if (m_Future.wait_for(0s) == std::future_status::ready)
-					{
-						return MakeRpcResultMessage(m_tId, [this](Result_t &results)
-							{
-								results.AddStringValue("classname", "ReadEEPromResult");
-								results.AddStringValue("filepath", m_pathRomFileName.string());
-							}
-						);
-					}					
-				}	
-
-				return std::nullopt;
+				Messenger::CancelEvents(*this);
 			}
 
 		private:
-			static void SaveEEprom(const DownloadEEPromTaskResult_t &data, const dcclite::fs::path &fileName)
+			void OnNetworkTaskStateChanged(const NetworkTask &task) override
+			{				
+				assert(&task == m_spTask.get());
+
+				m_spTask->SetObserver(nullptr);
+
+				if (m_spTask->HasFailed())
+				{
+					m_rclContext.SendClientNotification(MakeRpcErrorResponse(m_tCmdId, "Download task failed"));
+
+					//suicide, we are useless now
+					m_rclContext.DestroyFiber(*this);
+
+					return;
+				}
+
+				if (m_spTask->HasFinished())
+				{	
+					//we do not need the task anymore
+					m_spTask.reset();
+
+					//save the data to disk...
+					m_Future = std::async(SaveEEprom, std::ref(*this), std::ref(m_vecEEPromData), std::ref(m_pathRomFileName));
+				}								
+			}
+
+			class DiskWriteFinishedEvent: public Messenger::IEvent
+			{
+				public:
+					DiskWriteFinishedEvent(ReadEEPromFiber &target):
+						IEvent{ target }
+					{
+						//empty
+					}
+
+					void Fire() override
+					{
+						static_cast<ReadEEPromFiber &>(this->GetTarget()).OnSaveEEPromFinished();
+					}
+			};
+
+			void OnSaveEEPromFinished()
+			{
+				auto msg = MakeRpcResultMessage(m_tCmdId, [this](Result_t &results)
+					{
+						results.AddStringValue("classname", "ReadEEPromResult");
+						results.AddStringValue("filepath", m_pathRomFileName.string());
+					}
+				);
+
+				m_rclContext.SendClientNotification(msg);
+
+				//finally finished, so go away like MR. MEESEEKS
+				m_rclContext.DestroyFiber(*this);
+			}
+
+			static void SaveEEprom(ReadEEPromFiber &fiber, const DownloadEEPromTaskResult_t &data, const dcclite::fs::path &fileName)
 			{
 				dcclite::Log::Info("[ReadEEPromFiber::SaveEEprom] Saving EEPROM at {}", fileName.string());
 
@@ -570,6 +603,10 @@ namespace dcclite::broker
 
 				epromFile.write(reinterpret_cast<const char *>(&data.front()), data.size());
 				dcclite::Log::Info("[ReadEEPromFiber::SaveEEprom] Finished saving EEPROM at {}", fileName.string());
+
+				//
+				//Send results.. but we need to do this on main thread
+				Messenger::MakeEvent< DiskWriteFinishedEvent>(std::ref(fiber));
 			}
 
 		private:			
@@ -591,7 +628,7 @@ namespace dcclite::broker
 				//empty
 			}
 
-			CmdResult_t Run(TerminalContext& context, const CmdId_t id, const rapidjson::Document& request) override
+			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document& request) override
 			{
 				auto paramsIt = request.FindMember("params");
 				if (paramsIt->value.Size() < 2)
@@ -616,7 +653,7 @@ namespace dcclite::broker
 					throw TerminalCmdException(fmt::format("Device {} on {} system is NOT a network device", deviceName, systemName), id);
 				}				
 
-				return std::make_unique<ReadEEPromFiber>(id, *networkDevice);
+				return std::make_unique<ReadEEPromFiber>(id, context, *networkDevice);
 			}
 	};
 
@@ -661,7 +698,7 @@ namespace dcclite::broker
 					throw TerminalCmdException(fmt::format("Device {} on {} system is NOT a network device", deviceName, systemName), id);
 				}
 
-				auto task = networkDevice->StartServoTurnoutProgrammerTask(decoderName);
+				auto task = networkDevice->StartServoTurnoutProgrammerTask(nullptr, decoderName);
 
 				//
 				//store the task, so future cmds can reference it
@@ -699,6 +736,25 @@ namespace dcclite::broker
 					throw TerminalCmdException(fmt::format("{}: task {} not found", this->GetName(), taskId), id);
 				}
 
+				if (task->HasFailed())
+				{
+					//
+					//forget about it
+					taskManager.RemoveTask(task->GetTaskId());
+
+					throw TerminalCmdException(fmt::format("{}: task {} failed", this->GetName(), taskId), id);
+				}
+
+				if (task->HasFinished())
+				{
+					//
+					//forget about it
+					taskManager.RemoveTask(task->GetTaskId());
+
+					throw TerminalCmdException(fmt::format("{}: task {} finished", this->GetName(), taskId), id);
+
+				}
+
 				return task;
 			}
 			
@@ -722,6 +778,7 @@ namespace dcclite::broker
 				}
 								
 				auto task = this->GetTask(context, id, paramsIt->value[0]);
+
 				//
 				//tell the task to stop
 				task->Stop();
@@ -781,16 +838,14 @@ namespace dcclite::broker
 	//
 	//
 
-	class TerminalClient: private IObjectManagerListener
+	class TerminalClient: private IObjectManagerListener, ITerminalClient_ContextServices, Messenger::IEventTarget
 	{
 		public:
-			TerminalClient(TerminalService &owner, TerminalCmdHost &cmdHost, const NetworkAddress address, Socket &&socket);
+			TerminalClient(ITerminalServiceClientProxy &owner, TerminalCmdHost &cmdHost, dcclite::IObject &root, const dcclite::Path_t &ownerPath, const NetworkAddress address, Socket &&socket);
 			TerminalClient(const TerminalClient &client) = delete;
 			TerminalClient(TerminalClient &&other) = delete;
 
-			virtual ~TerminalClient();
-
-			bool Update();
+			virtual ~TerminalClient();			
 
 		private:
 			void OnObjectManagerEvent(const ObjectManagerEvent &event) override;
@@ -801,34 +856,74 @@ namespace dcclite::broker
 
 			FolderObject *TryGetServicesFolder() const;	
 
+			void ReceiveDataThreadProc();
+
+			void OnMsg(const std::string &msg);
+
+			//
+			//
+			// ITerminalClient_ContextServices 
+			//
+			//
+			void DestroyFiber(TerminalCmdFiber &fiber) override;
+			TaskManager &GetTaskManager() override;
+			void SendClientNotification(const std::string_view msg) override;
+
+			class MsgArrivedEvent: public Messenger::IEvent
+			{
+				public:
+					MsgArrivedEvent(TerminalClient &target, std::string &&msg):
+						IEvent(target),
+						m_strMessage(msg)
+					{
+						//empty
+					}
+
+					void Fire() override
+					{
+						static_cast<TerminalClient &>(this->GetTarget()).OnMsg(m_strMessage);
+					}
+
+				private:
+					std::string m_strMessage;
+			};
+
 		private:
 			NetMessenger	m_clMessenger;			
 			TerminalContext m_clContext;
 
-			TerminalService &m_rclOwner;
-			TerminalCmdHost &m_rclCmdHost;
+			ITerminalServiceClientProxy &m_rclOwner;
+			TerminalCmdHost				&m_rclCmdHost;
 
-			std::list<std::shared_ptr<TerminalCmdFiber>>			m_lstFibers;	
+			std::list<std::unique_ptr<TerminalCmdFiber>>	m_lstFibers;	
 
-			TaskManager												m_clTaskManager;
+			TaskManager										m_clTaskManager;
+
+			std::thread										m_thReceiveThread;
 
 			const NetworkAddress	m_clAddress;
 	};
 
-	TerminalClient::TerminalClient(TerminalService &owner, TerminalCmdHost &cmdHost, const NetworkAddress address, Socket &&socket) :	
+	TerminalClient::TerminalClient(ITerminalServiceClientProxy &owner, TerminalCmdHost &cmdHost, dcclite::IObject &root, const dcclite::Path_t &ownerPath, const NetworkAddress address, Socket &&socket) :
 		m_clMessenger(std::move(socket)),
 		m_rclOwner(owner),	
 		m_rclCmdHost(cmdHost),
-		m_clContext(static_cast<dcclite::FolderObject &>(owner.GetRoot()), m_clTaskManager),
+		m_clContext(static_cast<dcclite::FolderObject &>(root), *this),
 		m_clAddress(address)
 	{
-		m_clContext.SetLocation(owner.GetPath());
+		m_clContext.SetLocation(ownerPath);
 
 		this->RegisterListeners();
+
+		m_thReceiveThread = std::thread{ [this] {this->ReceiveDataThreadProc(); } };
 	}
 
 	TerminalClient::~TerminalClient()
 	{
+		m_clMessenger.Close();
+
+		m_thReceiveThread.join();
+
 		auto *servicesFolder = this->TryGetServicesFolder();
 		if (servicesFolder == nullptr)
 			return;
@@ -843,6 +938,8 @@ namespace dcclite::broker
 
 			service->RemoveListener(*this);
 		}
+
+		Messenger::CancelEvents(*this);
 	}
 
 	FolderObject *TerminalClient::TryGetServicesFolder() const
@@ -950,112 +1047,132 @@ namespace dcclite::broker
 		}
 	}
 
-	bool TerminalClient::Update()
+	TaskManager &TerminalClient::GetTaskManager()
 	{
-		for(auto it = m_lstFibers.begin(), end = m_lstFibers.end(); it != end;)
+		return m_clTaskManager;
+	}
+
+	void TerminalClient::SendClientNotification(const std::string_view msg)
+	{
+		if (!m_clMessenger.Send(m_clAddress, msg))
 		{
-			auto current = it;
-			++it;
+			dcclite::Log::Error("[TerminalClient::Update] fiber result for {} not sent, contents: {}", m_clAddress.GetIpString(), msg);
+		}
+	}
 
-			auto result = (*current)->Run(m_clContext);
-			if (result)
+	void TerminalClient::DestroyFiber(TerminalCmdFiber &fiber)
+	{
+#if 1
+		auto it = std::find_if(
+			m_lstFibers.begin(), 
+			m_lstFibers.end(), 
+			[&fiber](const std::unique_ptr<TerminalCmdFiber> &item)
 			{
-				if (!m_clMessenger.Send(m_clAddress, result.value()))
-				{
-					dcclite::Log::Error("[TerminalClient::Update] fiber result for {} not sent, contents: {}", m_clAddress.GetIpString(), result.value());
-				}
-
-				//fiber has finished
-				m_lstFibers.erase(current);
+				return item.get() == &fiber;
 			}
+		);
+#endif
+
+#if 0
+		m_lstFibers.clear();
+#endif
+		
+#if 1
+		if (it != m_lstFibers.end())
+			m_lstFibers.erase(it);
+#endif
+	}
+
+	void TerminalClient::OnMsg(const std::string &msg)
+	{
+		TerminalCmd::CmdResult_t result;
+
+		int cmdId = -1;
+		try
+		{
+			//dcclite::Log::Trace("Received {}", msg);
+
+			rapidjson::Document doc;
+			doc.Parse(msg.c_str());
+
+			if (doc.HasParseError())
+			{
+				throw TerminalCmdException(fmt::format("Invalid json: {}", msg), -1);
+			}
+
+			auto jsonrpcKey = doc.FindMember(JSONRPC_KEY);
+			if ((jsonrpcKey == doc.MemberEnd()) || (!jsonrpcKey->value.IsString()) || (strcmp(jsonrpcKey->value.GetString(), JSONRPC_VERSION)))
+			{
+				throw TerminalCmdException(fmt::format("Invalid rpc version or was not set: {}", msg), -1);
+			}
+
+			auto methodKey = doc.FindMember("method");
+			if ((methodKey == doc.MemberEnd()) || (!methodKey->value.IsString()))
+			{
+				throw TerminalCmdException(fmt::format("Invalid method name in msg: {}", msg), -1);
+			}
+
+			const auto methodName = methodKey->value.GetString();
+
+			auto idKey = doc.FindMember("id");
+			if ((idKey == doc.MemberEnd()) || (!idKey->value.IsInt()))
+			{
+				throw TerminalCmdException(fmt::format("No method id in: {}", msg), -1);
+			}
+
+			cmdId = idKey->value.GetInt();
+
+			auto cmd = m_rclCmdHost.TryFindCmd(methodName);
+			if (cmd == nullptr)
+			{
+				dcclite::Log::Error("Invalid cmd: {}", methodName);
+				throw TerminalCmdException(fmt::format("Invalid cmd name: {}", methodName), cmdId);				
+			}
+
+			result = cmd->Run(m_clContext, cmdId, doc);
+		}
+		catch (TerminalCmdException &ex)
+		{
+			result = MakeRpcErrorResponse(ex.GetId(), ex.what());
+		}
+		catch (std::exception &ex)
+		{
+			result = MakeRpcErrorResponse(cmdId, ex.what());
 		}
 
+		if (std::holds_alternative<std::string>(result))
+		{
+			auto const &response = std::get<std::string>(result);
+			if (!m_clMessenger.Send(m_clAddress, response))
+			{
+				dcclite::Log::Error("[TerminalClient::Update] message for {} not sent, contents: {}", m_clAddress.GetIpString(), response);
+			}
+		}
+		else
+		{
+			m_lstFibers.push_back(std::get<std::unique_ptr<TerminalCmdFiber>>(std::move(result)));
+		}
+	}
+
+	void TerminalClient::ReceiveDataThreadProc()
+	{		
 		for (;;)
 		{
 			auto[status, msg] = m_clMessenger.Poll();
 
 			if (status == Socket::Status::DISCONNECTED)
-				return false;
+				break;
 
 			if (status == Socket::Status::WOULD_BLOCK)
-				return true;
+				continue;
 
-			if (status == Socket::Status::OK)
-			{
-				TerminalCmd::CmdResult_t result;
-
-				int cmdId = -1;
-				try
-				{
-					//dcclite::Log::Trace("Received {}", msg);
-
-					rapidjson::Document doc;
-					doc.Parse(msg.c_str());
-
-					if (doc.HasParseError())
-					{
-						throw TerminalCmdException(fmt::format("Invalid json: {}", msg), -1);
-					}
-
-					auto jsonrpcKey = doc.FindMember(JSONRPC_KEY);
-					if ((jsonrpcKey == doc.MemberEnd()) || (!jsonrpcKey->value.IsString()) || (strcmp(jsonrpcKey->value.GetString(), JSONRPC_VERSION)))
-					{
-						throw TerminalCmdException(fmt::format("Invalid rpc version or was not set: {}", msg), -1);
-					}
-
-					auto methodKey = doc.FindMember("method");
-					if ((methodKey == doc.MemberEnd()) || (!methodKey->value.IsString()))
-					{
-						throw TerminalCmdException(fmt::format("Invalid method name in msg: {}", msg), -1);
-					}
-
-					const auto methodName = methodKey->value.GetString();
-
-					auto idKey = doc.FindMember("id");
-					if ((idKey == doc.MemberEnd()) || (!idKey->value.IsInt()))
-					{
-						throw TerminalCmdException(fmt::format("No method id in: {}", msg), -1);
-					}				
-
-					cmdId = idKey->value.GetInt();
-
-					auto cmd = m_rclCmdHost.TryFindCmd(methodName);
-					if (cmd == nullptr)
-					{
-						dcclite::Log::Error("Invalid cmd: {}", methodName);
-						throw TerminalCmdException(fmt::format("Invalid cmd name: {}", methodName), cmdId);
-
-						continue;
-					}					
-
-					result = cmd->Run(m_clContext, cmdId, doc);					
-				}
-				catch (TerminalCmdException &ex)
-				{
-					result = MakeRpcErrorResponse(ex.GetId(), ex.what());
-				}
-				catch (std::exception &ex)
-				{
-					result = MakeRpcErrorResponse(cmdId, ex.what());
-				}
-
-				if (std::holds_alternative<std::string>(result))
-				{
-					auto const &response = std::get<std::string>(result);
-					if (!m_clMessenger.Send(m_clAddress, response))
-					{
-						dcclite::Log::Error("[TerminalClient::Update] message for {} not sent, contents: {}", m_clAddress.GetIpString(), response);
-					}
-				}
-				else
-				{
-					m_lstFibers.push_back(std::get<std::unique_ptr<TerminalCmdFiber>>(std::move(result)));
-				}				
-			}
+			if (status != Socket::Status::OK)
+				throw std::logic_error(fmt::format("[TerminalClient::ReceiveDataThreadProc] Unexpected socket error: {}", magic_enum::enum_name(status)));
+			
+			Messenger::PostEvent(std::make_unique<TerminalClient::MsgArrivedEvent>(std::ref(*this), std::move(msg)));
 		}
-	
 
-		return true;
+		m_rclOwner.Async_DisconnectClient(*this);
 	}
 
 	//
@@ -1086,6 +1203,25 @@ namespace dcclite::broker
 			dcclite::NetworkAddress m_clAddress;
 	};
 
+	class TerminalServiceClientDisconnectedEvent: public Messenger::IEvent
+	{
+		public:
+			TerminalServiceClientDisconnectedEvent(TerminalService &target, TerminalClient &client):
+				IEvent(target),
+				m_rclClient(client)
+			{
+				//empty
+			}
+
+			void Fire() override
+			{
+				static_cast<TerminalService &>(this->GetTarget()).OnClientDisconnect(m_rclClient);
+			}
+
+		private:
+			TerminalClient &m_rclClient;
+	};
+
 	//
 	//
 	// TerminalService
@@ -1093,8 +1229,7 @@ namespace dcclite::broker
 	//
 
 	TerminalService::TerminalService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :
-		Service(name, broker, params, project),
-		m_tThinker{ {}, THINKER_MF_LAMBDA(Think) }
+		Service(name, broker, params, project)		
 	{	
 		auto cmdHost = broker.GetTerminalCmdHost();
 
@@ -1158,18 +1293,54 @@ namespace dcclite::broker
 
 	TerminalService::~TerminalService()
 	{
+		//close socket, so listen thread stops...
 		m_clSocket.Close();
 
+		//kill all clients...
+		m_vecClients.clear();
+
+		//wait for listen thread to finishes, so we are sure no more events will be posted
 		m_thListenThread.join();
 
+		//Cancel any events, because no one will be able to handle those
 		Messenger::CancelEvents(*this);
 	}	
+
+	void TerminalService::OnClientDisconnect(TerminalClient &client)
+	{
+		auto it = std::find_if(m_vecClients.begin(), m_vecClients.end(), [&client](std::unique_ptr<TerminalClient> &item)
+			{
+				return item.get() == &client;
+			});
+
+		assert(it != m_vecClients.end());
+
+		m_vecClients.erase(it);
+
+		dcclite::Log::Info("[TerminalService] Client disconnected");
+	}
+
+	void TerminalService::Async_DisconnectClient(TerminalClient &client)
+	{
+		Messenger::MakeEvent< TerminalServiceClientDisconnectedEvent>(std::ref(*this), std::ref(client));
+	}
 
 	void TerminalService::OnAcceptConnection(const dcclite::NetworkAddress &address, dcclite::Socket &&s)
 	{
 		dcclite::Log::Info("[TerminalService] Client connected {}", address.GetIpString());
 
-		m_vecClients.push_back(std::make_unique<TerminalClient>(*this, *m_rclBroker.GetTerminalCmdHost(), address, std::move(s)));
+		ITerminalServiceClientProxy &proxy = *this;
+
+		m_vecClients.push_back(
+			std::make_unique<TerminalClient>(
+				proxy,
+				*m_rclBroker.GetTerminalCmdHost(), 
+				this->GetRoot(), 
+				this->GetPath(), 
+				address, 
+				std::move(s)
+			)
+		);
 	}
 
 	void TerminalService::ListenThreadProc(const int port)
@@ -1201,22 +1372,5 @@ namespace dcclite::broker
 				)
 			);
 		}
-	}
-
-	void TerminalService::Think(const dcclite::Clock::TimePoint_t tp)
-	{
-		m_tThinker.SetNext(tp + 100ms);		
-
-		for (size_t i = 0; i < m_vecClients.size(); ++i)
-		{
-			auto &client = m_vecClients[i];
-
-			if (!client->Update())
-			{
-				dcclite::Log::Info("[TerminalService] Client disconnected");			
-
-				m_vecClients.erase(m_vecClients.begin() + i);
-			}
-		}
-	}
+	}	
 }

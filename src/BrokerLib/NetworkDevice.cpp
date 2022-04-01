@@ -737,6 +737,9 @@ namespace dcclite::broker
 				auto item = it++;
 
 				m_lstTasks.erase(item);
+
+				if (it == m_lstTasks.end())
+					break;
 			}
 		}		
 
@@ -804,16 +807,16 @@ namespace dcclite::broker
 		m_lstTasks.clear();		
 	}
 
-	std::shared_ptr<NetworkTask> NetworkDevice::StartDownloadEEPromTask(DownloadEEPromTaskResult_t &resultsStorage)
+	std::shared_ptr<NetworkTask> NetworkDevice::StartDownloadEEPromTask(NetworkTask::IObserver *observer, DownloadEEPromTaskResult_t &resultsStorage)
 	{		
-		auto task = detail::StartDownloadEEPromTask(*this, ++g_u32TaskId, resultsStorage);								
+		auto task = detail::StartDownloadEEPromTask(*this, ++g_u32TaskId, observer, resultsStorage);								
 
 		m_lstTasks.push_back(task);		
 
 		return task;
 	}
 
-	std::shared_ptr<NetworkTask> NetworkDevice::StartServoTurnoutProgrammerTask(const std::string_view servoDecoderName)
+	std::shared_ptr<NetworkTask> NetworkDevice::StartServoTurnoutProgrammerTask(NetworkTask::IObserver *observer, const std::string_view servoDecoderName)
 	{		
 		auto obj = this->TryResolveChild(servoDecoderName);
 		if (!obj)
@@ -823,7 +826,7 @@ namespace dcclite::broker
 		if(!servoTurnout)
 			throw std::invalid_argument(fmt::format("[NetworkDevice::StartDownloadEEPromTask] Servo decoder {} is not a ServoTurnoutDecoder", servoDecoderName));
 		
-		auto task = detail::StartServoTurnoutProgrammerTask(*this, ++g_u32TaskId, *servoTurnout);
+		auto task = detail::StartServoTurnoutProgrammerTask(*this, ++g_u32TaskId, observer, *servoTurnout);
 		
 		m_lstTasks.push_back(task);		
 

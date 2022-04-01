@@ -57,22 +57,12 @@ namespace dcclite::broker::detail
 	class DownloadEEPromTask: public NetworkTaskImpl
 	{
 		public:
-			DownloadEEPromTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, DownloadEEPromTaskResult_t &results):
-				NetworkTaskImpl{owner, taskId},
+			DownloadEEPromTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, IObserver *observer, DownloadEEPromTaskResult_t &results):
+				NetworkTaskImpl{owner, taskId, observer },
 				m_vecResults{ results }
 			{
 				//empty
-			}
-
-			bool HasFinished() const noexcept override
-			{
-				return m_fFinished;
-			}
-
-			bool HasFailed() const noexcept override
-			{
-				return m_fFailed;
-			}
+			}			
 
 			void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) override;
 
@@ -101,21 +91,17 @@ namespace dcclite::broker::detail
 
 			States	m_kState = States::WAITING_CONNECTION;		
 
-			dcclite::Clock::TimePoint_t m_tWaitTimeout;
-			
-			bool m_fFinished = false;
-			bool m_fFailed = false;
+			dcclite::Clock::TimePoint_t m_tWaitTimeout;					
 	};
 
 	void DownloadEEPromTask::Abort() noexcept
 	{		
-		m_fFailed = true;
-		m_fFinished = true;
+		this->MarkAbort();		
 	}	
 
 	void DownloadEEPromTask::Stop() noexcept
 	{
-		if(!m_fFinished)
+		if(!this->HasFinished())
 			this->Abort();
 	}
 
@@ -212,8 +198,8 @@ namespace dcclite::broker::detail
 
 	bool DownloadEEPromTask::Update(INetworkDevice_TaskServices &owner, const dcclite::Clock::TimePoint_t time) noexcept
 	{		
-		assert(!m_fFailed);
-		assert(!m_fFinished);
+		assert(!this->HasFailed());
+		assert(!this->HasFinished());
 		
 		switch (m_kState)
 		{
@@ -261,7 +247,7 @@ namespace dcclite::broker::detail
 
 					//
 					// received all packets...
-					m_fFinished = true;
+					this->MarkFinished();
 
 					Log::Info("[DownloadEEPromTask::Update]: finished download of {} bytes", m_vecResults.size());
 
@@ -273,9 +259,9 @@ namespace dcclite::broker::detail
 				//WTF?
 				Log::Error("[DownloadEEPromTask::Update] Invalid state {}", magic_enum::enum_name(m_kState));
 
-				m_fFailed = true;
-				return false;
-				break;
+				this->MarkFailed();
+
+				return false;				
 		}		
 	}
 
@@ -288,22 +274,12 @@ namespace dcclite::broker::detail
 	class ServoTurnoutProgrammerTask: public NetworkTaskImpl, public IServoProgrammerTask
 	{
 		public:
-			inline ServoTurnoutProgrammerTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, ServoTurnoutDecoder &decoder):
-				NetworkTaskImpl{ owner, taskId },
+			inline ServoTurnoutProgrammerTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, IObserver *observer, ServoTurnoutDecoder &decoder):
+				NetworkTaskImpl{ owner, taskId, observer },
 				m_rclDecoder{decoder}
 			{
 				//empty
-			}			
-
-			bool HasFinished() const noexcept override
-			{
-				return m_fFinished;
-			}
-
-			bool HasFailed() const noexcept override
-			{
-				return m_fFailed;
-			}
+			}						
 
 			void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) override;
 
@@ -321,9 +297,6 @@ namespace dcclite::broker::detail
 
 		private:
 			ServoTurnoutDecoder &m_rclDecoder;
-			
-			bool m_fFinished = false;
-			bool m_fFailed = false;
 	};
 
 	void ServoTurnoutProgrammerTask::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time)
@@ -334,18 +307,17 @@ namespace dcclite::broker::detail
 	bool ServoTurnoutProgrammerTask::Update(INetworkDevice_TaskServices &owner, const dcclite::Clock::TimePoint_t time) noexcept
 	{
 		//while not finished or not failed, keep updating...
-		return !m_fFinished || !m_fFailed;
+		return !this->HasFinished() || !this->HasFailed();
 	}
 
 	void ServoTurnoutProgrammerTask::Abort() noexcept
 	{			
-		m_fFailed = true;
-		m_fFinished = true;
+		this->MarkAbort();				
 	}
 
 	void ServoTurnoutProgrammerTask::Stop() noexcept
 	{
-		m_fFinished = true;
+		this->MarkFailed();
 	}
 
 	void ServoTurnoutProgrammerTask::SetStartPos(const uint8_t startPos)
@@ -368,13 +340,13 @@ namespace dcclite::broker::detail
 	// Helpers
 	//
 	//	
-	std::shared_ptr<NetworkTaskImpl> StartDownloadEEPromTask(INetworkDevice_TaskServices &device, const uint32_t taskId, DownloadEEPromTaskResult_t &resultsStorage)
+	std::shared_ptr<NetworkTaskImpl> StartDownloadEEPromTask(INetworkDevice_TaskServices &device, const uint32_t taskId, NetworkTask::IObserver *observer, DownloadEEPromTaskResult_t &resultsStorage)
 	{		
-		return std::make_shared<DownloadEEPromTask>(device, taskId, resultsStorage);
+		return std::make_shared<DownloadEEPromTask>(device, taskId, observer, resultsStorage);
 	}
 
-	std::shared_ptr<NetworkTaskImpl> StartServoTurnoutProgrammerTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, ServoTurnoutDecoder &decoder)
+	std::shared_ptr<NetworkTaskImpl> StartServoTurnoutProgrammerTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, NetworkTask::IObserver *observer, ServoTurnoutDecoder &decoder)
 	{
-		return std::make_shared<ServoTurnoutProgrammerTask>(owner, taskId, decoder);
+		return std::make_shared<ServoTurnoutProgrammerTask>(owner, taskId, observer, decoder);
 	}
 }

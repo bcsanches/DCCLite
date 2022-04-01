@@ -19,51 +19,19 @@
 using namespace std::chrono_literals;
 
 namespace dcclite::broker
-{
-	class DccppServiceImpl;
+{		
 	class DccppClient;
 
-#if 1	
-
-	class DccppClientEvent: public Messenger::IEvent
+	class DccppServiceImplClientProxy
 	{
 		public:
-			DccppClientEvent(DccppClient &target, std::string msg);
-
-			void Fire() override;
-
-		private:
-			std::string m_strMessage;
+			virtual void Async_ClientDisconnected(DccppClient &client) = 0;
 	};
-
-	class DccppServiceClientDisconnectedEvent: public Messenger::IEvent
-	{
-		public:
-			DccppServiceClientDisconnectedEvent(DccppServiceImpl &target, DccppClient &client);
-
-			void Fire() override;
-
-		private:
-			DccppClient &m_rclClient;
-	};
-
-	class DccppServiceAcceptConnectionEvent: public Messenger::IEvent
-	{
-		public:
-			DccppServiceAcceptConnectionEvent(DccppServiceImpl &target, const dcclite::NetworkAddress address, dcclite::Socket &&socket);
-
-			void Fire() override;
-
-		private:
-			const dcclite::NetworkAddress m_clAddress;
-			dcclite::Socket m_clSocket;
-	};
-#endif
 
 	class DccppClient: private IObjectManagerListener, public Messenger::IEventTarget
 	{
 		public:
-			DccppClient(DccppServiceImpl &owner, DccLiteService &dccLite, const NetworkAddress address, Socket&& socket);
+			DccppClient(DccppServiceImplClientProxy &owner, DccLiteService &dccLite, const NetworkAddress address, Socket&& socket);
 
 			DccppClient(const DccppClient& client) = delete;
 			DccppClient(DccppClient&& other) = delete;
@@ -95,34 +63,93 @@ namespace dcclite::broker
 
 			void ThreadProc();		
 
-			friend class DccppClientEvent;
+			class ClientEvent: public Messenger::IEvent
+			{
+				public:
+					ClientEvent(DccppClient &target, std::string msg):
+						IEvent(target),
+						m_strMessage(std::move(msg))
+					{
+						//empty
+					}
+
+					void Fire() override
+					{
+						static_cast<DccppClient &>(this->GetTarget()).OnMessage(m_strMessage);
+					}
+
+				private:
+					std::string m_strMessage;
+			};
 
 		private:
-			NetMessenger		m_clMessenger;
-			DccppServiceImpl	&m_rclOwner;
-			DccLiteService		&m_rclSystem;			
+			NetMessenger				m_clMessenger;
+			DccppServiceImplClientProxy &m_rclOwner;
+			DccLiteService				&m_rclSystem;			
 
 			const NetworkAddress	m_clAddress;
 
 			std::thread				m_clReceiveThread;
-	};
+	};		
 
-	class DccppServiceImpl: public DccppService, public Messenger::IEventTarget
+	class DccppServiceImpl: public DccppService, public Messenger::IEventTarget, DccppServiceImplClientProxy
 	{
 		public:
 			DccppServiceImpl(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
 			~DccppServiceImpl() override;
 
-			void Initialize() override;
-
-			void OnClientDisconnected(DccppClient &client);
+			void Initialize() override;			
 
 		private:			
 			void ListenThreadProc(const int port);
 
 			void OnAcceptConnection(const dcclite::NetworkAddress &address, Socket s);
 
-			friend class DccppServiceAcceptConnectionEvent;
+			void OnClientDisconnected(DccppClient &client);
+
+			void Async_ClientDisconnected(DccppClient &client) override;		
+
+		private:
+			
+			class ClientDisconnectedEvent: public Messenger::IEvent
+			{
+				public:
+					ClientDisconnectedEvent(DccppServiceImpl &target, DccppClient &client):
+						IEvent(target),
+						m_rclClient(client)
+					{
+						//empty
+					}
+
+					void Fire() override
+					{
+						static_cast<DccppServiceImpl &>(this->GetTarget()).OnClientDisconnected(m_rclClient);
+					}
+
+				private:
+					DccppClient &m_rclClient;
+			};
+
+			class AcceptConnectionEvent: public Messenger::IEvent
+			{
+				public:
+					AcceptConnectionEvent(DccppServiceImpl &target, const dcclite::NetworkAddress address, dcclite::Socket &&socket):
+						IEvent(target),
+						m_clAddress(address),
+						m_clSocket(std::move(socket))
+					{
+						//empty
+					}
+
+					void Fire() override
+					{
+						static_cast<DccppServiceImpl &>(this->GetTarget()).OnAcceptConnection(m_clAddress, std::move(m_clSocket));
+					}
+
+				private:
+					const dcclite::NetworkAddress m_clAddress;
+					dcclite::Socket m_clSocket;
+			};
 
 		private:
 			std::string		m_strDccServiceName;
@@ -139,7 +166,7 @@ namespace dcclite::broker
 			std::vector<std::unique_ptr<DccppClient>>	m_vecClients;
 	};
 
-	DccppClient::DccppClient(DccppServiceImpl &owner, DccLiteService &system, const NetworkAddress address, Socket &&socket):
+	DccppClient::DccppClient(DccppServiceImplClientProxy &owner, DccLiteService &system, const NetworkAddress address, Socket &&socket):
 		m_clMessenger(std::move(socket), ">"),
 		m_rclOwner(owner),
 		m_rclSystem(system),
@@ -604,10 +631,10 @@ ERROR_RESPONSE:
 			if (status != Socket::Status::OK)
 				break;
 			
-			Messenger::MakeEvent<DccppClientEvent>(std::ref(*this), std::move(msg));							
+			Messenger::MakeEvent<ClientEvent>(std::ref(*this), std::move(msg));
 		}
 
-		Messenger::MakeEvent<DccppServiceClientDisconnectedEvent>(std::ref(m_rclOwner), std::ref(*this));		
+		m_rclOwner.Async_ClientDisconnected(*this);		
 	}
 
 
@@ -695,11 +722,16 @@ ERROR_RESPONSE:
 			{
 				dcclite::Log::Info("[DccppService] Client connected {}", address.GetIpString());								
 				
-				Messenger::PostEvent(std::make_unique< DccppServiceAcceptConnectionEvent>(std::ref(*this), address, std::move(socket)));
+				Messenger::PostEvent(std::make_unique< AcceptConnectionEvent>(std::ref(*this), address, std::move(socket)));
 			}
 			else if (status != Socket::Status::WOULD_BLOCK)
 				break;
 		}		
+	}
+
+	void DccppServiceImpl::Async_ClientDisconnected(DccppClient &client)
+	{
+		Messenger::MakeEvent<ClientDisconnectedEvent>(std::ref(*this), std::ref(client));
 	}
 
 	void DccppServiceImpl::OnClientDisconnected(DccppClient &client)
@@ -733,43 +765,7 @@ ERROR_RESPONSE:
 	}
 
 #if 1
-	DccppServiceAcceptConnectionEvent::DccppServiceAcceptConnectionEvent(DccppServiceImpl &target, const dcclite::NetworkAddress address, dcclite::Socket &&socket):
-		IEvent(target),
-		m_clAddress(address),
-		m_clSocket(std::move(socket))
-	{
-		//empty
-	}
-
-	void DccppServiceAcceptConnectionEvent::Fire()
-	{
-		static_cast<DccppServiceImpl &>(this->GetTarget()).OnAcceptConnection(m_clAddress, std::move(m_clSocket));
-	}
-
-	DccppServiceClientDisconnectedEvent::DccppServiceClientDisconnectedEvent(DccppServiceImpl &target, DccppClient &client):
-		IEvent(target),
-		m_rclClient(client)
-	{
-		//empty
-	}
-
-
-	void DccppServiceClientDisconnectedEvent::Fire()
-	{
-		static_cast<DccppServiceImpl &>(this->GetTarget()).OnClientDisconnected(m_rclClient);
-	}	
-
-	DccppClientEvent::DccppClientEvent(DccppClient &target, std::string msg):
-		IEvent(target),
-		m_strMessage(std::move(msg))
-	{
-		//empty
-	}
-
-	void DccppClientEvent::Fire()
-	{
-		static_cast<DccppClient &>(this->GetTarget()).OnMessage(m_strMessage);
-	}
+	
 
 #endif
 

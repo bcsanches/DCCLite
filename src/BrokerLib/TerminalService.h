@@ -15,7 +15,6 @@
 #include <thread>
 
 #include "Service.h"
-#include "Thinker.h"
 #include "Messenger.h"
 
 #include "Socket.h"
@@ -25,24 +24,31 @@ namespace dcclite::broker
 
 	class TerminalClient;
 
-	class TerminalService : public Service, public Messenger::IEventTarget
+	class ITerminalServiceClientProxy
+	{
+		public:
+			virtual void Async_DisconnectClient(TerminalClient &client) = 0;
+	};
+
+	class TerminalService : public Service, Messenger::IEventTarget, ITerminalServiceClientProxy
 	{
 		private:		
 			dcclite::Socket m_clSocket;
 
 			std::vector <std::unique_ptr<TerminalClient>> m_vecClients;
-
-			Thinker m_tThinker;
-
+			
 			std::thread m_thListenThread;
 
-		private:
-			void Think(const dcclite::Clock::TimePoint_t tp);
-			
+		private:						
 			void ListenThreadProc(const int port);
 
 			void OnAcceptConnection(const dcclite::NetworkAddress &address, dcclite::Socket &&s);
 
+			void OnClientDisconnect(TerminalClient &client);
+
+			void Async_DisconnectClient(TerminalClient &client) override;
+
+			friend class TerminalServiceClientDisconnectedEvent;
 			friend class TerminalServiceAcceptConnectionEvent;
 
 		public:

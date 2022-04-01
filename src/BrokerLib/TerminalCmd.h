@@ -72,7 +72,16 @@ namespace dcclite::broker
 	typedef int CmdId_t;
 	class TaskManager;
 	class TerminalCmd;	
+	class TerminalCmdFiber;
 
+	class ITerminalClient_ContextServices
+	{
+		public:
+			virtual TaskManager &GetTaskManager() = 0;
+			virtual void SendClientNotification(const std::string_view msg) = 0;
+
+			virtual void DestroyFiber(TerminalCmdFiber &fiber) = 0;
+	};
 
 	/**
 
@@ -83,9 +92,9 @@ namespace dcclite::broker
 	class TerminalContext
 	{
 		public:		
-			explicit TerminalContext(dcclite::FolderObject &root, TaskManager &taskManager):
+			explicit TerminalContext(dcclite::FolderObject &root, ITerminalClient_ContextServices &terminalClientServices):
 				m_pclRoot(&root),
-				m_pclTaskManager(&taskManager)
+				m_rclTerminalClientServices(terminalClientServices)
 			{
 				//empty
 			}
@@ -105,7 +114,17 @@ namespace dcclite::broker
 
 			inline TaskManager &GetTaskManager() const noexcept
 			{
-				return *m_pclTaskManager;
+				return m_rclTerminalClientServices.GetTaskManager();
+			}
+
+			inline void SendClientNotification(const std::string_view msg)
+			{
+				m_rclTerminalClientServices.SendClientNotification(msg);
+			}
+
+			void DestroyFiber(TerminalCmdFiber &fiber)
+			{
+				m_rclTerminalClientServices.DestroyFiber(fiber);
 			}
 
 			/**
@@ -122,7 +141,7 @@ namespace dcclite::broker
 			dcclite::FolderObject *m_pclRoot;
 			dcclite::Path_t m_pthLocation;
 
-			TaskManager *m_pclTaskManager;
+			ITerminalClient_ContextServices &m_rclTerminalClientServices;
 	};
 
 	class TerminalCmdException: public std::exception
@@ -180,16 +199,18 @@ namespace dcclite::broker
 			typedef JsonCreator::Object<JsonCreator::StringWriter> Result_t;
 
 		public:
-			TerminalCmdFiber(const CmdId_t id) :
-				m_tId(id)
+			TerminalCmdFiber(const CmdId_t id, TerminalContext &context) :
+				m_tCmdId(id),
+				m_rclContext(context)
 			{
 				//empty
-			}
-			
-			[[nodiscard]] virtual std::optional<std::string> Run(TerminalContext& context) noexcept = 0;
+			}		
+
+			virtual ~TerminalCmdFiber() {};
 
 		protected:
-			const CmdId_t m_tId;
+			const CmdId_t m_tCmdId;
+			TerminalContext &m_rclContext;
 
 	};
 

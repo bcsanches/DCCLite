@@ -97,8 +97,8 @@ namespace dcclite::broker
 			// Tasks
 			//
 			//			
-			[[nodiscard]] std::shared_ptr<NetworkTask> StartDownloadEEPromTask(DownloadEEPromTaskResult_t &resultsStorage);
-			[[nodiscard]] std::shared_ptr<NetworkTask> StartServoTurnoutProgrammerTask(const std::string_view servoDecoderName);
+			[[nodiscard]] std::shared_ptr<NetworkTask> StartDownloadEEPromTask(NetworkTask::IObserver *observer, DownloadEEPromTaskResult_t &resultsStorage);
+			[[nodiscard]] std::shared_ptr<NetworkTask> StartServoTurnoutProgrammerTask(NetworkTask::IObserver *observer, const std::string_view servoDecoderName);
 
 		protected:
 			void OnUnload() override;
