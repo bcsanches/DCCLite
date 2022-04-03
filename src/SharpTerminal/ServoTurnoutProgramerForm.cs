@@ -40,7 +40,20 @@ namespace SharpTerminal
 
             InitializeComponent();
 
-            this.Text += " - " + m_clTarget.Name;            
+            this.Text += " - " + m_clTarget.Name;
+
+            m_tbName.Text = m_clTarget.Name;
+            m_numStartAngle.Value = m_clTarget.StartPos;
+            m_numEndAngle.Value = m_clTarget.EndPos;
+            m_tbOperationTime.Text = m_clTarget.m_msOperationTime.ToString();
+
+            m_cbInverted.Checked = m_clTarget.InvertedOperation;
+            m_cbIgnoreSaveState.Checked = m_clTarget.IgnoreSaveState;
+            m_cbInvertedFrog.Checked = m_clTarget.InvertedFrog;
+            m_cbInvertedPower.Checked = m_clTarget.InvertedPower;
+            m_cbActivateOnPowerUp.Checked = m_clTarget.ActivateOnPowerUp;
+
+            m_lblStatus.Text = "Connecting...";
         }
 
         protected override async void OnLoad(EventArgs e)
@@ -59,6 +72,7 @@ namespace SharpTerminal
                     if(json.ContainsKey("taskId"))
                     {
                         m_iProgrammerTaskId = (int)json["taskId"];
+                        m_lblStatus.Text = "Connected, task Id " + m_iProgrammerTaskId.ToString();
                     }
 
                     break;

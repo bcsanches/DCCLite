@@ -64,26 +64,7 @@ namespace dcclite::broker
 				return dcclite::DecoderTypes::DEC_SERVO_TURNOUT;
 			}
 
-			void Serialize(dcclite::JsonOutputStream_t& stream) const override
-			{
-				TurnoutDecoder::Serialize(stream);
-
-				stream.AddIntValue("pin", m_clPin.Raw());
-
-				if (m_clPowerPin)
-					stream.AddIntValue("powerPin", m_clPowerPin.Raw());
-
-				if (m_clFrogPin)
-					stream.AddIntValue("frogPin", m_clFrogPin.Raw());
-
-				stream.AddBool("invertedOperation", m_fInvertedOperation);
-				stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
-				stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
-				stream.AddBool("invertedFrog", m_fInvertedFrog);
-				stream.AddIntValue("startPos", m_uStartPos);
-				stream.AddIntValue("endPos", m_uEndPos);
-				stream.AddIntValue("msOperationTime", static_cast<int>(m_tOperationTime.count()));
-			}
+			void Serialize(dcclite::JsonOutputStream_t &stream) const override;
 
 			const char *GetTypeName() const noexcept override
 			{

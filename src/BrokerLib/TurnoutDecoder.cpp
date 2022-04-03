@@ -124,4 +124,25 @@ namespace dcclite::broker
 		packet.Write8(ticks > 255 ? 255 : static_cast<uint8_t>(ticks));
 	}
 
+	void ServoTurnoutDecoder::Serialize(dcclite::JsonOutputStream_t &stream) const
+	{
+		TurnoutDecoder::Serialize(stream);
+
+		stream.AddIntValue("pin", m_clPin.Raw());
+
+		if (m_clPowerPin)
+			stream.AddIntValue("powerPin", m_clPowerPin.Raw());
+
+		if (m_clFrogPin)
+			stream.AddIntValue("frogPin", m_clFrogPin.Raw());
+
+		stream.AddBool("invertedOperation", m_fInvertedOperation);
+		stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
+		stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
+		stream.AddBool("invertedFrog", m_fInvertedFrog);
+		stream.AddBool("invertedPower", m_fInvertedPower);
+		stream.AddIntValue("startPos", m_uStartPos);
+		stream.AddIntValue("endPos", m_uEndPos);
+		stream.AddIntValue("msOperationTime", static_cast<int>(m_tOperationTime.count()));
+	}
 }

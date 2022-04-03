@@ -186,6 +186,7 @@ namespace SharpTerminal
         public readonly bool m_fIgnoreSaveState;
         public readonly bool m_fActivateOnPowerUp;
         public readonly bool m_fInvertedFrog;
+        public readonly bool m_fInvertedPower;
 
         public readonly uint m_iStartPos;
         public readonly uint m_iEndPos;
@@ -202,6 +203,9 @@ namespace SharpTerminal
 
         [Category("Flags")]
         public bool InvertedFrog { get { return m_fInvertedFrog; } }
+
+        [Category("Flags")]
+        public bool InvertedPower { get { return m_fInvertedPower; } }
 
         [Category("Servo")]
         public uint StartPos { get { return m_iStartPos; } }
@@ -220,6 +224,7 @@ namespace SharpTerminal
             m_fIgnoreSaveState = objectDef["ignoreSaveState"];
             m_fActivateOnPowerUp = objectDef["activateOnPowerUp"];
             m_fInvertedFrog = objectDef["invertedFrog"];
+            m_fInvertedPower = objectDef["invertedPower"];
 
             m_iStartPos = objectDef["startPos"];
             m_iEndPos = objectDef["endPos"];
