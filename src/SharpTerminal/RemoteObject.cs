@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Json;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,13 +30,20 @@ namespace SharpTerminal
     }
 
     public class RemoteObject: NotifyPropertyBase
-    {        
+    {
+        [Category("Object")]
         public string Name { get; }
+
+        [Category("Object")]
         public string ClassName { get; }
+
+        [Category("Object")]
         public string Path { get; }
 
+        [Category("Object")]
         public ulong InternalId { get; }
 
+        [Category("Object")]
         public ulong ParentInternalId { get; }
 
         public event RemoteObjectStateChanged StateChanged;

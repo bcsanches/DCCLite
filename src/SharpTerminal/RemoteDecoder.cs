@@ -1,4 +1,5 @@
 ﻿using System.Json;
+using System.ComponentModel;
 
 
 namespace SharpTerminal
@@ -57,6 +58,7 @@ namespace SharpTerminal
         public string SystemName { get; }
 
         private bool mBroken;
+        
         private bool mRequestedState;
         private bool mRemoteState;
 
@@ -69,6 +71,7 @@ namespace SharpTerminal
             }
         }
 
+        [Category("RemoteFlags")]
         public bool RequestedState
         {
             get { return mRequestedState; }
@@ -79,6 +82,7 @@ namespace SharpTerminal
             }
         }
 
+        [Category("RemoteFlags")]
         public bool RemoteState 
         { 
             get { return mRemoteState; }
@@ -178,10 +182,48 @@ namespace SharpTerminal
     {
         protected static IRemoteObjectAction gProgrammerAction = new ServoProgrammerAction("Program", "Program the turnout servo");
 
+        public readonly bool m_fInvertedOperation;
+        public readonly bool m_fIgnoreSaveState;
+        public readonly bool m_fActivateOnPowerUp;
+        public readonly bool m_fInvertedFrog;
+
+        public readonly uint m_iStartPos;
+        public readonly uint m_iEndPos;
+        public readonly uint m_msOperationTime;
+
+        [Category("Flags")]
+        public bool InvertedOperation { get { return m_fInvertedOperation; } }
+
+        [Category("Flags")]
+        public bool IgnoreSaveState { get { return m_fIgnoreSaveState; } }
+
+        [Category("Flags")]
+        public bool ActivateOnPowerUp { get { return m_fActivateOnPowerUp; } }
+
+        [Category("Flags")]
+        public bool InvertedFrog { get { return m_fInvertedFrog; } }
+
+        [Category("Servo")]
+        public uint StartPos { get { return m_iStartPos; } }
+
+        [Category("Servo")]
+        public uint EndPos { get { return m_iEndPos; } }
+
+        [Category("Servo")]
+        public uint MsOperationTime { get { return m_msOperationTime; } }
+
+
         public RemoteTurnoutDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
             base(name, className, path, internalId, parentInternalId, objectDef)
         {
+            m_fInvertedOperation = objectDef["invertedOperation"];
+            m_fIgnoreSaveState = objectDef["ignoreSaveState"];
+            m_fActivateOnPowerUp = objectDef["activateOnPowerUp"];
+            m_fInvertedFrog = objectDef["invertedFrog"];
 
+            m_iStartPos = objectDef["startPos"];
+            m_iEndPos = objectDef["endPos"];
+            m_msOperationTime = objectDef["msOperationTime"];
         }
 
         public override string TryGetIconName()

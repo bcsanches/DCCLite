@@ -1,5 +1,6 @@
 ﻿
 
+using System;
 using System.Windows.Forms;
 
 namespace SharpTerminal
@@ -20,7 +21,7 @@ namespace SharpTerminal
             mObject = remoteObject ?? throw new System.ArgumentNullException(nameof(remoteObject));
             mConsole = console ?? throw new System.ArgumentNullException(nameof(console));
 
-            m_lbTitle.Text += " - " + remoteObject.Name;
+            m_lbTitle.Text = remoteObject.ClassName + " - " + remoteObject.Name;
 
             mPropertyGrid.SelectedObject = remoteObject;
 
@@ -42,6 +43,13 @@ namespace SharpTerminal
                     m_pnlButtons.Controls.Add(button);                                        
                 }
             }            
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            mPropertyGrid.Enabled = false;
         }
 
         private void pnlButtons_ButtonClick(object sender, System.EventArgs e)

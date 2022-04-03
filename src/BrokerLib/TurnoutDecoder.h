@@ -80,6 +80,9 @@ namespace dcclite::broker
 				stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
 				stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
 				stream.AddBool("invertedFrog", m_fInvertedFrog);
+				stream.AddIntValue("startPos", m_uStartPos);
+				stream.AddIntValue("endPos", m_uEndPos);
+				stream.AddIntValue("msOperationTime", static_cast<int>(m_tOperationTime.count()));
 			}
 
 			const char *GetTypeName() const noexcept override

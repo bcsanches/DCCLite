@@ -50,7 +50,6 @@
             this.mPropertyGrid.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.mPropertyGrid.Enabled = false;
             this.mPropertyGrid.Location = new System.Drawing.Point(7, 36);
             this.mPropertyGrid.Name = "mPropertyGrid";
             this.mPropertyGrid.Size = new System.Drawing.Size(505, 240);
