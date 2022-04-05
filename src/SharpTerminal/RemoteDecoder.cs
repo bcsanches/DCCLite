@@ -1,4 +1,5 @@
-﻿using System.Json;
+﻿using System;
+using System.Json;
 using System.ComponentModel;
 
 
@@ -178,6 +179,18 @@ namespace SharpTerminal
         }
     }
 
+    [Flags]
+    public enum ServoTurnoutFlags: byte
+    {
+        SRVT_INVERTED_OPERATION = 0x04,
+        SRVT_IGNORE_SAVED_STATE = 0x08,
+        SRVT_ACTIVATE_ON_POWER_UP = 0x10,
+        SRVT_INVERTED_FROG = 0x20,
+        SRVT_INVERTED_POWER = 0x40,
+
+        SRVT_POWER_ON = 0x80
+    }
+
     public class RemoteTurnoutDecoder: RemoteDecoder
     {
         protected static IRemoteObjectAction gProgrammerAction = new ServoProgrammerAction("Program", "Program the turnout servo");
@@ -191,6 +204,11 @@ namespace SharpTerminal
         public readonly uint m_iStartPos;
         public readonly uint m_iEndPos;
         public readonly uint m_msOperationTime;
+
+        public readonly ServoTurnoutFlags m_fFlags;
+
+        [Category("Flags")]
+        public ServoTurnoutFlags Flags { get { return m_fFlags; } }
 
         [Category("Flags")]
         public bool InvertedOperation { get { return m_fInvertedOperation; } }
@@ -220,11 +238,13 @@ namespace SharpTerminal
         public RemoteTurnoutDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
             base(name, className, path, internalId, parentInternalId, objectDef)
         {
-            m_fInvertedOperation = objectDef["invertedOperation"];
-            m_fIgnoreSaveState = objectDef["ignoreSaveState"];
-            m_fActivateOnPowerUp = objectDef["activateOnPowerUp"];
-            m_fInvertedFrog = objectDef["invertedFrog"];
-            m_fInvertedPower = objectDef["invertedPower"];
+            m_fFlags = (ServoTurnoutFlags)(int) objectDef["flags"];
+
+            m_fInvertedOperation = (m_fFlags & ServoTurnoutFlags.SRVT_INVERTED_OPERATION) != 0;
+            m_fIgnoreSaveState = (m_fFlags & ServoTurnoutFlags.SRVT_IGNORE_SAVED_STATE) != 0;
+            m_fActivateOnPowerUp = (m_fFlags & ServoTurnoutFlags.SRVT_ACTIVATE_ON_POWER_UP) != 0;
+            m_fInvertedFrog = (m_fFlags & ServoTurnoutFlags.SRVT_INVERTED_FROG) != 0;
+            m_fInvertedPower = (m_fFlags & ServoTurnoutFlags.SRVT_INVERTED_POWER) != 0;
 
             m_iStartPos = objectDef["startPos"];
             m_iEndPos = objectDef["endPos"];

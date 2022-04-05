@@ -136,6 +136,8 @@ void CheckTurnoutFlags(const char *json, uint8_t flags)
 	ASSERT_EQ(3, packet.Read< dcclite::PinType_t>());	
 
 	ASSERT_EQ(packet.Read<uint8_t>(), flags);
+
+	ASSERT_EQ(flags, turnout.GetFlags());
 }
 
 TEST(ServoTurnoutDecoderTest, InvertedFlag)

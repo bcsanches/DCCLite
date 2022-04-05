@@ -148,7 +148,7 @@ namespace SharpTerminal
             }
         }
 
-        private void ProcessLocalCmd(string[] vargs)
+        private void ProcessLocalCmd(object[] vargs)
         {
             switch (vargs[0])
             {
@@ -191,7 +191,7 @@ namespace SharpTerminal
             }
         }
 
-        private int ProcessRemoteCmd(IResponseHandler handler, string[] vargs)
+        private int ProcessRemoteCmd(IResponseHandler handler, object[] vargs)
         {
             if (mRequestManager.State != ConnectionState.OK)
             {
@@ -220,15 +220,15 @@ namespace SharpTerminal
             }            
         }
 
-        public int ProcessCmd(string[] vargs)
+        public int ProcessCmd(object[] vargs)
         {
             return this.ProcessCmd(this, vargs);
         }
 
-        public int ProcessCmd(IResponseHandler handler, string[] vargs)
+        public int ProcessCmd(IResponseHandler handler, object[] vargs)
         {
             //local command?
-            if (vargs[0][0] == '/')
+            if (((string)vargs[0])[0] == '/')
             {
                 ProcessLocalCmd(vargs);
 
@@ -240,7 +240,7 @@ namespace SharpTerminal
             }
         }
 
-        public async Task<JsonValue> RequestAsync(params string[] vargs)
+        public async Task<JsonValue> RequestAsync(params object[] vargs)
         {
             return await mRequestManager.RequestAsync(vargs);            
         }
@@ -391,10 +391,10 @@ namespace SharpTerminal
         }
         #endregion
 
-        private void UdpPing(string[] vargs)
+        private void UdpPing(object[] vargs)
         {
-            string ip = vargs.Length > 1 ? vargs[1] : "127.0.0.1";
-            int port = vargs.Length > 2 ? int.Parse(vargs[2]) : 8989;
+            string ip = vargs.Length > 1 ? vargs[1].ToString() : "127.0.0.1";
+            int port = vargs.Length > 2 ? int.Parse(vargs[2].ToString()) : 8989;
 
             using (var client = new System.Net.Sockets.UdpClient())
             {

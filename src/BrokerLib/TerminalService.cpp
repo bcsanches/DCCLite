@@ -799,6 +799,25 @@ namespace dcclite::broker
 
 	class EditServoProgrammerCmd: public ServoProgrammerBaseCmd
 	{
+		private:
+			typedef void (*EditProc_t)(dcclite::broker::IServoProgrammerTask &task, const rapidjson::Value &params);
+
+			struct Action
+			{
+				const char *m_szName;
+				EditProc_t m_pfnProc;
+			};
+
+			static void HandleMoveAction(dcclite::broker::IServoProgrammerTask &task, const rapidjson::Value &params)
+			{
+				auto &p = params[2];
+				auto pos = p.IsString() ? dcclite::ParseNumber(params[2].GetString()) : p.GetInt();
+
+				task.SetPosition(static_cast<uint8_t>(pos));
+			}
+
+			const static Action g_Actions[];
+
 		public:
 			EditServoProgrammerCmd(const std::string name = "Edit-ServoProgrammer"):
 				ServoProgrammerBaseCmd(std::move(name))
@@ -809,10 +828,10 @@ namespace dcclite::broker
 			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
 			{
 				auto paramsIt = request.FindMember("params");
-				if (paramsIt->value.Size() < 2)
+				if (paramsIt->value.Size() < 3)
 				{
 					throw TerminalCmdException(fmt::format("Usage: {} <taskId> <cmdType> <params>", this->GetName()), id);
-				}
+				}				
 
 				auto task = this->GetTask(context, id, paramsIt->value[0]);
 
@@ -820,6 +839,23 @@ namespace dcclite::broker
 				if (!programmerTask)
 				{
 					throw TerminalCmdException(fmt::format("{}: task {} is not a programmer task", this->GetName(), task->GetTaskId()), id);
+				}		
+
+				auto actionName = paramsIt->value[1].GetString();
+
+				bool found = false;
+				for (int i = 0; g_Actions[i].m_szName; ++i)
+				{
+					if (strcmp(g_Actions[i].m_szName, actionName) == 0)
+					{
+						g_Actions[i].m_pfnProc(*programmerTask, paramsIt->value);
+						found = true;
+					}
+				}
+
+				if (!found)
+				{
+					throw TerminalCmdException(fmt::format("{}:cmdType {} not found", this->GetName(), actionName), id);
 				}
 
 				return MakeRpcResultMessage(id, [](Result_t &results)
@@ -828,7 +864,13 @@ namespace dcclite::broker
 						results.AddStringValue("msg", "OK");
 					}
 				);
-			}
+			}			
+	};
+
+	const EditServoProgrammerCmd::Action EditServoProgrammerCmd::g_Actions[] =
+	{
+		{"position", EditServoProgrammerCmd::HandleMoveAction},
+		nullptr, nullptr
 	};
 	
 

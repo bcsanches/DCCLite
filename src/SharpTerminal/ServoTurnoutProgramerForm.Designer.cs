@@ -196,6 +196,16 @@ namespace SharpTerminal
             this.m_cbInvertedPower.Text = "Inverted power";
             this.m_cbInvertedPower.UseVisualStyleBackColor = true;
             // 
+            // label5
+            // 
+            label5.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            label5.AutoSize = true;
+            label5.Location = new System.Drawing.Point(3, 250);
+            label5.Name = "label5";
+            label5.Size = new System.Drawing.Size(40, 13);
+            label5.TabIndex = 10;
+            label5.Text = "Status:";
+            // 
             // m_btnCancel
             // 
             this.m_btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -266,6 +276,7 @@ namespace SharpTerminal
             this.m_numStartAngle.Name = "m_numStartAngle";
             this.m_numStartAngle.Size = new System.Drawing.Size(55, 20);
             this.m_numStartAngle.TabIndex = 1;
+            this.m_numStartAngle.ValueChanged += new System.EventHandler(this.m_numStartAngle_ValueChanged);
             // 
             // m_numEndAngle
             // 
@@ -274,6 +285,7 @@ namespace SharpTerminal
             this.m_numEndAngle.Name = "m_numEndAngle";
             this.m_numEndAngle.Size = new System.Drawing.Size(55, 20);
             this.m_numEndAngle.TabIndex = 3;
+            this.m_numEndAngle.ValueChanged += new System.EventHandler(this.m_numEndAngle_ValueChanged);
             // 
             // m_tbOperationTime
             // 
@@ -283,16 +295,6 @@ namespace SharpTerminal
             this.m_tbOperationTime.Size = new System.Drawing.Size(100, 20);
             this.m_tbOperationTime.TabIndex = 9;
             this.m_tbOperationTime.ValidatingType = typeof(int);
-            // 
-            // label5
-            // 
-            label5.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            label5.AutoSize = true;
-            label5.Location = new System.Drawing.Point(3, 250);
-            label5.Name = "label5";
-            label5.Size = new System.Drawing.Size(40, 13);
-            label5.TabIndex = 10;
-            label5.Text = "Status:";
             // 
             // m_lblStatus
             // 

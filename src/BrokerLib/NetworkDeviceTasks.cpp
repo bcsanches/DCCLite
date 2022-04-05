@@ -291,6 +291,8 @@ namespace dcclite::broker::detail
 
 			void SetInverted(const bool inverted) override;
 
+			void SetPosition(const uint8_t position) override;
+
 		private:
 			ServoTurnoutDecoder &m_rclDecoder;
 	};
@@ -321,6 +323,11 @@ namespace dcclite::broker::detail
 	}
 
 	void ServoTurnoutProgrammerTask::SetInverted(const bool inverted)
+	{
+
+	}
+
+	void ServoTurnoutProgrammerTask::SetPosition(const uint8_t position)
 	{
 
 	}

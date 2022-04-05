@@ -71,6 +71,11 @@ namespace dcclite::broker
 				return "ServoTurnoutDecoder";
 			}
 
+			[[nodiscard]] inline const std::uint8_t GetFlags() const noexcept
+			{
+				return m_fFlags;
+			}
+
 
 		private:
 			dcclite::BasicPin	m_clPin;
@@ -81,11 +86,6 @@ namespace dcclite::broker
 			std::uint8_t				m_uEndPos = dcclite::SERVO_DEFAULT_RANGE;			
 			std::chrono::milliseconds	m_tOperationTime = std::chrono::milliseconds{1000};
 
-			bool m_fInvertedOperation = false;
-			bool m_fIgnoreSavedState = false;
-			bool m_fActivateOnPowerUp = false;
-
-			bool m_fInvertedFrog = false;		
-			bool m_fInvertedPower = false;
+			std::uint8_t				m_fFlags = 0;			
 	};
 }

@@ -42,18 +42,48 @@ namespace SharpTerminal
 
             this.Text += " - " + m_clTarget.Name;
 
+            EnableProgMode(false);
+
+            m_numStartAngle.Maximum = 1000;
+            m_numEndAngle.Maximum = 1000;
+
             m_tbName.Text = m_clTarget.Name;
             m_numStartAngle.Value = m_clTarget.StartPos;
             m_numEndAngle.Value = m_clTarget.EndPos;
+
+            m_numStartAngle.Maximum = m_numEndAngle.Value - 1;
+            m_numEndAngle.Minimum = m_numStartAngle.Value + 1;
+
             m_tbOperationTime.Text = m_clTarget.m_msOperationTime.ToString();
 
             m_cbInverted.Checked = m_clTarget.InvertedOperation;
+            m_cbInverted.Tag = ServoTurnoutFlags.SRVT_INVERTED_OPERATION;
+
             m_cbIgnoreSaveState.Checked = m_clTarget.IgnoreSaveState;
+            m_cbIgnoreSaveState.Tag = ServoTurnoutFlags.SRVT_IGNORE_SAVED_STATE;
+
             m_cbInvertedFrog.Checked = m_clTarget.InvertedFrog;
+            m_cbInvertedFrog.Tag = ServoTurnoutFlags.SRVT_INVERTED_FROG;
+
             m_cbInvertedPower.Checked = m_clTarget.InvertedPower;
+            m_cbInvertedPower.Tag = ServoTurnoutFlags.SRVT_INVERTED_POWER;
+
             m_cbActivateOnPowerUp.Checked = m_clTarget.ActivateOnPowerUp;
+            m_cbActivateOnPowerUp.Tag = ServoTurnoutFlags.SRVT_ACTIVATE_ON_POWER_UP;
 
             m_lblStatus.Text = "Connecting...";
+        }
+
+        private void EnableProgMode(bool enable)
+        {
+            m_numStartAngle.Enabled = enable;
+            m_numEndAngle.Enabled = enable;
+            m_tbOperationTime.Enabled = enable;
+            m_cbActivateOnPowerUp.Enabled = enable;
+            m_cbIgnoreSaveState.Enabled = enable;
+            m_cbInverted.Enabled = enable;
+            m_cbInvertedFrog.Enabled = enable;
+            m_cbInvertedPower.Enabled = enable;
         }
 
         protected override async void OnLoad(EventArgs e)
@@ -73,6 +103,8 @@ namespace SharpTerminal
                     {
                         m_iProgrammerTaskId = (int)json["taskId"];
                         m_lblStatus.Text = "Connected, task Id " + m_iProgrammerTaskId.ToString();
+
+                        EnableProgMode(true);
                     }
 
                     break;
@@ -102,7 +134,39 @@ namespace SharpTerminal
             m_clOwner.Unregister(this);
 
             m_clConsole.ProcessCmd("Stop-ServoProgrammer", m_iProgrammerTaskId.ToString());
-        }        
+        }
+
+        private void m_numStartAngle_ValueChanged(object sender, EventArgs e)
+        {
+            int pos = (int)m_numStartAngle.Value;
+            m_numEndAngle.Minimum = pos + 1;
+
+            this.UpdatePosition(pos);
+        }
+
+        private void m_numEndAngle_ValueChanged(object sender, EventArgs e)
+        {
+            int pos = (int)m_numEndAngle.Value;
+
+            m_numStartAngle.Maximum = pos - 1;
+            this.UpdatePosition(pos);
+        }
+
+        private async void UpdatePosition(int position)
+        {
+            //Constructor fill fire events when initialzing, ignore...
+            if (m_iProgrammerTaskId < 0)
+                return;
+
+            try
+            {
+                await m_clConsole.RequestAsync("Edit-ServoProgrammer", m_iProgrammerTaskId, "position", position);
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show("Request failed: " + ex.Message);
+            }            
+        }
     }
 
     public class ServoProgrammerAction : RemoteDecoderCmdBaseAction

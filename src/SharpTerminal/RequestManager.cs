@@ -53,7 +53,7 @@ namespace SharpTerminal
         string mErrorMessage;
         JsonValue mResponse;
 
-        public JsonValue DoTask(RequestManager manager, string []args)
+        public JsonValue DoTask(RequestManager manager, object []args)
         {
             manager.DispatchRequest(args, this);            
 
@@ -149,7 +149,7 @@ namespace SharpTerminal
             mClient.Reconnect();
         }             
 
-        public int DispatchRequest(string[] vargs, IResponseHandler handler)
+        public int DispatchRequest(object[] vargs, IResponseHandler handler)
         {
             var strBuilder = new StringBuilder(256);
 
@@ -191,7 +191,7 @@ namespace SharpTerminal
             }            
         }
 
-        public async Task<JsonValue> RequestAsync(params string[] vargs)
+        public async Task<JsonValue> RequestAsync(params object[] vargs)
         {
             using var handler = new TaskReponseHandler();
             var task = new Task<JsonValue>(() => { return handler.DoTask(this, vargs); });

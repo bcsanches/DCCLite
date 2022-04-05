@@ -154,6 +154,8 @@ namespace dcclite::broker
 			virtual void SetEndPos(const uint8_t startPos) = 0;
 
 			virtual void SetInverted(const bool inverted) = 0;
+
+			virtual void SetPosition(const uint8_t position) = 0;
 	};
 
 	typedef std::vector<uint8_t> DownloadEEPromTaskResult_t;

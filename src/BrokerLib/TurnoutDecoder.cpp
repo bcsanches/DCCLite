@@ -16,6 +16,15 @@
 
 namespace dcclite::broker
 {
+	static std::uint8_t ReadFlag(const rapidjson::Value &params, const char *propertyName, std::uint8_t bit)
+	{
+		auto property = params.FindMember(propertyName);
+
+		if (property == params.MemberEnd())
+			return 0;
+
+		return property->value.GetBool() ? bit : 0;
+	}
 
 	ServoTurnoutDecoder::ServoTurnoutDecoder(
 		const DccAddress &address,
@@ -47,20 +56,12 @@ namespace dcclite::broker
 			networkDevice->Decoder_RegisterPin(*this, m_clFrogPin, "frogPin");
 		}
 
-		auto inverted = params.FindMember("inverted");
-		m_fInvertedOperation = inverted != params.MemberEnd() ? inverted->value.GetBool() : false;
+		m_fFlags |= ReadFlag(params, "inverted",			ServoTurnoutDecoderFlags::SRVT_INVERTED_OPERATION);
+		m_fFlags |= ReadFlag(params, "ignoreSavedState",	ServoTurnoutDecoderFlags::SRVT_IGNORE_SAVED_STATE);
+		m_fFlags |= ReadFlag(params, "activateOnPowerUp",	ServoTurnoutDecoderFlags::SRVT_ACTIVATE_ON_POWER_UP);
 
-		auto setOnPower = params.FindMember("ignoreSavedState");
-		m_fIgnoreSavedState = setOnPower != params.MemberEnd() ? setOnPower->value.GetBool() : false;
-
-		auto activateOnPowerUp = params.FindMember("activateOnPowerUp");
-		m_fActivateOnPowerUp = activateOnPowerUp != params.MemberEnd() ? activateOnPowerUp->value.GetBool() : false;
-
-		auto invertedFrog = params.FindMember("invertedFrog");
-		m_fInvertedFrog = invertedFrog != params.MemberEnd() ? invertedFrog->value.GetBool() : false;
-
-		auto invertedPower = params.FindMember("invertedPower");
-		m_fInvertedPower = invertedPower != params.MemberEnd() ? invertedPower->value.GetBool() : false;
+		m_fFlags |= ReadFlag(params, "invertedFrog",		ServoTurnoutDecoderFlags::SRVT_INVERTED_FROG);
+		m_fFlags |= ReadFlag(params, "invertedPower",		ServoTurnoutDecoderFlags::SRVT_INVERTED_POWER);						
 
 		auto range = params.FindMember("range");
 		if (range != params.MemberEnd())
@@ -87,7 +88,9 @@ namespace dcclite::broker
 		auto operationTime = params.FindMember("operationTime");
 		m_tOperationTime = operationTime != params.MemberEnd() ? std::chrono::milliseconds{ operationTime->value.GetUint() } : m_tOperationTime;
 
-		this->SyncRemoteState(m_fIgnoreSavedState && m_fActivateOnPowerUp ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
+		this->SyncRemoteState(
+			(m_fFlags & ServoTurnoutDecoderFlags::SRVT_IGNORE_SAVED_STATE) && (m_fFlags & ServoTurnoutDecoderFlags::SRVT_ACTIVATE_ON_POWER_UP) ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE
+		);
 	}
 
 	ServoTurnoutDecoder::~ServoTurnoutDecoder()
@@ -107,13 +110,7 @@ namespace dcclite::broker
 
 		packet.Write8(m_clPin.Raw());
 
-		packet.Write8(
-			(m_fInvertedOperation ? dcclite::ServoTurnoutDecoderFlags::SRVT_INVERTED_OPERATION : 0) |
-			(m_fIgnoreSavedState ? dcclite::ServoTurnoutDecoderFlags::SRVT_IGNORE_SAVED_STATE : 0) |
-			(m_fActivateOnPowerUp ? dcclite::ServoTurnoutDecoderFlags::SRVT_ACTIVATE_ON_POWER_UP : 0) |
-			(m_fInvertedFrog ? dcclite::ServoTurnoutDecoderFlags::SRVT_INVERTED_FROG : 0) |
-			(m_fInvertedPower ? dcclite::ServoTurnoutDecoderFlags::SRVT_INVERTED_POWER : 0)
-		);
+		packet.Write8(m_fFlags);
 
 		packet.Write8(m_clPowerPin.Raw());
 		packet.Write8(m_clFrogPin.Raw());
@@ -136,11 +133,8 @@ namespace dcclite::broker
 		if (m_clFrogPin)
 			stream.AddIntValue("frogPin", m_clFrogPin.Raw());
 
-		stream.AddBool("invertedOperation", m_fInvertedOperation);
-		stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
-		stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
-		stream.AddBool("invertedFrog", m_fInvertedFrog);
-		stream.AddBool("invertedPower", m_fInvertedPower);
+		stream.AddBool("flags", m_fFlags);
+
 		stream.AddIntValue("startPos", m_uStartPos);
 		stream.AddIntValue("endPos", m_uEndPos);
 		stream.AddIntValue("msOperationTime", static_cast<int>(m_tOperationTime.count()));
