@@ -440,11 +440,13 @@ namespace dcclite::broker::detail
 		State{self},
 		m_clThinker{ THINKER_MF_LAMBDA(SendStartPacket) }
 	{		
-		this->SendStartPacket(dcclite::Clock::DefaultClock_t::now());
+		this->SendStartPacket(dcclite::Clock::DefaultClock_t::now());		
 	}
 
 	void ServoTurnoutProgrammerTask::StartingState::SendStartPacket(const dcclite::Clock::TimePoint_t time)
 	{
+		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StartingState::SendStartPacket] Sent start packet - {}", m_rclSelf.m_u32TaskId);
+
 		m_clThinker.SetNext(time + 50ms);
 
 		//
@@ -465,11 +467,15 @@ namespace dcclite::broker::detail
 		switch (msg)
 		{
 			case ServoProgrammerClientMsgTypes::FAILURE:
+				dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StartingState::OnPacket] Got failure packet");
+
 				ReportPacketError(packet);
 				m_rclSelf.GotoFailureState();
 				break;
 
 			case ServoProgrammerClientMsgTypes::READY:
+				dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StartingState::OnPacket] Got READY packet");
+
 				m_rclSelf.GotoRunningState();
 				break;
 		}
@@ -484,11 +490,12 @@ namespace dcclite::broker::detail
 	ServoTurnoutProgrammerTask::RunningState::RunningState(ServoTurnoutProgrammerTask &self):
 		State{ self }		
 	{
-		//empty
+		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::RunningState::RunningState] Running");
 	}
 	
 	void ServoTurnoutProgrammerTask::RunningState::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time)
 	{
+		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::RunningState::OnPacket] Got packet");
 	}		
 
 	//
@@ -511,12 +518,16 @@ namespace dcclite::broker::detail
 		switch (msg)
 		{
 			case ServoProgrammerClientMsgTypes::FAILURE:
+				dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StoppingState::OnPacket] Got failure packet {}", m_rclSelf.m_u32TaskId);
+
 				ReportPacketError(packet);
 				m_rclSelf.GotoFailureState();
 				break;
 
 			//are we done?
 			case ServoProgrammerClientMsgTypes::FINISHED:
+				dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StoppingState::OnPacket] Got FINISHED packet {}", m_rclSelf.m_u32TaskId);
+
 				m_clThinker.Cancel();
 				m_rclSelf.MarkFinished();								
 				break;
@@ -525,6 +536,8 @@ namespace dcclite::broker::detail
 
 	void ServoTurnoutProgrammerTask::StoppingState::SendStopPacket(const dcclite::Clock::TimePoint_t time)
 	{
+		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StoppingState::SendStopPacket] Sending stop packet {} {}", m_rclSelf.m_u32TaskId, time.time_since_epoch().count());
+
 		m_clThinker.SetNext(time + 50ms);
 
 		//
@@ -547,6 +560,8 @@ namespace dcclite::broker::detail
 	ServoTurnoutProgrammerTask::FailureState::FailureState(ServoTurnoutProgrammerTask &self):
 		State{ self }
 	{
+		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::FailureState::FailureState] Entered failure state {}", m_rclSelf.m_u32TaskId);
+
 		self.MarkFailed();
 	}
 

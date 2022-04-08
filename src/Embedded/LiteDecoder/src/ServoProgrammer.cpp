@@ -82,6 +82,10 @@ static void ParseStop(dcclite::Packet &packet, const uint32_t packetTaskId)
 
 		return;
 	}
+	else
+	{
+		SendStopAck(packet, packetTaskId);
+	}
 
 	//
 	// we must stop the programmer
