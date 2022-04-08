@@ -32,7 +32,7 @@ namespace dcclite::broker
 		class INetworkDevice_TaskServices
 		{
 			public:
-				virtual void TaskServices_FillPacketHeader(dcclite::Packet &packet) const noexcept = 0;
+				virtual void TaskServices_FillPacketHeader(dcclite::Packet &packet, const uint32_t taskId, const NetworkTaskTypes taskType) const noexcept = 0;
 
 				virtual void TaskServices_SendPacket(dcclite::Packet &packet) = 0;
 
@@ -116,6 +116,7 @@ namespace dcclite::broker
 			inline void MarkFailed()
 			{
 				m_fFailed = true;
+				m_fFinished = true;
 
 				this->NotifyObserver();
 				m_rclOwner.TaskServices_ForgetTask(*this);
@@ -130,7 +131,10 @@ namespace dcclite::broker
 				m_fFinished = true;
 
 				this->NotifyObserver();
-				m_rclOwner.TaskServices_ForgetTask(*this);
+
+				//
+				// Abort does not need to call forget, the network device will do it...
+				//m_rclOwner.TaskServices_ForgetTask(*this);
 			}
 
 
@@ -192,6 +196,13 @@ namespace dcclite::broker
 				}
 
 			public:
+
+				/**
+				* Abort means that the connection was lost, so the task should stop whatever it is doing and should not try to communicate with the remote device anymore
+				* 
+				* Also, the NetworkDevice will automatically forget the task after calling abort, so task may be destroyed after it	
+				*
+				*/
 				virtual void Abort() noexcept = 0;				
 
 				//

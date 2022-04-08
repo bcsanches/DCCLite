@@ -507,19 +507,21 @@ static void OnSyncPacket(dcclite::Packet &packet)
 	NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
 }
 
-static void OnTaskRequestPacket(dcclite::Packet &packet)
+void Session::detail::InitTaskPacket(dcclite::Packet &packet, const uint32_t taskId)
 {
-	using namespace dcclite;
+	packet.Reset();
+	dcclite::PacketBuilder builder{ packet, dcclite::MsgTypes::TASK_DATA, g_SessionToken, g_ConfigToken };
+	
+	packet.Write32(taskId);
+}
 
-	NetworkTaskTypes taskType = static_cast<NetworkTaskTypes>(packet.ReadByte());
+void Session::detail::SendTaskPacket(const dcclite::Packet &packet)
+{
+	NetUdp::SendPacket(packet.GetData(), packet.GetSize(), g_u8ServerIp, g_uSrvPort);
+}
 
-	if(taskType != NetworkTaskTypes::TASK_DOWNLOAD_EEPROM)
-	{
-		Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', "task", ' ',  static_cast<int>(taskType));
-
-		return;
-	}
-
+static void DownloadEpromTaskHandler(dcclite::Packet &packet)
+{
 	const uint32_t taskId = packet.Read<uint32_t>();
 
 	uint8_t sliceNumber = packet.ReadByte();
@@ -530,16 +532,14 @@ static void OnTaskRequestPacket(dcclite::Packet &packet)
 
 	//
 	//write out the data
-	packet.Reset();
-	dcclite::PacketBuilder builder{ packet, MsgTypes::TASK_DATA, g_SessionToken, g_ConfigToken };	
-
-	packet.Write32(taskId);
+	Session::detail::InitTaskPacket(packet, taskId);
+	
 	packet.Write8(sliceNumber);
 	packet.Write8(static_cast<uint8_t>(storageSize / SLICE_SIZE));		//numSlices
 	packet.Write8(SLICE_SIZE);						//sliceSize
 
 	Storage::EpromStream stream(sliceNumber * SLICE_SIZE);
-	
+
 	for (int i = 0; i < SLICE_SIZE; ++i)
 	{
 		uint8_t data;
@@ -549,6 +549,28 @@ static void OnTaskRequestPacket(dcclite::Packet &packet)
 	}
 
 	NetUdp::SendPacket(packet.GetData(), packet.GetSize(), g_u8ServerIp, g_uSrvPort);
+}
+
+static void OnTaskRequestPacket(dcclite::Packet &packet)
+{
+	using namespace dcclite;
+
+	NetworkTaskTypes taskType = static_cast<NetworkTaskTypes>(packet.ReadByte());
+
+	switch (taskType)
+	{
+		case NetworkTaskTypes::TASK_DOWNLOAD_EEPROM:
+			DownloadEpromTaskHandler(packet);
+			break;
+
+		case NetworkTaskTypes::TASK_SERVO_PROGRAMMER:
+			ServoProgrammer::ParsePacket(packet);
+			break;
+
+		default:
+			Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', "task", ' ', static_cast<int>(taskType));
+			break;
+	}
 }
 
 static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)

@@ -73,6 +73,16 @@ namespace Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap connecting_drive {
+            get {
+                object obj = ResourceManager.GetObject("connecting_drive", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap disconnected_drive {
             get {
                 object obj = ResourceManager.GetObject("disconnected_drive", resourceCulture);

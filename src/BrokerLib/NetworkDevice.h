@@ -36,6 +36,7 @@ namespace dcclite::broker
 			enum class Status
 			{
 				OFFLINE,
+				CONNECTING,
 				ONLINE			
 			};		
 
@@ -86,7 +87,7 @@ namespace dcclite::broker
 			//
 			//
 
-			void TaskServices_FillPacketHeader(dcclite::Packet &packet) const noexcept override;
+			void TaskServices_FillPacketHeader(dcclite::Packet &packet, const uint32_t taskId, const NetworkTaskTypes taskType) const noexcept override;
 
 			void TaskServices_SendPacket(dcclite::Packet &packet) override;			
 
@@ -107,12 +108,7 @@ namespace dcclite::broker
 
 			void CheckLoadedDecoder(Decoder &decoder) override;
 
-		private:						
-			[[nodiscard]] inline bool IsOnline() const noexcept
-			{
-				return m_eStatus == Status::ONLINE;
-			}
-			
+		private:									
 			[[nodiscard]] bool CheckSessionConfig(const dcclite::Guid remoteConfigToken, const dcclite::NetworkAddress remoteAddress);
 			
 			[[nodiscard]] bool CheckSession(const dcclite::NetworkAddress remoteAddress);
@@ -159,7 +155,7 @@ namespace dcclite::broker
 			//
 			//
 			//Connection status
-			Status				m_eStatus;
+			Status				m_kStatus = Status::OFFLINE;
 
 			dcclite::Clock::TimePoint_t m_Timeout;					
 

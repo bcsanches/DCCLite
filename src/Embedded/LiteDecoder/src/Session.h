@@ -22,6 +22,7 @@ namespace Storage
 namespace dcclite
 {
 	class Guid;
+	class Packet;
 }
 
 namespace Session
@@ -41,4 +42,11 @@ namespace Session
 	extern void ReplaceConfigToken(const dcclite::Guid &configToken);
 
 	extern NetUdp::ReceiveCallback_t GetReceiverCallback();
+
+	namespace detail
+	{
+		extern void InitTaskPacket(dcclite::Packet &packet, const uint32_t taskId);
+
+		extern void SendTaskPacket(const dcclite::Packet &packet);
+	}
 }

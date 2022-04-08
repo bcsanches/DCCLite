@@ -1,4 +1,5 @@
 connected_drive.png -> https://freeicons.io/server-icons/server-icon-3465#
+connecting_drive.png -> derived from disconnected_drive.png
 disconnected_drive.png -> https://freeicons.io/server-icons/server-icon-3466#
 folder.png -> https://freeicons.io/office-and-workstation-icons-5/folder-icon-18881#
 file_gear.png -> https://freeicons.io/regular-life-icons/file-exe-icon-17813#

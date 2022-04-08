@@ -10,9 +10,15 @@
 
 #pragma once
 
-namespace ServoProgrammer
+namespace dcclite
 {
-	extern void Start();
+	class Packet;
+}
+
+namespace ServoProgrammer
+{	
 	extern void Stop();
+
+	extern void ParsePacket(dcclite::Packet &packet);
 }
 

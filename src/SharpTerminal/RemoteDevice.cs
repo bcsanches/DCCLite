@@ -29,7 +29,14 @@ namespace SharpTerminal
 
     public class RemoteDevice: RemoteFolder
     {           
-        public bool Connected { get; set; }
+        public enum Status
+        {
+            OFFLINE,
+            CONNECTING,
+            ONLINE
+        }
+
+        public Status ConnectionStatus { get; set; }
 
         public RemotePin[] Pins;
 
@@ -43,7 +50,7 @@ namespace SharpTerminal
         {
             base.OnUpdateState(objectDef);
 
-            Connected = objectDef["connected"];
+            ConnectionStatus = (Status)(int)objectDef["connectionStatus"];
 
             if (!objectDef.ContainsKey("pins"))
                 return;
@@ -84,7 +91,12 @@ namespace SharpTerminal
 
         public override string TryGetIconName()
         {
-            return Connected ? DefaultIcons.CONNECTED_DRIVE_ICON : DefaultIcons.DISCONNECTED_DRIVE_ICON;
+            if (ConnectionStatus == Status.ONLINE)
+                return DefaultIcons.CONNECTED_DRIVE_ICON;
+            else if (ConnectionStatus == Status.CONNECTING)
+                return DefaultIcons.CONNECTING_DRIVE_ICON;
+            else
+                return DefaultIcons.DISCONNECTED_DRIVE_ICON;            
         }
 
         public override Control CreateControl(IConsole console)

@@ -43,7 +43,30 @@ namespace dcclite
 	{
 		RESERVED0,
 
-		TASK_DOWNLOAD_EEPROM
+		TASK_DOWNLOAD_EEPROM,
+		TASK_SERVO_PROGRAMMER
+	};
+
+	enum class ServoProgrammerServerMsgTypes: uint8_t
+	{
+		RESERVED0,
+
+		START,
+		STOP
+	};
+
+	enum class ServoProgrammerClientMsgTypes: uint8_t
+	{
+		RESERVED0,
+
+		READY,
+		FINISHED,
+		FAILURE
+	};
+
+	enum class ServoProgammerClientErrors: uint8_t
+	{
+		INVALID_TASK_ID,
 	};
 
 	constexpr uint32_t PACKET_ID = 0xBEEFFEED;

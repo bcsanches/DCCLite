@@ -54,7 +54,6 @@ namespace dcclite::broker
 	NetworkDevice::NetworkDevice(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project) :
 		Device(std::move(name), dccService, params, project),
 		m_clPinManager(DecodeBoardName(params["class"].GetString())),
-		m_eStatus(Status::OFFLINE),
 		m_fRegistered(true)		
 	{
 		this->Load();
@@ -63,8 +62,7 @@ namespace dcclite::broker
 
 	NetworkDevice::NetworkDevice(std::string name, IDccLite_DeviceServices &dccService, const Project &project) :
 		Device(std::move(name), dccService, project),
-		m_clPinManager(ArduinoBoards::MEGA),
-		m_eStatus(Status::OFFLINE),
+		m_clPinManager(ArduinoBoards::MEGA),		
 		m_fRegistered(false)
 	{
 		//empty
@@ -342,7 +340,7 @@ namespace dcclite::broker
 
 	void NetworkDevice::SyncState::Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time)
 	{
-		assert(self.m_eStatus == Status::ONLINE);
+		assert(self.m_kStatus == Status::CONNECTING);
 
 		//too soon?
 		if (m_SyncTimeout > time)
@@ -573,14 +571,14 @@ namespace dcclite::broker
 		stream.AddStringValue("configToken", dcclite::GuidToString(m_ConfigToken));
 		stream.AddStringValue("sessionToken", dcclite::GuidToString(m_SessionToken));
 		stream.AddStringValue("remoteAddress", m_RemoteAddress.GetIpString());
-		stream.AddBool("connected", this->IsOnline());
+		stream.AddIntValue("connectionStatus", static_cast<int>(m_kStatus));
 
 		m_clPinManager.Serialize(stream);
 	}
 
 	void NetworkDevice::Disconnect()
 	{
-		if (m_eStatus != Status::ONLINE)
+		if (m_kStatus == Status::OFFLINE)
 			return;
 
 		DevicePacket pkt{ dcclite::MsgTypes::DISCONNECT, m_SessionToken, m_ConfigToken };
@@ -594,7 +592,7 @@ namespace dcclite::broker
 
 	void NetworkDevice::GoOffline()
 	{
-		m_eStatus = Status::OFFLINE;
+		m_kStatus = Status::OFFLINE;
 
 		m_clDccService.Device_UnregisterSession(*this, m_SessionToken);
 		m_SessionToken = dcclite::Guid{};
@@ -608,7 +606,7 @@ namespace dcclite::broker
 
 	void NetworkDevice::AcceptConnection(const dcclite::Clock::TimePoint_t time, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken)
 	{
-		if (m_eStatus == Status::ONLINE)
+		if (m_kStatus != Status::OFFLINE)
 		{
 			dcclite::Log::Error("[{}::Device::AcceptConnection] Already connected, cannot accept request from {}", this->GetName(), remoteAddress);
 
@@ -618,11 +616,11 @@ namespace dcclite::broker
 		m_RemoteAddress = remoteAddress;
 		m_SessionToken = dcclite::GuidCreate();
 
-		m_eStatus = Status::ONLINE;
+		m_kStatus = Status::CONNECTING;
 
 		m_clDccService.Device_RegisterSession(*this, m_SessionToken);
 
-		dcclite::Log::Info("[{}::Device::GoOnline] Is connected", this->GetName());
+		dcclite::Log::Info("[{}::Device::GoOnline] Is connecting", this->GetName());
 
 		this->RefreshTimeout(time);
 
@@ -666,7 +664,7 @@ namespace dcclite::broker
 
 	bool NetworkDevice::CheckSession(dcclite::NetworkAddress remoteAddress)
 	{
-		if (m_eStatus != Status::ONLINE)
+		if (m_kStatus == Status::OFFLINE)
 		{
 			dcclite::Log::Error("[{}::Device::CheckSession] got packet from disconnected device", this->GetName());
 
@@ -718,7 +716,7 @@ namespace dcclite::broker
 
 	void NetworkDevice::Update(const dcclite::Clock::TimePoint_t ticks)
 	{
-		if (m_eStatus != Status::ONLINE)
+		if (m_kStatus == Status::OFFLINE)
 			return;		
 
 		//Did remoted device timedout?
@@ -751,7 +749,9 @@ namespace dcclite::broker
 	{
 		this->ClearState();
 
-		m_vState = OnlineState{};
+		m_kStatus = Status::ONLINE;
+
+		m_vState.emplace<OnlineState>();
 		m_pclCurrentState = std::get_if<OnlineState>(&m_vState);
 
 		dcclite::Log::Trace("[{}::Device::GotoOnlineState] Entered", this->GetName());
@@ -771,12 +771,15 @@ namespace dcclite::broker
 	{
 		//
 		//make sure we are connected and on online state (sync and config are not valids)
-		return dynamic_cast<NetworkDevice::OnlineState *>(m_pclCurrentState);		
+		return std::holds_alternative<NetworkDevice::OnlineState>(m_vState);		
 	}
 
-	void NetworkDevice::TaskServices_FillPacketHeader(dcclite::Packet &packet) const noexcept
+	void NetworkDevice::TaskServices_FillPacketHeader(dcclite::Packet &packet, const uint32_t taskId, const NetworkTaskTypes taskType) const noexcept
 	{
 		PacketBuilder builder{ packet, MsgTypes::TASK_REQUEST, m_SessionToken, m_ConfigToken };
+
+		packet.Write8(static_cast<uint8_t>(taskType));
+		packet.Write32(taskId);
 	}
 
 	void NetworkDevice::TaskServices_SendPacket(dcclite::Packet &packet)
@@ -798,14 +801,21 @@ namespace dcclite::broker
 
 	void NetworkDevice::AbortPendingTasks()
 	{
-		for (auto &task : m_lstTasks)
-			task->Abort();
+		while (!m_lstTasks.empty())
+		{
+			auto t = m_lstTasks.front();
+			m_lstTasks.pop_front();
 
-		m_lstTasks.clear();		
+			t->Abort();
+
+		}		
 	}
 
 	std::shared_ptr<NetworkTask> NetworkDevice::StartDownloadEEPromTask(NetworkTask::IObserver *observer, DownloadEEPromTaskResult_t &resultsStorage)
 	{		
+		if (!this->IsConnectionStable())		
+			throw std::runtime_error("[NetworkDevice::StartDownloadEEPromTask] Cannot start task without a connectd device");
+
 		auto task = detail::StartDownloadEEPromTask(*this, ++g_u32TaskId, observer, resultsStorage);								
 
 		m_lstTasks.push_back(task);		
@@ -815,6 +825,9 @@ namespace dcclite::broker
 
 	std::shared_ptr<NetworkTask> NetworkDevice::StartServoTurnoutProgrammerTask(NetworkTask::IObserver *observer, const std::string_view servoDecoderName)
 	{		
+		if (!this->IsConnectionStable())
+			throw std::runtime_error("[NetworkDevice::StartServoTurnoutProgrammerTask] Cannot start task without a connectd device");
+
 		auto obj = this->TryResolveChild(servoDecoderName);
 		if (!obj)
 			throw std::invalid_argument(fmt::format("[NetworkDevice::StartDownloadEEPromTask] Servo decoder {} not found", servoDecoderName));

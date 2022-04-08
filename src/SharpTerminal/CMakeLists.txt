@@ -4,6 +4,7 @@ project(SharpTerminal VERSION 0.1.0 LANGUAGES CSharp)
 include(CSharpUtilities)
 
 set(ICON_RESOURCE_CONNECTED_DRIVE "Resources/connected_drive.png")
+set(ICON_RESOURCE_CONNECTING_DRIVE "Resources/connecting_drive.png")
 set(ICON_RESOURCE_DISCONNECTED_DRIVE "Resources/disconnected_drive.png")
 set(ICON_RESOURCE_FOLDER "Resources/folder.png")
 set(ICON_RESOURCE_FILE_GEAR "Resources/file_gear.png")
@@ -73,6 +74,7 @@ add_executable(SharpTerminal
   ServerSelectionForm.resx
 
   ${ICON_RESOURCE_CONNECTED_DRIVE}
+  ${ICON_RESOURCE_CONNECTING_DRIVE}
   ${ICON_RESOURCE_DISCONNECTED_DRIVE}
   ${ICON_RESOURCE_FOLDER}
   ${ICON_RESOURCE_FILE_GEAR}
