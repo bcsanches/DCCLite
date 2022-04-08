@@ -66,30 +66,25 @@ static void SendStopAck(dcclite::Packet &packet, const uint32_t taskId)
 
 static void ParseStop(dcclite::Packet &packet, const uint32_t packetTaskId)
 {		
-	if (g_iTaskId != packetTaskId)
+	if (g_iTaskId == packetTaskId)
 	{
-		if (g_iTaskId >= 0)
-		{
-			//Wrong id... ignore...
-			SendError_InvalidTaskId(packet, packetTaskId);
-
-			return;
-		}					
-
-		//
-		// g_iTaskId < 0, so just report that stop was done...
 		SendStopAck(packet, packetTaskId);
 
-		return;
+		//
+		// we must stop the programmer
+		ServoProgrammer::Stop();
+	}
+	else if(g_iTaskId >= 0)
+	{		
+		//Wrong id... ignore...
+		SendError_InvalidTaskId(packet, packetTaskId);
 	}
 	else
 	{
+		//
+		// g_iTaskId < 0, so just report that stop was done...
 		SendStopAck(packet, packetTaskId);
-	}
-
-	//
-	// we must stop the programmer
-	ServoProgrammer::Stop();
+	}	
 }
 
 
@@ -97,6 +92,8 @@ void ServoProgrammer::Stop()
 {
 	if (g_iTaskId < 0)
 		return;
+
+	//TODO: release servo
 
 	g_iTaskId = -1;
 }
