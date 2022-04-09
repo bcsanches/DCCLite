@@ -484,21 +484,24 @@ namespace dcclite::broker
 		}
 
 		char cmd[4];
-		auto tokenType = parser.GetToken(cmd, sizeof(cmd));
 
-		if (tokenType == Tokens::HASH)
 		{
-			//max slots, have no idea why and how it is used
-			m_clMessenger.Send(m_clAddress, "<# 0>");
+			auto tokenType = parser.GetToken(cmd, sizeof(cmd));
 
-			return;
-		}
+			if (tokenType == Tokens::HASH)
+			{
+				//max slots, have no idea why and how it is used
+				m_clMessenger.Send(m_clAddress, "<# 0>");
 
-		if (tokenType != Tokens::ID)
-		{
-			Log::Error("[DccppClient::OnMessage] Error parsing msg, expected TOKEN_ID for cmd identification: {}", msg);
+				return;
+			}
 
-			goto ERROR_RESPONSE;
+			if (tokenType != Tokens::ID)
+			{
+				Log::Error("[DccppClient::OnMessage] Error parsing msg, expected TOKEN_ID for cmd identification: {}", msg);
+
+				goto ERROR_RESPONSE;
+			}
 		}
 
 		switch (cmd[0])
@@ -545,7 +548,7 @@ namespace dcclite::broker
 			case 'Z':
 			{
 				int id;
-				tokenType = parser.GetNumber(id);
+				const auto tokenType = parser.GetNumber(id);
 				if (tokenType == Tokens::END_OF_BUFFER)
 				{
 					std::stringstream response;
