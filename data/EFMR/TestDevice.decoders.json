@@ -22,7 +22,7 @@
     "name":"ServoTest",
     "class":"ServoTurnout",
     "address":"0100",
-    "pin": 10,
+    "pin": 22,
     "inverted": false,    
     "operationTime":4000,
     "startPos":48,

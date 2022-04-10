@@ -19,6 +19,6 @@ namespace ServoProgrammer
 {	
 	extern void Stop();
 
-	extern void ParsePacket(dcclite::Packet &packet);
+	extern void ParsePacket(dcclite::Packet &packet);	
 }
 

@@ -28,6 +28,8 @@ namespace dcclite
 
 namespace DecoderManager
 {
+	constexpr uint8_t NULL_SLOT = 255;
+
 	Decoder *Create(const uint8_t slot, dcclite::Packet &packet);
 
 	void Destroy(const uint8_t slot);

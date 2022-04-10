@@ -414,7 +414,7 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 static void OnlineTick(const unsigned long ticks, const bool stateChangeDetectedHint)
 {	
 	if (PingManager::CheckTimeout(ticks))
-		return;
+		return;	
 
 	using namespace dcclite;	
 

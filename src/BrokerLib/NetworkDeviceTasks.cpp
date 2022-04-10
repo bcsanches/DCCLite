@@ -267,6 +267,21 @@ namespace dcclite::broker::detail
 	//
 	//	
 
+	/**
+	* ServoTurnoutProgrammerTask Packet format
+
+
+	  0  1  2  3  4  5  6  7
+	+--+--+--+--+--+--+--+--+		
+	|          MSG          |
+	+--+--+--+--+--+--+--+--+		
+	|                       |
+	//       MSG DATA       //
+	|                       |
+	+--+--+--+--+--+--+--+--+
+
+	*/
+
 	class ServoTurnoutProgrammerTask: public NetworkTaskImpl, public IServoProgrammerTask
 	{
 		public:
@@ -289,10 +304,12 @@ namespace dcclite::broker::detail
 			void GotoFailureState();
 			void GotoRunningState();
 			void GotoStoppingState();
+
+			void FillPacket(dcclite::Packet &packet, const uint32_t taskId, const NetworkTaskTypes taskType, const ServoProgrammerServerMsgTypes msg);
 			
 			struct State
 			{				
-				virtual void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) = 0;				
+				virtual void OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time) = 0;				
 
 				virtual ~State() {};
 
@@ -306,11 +323,25 @@ namespace dcclite::broker::detail
 					ServoTurnoutProgrammerTask &m_rclSelf;
 			};
 
+			struct NullState: State
+			{
+				NullState(ServoTurnoutProgrammerTask &self):
+					State{ self }
+				{
+					//empty
+				}
+
+				void OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time) override
+				{
+					throw std::logic_error("[ServoTurnoutProgrammerTask::NullState::OnPacket] What?");
+				}
+			};
+
 			struct StartingState: State
 			{	
 				StartingState(ServoTurnoutProgrammerTask &self);
 
-				void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) override;				
+				void OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time) override;
 
 				private:
 					void SendStartPacket(const dcclite::Clock::TimePoint_t time);
@@ -323,7 +354,7 @@ namespace dcclite::broker::detail
 			{
 				RunningState(ServoTurnoutProgrammerTask &self);
 
-				void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) override;				
+				void OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time) override;
 
 				void OnNewServoPosition();
 
@@ -332,13 +363,16 @@ namespace dcclite::broker::detail
 
 				private:
 					Thinker	m_clThinker;
+
+					uint32_t	m_u32Sequence = 0;
+					uint32_t	m_u32AckSequence = 0;
 			};
 
 			struct StoppingState: State
 			{
 				StoppingState(ServoTurnoutProgrammerTask &self);							
 
-				void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) override;				
+				void OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time) override;
 
 				private:
 					void SendStopPacket(const dcclite::Clock::TimePoint_t time);
@@ -351,36 +385,41 @@ namespace dcclite::broker::detail
 			{
 				FailureState(ServoTurnoutProgrammerTask &self);
 
-				void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) override;			
+				void OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time) override;
 			};
 
 		private:
-			ServoTurnoutDecoder &m_rclDecoder;			
+			ServoTurnoutDecoder &m_rclDecoder;						
+
+			std::variant< StartingState, RunningState, StoppingState, FailureState, NullState> m_vState;
 
 			std::uint8_t		m_u8DecoderIndex;
 
 			std::uint8_t		m_u8ServoPosition;
-			std::uint8_t		m_u8ServoRemotePosition;
-
-			std::variant< StartingState, RunningState, StoppingState, FailureState> m_vState;
+			std::uint8_t		m_u8ServoRemotePosition;			
 	};
 
 	ServoTurnoutProgrammerTask::ServoTurnoutProgrammerTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, IObserver *observer, ServoTurnoutDecoder &decoder):
 		NetworkTaskImpl{ owner, taskId, observer },
 		m_rclDecoder{ decoder },
 		m_u8DecoderIndex{ owner.TaskServices_FindDecoderIndex(decoder) },
-		m_vState{ StartingState {*this} }
-	{
-		
+		m_vState{ NullState{*this} }
+	{		
 		m_u8ServoPosition = decoder.GetStartPosition();
 
 		//put a diferent number to force an update after programmer is connected
 		m_u8ServoRemotePosition = m_u8ServoPosition + 1;
+
+		//
+		//After this is initialized, start the state machine
+		m_vState.emplace<StartingState>( *this );
 	}
 
 	void ServoTurnoutProgrammerTask::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time)
-	{
-		std::visit([&packet, time](ServoTurnoutProgrammerTask::State &state) {state.OnPacket(packet, time); }, m_vState);
+	{		
+		const auto msg = static_cast<ServoProgrammerClientMsgTypes>(packet.Read<uint8_t>());
+
+		std::visit([&packet, msg, time](ServoTurnoutProgrammerTask::State &state) {state.OnPacket(packet, msg, time); }, m_vState);
 	}
 
 	void ServoTurnoutProgrammerTask::Abort() noexcept
@@ -399,6 +438,15 @@ namespace dcclite::broker::detail
 			return;
 
 		this->GotoStoppingState();		
+	}
+
+	void ServoTurnoutProgrammerTask::FillPacket(dcclite::Packet &packet, const uint32_t taskId, const NetworkTaskTypes taskType, const ServoProgrammerServerMsgTypes msg)
+	{
+		m_rclOwner.TaskServices_FillPacketHeader(packet, taskId, taskType);
+
+		//packet.Write32(++m_uSequence);
+
+		packet.Write8(static_cast<uint8_t>(msg));
 	}
 
 	void ServoTurnoutProgrammerTask::SetStartPos(const uint8_t startPos)
@@ -478,18 +526,14 @@ namespace dcclite::broker::detail
 		// Start it
 		dcclite::Packet packet;
 
-		m_rclSelf.m_rclOwner.TaskServices_FillPacketHeader(packet, m_rclSelf.m_u32TaskId, NetworkTaskTypes::TASK_SERVO_PROGRAMMER);
-
-		packet.Write8(static_cast<uint8_t>(dcclite::ServoProgrammerServerMsgTypes::START));
+		m_rclSelf.FillPacket(packet, m_rclSelf.m_u32TaskId, NetworkTaskTypes::TASK_SERVO_PROGRAMMER, dcclite::ServoProgrammerServerMsgTypes::START);
 		packet.Write8(m_rclSelf.m_u8DecoderIndex);
 
 		m_rclSelf.m_rclOwner.TaskServices_SendPacket(packet);
 	}
 
-	void ServoTurnoutProgrammerTask::StartingState::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time)
-	{
-		auto msg = static_cast<dcclite::ServoProgrammerClientMsgTypes>(packet.ReadByte());
-
+	void ServoTurnoutProgrammerTask::StartingState::OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time)
+	{		
 		switch (msg)
 		{
 			case ServoProgrammerClientMsgTypes::FAILURE:
@@ -524,15 +568,22 @@ namespace dcclite::broker::detail
 		this->OnNewServoPosition();
 	}
 	
-	void ServoTurnoutProgrammerTask::RunningState::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time)
+	void ServoTurnoutProgrammerTask::RunningState::OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time)
 	{
 		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::RunningState::OnPacket] Got packet");
-
-		auto msg = static_cast<dcclite::ServoProgrammerClientMsgTypes>(packet.ReadByte());
+		
 		switch (msg)
 		{
 			case ServoProgrammerClientMsgTypes::SERVO_MOVED:
 				{
+					const auto ackSequence = packet.Read<uint32_t>();
+
+					//old packet? if so, drop it
+					if (ackSequence < m_u32AckSequence)
+						return;
+					
+					m_u32AckSequence = ackSequence;
+
 					m_rclSelf.m_u8ServoRemotePosition = packet.ReadByte();
 
 					if (m_rclSelf.m_u8ServoPosition != m_rclSelf.m_u8ServoRemotePosition)
@@ -545,6 +596,13 @@ namespace dcclite::broker::detail
 						m_clThinker.Cancel();
 					}
 				}
+				break;	
+
+			case ServoProgrammerClientMsgTypes::READY:
+				//
+				//ignore - we may have sent two starts and received the first one ack (and the second one still in the flight)
+				// and later we got the second one, so ignore it
+				//
 				break;
 
 			case ServoProgrammerClientMsgTypes::FAILURE:
@@ -562,9 +620,8 @@ namespace dcclite::broker::detail
 	{
 		dcclite::Packet packet;
 
-		m_rclSelf.m_rclOwner.TaskServices_FillPacketHeader(packet, m_rclSelf.m_u32TaskId, NetworkTaskTypes::TASK_SERVO_PROGRAMMER);
-
-		packet.Write8(static_cast<uint8_t>(dcclite::ServoProgrammerServerMsgTypes::MOVE_SERVO));
+		m_rclSelf.FillPacket(packet, m_rclSelf.m_u32TaskId, NetworkTaskTypes::TASK_SERVO_PROGRAMMER, dcclite::ServoProgrammerServerMsgTypes::MOVE_SERVO);
+		packet.Write32(++m_u32Sequence);
 		packet.Write8(m_rclSelf.m_u8ServoPosition);
 
 		m_rclSelf.m_rclOwner.TaskServices_SendPacket(packet);
@@ -592,12 +649,17 @@ namespace dcclite::broker::detail
 		this->SendStopPacket(dcclite::Clock::DefaultClock_t::now());
 	}
 
-	void ServoTurnoutProgrammerTask::StoppingState::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time)
-	{
-		auto msg = static_cast<dcclite::ServoProgrammerClientMsgTypes>(packet.ReadByte());
-
+	void ServoTurnoutProgrammerTask::StoppingState::OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time)
+	{		
 		switch (msg)
 		{
+			case ServoProgrammerClientMsgTypes::SERVO_MOVED:
+			case ServoProgrammerClientMsgTypes::READY:
+				//
+				// ignore those
+				//
+				break;
+
 			case ServoProgrammerClientMsgTypes::FAILURE:
 				dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StoppingState::OnPacket] Got failure packet {}", m_rclSelf.m_u32TaskId);
 
@@ -625,10 +687,8 @@ namespace dcclite::broker::detail
 		// Stop it
 		dcclite::Packet packet;
 
-		m_rclSelf.m_rclOwner.TaskServices_FillPacketHeader(packet, m_rclSelf.m_u32TaskId, NetworkTaskTypes::TASK_SERVO_PROGRAMMER);
-
-		packet.Write8(static_cast<uint8_t>(dcclite::ServoProgrammerServerMsgTypes::STOP));
-
+		m_rclSelf.FillPacket(packet, m_rclSelf.m_u32TaskId, NetworkTaskTypes::TASK_SERVO_PROGRAMMER, dcclite::ServoProgrammerServerMsgTypes::STOP);
+		
 		m_rclSelf.m_rclOwner.TaskServices_SendPacket(packet);
 	}
 
@@ -646,7 +706,7 @@ namespace dcclite::broker::detail
 		self.MarkFailed();
 	}
 
-	void ServoTurnoutProgrammerTask::FailureState::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time)
+	void ServoTurnoutProgrammerTask::FailureState::OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, dcclite::Clock::TimePoint_t time)
 	{
 		//ignore packets...
 	}
