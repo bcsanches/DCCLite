@@ -43,13 +43,79 @@ class ServoProgrammerHelper
 		ServoTurnoutDecoder &m_rclDecoder;
 
 	public:
-		const unsigned int	m_uTaskId;
-		const uint8_t		m_uDecoderSlot;		
+		ServoProgrammerHelper *m_pclNext = nullptr;
+		ServoProgrammerHelper *m_pclPrev = nullptr;
+
+		const uint32_t		m_uTaskId;		
 
 		uint32_t			m_uServerSequence = 0;		
+
+		const uint8_t		m_uDecoderSlot;
+		
 };
 
-static ServoProgrammerHelper *g_pclHelper = nullptr;
+class TaskList
+{
+	public:
+		void Insert(ServoProgrammerHelper *item) noexcept
+		{
+			item->m_pclNext = m_pclListHead;
+
+			if (m_pclListHead)
+			{
+				m_pclListHead->m_pclPrev = item;
+			}
+
+			m_pclListHead = item;
+		}
+
+		void Remove(ServoProgrammerHelper *item) noexcept
+		{
+			if (item->m_pclPrev)
+			{
+				item->m_pclPrev->m_pclNext = item->m_pclNext;
+			}
+
+			if (item->m_pclNext)
+			{
+				item->m_pclNext->m_pclPrev = item->m_pclPrev;
+			}
+
+			if (m_pclListHead == item)
+			{
+				m_pclListHead = item->m_pclNext;
+			}
+
+			item->m_pclNext = item->m_pclPrev = nullptr;
+		}
+
+		ServoProgrammerHelper *TryFindTask(const uint32_t taskId) const noexcept
+		{
+			for (auto p = m_pclListHead; p; p = p->m_pclNext)
+			{
+				if (p->m_uTaskId == taskId)
+					return p;
+			}
+
+			return nullptr;
+		}
+
+		void Clear() noexcept
+		{
+			while (m_pclListHead)
+			{
+				auto *next = m_pclListHead->m_pclNext;
+
+				delete m_pclListHead;
+				m_pclListHead = next;
+			}
+		}
+
+	private:
+		ServoProgrammerHelper *m_pclListHead = nullptr;
+};
+
+static TaskList g_clTasklist;
 
 static void SendError_InvalidDecoderSlot(dcclite::Packet &packet, const uint32_t originalTaskId, const uint8_t slot)
 {
@@ -85,9 +151,12 @@ static void SendError_InvalidTaskId(dcclite::Packet &packet, const uint32_t orig
 	Session::detail::SendTaskPacket(packet);
 }
 
+
 static void ParseStart(dcclite::Packet &packet, const uint32_t packetTaskId)
 {	
-	if (g_pclHelper == nullptr)
+	auto task = g_clTasklist.TryFindTask(packetTaskId);
+
+	if (task == nullptr)
 	{
 		//
 		//a real start, so let do it...
@@ -110,16 +179,10 @@ static void ParseStart(dcclite::Packet &packet, const uint32_t packetTaskId)
 			return;
 		}
 
-		g_pclHelper = new ServoProgrammerHelper{ packetTaskId, slot, *static_cast<ServoTurnoutDecoder *>(decoder) };		
-	}	
-	else if (g_pclHelper->m_uTaskId != packetTaskId)
-	{
-		//
-		//Another task started? Can do more than one per time...
-		SendError_InvalidTaskId(packet, packetTaskId, g_pclHelper->m_uTaskId);
+		task = new ServoProgrammerHelper{ packetTaskId, slot, *static_cast<ServoTurnoutDecoder *>(decoder) };
 
-		return;
-	}			
+		g_clTasklist.Insert(task);
+	}		
 
 	//
 	//else - already started, but packet may be lost, so answer server
@@ -139,7 +202,9 @@ static void SendStopAck(dcclite::Packet &packet, const uint32_t taskId)
 
 static void ParseStop(dcclite::Packet &packet, const uint32_t packetTaskId)
 {		
-	if (g_pclHelper == nullptr)
+	auto task = g_clTasklist.TryFindTask(packetTaskId);
+
+	if(task == nullptr)	
 	{
 		//
 		// g_iTaskId < 0, so just report that stop was done...
@@ -147,34 +212,28 @@ static void ParseStop(dcclite::Packet &packet, const uint32_t packetTaskId)
 
 		return;
 	}
-	
-	if (g_pclHelper->m_uTaskId == packetTaskId)
-	{		
-		SendStopAck(packet, packetTaskId);
+		
+	SendStopAck(packet, packetTaskId);
 
-		//
-		// we must stop the programmer
-		ServoProgrammer::Stop();
-	}
-	else
-	{
-		//Wrong id... ignore...
-		SendError_InvalidTaskId(packet, packetTaskId, g_pclHelper->m_uTaskId);
-	}	
+	//
+	// we must stop the programmer
+	g_clTasklist.Remove(task);
+	delete task;	
 }
 
 static void ParseMoveServo(dcclite::Packet &packet, const uint32_t packetTaskId)
 {
-	if((!g_pclHelper) || (g_pclHelper->m_uTaskId != packetTaskId))	
+	auto task = g_clTasklist.TryFindTask(packetTaskId);
+	if (task == nullptr)
 	{
 		//Wrong id... ignore...
-		SendError_InvalidTaskId(packet, packetTaskId, g_pclHelper->m_uTaskId);
-	}
+		SendError_InvalidTaskId(packet, packetTaskId, task->m_uTaskId);
+	}	
 
 	const auto serverSequence = packet.Read<uint32_t>();
 
 	//old packet?
-	if (serverSequence < g_pclHelper->m_uServerSequence)
+	if (serverSequence < task->m_uServerSequence)
 	{
 		//drop it
 		return;
@@ -183,9 +242,9 @@ static void ParseMoveServo(dcclite::Packet &packet, const uint32_t packetTaskId)
 	const auto position = packet.ReadByte();
 
 	Console::SendLogEx("[ParseMoveServo]", ' ', position);
-	g_pclHelper->MoveServo(position);
+	task->MoveServo(position);
 
-	g_pclHelper->m_uServerSequence = serverSequence;
+	task->m_uServerSequence = serverSequence;
 
 	Session::detail::InitTaskPacket(packet, packetTaskId);
 	packet.Write8(static_cast<uint8_t>(dcclite::ServoProgrammerClientMsgTypes::SERVO_MOVED));	
@@ -198,11 +257,7 @@ static void ParseMoveServo(dcclite::Packet &packet, const uint32_t packetTaskId)
 
 void ServoProgrammer::Stop()
 {
-	if (g_pclHelper == nullptr)
-		return;
-
-	delete g_pclHelper;
-	g_pclHelper = nullptr;	
+	g_clTasklist.Clear();	
 }
 
 void ServoProgrammer::ParsePacket(dcclite::Packet &packet)
