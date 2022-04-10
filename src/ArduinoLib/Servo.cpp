@@ -8,7 +8,33 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "Misc.h"
+#include "Servo.h"
+
+#include "Log.h"
+
+void Servo::attach(int pin)
+{
+	m_iPin = pin;
+
+	dcclite::Log::Trace("[Servo::attach] Pin {}", m_iPin);
+}
 
 
+void Servo::write(int angle)
+{
+	m_iAngle = angle;
 
+	dcclite::Log::Trace("[Servo::write] Pin {} moved to {}", m_iPin, m_iAngle);
+}
+
+int Servo::read() const
+{
+	return m_iAngle;
+}
+
+void Servo::detach()
+{
+	dcclite::Log::Trace("[Servo::detach] Pin {}", m_iPin);
+
+	m_iPin = 0;	
+}

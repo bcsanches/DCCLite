@@ -76,6 +76,10 @@ namespace dcclite::broker
 				return m_fFlags;
 			}
 
+			[[nodiscard]] inline const std::uint8_t GetStartPosition() const noexcept
+			{
+				return m_uStartPos;
+			}
 
 		private:
 			dcclite::BasicPin	m_clPin;

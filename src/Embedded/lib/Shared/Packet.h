@@ -52,7 +52,8 @@ namespace dcclite
 		RESERVED0,
 
 		START,
-		STOP
+		STOP,
+		MOVE_SERVO
 	};
 
 	enum class ServoProgrammerClientMsgTypes: uint8_t
@@ -61,12 +62,16 @@ namespace dcclite
 
 		READY,
 		FINISHED,
+		SERVO_MOVED,
+		
 		FAILURE
 	};
 
 	enum class ServoProgammerClientErrors: uint8_t
 	{
 		INVALID_TASK_ID,
+		INVALID_DECODER_SLOT,
+		INVALID_DECODER_TYPE		
 	};
 
 	constexpr uint32_t PACKET_ID = 0xBEEFFEED;

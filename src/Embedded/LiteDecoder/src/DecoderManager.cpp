@@ -341,3 +341,41 @@ bool DecoderManager::Update(const unsigned long ticks)
 	return stateChanged;
 }
 
+
+Decoder *DecoderManager::TryPopDecoder(const uint8_t slot) noexcept
+{
+	if (slot >= MAX_DECODERS)
+	{
+		Console::SendLogEx(MODULE_NAME, FSTR_SLOT_OUT_OF_RANGE, ' ', slot);
+
+		return nullptr;
+	}
+
+	auto dec = g_pDecoders[slot];
+	g_pDecoders[slot] = nullptr;
+
+	return dec;
+}
+
+bool DecoderManager::PushDecoder(Decoder *decoder, const uint8_t slot) noexcept
+{
+	if (slot >= MAX_DECODERS)
+	{
+		Console::SendLogEx(MODULE_NAME, FSTR_SLOT_OUT_OF_RANGE, ' ', slot);
+
+		return false;
+	}
+
+	if (g_pDecoders[slot])
+	{
+		Console::SendLogEx(MODULE_NAME, FSTR_SLOT_IN_USE, slot);
+
+		return false;
+	}
+
+	g_pDecoders[slot] = decoder;
+
+	return true;
+}
+
+

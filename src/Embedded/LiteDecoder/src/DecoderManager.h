@@ -36,6 +36,10 @@ namespace DecoderManager
 	void SaveConfig(Storage::EpromStream &stream);
 	void LoadConfig(Storage::EpromStream &stream);
 
+	Decoder *TryPopDecoder(const uint8_t slot) noexcept;
+
+	bool PushDecoder(Decoder *decoder, const uint8_t slot) noexcept;
+
 	/**
 	Updates all decoders with the bitpack.
 

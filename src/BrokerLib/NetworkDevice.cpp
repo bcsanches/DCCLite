@@ -601,6 +601,7 @@ namespace dcclite::broker
 		this->AbortPendingTasks();
 
 		dcclite::Log::Warn("[{}::Device::GoOffline] Is OFFLINE", this->GetName());
+		m_clDccService.Device_NotifyStateChange(*this);
 	}
 
 
@@ -645,6 +646,8 @@ namespace dcclite::broker
 			//now sync it
 			this->GotoSyncState();
 		}
+
+		m_clDccService.Device_NotifyStateChange(*this);
 	}
 
 	bool NetworkDevice::CheckSessionConfig(dcclite::Guid remoteConfigToken, dcclite::NetworkAddress remoteAddress)
@@ -755,6 +758,7 @@ namespace dcclite::broker
 		m_pclCurrentState = std::get_if<OnlineState>(&m_vState);
 
 		dcclite::Log::Trace("[{}::Device::GotoOnlineState] Entered", this->GetName());
+		m_clDccService.Device_NotifyStateChange(*this);
 	}
 
 	void NetworkDevice::GotoConfigState(const dcclite::Clock::TimePoint_t time)
@@ -798,6 +802,20 @@ namespace dcclite::broker
 
 		m_lstTasks.erase(it);
 	}
+
+	uint8_t NetworkDevice::TaskServices_FindDecoderIndex(const Decoder &decoder) const
+	{
+		assert(m_vecDecoders.size() < 255);
+
+		for (size_t i = 0, len = m_vecDecoders.size(); i < len; ++i)
+		{
+			if (m_vecDecoders[i] == &decoder)
+				return static_cast<uint8_t>(i);
+		}
+
+		throw std::out_of_range(fmt::format("[NetworkDevice::TaskServices_FindDecoderIndex] Decoder {} not found in device {}", decoder.GetName(), this->GetName()));
+	}
+
 
 	void NetworkDevice::AbortPendingTasks()
 	{

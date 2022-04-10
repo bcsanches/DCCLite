@@ -90,7 +90,7 @@ void DynamicLibrary::Load(const std::string_view name)
 
 	if (m_upHandle == NULL)
 	{
-		this->RaiseException("DynamicLibrary_c::Load", m_strName.c_str());
+		this->RaiseException("DynamicLibrary::Load", m_strName.c_str());
 	}
 }
 
@@ -104,7 +104,7 @@ void *DynamicLibrary::GetSymbol(const char *name)
 	void *ptr = this->TryGetSymbol(name);
 	if (ptr == NULL)
 	{
-		this->RaiseException("DynamicLibrary_c::GetSymbol", name);
+		this->RaiseException("DynamicLibrary::GetSymbol", name);
 	}
 
 	return ptr;

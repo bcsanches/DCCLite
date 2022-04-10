@@ -95,6 +95,8 @@ namespace dcclite::broker
 
 			void TaskServices_ForgetTask(NetworkTask &task) override;
 
+			[[nodiscard]] uint8_t TaskServices_FindDecoderIndex(const Decoder &decoder) const override;
+
 			//
 			//
 			// Tasks

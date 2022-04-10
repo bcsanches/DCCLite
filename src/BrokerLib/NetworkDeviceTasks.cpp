@@ -21,6 +21,7 @@
 #include "Project.h"
 #include "SensorDecoder.h"
 #include "Thinker.h"
+#include "TurnoutDecoder.h"
 
 namespace dcclite::broker::detail
 {		
@@ -323,6 +324,14 @@ namespace dcclite::broker::detail
 				RunningState(ServoTurnoutProgrammerTask &self);
 
 				void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) override;				
+
+				void OnNewServoPosition();
+
+				private:
+					void OnThink(const dcclite::Clock::TimePoint_t time);
+
+				private:
+					Thinker	m_clThinker;
 			};
 
 			struct StoppingState: State
@@ -348,15 +357,25 @@ namespace dcclite::broker::detail
 		private:
 			ServoTurnoutDecoder &m_rclDecoder;			
 
+			std::uint8_t		m_u8DecoderIndex;
+
+			std::uint8_t		m_u8ServoPosition;
+			std::uint8_t		m_u8ServoRemotePosition;
+
 			std::variant< StartingState, RunningState, StoppingState, FailureState> m_vState;
 	};
 
 	ServoTurnoutProgrammerTask::ServoTurnoutProgrammerTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, IObserver *observer, ServoTurnoutDecoder &decoder):
 		NetworkTaskImpl{ owner, taskId, observer },
-		m_rclDecoder{ decoder },		
+		m_rclDecoder{ decoder },
+		m_u8DecoderIndex{ owner.TaskServices_FindDecoderIndex(decoder) },
 		m_vState{ StartingState {*this} }
 	{
-		//empty
+		
+		m_u8ServoPosition = decoder.GetStartPosition();
+
+		//put a diferent number to force an update after programmer is connected
+		m_u8ServoRemotePosition = m_u8ServoPosition + 1;
 	}
 
 	void ServoTurnoutProgrammerTask::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time)
@@ -399,7 +418,13 @@ namespace dcclite::broker::detail
 
 	void ServoTurnoutProgrammerTask::SetPosition(const uint8_t position)
 	{
+		m_u8ServoPosition = position;
 
+		if (std::holds_alternative<RunningState>(m_vState))
+		{
+			auto state = std::get_if<RunningState>(&m_vState);
+			state->OnNewServoPosition();
+		}
 	}	
 
 	static void ReportPacketError(dcclite::Packet &packet)
@@ -456,6 +481,7 @@ namespace dcclite::broker::detail
 		m_rclSelf.m_rclOwner.TaskServices_FillPacketHeader(packet, m_rclSelf.m_u32TaskId, NetworkTaskTypes::TASK_SERVO_PROGRAMMER);
 
 		packet.Write8(static_cast<uint8_t>(dcclite::ServoProgrammerServerMsgTypes::START));
+		packet.Write8(m_rclSelf.m_u8DecoderIndex);
 
 		m_rclSelf.m_rclOwner.TaskServices_SendPacket(packet);
 	}
@@ -488,15 +514,70 @@ namespace dcclite::broker::detail
 	//
 
 	ServoTurnoutProgrammerTask::RunningState::RunningState(ServoTurnoutProgrammerTask &self):
-		State{ self }		
+		State{ self },
+		m_clThinker{THINKER_MF_LAMBDA(OnThink)}
 	{
-		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::RunningState::RunningState] Running");
+		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::RunningState::RunningState] Running");		
+
+		//
+		//If terminal already requested a new position, we may intercept it now and request the servo to move
+		this->OnNewServoPosition();
 	}
 	
 	void ServoTurnoutProgrammerTask::RunningState::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time)
 	{
 		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::RunningState::OnPacket] Got packet");
+
+		auto msg = static_cast<dcclite::ServoProgrammerClientMsgTypes>(packet.ReadByte());
+		switch (msg)
+		{
+			case ServoProgrammerClientMsgTypes::SERVO_MOVED:
+				{
+					m_rclSelf.m_u8ServoRemotePosition = packet.ReadByte();
+
+					if (m_rclSelf.m_u8ServoPosition != m_rclSelf.m_u8ServoRemotePosition)
+					{
+						this->OnNewServoPosition();
+					}
+					else
+					{
+						//reached desired position, so no timeout
+						m_clThinker.Cancel();
+					}
+				}
+				break;
+
+			case ServoProgrammerClientMsgTypes::FAILURE:
+				dcclite::Log::Error("[ServoTurnoutProgrammerTask::RunningState::OnPacket] Got failure packet");
+				ReportPacketError(packet);				
+				break;
+
+			default:
+				dcclite::Log::Error("[ServoTurnoutProgrammerTask::RunningState::OnPacket] Unexpected packet: {}", magic_enum::enum_name(msg));
+				break;
+		}
 	}		
+
+	void ServoTurnoutProgrammerTask::RunningState::OnNewServoPosition()
+	{
+		dcclite::Packet packet;
+
+		m_rclSelf.m_rclOwner.TaskServices_FillPacketHeader(packet, m_rclSelf.m_u32TaskId, NetworkTaskTypes::TASK_SERVO_PROGRAMMER);
+
+		packet.Write8(static_cast<uint8_t>(dcclite::ServoProgrammerServerMsgTypes::MOVE_SERVO));
+		packet.Write8(m_rclSelf.m_u8ServoPosition);
+
+		m_rclSelf.m_rclOwner.TaskServices_SendPacket(packet);
+
+		m_clThinker.SetNext(dcclite::Clock::DefaultClock_t::now() + 50ms);
+	}
+
+	void ServoTurnoutProgrammerTask::RunningState::OnThink(const dcclite::Clock::TimePoint_t time)
+	{
+		//
+		//servo set position may have timeout
+		this->OnNewServoPosition();
+	}
 
 	//
 	//

@@ -30,13 +30,13 @@
 #include "BonjourService.h"
 #include "Broker.h"
 #include "DccLiteService.h"
-#include "Misc.h"
 #include "NetMessenger.h"
 #include "NetworkDevice.h"
 #include "OutputDecoder.h"
 #include "SignalDecoder.h"
 #include "SpecialFolders.h"
 #include "TerminalCmd.h"
+#include "Util.h"
 #include "ZeroconfService.h"
 
 #include <thread>

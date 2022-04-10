@@ -10,12 +10,20 @@
 
 #pragma once
 
-class Servo
+#include "ArduinoLibDefs.h"
+
+class ARDUINO_API Servo
 {
 	public:
-		inline void attach(int pin) { ; }
+		void attach(int pin);
 
-		inline void write(int angle) { ; }
+		void write(int angle);
 
-		inline void detach() { ; }
+		int read() const;
+
+		void detach();
+
+	private:
+		int m_iPin = 0;
+		int m_iAngle = 0;
 };

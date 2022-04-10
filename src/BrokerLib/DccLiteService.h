@@ -113,6 +113,7 @@ namespace dcclite::broker
 
 			void Device_NotifyInternalItemCreated(const dcclite::IObject &item) const override;
 			void Device_NotifyInternalItemDestroyed(const dcclite::IObject &item) const override;
+			void Device_NotifyStateChange(const NetworkDevice &device) const override;
 
 			//
 			//

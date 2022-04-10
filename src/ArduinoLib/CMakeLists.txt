@@ -5,6 +5,7 @@ set(ArduinoLib_SRCS
   EEPROM.cpp
   Ethercard.cpp
   Serial.cpp
+  Servo.cpp
 )
 
 set(ArduinoLib_HDRS

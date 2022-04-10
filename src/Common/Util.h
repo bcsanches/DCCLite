@@ -16,6 +16,10 @@ namespace dcclite
 {
 	bool TryHexStrToBinary(std::uint8_t dest[], size_t destSize, std::string_view str) noexcept;
 
+	//
+	//Try to parse a number, throws if string contains no number
+	int ParseNumber(const char *str);
+
 	/**
 	* Returns a view to a string without leading and trailing white spaces
 	* 

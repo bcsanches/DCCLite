@@ -10,8 +10,8 @@
 
 #include "DccAddress.h"
 
-#include "Misc.h"
 #include "Packet.h"
+#include "Util.h"
 
 namespace dcclite::broker
 {

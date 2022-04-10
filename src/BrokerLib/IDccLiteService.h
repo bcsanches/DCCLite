@@ -94,22 +94,23 @@ namespace dcclite::broker
 	class IDccLite_DeviceServices
 	{
 		public:
-			virtual Decoder& Device_CreateDecoder(
+			virtual Decoder &Device_CreateDecoder(
 				IDevice_DecoderServices &dev,
-				const std::string& className,
+				const std::string &className,
 				DccAddress address,
-				const std::string& name,
-				const rapidjson::Value& params
+				const std::string &name,
+				const rapidjson::Value &params
 			) = 0;
 
 			virtual void Device_DestroyDecoder(Decoder &) = 0;
 		
 			virtual void Device_SendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet& packet) = 0;
 
-			virtual void Device_RegisterSession(NetworkDevice& dev, const dcclite::Guid& configToken) = 0;
-			virtual void Device_UnregisterSession(NetworkDevice& dev, const dcclite::Guid& sessionToken) = 0;				
+			virtual void Device_RegisterSession(NetworkDevice &dev, const dcclite::Guid &configToken) = 0;
+			virtual void Device_UnregisterSession(NetworkDevice &dev, const dcclite::Guid &sessionToken) = 0;				
 
 			virtual void Device_NotifyInternalItemCreated(const dcclite::IObject &item) const = 0;
 			virtual void Device_NotifyInternalItemDestroyed(const dcclite::IObject &item) const = 0;
+			virtual void Device_NotifyStateChange(const NetworkDevice &device) const = 0;
 	};
 }

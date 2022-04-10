@@ -11,6 +11,7 @@
 #include "Util.h"
 
 #include "Misc.h"
+#include "Parser.h"
 
 #include <algorithm>
 
@@ -23,6 +24,26 @@
 #include <winsock.h>
 #endif
 
+#include <stdexcept>
+#include <sstream>
+
+
+int dcclite::ParseNumber(const char *str)
+{
+	dcclite::Parser parser{ str };
+
+	int adr;
+	if (parser.GetNumber(adr) != dcclite::Tokens::NUMBER)
+	{
+		std::stringstream stream;
+
+		stream << "[dcclite::ParseNumber] String " << str << " does not contains a valid number";
+
+		throw std::runtime_error(stream.str());
+	}
+
+	return adr;
+}
 
 bool dcclite::TryHexStrToBinary(std::uint8_t dest[], size_t destSize, std::string_view str) noexcept
 {

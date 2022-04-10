@@ -332,3 +332,15 @@ void ServoTurnoutDecoder::OperateClose(const unsigned long ticks) noexcept
 
 	this->SetState(States::CLOSING);
 }
+
+void ServoTurnoutDecoder::PM_EnableProgMode() noexcept
+{	
+	this->SetState(States::THROWN);
+	this->TurnOnPower(millis());
+}
+
+void ServoTurnoutDecoder::PM_DisableProgMode() noexcept
+{
+	//go back to reset state
+	this->OperateClose(millis());
+}

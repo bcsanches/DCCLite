@@ -170,6 +170,11 @@ namespace dcclite::broker
 		this->NotifyItemDestroyed(item);
 	}
 
+	void DccLiteService::Device_NotifyStateChange(const NetworkDevice &device) const
+	{
+		this->NotifyItemChanged(device);
+	}
+
 	Device *DccLiteService::TryFindDeviceByName(std::string_view name)
 	{	
 		return static_cast<Device *>(m_pDevices->TryGetChild(name));
@@ -291,16 +296,12 @@ namespace dcclite::broker
 	{
 		auto session = m_pSessions->AddChild(std::make_unique<dcclite::Shortcut>(dcclite::GuidToString(sessionToken), dev));
 
-		this->NotifyItemCreated(*session);
-
-		this->NotifyItemChanged(dev);		
+		this->NotifyItemCreated(*session);		
 	}
 
 	void DccLiteService::Device_UnregisterSession(NetworkDevice& dev, const dcclite::Guid &sessionToken)
 	{	
-		auto session = m_pSessions->RemoveChild(dcclite::GuidToString(sessionToken));	
-		
-		this->NotifyItemChanged(dev);
+		auto session = m_pSessions->RemoveChild(dcclite::GuidToString(sessionToken));				
 					
 		this->NotifyItemDestroyed(*session);
 	}

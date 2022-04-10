@@ -90,6 +90,8 @@ class ServoTurnoutDecoder : public Decoder
 			return (state == States::CLOSING) || (state == States::THROWNING);
 		}
 
+		friend class ServoProgrammerHelper;		
+
 	private:
 		void Init(const dcclite::PinType_t powerPin, const dcclite::PinType_t frogPin, bool checkInversion) noexcept;
 		
@@ -119,4 +121,12 @@ class ServoTurnoutDecoder : public Decoder
 		dcclite::DecoderStates State2DecoderState() const noexcept;
 
 		bool StateUpdate(const uint8_t desiredPosition, const States desiredState, const int moveDirection, const unsigned long ticks) noexcept;
+
+		//
+		//Used only by Servo Programmer, it allow the servo to "sleep" while we do the programming
+		void PM_EnableProgMode() noexcept;
+
+		//
+		//Used only by the Servo Programmer, it will come back to life...
+		void PM_DisableProgMode() noexcept;		
 };
