@@ -86,20 +86,22 @@ namespace SharpTerminal
             m_cbInvertedPower.Enabled = enable;
         }
 
-        protected override async void OnLoad(EventArgs e)
+        private void EnableTestMode(bool enable)
         {
-            base.OnLoad(e);
+            m_btnFlip.Enabled = enable;
+            m_btnClose.Enabled = enable;
+            m_btnThrow.Enabled = enable;    
+        }
 
-            if (this.DesignMode)
-                return;
-
-            for(; ;)
+        private async void AsyncStartServoProgrammer()
+        {
+            for (; ; )
             {
                 try
                 {
                     var json = await m_clConsole.RequestAsync("Start-ServoProgrammer", m_clTarget.SystemName, m_clTarget.DeviceName, m_clTarget.Name);
 
-                    if(json.ContainsKey("taskId"))
+                    if (json.ContainsKey("taskId"))
                     {
                         m_iProgrammerTaskId = (int)json["taskId"];
                         m_lblStatus.Text = "Connected, task Id " + m_iProgrammerTaskId.ToString();
@@ -117,7 +119,17 @@ namespace SharpTerminal
                         this.Close();
                     }
                 }
-            }                                    
+            }
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            if (this.DesignMode)
+                return;
+
+            this.AsyncStartServoProgrammer();                                  
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
@@ -166,6 +178,59 @@ namespace SharpTerminal
             {
                 MessageBox.Show("Request failed: " + ex.Message);
             }            
+        }
+
+        private ServoTurnoutFlags ExtractFlags()
+        {
+            ServoTurnoutFlags flags = 0;
+            
+            flags |= m_cbInverted.Checked ? ServoTurnoutFlags.SRVT_INVERTED_OPERATION : 0;
+            flags |= m_cbIgnoreSaveState.Checked ? ServoTurnoutFlags.SRVT_IGNORE_SAVED_STATE : 0;
+            flags |= m_cbActivateOnPowerUp.Checked ? ServoTurnoutFlags.SRVT_ACTIVATE_ON_POWER_UP : 0;
+            flags |= m_cbInvertedFrog.Checked ? ServoTurnoutFlags.SRVT_INVERTED_FROG : 0;
+            flags |= m_cbInvertedPower.Checked ? ServoTurnoutFlags.SRVT_INVERTED_POWER : 0;
+
+            return flags;
+        }
+
+        private async void m_cbTestMode_CheckedChanged(object sender, EventArgs e)
+        {
+            m_cbTestMode.Enabled = false;
+
+            if (m_cbTestMode.Checked)
+            {
+                this.EnableProgMode(false);                
+
+                try
+                {
+                    await m_clConsole.RequestAsync(
+                        "Deploy-ServoProgrammer", 
+                        m_iProgrammerTaskId, 
+                        this.ExtractFlags(), 
+                        m_numStartAngle.Value, 
+                        m_numEndAngle.Value, 
+                        int.Parse(m_tbOperationTime.Text)
+                    );
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Deploy failed: " + ex.Message);
+
+                    return;
+                }
+
+                this.EnableTestMode(true);                
+            }
+            else
+            {
+                this.EnableTestMode(false);
+
+                AsyncStartServoProgrammer();
+
+                this.EnableProgMode(true);
+            }
+
+            m_cbTestMode.Enabled = true;
         }
     }
 

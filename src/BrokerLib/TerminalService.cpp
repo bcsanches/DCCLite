@@ -533,7 +533,7 @@ namespace dcclite::broker
 			}
 
 		private:
-			void OnNetworkTaskStateChanged(const NetworkTask &task) override
+			void OnNetworkTaskStateChanged(NetworkTask &task) override
 			{				
 				assert(&task == m_spTask.get());
 
@@ -758,6 +758,10 @@ namespace dcclite::broker
 				return task;
 			}
 			
+			static inline int ParseNumParam(const rapidjson::Value &p)
+			{
+				return p.IsString() ? dcclite::ParseNumber(p.GetString()) : p.GetInt();
+			}
 	};
 
 	class StopServoProgrammerCmd: public ServoProgrammerBaseCmd
@@ -809,11 +813,8 @@ namespace dcclite::broker
 			};
 
 			static void HandleMoveAction(dcclite::broker::IServoProgrammerTask &task, const rapidjson::Value &params)
-			{
-				auto &p = params[2];
-				auto pos = p.IsString() ? dcclite::ParseNumber(params[2].GetString()) : p.GetInt();
-
-				task.SetPosition(static_cast<uint8_t>(pos));
+			{				
+				task.SetPosition(static_cast<uint8_t>(ServoProgrammerBaseCmd::ParseNumParam(params[2])));
 			}
 
 			const static Action g_Actions[];
@@ -871,6 +872,81 @@ namespace dcclite::broker
 	{
 		{"position", EditServoProgrammerCmd::HandleMoveAction},
 		nullptr, nullptr
+	};
+
+	class ServoProgrammerDeployMonitorFiber: public TerminalCmdFiber, private NetworkTask::IObserver
+	{
+		public:
+			ServoProgrammerDeployMonitorFiber(const CmdId_t id, TerminalContext &context, NetworkTask &task):
+				TerminalCmdFiber(id, context)				
+			{
+				task.SetObserver(this);
+			}			
+
+		private:
+			void OnNetworkTaskStateChanged(NetworkTask &task) override
+			{
+				task.SetObserver(nullptr);
+
+				if (task.HasFailed())
+				{
+					m_rclContext.SendClientNotification(MakeRpcErrorResponse(m_tCmdId, "Deploy task failed"));
+				}
+				else if (task.HasFinished())
+				{
+					auto msg = MakeRpcResultMessage(m_tCmdId, [this](Result_t &results)
+						{
+							results.AddStringValue("classname", "string");
+							results.AddStringValue("msg", "OK");
+						}
+					);
+
+					m_rclContext.SendClientNotification(msg);
+				}				
+
+				//suicide, we are useless now
+				m_rclContext.DestroyFiber(*this);			
+			}		
+	};
+
+	class DeployServoProgrammerCmd: ServoProgrammerBaseCmd
+	{
+		public:
+			DeployServoProgrammerCmd(const std::string name = "Deploy-ServoProgrammer"):
+				ServoProgrammerBaseCmd(std::move(name))
+			{
+				//empty
+			}
+
+			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
+			{
+				auto paramsIt = request.FindMember("params");
+				if (paramsIt->value.Size() < 5)
+				{
+					throw TerminalCmdException(fmt::format("Usage: {} <taskId> <flags> <startPos> <endPos> <operationTimeMs>", this->GetName()), id);
+				}
+
+				auto task = this->GetTask(context, id, paramsIt->value[0]);
+
+				auto programmerTask = dynamic_cast<dcclite::broker::IServoProgrammerTask *>(task);
+				if (!programmerTask)
+				{
+					throw TerminalCmdException(fmt::format("{}: task {} is not a programmer task", this->GetName(), task->GetTaskId()), id);
+				}
+
+				programmerTask->DeployChanges(
+					static_cast<uint8_t>(ServoProgrammerBaseCmd::ParseNumParam(paramsIt->value[2])),		//flags
+					static_cast<uint8_t>(ServoProgrammerBaseCmd::ParseNumParam(paramsIt->value[3])),		//startPos
+					static_cast<uint8_t>(ServoProgrammerBaseCmd::ParseNumParam(paramsIt->value[4])),		//endPos
+					std::chrono::milliseconds{ ServoProgrammerBaseCmd::ParseNumParam(paramsIt->value[5]) }	//operationTime
+				);
+
+				//
+				//we do not need to track it anymore...
+				context.GetTaskManager().RemoveTask(task->GetTaskId());
+
+				return std::make_unique<ServoProgrammerDeployMonitorFiber>(id, context, *task);				
+			}
 	};
 	
 

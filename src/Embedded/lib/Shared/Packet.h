@@ -53,7 +53,8 @@ namespace dcclite
 
 		START,
 		STOP,
-		MOVE_SERVO
+		MOVE_SERVO,
+		DEPLOY
 	};
 
 	enum class ServoProgrammerClientMsgTypes: uint8_t
@@ -63,6 +64,7 @@ namespace dcclite
 		READY,
 		FINISHED,
 		SERVO_MOVED,
+		DEPLOY_FINISHED,
 		
 		FAILURE
 	};

@@ -116,9 +116,8 @@ namespace dcclite::broker
 		packet.Write8(m_clFrogPin.Raw());
 		packet.Write8(m_uStartPos);
 		packet.Write8(m_uEndPos);
-
-		auto ticks = m_tOperationTime.count() / (m_uEndPos - m_uStartPos);
-		packet.Write8(ticks > 255 ? 255 : static_cast<uint8_t>(ticks));
+		
+		packet.Write8(TimeToTicks(m_tOperationTime, m_uStartPos, m_uEndPos));
 	}
 
 	void ServoTurnoutDecoder::Serialize(dcclite::JsonOutputStream_t &stream) const

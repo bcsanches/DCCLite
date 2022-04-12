@@ -52,7 +52,7 @@ namespace dcclite::broker
 			class IObserver
 			{
 				public:
-					virtual void OnNetworkTaskStateChanged(const NetworkTask &task) = 0;
+					virtual void OnNetworkTaskStateChanged(NetworkTask &task) = 0;
 			};			
 
 			[[nodiscard]] inline uint32_t GetTaskId() const noexcept
@@ -156,10 +156,7 @@ namespace dcclite::broker
 	class IServoProgrammerTask
 	{
 		public:
-			virtual void SetStartPos(const uint8_t startPos) = 0;
-			virtual void SetEndPos(const uint8_t startPos) = 0;
-
-			virtual void SetInverted(const bool inverted) = 0;
+			virtual void DeployChanges(const uint8_t flags, const uint8_t startPos, const uint8_t endPos, std::chrono::milliseconds operationTime) = 0;
 
 			virtual void SetPosition(const uint8_t position) = 0;
 	};

@@ -52,6 +52,10 @@ namespace SharpTerminal
             this.m_cbActivateOnPowerUp = new System.Windows.Forms.CheckBox();
             this.m_cbInvertedFrog = new System.Windows.Forms.CheckBox();
             this.m_cbInvertedPower = new System.Windows.Forms.CheckBox();
+            this.m_cbTestMode = new System.Windows.Forms.CheckBox();
+            this.m_btnFlip = new System.Windows.Forms.Button();
+            this.m_btnClose = new System.Windows.Forms.Button();
+            this.m_btnThrow = new System.Windows.Forms.Button();
             this.m_btnCancel = new System.Windows.Forms.Button();
             this.m_btnOK = new System.Windows.Forms.Button();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
@@ -60,10 +64,6 @@ namespace SharpTerminal
             this.m_numEndAngle = new System.Windows.Forms.NumericUpDown();
             this.m_tbOperationTime = new System.Windows.Forms.MaskedTextBox();
             this.m_lblStatus = new System.Windows.Forms.Label();
-            this.m_btnThrow = new System.Windows.Forms.Button();
-            this.m_btnClose = new System.Windows.Forms.Button();
-            this.m_btnFlip = new System.Windows.Forms.Button();
-            this.m_cbTestMode = new System.Windows.Forms.CheckBox();
             label1 = new System.Windows.Forms.Label();
             label2 = new System.Windows.Forms.Label();
             label3 = new System.Windows.Forms.Label();
@@ -74,10 +74,10 @@ namespace SharpTerminal
             groupBox2 = new System.Windows.Forms.GroupBox();
             groupBox1.SuspendLayout();
             tableLayoutPanel2.SuspendLayout();
+            groupBox2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.m_numStartAngle)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.m_numEndAngle)).BeginInit();
-            groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -212,6 +212,61 @@ namespace SharpTerminal
             label5.TabIndex = 10;
             label5.Text = "Status:";
             // 
+            // groupBox2
+            // 
+            groupBox2.Controls.Add(this.m_cbTestMode);
+            groupBox2.Controls.Add(this.m_btnFlip);
+            groupBox2.Controls.Add(this.m_btnClose);
+            groupBox2.Controls.Add(this.m_btnThrow);
+            groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
+            groupBox2.Location = new System.Drawing.Point(130, 107);
+            groupBox2.Name = "groupBox2";
+            groupBox2.Size = new System.Drawing.Size(257, 135);
+            groupBox2.TabIndex = 12;
+            groupBox2.TabStop = false;
+            groupBox2.Text = "Test Controls";
+            // 
+            // m_cbTestMode
+            // 
+            this.m_cbTestMode.AutoSize = true;
+            this.m_cbTestMode.Location = new System.Drawing.Point(6, 111);
+            this.m_cbTestMode.Name = "m_cbTestMode";
+            this.m_cbTestMode.Size = new System.Drawing.Size(76, 17);
+            this.m_cbTestMode.TabIndex = 3;
+            this.m_cbTestMode.Text = "Test mode";
+            this.m_cbTestMode.UseVisualStyleBackColor = true;
+            this.m_cbTestMode.CheckedChanged += new System.EventHandler(this.m_cbTestMode_CheckedChanged);
+            // 
+            // m_btnFlip
+            // 
+            this.m_btnFlip.Enabled = false;
+            this.m_btnFlip.Location = new System.Drawing.Point(168, 19);
+            this.m_btnFlip.Name = "m_btnFlip";
+            this.m_btnFlip.Size = new System.Drawing.Size(75, 23);
+            this.m_btnFlip.TabIndex = 2;
+            this.m_btnFlip.Text = "Flip";
+            this.m_btnFlip.UseVisualStyleBackColor = true;
+            // 
+            // m_btnClose
+            // 
+            this.m_btnClose.Enabled = false;
+            this.m_btnClose.Location = new System.Drawing.Point(87, 19);
+            this.m_btnClose.Name = "m_btnClose";
+            this.m_btnClose.Size = new System.Drawing.Size(75, 23);
+            this.m_btnClose.TabIndex = 1;
+            this.m_btnClose.Text = "Close";
+            this.m_btnClose.UseVisualStyleBackColor = true;
+            // 
+            // m_btnThrow
+            // 
+            this.m_btnThrow.Enabled = false;
+            this.m_btnThrow.Location = new System.Drawing.Point(6, 19);
+            this.m_btnThrow.Name = "m_btnThrow";
+            this.m_btnThrow.Size = new System.Drawing.Size(75, 23);
+            this.m_btnThrow.TabIndex = 0;
+            this.m_btnThrow.Text = "Throw";
+            this.m_btnThrow.UseVisualStyleBackColor = true;
+            // 
             // m_btnCancel
             // 
             this.m_btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -313,60 +368,6 @@ namespace SharpTerminal
             this.m_lblStatus.TabIndex = 11;
             this.m_lblStatus.Text = "label6";
             // 
-            // groupBox2
-            // 
-            groupBox2.Controls.Add(this.m_cbTestMode);
-            groupBox2.Controls.Add(this.m_btnFlip);
-            groupBox2.Controls.Add(this.m_btnClose);
-            groupBox2.Controls.Add(this.m_btnThrow);
-            groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
-            groupBox2.Location = new System.Drawing.Point(130, 107);
-            groupBox2.Name = "groupBox2";
-            groupBox2.Size = new System.Drawing.Size(257, 135);
-            groupBox2.TabIndex = 12;
-            groupBox2.TabStop = false;
-            groupBox2.Text = "Test Controls";
-            // 
-            // m_btnThrow
-            // 
-            this.m_btnThrow.Enabled = false;
-            this.m_btnThrow.Location = new System.Drawing.Point(6, 19);
-            this.m_btnThrow.Name = "m_btnThrow";
-            this.m_btnThrow.Size = new System.Drawing.Size(75, 23);
-            this.m_btnThrow.TabIndex = 0;
-            this.m_btnThrow.Text = "Throw";
-            this.m_btnThrow.UseVisualStyleBackColor = true;
-            // 
-            // m_btnClose
-            // 
-            this.m_btnClose.Enabled = false;
-            this.m_btnClose.Location = new System.Drawing.Point(87, 19);
-            this.m_btnClose.Name = "m_btnClose";
-            this.m_btnClose.Size = new System.Drawing.Size(75, 23);
-            this.m_btnClose.TabIndex = 1;
-            this.m_btnClose.Text = "Close";
-            this.m_btnClose.UseVisualStyleBackColor = true;
-            // 
-            // m_btnFlip
-            // 
-            this.m_btnFlip.Enabled = false;
-            this.m_btnFlip.Location = new System.Drawing.Point(168, 19);
-            this.m_btnFlip.Name = "m_btnFlip";
-            this.m_btnFlip.Size = new System.Drawing.Size(75, 23);
-            this.m_btnFlip.TabIndex = 2;
-            this.m_btnFlip.Text = "Flip";
-            this.m_btnFlip.UseVisualStyleBackColor = true;
-            // 
-            // m_cbTestMode
-            // 
-            this.m_cbTestMode.AutoSize = true;
-            this.m_cbTestMode.Location = new System.Drawing.Point(6, 111);
-            this.m_cbTestMode.Name = "m_cbTestMode";
-            this.m_cbTestMode.Size = new System.Drawing.Size(76, 17);
-            this.m_cbTestMode.TabIndex = 3;
-            this.m_cbTestMode.Text = "Test mode";
-            this.m_cbTestMode.UseVisualStyleBackColor = true;
-            // 
             // ServoTurnoutProgrammerForm
             // 
             this.AcceptButton = this.m_btnOK;
@@ -388,12 +389,12 @@ namespace SharpTerminal
             groupBox1.ResumeLayout(false);
             tableLayoutPanel2.ResumeLayout(false);
             tableLayoutPanel2.PerformLayout();
+            groupBox2.ResumeLayout(false);
+            groupBox2.PerformLayout();
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.m_numStartAngle)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.m_numEndAngle)).EndInit();
-            groupBox2.ResumeLayout(false);
-            groupBox2.PerformLayout();
             this.ResumeLayout(false);
 
         }

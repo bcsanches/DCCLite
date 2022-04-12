@@ -81,6 +81,13 @@ namespace dcclite::broker
 				return m_uStartPos;
 			}
 
+			static inline uint8_t TimeToTicks(const std::chrono::milliseconds msec, const std::uint8_t startPos, const std::uint8_t endPos) noexcept
+			{
+				auto ticks = msec.count() / (endPos - startPos);
+
+				return ticks > 255 ? 255 : static_cast<uint8_t>(ticks);				
+			}
+
 		private:
 			dcclite::BasicPin	m_clPin;
 			dcclite::BasicPin	m_clPowerPin;

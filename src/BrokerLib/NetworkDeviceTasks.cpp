@@ -293,19 +293,20 @@ namespace dcclite::broker::detail
 
 			void Stop() noexcept override;
 
-		private:
-			void SetStartPos(const uint8_t startPos) override;
-			void SetEndPos(const uint8_t startPos) override;
-
-			void SetInverted(const bool inverted) override;
-
+		private:			
 			void SetPosition(const uint8_t position) override;	
 
-			void GotoFailureState();
-			void GotoRunningState();
-			void GotoStoppingState();
+			void DeployChanges(const uint8_t flags, const uint8_t startPos, const uint8_t endPos, std::chrono::milliseconds operationTime) override;
 
-			void FillPacket(dcclite::Packet &packet, const uint32_t taskId, const NetworkTaskTypes taskType, const ServoProgrammerServerMsgTypes msg);
+			template <typename T>
+			void GotoState();
+
+			struct RunningState;
+
+			template <>
+			void GotoState<RunningState>();					
+
+			void FillPacket(dcclite::Packet &packet, const uint32_t taskId, const NetworkTaskTypes taskType, const ServoProgrammerServerMsgTypes msg);			
 			
 			struct State
 			{				
@@ -368,7 +369,30 @@ namespace dcclite::broker::detail
 					uint32_t	m_u32AckSequence = 0;
 			};
 
-			struct StoppingState: State
+			struct TerminalState: State
+			{
+				protected:
+					TerminalState(ServoTurnoutProgrammerTask &self):
+						State{ self }
+					{
+						//empty
+					}
+			};
+			
+			struct DeployState: TerminalState
+			{
+				DeployState(ServoTurnoutProgrammerTask &self);
+
+				void OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time) override;
+
+				private:
+					void SendDeployPacket(const dcclite::Clock::TimePoint_t time);
+
+				private:
+					Thinker	m_clThinker;
+			};
+
+			struct StoppingState: TerminalState
 			{
 				StoppingState(ServoTurnoutProgrammerTask &self);							
 
@@ -381,17 +405,44 @@ namespace dcclite::broker::detail
 					Thinker	m_clThinker;
 			};
 
-			struct FailureState: State
+			struct FailureState: TerminalState
 			{
 				FailureState(ServoTurnoutProgrammerTask &self);
 
 				void OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time) override;
 			};
 
+			struct DeployData
+			{
+				DeployData(const uint8_t flags, const uint8_t startPos, const uint8_t endPos, const std::chrono::milliseconds operationTime):
+					m_fFlags{flags},
+					m_u8StartPos{startPos > endPos ? endPos : startPos},
+					m_u8EndPos{ startPos > endPos ? startPos : endPos},
+					m_tOperationTime{ operationTime }
+				{
+					//empty
+				}
+
+				const uint8_t m_fFlags;
+				const uint8_t m_u8StartPos;
+				const uint8_t m_u8EndPos;
+				const std::chrono::milliseconds m_tOperationTime;
+			};
+
 		private:
 			ServoTurnoutDecoder &m_rclDecoder;						
 
-			std::variant< StartingState, RunningState, StoppingState, FailureState, NullState> m_vState;
+			std::variant< 
+				StartingState, 
+				RunningState, 
+				StoppingState, 
+				FailureState, 
+				DeployState,				
+				NullState>				m_vState;
+
+			std::optional<DeployData>	m_tDeployData;
+
+			bool						m_fStopRequested = false;
 
 			std::uint8_t		m_u8DecoderIndex;
 
@@ -422,57 +473,85 @@ namespace dcclite::broker::detail
 		std::visit([&packet, msg, time](ServoTurnoutProgrammerTask::State &state) {state.OnPacket(packet, msg, time); }, m_vState);
 	}
 
+
+	/// <summary>
+	/// This is expected to be called only when the connection from the NetworkDevice to the device is lost
+	/// 
+	/// So it does not cleanup things, just go to a terminal state (the task becomes a zombie) and the owners can later destroy it
+	/// </summary>
+	/// 
 	void ServoTurnoutProgrammerTask::Abort() noexcept
 	{			
-		this->GotoFailureState();
+		this->GotoState<FailureState>();
 
 		this->MarkAbort();				
 	}
 
 	void ServoTurnoutProgrammerTask::Stop() noexcept
 	{
+		//Finished? Ignore...
 		if (this->HasFinished())
 			return;
 
+		//Already stopping? Ignore....
 		if (std::holds_alternative<StoppingState>(m_vState))
 			return;
 
-		this->GotoStoppingState();		
+		//Flag it, so later state transitions may intercept it
+		m_fStopRequested = true;
+
+		//
+		//If on running state, it is safe to transition to stop mode
+		if (std::holds_alternative<RunningState>(m_vState))
+		{
+			this->GotoState<StoppingState>();			
+		}
+
+		//
+		//any other state: it is already stopping or entering failure mode, so we do not care
+		//All other cases: if will be intercepted by "OnStateChange"
+	}
+
+	void ServoTurnoutProgrammerTask::DeployChanges(const uint8_t flags, const uint8_t startPos, const uint8_t endPos, std::chrono::milliseconds operationTime)
+	{
+		if (this->HasFinished())
+			throw std::runtime_error("[ServoTurnoutProgrammerTask::SetPosition] Task has finished");
+
+		m_tDeployData.emplace(flags, startPos, endPos, operationTime);
+
+		//If on running state, Deploy the data
+		if (auto state = std::get_if<RunningState>(&m_vState))
+		{
+			this->GotoState<DeployState>();
+		}
+		else
+		{
+			//any other state will finish the task or transit to the Running state and will later handle the Deploy
+		}
 	}
 
 	void ServoTurnoutProgrammerTask::FillPacket(dcclite::Packet &packet, const uint32_t taskId, const NetworkTaskTypes taskType, const ServoProgrammerServerMsgTypes msg)
 	{
 		m_rclOwner.TaskServices_FillPacketHeader(packet, taskId, taskType);
 
-		//packet.Write32(++m_uSequence);
-
 		packet.Write8(static_cast<uint8_t>(msg));
-	}
-
-	void ServoTurnoutProgrammerTask::SetStartPos(const uint8_t startPos)
-	{
-
-	}
-
-	void ServoTurnoutProgrammerTask::SetEndPos(const uint8_t startPos)
-	{
-
-	}
-
-	void ServoTurnoutProgrammerTask::SetInverted(const bool inverted)
-	{
-
-	}
+	}	
 
 	void ServoTurnoutProgrammerTask::SetPosition(const uint8_t position)
 	{
+		if (this->HasFinished())
+			throw std::runtime_error("[ServoTurnoutProgrammerTask::SetPosition] Task has finished");
+
+		//
+		//Store it
 		m_u8ServoPosition = position;
 
-		if (std::holds_alternative<RunningState>(m_vState))
-		{
-			auto state = std::get_if<RunningState>(&m_vState);
-			state->OnNewServoPosition();
-		}
+		//If on running state, notify it that new position is available
+		if (auto state = std::get_if<RunningState>(&m_vState))
+			state->OnNewServoPosition();		
+
+		//
+		//else... when running state loads up, it will grab the position and set it
 	}	
 
 	static void ReportPacketError(dcclite::Packet &packet)
@@ -488,19 +567,35 @@ namespace dcclite::broker::detail
 	//
 	//
 
-	void ServoTurnoutProgrammerTask::GotoFailureState()
+	template <typename T>
+	void ServoTurnoutProgrammerTask::GotoState()
 	{
-		m_vState.emplace<FailureState>(*this);
+		m_vState.emplace<T>(*this);
 	}
 
-	void ServoTurnoutProgrammerTask::GotoRunningState()
+	template <>
+	void ServoTurnoutProgrammerTask::GotoState<ServoTurnoutProgrammerTask::RunningState>()
 	{
 		m_vState.emplace<RunningState>(*this);
-	}
 
-	void ServoTurnoutProgrammerTask::GotoStoppingState()
-	{
-		m_vState.emplace<StoppingState>(*this);
+		if (m_fStopRequested)
+		{
+			this->GotoState<StoppingState>();
+
+			return;
+		}
+
+		if (m_tDeployData)
+		{
+			this->GotoState<DeployState>();
+
+			return;
+		}
+
+		//
+		//If terminal already requested a new position, we may intercept it now and request the servo to move
+		auto state = std::get_if<RunningState>(&m_vState);
+		state->OnNewServoPosition();
 	}
 
 	//
@@ -540,13 +635,17 @@ namespace dcclite::broker::detail
 				dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StartingState::OnPacket] Got failure packet");
 
 				ReportPacketError(packet);
-				m_rclSelf.GotoFailureState();
+				m_rclSelf.GotoState<FailureState>();
 				break;
 
 			case ServoProgrammerClientMsgTypes::READY:
 				dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StartingState::OnPacket] Got READY packet");
 
-				m_rclSelf.GotoRunningState();
+				m_rclSelf.GotoState<RunningState>();
+				break;
+
+			default:
+				dcclite::Log::Error("[ServoTurnoutProgrammerTask::StartingState::OnPacket] Unexpected packet: {}", magic_enum::enum_name(msg));
 				break;
 		}
 	}
@@ -561,11 +660,7 @@ namespace dcclite::broker::detail
 		State{ self },
 		m_clThinker{THINKER_MF_LAMBDA(OnThink)}
 	{
-		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::RunningState::RunningState] Running");		
-
-		//
-		//If terminal already requested a new position, we may intercept it now and request the servo to move
-		this->OnNewServoPosition();
+		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::RunningState::RunningState] Running");
 	}
 	
 	void ServoTurnoutProgrammerTask::RunningState::OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time)
@@ -642,8 +737,77 @@ namespace dcclite::broker::detail
 	//
 	//
 
+	ServoTurnoutProgrammerTask::DeployState::DeployState(ServoTurnoutProgrammerTask &self):
+		TerminalState{ self },
+		m_clThinker{ THINKER_MF_LAMBDA(SendDeployPacket) }
+	{
+		this->SendDeployPacket(dcclite::Clock::DefaultClock_t::now());
+	}
+
+
+	void ServoTurnoutProgrammerTask::DeployState::OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time)
+	{
+		switch (msg)
+		{
+			case ServoProgrammerClientMsgTypes::SERVO_MOVED:
+			case ServoProgrammerClientMsgTypes::READY:
+				//
+				// ignore those
+				//
+				break;
+
+			case ServoProgrammerClientMsgTypes::FAILURE:
+				dcclite::Log::Trace("[ServoTurnoutProgrammerTask::DeployState::OnPacket] Got failure packet {}", m_rclSelf.m_u32TaskId);
+
+				ReportPacketError(packet);
+				m_rclSelf.GotoState<FailureState>();
+				break;
+
+				//are we done?
+			case ServoProgrammerClientMsgTypes::DEPLOY_FINISHED:
+				dcclite::Log::Trace("[ServoTurnoutProgrammerTask::DeployState::OnPacket] Got DEPLOY_FINISHED packet {}", m_rclSelf.m_u32TaskId);
+
+				m_clThinker.Cancel();
+				m_rclSelf.MarkFinished();
+				break;
+
+			default:
+				dcclite::Log::Error("[ServoTurnoutProgrammerTask::DeployState::OnPacket] Unexpected packet: {}", magic_enum::enum_name(msg));
+				break;
+		}
+	}
+
+	void ServoTurnoutProgrammerTask::DeployState::SendDeployPacket(const dcclite::Clock::TimePoint_t time)
+	{
+		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::DeployState::SendDeployPacket] Sending Deploy packet {} {}", m_rclSelf.m_u32TaskId, time.time_since_epoch().count());
+
+		m_clThinker.SetNext(time + 50ms);
+
+		//
+		// Deploy it
+		dcclite::Packet packet;
+
+		const auto &deployData = m_rclSelf.m_tDeployData.value();
+
+		m_rclSelf.FillPacket(packet, m_rclSelf.m_u32TaskId, NetworkTaskTypes::TASK_SERVO_PROGRAMMER, dcclite::ServoProgrammerServerMsgTypes::DEPLOY);
+
+		packet.Write8(deployData.m_fFlags);
+		packet.Write8(deployData.m_u8StartPos);
+		packet.Write8(deployData.m_u8EndPos);
+		packet.Write8(ServoTurnoutDecoder::TimeToTicks(deployData.m_tOperationTime, deployData.m_u8StartPos, deployData.m_u8EndPos));
+
+		m_rclSelf.m_rclOwner.TaskServices_SendPacket(packet);
+	}
+
+
+	//
+	//
+	//
+	//
+	//
+
 	ServoTurnoutProgrammerTask::StoppingState::StoppingState(ServoTurnoutProgrammerTask &self):
-		State{ self },
+		TerminalState{ self },
 		m_clThinker{THINKER_MF_LAMBDA(SendStopPacket)}
 	{
 		this->SendStopPacket(dcclite::Clock::DefaultClock_t::now());
@@ -664,7 +828,7 @@ namespace dcclite::broker::detail
 				dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StoppingState::OnPacket] Got failure packet {}", m_rclSelf.m_u32TaskId);
 
 				ReportPacketError(packet);
-				m_rclSelf.GotoFailureState();
+				m_rclSelf.GotoState<FailureState>();
 				break;
 
 			//are we done?
@@ -673,6 +837,10 @@ namespace dcclite::broker::detail
 
 				m_clThinker.Cancel();
 				m_rclSelf.MarkFinished();								
+				break;		
+
+			default:
+				dcclite::Log::Error("[ServoTurnoutProgrammerTask::StoppingState::OnPacket] Unexpected packet: {}", magic_enum::enum_name(msg));
 				break;
 		}
 	}
@@ -692,6 +860,7 @@ namespace dcclite::broker::detail
 		m_rclSelf.m_rclOwner.TaskServices_SendPacket(packet);
 	}
 
+
 	//
 	//
 	//
@@ -699,7 +868,7 @@ namespace dcclite::broker::detail
 	//
 
 	ServoTurnoutProgrammerTask::FailureState::FailureState(ServoTurnoutProgrammerTask &self):
-		State{ self }
+		TerminalState{ self }
 	{
 		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::FailureState::FailureState] Entered failure state {}", m_rclSelf.m_u32TaskId);
 
