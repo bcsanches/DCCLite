@@ -86,6 +86,11 @@ namespace dcclite::broker
 				m_pclObserver = observer;
 			}
 
+			inline const std::string &GetMessage() const noexcept
+			{
+				return m_strMessage;
+			}
+
 		protected:
 			inline NetworkTask(detail::INetworkDevice_TaskServices &owner, const uint32_t taskId, IObserver *observer = nullptr) noexcept:
 				m_rclOwner{ owner },
@@ -115,14 +120,7 @@ namespace dcclite::broker
 			//
 			// The task may be deleted after this method returns
 			//
-			inline void MarkFailed()
-			{
-				m_fFailed = true;
-				m_fFinished = true;
-
-				this->NotifyObserver();
-				m_rclOwner.TaskServices_ForgetTask(*this);
-			}
+			void MarkFailed(std::string reason);
 
 			//
 			// The task may be deleted after this method returns
@@ -150,6 +148,8 @@ namespace dcclite::broker
 
 			bool m_fFinished = false;
 			bool m_fFailed = false;
+
+			std::string m_strMessage;
 
 	};	
 

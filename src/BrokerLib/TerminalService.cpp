@@ -541,7 +541,7 @@ namespace dcclite::broker
 
 				if (m_spTask->HasFailed())
 				{
-					m_rclContext.SendClientNotification(MakeRpcErrorResponse(m_tCmdId, "Download task failed"));
+					m_rclContext.SendClientNotification(MakeRpcErrorResponse(m_tCmdId, fmt::format("Download task failed: {}", m_spTask->GetMessage())));
 
 					//suicide, we are useless now
 					m_rclContext.DestroyFiber(*this);
@@ -820,7 +820,7 @@ namespace dcclite::broker
 			const static Action g_Actions[];
 
 		public:
-			EditServoProgrammerCmd(const std::string name = "Edit-ServoProgrammer"):
+			EditServoProgrammerCmd(std::string name = "Edit-ServoProgrammer"):
 				ServoProgrammerBaseCmd(std::move(name))
 			{
 				//empty
@@ -890,7 +890,7 @@ namespace dcclite::broker
 
 				if (task.HasFailed())
 				{
-					m_rclContext.SendClientNotification(MakeRpcErrorResponse(m_tCmdId, "Deploy task failed"));
+					m_rclContext.SendClientNotification(MakeRpcErrorResponse(m_tCmdId, task.GetMessage()));
 				}
 				else if (task.HasFinished())
 				{
@@ -909,10 +909,10 @@ namespace dcclite::broker
 			}		
 	};
 
-	class DeployServoProgrammerCmd: ServoProgrammerBaseCmd
+	class DeployServoProgrammerCmd: public ServoProgrammerBaseCmd
 	{
 		public:
-			DeployServoProgrammerCmd(const std::string name = "Deploy-ServoProgrammer"):
+			DeployServoProgrammerCmd(std::string name = "Deploy-ServoProgrammer"):
 				ServoProgrammerBaseCmd(std::move(name))
 			{
 				//empty
@@ -935,10 +935,10 @@ namespace dcclite::broker
 				}
 
 				programmerTask->DeployChanges(
-					static_cast<uint8_t>(ServoProgrammerBaseCmd::ParseNumParam(paramsIt->value[2])),		//flags
-					static_cast<uint8_t>(ServoProgrammerBaseCmd::ParseNumParam(paramsIt->value[3])),		//startPos
-					static_cast<uint8_t>(ServoProgrammerBaseCmd::ParseNumParam(paramsIt->value[4])),		//endPos
-					std::chrono::milliseconds{ ServoProgrammerBaseCmd::ParseNumParam(paramsIt->value[5]) }	//operationTime
+					static_cast<uint8_t>(ServoProgrammerBaseCmd::ParseNumParam(paramsIt->value[1])),		//flags
+					static_cast<uint8_t>(ServoProgrammerBaseCmd::ParseNumParam(paramsIt->value[2])),		//startPos
+					static_cast<uint8_t>(ServoProgrammerBaseCmd::ParseNumParam(paramsIt->value[3])),		//endPos
+					std::chrono::milliseconds{ ServoProgrammerBaseCmd::ParseNumParam(paramsIt->value[4]) }	//operationTime
 				);
 
 				//
@@ -1389,6 +1389,7 @@ namespace dcclite::broker
 			cmdHost->AddCmd(std::make_unique<StartServoProgrammerCmd>());
 			cmdHost->AddCmd(std::make_unique<StopServoProgrammerCmd>());
 			cmdHost->AddCmd(std::make_unique<EditServoProgrammerCmd>());
+			cmdHost->AddCmd(std::make_unique<DeployServoProgrammerCmd>());
 		}
 
 		{

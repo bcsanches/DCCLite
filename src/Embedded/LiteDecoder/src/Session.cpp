@@ -574,15 +574,14 @@ static void OnTaskRequestPacket(dcclite::Packet &packet)
 }
 
 static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
-{		
-	PingManager::Reset(millis());	
-	
+{					
 	switch (type)
 	{
 		case dcclite::MsgTypes::MSG_PONG:
 			Blinker::Play(Blinker::Animations::OK);
 			Console::SendLogEx(MODULE_NAME, "PONG");
-			//nothing to do, already done
+			
+			PingManager::Reset(millis());
 			break;
 
 		case dcclite::MsgTypes::CONFIG_FINISHED:		

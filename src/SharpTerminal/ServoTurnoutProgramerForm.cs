@@ -23,6 +23,8 @@ namespace SharpTerminal
 
         private int m_iProgrammerTaskId = -1;
 
+        private bool m_fFailed;
+
         public RemoteTurnoutDecoder Target { get { return m_clTarget; } }
 
         protected ServoTurnoutProgrammerForm()
@@ -134,7 +136,7 @@ namespace SharpTerminal
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            if (MessageBox.Show(this, "Are you sure? Changes will not be saved", "Are you sure?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            if (!m_fFailed && (MessageBox.Show(this, "Are you sure? Changes will not be saved", "Are you sure?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes))
             {
                 e.Cancel = true;
 
@@ -164,6 +166,20 @@ namespace SharpTerminal
             this.UpdatePosition(pos);
         }
 
+        private void GotoFailureMode(string reason)
+        {
+            m_fFailed = true;
+
+            this.EnableProgMode(false);
+            this.EnableTestMode(false);
+            
+            m_cbTestMode.Enabled = false;
+
+            m_lblStatus.Text = reason;
+
+            MessageBox.Show(this, reason, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
         private async void UpdatePosition(int position)
         {
             //Constructor fill fire events when initialzing, ignore...
@@ -176,7 +192,7 @@ namespace SharpTerminal
             }
             catch(Exception ex)
             {
-                MessageBox.Show("Request failed: " + ex.Message);
+                GotoFailureMode("Request failed: " + ex.Message);                
             }            
         }
 
@@ -214,7 +230,7 @@ namespace SharpTerminal
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Deploy failed: " + ex.Message);
+                    GotoFailureMode("Deploy failed: " + ex.Message);                    
 
                     return;
                 }

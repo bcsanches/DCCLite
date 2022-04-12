@@ -23,8 +23,24 @@
 #include "Thinker.h"
 #include "TurnoutDecoder.h"
 
+namespace dcclite::broker
+{
+	void NetworkTask::MarkFailed(std::string reason)
+	{
+		m_strMessage = std::move(reason);
+		dcclite::Log::Error("{}", m_strMessage);
+
+		m_fFailed = true;
+		m_fFinished = true;
+
+		this->NotifyObserver();
+		m_rclOwner.TaskServices_ForgetTask(*this);
+	}
+}
+
 namespace dcclite::broker::detail
 {		
+	
 	//
 	//
 	// TASKS
@@ -254,10 +270,11 @@ namespace dcclite::broker::detail
 				break;
 
 			default:
-				//WTF?
-				Log::Error("[DownloadEEPromTask::Update] Invalid state {}", magic_enum::enum_name(m_kState));
-
-				this->MarkFailed();				
+				{
+					//WTF?					
+					this->MarkFailed(fmt::format("[DownloadEEPromTask::Update] Invalid state {}", magic_enum::enum_name(m_kState)));
+				}
+				
 		}		
 	}
 
@@ -302,9 +319,13 @@ namespace dcclite::broker::detail
 			void GotoState();
 
 			struct RunningState;
+			struct FailureState;
 
 			template <>
 			void GotoState<RunningState>();					
+			
+			void GotoStateFailure(const char *stateName, const ServoProgammerClientErrors errorCode);
+			void GotoStateFailure(std::string reason);
 
 			void FillPacket(dcclite::Packet &packet, const uint32_t taskId, const NetworkTaskTypes taskType, const ServoProgrammerServerMsgTypes msg);			
 			
@@ -407,7 +428,7 @@ namespace dcclite::broker::detail
 
 			struct FailureState: TerminalState
 			{
-				FailureState(ServoTurnoutProgrammerTask &self);
+				FailureState(ServoTurnoutProgrammerTask &self, std::string reason);
 
 				void OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time) override;
 			};
@@ -482,7 +503,7 @@ namespace dcclite::broker::detail
 	/// 
 	void ServoTurnoutProgrammerTask::Abort() noexcept
 	{			
-		this->GotoState<FailureState>();
+		this->GotoStateFailure("[ServoTurnoutProgrammerTask::Abort] Abort was called");
 
 		this->MarkAbort();				
 	}
@@ -554,9 +575,14 @@ namespace dcclite::broker::detail
 		//else... when running state loads up, it will grab the position and set it
 	}	
 
+	static ServoProgammerClientErrors ReadClientErrorValue(dcclite::Packet &packet)
+	{
+		return static_cast<ServoProgammerClientErrors>(packet.ReadByte());
+	}
+
 	static void ReportPacketError(dcclite::Packet &packet)
 	{
-		auto error = static_cast<ServoProgammerClientErrors>(packet.ReadByte());
+		auto error = ReadClientErrorValue(packet);
 
 		Log::Error("[ServoTurnoutProgrammerTask::StartingState::OnPacket] Task start failed: {}", magic_enum::enum_name(error));
 	}
@@ -598,6 +624,21 @@ namespace dcclite::broker::detail
 		state->OnNewServoPosition();
 	}
 
+	void ServoTurnoutProgrammerTask::GotoStateFailure(const char *stateName, const ServoProgammerClientErrors errorCode)
+	{
+		this->GotoStateFailure(fmt::format(
+			"[ServoTurnoutProgrammerTask::GotoStateFailure] Task {} on state {} received failure packet {}",
+			m_u32TaskId,
+			stateName,
+			magic_enum::enum_name(errorCode)
+		));
+	}
+
+	void ServoTurnoutProgrammerTask::GotoStateFailure(std::string reason)
+	{
+		m_vState.emplace<FailureState>(*this, std::move(reason));
+	}
+
 	//
 	//
 	// State Machine
@@ -633,9 +674,8 @@ namespace dcclite::broker::detail
 		{
 			case ServoProgrammerClientMsgTypes::FAILURE:
 				dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StartingState::OnPacket] Got failure packet");
-
-				ReportPacketError(packet);
-				m_rclSelf.GotoState<FailureState>();
+				
+				m_rclSelf.GotoStateFailure("StartingState", ReadClientErrorValue(packet));
 				break;
 
 			case ServoProgrammerClientMsgTypes::READY:
@@ -756,11 +796,8 @@ namespace dcclite::broker::detail
 				//
 				break;
 
-			case ServoProgrammerClientMsgTypes::FAILURE:
-				dcclite::Log::Trace("[ServoTurnoutProgrammerTask::DeployState::OnPacket] Got failure packet {}", m_rclSelf.m_u32TaskId);
-
-				ReportPacketError(packet);
-				m_rclSelf.GotoState<FailureState>();
+			case ServoProgrammerClientMsgTypes::FAILURE:								
+				m_rclSelf.GotoStateFailure("DeployState", ReadClientErrorValue(packet));
 				break;
 
 				//are we done?
@@ -824,11 +861,8 @@ namespace dcclite::broker::detail
 				//
 				break;
 
-			case ServoProgrammerClientMsgTypes::FAILURE:
-				dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StoppingState::OnPacket] Got failure packet {}", m_rclSelf.m_u32TaskId);
-
-				ReportPacketError(packet);
-				m_rclSelf.GotoState<FailureState>();
+			case ServoProgrammerClientMsgTypes::FAILURE:								
+				m_rclSelf.GotoStateFailure("StoppingState", ReadClientErrorValue(packet));				
 				break;
 
 			//are we done?
@@ -867,12 +901,12 @@ namespace dcclite::broker::detail
 	//
 	//
 
-	ServoTurnoutProgrammerTask::FailureState::FailureState(ServoTurnoutProgrammerTask &self):
+	ServoTurnoutProgrammerTask::FailureState::FailureState(ServoTurnoutProgrammerTask &self, std::string reason):
 		TerminalState{ self }
 	{
 		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::FailureState::FailureState] Entered failure state {}", m_rclSelf.m_u32TaskId);
 
-		self.MarkFailed();
+		self.MarkFailed(std::move(reason));
 	}
 
 	void ServoTurnoutProgrammerTask::FailureState::OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, dcclite::Clock::TimePoint_t time)

@@ -38,6 +38,13 @@ static void ProcC(const dcclite::Clock::TimePoint_t tp)
 	g_iCounter = 3;
 }
 
+static bool g_fAACalled = false;
+
+static void ProcAA(const dcclite::Clock::TimePoint_t tp)
+{	
+	g_fAACalled = true;
+}
+
 TEST(Thinker, RunTest)
 {
 	g_iCounter = 0;
@@ -89,7 +96,38 @@ TEST(Thinker, RunTest)
 	tb.SetNext(tp + 100ms);
 
 	dcclite::broker::Thinker::UpdateThinkers(tp + 100ms);
-	ASSERT_EQ(g_iCounter, 2);
+	ASSERT_EQ(g_iCounter, 2);	
+}
+
+TEST(Thinker, SameTime)
+{
+	g_iCounter = 0;
+
+	dcclite::broker::Thinker ta{ ProcA };
+	dcclite::broker::Thinker tb{ ProcB };
+	dcclite::broker::Thinker tc{ ProcC };
+
+	dcclite::broker::Thinker taa{ ProcAA };
+
+	dcclite::Clock ck;
+
+	ck.Tick();
+
+	auto tp = ck.Ticks();
+
+	using namespace std::chrono_literals;
+
+	//	
+	ta.SetNext(tp + 10ms);
+	tb.SetNext(tp + 100ms);	
+	tc.SetNext(tp + 200ms);
+
+	taa.SetNext(tp + 10ms);
+
+	dcclite::broker::Thinker::UpdateThinkers(tp + 50ms);
+
+	ASSERT_EQ(g_iCounter, 1);
+	ASSERT_TRUE(g_fAACalled);
 }
 
 TEST(Thinker, CancelTest)
