@@ -315,11 +315,11 @@ namespace dcclite::broker::detail
 
 			void DeployChanges(const uint8_t flags, const uint8_t startPos, const uint8_t endPos, std::chrono::milliseconds operationTime) override;
 
-			template <typename T>
-			void GotoState();
-
 			struct RunningState;
 			struct FailureState;
+
+			template <typename T>
+			void GotoState();			
 
 			template <>
 			void GotoState<RunningState>();					

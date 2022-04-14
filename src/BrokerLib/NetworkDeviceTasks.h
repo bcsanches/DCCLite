@@ -63,7 +63,7 @@ namespace dcclite::broker
 			//
 			// When the task finishes, success or not, this must return true			
 			//			
-			inline [[nodiscard]] bool HasFinished() const noexcept
+			[[nodiscard]] inline bool HasFinished() const noexcept
 			{
 				return m_fFinished;
 			}			
@@ -71,7 +71,7 @@ namespace dcclite::broker
 			//
 			// When the task fails to complete, this must return true (results must be ignored / discarded)
 			//			
-			inline [[nodiscard]] bool HasFailed() const noexcept
+			[[nodiscard]] inline bool HasFailed() const noexcept
 			{
 				return m_fFailed;
 			}
