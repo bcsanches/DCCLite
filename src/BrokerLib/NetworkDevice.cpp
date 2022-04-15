@@ -488,11 +488,9 @@ namespace dcclite::broker
 		m_rclSelf.PostponeTimeout(time);
 
 		if (msgType == dcclite::MsgTypes::MSG_PONG)
-		{
-			//DevicePacket pkt{ dcclite::MsgTypes::MSG_PONG, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
-			//m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
-
-			//any packet do it
+		{			
+			//Just ignore it...
+			//any packet updates timeout do it
 			//m_rclSelf.PostponeTimeout(time);
 
 			dcclite::Log::Debug("[{}::Device::OnPacket] pong", m_rclSelf.GetName());
