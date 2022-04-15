@@ -313,19 +313,16 @@ namespace dcclite::broker::detail
 		private:			
 			void SetPosition(const uint8_t position) override;	
 
-			void DeployChanges(const uint8_t flags, const uint8_t startPos, const uint8_t endPos, std::chrono::milliseconds operationTime) override;
+			void DeployChanges(const uint8_t flags, const uint8_t startPos, const uint8_t endPos, std::chrono::milliseconds operationTime) override;			
 
-			template <typename T>
+			template<typename T>
 			void GotoState();
-
-			struct RunningState;
-			struct FailureState;
-
-			template <>
-			void GotoState<RunningState>();					
 			
 			void GotoStateFailure(const char *stateName, const ServoProgammerClientErrors errorCode);
 			void GotoStateFailure(std::string reason);
+
+			void GotoRunningState();
+
 
 			void FillPacket(dcclite::Packet &packet, const uint32_t taskId, const NetworkTaskTypes taskType, const ServoProgrammerServerMsgTypes msg);			
 			
@@ -596,11 +593,12 @@ namespace dcclite::broker::detail
 	template <typename T>
 	void ServoTurnoutProgrammerTask::GotoState()
 	{
+		static_assert(!std::is_same<T, RunningState>::value, "Use GotoRunningState");
+
 		m_vState.emplace<T>(*this);
 	}
 
-	template <>
-	void ServoTurnoutProgrammerTask::GotoState<ServoTurnoutProgrammerTask::RunningState>()
+	void ServoTurnoutProgrammerTask::GotoRunningState()
 	{
 		m_vState.emplace<RunningState>(*this);
 
@@ -681,7 +679,7 @@ namespace dcclite::broker::detail
 			case ServoProgrammerClientMsgTypes::READY:
 				dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StartingState::OnPacket] Got READY packet");
 
-				m_rclSelf.GotoState<RunningState>();
+				m_rclSelf.GotoRunningState();
 				break;
 
 			default:

@@ -26,6 +26,12 @@ namespace dcclite::broker
 		public:
 			Thinker(Proc_t proc) noexcept;
 			Thinker(const dcclite::Clock::TimePoint_t tp, Proc_t proc) noexcept;
+
+			Thinker(Thinker &&) = delete;
+			Thinker(const Thinker &) = delete;
+
+			Thinker &operator=(const Thinker &) = delete;
+			Thinker &operator=(Thinker &&) = delete;
 			
 			~Thinker() noexcept;
 

@@ -874,6 +874,12 @@ namespace dcclite::broker
 		nullptr, nullptr
 	};
 
+	/**
+	* 
+	* This fiber is only used to monitor the ServoProgrammer task and notify the client when its finishes
+	*
+	*
+	*/
 	class ServoProgrammerDeployMonitorFiber: public TerminalCmdFiber, private NetworkTask::IObserver
 	{
 		public:
@@ -886,8 +892,10 @@ namespace dcclite::broker
 		private:
 			void OnNetworkTaskStateChanged(NetworkTask &task) override
 			{
+				//Ignore us from now...
 				task.SetObserver(nullptr);
 
+				//Notify SharpTerminal if failed or succeed
 				if (task.HasFailed())
 				{
 					m_rclContext.SendClientNotification(MakeRpcErrorResponse(m_tCmdId, task.GetMessage()));

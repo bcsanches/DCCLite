@@ -227,7 +227,7 @@ static void ParseMoveServo(dcclite::Packet &packet, const uint32_t packetTaskId)
 	if (task == nullptr)
 	{
 		//Wrong id... ignore...
-		SendError_InvalidTaskId(packet, packetTaskId, task->m_uTaskId);
+		SendError_InvalidTaskId(packet, packetTaskId, packetTaskId);
 	}	
 
 	const auto serverSequence = packet.Read<uint32_t>();
@@ -252,6 +252,16 @@ static void ParseMoveServo(dcclite::Packet &packet, const uint32_t packetTaskId)
 	packet.Write8(position);
 
 	Session::detail::SendTaskPacket(packet);
+}
+
+static void ParseDeployServo(dcclite::Packet &packet, const uint32_t packetTaskId)
+{
+	auto task = g_clTasklist.TryFindTask(packetTaskId);
+	if (task == nullptr)
+	{
+		//Wrong id... ignore...
+		SendError_InvalidTaskId(packet, packetTaskId, packetTaskId);
+	}
 }
 
 
@@ -279,6 +289,10 @@ void ServoProgrammer::ParsePacket(dcclite::Packet &packet)
 
 		case ServoProgrammerServerMsgTypes::MOVE_SERVO:
 			ParseMoveServo(packet, packetTaskId);
+			break;
+
+		case ServoProgrammerServerMsgTypes::DEPLOY:
+			ParseDeployServo(packet, packetTaskId);
 			break;
 
 		default:
