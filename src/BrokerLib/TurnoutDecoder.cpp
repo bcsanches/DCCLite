@@ -10,6 +10,7 @@
 
 #include "TurnoutDecoder.h"
 
+#include "IDccLiteService.h"
 #include "IDevice.h"
 
 #include <Packet.h>
@@ -78,12 +79,11 @@ namespace dcclite::broker
 				m_uEndPos = params["endPos"].GetUint();				
 
 				if (m_uStartPos > m_uEndPos)
-					std::swap(m_uStartPos, m_uEndPos);
-
-				if (m_uStartPos == m_uEndPos)
-					throw std::logic_error(fmt::format("[ServoTurnoutDecoder::ServoTurnoutDecoder] {}: startPos must be < than endPos", this->GetName()));
+					std::swap(m_uStartPos, m_uEndPos);				
 			}			
 		}		
+
+		this->CheckServoData(m_uStartPos, m_uEndPos, this->GetName());
 
 		auto operationTime = params.FindMember("operationTime");
 		m_tOperationTime = operationTime != params.MemberEnd() ? std::chrono::milliseconds{ operationTime->value.GetUint() } : m_tOperationTime;
@@ -132,10 +132,31 @@ namespace dcclite::broker
 		if (m_clFrogPin)
 			stream.AddIntValue("frogPin", m_clFrogPin.Raw());
 
-		stream.AddBool("flags", m_fFlags);
+		stream.AddIntValue("flags", m_fFlags);
 
 		stream.AddIntValue("startPos", m_uStartPos);
 		stream.AddIntValue("endPos", m_uEndPos);
 		stream.AddIntValue("msOperationTime", static_cast<int>(m_tOperationTime.count()));
+	}
+
+	void ServoTurnoutDecoder::CheckServoData(const std::uint8_t startPos, const std::uint8_t endPos, std::string_view name)
+	{
+		if (startPos > endPos)
+			throw std::logic_error(fmt::format("[ServoTurnoutDecoder::ValidateServoData] startPos must be < than endPos", name));
+
+		if (startPos == endPos)
+			throw std::logic_error(fmt::format("[ServoTurnoutDecoder::ValidateServoData] startPos must be < than endPos", name));
+	}
+
+	void ServoTurnoutDecoder::UpdateData(const std::uint8_t flags, const std::uint8_t startPos, const std::uint8_t endPos, const std::chrono::milliseconds operationTime)
+	{
+		CheckServoData(startPos, endPos, this->GetName());
+
+		m_fFlags = flags;
+		m_uStartPos = startPos;
+		m_uEndPos = endPos;
+		m_tOperationTime = operationTime;
+
+		this->m_rclManager.Decoder_OnStateChanged(*this);
 	}
 }

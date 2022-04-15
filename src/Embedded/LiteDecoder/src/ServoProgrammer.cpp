@@ -39,6 +39,14 @@ class ServoProgrammerHelper
 			m_rclDecoder.m_clServo.write(position);
 		}
 
+		void UpdateServo(const uint8_t flags, const uint8_t startPos, const uint8_t endPos, const uint8_t ticks)
+		{
+			m_rclDecoder.m_fFlags = flags & ~dcclite::SRVT_STATE_BITS;
+			m_rclDecoder.m_uStartPos = startPos;
+			m_rclDecoder.m_uEndPos = endPos;
+			m_rclDecoder.m_uTicks = ticks;			
+		}
+
 	private:
 		ServoTurnoutDecoder &m_rclDecoder;
 
@@ -228,6 +236,8 @@ static void ParseMoveServo(dcclite::Packet &packet, const uint32_t packetTaskId)
 	{
 		//Wrong id... ignore...
 		SendError_InvalidTaskId(packet, packetTaskId, packetTaskId);
+
+		return;
 	}	
 
 	const auto serverSequence = packet.Read<uint32_t>();
@@ -261,7 +271,29 @@ static void ParseDeployServo(dcclite::Packet &packet, const uint32_t packetTaskI
 	{
 		//Wrong id... ignore...
 		SendError_InvalidTaskId(packet, packetTaskId, packetTaskId);
+
+		return;
 	}
+
+	Console::SendLogEx("[ParseDeployServo]", ' ', packetTaskId);
+
+	const auto flags = packet.ReadByte();
+	const auto startPos = packet.ReadByte();
+	const auto endPos = packet.ReadByte();
+	const auto ticks = packet.ReadByte();
+
+	task->UpdateServo(flags, startPos, endPos, ticks);
+	g_clTasklist.Remove(task);
+
+	delete task;
+
+	Session::detail::InitTaskPacket(packet, packetTaskId);
+	packet.Write8(static_cast<uint8_t>(dcclite::ServoProgrammerClientMsgTypes::DEPLOY_FINISHED));		
+
+	//
+	//Send twice so it has a better chance of arriving
+	Session::detail::SendTaskPacket(packet);
+	Session::detail::SendTaskPacket(packet);
 }
 
 

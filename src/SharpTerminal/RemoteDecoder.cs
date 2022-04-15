@@ -195,60 +195,125 @@ namespace SharpTerminal
     {
         protected static IRemoteObjectAction gProgrammerAction = new ServoProgrammerAction("Program", "Program the turnout servo");
 
-        public readonly bool m_fInvertedOperation;
-        public readonly bool m_fIgnoreSaveState;
-        public readonly bool m_fActivateOnPowerUp;
-        public readonly bool m_fInvertedFrog;
-        public readonly bool m_fInvertedPower;
+        public bool m_fInvertedOperation;
+        public bool m_fIgnoreSaveState;
+        public bool m_fActivateOnPowerUp;
+        public bool m_fInvertedFrog;
+        public bool m_fInvertedPower;
 
-        public readonly uint m_iStartPos;
-        public readonly uint m_iEndPos;
-        public readonly uint m_msOperationTime;
+        public uint m_iStartPos;
+        public uint m_iEndPos;
+        public uint m_msOperationTime;
 
-        public readonly ServoTurnoutFlags m_fFlags;
-
-        [Category("Flags")]
-        public ServoTurnoutFlags Flags { get { return m_fFlags; } }
+        public ServoTurnoutFlags m_fFlags;
 
         [Category("Flags")]
-        public bool InvertedOperation { get { return m_fInvertedOperation; } }
+        public ServoTurnoutFlags Flags 
+        { 
+            get { return m_fFlags; }
+            private set
+            {
+                this.UpdateProperty(ref m_fFlags, value);
+
+                InvertedOperation = (m_fFlags & ServoTurnoutFlags.SRVT_INVERTED_OPERATION) != 0;
+                IgnoreSaveState = (m_fFlags & ServoTurnoutFlags.SRVT_IGNORE_SAVED_STATE) != 0;
+                ActivateOnPowerUp = (m_fFlags & ServoTurnoutFlags.SRVT_ACTIVATE_ON_POWER_UP) != 0;
+                InvertedFrog = (m_fFlags & ServoTurnoutFlags.SRVT_INVERTED_FROG) != 0;
+                InvertedPower = (m_fFlags & ServoTurnoutFlags.SRVT_INVERTED_POWER) != 0;
+            }
+        }
 
         [Category("Flags")]
-        public bool IgnoreSaveState { get { return m_fIgnoreSaveState; } }
+        public bool InvertedOperation 
+        { 
+            get { return m_fInvertedOperation; }
+
+            private set
+            {
+                this.UpdateProperty(ref m_fInvertedOperation, value);
+            }
+        }
 
         [Category("Flags")]
-        public bool ActivateOnPowerUp { get { return m_fActivateOnPowerUp; } }
+        public bool IgnoreSaveState 
+        { 
+            get { return m_fIgnoreSaveState; }
+
+            private set
+            {
+                this.UpdateProperty(ref m_fIgnoreSaveState, value);
+            }
+        }
 
         [Category("Flags")]
-        public bool InvertedFrog { get { return m_fInvertedFrog; } }
+        public bool ActivateOnPowerUp 
+        { 
+            get { return m_fActivateOnPowerUp; }
+
+            private set
+            {
+                this.UpdateProperty(ref m_fActivateOnPowerUp, value);
+            }
+        }
 
         [Category("Flags")]
-        public bool InvertedPower { get { return m_fInvertedPower; } }
+        public bool InvertedFrog 
+        { 
+            get { return m_fInvertedFrog; }
+
+            private set
+            {
+                this.UpdateProperty(ref m_fInvertedFrog, value);
+            }
+        }
+
+        [Category("Flags")]
+        public bool InvertedPower 
+        { 
+            get { return m_fInvertedPower; }
+
+            private set
+            {
+                this.UpdateProperty(ref m_fInvertedPower, value);
+            }
+
+        }
 
         [Category("Servo")]
-        public uint StartPos { get { return m_iStartPos; } }
+        public uint StartPos 
+        { 
+            get { return m_iStartPos; } 
+
+            private set
+            {
+                this.UpdateProperty(ref m_iStartPos, value);
+            }
+        }
 
         [Category("Servo")]
-        public uint EndPos { get { return m_iEndPos; } }
+        public uint EndPos 
+        { 
+            get { return m_iEndPos; } 
+        
+            private set
+            {
+                this.UpdateProperty(ref m_iEndPos, value);
+            }
+        }
 
         [Category("Servo")]
-        public uint MsOperationTime { get { return m_msOperationTime; } }
+        public uint MsOperationTime 
+        { 
+            get { return m_msOperationTime; } 
+        
+            private set { this.UpdateProperty(ref m_msOperationTime, value); }
+        }
 
 
         public RemoteTurnoutDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
             base(name, className, path, internalId, parentInternalId, objectDef)
         {
-            m_fFlags = (ServoTurnoutFlags)(int) objectDef["flags"];
-
-            m_fInvertedOperation = (m_fFlags & ServoTurnoutFlags.SRVT_INVERTED_OPERATION) != 0;
-            m_fIgnoreSaveState = (m_fFlags & ServoTurnoutFlags.SRVT_IGNORE_SAVED_STATE) != 0;
-            m_fActivateOnPowerUp = (m_fFlags & ServoTurnoutFlags.SRVT_ACTIVATE_ON_POWER_UP) != 0;
-            m_fInvertedFrog = (m_fFlags & ServoTurnoutFlags.SRVT_INVERTED_FROG) != 0;
-            m_fInvertedPower = (m_fFlags & ServoTurnoutFlags.SRVT_INVERTED_POWER) != 0;
-
-            m_iStartPos = objectDef["startPos"];
-            m_iEndPos = objectDef["endPos"];
-            m_msOperationTime = objectDef["msOperationTime"];
+            this.ParseState(objectDef);
         }
 
         public override string TryGetIconName()
@@ -259,6 +324,22 @@ namespace SharpTerminal
         public override IRemoteObjectAction[] GetActions()
         {
             return new IRemoteObjectAction[2] { g_FlipAction, gProgrammerAction };
+        }
+
+        protected override void OnUpdateState(JsonValue objectDef)
+        {
+            base.OnUpdateState(objectDef);
+
+            this.ParseState(objectDef);
+        }
+
+        private void ParseState(JsonValue objectDef)
+        {
+            Flags = (ServoTurnoutFlags)(int)objectDef["flags"];                        
+
+            StartPos = objectDef["startPos"];
+            EndPos = objectDef["endPos"];
+            MsOperationTime = objectDef["msOperationTime"];
         }
     }
 }

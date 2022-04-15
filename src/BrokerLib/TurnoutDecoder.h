@@ -88,6 +88,10 @@ namespace dcclite::broker
 				return ticks > 255 ? 255 : static_cast<uint8_t>(ticks);				
 			}
 
+			void UpdateData(const std::uint8_t flags, const std::uint8_t startPos, const std::uint8_t endPos, const std::chrono::milliseconds operationTime);
+
+			static void CheckServoData(const std::uint8_t startPos, const std::uint8_t endPos, std::string_view name);
+
 		private:
 			dcclite::BasicPin	m_clPin;
 			dcclite::BasicPin	m_clPowerPin;

@@ -161,6 +161,7 @@ namespace SharpTerminal
             this.m_cbInverted.TabIndex = 0;
             this.m_cbInverted.Text = "Inverted";
             this.m_cbInverted.UseVisualStyleBackColor = true;
+            this.m_cbInverted.CheckedChanged += new System.EventHandler(this.Flags_CheckedChanged);
             // 
             // m_cbIgnoreSaveState
             // 
@@ -171,6 +172,7 @@ namespace SharpTerminal
             this.m_cbIgnoreSaveState.TabIndex = 1;
             this.m_cbIgnoreSaveState.Text = "Ignore save state";
             this.m_cbIgnoreSaveState.UseVisualStyleBackColor = true;
+            this.m_cbIgnoreSaveState.CheckedChanged += new System.EventHandler(this.Flags_CheckedChanged);
             // 
             // m_cbActivateOnPowerUp
             // 
@@ -181,6 +183,7 @@ namespace SharpTerminal
             this.m_cbActivateOnPowerUp.TabIndex = 2;
             this.m_cbActivateOnPowerUp.Text = "Activate on power up";
             this.m_cbActivateOnPowerUp.UseVisualStyleBackColor = true;
+            this.m_cbActivateOnPowerUp.CheckedChanged += new System.EventHandler(this.Flags_CheckedChanged);
             // 
             // m_cbInvertedFrog
             // 
@@ -191,6 +194,7 @@ namespace SharpTerminal
             this.m_cbInvertedFrog.TabIndex = 3;
             this.m_cbInvertedFrog.Text = "Inverted frog";
             this.m_cbInvertedFrog.UseVisualStyleBackColor = true;
+            this.m_cbInvertedFrog.CheckedChanged += new System.EventHandler(this.Flags_CheckedChanged);
             // 
             // m_cbInvertedPower
             // 
@@ -201,6 +205,7 @@ namespace SharpTerminal
             this.m_cbInvertedPower.TabIndex = 4;
             this.m_cbInvertedPower.Text = "Inverted power";
             this.m_cbInvertedPower.UseVisualStyleBackColor = true;
+            this.m_cbInvertedPower.CheckedChanged += new System.EventHandler(this.Flags_CheckedChanged);
             // 
             // label5
             // 
@@ -246,6 +251,7 @@ namespace SharpTerminal
             this.m_btnFlip.TabIndex = 2;
             this.m_btnFlip.Text = "Flip";
             this.m_btnFlip.UseVisualStyleBackColor = true;
+            this.m_btnFlip.Click += new System.EventHandler(this.m_btnFlip_Click);
             // 
             // m_btnClose
             // 
@@ -256,6 +262,7 @@ namespace SharpTerminal
             this.m_btnClose.TabIndex = 1;
             this.m_btnClose.Text = "Close";
             this.m_btnClose.UseVisualStyleBackColor = true;
+            this.m_btnClose.Click += new System.EventHandler(this.m_btnClose_Click);
             // 
             // m_btnThrow
             // 
@@ -266,6 +273,7 @@ namespace SharpTerminal
             this.m_btnThrow.TabIndex = 0;
             this.m_btnThrow.Text = "Throw";
             this.m_btnThrow.UseVisualStyleBackColor = true;
+            this.m_btnThrow.Click += new System.EventHandler(this.m_btnThrow_Click);
             // 
             // m_btnCancel
             // 
@@ -277,6 +285,7 @@ namespace SharpTerminal
             this.m_btnCancel.TabIndex = 1;
             this.m_btnCancel.Text = "&Cancel";
             this.m_btnCancel.UseVisualStyleBackColor = true;
+            this.m_btnCancel.Click += new System.EventHandler(this.m_btnCancel_Click);
             // 
             // m_btnOK
             // 
@@ -289,6 +298,7 @@ namespace SharpTerminal
             this.m_btnOK.TabIndex = 2;
             this.m_btnOK.Text = "&OK";
             this.m_btnOK.UseVisualStyleBackColor = true;
+            this.m_btnOK.Click += new System.EventHandler(this.m_btnOK_Click);
             // 
             // tableLayoutPanel1
             // 
@@ -357,6 +367,7 @@ namespace SharpTerminal
             this.m_tbOperationTime.Size = new System.Drawing.Size(100, 20);
             this.m_tbOperationTime.TabIndex = 9;
             this.m_tbOperationTime.ValidatingType = typeof(int);
+            this.m_tbOperationTime.Validated += new System.EventHandler(this.m_tbOperationTime_Validated);
             // 
             // m_lblStatus
             // 

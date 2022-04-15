@@ -11,6 +11,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace SharpTerminal
@@ -21,9 +22,35 @@ namespace SharpTerminal
         private RemoteTurnoutDecoder    m_clTarget;
         private IConsole                m_clConsole;
 
+        //
+        //Backup servo original data, because test mode causes a refresh
+        private readonly uint           m_fOriginalFlags;
+        private readonly uint           m_uOriginalStartPos;            
+        private readonly uint           m_uOriginalEndPos;
+        private readonly uint           m_uOriginalMsOperationTime;
+
+
+        private bool m_fDataChanged;
+        private bool m_fDataCommited;
+        private bool m_fCommitedOnce;
+
         private int m_iProgrammerTaskId = -1;
 
         private bool m_fFailed;
+
+        private void OnDataChanged()
+        {
+            m_fDataChanged = true;
+            m_fDataCommited = false;
+
+            m_btnOK.Enabled = true;
+        }
+
+        private void OnDataCommited()
+        {            
+            m_fDataCommited = true;
+            m_fCommitedOnce = true;
+        }
 
         public RemoteTurnoutDecoder Target { get { return m_clTarget; } }
 
@@ -39,6 +66,11 @@ namespace SharpTerminal
 
             m_clTarget = target ?? throw new ArgumentNullException(nameof(target));
             m_clConsole = console ?? throw new ArgumentNullException(nameof(console));
+
+            m_fOriginalFlags = (uint)m_clTarget.Flags;
+            m_uOriginalStartPos = m_clTarget.StartPos;
+            m_uOriginalEndPos = m_clTarget.EndPos;
+            m_uOriginalMsOperationTime = m_clTarget.MsOperationTime;
 
             InitializeComponent();
 
@@ -74,6 +106,14 @@ namespace SharpTerminal
             m_cbActivateOnPowerUp.Tag = ServoTurnoutFlags.SRVT_ACTIVATE_ON_POWER_UP;
 
             m_lblStatus.Text = "Connecting...";
+
+            //
+            //reset all flags because loading data on the form will change those
+            m_fDataChanged = false;
+            m_fDataCommited = false;
+            m_fCommitedOnce = false;
+
+            m_btnOK.Enabled = false;
         }
 
         private void EnableProgMode(bool enable)
@@ -86,6 +126,8 @@ namespace SharpTerminal
             m_cbInverted.Enabled = enable;
             m_cbInvertedFrog.Enabled = enable;
             m_cbInvertedPower.Enabled = enable;
+
+            m_btnOK.Enabled = enable && m_fDataChanged;
         }
 
         private void EnableTestMode(bool enable)
@@ -95,21 +137,23 @@ namespace SharpTerminal
             m_btnThrow.Enabled = enable;    
         }
 
-        private async void AsyncStartServoProgrammer()
+        private async Task StartServoProgrammerTaskAsync()
+        {
+            var json = await m_clConsole.RequestAsync("Start-ServoProgrammer", m_clTarget.SystemName, m_clTarget.DeviceName, m_clTarget.Name);
+
+            m_iProgrammerTaskId = (int)json["taskId"];
+            m_lblStatus.Text = "Connected, task Id " + m_iProgrammerTaskId.ToString();                            
+        }
+
+        private async Task StartServoProgrammerAsync()
         {
             for (; ; )
             {
                 try
                 {
-                    var json = await m_clConsole.RequestAsync("Start-ServoProgrammer", m_clTarget.SystemName, m_clTarget.DeviceName, m_clTarget.Name);
+                    await StartServoProgrammerTaskAsync();
 
-                    if (json.ContainsKey("taskId"))
-                    {
-                        m_iProgrammerTaskId = (int)json["taskId"];
-                        m_lblStatus.Text = "Connected, task Id " + m_iProgrammerTaskId.ToString();
-
-                        EnableProgMode(true);
-                    }
+                    EnableProgMode(true);
 
                     break;
                 }
@@ -124,30 +168,77 @@ namespace SharpTerminal
             }
         }
 
-        protected override void OnLoad(EventArgs e)
+        protected override async void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
 
             if (this.DesignMode)
                 return;
 
-            this.AsyncStartServoProgrammer();                                  
+            await this.StartServoProgrammerAsync();                                  
         }
 
-        protected override void OnFormClosing(FormClosingEventArgs e)
+        protected override async void OnFormClosing(FormClosingEventArgs e)
         {
-            if (!m_fFailed && (MessageBox.Show(this, "Are you sure? Changes will not be saved", "Are you sure?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes))
+            bool okPressed = this.DialogResult == DialogResult.OK;
+
+            if (!okPressed && !m_fFailed && m_fDataChanged && (MessageBox.Show(this, "Are you sure? Changes will not be saved", "Are you sure?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes))
             {
                 e.Cancel = true;
 
                 return;
             }
 
+            //
+            //If no ok button used, ignore any data changed
+            if (this.DialogResult != DialogResult.OK)
+                m_fDataChanged = false;
+
+            try
+            {
+                //Ok pressed 
+                if(okPressed)
+                {
+                    //do we have changes that were not commited yet?
+                    if (m_fDataChanged && !m_fDataCommited)
+                    {
+                        //Is programmer task not running?
+                        if (m_iProgrammerTaskId < 0)
+                        {
+                            //start it
+                            await StartServoProgrammerTaskAsync();
+                        }
+
+                        //pending changes
+                        await this.DeployFormServoDataAsync();
+                    }                    
+                }
+                //user cancelled, has any data been persisted?
+                else if (m_fCommitedOnce)
+                {
+                    //Is programmer task not running?
+                    if (m_iProgrammerTaskId < 0)
+                    {
+                        //start it
+                        await StartServoProgrammerTaskAsync();
+                    }
+
+                    //rollback changes
+                    await this.DeployServoDataAsync(m_fOriginalFlags, m_uOriginalStartPos, m_uOriginalEndPos, m_uOriginalMsOperationTime);
+                }                               
+                
+                //Is programmer still running?
+                if(m_iProgrammerTaskId >= 0)
+                    m_clConsole.ProcessCmd("Stop-ServoProgrammer", m_iProgrammerTaskId.ToString());
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(this, "Data update failed: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            
             base.OnFormClosing(e);
 
-            m_clOwner.Unregister(this);
-
-            m_clConsole.ProcessCmd("Stop-ServoProgrammer", m_iProgrammerTaskId.ToString());
+            m_clOwner.Unregister(this);            
         }
 
         private void m_numStartAngle_ValueChanged(object sender, EventArgs e)
@@ -155,20 +246,26 @@ namespace SharpTerminal
             int pos = (int)m_numStartAngle.Value;
             m_numEndAngle.Minimum = pos + 1;
 
+            this.OnDataChanged();
+
             this.UpdatePosition(pos);
         }
 
         private void m_numEndAngle_ValueChanged(object sender, EventArgs e)
         {
             int pos = (int)m_numEndAngle.Value;
-
             m_numStartAngle.Maximum = pos - 1;
+
+            this.OnDataChanged();
+
             this.UpdatePosition(pos);
         }
 
         private void GotoFailureMode(string reason)
         {
             m_fFailed = true;
+
+            this.OnDataCommited();
 
             this.EnableProgMode(false);
             this.EnableTestMode(false);
@@ -196,7 +293,7 @@ namespace SharpTerminal
             }            
         }
 
-        private ServoTurnoutFlags ExtractFlags()
+        private uint ExtractFlags()
         {
             ServoTurnoutFlags flags = 0;
             
@@ -206,7 +303,36 @@ namespace SharpTerminal
             flags |= m_cbInvertedFrog.Checked ? ServoTurnoutFlags.SRVT_INVERTED_FROG : 0;
             flags |= m_cbInvertedPower.Checked ? ServoTurnoutFlags.SRVT_INVERTED_POWER : 0;
 
-            return flags;
+            return (uint)flags;
+        }
+
+        private async Task DeployFormServoDataAsync()
+        {
+            await this.DeployServoDataAsync(
+                this.ExtractFlags(), 
+                (uint)m_numStartAngle.Value, 
+                (uint)m_numEndAngle.Value, 
+                uint.Parse(m_tbOperationTime.Text)
+            );
+        }
+
+        private async Task DeployServoDataAsync(uint flags, uint startPos, uint endPos, uint operationTime)
+        {
+            await m_clConsole.RequestAsync(
+                        "Deploy-ServoProgrammer",
+                        m_iProgrammerTaskId,
+                        flags,
+                        startPos,
+                        endPos,
+                        operationTime
+            );
+
+            //
+            //no more task id
+            m_iProgrammerTaskId = -1;
+
+            //data change deployed...
+            this.OnDataCommited();
         }
 
         private async void m_cbTestMode_CheckedChanged(object sender, EventArgs e)
@@ -219,14 +345,7 @@ namespace SharpTerminal
 
                 try
                 {
-                    await m_clConsole.RequestAsync(
-                        "Deploy-ServoProgrammer", 
-                        m_iProgrammerTaskId, 
-                        this.ExtractFlags(), 
-                        m_numStartAngle.Value, 
-                        m_numEndAngle.Value, 
-                        int.Parse(m_tbOperationTime.Text)
-                    );
+                    await DeployFormServoDataAsync();                    
                 }
                 catch (Exception ex)
                 {
@@ -241,12 +360,62 @@ namespace SharpTerminal
             {
                 this.EnableTestMode(false);
 
-                AsyncStartServoProgrammer();
+                await StartServoProgrammerAsync();
 
                 this.EnableProgMode(true);
             }
 
             m_cbTestMode.Enabled = true;
+        }
+
+        private async void m_btnThrow_Click(object sender, EventArgs e)
+        {
+            m_cbTestMode.Enabled = false;
+
+            await m_clConsole.RequestAsync("Activate-Item", m_clTarget.SystemName, m_clTarget.Name);
+
+            m_cbTestMode.Enabled = true;
+        }
+
+        private async void m_btnClose_Click(object sender, EventArgs e)
+        {
+            m_cbTestMode.Enabled = false;
+
+            await m_clConsole.RequestAsync("Deactivate-Item", m_clTarget.SystemName, m_clTarget.Name);
+
+            m_cbTestMode.Enabled = true;
+        }
+
+        private async void m_btnFlip_Click(object sender, EventArgs e)
+        {
+            m_cbTestMode.Enabled = false;
+
+            await m_clConsole.RequestAsync("Flip-Item", m_clTarget.SystemName, m_clTarget.Name);
+
+            m_cbTestMode.Enabled = true;
+        }
+
+        private void m_btnCancel_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void m_btnOK_Click(object sender, EventArgs e)
+        {
+            this.EnableProgMode(false);
+            this.EnableTestMode(false);
+
+            this.Close();
+        }
+
+        private void m_tbOperationTime_Validated(object sender, EventArgs e)
+        {
+            this.OnDataChanged();
+        }
+
+        private void Flags_CheckedChanged(object sender, EventArgs e)
+        {
+            this.OnDataChanged();
         }
     }
 

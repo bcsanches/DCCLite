@@ -535,6 +535,8 @@ namespace dcclite::broker::detail
 		if (this->HasFinished())
 			throw std::runtime_error("[ServoTurnoutProgrammerTask::SetPosition] Task has finished");
 
+		ServoTurnoutDecoder::CheckServoData(startPos, endPos, "[ServoTurnoutProgrammerTask::DeployChanges]");
+
 		m_tDeployData.emplace(flags, startPos, endPos, operationTime);
 
 		//If on running state, Deploy the data
@@ -794,13 +796,21 @@ namespace dcclite::broker::detail
 				//
 				break;
 
-			case ServoProgrammerClientMsgTypes::FAILURE:								
-				m_rclSelf.GotoStateFailure("DeployState", ReadClientErrorValue(packet));
-				break;
+			case ServoProgrammerClientMsgTypes::FAILURE:
+				//The deploy itself cannot fail, but it may have processed a later packet and task was already destroyed... so we ignore
+
+				//Fallthrought
 
 				//are we done?
 			case ServoProgrammerClientMsgTypes::DEPLOY_FINISHED:
 				dcclite::Log::Trace("[ServoTurnoutProgrammerTask::DeployState::OnPacket] Got DEPLOY_FINISHED packet {}", m_rclSelf.m_u32TaskId);
+
+				{
+					const auto &deployData = m_rclSelf.m_tDeployData.value();
+
+					m_rclSelf.m_rclDecoder.UpdateData(deployData.m_fFlags, deployData.m_u8StartPos, deployData.m_u8EndPos, deployData.m_tOperationTime);
+				}
+				
 
 				m_clThinker.Cancel();
 				m_rclSelf.MarkFinished();
@@ -865,7 +875,7 @@ namespace dcclite::broker::detail
 
 			//are we done?
 			case ServoProgrammerClientMsgTypes::FINISHED:
-				dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StoppingState::OnPacket] Got FINISHED packet {}", m_rclSelf.m_u32TaskId);
+				dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StoppingState::OnPacket] Got FINISHED packet {}", m_rclSelf.m_u32TaskId);				
 
 				m_clThinker.Cancel();
 				m_rclSelf.MarkFinished();								
