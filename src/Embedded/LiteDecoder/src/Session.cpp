@@ -103,15 +103,11 @@ bool Session::Configure(const uint8_t *srvIp, uint16_t srvport)
 //
 
 namespace PingManager
-{
-	static unsigned long g_uNextPingThink = 0;
-	static unsigned long g_uTimeoutTicks = 0;
-	static unsigned long g_uPingTicks = 4500;
+{	
+	static unsigned long g_uTimeoutTicks = 0;	
 
 	static void Reset(unsigned long currentTime)
-	{
-		g_uPingTicks = Config::g_cfgPingTicks;
-		g_uNextPingThink = currentTime + Config::g_cfgPingTicks;
+	{		
 		g_uTimeoutTicks = currentTime + Config::g_cfgTimeoutTicks;
 	}
 
@@ -128,29 +124,6 @@ namespace PingManager
 		}
 
 		return false;
-	}
-
-	static void Launch(unsigned long currentTime)
-	{
-		if (g_uNextPingThink <= currentTime)
-		{		
-			Console::SendLogEx(MODULE_NAME, "PING");
-			Blinker::Play(Blinker::Animations::ERROR);
-
-			dcclite::Packet pkt;
-
-			dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::MSG_PING, g_SessionToken, g_ConfigToken };
-
-			//Send three times... stupid network...
-			NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
-			//NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
-			//NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
-
-			g_uNextPingThink = currentTime + g_uPingTicks;			
-			g_uPingTicks /= 2;
-
-			g_uPingTicks = 500 > g_uPingTicks ? 500 : g_uPingTicks;
-		}
 	}
 }
 
@@ -449,9 +422,7 @@ static void OnlineTick(const unsigned long ticks, const bool stateChangeDetected
 		}
 
 		g_uNextStateThink = ticks + Config::g_cfgStateTicks;
-	}
-	
-	PingManager::Launch(ticks);
+	}	
 }
 
 static void OnStatePacket(dcclite::Packet &packet)
@@ -574,14 +545,21 @@ static void OnTaskRequestPacket(dcclite::Packet &packet)
 }
 
 static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
-{					
+{			
+	PingManager::Reset(millis());
+
 	switch (type)
 	{
-		case dcclite::MsgTypes::MSG_PONG:
+		case dcclite::MsgTypes::MSG_PING:
 			Blinker::Play(Blinker::Animations::OK);
-			Console::SendLogEx(MODULE_NAME, "PONG");
-			
-			PingManager::Reset(millis());
+			Console::SendLogEx(MODULE_NAME, "PING");
+
+			{				
+				dcclite::Packet pkt;
+				dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::MSG_PONG, g_SessionToken, g_ConfigToken };
+
+				NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
+			}
 			break;
 
 		case dcclite::MsgTypes::CONFIG_FINISHED:		

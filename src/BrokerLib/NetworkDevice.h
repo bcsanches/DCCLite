@@ -118,13 +118,12 @@ namespace dcclite::broker
 			void GoOffline();
 			void Disconnect();
 
-			void RefreshTimeout(const dcclite::Clock::TimePoint_t time);
-			
-			[[nodiscard]] bool CheckTimeout(const dcclite::Clock::TimePoint_t time);
+			void PostponeTimeout(const dcclite::Clock::TimePoint_t time);
+			void OnTimeoutThink(const dcclite::Clock::TimePoint_t time);
 		
 			void ClearState();
 			void GotoSyncState();
-			void GotoOnlineState();
+			void GotoOnlineState(const dcclite::Clock::TimePoint_t time);
 			void GotoConfigState(const dcclite::Clock::TimePoint_t time);		
 
 			void AbortPendingTasks();
@@ -157,14 +156,11 @@ namespace dcclite::broker
 			//
 			//
 			//Connection status
-			Status				m_kStatus = Status::OFFLINE;
-
-			dcclite::Clock::TimePoint_t m_Timeout;					
+			Status				m_kStatus = Status::OFFLINE;			
 
 			struct State
 			{
-				virtual void OnPacket(
-					NetworkDevice &self,
+				virtual void OnPacket(					
 					dcclite::Packet &packet, 
 					const dcclite::Clock::TimePoint_t time, 
 					const dcclite::MsgTypes msgType, 
@@ -172,9 +168,18 @@ namespace dcclite::broker
 					const dcclite::Guid remoteConfigToken
 				);
 
-				virtual void Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time) = 0;
+				virtual void Update(const dcclite::Clock::TimePoint_t time) = 0;
 				
 				[[nodiscard]] virtual const char *GetName() const = 0;
+
+				protected:
+					State(NetworkDevice &self):
+						m_rclSelf(self)
+					{
+						//empty
+					}
+
+					NetworkDevice &m_rclSelf;
 			};		
 
 			struct ConfigState: State
@@ -188,8 +193,7 @@ namespace dcclite::broker
 
 				ConfigState(NetworkDevice &self, const dcclite::Clock::TimePoint_t time);			
 
-				void OnPacket(
-					NetworkDevice &self,
+				void OnPacket(					
 					dcclite::Packet &packet,
 					const dcclite::Clock::TimePoint_t time,
 					const dcclite::MsgTypes msgType,
@@ -197,17 +201,16 @@ namespace dcclite::broker
 					const dcclite::Guid remoteConfigToken
 				) override;
 
-				void Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time) override;
+				void Update(const dcclite::Clock::TimePoint_t time) override;
 
 				[[nodiscard]] const char *GetName() const override { return "ConfigState"; }
 
 				private:				
-					void SendDecoderConfigPacket(const NetworkDevice &self, const size_t index) const;
-					void SendConfigStartPacket(const NetworkDevice &self) const;
-					void SendConfigFinishedPacket(const NetworkDevice &self) const;
+					void SendDecoderConfigPacket(const size_t index) const;
+					void SendConfigStartPacket() const;
+					void SendConfigFinishedPacket() const;
 
-					void OnPacket_ConfigAck(
-						NetworkDevice &self,
+					void OnPacket_ConfigAck(						
 						dcclite::Packet &packet,
 						const dcclite::Clock::TimePoint_t time,
 						const dcclite::MsgTypes msgType,
@@ -216,7 +219,6 @@ namespace dcclite::broker
 					);
 
 					void OnPacket_ConfigFinished(
-						NetworkDevice &self,
 						dcclite::Packet &packet,
 						const dcclite::Clock::TimePoint_t time,
 						const dcclite::MsgTypes msgType,
@@ -229,8 +231,9 @@ namespace dcclite::broker
 			{
 				dcclite::Clock::TimePoint_t m_SyncTimeout;
 
+				SyncState(NetworkDevice &self);
+
 				void OnPacket(
-					NetworkDevice &self,
 					dcclite::Packet &packet,
 					const dcclite::Clock::TimePoint_t time,
 					const dcclite::MsgTypes msgType,
@@ -238,17 +241,16 @@ namespace dcclite::broker
 					const dcclite::Guid remoteConfigToken
 				) override;
 
-				void Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time) override;
+				void Update(const dcclite::Clock::TimePoint_t time) override;
 
 				[[nodiscard]] const char *GetName() const override { return "SyncState"; }
 			};
 
 			struct OnlineState: State
 			{			
-				OnlineState();
+				OnlineState(NetworkDevice &self, const dcclite::Clock::TimePoint_t time);
 
 				void OnPacket(
-					NetworkDevice &self,
 					dcclite::Packet &packet,
 					const dcclite::Clock::TimePoint_t time,
 					const dcclite::MsgTypes msgType,
@@ -256,12 +258,14 @@ namespace dcclite::broker
 					const dcclite::Guid remoteConfigToken
 				) override;
 
-				void Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time) override;
+				void Update(const dcclite::Clock::TimePoint_t time) override;
 
 				[[nodiscard]] const char *GetName() const override { return "OnlineState"; }
 
 				private:
-					void SendStateDelta(NetworkDevice &self, const bool sendSensorsState, const dcclite::Clock::TimePoint_t time);
+					void SendStateDelta(const bool sendSensorsState, const dcclite::Clock::TimePoint_t time);
+
+					void OnPingThink(const dcclite::Clock::TimePoint_t time);
 
 					dcclite::Clock::TimePoint_t m_tLastStateSentTimeout;
 					dcclite::StatesBitPack_t	m_tLastStateSent;
@@ -269,6 +273,8 @@ namespace dcclite::broker
 					uint64_t			m_uLastReceivedStatePacketId = 0;
 
 					uint64_t			m_uOutgoingStatePacketId = 0;
+
+					Thinker				m_clPingThinker;
 			};
 
 
@@ -279,6 +285,8 @@ namespace dcclite::broker
 		
 			std::variant< NullState, ConfigState, SyncState, OnlineState> m_vState;
 			State *m_pclCurrentState = nullptr;
+
+			Thinker				m_clTimeoutThinker;
 
 			//
 			//

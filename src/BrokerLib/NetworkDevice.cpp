@@ -33,6 +33,8 @@ namespace dcclite::broker
 
 	static auto constexpr SYNC_TIMEOUT = 100ms;
 
+	static auto constexpr PING_TIMEOUT = 1s;
+
 	static uint32_t	g_u32TaskId = 0;
 
 
@@ -51,10 +53,11 @@ namespace dcclite::broker
 	//
 	//
 
-	NetworkDevice::NetworkDevice(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project) :
+	NetworkDevice::NetworkDevice(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project):
 		Device(std::move(name), dccService, params, project),
+		m_clTimeoutThinker(THINKER_MF_LAMBDA(OnTimeoutThink)),
 		m_clPinManager(DecodeBoardName(params["class"].GetString())),
-		m_fRegistered(true)		
+		m_fRegistered(true)
 	{
 		this->Load();
 	}
@@ -62,6 +65,7 @@ namespace dcclite::broker
 
 	NetworkDevice::NetworkDevice(std::string name, IDccLite_DeviceServices &dccService, const Project &project) :
 		Device(std::move(name), dccService, project),
+		m_clTimeoutThinker(THINKER_MF_LAMBDA(OnTimeoutThink)),
 		m_clPinManager(ArduinoBoards::MEGA),		
 		m_fRegistered(false)
 	{
@@ -96,8 +100,7 @@ namespace dcclite::broker
 	//
 	//
 
-	void NetworkDevice::State::OnPacket(
-		NetworkDevice &self,
+	void NetworkDevice::State::OnPacket(		
 		dcclite::Packet &packet,
 		const dcclite::Clock::TimePoint_t time,
 		const dcclite::MsgTypes msgType,
@@ -105,7 +108,7 @@ namespace dcclite::broker
 		const dcclite::Guid remoteConfigToken
 	)
 	{
-		dcclite::Log::Error("[{}::Device::{}::OnPacket] Unexpected msg type: {}", self.GetName(), this->GetName(), dcclite::MsgName(msgType));
+		dcclite::Log::Error("[{}::Device::{}::OnPacket] Unexpected msg type: {}", m_rclSelf.GetName(), this->GetName(), dcclite::MsgName(msgType));
 	}
 
 	//
@@ -114,63 +117,63 @@ namespace dcclite::broker
 	//
 	//
 
-	NetworkDevice::ConfigState::ConfigState(NetworkDevice &self, const dcclite::Clock::TimePoint_t time)
+	NetworkDevice::ConfigState::ConfigState(NetworkDevice &self, const dcclite::Clock::TimePoint_t time):
+		State(self)
 	{
 		this->m_vecAcks.resize(self.m_vecDecoders.size());
 		this->m_RetryTime = time + CONFIG_RETRY_TIME;
 
-		this->SendConfigStartPacket(self);
+		this->SendConfigStartPacket();
 
 		for (size_t i = 0, sz = self.m_vecDecoders.size(); i < sz; ++i)
 		{
-			this->SendDecoderConfigPacket(self, i);
+			this->SendDecoderConfigPacket(i);
 		}
 	}
 
-	void NetworkDevice::ConfigState::SendDecoderConfigPacket(const NetworkDevice &self, const size_t index) const
+	void NetworkDevice::ConfigState::SendDecoderConfigPacket(const size_t index) const
 	{
-		DevicePacket pkt{ dcclite::MsgTypes::CONFIG_DEV, self.m_SessionToken, self.m_ConfigToken };
+		DevicePacket pkt{ dcclite::MsgTypes::CONFIG_DEV, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
 		pkt.Write8(static_cast<uint8_t>(index));
 
-		static_cast<RemoteDecoder *>(self.m_vecDecoders[index])->WriteConfig(pkt);
+		static_cast<RemoteDecoder *>(m_rclSelf.m_vecDecoders[index])->WriteConfig(pkt);
 
-		self.m_clDccService.Device_SendPacket(self.m_RemoteAddress, pkt);
+		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
 	}
 
-	void NetworkDevice::ConfigState::SendConfigFinishedPacket(const NetworkDevice &self) const
+	void NetworkDevice::ConfigState::SendConfigFinishedPacket() const
 	{
-		DevicePacket pkt{ dcclite::MsgTypes::CONFIG_FINISHED, self.m_SessionToken, self.m_ConfigToken };
+		DevicePacket pkt{ dcclite::MsgTypes::CONFIG_FINISHED, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
 
-		pkt.Write8(static_cast<uint8_t>(self.m_vecDecoders.size()));
+		pkt.Write8(static_cast<uint8_t>(m_rclSelf.m_vecDecoders.size()));
 
-		self.m_clDccService.Device_SendPacket(self.m_RemoteAddress, pkt);
+		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
 	}
 
-	void NetworkDevice::ConfigState::SendConfigStartPacket(const NetworkDevice &self) const
+	void NetworkDevice::ConfigState::SendConfigStartPacket() const
 	{
-		DevicePacket pkt{ dcclite::MsgTypes::CONFIG_START, self.m_SessionToken, self.m_ConfigToken };
+		DevicePacket pkt{ dcclite::MsgTypes::CONFIG_START, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
 
-		self.m_clDccService.Device_SendPacket(self.m_RemoteAddress, pkt);
+		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
 	}
 
 	void NetworkDevice::ConfigState::OnPacket_ConfigAck(
-		NetworkDevice &self,
 		dcclite::Packet &packet,
 		const dcclite::Clock::TimePoint_t time,
 		const dcclite::MsgTypes msgType,
 		const dcclite::NetworkAddress remoteAddress,
 		const dcclite::Guid remoteConfigToken)
 	{
-		if (!self.CheckSession(remoteAddress))
+		if (!m_rclSelf.CheckSession(remoteAddress))
 			return;
 
 		auto seq = packet.Read<uint8_t>();
 
 		if (seq >= m_vecAcks.size())
 		{
-			dcclite::Log::Error("[{}::Device::OnPacket_ConfigAck] config out of sync, dropping connection", self.GetName());
+			dcclite::Log::Error("[{}::Device::OnPacket_ConfigAck] config out of sync, dropping connection", m_rclSelf.GetName());
 
-			self.GoOffline();
+			m_rclSelf.GoOffline();
 
 			return;
 		}
@@ -181,18 +184,17 @@ namespace dcclite::broker
 
 		m_RetryTime = time + CONFIG_RETRY_TIME;
 
-		dcclite::Log::Info("[{}::Device::OnPacket_ConfigAck] Config ACK {} - {}", self.GetName(), seq, self.m_vecDecoders[seq]->GetName());
+		dcclite::Log::Info("[{}::Device::OnPacket_ConfigAck] Config ACK {} - {}", m_rclSelf.GetName(), seq, m_rclSelf.m_vecDecoders[seq]->GetName());
 
 		if (m_uSeqCount == m_vecAcks.size())
 		{
-			dcclite::Log::Info("[{}::Device::OnPacket_ConfigAck] Config Finished, configured {} decoders", self.GetName(), m_uSeqCount);
+			dcclite::Log::Info("[{}::Device::OnPacket_ConfigAck] Config Finished, configured {} decoders", m_rclSelf.GetName(), m_uSeqCount);
 
-			this->SendConfigFinishedPacket(self);
+			this->SendConfigFinishedPacket();
 		}
 	}
 
-	void NetworkDevice::ConfigState::OnPacket_ConfigFinished(
-		NetworkDevice &self,
+	void NetworkDevice::ConfigState::OnPacket_ConfigFinished(		
 		dcclite::Packet &packet,
 		const dcclite::Clock::TimePoint_t time,
 		const dcclite::MsgTypes msgType,
@@ -200,16 +202,15 @@ namespace dcclite::broker
 		const dcclite::Guid remoteConfigToken
 	)
 	{
-		if (!self.CheckSession(remoteAddress))
+		if (!m_rclSelf.CheckSession(remoteAddress))
 			return;
 
-		dcclite::Log::Info("[{}::Device::OnPacket_ConfigFinished] Config Finished, device is ready", self.GetName());
+		dcclite::Log::Info("[{}::Device::OnPacket_ConfigFinished] Config Finished, device is ready", m_rclSelf.GetName());
 
-		self.GotoSyncState();
+		m_rclSelf.GotoSyncState();
 	}
 
-	void NetworkDevice::ConfigState::OnPacket(
-		NetworkDevice &self,
+	void NetworkDevice::ConfigState::OnPacket(	
 		dcclite::Packet &packet,
 		const dcclite::Clock::TimePoint_t time,
 		const dcclite::MsgTypes msgType,
@@ -219,20 +220,20 @@ namespace dcclite::broker
 		switch (msgType)
 		{
 			case dcclite::MsgTypes::CONFIG_ACK:
-				this->OnPacket_ConfigAck(self, packet, time, msgType, remoteAddress, remoteConfigToken);
+				this->OnPacket_ConfigAck(packet, time, msgType, remoteAddress, remoteConfigToken);
 				break;
 
 			case dcclite::MsgTypes::CONFIG_FINISHED:
-				this->OnPacket_ConfigFinished(self, packet, time, msgType, remoteAddress, remoteConfigToken);
+				this->OnPacket_ConfigFinished(packet, time, msgType, remoteAddress, remoteConfigToken);
 				break;
 
 			default:
-				State::OnPacket(self, packet, time, msgType, remoteAddress, remoteConfigToken);
+				State::OnPacket(packet, time, msgType, remoteAddress, remoteConfigToken);
 				break;
 		}
 	}
 
-	void NetworkDevice::ConfigState::Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time)
+	void NetworkDevice::ConfigState::Update(const dcclite::Clock::TimePoint_t time)
 	{
 		//should retry sending config packets?	
 		if (m_RetryTime > time)
@@ -249,11 +250,11 @@ namespace dcclite::broker
 				if (pos == 0)
 				{
 					//when config 0 is not received, this could also means that CONFIG_START was not received by tge remote, so we send it again
-					this->SendConfigStartPacket(self);
+					this->SendConfigStartPacket();
 				}
 
-				dcclite::Log::Warn("[{}::Device::Update] retrying config for device {} at {}", self.GetName(), self.m_vecDecoders[pos]->GetName(), pos);
-				this->SendDecoderConfigPacket(self, pos);
+				dcclite::Log::Warn("[{}::Device::Update] retrying config for device {} at {}", m_rclSelf.GetName(), m_rclSelf.m_vecDecoders[pos]->GetName(), pos);
+				this->SendDecoderConfigPacket(pos);
 
 				++packetCount;
 
@@ -268,8 +269,8 @@ namespace dcclite::broker
 		if (packetCount == 0)
 		{
 			//remote device already acked all decoders, but not acked the config finished, so, send it again
-			dcclite::Log::Warn("[{}::Device::Update] retrying config finished for remote device", self.GetName());
-			this->SendConfigFinishedPacket(self);
+			dcclite::Log::Warn("[{}::Device::Update] retrying config finished for remote device", m_rclSelf.GetName());
+			this->SendConfigFinishedPacket();
 		}
 	}
 
@@ -279,8 +280,13 @@ namespace dcclite::broker
 	//
 	//
 
-	void NetworkDevice::SyncState::OnPacket(
-		NetworkDevice &self,
+	NetworkDevice::SyncState::SyncState(NetworkDevice &self):
+		State{ self }
+	{
+		//empty
+	}
+
+	void NetworkDevice::SyncState::OnPacket(		
 		dcclite::Packet &packet,
 		const dcclite::Clock::TimePoint_t time,
 		const dcclite::MsgTypes msgType,
@@ -297,12 +303,12 @@ namespace dcclite::broker
 
 		if (msgType != dcclite::MsgTypes::SYNC)
 		{
-			State::OnPacket(self, packet, time, msgType, remoteAddress, remoteConfigToken);
+			State::OnPacket(packet, time, msgType, remoteAddress, remoteConfigToken);
 
 			return;
 		}
 
-		if (!self.CheckSessionConfig(remoteConfigToken, remoteAddress))
+		if (!m_rclSelf.CheckSessionConfig(remoteConfigToken, remoteAddress))
 			return;
 
 		dcclite::StatesBitPack_t changedStates;
@@ -317,7 +323,7 @@ namespace dcclite::broker
 				continue;
 
 			auto state = states[i] ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE;
-			auto remoteDecoder = static_cast<RemoteDecoder *>(self.m_vecDecoders[i]);
+			auto remoteDecoder = static_cast<RemoteDecoder *>(m_rclSelf.m_vecDecoders[i]);
 			remoteDecoder->SyncRemoteState(state);
 
 			if (remoteDecoder->IsOutputDecoder())
@@ -333,24 +339,24 @@ namespace dcclite::broker
 			}
 		}
 
-		dcclite::Log::Info("[{}::Device::SyncState::OnPacket] Sync OK", self.GetName());
+		dcclite::Log::Info("[{}::Device::SyncState::OnPacket] Sync OK", m_rclSelf.GetName());
 
-		self.GotoOnlineState();
+		m_rclSelf.GotoOnlineState(time);
 	}
 
-	void NetworkDevice::SyncState::Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time)
+	void NetworkDevice::SyncState::Update(const dcclite::Clock::TimePoint_t time)
 	{
-		assert(self.m_kStatus == Status::CONNECTING);
+		assert(m_rclSelf.m_kStatus == Status::CONNECTING);
 
 		//too soon?
 		if (m_SyncTimeout > time)
 			return;
 
-		dcclite::Log::Info("[{}::Device::SyncState::Update] request sent", self.GetName());
+		dcclite::Log::Info("[{}::Device::SyncState::Update] request sent", m_rclSelf.GetName());
 
-		DevicePacket pkt{ dcclite::MsgTypes::SYNC, self.m_SessionToken, self.m_ConfigToken };
+		DevicePacket pkt{ dcclite::MsgTypes::SYNC, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
 
-		self.m_clDccService.Device_SendPacket(self.m_RemoteAddress, pkt);
+		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
 
 		m_SyncTimeout = time + SYNC_TIMEOUT;
 	}
@@ -361,13 +367,18 @@ namespace dcclite::broker
 	//
 	//
 
-	NetworkDevice::OnlineState::OnlineState()
+	NetworkDevice::OnlineState::OnlineState(NetworkDevice &self, const dcclite::Clock::TimePoint_t time):
+		State{ self },
+		m_clPingThinker{THINKER_MF_LAMBDA(OnPingThink)}
 	{
 		m_tLastStateSent.ClearAll();
 		m_tLastStateSentTimeout = {};
+
+		m_clPingThinker.SetNext(time + PING_TIMEOUT);
+		m_rclSelf.PostponeTimeout(time);
 	}
 
-	void NetworkDevice::OnlineState::SendStateDelta(NetworkDevice &self, const bool sendSensorsState, const dcclite::Clock::TimePoint_t time)
+	void NetworkDevice::OnlineState::SendStateDelta(const bool sendSensorsState, const dcclite::Clock::TimePoint_t time)
 	{
 		dcclite::BitPack<dcclite::MAX_DECODERS_STATES_PER_PACKET> states;
 		dcclite::BitPack<dcclite::MAX_DECODERS_STATES_PER_PACKET> changedStates;
@@ -375,10 +386,10 @@ namespace dcclite::broker
 		bool stateChanged = false;
 		bool sensorDetected = false;		
 
-		const unsigned numDecoders = static_cast<unsigned>(std::min(self.m_vecDecoders.size(), size_t{ dcclite::MAX_DECODERS_STATES_PER_PACKET }));
+		const unsigned numDecoders = static_cast<unsigned>(std::min(m_rclSelf.m_vecDecoders.size(), size_t{ dcclite::MAX_DECODERS_STATES_PER_PACKET }));
 		for (unsigned i = 0; i < numDecoders; ++i)
 		{
-			auto *decoder = static_cast<RemoteDecoder *>(self.m_vecDecoders[i]);
+			auto *decoder = static_cast<RemoteDecoder *>(m_rclSelf.m_vecDecoders[i]);
 			if (!decoder)
 				continue;
 
@@ -421,7 +432,7 @@ namespace dcclite::broker
 
 			for (unsigned i = 0; i < numDecoders; ++i)
 			{
-				auto *decoder = static_cast<RemoteDecoder *>(self.m_vecDecoders[i]);
+				auto *decoder = static_cast<RemoteDecoder *>(m_rclSelf.m_vecDecoders[i]);
 				if (!decoder)
 					continue;
 
@@ -447,13 +458,13 @@ namespace dcclite::broker
 				return;
 			}				
 
-			DevicePacket pkt{ dcclite::MsgTypes::STATE, self.m_SessionToken, self.m_ConfigToken };
+			DevicePacket pkt{ dcclite::MsgTypes::STATE, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
 
 			pkt.Write64(++m_uOutgoingStatePacketId);
 			pkt.Write(changedStates);
 			pkt.Write(states);
 
-			self.m_clDccService.Device_SendPacket(self.m_RemoteAddress, pkt);
+			m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
 
 			m_tLastStateSentTimeout = time + STATE_TIMEOUT;
 			m_tLastStateSent = states;
@@ -463,8 +474,7 @@ namespace dcclite::broker
 	}
 
 
-	void NetworkDevice::OnlineState::OnPacket(
-		NetworkDevice &self,
+	void NetworkDevice::OnlineState::OnPacket(		
 		dcclite::Packet &packet,
 		const dcclite::Clock::TimePoint_t time,
 		const dcclite::MsgTypes msgType,
@@ -472,17 +482,20 @@ namespace dcclite::broker
 		const dcclite::Guid remoteConfigToken
 	)
 	{
-		if (!self.CheckSessionConfig(remoteConfigToken, remoteAddress))
+		if (!m_rclSelf.CheckSessionConfig(remoteConfigToken, remoteAddress))
 			return;
 
-		if (msgType == dcclite::MsgTypes::MSG_PING)
+		m_rclSelf.PostponeTimeout(time);
+
+		if (msgType == dcclite::MsgTypes::MSG_PONG)
 		{
-			DevicePacket pkt{ dcclite::MsgTypes::MSG_PONG, self.m_SessionToken, self.m_ConfigToken };
-			self.m_clDccService.Device_SendPacket(self.m_RemoteAddress, pkt);
+			//DevicePacket pkt{ dcclite::MsgTypes::MSG_PONG, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
+			//m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
 
-			self.RefreshTimeout(time);
+			//any packet do it
+			//m_rclSelf.PostponeTimeout(time);
 
-			dcclite::Log::Debug("[{}::Device::OnPacket] ping", self.GetName());
+			dcclite::Log::Debug("[{}::Device::OnPacket] pong", m_rclSelf.GetName());
 
 			return;
 		}
@@ -490,7 +503,7 @@ namespace dcclite::broker
 		if (msgType == dcclite::MsgTypes::TASK_DATA)
 		{
 			auto taskId = packet.Read<uint32_t>();			
-			for (auto &task : self.m_lstTasks)
+			for (auto &task : m_rclSelf.m_lstTasks)
 			{
 				if (task->GetTaskId() == taskId)
 				{
@@ -499,14 +512,14 @@ namespace dcclite::broker
 				}
 			}
 			
-			dcclite::Log::Warn("[{}::Device::OnPacket] task data, but not task running or task not found for id {}", self.GetName(), taskId);			
+			dcclite::Log::Warn("[{}::Device::OnPacket] task data, but not task running or task not found for id {}", m_rclSelf.GetName(), taskId);
 
 			return;
 		}
 
 		if (msgType != dcclite::MsgTypes::STATE)
 		{
-			State::OnPacket(self, packet, time, msgType, remoteAddress, remoteConfigToken);
+			State::OnPacket(packet, time, msgType, remoteAddress, remoteConfigToken);
 
 			return;
 		}
@@ -536,7 +549,7 @@ namespace dcclite::broker
 
 			auto state = states[i] ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE;
 
-			auto remoteDecoder = static_cast<RemoteDecoder *>(self.m_vecDecoders[i]);
+			auto remoteDecoder = static_cast<RemoteDecoder *>(m_rclSelf.m_vecDecoders[i]);
 			remoteDecoder->SyncRemoteState(state);
 
 			/**
@@ -554,13 +567,25 @@ namespace dcclite::broker
 
 		if (stateRefresh)
 		{
-			SendStateDelta(self, true, time);
+			SendStateDelta(true, time);
 		}
 	}
 
-	void NetworkDevice::OnlineState::Update(NetworkDevice &self, const dcclite::Clock::TimePoint_t time)
+	void NetworkDevice::OnlineState::OnPingThink(const dcclite::Clock::TimePoint_t time)
 	{
-		this->SendStateDelta(self, false, time);
+		m_clPingThinker.SetNext(time + PING_TIMEOUT);
+
+		DevicePacket pkt{ dcclite::MsgTypes::MSG_PING, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
+		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
+
+		//m_rclSelf.PostponeTimeout(time);
+
+		dcclite::Log::Debug("[{}::Device::OnPacket] sending ping", m_rclSelf.GetName());
+	}
+
+	void NetworkDevice::OnlineState::Update(const dcclite::Clock::TimePoint_t time)
+	{
+		this->SendStateDelta(false, time);
 	}
 
 	void NetworkDevice::Serialize(dcclite::JsonOutputStream_t &stream) const
@@ -623,7 +648,7 @@ namespace dcclite::broker
 
 		dcclite::Log::Info("[{}::Device::GoOnline] Is connecting", this->GetName());
 
-		this->RefreshTimeout(time);
+		//this->RefreshTimeout(time);
 
 		//Is device config expired?
 		if (remoteConfigToken != m_ConfigToken)
@@ -684,23 +709,16 @@ namespace dcclite::broker
 		return true;
 	}
 
-	void NetworkDevice::RefreshTimeout(dcclite::Clock::TimePoint_t time)
+	void NetworkDevice::PostponeTimeout(const dcclite::Clock::TimePoint_t time)
 	{
-		m_Timeout = time + TIMEOUT;
-	}
+		m_clTimeoutThinker.SetNext(time + TIMEOUT);
+	}		
 
-	bool NetworkDevice::CheckTimeout(dcclite::Clock::TimePoint_t time)
-	{
-		if (time > m_Timeout)
-		{
-			dcclite::Log::Warn("[{}::Device::Update] timeout", this->GetName());
+	void NetworkDevice::OnTimeoutThink(const dcclite::Clock::TimePoint_t time)
+	{		
+		dcclite::Log::Warn("[{}::Device::Update] timeout", this->GetName());
 
-			this->GoOffline();
-
-			return false;
-		}
-
-		return true;
+		this->GoOffline();
 	}
 
 	void NetworkDevice::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteConfigToken)
@@ -712,24 +730,17 @@ namespace dcclite::broker
 			return;
 		}
 
-		this->RefreshTimeout(time);
+		//this->PostponeTimeout(time);
 
-		m_pclCurrentState->OnPacket(*this, packet, time, msgType, remoteAddress, remoteConfigToken);
+		m_pclCurrentState->OnPacket(packet, time, msgType, remoteAddress, remoteConfigToken);
 	}
 
 	void NetworkDevice::Update(const dcclite::Clock::TimePoint_t ticks)
 	{
 		if (m_kStatus == Status::OFFLINE)
-			return;		
+			return;					
 
-		//Did remoted device timedout?
-		if (!this->CheckTimeout(ticks))
-		{
-			//yes, ok get out and wait for it to come back
-			return;
-		}				
-
-		m_pclCurrentState->Update(*this, ticks);
+		m_pclCurrentState->Update(ticks);
 	}
 
 	void NetworkDevice::ClearState()
@@ -742,19 +753,19 @@ namespace dcclite::broker
 	{
 		this->ClearState();
 
-		m_vState = SyncState{};
+		m_vState.emplace<SyncState>(*this);
 		m_pclCurrentState = std::get_if<SyncState>(&m_vState);
 
 		dcclite::Log::Trace("[{}::Device::GotoSyncState] Entered", this->GetName());
 	}
 
-	void NetworkDevice::GotoOnlineState()
+	void NetworkDevice::GotoOnlineState(const dcclite::Clock::TimePoint_t time)
 	{
 		this->ClearState();
 
 		m_kStatus = Status::ONLINE;
 
-		m_vState.emplace<OnlineState>();
+		m_vState.emplace<OnlineState>(*this, time);
 		m_pclCurrentState = std::get_if<OnlineState>(&m_vState);
 
 		dcclite::Log::Trace("[{}::Device::GotoOnlineState] Entered", this->GetName());
@@ -765,7 +776,7 @@ namespace dcclite::broker
 	{
 		this->ClearState();
 
-		m_vState = ConfigState{ *this, time };
+		m_vState.emplace<ConfigState>(*this, time);		
 		m_pclCurrentState = std::get_if<ConfigState>(&m_vState);
 
 		dcclite::Log::Trace("[{}::Device::GotoConfigState] Entered", this->GetName());
