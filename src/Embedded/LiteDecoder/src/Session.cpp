@@ -391,6 +391,8 @@ static void OnlineTick(const unsigned long ticks, const bool stateChangeDetected
 
 	using namespace dcclite;	
 
+	ServoProgrammer::Update(ticks);
+
 	if (stateChangeDetectedHint || g_fForceStateRefresh || (g_uNextStateThink <= ticks))
 	{		
 		StatesBitPack_t states;

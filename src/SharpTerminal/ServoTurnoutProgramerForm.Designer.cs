@@ -64,6 +64,8 @@ namespace SharpTerminal
             this.m_numEndAngle = new System.Windows.Forms.NumericUpDown();
             this.m_tbOperationTime = new System.Windows.Forms.MaskedTextBox();
             this.m_lblStatus = new System.Windows.Forms.Label();
+            this.m_lnkStartPos = new System.Windows.Forms.LinkLabel();
+            this.m_lnkEndPos = new System.Windows.Forms.LinkLabel();
             label1 = new System.Windows.Forms.Label();
             label2 = new System.Windows.Forms.Label();
             label3 = new System.Windows.Forms.Label();
@@ -86,9 +88,9 @@ namespace SharpTerminal
             label1.AutoSize = true;
             label1.Location = new System.Drawing.Point(3, 32);
             label1.Name = "label1";
-            label1.Size = new System.Drawing.Size(121, 13);
-            label1.TabIndex = 0;
-            label1.Text = "Start Angle:";
+            label1.Size = new System.Drawing.Size(123, 13);
+            label1.TabIndex = 2;
+            label1.Text = "&Start Angle:";
             // 
             // label2
             // 
@@ -96,9 +98,9 @@ namespace SharpTerminal
             label2.AutoSize = true;
             label2.Location = new System.Drawing.Point(3, 58);
             label2.Name = "label2";
-            label2.Size = new System.Drawing.Size(121, 13);
-            label2.TabIndex = 2;
-            label2.Text = "End Angle:";
+            label2.Size = new System.Drawing.Size(123, 13);
+            label2.TabIndex = 5;
+            label2.Text = "&End Angle:";
             // 
             // label3
             // 
@@ -107,7 +109,7 @@ namespace SharpTerminal
             label3.Location = new System.Drawing.Point(3, 6);
             label3.Name = "label3";
             label3.Size = new System.Drawing.Size(38, 13);
-            label3.TabIndex = 4;
+            label3.TabIndex = 0;
             label3.Text = "Servo:";
             // 
             // label4
@@ -116,9 +118,9 @@ namespace SharpTerminal
             label4.AutoSize = true;
             label4.Location = new System.Drawing.Point(3, 84);
             label4.Name = "label4";
-            label4.Size = new System.Drawing.Size(121, 13);
-            label4.TabIndex = 6;
-            label4.Text = "Operation time (ms):";
+            label4.Size = new System.Drawing.Size(123, 13);
+            label4.TabIndex = 8;
+            label4.Text = "Operation &time (ms):";
             // 
             // groupBox1
             // 
@@ -126,8 +128,8 @@ namespace SharpTerminal
             groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             groupBox1.Location = new System.Drawing.Point(3, 107);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new System.Drawing.Size(121, 135);
-            groupBox1.TabIndex = 8;
+            groupBox1.Size = new System.Drawing.Size(123, 135);
+            groupBox1.TabIndex = 10;
             groupBox1.TabStop = false;
             groupBox1.Text = "Flags";
             // 
@@ -149,7 +151,7 @@ namespace SharpTerminal
             tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
             tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
             tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            tableLayoutPanel2.Size = new System.Drawing.Size(115, 116);
+            tableLayoutPanel2.Size = new System.Drawing.Size(117, 116);
             tableLayoutPanel2.TabIndex = 0;
             // 
             // m_cbInverted
@@ -179,7 +181,7 @@ namespace SharpTerminal
             this.m_cbActivateOnPowerUp.AutoSize = true;
             this.m_cbActivateOnPowerUp.Location = new System.Drawing.Point(3, 49);
             this.m_cbActivateOnPowerUp.Name = "m_cbActivateOnPowerUp";
-            this.m_cbActivateOnPowerUp.Size = new System.Drawing.Size(109, 17);
+            this.m_cbActivateOnPowerUp.Size = new System.Drawing.Size(111, 17);
             this.m_cbActivateOnPowerUp.TabIndex = 2;
             this.m_cbActivateOnPowerUp.Text = "Activate on power up";
             this.m_cbActivateOnPowerUp.UseVisualStyleBackColor = true;
@@ -214,20 +216,21 @@ namespace SharpTerminal
             label5.Location = new System.Drawing.Point(3, 250);
             label5.Name = "label5";
             label5.Size = new System.Drawing.Size(40, 13);
-            label5.TabIndex = 10;
+            label5.TabIndex = 12;
             label5.Text = "Status:";
             // 
             // groupBox2
             // 
+            this.tableLayoutPanel1.SetColumnSpan(groupBox2, 2);
             groupBox2.Controls.Add(this.m_cbTestMode);
             groupBox2.Controls.Add(this.m_btnFlip);
             groupBox2.Controls.Add(this.m_btnClose);
             groupBox2.Controls.Add(this.m_btnThrow);
             groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
-            groupBox2.Location = new System.Drawing.Point(130, 107);
+            groupBox2.Location = new System.Drawing.Point(132, 107);
             groupBox2.Name = "groupBox2";
-            groupBox2.Size = new System.Drawing.Size(257, 135);
-            groupBox2.TabIndex = 12;
+            groupBox2.Size = new System.Drawing.Size(255, 135);
+            groupBox2.TabIndex = 11;
             groupBox2.TabStop = false;
             groupBox2.Text = "Test Controls";
             // 
@@ -238,7 +241,7 @@ namespace SharpTerminal
             this.m_cbTestMode.Name = "m_cbTestMode";
             this.m_cbTestMode.Size = new System.Drawing.Size(76, 17);
             this.m_cbTestMode.TabIndex = 3;
-            this.m_cbTestMode.Text = "Test mode";
+            this.m_cbTestMode.Text = "Test mo&de";
             this.m_cbTestMode.UseVisualStyleBackColor = true;
             this.m_cbTestMode.CheckedChanged += new System.EventHandler(this.m_cbTestMode_CheckedChanged);
             // 
@@ -249,7 +252,7 @@ namespace SharpTerminal
             this.m_btnFlip.Name = "m_btnFlip";
             this.m_btnFlip.Size = new System.Drawing.Size(75, 23);
             this.m_btnFlip.TabIndex = 2;
-            this.m_btnFlip.Text = "Flip";
+            this.m_btnFlip.Text = "&Flip";
             this.m_btnFlip.UseVisualStyleBackColor = true;
             this.m_btnFlip.Click += new System.EventHandler(this.m_btnFlip_Click);
             // 
@@ -260,7 +263,7 @@ namespace SharpTerminal
             this.m_btnClose.Name = "m_btnClose";
             this.m_btnClose.Size = new System.Drawing.Size(75, 23);
             this.m_btnClose.TabIndex = 1;
-            this.m_btnClose.Text = "Close";
+            this.m_btnClose.Text = "&Close";
             this.m_btnClose.UseVisualStyleBackColor = true;
             this.m_btnClose.Click += new System.EventHandler(this.m_btnClose_Click);
             // 
@@ -271,7 +274,7 @@ namespace SharpTerminal
             this.m_btnThrow.Name = "m_btnThrow";
             this.m_btnThrow.Size = new System.Drawing.Size(75, 23);
             this.m_btnThrow.TabIndex = 0;
-            this.m_btnThrow.Text = "Throw";
+            this.m_btnThrow.Text = "&Throw";
             this.m_btnThrow.UseVisualStyleBackColor = true;
             this.m_btnThrow.Click += new System.EventHandler(this.m_btnThrow_Click);
             // 
@@ -282,7 +285,7 @@ namespace SharpTerminal
             this.m_btnCancel.Location = new System.Drawing.Point(327, 286);
             this.m_btnCancel.Name = "m_btnCancel";
             this.m_btnCancel.Size = new System.Drawing.Size(75, 23);
-            this.m_btnCancel.TabIndex = 1;
+            this.m_btnCancel.TabIndex = 0;
             this.m_btnCancel.Text = "&Cancel";
             this.m_btnCancel.UseVisualStyleBackColor = true;
             this.m_btnCancel.Click += new System.EventHandler(this.m_btnCancel_Click);
@@ -305,9 +308,10 @@ namespace SharpTerminal
             this.tableLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tableLayoutPanel1.ColumnCount = 2;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 32.82051F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 67.17949F));
+            this.tableLayoutPanel1.ColumnCount = 3;
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 44.44444F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 22.22222F));
             this.tableLayoutPanel1.Controls.Add(label4, 0, 3);
             this.tableLayoutPanel1.Controls.Add(label3, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.m_tbName, 1, 0);
@@ -320,6 +324,8 @@ namespace SharpTerminal
             this.tableLayoutPanel1.Controls.Add(label5, 0, 5);
             this.tableLayoutPanel1.Controls.Add(this.m_lblStatus, 1, 5);
             this.tableLayoutPanel1.Controls.Add(groupBox2, 1, 4);
+            this.tableLayoutPanel1.Controls.Add(this.m_lnkStartPos, 2, 1);
+            this.tableLayoutPanel1.Controls.Add(this.m_lnkEndPos, 2, 2);
             this.tableLayoutPanel1.Location = new System.Drawing.Point(12, 12);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 6;
@@ -330,38 +336,39 @@ namespace SharpTerminal
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 141F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 18F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(390, 268);
-            this.tableLayoutPanel1.TabIndex = 3;
+            this.tableLayoutPanel1.TabIndex = 1;
             // 
             // m_tbName
             // 
             this.m_tbName.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_tbName.Location = new System.Drawing.Point(130, 3);
+            this.tableLayoutPanel1.SetColumnSpan(this.m_tbName, 2);
+            this.m_tbName.Location = new System.Drawing.Point(132, 3);
             this.m_tbName.Name = "m_tbName";
             this.m_tbName.ReadOnly = true;
-            this.m_tbName.Size = new System.Drawing.Size(257, 20);
-            this.m_tbName.TabIndex = 5;
+            this.m_tbName.Size = new System.Drawing.Size(255, 20);
+            this.m_tbName.TabIndex = 1;
             // 
             // m_numStartAngle
             // 
             this.m_numStartAngle.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.m_numStartAngle.Location = new System.Drawing.Point(130, 29);
+            this.m_numStartAngle.Location = new System.Drawing.Point(132, 29);
             this.m_numStartAngle.Name = "m_numStartAngle";
             this.m_numStartAngle.Size = new System.Drawing.Size(55, 20);
-            this.m_numStartAngle.TabIndex = 1;
+            this.m_numStartAngle.TabIndex = 3;
             this.m_numStartAngle.ValueChanged += new System.EventHandler(this.m_numStartAngle_ValueChanged);
             // 
             // m_numEndAngle
             // 
             this.m_numEndAngle.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.m_numEndAngle.Location = new System.Drawing.Point(130, 55);
+            this.m_numEndAngle.Location = new System.Drawing.Point(132, 55);
             this.m_numEndAngle.Name = "m_numEndAngle";
             this.m_numEndAngle.Size = new System.Drawing.Size(55, 20);
-            this.m_numEndAngle.TabIndex = 3;
+            this.m_numEndAngle.TabIndex = 6;
             this.m_numEndAngle.ValueChanged += new System.EventHandler(this.m_numEndAngle_ValueChanged);
             // 
             // m_tbOperationTime
             // 
-            this.m_tbOperationTime.Location = new System.Drawing.Point(130, 81);
+            this.m_tbOperationTime.Location = new System.Drawing.Point(132, 81);
             this.m_tbOperationTime.Mask = "0000";
             this.m_tbOperationTime.Name = "m_tbOperationTime";
             this.m_tbOperationTime.Size = new System.Drawing.Size(100, 20);
@@ -373,11 +380,36 @@ namespace SharpTerminal
             // 
             this.m_lblStatus.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.m_lblStatus.AutoSize = true;
-            this.m_lblStatus.Location = new System.Drawing.Point(130, 250);
+            this.tableLayoutPanel1.SetColumnSpan(this.m_lblStatus, 2);
+            this.m_lblStatus.Location = new System.Drawing.Point(132, 250);
             this.m_lblStatus.Name = "m_lblStatus";
             this.m_lblStatus.Size = new System.Drawing.Size(35, 13);
-            this.m_lblStatus.TabIndex = 11;
+            this.m_lblStatus.TabIndex = 13;
             this.m_lblStatus.Text = "label6";
+            // 
+            // m_lnkStartPos
+            // 
+            this.m_lnkStartPos.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_lnkStartPos.AutoSize = true;
+            this.m_lnkStartPos.Location = new System.Drawing.Point(305, 32);
+            this.m_lnkStartPos.Name = "m_lnkStartPos";
+            this.m_lnkStartPos.Size = new System.Drawing.Size(82, 13);
+            this.m_lnkStartPos.TabIndex = 4;
+            this.m_lnkStartPos.TabStop = true;
+            this.m_lnkStartPos.Text = "&move";
+            this.m_lnkStartPos.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.m_lnkStartPos_LinkClicked);
+            // 
+            // m_lnkEndPos
+            // 
+            this.m_lnkEndPos.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_lnkEndPos.AutoSize = true;
+            this.m_lnkEndPos.Location = new System.Drawing.Point(305, 58);
+            this.m_lnkEndPos.Name = "m_lnkEndPos";
+            this.m_lnkEndPos.Size = new System.Drawing.Size(82, 13);
+            this.m_lnkEndPos.TabIndex = 7;
+            this.m_lnkEndPos.TabStop = true;
+            this.m_lnkEndPos.Text = "m&ove";
+            this.m_lnkEndPos.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.m_lnkEndPos_LinkClicked);
             // 
             // ServoTurnoutProgrammerForm
             // 
@@ -428,6 +460,8 @@ namespace SharpTerminal
         private System.Windows.Forms.Button m_btnFlip;
         private System.Windows.Forms.Button m_btnClose;
         private System.Windows.Forms.Button m_btnThrow;
+        private System.Windows.Forms.LinkLabel m_lnkStartPos;
+        private System.Windows.Forms.LinkLabel m_lnkEndPos;
     }
 }
 

@@ -36,5 +36,10 @@ void Servo::detach()
 {
 	dcclite::Log::Trace("[Servo::detach] Pin {}", m_iPin);
 
-	m_iPin = 0;	
+	m_iPin = -1;
+}
+
+bool Servo::attached() const noexcept
+{
+	return m_iPin >= 0;
 }

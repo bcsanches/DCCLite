@@ -126,6 +126,8 @@ namespace SharpTerminal
             m_cbInverted.Enabled = enable;
             m_cbInvertedFrog.Enabled = enable;
             m_cbInvertedPower.Enabled = enable;
+            m_lnkStartPos.Enabled = enable;
+            m_lnkEndPos.Enabled = enable;
 
             m_btnOK.Enabled = enable && m_fDataChanged;
         }
@@ -181,6 +183,9 @@ namespace SharpTerminal
         protected override async void OnFormClosing(FormClosingEventArgs e)
         {
             bool okPressed = this.DialogResult == DialogResult.OK;
+
+            if (m_fFailed)
+                return;
 
             if (!okPressed && !m_fFailed && m_fDataChanged && (MessageBox.Show(this, "Are you sure? Changes will not be saved", "Are you sure?", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes))
             {
@@ -416,6 +421,16 @@ namespace SharpTerminal
         private void Flags_CheckedChanged(object sender, EventArgs e)
         {
             this.OnDataChanged();
+        }
+
+        private void m_lnkStartPos_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            this.UpdatePosition((int)m_numStartAngle.Value);
+        }
+
+        private void m_lnkEndPos_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            this.UpdatePosition((int)m_numEndAngle.Value);
         }
     }
 

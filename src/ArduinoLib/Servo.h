@@ -23,7 +23,10 @@ class ARDUINO_API Servo
 
 		void detach();
 
+		bool attached() const noexcept;
+
 	private:
-		int m_iPin = 0;
-		int m_iAngle = 0;
+		int m_iPin = -1;
+
+		int m_iAngle = 0;		
 };

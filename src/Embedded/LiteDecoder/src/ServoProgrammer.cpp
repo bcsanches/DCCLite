@@ -16,12 +16,15 @@
 #include "ServoTurnoutDecoder.h"
 #include "Session.h"
 
+constexpr unsigned long DETACH_DELAY = 1000;
+constexpr unsigned long DEGREE_DETACH_DELAY_BONUS = 50;
+
 class ServoProgrammerHelper
 {
 	public:		
-		ServoProgrammerHelper(const uint32_t taskId, const uint8_t slot, ServoTurnoutDecoder &decoder):
-			m_uTaskId{taskId},			
+		ServoProgrammerHelper(const uint32_t taskId, const uint8_t slot, ServoTurnoutDecoder &decoder):					
 			m_rclDecoder{ decoder },
+			m_uTaskId{taskId},
 			m_uDecoderSlot{ slot }			
 		{
 			m_rclDecoder.PM_EnableProgMode();
@@ -36,7 +39,17 @@ class ServoProgrammerHelper
 
 		void MoveServo(const uint8_t position)
 		{						
+			if (!m_rclDecoder.m_clServo.attached())			
+			{
+				//Console::SendLn("[ServoProgrammerHelper::MoveServo] attached");
+				m_rclDecoder.m_clServo.attach(m_rclDecoder.m_clPin.Raw());
+			}				
+
+			auto bonus = abs(position - m_rclDecoder.m_clServo.read());
+
 			m_rclDecoder.m_clServo.write(position);
+
+			m_uDetachTime = millis() + DETACH_DELAY + (DEGREE_DETACH_DELAY_BONUS * bonus);
 		}
 
 		void UpdateServo(const uint8_t flags, const uint8_t startPos, const uint8_t endPos, const uint8_t ticks)
@@ -47,12 +60,24 @@ class ServoProgrammerHelper
 			m_rclDecoder.m_uTicks = ticks;			
 		}
 
+		void Update(const unsigned long ticks)
+		{
+			if ((ticks >= m_uDetachTime) && (m_rclDecoder.m_clServo.attached()))
+			{
+				m_rclDecoder.m_clServo.detach();
+
+				//Console::SendLn("[ServoProgrammerHelper::MoveServo] detach");
+			}
+		}
+
 	private:
 		ServoTurnoutDecoder &m_rclDecoder;
 
 	public:
 		ServoProgrammerHelper *m_pclNext = nullptr;
 		ServoProgrammerHelper *m_pclPrev = nullptr;
+
+		unsigned long		m_uDetachTime = 0;
 
 		const uint32_t		m_uTaskId;		
 
@@ -116,6 +141,14 @@ class TaskList
 
 				delete m_pclListHead;
 				m_pclListHead = next;
+			}
+		}
+
+		inline void Update(const unsigned long ticks)
+		{
+			for (auto item = m_pclListHead; item; item = item->m_pclNext)
+			{
+				item->Update(ticks);
 			}
 		}
 
@@ -275,7 +308,7 @@ static void ParseDeployServo(dcclite::Packet &packet, const uint32_t packetTaskI
 		return;
 	}
 
-	Console::SendLogEx("[ParseDeployServo]", ' ', packetTaskId);
+	//Console::SendLogEx("[ParseDeployServo]", ' ', packetTaskId);
 
 	const auto flags = packet.ReadByte();
 	const auto startPos = packet.ReadByte();
@@ -300,6 +333,11 @@ static void ParseDeployServo(dcclite::Packet &packet, const uint32_t packetTaskI
 void ServoProgrammer::Stop()
 {
 	g_clTasklist.Clear();	
+}
+
+void ServoProgrammer::Update(const unsigned long ticks)
+{
+	g_clTasklist.Update(ticks);
 }
 
 void ServoProgrammer::ParsePacket(dcclite::Packet &packet)
