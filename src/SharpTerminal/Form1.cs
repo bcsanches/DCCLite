@@ -20,9 +20,18 @@ namespace SharpTerminal
 
         private readonly RequestManager mRequestManager;
 
-        public Console()
+        String  m_strParamServer;
+        ushort  m_uParamPort; 
+
+        public Console(String[] args = null)
         {
             InitializeComponent();
+
+            if((args != null) && (args.Length== 2))
+            {
+                m_strParamServer = args[0];
+                m_uParamPort = ushort.Parse(args[1]);
+            }
 
             //Creates here, so it has a SyncContext
             mRequestManager = new();
@@ -39,22 +48,25 @@ namespace SharpTerminal
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-            
-            using (var dialog = new ServerSelectionForm())
+
+            if(m_strParamServer == null)
             {
+                using var dialog = new ServerSelectionForm();
+                
                 if (dialog.ShowDialog() == DialogResult.Cancel)
                 {
                     this.Close();
                     return;
                 }
 
-                mRequestManager.ConnectionStateChanged += mRequestManager_ConnectionStateChanged;
-                mRequestManager.BeginConnect(dialog.mSelectedService.mAddress.ToString(), dialog.mSelectedService.mPort);
+                m_strParamServer = dialog.mSelectedService.mAddress.ToString();
+                m_uParamPort = dialog.mSelectedService.mPort;                
+            }            
 
-                SetStatus("Connecting");
+            mRequestManager.ConnectionStateChanged += mRequestManager_ConnectionStateChanged;
+            mRequestManager.BeginConnect(m_strParamServer, m_uParamPort);
 
-            }
-
+            SetStatus("Connecting");
         }        
 
         protected override void OnFormClosed(FormClosedEventArgs e)
