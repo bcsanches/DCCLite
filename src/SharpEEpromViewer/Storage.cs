@@ -168,7 +168,8 @@ namespace SharpEEPromViewer
             { "Bcs0008\0", typeof(RootLump) },
             { "NetU002\0", typeof(NetworkLump) },
             { "Sson001\0", typeof(SessionLump) },
-            { "DECS012\0", typeof(DecodersLump) },
+            { "DECS012\0", typeof(DecodersLump) },  //DECS012 is the same as DECS013, bumped version for testing
+            { "DECS013\0", typeof(DecodersLump) },
             { "ENDEND1\0", typeof(MarkerLump) }
         };
 
@@ -211,10 +212,9 @@ namespace SharpEEPromViewer
         {
             var headerBytes = reader.ReadChars(8);
             var name = new String(headerBytes);
-
-            Type foundType;
-            if (!gKnownTypes.TryGetValue(name, out foundType))
-                throw new NotImplementedException();
+             
+            if (!gKnownTypes.TryGetValue(name, out Type foundType))
+                throw new Exception("Lump " + name + " not supported");
                 //foundType = typeof(UnknownLump);
 
             var size = reader.ReadUInt16();

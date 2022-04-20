@@ -69,29 +69,45 @@ namespace SharpEEPromViewer
 
         private void LoadEEProm(Stream stream)
         {
-            using var reader = new System.IO.BinaryReader(stream, System.Text.Encoding.ASCII);
-
-            var lump = Lump.Create(reader);
-            
-            if(lump is not RootLump)
+            try
             {
-                MessageBox.Show("Error: file does not contains a valid header", "Error reading", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                using var reader = new System.IO.BinaryReader(stream, System.Text.Encoding.ASCII);
+
+                var lump = Lump.Create(reader);
+
+                if (lump is not RootLump)
+                {
+                    MessageBox.Show("Error: file does not contains a valid header", "Error reading", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                    return;
+                }
+
+                //so far it appears that the EEProm is fine, so clear and load
+                this.Clear();
+
+                mTreeView.Nodes.Add(lump.Name);
+
+                var node = mTreeView.Nodes[0];
+
+                ConfigureNode(node, lump);
+
+                FillTree_r(node, lump);
+
+                node.ExpandAll();
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null)
+                    ex = ex.InnerException;
+
+                MessageBox.Show("Error: Loading EEPROM failed: " + ex.Message, "Error loading data", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                mSplitContainer.Panel2.Controls.Clear();
+                mTreeView.Nodes.Clear();
 
                 return;
             }
             
-            //so far it appears that the EEProm is fine, so clear and load
-            this.Clear();
-
-            mTreeView.Nodes.Add(lump.Name);
-
-            var node = mTreeView.Nodes[0];
-
-            ConfigureNode(node, lump);
-            
-            FillTree_r(node, lump);
-
-            node.ExpandAll();
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)

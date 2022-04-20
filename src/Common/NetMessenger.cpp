@@ -13,6 +13,8 @@
 #include <algorithm>
 #include <string.h>
 
+#include "Util.h"
+
 namespace dcclite
 {
 	NetMessenger::NetMessenger(Socket &&socket, const char *separator, const char *initialBuffer) :			
@@ -55,6 +57,9 @@ namespace dcclite
 
 	std::tuple<Socket::Status, std::string> NetMessenger::Poll()
 	{
+		if (!m_lstMessages.empty())
+			return this->PollInternalQueue();
+
 		char tmpBuffer[1024];
 
 		auto[status, size] = m_clSocket.Receive(tmpBuffer, sizeof(tmpBuffer));
@@ -90,23 +95,37 @@ namespace dcclite
 	}
 
 	bool NetMessenger::Send(const NetworkAddress &destination, std::string_view msg)
-	{
-		if (!m_clSocket.Send(destination, msg.data(), msg.length()))
-			return false;
-		
-		return m_clSocket.Send(destination, "\r\n", 2);
+	{	
+		if (!dcclite::StrEndsWith(msg, "\r\n"))
+		{
+			std::string newMsg{msg};
+
+			newMsg.append("\r\n");
+
+			return m_clSocket.Send(destination, newMsg.data(), newMsg.length());				
+		}
+		else
+		{
+			return m_clSocket.Send(destination, msg.data(), msg.length());				
+		}
 	}
 
 	bool NetMessenger::Send(std::string_view msg)
 	{
+		if (!dcclite::StrEndsWith(msg, "\r\n"))
+		{
+			std::string newMsg{ msg };
+
+			newMsg.append("\r\n");
+
+			auto [status, size] = m_clSocket.Send(newMsg.data(), newMsg.length());
+			return status != Socket::Status::DISCONNECTED;
+		}
+		else
 		{
 			auto [status, size] = m_clSocket.Send(msg.data(), msg.length());
-			if (status == Socket::Status::DISCONNECTED)
-				return false;
+			return status != Socket::Status::DISCONNECTED;			
 		}
-
-		auto [status, size] = m_clSocket.Send("\r\n", 2);
-		return status != Socket::Status::DISCONNECTED;
 	}
 
 	std::tuple<Socket::Status, std::string> NetMessenger::PollInternalQueue()

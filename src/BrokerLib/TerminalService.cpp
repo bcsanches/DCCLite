@@ -1216,7 +1216,7 @@ namespace dcclite::broker
 		int cmdId = -1;
 		try
 		{
-			//dcclite::Log::Trace("Received {}", msg);
+			//dcclite::Log::Trace("[TerminalClient::OnMsg] Got msg");
 
 			rapidjson::Document doc;
 			doc.Parse(msg.c_str());
@@ -1255,6 +1255,7 @@ namespace dcclite::broker
 				throw TerminalCmdException(fmt::format("Invalid cmd name: {}", methodName), cmdId);				
 			}
 
+			//dcclite::Log::Trace("[TerminalClient::OnMsg] Running cmd {} - {}", cmd->GetName(), cmdId);
 			result = cmd->Run(m_clContext, cmdId, doc);
 		}
 		catch (TerminalCmdException &ex)
@@ -1295,6 +1296,7 @@ namespace dcclite::broker
 			if (status != Socket::Status::OK)
 				throw std::logic_error(fmt::format("[TerminalClient::ReceiveDataThreadProc] Unexpected socket error: {}", magic_enum::enum_name(status)));
 			
+			//dcclite::Log::Trace("[TerminalClient::ReceiveDataThreadProc] Got data");
 			Messenger::PostEvent(std::make_unique<TerminalClient::MsgArrivedEvent>(std::ref(*this), std::move(msg)));
 		}
 
@@ -1489,7 +1491,7 @@ namespace dcclite::broker
 			auto [status, socket, address] = m_clSocket.TryAccept();
 
 			if (status != Socket::Status::OK)
-				break;
+				break;			
 			
 			Messenger::PostEvent(
 				std::make_unique<TerminalServiceAcceptConnectionEvent>(
