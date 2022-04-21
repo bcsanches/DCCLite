@@ -115,10 +115,11 @@
         "class": "ServoTurnout",
         "address": "1410",
         "pin": 35,
-        "inverted": false,
+        "inverted": true,
         "powerPin": 65,
         "frogPin": 64,
-        "range":25,
+        "startPos":30,
+        "endPos":45,
         "invertedFrog": false,
         "invertedPower": true,
         "operationTime": 3000
