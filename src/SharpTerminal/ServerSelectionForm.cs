@@ -63,7 +63,7 @@ namespace SharpTerminal
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-
+            
             mClient.EnableBroadcast = true;
             mClient.Client.Bind(new IPEndPoint(IPAddress.Any, 0));
 

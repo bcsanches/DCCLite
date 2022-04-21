@@ -125,7 +125,7 @@ bool Console::Custom_ParseCommand(const char *command)
 	return false;
 }
 
-static const char DecodersStorageId[] PROGMEM = { "DECS012" };
+static const char DecodersStorageId[] PROGMEM = { "DECS013" };
 static const char NetUdpStorageId[] PROGMEM = { "NetU002" };
 static const char SessionStorageId[] PROGMEM = { "Sson001" };
 
