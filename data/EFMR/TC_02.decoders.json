@@ -55,6 +55,7 @@
         "inverted": true,
         "powerPin": 36,
         "frogPin": 34,
+        "range":15,
         "invertedFrog": true,
         "invertedPower": true,
         "operationTime": 3000
@@ -104,6 +105,19 @@
         "inverted": false,
         "powerPin": 67,
         "frogPin": 66,
+        "range":25,
+        "invertedFrog": false,
+        "invertedPower": true,
+        "operationTime": 3000
+    },
+    {
+        "name": "TC_T10",
+        "class": "ServoTurnout",
+        "address": "1410",
+        "pin": 35,
+        "inverted": false,
+        "powerPin": 65,
+        "frogPin": 64,
         "range":25,
         "invertedFrog": false,
         "invertedPower": true,

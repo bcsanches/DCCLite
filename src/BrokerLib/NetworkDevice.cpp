@@ -493,7 +493,7 @@ namespace dcclite::broker
 			//any packet updates timeout do it
 			//m_rclSelf.PostponeTimeout(time);
 
-			dcclite::Log::Debug("[{}::Device::OnPacket] pong", m_rclSelf.GetName());
+			//dcclite::Log::Debug("[{}::Device::OnPacket] pong", m_rclSelf.GetName());
 
 			return;
 		}
@@ -578,7 +578,7 @@ namespace dcclite::broker
 
 		//m_rclSelf.PostponeTimeout(time);
 
-		dcclite::Log::Debug("[{}::Device::OnPacket] sending ping", m_rclSelf.GetName());
+		//dcclite::Log::Debug("[{}::Device::OnPacket] sending ping", m_rclSelf.GetName());
 	}
 
 	void NetworkDevice::OnlineState::Update(const dcclite::Clock::TimePoint_t time)

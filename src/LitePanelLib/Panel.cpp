@@ -12,6 +12,8 @@
 #include "Panel.h"
 #include "RailObject.h"
 
+#include <stdexcept>
+
 namespace LitePanel
 {
 	enum Layers

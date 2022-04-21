@@ -95,6 +95,12 @@ std::string_view dcclite::StrTrim(std::string_view str) noexcept
 	return str.substr(newBegin - str.begin(), newEnd - newBegin);
 }
 
+//https://stackoverflow.com/questions/874134/find-out-if-string-ends-with-another-string-in-c
+bool dcclite::StrEndsWith(std::string_view str, std::string_view suffix) noexcept
+{
+	return str.size() >= suffix.size() && 0 == str.compare(str.size() - suffix.size(), suffix.size(), suffix);
+}
+
 std::string dcclite::GetSystemErrorMessage(const unsigned int error) noexcept
 {
 #ifndef WIN32	

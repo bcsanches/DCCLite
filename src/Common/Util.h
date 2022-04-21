@@ -28,6 +28,8 @@ namespace dcclite
 	*/
 	std::string_view StrTrim(std::string_view str) noexcept;
 
+	bool StrEndsWith(std::string_view str, std::string_view suffix) noexcept;	
+
 	std::string GetSystemLastErrorMessage() noexcept;
 
 	std::string GetSystemErrorMessage(const unsigned int error) noexcept;
