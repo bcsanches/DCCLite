@@ -115,11 +115,17 @@ namespace dcclite::broker
 			
 			[[nodiscard]] bool CheckSession(const dcclite::NetworkAddress remoteAddress);
 
+			/*
+			* This methods sets the state as offline, such as in cases when a connection is dropped
+			*
+			*/
 			void GoOffline();
-			void Disconnect();
 
-			void PostponeTimeout(const dcclite::Clock::TimePoint_t time);
-			void OnTimeoutThink(const dcclite::Clock::TimePoint_t time);
+			/*
+			* Disconnect does a graceful disconnect telling the device that we are disconnecting, after that, it goes to OFFLINE state
+			* 
+			*/
+			void Disconnect();			
 		
 			void ClearState();
 			void GotoSyncState();
@@ -277,6 +283,24 @@ namespace dcclite::broker
 					Thinker				m_clPingThinker;
 			};
 
+			class TimeoutController
+			{
+				public:
+					TimeoutController(NetworkDevice &owner);
+
+					void Enable(const dcclite::Clock::TimePoint_t time);
+
+					void Disable();
+
+				private:
+					void OnThink(const dcclite::Clock::TimePoint_t time);
+
+				private:
+					Thinker	m_clThinker;
+
+					NetworkDevice &m_rclOwner;
+			};
+
 
 			//
 			//
@@ -284,9 +308,9 @@ namespace dcclite::broker
 			struct NullState {};
 		
 			std::variant< NullState, ConfigState, SyncState, OnlineState> m_vState;
-			State *m_pclCurrentState = nullptr;
+			State *m_pclCurrentState = nullptr;			
 
-			Thinker				m_clTimeoutThinker;
+			TimeoutController	m_clTimeoutController;
 
 			//
 			//

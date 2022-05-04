@@ -27,7 +27,7 @@ namespace dcclite::broker
 
 	using namespace std::chrono_literals;
 
-	static auto constexpr TIMEOUT = 10s;
+	static auto constexpr TIMEOUT_TICKS = 10s;
 	static auto constexpr CONFIG_RETRY_TIME = 100ms;
 	static auto constexpr STATE_TIMEOUT = 250ms;
 
@@ -49,25 +49,60 @@ namespace dcclite::broker
 
 	//
 	//
+	//
+	//
+	//
+	//
+
+	NetworkDevice::TimeoutController::TimeoutController(NetworkDevice &owner):
+		m_clThinker{ THINKER_MF_LAMBDA(OnThink) },
+		m_rclOwner(owner)
+	{
+		//empty
+	}
+
+	void NetworkDevice::TimeoutController::Enable(const dcclite::Clock::TimePoint_t currentTime)
+	{
+		m_clThinker.SetNext(currentTime + TIMEOUT_TICKS);
+	}
+
+	void NetworkDevice::TimeoutController::Disable()
+	{
+		m_clThinker.Cancel();
+	}
+
+	void NetworkDevice::TimeoutController::OnThink(const dcclite::Clock::TimePoint_t time)
+	{
+		dcclite::Log::Warn("[{}::Device::Update] timeout", m_rclOwner.GetName());
+
+		//
+		//connection lost...
+		m_rclOwner.GoOffline();
+	}
+
+	//
+	//
 	// DEVICE CONSTRUCTION / DESTRUCTION
 	//
 	//
 
+
+
 	NetworkDevice::NetworkDevice(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project):
-		Device(std::move(name), dccService, params, project),
-		m_clTimeoutThinker(THINKER_MF_LAMBDA(OnTimeoutThink)),
+		Device(std::move(name), dccService, params, project),		
 		m_clPinManager(DecodeBoardName(params["class"].GetString())),
-		m_fRegistered(true)
+		m_fRegistered(true),
+		m_clTimeoutController{ *this }
 	{
 		this->Load();
 	}
 
 
 	NetworkDevice::NetworkDevice(std::string name, IDccLite_DeviceServices &dccService, const Project &project) :
-		Device(std::move(name), dccService, project),
-		m_clTimeoutThinker(THINKER_MF_LAMBDA(OnTimeoutThink)),
+		Device(std::move(name), dccService, project),		
 		m_clPinManager(ArduinoBoards::MEGA),		
-		m_fRegistered(false)
+		m_fRegistered(false),
+		m_clTimeoutController{*this}
 	{
 		//empty
 	}
@@ -176,7 +211,9 @@ namespace dcclite::broker
 			m_rclSelf.GoOffline();
 
 			return;
-		}
+		}		
+
+		m_rclSelf.m_clTimeoutController.Enable(time);
 
 		//only increment seq count if m_vecAcks[seq] is not set yet, so we handle duplicate packets
 		m_uSeqCount += m_vecAcks[seq] == false;
@@ -206,6 +243,8 @@ namespace dcclite::broker
 			return;
 
 		dcclite::Log::Info("[{}::Device::OnPacket_ConfigFinished] Config Finished, device is ready", m_rclSelf.GetName());
+
+		m_rclSelf.m_clTimeoutController.Enable(time);
 
 		m_rclSelf.GotoSyncState();
 	}
@@ -311,6 +350,8 @@ namespace dcclite::broker
 		if (!m_rclSelf.CheckSessionConfig(remoteConfigToken, remoteAddress))
 			return;
 
+		m_rclSelf.m_clTimeoutController.Enable(time);
+
 		dcclite::StatesBitPack_t changedStates;
 		dcclite::StatesBitPack_t states;
 
@@ -375,7 +416,8 @@ namespace dcclite::broker
 		m_tLastStateSentTimeout = {};
 
 		m_clPingThinker.SetNext(time + PING_TIMEOUT);
-		m_rclSelf.PostponeTimeout(time);
+
+		m_rclSelf.m_clTimeoutController.Enable(time);		
 	}
 
 	void NetworkDevice::OnlineState::SendStateDelta(const bool sendSensorsState, const dcclite::Clock::TimePoint_t time)
@@ -484,8 +526,8 @@ namespace dcclite::broker
 	{
 		if (!m_rclSelf.CheckSessionConfig(remoteConfigToken, remoteAddress))
 			return;
-
-		m_rclSelf.PostponeTimeout(time);
+		
+		m_rclSelf.m_clTimeoutController.Enable(time);		
 
 		if (msgType == dcclite::MsgTypes::MSG_PONG)
 		{			
@@ -623,6 +665,8 @@ namespace dcclite::broker
 		this->ClearState();
 		this->AbortPendingTasks();
 
+		m_clTimeoutController.Disable();
+
 		dcclite::Log::Warn("[{}::Device::GoOffline] Is OFFLINE", this->GetName());
 		m_clDccService.Device_NotifyStateChange(*this);
 	}
@@ -643,6 +687,8 @@ namespace dcclite::broker
 		m_kStatus = Status::CONNECTING;
 
 		m_clDccService.Device_RegisterSession(*this, m_SessionToken);
+
+		m_clTimeoutController.Enable(time);
 
 		dcclite::Log::Info("[{}::Device::GoOnline] Is connecting", this->GetName());
 
@@ -707,18 +753,6 @@ namespace dcclite::broker
 		return true;
 	}
 
-	void NetworkDevice::PostponeTimeout(const dcclite::Clock::TimePoint_t time)
-	{
-		m_clTimeoutThinker.SetNext(time + TIMEOUT);
-	}		
-
-	void NetworkDevice::OnTimeoutThink(const dcclite::Clock::TimePoint_t time)
-	{		
-		dcclite::Log::Warn("[{}::Device::Update] timeout", this->GetName());
-
-		this->GoOffline();
-	}
-
 	void NetworkDevice::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteConfigToken)
 	{
 		if (!m_pclCurrentState)
@@ -726,9 +760,7 @@ namespace dcclite::broker
 			dcclite::Log::Error("[{}::Device::OnPacket] Cannot process packet on Offline mode, packet: {}", this->GetName(), dcclite::MsgName(msgType));
 
 			return;
-		}
-
-		//this->PostponeTimeout(time);
+		}		
 
 		m_pclCurrentState->OnPacket(packet, time, msgType, remoteAddress, remoteConfigToken);
 	}
