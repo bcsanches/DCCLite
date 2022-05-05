@@ -249,12 +249,18 @@ namespace dcclite
 
 		if (flags & Flags::FLAG_ADDRESS_REUSE)
 		{
-			const char reuseaddr = 1;
+			const int reuseaddr = 1;
 			if (setsockopt(m_hHandle, SOL_SOCKET, SO_REUSEADDR, &reuseaddr, sizeof(reuseaddr)) != 0)
 			{
-				this->Close();
-
+#if PLATFORM == PLATFORM_WINDOWS
 				LogGetDefault()->error("[Socket::Open] Failed to enable SO_REUSEADDR.");
+#else
+				const auto errsv = errno;
+				LogGetDefault()->error("[Socket::Open] Failed to enable SO_REUSEADDR: {}.", strerror(errsv));
+#endif
+
+				this->Close();
+								
 				return false;
 			}
 		}

@@ -106,10 +106,10 @@ namespace dcclite::broker
 
 		if (!configFile)
 		{
-			throw std::runtime_error(fmt::format("error: cannot open config file {}", configFileName.string()));
+			throw std::runtime_error(fmt::format("[Broker::LoadConfig] error: cannot open config file {}", configFileName.string()));
 		}
 
-		dcclite::Log::Debug("Loaded config {}", configFileName.string());
+		dcclite::Log::Debug("[Broker::LoadConfig] Loaded config {}", configFileName.string());
 
 		rapidjson::IStreamWrapper isw(configFile);
 		rapidjson::Document data;
@@ -121,7 +121,7 @@ namespace dcclite::broker
 
 		if (!services.IsArray())
 		{
-			throw std::runtime_error("error: invalid config, expected services array");
+			throw std::runtime_error("[Broker::LoadConfig] error: invalid config, expected services array");
 		}
 
 		auto bonjourSetting = data.FindMember("bonjourService");
