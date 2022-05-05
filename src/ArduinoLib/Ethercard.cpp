@@ -92,7 +92,7 @@ void EtherCard::udpServerListenOnPort(UdpServerCallback callback, uint16_t port)
 	if (g_Socket.IsOpen())
 		throw std::logic_error("EtherCard::udpServerListenOnPort -> Only one port supported, sorry");
 
-	if (!g_Socket.Open(port, dcclite::Socket::Type::DATAGRAM))
+	if (!g_Socket.Open(port, dcclite::Socket::Type::DATAGRAM, dcclite::Socket::FLAG_BROADCAST_MODE))
 		throw std::runtime_error(fmt::format("EtherCard::udpServerListenOnPort: Cannot open datagram socket on port {}", port));
 
 	UdpServerListener listener;

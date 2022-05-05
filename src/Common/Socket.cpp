@@ -235,14 +235,17 @@ namespace dcclite
 			return false;
 		}
 
-		const char broadcast = 1;
-		if ((type == Type::DATAGRAM) && (setsockopt(m_hHandle, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast)) != 0))
+		if (flags & FLAG_BROADCAST_MODE)
 		{
-			this->Close();
+			const char broadcast = 1;
+			if ((type == Type::DATAGRAM) && (setsockopt(m_hHandle, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast)) != 0))
+			{
+				this->Close();
 
-			LogGetDefault()->error("[Socket::Open] Failed to enable SO_BROADCAST.");
-			return false;
-		}
+				LogGetDefault()->error("[Socket::Open] Failed to enable SO_BROADCAST.");
+				return false;
+			}
+		}		
 
 		if (flags & Flags::FLAG_ADDRESS_REUSE)
 		{
