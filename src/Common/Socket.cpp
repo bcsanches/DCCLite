@@ -237,8 +237,8 @@ namespace dcclite
 
 		if (flags & FLAG_BROADCAST_MODE)
 		{
-			const char broadcast = 1;
-			if ((type == Type::DATAGRAM) && (setsockopt(m_hHandle, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast)) != 0))
+			const int broadcast = 1;
+			if ((type == Type::DATAGRAM) && (setsockopt(m_hHandle, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<const char *>(&broadcast), sizeof(broadcast)) != 0))
 			{
 				this->Close();
 
@@ -250,7 +250,7 @@ namespace dcclite
 		if (flags & Flags::FLAG_ADDRESS_REUSE)
 		{
 			const int reuseaddr = 1;
-			if (setsockopt(m_hHandle, SOL_SOCKET, SO_REUSEADDR, &reuseaddr, sizeof(reuseaddr)) != 0)
+			if (setsockopt(m_hHandle, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&reuseaddr), sizeof(reuseaddr)) != 0)
 			{
 #if PLATFORM == PLATFORM_WINDOWS
 				LogGetDefault()->error("[Socket::Open] Failed to enable SO_REUSEADDR.");
