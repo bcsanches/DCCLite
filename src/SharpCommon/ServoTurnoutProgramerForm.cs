@@ -54,6 +54,12 @@ namespace SharpCommon
             InitializeComponent();                       
         }
 
+        private static void ConfigureCheckBox(CheckBox checkBox, ServoTurnoutFlags flags, ServoTurnoutFlags bit)
+        {
+            checkBox.Checked = (flags & bit) == bit;
+            checkBox.Tag = bit;
+        }
+
         public ServoTurnoutProgrammerForm(IServoProgrammer programmer, IServoTurnout target)
         {            
             m_clTarget = target ?? throw new ArgumentNullException(nameof(target));
@@ -82,20 +88,11 @@ namespace SharpCommon
 
             m_tbOperationTime.Text = m_clTarget.MsOperationTime.ToString();
 
-            m_cbInverted.Checked = m_clTarget.InvertedOperation;
-            m_cbInverted.Tag = ServoTurnoutFlags.SRVT_INVERTED_OPERATION;
-
-            m_cbIgnoreSaveState.Checked = m_clTarget.IgnoreSaveState;
-            m_cbIgnoreSaveState.Tag = ServoTurnoutFlags.SRVT_IGNORE_SAVED_STATE;
-
-            m_cbInvertedFrog.Checked = m_clTarget.InvertedFrog;
-            m_cbInvertedFrog.Tag = ServoTurnoutFlags.SRVT_INVERTED_FROG;
-
-            m_cbInvertedPower.Checked = m_clTarget.InvertedPower;
-            m_cbInvertedPower.Tag = ServoTurnoutFlags.SRVT_INVERTED_POWER;
-
-            m_cbActivateOnPowerUp.Checked = m_clTarget.ActivateOnPowerUp;
-            m_cbActivateOnPowerUp.Tag = ServoTurnoutFlags.SRVT_ACTIVATE_ON_POWER_UP;
+            ConfigureCheckBox(m_cbInverted, m_fOriginalFlags, ServoTurnoutFlags.SRVT_INVERTED_OPERATION);
+            ConfigureCheckBox(m_cbIgnoreSaveState, m_fOriginalFlags, ServoTurnoutFlags.SRVT_IGNORE_SAVED_STATE);
+            ConfigureCheckBox(m_cbInvertedFrog, m_fOriginalFlags, ServoTurnoutFlags.SRVT_INVERTED_FROG);
+            ConfigureCheckBox(m_cbInvertedPower, m_fOriginalFlags, ServoTurnoutFlags.SRVT_INVERTED_POWER);
+            ConfigureCheckBox(m_cbActivateOnPowerUp, m_fOriginalFlags, ServoTurnoutFlags.SRVT_ACTIVATE_ON_POWER_UP);
 
             m_lblStatus.Text = "Connecting...";
 

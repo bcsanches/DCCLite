@@ -31,16 +31,6 @@ namespace SharpCommon
 
         public ServoTurnoutFlags Flags { get; }
 
-        public bool InvertedOperation { get; }
-
-        public bool IgnoreSaveState { get; }
-
-        public bool InvertedFrog { get; }
-
-        public bool InvertedPower { get; }
-
-        public bool ActivateOnPowerUp { get; }
-
         public uint StartPos { get; }
         public uint EndPos { get; }
 

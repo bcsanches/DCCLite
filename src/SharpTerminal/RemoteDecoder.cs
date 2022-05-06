@@ -177,19 +177,7 @@ namespace SharpTerminal
         {
             return new IRemoteObjectAction[1]{ g_FlipAction };
         }
-    }
-
-    [Flags]
-    public enum ServoTurnoutFlags: byte
-    {
-        SRVT_INVERTED_OPERATION = 0x04,
-        SRVT_IGNORE_SAVED_STATE = 0x08,
-        SRVT_ACTIVATE_ON_POWER_UP = 0x10,
-        SRVT_INVERTED_FROG = 0x20,
-        SRVT_INVERTED_POWER = 0x40,
-
-        SRVT_POWER_ON = 0x80
-    }
+    }    
 
     public class RemoteTurnoutDecoder: RemoteDecoder
     {
@@ -205,21 +193,21 @@ namespace SharpTerminal
         public uint m_iEndPos;
         public uint m_msOperationTime;
 
-        public ServoTurnoutFlags m_fFlags;
+        public SharpCommon.ServoTurnoutFlags m_fFlags;
 
         [Category("Flags")]
-        public ServoTurnoutFlags Flags 
+        public SharpCommon.ServoTurnoutFlags Flags 
         { 
             get { return m_fFlags; }
             private set
             {
                 this.UpdateProperty(ref m_fFlags, value);
 
-                InvertedOperation = (m_fFlags & ServoTurnoutFlags.SRVT_INVERTED_OPERATION) != 0;
-                IgnoreSaveState = (m_fFlags & ServoTurnoutFlags.SRVT_IGNORE_SAVED_STATE) != 0;
-                ActivateOnPowerUp = (m_fFlags & ServoTurnoutFlags.SRVT_ACTIVATE_ON_POWER_UP) != 0;
-                InvertedFrog = (m_fFlags & ServoTurnoutFlags.SRVT_INVERTED_FROG) != 0;
-                InvertedPower = (m_fFlags & ServoTurnoutFlags.SRVT_INVERTED_POWER) != 0;
+                InvertedOperation = (m_fFlags & SharpCommon.ServoTurnoutFlags.SRVT_INVERTED_OPERATION) != 0;
+                IgnoreSaveState = (m_fFlags & SharpCommon.ServoTurnoutFlags.SRVT_IGNORE_SAVED_STATE) != 0;
+                ActivateOnPowerUp = (m_fFlags & SharpCommon.ServoTurnoutFlags.SRVT_ACTIVATE_ON_POWER_UP) != 0;
+                InvertedFrog = (m_fFlags & SharpCommon.ServoTurnoutFlags.SRVT_INVERTED_FROG) != 0;
+                InvertedPower = (m_fFlags & SharpCommon.ServoTurnoutFlags.SRVT_INVERTED_POWER) != 0;
             }
         }
 
@@ -335,7 +323,7 @@ namespace SharpTerminal
 
         private void ParseState(JsonValue objectDef)
         {
-            Flags = (ServoTurnoutFlags)(int)objectDef["flags"];                        
+            Flags = (SharpCommon.ServoTurnoutFlags)(int)objectDef["flags"];                        
 
             StartPos = objectDef["startPos"];
             EndPos = objectDef["endPos"];

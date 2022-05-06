@@ -57,9 +57,7 @@ add_executable(SharpTerminal
   RemoteShortcutUserControl.Designer.cs
   RemoteShortcutUserControl.resx
   
-  ServoTurnoutProgramerForm.cs
-  ServoTurnoutProgramerForm.Designer.cs
-  ServoTurnoutProgramerForm.resx
+  ServoTurnoutProgrammer.cs
   
   TerminalClient.cs
   
@@ -141,15 +139,11 @@ csharp_set_windows_forms_properties(
     
     ServerSelectionForm.cs
     ServerSelectionForm.Designer.cs
-    ServerSelectionForm.resx
-    
-    ServoTurnoutProgramerForm.cs
-    ServoTurnoutProgramerForm.Designer.cs
-    ServoTurnoutProgramerForm.resx
+    ServerSelectionForm.resx        
 )
 
 set_property(TARGET SharpTerminal PROPERTY VS_DOTNET_REFERENCES
-    "Microsoft.CSharp"    
+    "Microsoft.CSharp"        
     "System"
     "System.Core"
     "System.Data"
@@ -162,6 +156,8 @@ set_property(TARGET SharpTerminal PROPERTY VS_DOTNET_REFERENCES
     "System.Xml"
     "System.Xml.Linq"    
 )
+
+target_link_libraries(SharpTerminal SharpCommon)
 
 set_property(TARGET SharpTerminal PROPERTY VS_PACKAGE_REFERENCES "System.Json")
 

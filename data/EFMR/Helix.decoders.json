@@ -4,13 +4,12 @@
     "class": "ServoTurnout",
     "address": "1851",
     "pin": 21,
-    "inverted": true,
-    "powerPin": 43,
-    "frogPin": 42,
+    "inverted": false,
+    "powerPin": 43,    
     "invertedFrog": false,
     "operationTime": 3000,
-    "range":15,
-    "comment": "Double track juntion"
+    "range":20,
+    "comment": "AMV 01 linha interna"
   },
   {
     "name": "HLX_T02",
