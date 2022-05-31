@@ -219,7 +219,7 @@ namespace SharpCommon
             }
             catch(Exception ex)
             {
-                MessageBox.Show(this, "Data update failed: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(null, "Data update failed: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             
             base.OnFormClosing(e);                        

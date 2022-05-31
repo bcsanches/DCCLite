@@ -33,7 +33,7 @@ namespace dcclite::broker
 
 	static auto constexpr SYNC_TIMEOUT = 100ms;
 
-	static auto constexpr PING_TIMEOUT = 1s;
+	static auto constexpr PING_TIMEOUT = 2s;
 
 	static uint32_t	g_u32TaskId = 0;
 
@@ -552,7 +552,7 @@ namespace dcclite::broker
 				}
 			}
 			
-			dcclite::Log::Warn("[{}::Device::OnPacket] task data, but not task running or task not found for id {}", m_rclSelf.GetName(), taskId);
+			dcclite::Log::Warn("[{}::Device::OnPacket] task data, but no task running or task not found for id {}", m_rclSelf.GetName(), taskId);
 
 			return;
 		}

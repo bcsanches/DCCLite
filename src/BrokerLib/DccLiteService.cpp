@@ -19,6 +19,7 @@
 #include "FmtUtils.h"
 #include "GuidUtils.h"
 #include "LocationManager.h"
+#include "Messenger.h"
 #include "OutputDecoder.h"
 #include "Packet.h"
 #include "SensorDecoder.h"
@@ -59,7 +60,7 @@ namespace dcclite::broker
 
 		auto port = params["port"].GetInt();
 	
-		if (!m_clSocket.Open(port, dcclite::Socket::Type::DATAGRAM))
+		if (!m_clSocket.Open(port, dcclite::Socket::Type::DATAGRAM, dcclite::Socket::FLAG_BLOCKING_MODE))
 		{
 			throw std::runtime_error("[DccLiteService] error: cannot open socket");
 		}
@@ -92,8 +93,8 @@ namespace dcclite::broker
 			throw;
 		}
 
-		m_tThinker.SetNext(dcclite::Clock::DefaultClock_t::now());
-	
+		m_tThinker.SetNext(dcclite::Clock::DefaultClock_t::now());	
+		m_clNetworkThread = std::thread{ [this] {this->NetworkThreadProc(); } };
 	}
 
 	DccLiteService::~DccLiteService()
@@ -183,75 +184,7 @@ namespace dcclite::broker
 	NetworkDevice *DccLiteService::TryFindDeviceSession(const dcclite::Guid &guid)
 	{
 		return static_cast<NetworkDevice *>(m_pSessions->TryResolveChild(dcclite::GuidToString(guid)));
-	}
-
-	void DccLiteService::OnNet_Discovery(const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet)
-	{
-		dcclite::Log::Info("[{}::DccLiteService::OnNet_Hello] received discovery from {}, sending reply", this->GetName(), senderAddress);
-
-		dcclite::Packet pkt;
-
-		//just send a blank packet, so they know we are here
-		dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::DISCOVERY, dcclite::Guid{}, dcclite::Guid{} };
-	
-		this->Device_SendPacket(senderAddress, pkt);
-	}
-
-	void DccLiteService::OnNet_Hello(const dcclite::Clock::TimePoint_t tp, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet)
-	{
-		auto remoteSessionToken = packet.ReadGuid();
-		auto remoteConfigToken = packet.ReadGuid();
-		
-		dcclite::PacketReader reader(packet);	
-
-		char name[256];
-		reader.ReadStr(name, sizeof(name));
-
-		const auto procotolVersion = packet.Read<std::uint16_t>();
-		if (procotolVersion != dcclite::PROTOCOL_VERSION)
-		{
-			dcclite::Log::Error("[{}::DccLiteService::OnNet_Hello] Hello from {} - {} with invalid protocol version {}, expected {}, ignoring", 
-				this->GetName(), 
-				name, 
-				senderAddress,
-				procotolVersion,
-				dcclite::PROTOCOL_VERSION
-			);
-
-			return;
-		}
-
-		dcclite::Log::Info("[{}::DccLiteService::OnNet_Hello] received hello from {}, starting handshake", this->GetName(), name);
-
-		//lookup device
-		auto dev = this->TryFindDeviceByName(name);	
-		NetworkDevice *netDevice;
-		if (dev == nullptr)
-		{
-			//no device, create a temp one
-			dcclite::Log::Warn("[{}::DccLiteService::OnNet_Hello] {} is not on config", this->GetName(), name);
-
-			netDevice = static_cast<NetworkDevice*>(m_pDevices->AddChild(
-				std::make_unique<NetworkDevice>(
-					name, 
-					*static_cast<IDccLite_DeviceServices *>(this), 
-					m_rclProject
-				)
-			));
-		}	
-		else
-		{
-			netDevice = dynamic_cast<NetworkDevice *>(dev);
-			if (netDevice == nullptr)
-			{
-				dcclite::Log::Error("[{}::DccLiteService::OnNet_Hello] {} is not a network device, cannot accept connection. Please check config.", this->GetName(), name);
-
-				return;
-			}
-		}
-
-		netDevice->AcceptConnection(tp, senderAddress, remoteSessionToken, remoteConfigToken);
-	}
+	}	
 
 	NetworkDevice *DccLiteService::TryFindPacketDestination(dcclite::Packet &packet)
 	{	
@@ -267,22 +200,6 @@ namespace dcclite::broker
 
 		return dev;
 	}
-
-	void DccLiteService::OnNet_Packet(const dcclite::Clock::TimePoint_t tp, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType)
-	{
-		auto dev = TryFindPacketDestination(packet);
-		if (!dev)
-		{
-			dcclite::Log::Warn("[{}::DccLiteService::OnNet_Packet] Received packet from unkown device", this->GetName());
-
-			return;
-		}
-
-		dcclite::Guid configToken = packet.ReadGuid();
-
-		dev->OnPacket(packet, tp, msgType, senderAddress, configToken);
-	}
-
 
 	void DccLiteService::Device_SendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet &packet)
 	{
@@ -378,13 +295,170 @@ namespace dcclite::broker
 	void DccLiteService::Decoder_OnStateChanged(Decoder& decoder)
 	{
 		this->NotifyItemChanged(decoder);		
-	}
+	}	
 
 	void DccLiteService::Think(const dcclite::Clock::TimePoint_t ticks)
 	{
 		m_tThinker.SetNext(ticks + 50ms);
 
-		std::uint8_t data[2048];
+		auto enumerator = this->m_pDevices->GetEnumerator();
+		while (enumerator.MoveNext())
+		{
+			auto dev = enumerator.TryGetCurrent<Device>();
+
+			dev->Update(ticks);
+		}
+	}
+
+	//
+	//
+	// Network Thread
+	//
+	//
+
+	void DccLiteService::NetworkThread_OnDiscovery(const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet)
+	{
+		dcclite::Log::Info("[{}::DccLiteService::OnNet_Hello] received discovery from {}, sending reply", this->GetName(), senderAddress);
+
+		dcclite::Packet pkt;
+
+		//just send a blank packet, so they know we are here
+		dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::DISCOVERY, dcclite::Guid{}, dcclite::Guid{} };
+
+		this->Device_SendPacket(senderAddress, pkt);
+	}
+
+	class NetworkHelloEvent: public dcclite::broker::Messenger::IEvent
+	{
+		public:
+			NetworkHelloEvent(DccLiteService &target, dcclite::NetworkAddress address, std::string_view deviceName, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken):
+				IEvent(target),
+				m_clAddress(address),
+				m_clRemoteSessionToken{ remoteSessionToken },
+				m_clRemoteConfigToken{ remoteConfigToken },
+				m_strDeviceName{ deviceName }
+			{
+				//empty
+			}
+
+			void Fire() override
+			{
+				static_cast<DccLiteService &>(this->GetTarget()).OnNetEvent_Hello(m_clAddress, m_strDeviceName, m_clRemoteSessionToken, m_clRemoteConfigToken);
+			}
+
+		private:
+			const dcclite::NetworkAddress m_clAddress;
+
+			const dcclite::Guid m_clRemoteSessionToken;
+			const dcclite::Guid m_clRemoteConfigToken;
+
+			std::string m_strDeviceName;
+	};
+
+	void DccLiteService::NetworkThread_OnNetHello(const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet)
+	{
+		auto remoteSessionToken = packet.ReadGuid();
+		auto remoteConfigToken = packet.ReadGuid();
+
+		dcclite::PacketReader reader(packet);
+
+		char name[256];
+		reader.ReadStr(name, sizeof(name));
+
+		const auto procotolVersion = packet.Read<std::uint16_t>();
+		if (procotolVersion != dcclite::PROTOCOL_VERSION)
+		{
+			dcclite::Log::Error("[{}::DccLiteService::OnNet_Hello] Hello from {} - {} with invalid protocol version {}, expected {}, ignoring",
+				this->GetName(),
+				name,
+				senderAddress,
+				procotolVersion,
+				dcclite::PROTOCOL_VERSION
+			);
+
+			return;
+		}
+
+		dcclite::Log::Info("[{}::DccLiteService::OnNet_Hello] received hello from {}, starting handshake", this->GetName(), name);
+
+		Messenger::MakeEvent<NetworkHelloEvent>(std::ref(*this), senderAddress, name, remoteSessionToken, remoteConfigToken);
+	}
+
+	void DccLiteService::OnNetEvent_Hello(const dcclite::NetworkAddress &senderAddress, const std::string &deviceName, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken)
+	{		
+		//lookup device
+		auto dev = this->TryFindDeviceByName(deviceName);
+		NetworkDevice *netDevice;
+		if (dev == nullptr)
+		{
+			//no device, create a temp one
+			dcclite::Log::Warn("[{}::DccLiteService::OnNetEvent_Hello] {} is not on config", this->GetName(), deviceName);
+
+			netDevice = static_cast<NetworkDevice *>(m_pDevices->AddChild(
+				std::make_unique<NetworkDevice>(
+					deviceName,
+					*static_cast<IDccLite_DeviceServices *>(this),
+					m_rclProject
+				)
+			));
+		}
+		else
+		{
+			netDevice = dynamic_cast<NetworkDevice *>(dev);
+			if (netDevice == nullptr)
+			{
+				dcclite::Log::Error("[{}::DccLiteService::OnNet_Hello] {} is not a network device, cannot accept connection. Please check config.", this->GetName(), deviceName);
+
+				return;
+			}
+		}
+
+		netDevice->AcceptConnection(dcclite::Clock::DefaultClock_t::now(), senderAddress, remoteSessionToken, remoteConfigToken);
+	}
+
+	class GenericNetworkEvent: public dcclite::broker::Messenger::IEvent
+	{
+		public:
+			GenericNetworkEvent(DccLiteService &target, dcclite::NetworkAddress address, const dcclite::Packet &packet, dcclite::MsgTypes msgType):
+				IEvent(target),				
+				m_clAddress(address),
+				m_clPacket{ packet },
+				m_tMsgType{ msgType }
+			{
+				//empty
+			}
+
+			void Fire() override
+			{
+				static_cast<DccLiteService &>(this->GetTarget()).OnNetEvent_Packet(m_clAddress, m_clPacket, m_tMsgType);
+			}
+
+		private:
+			const dcclite::NetworkAddress	m_clAddress;
+
+			dcclite::Packet					m_clPacket;
+
+			dcclite::MsgTypes				m_tMsgType;
+	};
+
+	void DccLiteService::OnNetEvent_Packet(const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType)
+	{
+		auto dev = TryFindPacketDestination(packet);
+		if (!dev)
+		{
+			dcclite::Log::Warn("[{}::DccLiteService::OnNet_Packet] Received packet from unkown device", this->GetName());
+
+			return;
+		}
+
+		dcclite::Guid configToken = packet.ReadGuid();
+
+		dev->OnPacket(packet, dcclite::Clock::DefaultClock_t::now(), msgType, senderAddress, configToken);
+	}
+
+	void DccLiteService::NetworkThreadProc()
+	{
+		std::uint8_t data[PACKET_MAX_SIZE];
 
 		dcclite::NetworkAddress sender;
 
@@ -422,26 +496,18 @@ namespace dcclite::broker
 			switch (msgType)
 			{
 				case dcclite::MsgTypes::DISCOVERY:
-					this->OnNet_Discovery(sender, pkt);
+					this->NetworkThread_OnDiscovery(sender, pkt);
 					break;
 
 				case dcclite::MsgTypes::HELLO:
-					this->OnNet_Hello(ticks, sender, pkt);
+					this->NetworkThread_OnNetHello(sender, pkt);
 					break;
 
 				default:
-					this->OnNet_Packet(ticks, sender, pkt, msgType);
+					dcclite::broker::Messenger::MakeEvent< GenericNetworkEvent>(std::ref(*this), sender, pkt, msgType);					
 					break;
 			}
 		}
-
-		auto enumerator = this->m_pDevices->GetEnumerator();
-		while (enumerator.MoveNext())
-		{
-			auto dev = enumerator.TryGetCurrent<Device>();
-
-			dev->Update(ticks);
-		}
-	}
+	}	
 }
 

@@ -19,6 +19,9 @@
 constexpr unsigned long DETACH_DELAY = 1000;
 constexpr unsigned long DEGREE_DETACH_DELAY_BONUS = 50;
 
+//20 seconds
+constexpr unsigned long ZOMBIE_WAIT_TIME = 20000;
+
 class ServoProgrammerHelper
 {
 	public:		
@@ -70,6 +73,12 @@ class ServoProgrammerHelper
 			}
 		}
 
+		void EnableZombieMode(const unsigned long ticks)
+		{
+			m_uDetachTime = ticks + ZOMBIE_WAIT_TIME;
+			m_fZombie = true;
+		}
+
 	private:
 		ServoTurnoutDecoder &m_rclDecoder;
 
@@ -84,6 +93,8 @@ class ServoProgrammerHelper
 		uint32_t			m_uServerSequence = 0;		
 
 		const uint8_t		m_uDecoderSlot;
+
+		bool				m_fZombie = false;
 		
 };
 
@@ -148,7 +159,16 @@ class TaskList
 		{
 			for (auto item = m_pclListHead; item; item = item->m_pclNext)
 			{
-				item->Update(ticks);
+				if ((item->m_fZombie) && (item->m_uDetachTime <= ticks))
+				{					
+					this->Remove(item);
+
+					auto next = item->m_pclNext;
+					delete item;
+					item = next;
+				}
+				else
+					item->Update(ticks);
 			}
 		}
 
@@ -310,23 +330,70 @@ static void ParseDeployServo(dcclite::Packet &packet, const uint32_t packetTaskI
 
 	//Console::SendLogEx("[ParseDeployServo]", ' ', packetTaskId);
 
-	const auto flags = packet.ReadByte();
-	const auto startPos = packet.ReadByte();
-	const auto endPos = packet.ReadByte();
-	const auto ticks = packet.ReadByte();
 
-	task->UpdateServo(flags, startPos, endPos, ticks);
-	g_clTasklist.Remove(task);
+	//if task  is not a zombie, first deploy call, so do it
+	if (!task->m_fZombie)
+	{
+		const auto flags = packet.ReadByte();
+		const auto startPos = packet.ReadByte();
+		const auto endPos = packet.ReadByte();
+		const auto servoTicks = packet.ReadByte();
 
-	delete task;
+		task->UpdateServo(flags, startPos, endPos, servoTicks);
+	}	
 
 	Session::detail::InitTaskPacket(packet, packetTaskId);
 	packet.Write8(static_cast<uint8_t>(dcclite::ServoProgrammerClientMsgTypes::DEPLOY_FINISHED));		
+		
+	Session::detail::SendTaskPacket(packet);
 
-	//
-	//Send twice so it has a better chance of arriving
-	Session::detail::SendTaskPacket(packet);
-	Session::detail::SendTaskPacket(packet);
+	/*
+		Goto zombie mode
+	
+			The server will send a third ack msg, but if we do not hear from the server for the next seconds, 
+			we simple kill the task (msg may be lost)
+
+			Server will keep sending "DEPLOY" msgs until it gets the DEPLOY_FINISHED msg, 
+			so we keep the task in zombie mode for answering the server
+
+			But after the ZOMBIE_TIMEOUT (20 seconds) the server could not ack, network is really sucking so 
+			we probably will timeout before this happens, but just in case manage this and kill the task after 20 seconds
+
+			We keep the task in zombie mode because the server may not see the first DEPLOY_FINISHED msg and will send MSG_DEPLOY again
+
+			When the server sees the DEPLOY_FINISHED, it will send a DEPLOY_FINISHED_ACK just once. If we see this message,
+			we can safely kill the task. Otherwise, if the msg is lost, the zombie task will timeout and be killed anyway
+	*/
+	task->EnableZombieMode(millis());
+}
+
+static void ParseDeployFinishedAck(dcclite::Packet &packet, const uint32_t packetTaskId)
+{
+	auto task = g_clTasklist.TryFindTask(packetTaskId);
+	if (task == nullptr)
+	{
+		//Wrong id... ignore...
+		SendError_InvalidTaskId(packet, packetTaskId, packetTaskId);
+
+		return;
+	}
+
+	//Console::SendLogEx("[ParseDeployServo]", ' ', packetTaskId);
+
+
+	//if task  is not a zombie, first deploy call, so do it
+	if (!task->m_fZombie)
+	{
+		//
+		//Wtf? The task should be in zombie mode ... ignore
+
+		Console::SendLogEx(F("[ParseDeployFinishedAck] Expected task in Zombie mode"), ' ');
+
+		return;
+	}
+
+	g_clTasklist.Remove(task);
+	delete task;
 }
 
 
@@ -363,6 +430,10 @@ void ServoProgrammer::ParsePacket(dcclite::Packet &packet)
 
 		case ServoProgrammerServerMsgTypes::DEPLOY:
 			ParseDeployServo(packet, packetTaskId);
+			break;
+
+		case ServoProgrammerServerMsgTypes::DEPLOY_FINISHED_ACK:
+			ParseDeployFinishedAck(packet, packetTaskId);
 			break;
 
 		default:

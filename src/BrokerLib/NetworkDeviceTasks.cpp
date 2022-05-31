@@ -811,6 +811,12 @@ namespace dcclite::broker::detail
 					m_rclSelf.m_rclDecoder.UpdateData(deployData.m_fFlags, deployData.m_u8StartPos, deployData.m_u8EndPos, deployData.m_tOperationTime);
 				}
 				
+				{
+					dcclite::Packet packet;
+
+					m_rclSelf.FillPacket(packet, m_rclSelf.m_u32TaskId, NetworkTaskTypes::TASK_SERVO_PROGRAMMER, dcclite::ServoProgrammerServerMsgTypes::DEPLOY_FINISHED_ACK);
+					m_rclSelf.m_rclOwner.TaskServices_SendPacket(packet);
+				}																			
 
 				m_clThinker.Cancel();
 				m_rclSelf.MarkFinished();

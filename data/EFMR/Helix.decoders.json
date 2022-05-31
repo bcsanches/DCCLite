@@ -4,12 +4,13 @@
     "class": "ServoTurnout",
     "address": "1851",
     "pin": 21,
-    "inverted": false,
+    "inverted": true,
     "powerPin": 43,    
-    "invertedFrog": false,
+    "frogPin": 42,
+    "invertedFrog": true,
     "operationTime": 3000,
-    "range":20,
-    "comment": "AMV 01 linha interna"
+    "range":25,
+    "comment": "AMV 01 linha interna (travessao)"
   },
   {
     "name": "HLX_T02",
@@ -17,11 +18,12 @@
     "address": "1852",
     "pin": 20,
     "inverted": true,
-    "powerPin": 45,
+    "powerPin": 45,    
     "frogPin": 44,
     "invertedFrog": false,
     "operationTime": 3000,
-    "comment": "TC exit"
+    "range":45,
+    "comment": "AMV 02 - linha externa (travessao)"
   },
   {
     "name": "HLX_T03",
@@ -33,22 +35,32 @@
     "frogPin": 46,
     "invertedFrog": false,
     "operationTime": 3000,
-    "comment": "TC join"
-  },
-
+    "comment": "AMV 03 - ponta do triangulo saida para TC"
+  },  
   {
     "name": "HLX_T04",
     "class": "ServoTurnout",
     "address": "1854",
     "pin": 18,
+    "inverted": true,
+    "powerPin": 49,   
+    "frogPin": 48, 
+    "invertedFrog": false,
+    "range":20,
+    "operationTime": 3000,
+    "comment": "AMV 04 - inferior saída para TC"
+  },
+  {
+    "name": "HLX_T06",
+    "class": "ServoTurnout",
+    "address": "1856",
+    "pin": 17,
     "inverted": false,
-    "powerPin": 49,
-    "frogPin": 48,
+    "powerPin": 51,    
     "invertedFrog": true,
     "operationTime": 1000,
-    "comment": "TC entry"
-  },
-      
+    "comment": "AMV 06 - superior saída para TC"
+  },      
   {
     "name":"HLX_DMT03",
     "class":"Sensor",

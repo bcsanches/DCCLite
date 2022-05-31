@@ -14,11 +14,13 @@
 
 #include <map>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "Decoder.h"
 #include "Guid.h"
 #include "IDccLiteService.h"
+#include "Messenger.h"
 #include "Packet.h"
 #include "Socket.h"
 #include "Thinker.h"
@@ -33,7 +35,7 @@ namespace dcclite::broker
 	class SensorDecoder;
 	class TurnoutDecoder;
 
-	class DccLiteService : public Service, private IDccLite_DeviceServices, private IDccLite_DecoderServices
+	class DccLiteService : public Service, private IDccLite_DeviceServices, private IDccLite_DecoderServices, public Messenger::IEventTarget
 	{
 		public:
 			DccLiteService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
@@ -79,17 +81,24 @@ namespace dcclite::broker
 
 			std::vector<TurnoutDecoder*> FindAllTurnoutDecoders();
 
-		private:
-			void OnNet_Discovery(const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet);
-			void OnNet_Hello(const dcclite::Clock::TimePoint_t ticks, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet);
+		private:			
+			void OnNetEvent_Hello(const dcclite::NetworkAddress &senderAddress, const std::string &deviceName, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken);
 
-			void OnNet_Packet(const dcclite::Clock::TimePoint_t ticks, const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType);
+			void OnNetEvent_Packet(const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType);
 
 			NetworkDevice *TryFindDeviceSession(const dcclite::Guid &guid);
 
 			NetworkDevice *TryFindPacketDestination(dcclite::Packet &packet);	
 
 			void Think(const dcclite::Clock::TimePoint_t ticks);
+
+			void NetworkThreadProc();
+
+			void NetworkThread_OnDiscovery(const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet);
+			void NetworkThread_OnNetHello(const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet);
+
+			friend class GenericNetworkEvent;
+			friend class NetworkHelloEvent;
 
 		private:
 			//
@@ -132,6 +141,8 @@ namespace dcclite::broker
 			Thinker m_tThinker;
 
 			dcclite::Socket m_clSocket;		
+
+			std::thread		m_clNetworkThread;
 
 			FolderObject *m_pDecoders;
 			FolderObject *m_pAddresses;

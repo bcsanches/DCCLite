@@ -21,6 +21,6 @@ namespace ServoProgrammer
 
 	extern void Update(const unsigned long ticks);
 
-	extern void ParsePacket(dcclite::Packet &packet);	
+	extern void ParsePacket(dcclite::Packet &packet);
 }
 
