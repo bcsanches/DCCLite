@@ -7,7 +7,7 @@ set(QueraltLib_HDRS
   main.h  
 )
 
-add_compile_definitions(QUERALTLIB_EXPORTS)
+add_compile_definitions(QUERALTLIB_EXPORTS DCCLITE_ARDUINO_EMULATOR)
 add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 
 add_library(QueraltLib SHARED ${QueraltLib_SRCS} ${QueraltLib_HDRS})

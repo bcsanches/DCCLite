@@ -26,8 +26,7 @@
 
 //testar: https://github.com/ntruchsess/arduino_uip
 
-const char StorageModuleName[] PROGMEM = {"Session"} ;
-#define MODULE_NAME Console::FlashStr(StorageModuleName), __LINE__, ' '
+#define MODULE_NAME F("Session"), __LINE__, ' '
 
 enum class ConnectionStates: uint8_t
 {
@@ -116,7 +115,7 @@ namespace PingManager
 		if (currentTime >= g_uTimeoutTicks)
 		{
 			//Server is dead?
-			Console::SendLogEx(MODULE_NAME, "srv", ' ',  FSTR_TIMEOUT);
+			Console::SendLogEx(MODULE_NAME, F("server"), ' ',  FSTR_TIMEOUT);
 
 			GotoOfflineState();			
 
@@ -134,16 +133,16 @@ namespace PingManager
 //
 //
 
-static void LogInvalidPacket(const Console::FlashStr &stateName, dcclite::MsgTypes type)
+static void LogInvalidPacket(const FlashStringHelper_t *fstr, dcclite::MsgTypes type)
 {
-	Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', "pkt", ' ', stateName, ' ', static_cast<int>(type));
+	Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', F("pkt"), ' ', fstr, ' ', static_cast<int>(type));
 }
 	
 static bool IsValidServer(uint8_t src_ip[4], uint16_t src_port)
 {
 	if (memcmp(src_ip, g_u8ServerIp, sizeof(g_u8ServerIp)) || (g_uSrvPort != src_port))
 	{
-		Console::SendLogEx(MODULE_NAME, FSTR_UNKNOWN, ' ', "ip");
+		Console::SendLogEx(MODULE_NAME, FSTR_UNKNOWN, ' ', F("ip"));
 		return false;
 	}
 
@@ -221,8 +220,7 @@ static void SendConfigPacket(dcclite::Packet &packet, dcclite::MsgTypes msgType,
 	NetUdp::SendPacket(packet.GetData(), packet.GetSize(), g_u8ServerIp, g_uSrvPort);
 }
 
-const char OnConfiguringPacketStateName[] PROGMEM = { "OnConfiguringPacket" };
-#define OnConfiguringPacketStateNameStr Console::FlashStr(OnConfiguringPacketStateName)
+#define OnConfiguringPacketStateNameStr F("OnConfiguringPacket")
 
 static void HandleConfigPacket(dcclite::Packet &packet)
 {
@@ -230,7 +228,7 @@ static void HandleConfigPacket(dcclite::Packet &packet)
 
 	DecoderManager::Create(seq, packet);
 
-	Console::SendLogEx(MODULE_NAME, OnConfiguringPacketStateNameStr, ' ', "Ack", ' ', seq);
+	Console::SendLogEx(MODULE_NAME, OnConfiguringPacketStateNameStr, ' ', F("Ack"), ' ', seq);
 
 	SendConfigPacket(packet, dcclite::MsgTypes::CONFIG_ACK, seq);
 }
@@ -267,8 +265,7 @@ static void SearchingServerTick(const unsigned long ticks)
 	OfflineTick(ticks);
 }
 
-const char OnSearchingServerPacketStateName[] PROGMEM = {"OnSearchingServerPacket"} ;
-#define OnSearchingServerPacketStateNameStr Console::FlashStr(OnSearchingServerPacketStateName)
+#define OnSearchingServerPacketStateNameStr F("OnSearchingServerPacket")
 
 static void SendHelloPacket()
 {
@@ -307,8 +304,7 @@ static bool ArpTick(const unsigned long ticks)
 	return false;
 }
 
-const char OnOnlineStateName[] PROGMEM = {"Online"} ;
-#define OnOnlineStateNameStr Console::FlashStr(OnOnlineStateName)
+#define OnOnlineStateNameStr F("Online")
 
 static void GotoOnlineState(const unsigned long ticks, int callerLine)
 {
@@ -715,7 +711,7 @@ static void ReceiveCallback(
 	//we have been already configured, so validate the config token
 	if (token != g_ConfigToken)
 	{
-		Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', "cfg", ' ', "id", ',', ' ', "to", ' ', FSTR_OFFLINE);
+		Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', F("cfg"), ' ', F("id"), ',', ' ', F("to"), ' ', FSTR_OFFLINE);
 
 		GotoOfflineState();		
 		return;

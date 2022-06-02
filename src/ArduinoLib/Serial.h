@@ -13,6 +13,7 @@
 #include <string>
 
 #include "ArduinoLibDefs.h"
+#include "avr/pgmspace.h"
 
 struct ARDUINO_API SerialImpl
 {
@@ -21,8 +22,15 @@ struct ARDUINO_API SerialImpl
 	void print(const char *str);
 	void print(int value, int base = 10);
 	void print(unsigned int value, int base = 10);
+	void print(unsigned long value, int base = 10);
 	void print(char value);
 	void println(const char *str);
+
+
+	inline void print(const __FlashStringHelper *fstr)
+	{
+		print(reinterpret_cast<const char *>(fstr));
+	}
 
 	void write(char ch);
 

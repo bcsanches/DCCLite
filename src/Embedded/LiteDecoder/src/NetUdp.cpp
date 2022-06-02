@@ -20,8 +20,7 @@
 
 #define ARP_PATCH 1
 
-const char StorageModuleName[] PROGMEM = {"NetUdp"} ;
-#define MODULE_NAME Console::FlashStr(StorageModuleName)
+#define MODULE_NAME F("NetUdp")
 
 static uint8_t g_u8Mac[] = { 0x00,0x00,0x00,0x00,0x00,0x00 };
 

@@ -7,7 +7,7 @@ set(StandAloneDecoderLib_HDRS
   main.h  
 )
 
-add_compile_definitions(STANDALONEDECODERLIB_EXPORTS)
+add_compile_definitions(STANDALONEDECODERLIB_EXPORTS DCCLITE_ARDUINO_EMULATOR)
 add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 
 add_library(StandAloneDecoderLib SHARED ${StandAloneDecoderLib_SRCS} ${StandAloneDecoderLib_HDRS})

@@ -21,7 +21,7 @@ set(LiteDecoderLib_HDRS
   Session.h  
 )
 
-add_compile_definitions(LITEDECODERLIB_EXPORTS)
+add_compile_definitions(LITEDECODERLIB_EXPORTS DCCLITE_ARDUINO_EMULATOR)
 add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 
 add_library(LiteDecoderLib SHARED ${LiteDecoderLib_SRCS} ${LiteDecoderLib_HDRS})

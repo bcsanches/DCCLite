@@ -304,7 +304,7 @@ static void ParseMoveServo(dcclite::Packet &packet, const uint32_t packetTaskId)
 
 	const auto position = packet.ReadByte();
 
-	Console::SendLogEx("[ParseMoveServo]", ' ', position);
+	Console::SendLogEx(F("[ParseMoveServo]"), ' ', position);
 	task->MoveServo(position);
 
 	task->m_uServerSequence = serverSequence;
@@ -349,20 +349,26 @@ static void ParseDeployServo(dcclite::Packet &packet, const uint32_t packetTaskI
 
 	/*
 		Goto zombie mode
+
+			In the perfect world, what happens is:
+				Server -> sends DEPLOY_MSG
+				client -> answers with DEPLOY_FINISHED and put task in zombie mode
+				server -> sends a DEPLOY_FINISHED_ACK (and assumes that the task is gone)
+				client -> when it receives DEPLOY_FINISHED_ACK, destroy the zombie task
+
+			But, in the real world:
+				- Server DEPLOY_MSG may never arrives, so server sends it again and again until 
+					it gets a DEPLOY_FINISHED msg
+
+				- Server may not receive a DEPLOY_FINISHED, so it keeps sending DEPLOY_MSG until it gets one
+
+				- Server after getting a DEPLOY_FINISHED, sends a DEPLOY_FINISHED_ACK, but client may never see it,
+					so the client timeouts the task after sending a DEPLOY_FINISHED
 	
-			The server will send a third ack msg, but if we do not hear from the server for the next seconds, 
-			we simple kill the task (msg may be lost)
-
-			Server will keep sending "DEPLOY" msgs until it gets the DEPLOY_FINISHED msg, 
-			so we keep the task in zombie mode for answering the server
-
-			But after the ZOMBIE_TIMEOUT (20 seconds) the server could not ack, network is really sucking so 
+			After the ZOMBIE_TIMEOUT (20 seconds) the server could not ack, network is really sucking so 
 			we probably will timeout before this happens, but just in case manage this and kill the task after 20 seconds
 
-			We keep the task in zombie mode because the server may not see the first DEPLOY_FINISHED msg and will send MSG_DEPLOY again
-
-			When the server sees the DEPLOY_FINISHED, it will send a DEPLOY_FINISHED_ACK just once. If we see this message,
-			we can safely kill the task. Otherwise, if the msg is lost, the zombie task will timeout and be killed anyway
+			We keep the task in zombie mode because the server may not see the first DEPLOY_FINISHED msg and will send MSG_DEPLOY again			
 	*/
 	task->EnableZombieMode(millis());
 }
@@ -387,7 +393,7 @@ static void ParseDeployFinishedAck(dcclite::Packet &packet, const uint32_t packe
 		//
 		//Wtf? The task should be in zombie mode ... ignore
 
-		Console::SendLogEx(F("[ParseDeployFinishedAck] Expected task in Zombie mode"), ' ');
+		Console::SendLogEx(F("ParseDeployFinishedAck"), F("Expected task in Zombie mode"), ' ', packetTaskId);
 
 		return;
 	}

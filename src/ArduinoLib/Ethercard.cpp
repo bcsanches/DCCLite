@@ -133,7 +133,7 @@ uint16_t EtherCard::packetLoop(uint16_t plen)
 	for(;;)
 	{
 		dcclite::NetworkAddress sender;
-		auto[status, size] = g_Socket.Receive(sender, buffer.data(), buffer.size());
+		auto[status, size] = g_Socket.Receive(sender, buffer.data(), static_cast<int>(buffer.size()));
 
 		if (status != dcclite::Socket::Status::OK)
 			break;

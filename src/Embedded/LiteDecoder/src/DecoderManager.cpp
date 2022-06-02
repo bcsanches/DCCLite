@@ -27,17 +27,12 @@ constexpr auto MAX_DECODERS = 16;
 
 static Decoder *g_pDecoders[MAX_DECODERS] = { 0 };
 
-static const char DeviceManagerModuleName[] PROGMEM = { "DevMgr" };
-#define MODULE_NAME Console::FlashStr(DeviceManagerModuleName)
+#define MODULE_NAME					F("DecoderManager")
 
-static const char FStrSlotInUse[] PROGMEM = { "Slot already in use" };
-#define FSTR_SLOT_IN_USE Console::FlashStr(FStrSlotInUse)
+#define FSTR_SLOT_IN_USE			F("Slot already in use")
 
-static const char FStrSlotOutOfRange[] PROGMEM = { "Slot out of range" };
-#define FSTR_SLOT_OUT_OF_RANGE Console::FlashStr(FStrSlotOutOfRange)
-
-static const char FStrInvalidDecoderType[] PROGMEM = { "Invalid decoder type" };
-#define FSTR_INVALID_DECODER_TYPE Console::FlashStr(FStrSlotOutOfRange)
+#define FSTR_SLOT_OUT_OF_RANGE		F("Slot out of range")
+#define FSTR_INVALID_DECODER_TYPE	F("Invalid decoder type")
 
 static Decoder *Create(const dcclite::DecoderTypes type, dcclite::Packet &packet)
 {

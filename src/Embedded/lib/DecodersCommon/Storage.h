@@ -13,7 +13,7 @@
 
 #include <Arduino.h>
 
-
+#include "Strings.h"
 
 #define LUMP_NAME_SIZE 8
 
@@ -82,15 +82,13 @@ namespace Storage
 	class LumpWriter
 	{
 		private:
-			const char *m_pszName;
-			EpromStream &m_rStream;
+			const FlashStringHelper_t	*m_pfszName;
+			EpromStream					&m_rStream;
 
 			uint16_t	m_uStartIndex;
 
-			bool 		m_fNameFromRam;
-
 		public:
-			LumpWriter(EpromStream &stream, const char *lumpName, bool nameFromRam = true);
+			LumpWriter(EpromStream &stream, const FlashStringHelper_t *lumpName);
 
 			~LumpWriter();
 	};

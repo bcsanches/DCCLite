@@ -19,11 +19,10 @@
 #include "Storage.h"
 #include "Strings.h"
 
-static const char StorageMagic[] PROGMEM = {"Bcs0008"};
-static const char EndStorageId[] PROGMEM = {"ENDEND1"};
+#define STORAGE_MAGIC F("Bcs0008")
+#define END_STORAGE_ID F("ENDEND1")
 
-const char StorageModuleName[] PROGMEM = {"Storage"} ;
-#define MODULE_NAME Console::FlashStr(StorageModuleName)
+#define MODULE_NAME F("Storage")
 
 //#define MODULE_NAME "Storage"
 
@@ -68,7 +67,7 @@ extern size_t Storage::Length() noexcept
 bool Storage::LoadConfig()
 {	
     //Console::SendLog(MODULE_NAME, "init %d", sizeof(STORAGE_MAGIC));		
-	Console::SendLogEx(MODULE_NAME, 0, FSTR_INIT, ' ', static_cast<unsigned>(strlen_P(StorageMagic)));
+	Console::SendLogEx(MODULE_NAME, 0, FSTR_INIT, ' ', static_cast<unsigned>(FStrLen(STORAGE_MAGIC)));
 
 	Lump header;
 
@@ -79,7 +78,7 @@ bool Storage::LoadConfig()
     stream.GetString(header.m_archName, sizeof(header.m_archName));
     stream.Get(header.m_uLength);	
 
-    if(strncmp_P(header.m_archName, StorageMagic, strlen_P(StorageMagic)))
+    if(FStrNCmp(header.m_archName, STORAGE_MAGIC, FStrLen(STORAGE_MAGIC)))
     {
 		//copy lump header and make sure we put a 0 at the end
 		char name[LUMP_NAME_SIZE+1] = {0};
@@ -102,7 +101,7 @@ bool Storage::LoadConfig()
 			if (Storage::Custom_LoadModules(lump, stream))
 				continue;
 
-			if (strncmp_P(lump.m_archName, EndStorageId, strlen_P(EndStorageId)) == 0)
+			if (FStrNCmp(lump.m_archName, END_STORAGE_ID, FStrLen(END_STORAGE_ID)) == 0)
 			{
 				Console::SendLogEx(MODULE_NAME, FSTR_ROM, ' ', "end");
 
@@ -131,17 +130,17 @@ void Storage::SaveConfig()
 	{
 		EpromStream stream(0);
 
-		LumpWriter endLump(stream, EndStorageId, false);
+		LumpWriter endLump(stream, END_STORAGE_ID);
 	}
 
 	EpromStream stream(0);
 
-	LumpWriter lump(stream, StorageMagic, false);
+	LumpWriter lump(stream, STORAGE_MAGIC);
 	
 	Storage::Custom_SaveModules(stream);
 		
 	{
-		LumpWriter endLump(stream, EndStorageId, false);
+		LumpWriter endLump(stream, END_STORAGE_ID);
 	}
 
     Console::SendLogEx(MODULE_NAME, "sv", ' ', FSTR_OK);
@@ -322,11 +321,10 @@ namespace Storage
 	}
 #endif
 
-	LumpWriter::LumpWriter(EpromStream &stream, const char *lumpName, bool nameFromRam) :
-		m_pszName(lumpName),
+	LumpWriter::LumpWriter(EpromStream &stream, const FlashStringHelper_t *lumpName) :
+		m_pfszName(lumpName),
 		m_rStream(stream),
-		m_uStartIndex(stream.m_uIndex),
-		m_fNameFromRam(nameFromRam)
+		m_uStartIndex(stream.m_uIndex)		
 	{
 		m_rStream.Skip(sizeof(Storage::Lump));
 
@@ -351,10 +349,12 @@ namespace Storage
 
 		Storage::Lump header;
 
+#if 0
 		if (m_fNameFromRam)
-			strncpy(header.m_archName, m_pszName, sizeof(header.m_archName));
+			strncpy(header.m_archName, m_pfszName, sizeof(header.m_archName));
 		else
-			strncpy_P(header.m_archName, m_pszName, sizeof(header.m_archName));
+#endif
+			FStrCpy(header.m_archName, m_pfszName, sizeof(header.m_archName));
 
 		//strncpy(header.m_archName, name, sizeof(header.m_archName));
 

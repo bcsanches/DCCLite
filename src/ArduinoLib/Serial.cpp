@@ -34,6 +34,11 @@ void SerialImpl::print(unsigned int value, int base)
 	printf(base == 10 ? "%u" : "%X", value);
 }
 
+void SerialImpl::print(unsigned long value, int base)
+{
+	printf(base == 10 ? "%u" : "%X", value);
+}
+
 void SerialImpl::print(char value)
 {
 	printf("%c", value);

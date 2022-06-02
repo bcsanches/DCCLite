@@ -461,7 +461,7 @@ namespace dcclite
 	{
 		assert(m_hHandle != NULL_SOCKET);
 
-		auto bytesSent = send(m_hHandle, (const char *)data, size, 0);
+		auto bytesSent = send(m_hHandle, (const char *)data, (int)size, 0);
 		
 #if PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
 		if (bytesSent < 0)
@@ -502,7 +502,7 @@ namespace dcclite
 	}
 
 
-	std::tuple<Socket::Status, size_t> Socket::Receive(NetworkAddress &sender, void *data, const size_t size, const bool truncate)
+	std::tuple<Socket::Status, int> Socket::Receive(NetworkAddress &sender, void *data, const int size, const bool truncate)
 	{	
 		assert(m_hHandle != NULL_SOCKET);
 
@@ -571,14 +571,14 @@ namespace dcclite
 		return std::make_tuple(Status::OK, result);
 	}
 
-	std::tuple<Socket::Status, size_t> Socket::Receive(void *data, size_t size)
+	std::tuple<Socket::Status, int> Socket::Receive(void *data, int size)
 	{
 		assert(m_hHandle != NULL_SOCKET);
 
 		auto result = recv(
 			m_hHandle, 
 			(char*)data, 
-			static_cast<int>(size), 
+			size, 
 			0
 		);
 

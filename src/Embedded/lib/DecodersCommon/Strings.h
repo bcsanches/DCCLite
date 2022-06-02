@@ -2,65 +2,74 @@
 
 #include <avr/pgmspace.h>
 
-extern const char g_fstrArp[] PROGMEM;
-#define FSTR_ARP Console::FlashStr(g_fstrArp)
+#include <WString.h>
 
-extern const char g_fstrBroadcast[] PROGMEM;
-#define FSTR_BROADCAST Console::FlashStr(g_fstrBroadcast)
+typedef __FlashStringHelper FlashStringHelper_t;
 
-extern const char g_fstrDisconnect[] PROGMEM;
-#define FSTR_DISCONNECT Console::FlashStr(g_fstrDisconnect)
+#define FSTR_ARP		F("ARP")
+#define FSTR_BROADCAST	F("broadcast")
+#define FSTR_DISCONNECT F("disconnect")
+#define FSTR_DECODERS	F("decoders")
+#define FSTR_EOF		F("EOF")
+#define FSTR_INIT		F("init")
+#define FSTR_INVALID	F("invalid")
+#define FSTR_LUMP		F("lump")
+#define FSTR_NAME		F("name")
+#define FSTR_NODE		F("node")
+#define FSTR_NO			F("no")
+#define FSTR_NOK		F("NOT OK")
+#define FSTR_OFFLINE	F("offline")
+#define FSTR_OK			F("ok")
+#define FSTR_SETUP		F("setup")
+#define FSTR_PORT		F("port")
+#define FSTR_ROM		F("rom")
+#define FSTR_SRVPORT	F("srvport")
+#define FSTR_SESSION	F("session")
+#define FSTR_TIMEOUT	F("timeout")
+#define FSTR_UNKNOWN	F("unknown")
 
-extern const char g_fstrDecoders[] PROGMEM;
-#define FSTR_DECODERS Console::FlashStr(g_fstrDecoders)
+#ifdef DCCLITE_ARDUINO_EMULATOR
 
-extern const char g_fstrEof[] PROGMEM;
-#define FSTR_EOF Console::FlashStr(g_fstrEof)
+inline size_t FStrLen(const FlashStringHelper_t *fstr)
+{
+	return strlen_P(fstr);
+}
 
-extern const char g_fstrInit[] PROGMEM;
-#define FSTR_INIT Console::FlashStr(g_fstrInit)
+inline char FStrReadChar(const FlashStringHelper_t *fstr, size_t index)
+{
+	return reinterpret_cast<const char *>(fstr)[index];
+}
 
-extern const char g_fstrInvalid[] PROGMEM ;
-#define FSTR_INVALID Console::FlashStr(g_fstrInvalid)
+inline int FStrNCmp(const char *str1, const __FlashStringHelper *fstr2, size_t maxCount)
+{
+	return strncmp_P(str1, fstr2, maxCount);
+}
 
-extern const char g_fstrLump[] PROGMEM;
-#define FSTR_LUMP Console::FlashStr(g_fstrLump)
+inline char *FStrCpy(char *dest, const __FlashStringHelper *fsrc, size_t count)
+{
+	return strncpy_P(dest, fsrc, count);
+}
 
-extern const char g_fstrName[] PROGMEM;
-#define FSTR_NAME Console::FlashStr(g_fstrName)
+#else
 
-extern const char g_fstrNode[] PROGMEM;
-#define FSTR_NODE Console::FlashStr(g_fstrNode)
+inline size_t FStrLen(const FlashStringHelper_t *fstr)
+{
+	return strlen_P((PGM_P)fstr);
+}
 
-extern const char g_fstrNo[] PROGMEM;
-#define FSTR_NO Console::FlashStr(g_fstrNo)
+inline char FStrReadChar(const FlashStringHelper_t *fstr, size_t index)
+{
+	return static_cast<char>(pgm_read_byte_near((PGM_P)(fstr)+index));
+}
 
-extern const char g_fstrNok[] PROGMEM;
-#define FSTR_NOK Console::FlashStr(g_fstrNok)
+inline int FStrNCmp(const char *str1, const __FlashStringHelper *fstr2, size_t maxCount)
+{
+	return strncmp_P(str1, (PGM_P)fstr2, maxCount);
+}
 
-extern const char g_fstrOffline[] PROGMEM;
-#define FSTR_OFFLINE Console::FlashStr(g_fstrOffline)
+inline char *FStrCpy(char *dest, const __FlashStringHelper *fsrc, size_t count)
+{
+	return strncpy_P(dest, (PGM_P)fsrc, count);
+}
 
-extern const char g_fstrOk[] PROGMEM;
-#define FSTR_OK Console::FlashStr(g_fstrOk)
-
-extern const char g_fstrSetup[] PROGMEM;
-#define FSTR_SETUP Console::FlashStr(g_fstrSetup)
-
-extern const char g_fstrPort[] PROGMEM;
-#define FSTR_PORT Console::FlashStr(g_fstrPort)
-
-extern const char g_fstrRom[] PROGMEM;
-#define FSTR_ROM Console::FlashStr(g_fstrRom)
-
-extern const char g_fstrSrvport[] PROGMEM;
-#define FSTR_SRVPORT Console::FlashStr(g_fstrSrvport)
-
-extern const char g_fstrSession[] PROGMEM;
-#define FSTR_SESSION Console::FlashStr(g_fstrSession)
-
-extern const char g_fstrTimeout[] PROGMEM;
-#define FSTR_TIMEOUT Console::FlashStr(g_fstrTimeout)
-
-extern const char g_fstrUnknown[] PROGMEM;
-#define FSTR_UNKNOWN Console::FlashStr(g_fstrUnknown)
+#endif

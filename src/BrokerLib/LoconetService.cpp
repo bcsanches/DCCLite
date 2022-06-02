@@ -564,8 +564,10 @@ std::optional<uint8_t> SlotManager::AcquireLocomotive(const dcclite::broker::Dcc
 		//Found it, use...
 		it->GotoState_Common(address);		
 	}
+	
+	static_assert(MAX_SLOTS <= 255);
 
-	auto index = it - m_arSlots.begin();	
+	auto index = static_cast<uint8_t>(it - m_arSlots.begin());	
 	
 	return index;
 }
@@ -1424,7 +1426,7 @@ namespace dcclite::broker
 
 				++msg;		
 
-				MiniPacket_t packet(msg, nextMsg - msg);
+				MiniPacket_t packet(msg, static_cast<uint8_t>(nextMsg - msg));
 
 				this->ParseMessage(opcode, packet, ticks);
 			

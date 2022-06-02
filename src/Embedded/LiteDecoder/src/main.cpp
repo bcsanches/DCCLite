@@ -26,18 +26,19 @@ static float g_uFps = 0;
 
 static unsigned short g_uDecodersPosition = 0;
 
+static_assert(sizeof(g_uDecodersPosition) == 2);
+
 bool g_fNetReady = false;
 
-const char CmdCfgName[] PROGMEM = { "cfg" };
-const char CmdDumpName[] PROGMEM = { "dump" };
-const char CmdHDumpName[] PROGMEM = { "hdump" };
-const char MainModuleName[] PROGMEM = { "LITE_DECODER" };
+#define CMD_CFG_NAME F("cfg")
+#define CMD_DUMP_NAME F("dump")
+#define CMD_HDUMP_NAME F("hdump")
 
-#define MODULE_NAME Console::FlashStr(MainModuleName)
+#define MODULE_NAME F("LITE_DECODER")
 
 bool Console::Custom_ParseCommand(const char *command)
 {
-	if (strncmp_P(command, CmdCfgName, 3) == 0)
+	if (FStrNCmp(command, CMD_CFG_NAME, 3) == 0)
 	{
 		//format: cfg <nodeName> <mac> <port> <srvport>	
 
@@ -50,6 +51,8 @@ bool Console::Custom_ParseCommand(const char *command)
 
 			return true;
 		}
+
+		//Serial.println(F("etst"));
 
 		//Console::SendLog("[CONSOLE]", "name: %s", nodeName);
 
@@ -106,14 +109,14 @@ bool Console::Custom_ParseCommand(const char *command)
 
 		return true;
 	}
-	else if (strncmp_P(command, CmdDumpName, 4) == 0)
+	else if (FStrNCmp(command, CMD_DUMP_NAME, 4) == 0)
 	{
 		Storage::Dump();
 		Console::SendLogEx(MODULE_NAME, FSTR_OK);
 
 		return true;
 	}
-	else if (strncmp_P(command, CmdHDumpName, 5) == 0)
+	else if (FStrNCmp(command, CMD_HDUMP_NAME, 5) == 0)
 	{
 		Storage::DumpHex();
 		Console::SendLogEx(MODULE_NAME, FSTR_OK);
@@ -125,15 +128,18 @@ bool Console::Custom_ParseCommand(const char *command)
 	return false;
 }
 
-static const char DecodersStorageId[] PROGMEM = { "DECS013" };
-static const char NetUdpStorageId[] PROGMEM = { "NetU002" };
-static const char SessionStorageId[] PROGMEM = { "Sson001" };
+#define DECODERS_STORAGE_ID F("DECS013")
+#define NET_UDP_STORAGE_ID	F("NetU002")
+#define SESSION_STORAGE_ID  F("Sson001")
 
 bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream &stream)
 {
-	if (strncmp_P(lump.m_archName, DecodersStorageId, strlen_P(DecodersStorageId)) == 0)
+	if (FStrNCmp(lump.m_archName, DECODERS_STORAGE_ID, FStrLen(DECODERS_STORAGE_ID)) == 0)
 	{
-		g_uDecodersPosition = stream.GetIndex() - sizeof(Storage::Lump);
+		//make sure below cast will not fail...
+		static_assert(sizeof(Storage::Lump) < 255);
+
+		g_uDecodersPosition = stream.GetIndex() - static_cast<unsigned short>(sizeof(Storage::Lump));
 		stream.Skip(lump.m_uLength);
 
 		Console::SendLogEx(MODULE_NAME, FSTR_DECODERS, ' ', "cfg", ' ', g_uDecodersPosition);
@@ -141,7 +147,7 @@ bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream
 		return true;
 	}
 
-	if (strncmp_P(lump.m_archName, NetUdpStorageId, strlen_P(NetUdpStorageId)) == 0)
+	if (FStrNCmp(lump.m_archName, NET_UDP_STORAGE_ID, FStrLen(NET_UDP_STORAGE_ID)) == 0)
 	{
 		Console::SendLogEx(MODULE_NAME, "net", "udp", ' ', "cfg");
 		NetUdp::LoadConfig(stream);
@@ -149,7 +155,7 @@ bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream
 		return true;
 	}
 
-	if (strncmp_P(lump.m_archName, SessionStorageId, strlen_P(SessionStorageId)) == 0)
+	if (FStrNCmp(lump.m_archName, SESSION_STORAGE_ID, FStrLen(SESSION_STORAGE_ID)) == 0)
 	{
 		Console::SendLogEx(MODULE_NAME, FSTR_SESSION, ' ', "cfg");
 
@@ -164,19 +170,19 @@ bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream
 void Storage::Custom_SaveModules(Storage::EpromStream &stream)
 {
 	{
-		LumpWriter netLump(stream, NetUdpStorageId, false);
+		LumpWriter netLump(stream, NET_UDP_STORAGE_ID);
 
 		NetUdp::SaveConfig(stream);
 	}
 
 	{
-		LumpWriter sessionLump(stream, SessionStorageId, false);
+		LumpWriter sessionLump(stream, SESSION_STORAGE_ID);
 
 		Session::SaveConfig(stream);
 	}
 
 	{
-		LumpWriter decodersLump(stream, DecodersStorageId, false);
+		LumpWriter decodersLump(stream, DECODERS_STORAGE_ID);
 
 		DecoderManager::SaveConfig(stream);
 	}
@@ -191,7 +197,7 @@ void Storage_LoadDecoders(uint32_t position)
 	stream.GetString(lump.m_archName, sizeof(lump.m_archName));
 	stream.Get(lump.m_uLength);
 
-	if (strncmp_P(lump.m_archName, DecodersStorageId, strlen_P(DecodersStorageId)) != 0)
+	if (FStrNCmp(lump.m_archName, DECODERS_STORAGE_ID, FStrLen(DECODERS_STORAGE_ID)) != 0)
 	{
 		Console::SendLogEx(MODULE_NAME, FSTR_UNKNOWN, ' ', FSTR_LUMP, ' ', lump.m_archName);
 

@@ -20,6 +20,7 @@ set(ArduinoLib_HDRS
   Serial.h
   Servo.h
   avr/pgmspace.h
+  WString.h
 )
 
 add_compile_definitions(ARDUINOLIB_EXPORTS)

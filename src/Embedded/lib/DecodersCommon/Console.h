@@ -11,10 +11,12 @@
 #ifndef CONSOLE_NET_H
 #define CONSOLE_NET_H
 
-#include <avr/pgmspace.h>
+#include "Strings.h"
 
 namespace Console
 {
+	typedef __FlashStringHelper ConsoleFlashStringHelper_t;
+
 	enum class Format
 	{
 		DECIMAL,
@@ -22,10 +24,12 @@ namespace Console
 	};
 
 	extern void Send(const char *str);
+	extern void Send(const ConsoleFlashStringHelper_t *fstr);
 	extern void SendLn(const char *str);
 	extern void Send(char value);		
 	extern void Send(int value, Format format = Format::DECIMAL);
 	extern void Send(unsigned int value, Format format = Format::DECIMAL);
+	extern void Send(const unsigned long value, Format format = Format::DECIMAL);
 
 	struct Hex
 	{
@@ -39,13 +43,6 @@ namespace Console
 		const unsigned char *srcIp;
 
 		explicit IpPrinter(const unsigned char src_ip[4]) : srcIp(src_ip) {}
-	};
-
-	struct FlashStr
-	{
-		const char *fstr;
-
-		explicit FlashStr(const char *p): fstr{ p } {}
 	};
 
 	namespace detail
@@ -102,23 +99,26 @@ namespace Console
 		};
 
 		template <>
-		struct formatter<FlashStr>
-		{
-			inline void format(FlashStr fstr)
+		struct formatter<ConsoleFlashStringHelper_t>
+		{			
+			//static_assert(sizeof(ConsoleFlashStringHelper_t) == 1);
+
+			inline void format(const ConsoleFlashStringHelper_t *fstr)
 			{
-				// Send(hex.num, Format::HEXADECIMAL);
-				auto len = strlen_P(fstr.fstr);
-				for (size_t i = 0; i < len; ++i)
-				{
-					Send(static_cast<char>(pgm_read_byte_near(fstr.fstr + i)));
-				}
+				Send(fstr);				
 			}
-		};
+		};		
 
 		template <typename T>
 		inline void DoSendLog(const T &arg1)
 		{
 			formatter<T> f;
+			f.format(arg1);
+		}
+		
+		inline void DoSendLog(const ConsoleFlashStringHelper_t *arg1)
+		{
+			formatter<ConsoleFlashStringHelper_t> f;
 			f.format(arg1);
 		}
 
@@ -148,12 +148,12 @@ namespace Console
 	}
 
 	template <typename... Args>
-	inline void SendLogEx(const FlashStr &module, Args... args)
+	inline void SendLogEx(const ConsoleFlashStringHelper_t *fmodule, Args... args)
 	{
 		Console::Send('[');
 
-		detail::formatter<FlashStr> ffstr;
-		ffstr.format(module);		
+		detail::formatter<ConsoleFlashStringHelper_t> ffstr;
+		ffstr.format(fmodule);
 
 		Console::Send(']');
 		Console::Send(' ');

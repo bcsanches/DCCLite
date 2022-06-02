@@ -14,10 +14,21 @@
 
 #define PROGMEM
 
-#define strlen_P strlen
-#define strncmp_P strncmp
-#define strncpy_P strncpy
+class __FlashStringHelper;
 
-inline char pgm_read_byte_near(const char *p) { return *p; }
+inline size_t strlen_P(const __FlashStringHelper *fstr)
+{
+	return strlen((const char *)fstr);
+}
 
-#define F(x) x
+inline int strncmp_P(const char *str1, const __FlashStringHelper *fstr2, size_t maxCount)
+{
+	return strncmp(str1, (const char *)fstr2, maxCount);
+}
+
+inline char *strncpy_P(char *dest, const __FlashStringHelper *fsrc, size_t count)
+{
+	return strncpy(dest, (const char *)fsrc, count);
+}
+
+#define F(x) (reinterpret_cast<const __FlashStringHelper *>(x))

@@ -25,14 +25,10 @@ constexpr auto MAX_DECODERS = 16;
 
 constexpr auto MAX_BUTTONS = 32;
 
-static const char LocalDecoderManagerModuleName[] PROGMEM = { "LDecMgr" };
-#define MODULE_NAME Console::FlashStr(LocalDecoderManagerModuleName)
+#define MODULE_NAME F("LocalDecoderManager")
+#define FSTR_NO_SLOTS F("Out of slots")
 
-static const char FStrNoSlots[] PROGMEM = { "Out of slots" };
-#define FSTR_NO_SLOTS Console::FlashStr(FStrNoSlots)
-
-static const char FStrNoButtons[] PROGMEM = { "Out of buttons" };
-#define FSTR_NO_BUTTONS Console::FlashStr(FStrNoButtons)
+#define FSTR_NO_BUTTONS F("Out of buttons")
 
 static Decoder *g_pDecoders[MAX_DECODERS] = { 0 };
 

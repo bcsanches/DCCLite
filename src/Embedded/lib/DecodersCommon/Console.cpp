@@ -31,10 +31,7 @@
 #define HEX 16
 #endif
 
-const char ConsoleModuleName[] PROGMEM = {"CONSOLE"} ;
-#define MODULE_NAME Console::FlashStr(ConsoleModuleName)
-
-const char CmdMemName[] PROGMEM = {"mem"} ;
+#define MODULE_NAME F("CONSOLE")
 
 extern int __heap_start, *__brkval;
 
@@ -74,6 +71,16 @@ void Console::Send(unsigned int value, Format format)
 	Serial.print(value, format == Format::DECIMAL ? DEC : HEX);
 }
 
+void Console::Send(const unsigned long value, Format format)
+{
+    Serial.print(value, format == Format::DECIMAL ? DEC : HEX);
+}
+
+void Console::Send(const ConsoleFlashStringHelper_t *fstr)
+{
+    Serial.print(fstr);
+}
+
 void Console::Send(char value)
 {
 	Serial.print(value);
@@ -93,7 +100,7 @@ static void Parse(const char *command)
 {
 	Console::SendLogEx(MODULE_NAME, "in:", " ", command);
 
-	if(strncmp_P(command, CmdMemName, 3) == 0)
+	if(FStrNCmp(command, F("mem"), 3) == 0)
 	{
 		//based on https://github.com/DccPlusPlus/BaseStation/blob/master/DCCpp_Uno/SerialCommand.cpp
 
