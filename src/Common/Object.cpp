@@ -82,7 +82,7 @@ namespace dcclite
 	void IObject::SerializeIdentification(JsonOutputStream_t &stream) const
 	{
 		stream.AddStringValue("name", this->GetName());
-		stream.AddIntValue("internalId", reinterpret_cast<intptr_t>(this));
+		stream.AddPointerValue("internalId", this);
 		stream.AddStringValue("path", this->GetPath().string());
 	}
 
@@ -97,7 +97,7 @@ namespace dcclite
 		if (m_pParent)
 		{
 			stream.AddStringValue("parentName", m_pParent->GetName());
-			stream.AddIntValue("parentInternalId", reinterpret_cast<intptr_t>(m_pParent));
+			stream.AddPointerValue("parentInternalId", m_pParent);
 		}			
 	}
 
