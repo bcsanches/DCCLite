@@ -14,6 +14,7 @@
 #include "Blinker.h"
 #include "Console.h"
 #include "DecoderManager.h"
+#include "Misc.h"
 #include "NetUdp.h"
 #include "Parser.h"
 #include "Session.h"
@@ -228,6 +229,8 @@ void setup()
 	Console::SendLogEx(FSTR_SETUP, " ", FSTR_OK);
 }
 
+static int g_iMinHeapSpace = INT_MAX;
+
 void loop() 
 {	
 	++g_uFrameCount;
@@ -247,6 +250,14 @@ void loop()
 		g_uFrameCount = 0;
 
 		//Console::sendLog("main", "fps %d", (int)g_fps);
+
+		auto freeSpace = dcclite::GetHeapFreeSpace();
+		if (freeSpace < g_iMinHeapSpace)
+		{
+			g_iMinHeapSpace = freeSpace;
+
+			Console::SendLogEx(MODULE_NAME, F("ram "), g_iMinHeapSpace, F(" | fps "), (int)g_uFps);			
+		}
 	}
 
 	Console::Update();
@@ -257,5 +268,5 @@ void loop()
 	{
 		NetUdp::Update();
 		Session::Update(currentTime, stateChangeDetected);
-	}
+	}	
 }

@@ -1,71 +1,58 @@
 
+add_library(
+    Common  
+        Clock.cpp
+        Clock.h
+        ConsoleUtils.h	
+        defs.h
+        FileSystem.h
+        FmtUtils.h
+        GuidUtils.cpp
+        GuidUtils.h
+        Log.h
+        LogUtils.cpp
+        LogUtils.h
+        NetMessenger.cpp
+        NetMessenger.h
+        NmraUtil.cpp
+        NmraUtil.h
+        Object.cpp
+        Object.h
+        Sha1.cpp
+        PathUtils.cpp
+        PathUtils.h	
+        SerialPort.h
+        Sha1.h
+        Socket.cpp
+        Socket.h
+        Util.cpp
+        Util.h
+)
+
 if(WIN32)
-	set(CommonPlatSrcs 
-		ConsoleUtils_win.cpp
-		GuidUtils_win.cpp
-        SerialPort_win.cpp
-		Sha1_win.cpp        
-	)
+
+	target_compile_definitions(Common PRIVATE _CRT_SECURE_NO_WARNINGS)
     
-    set(CommonPlatHeaders
+    target_sources(Common PRIVATE
+        ConsoleUtils_win.cpp
+        GuidUtils_win.cpp
+        SerialPort_win.cpp
         SerialPort_win.h
+		Sha1_win.cpp
     )
 
 else(WIN32)
-	set(CommonPlatSrcs 
+
+    target_sources(Common PRIVATE
 		ConsoleUtils_linux.cpp
 		GuidUtils_linux.cpp
 		Sha1_linux.cpp
 		SerialPort_linux.cpp
-	)
-    
-    set(CommonPlatHeaders
         SerialPort_linux.h
-    )
-    
+	)   
+     
 endif(WIN32)
-
-set(Common_SRCS
-	${CommonPlatSrcs}
-	Clock.cpp	
-	GuidUtils.cpp
-	LogUtils.cpp
-	NetMessenger.cpp
-	NmraUtil.cpp
-	Object.cpp
-	Sha1.cpp
-	PathUtils.cpp	
-	Socket.cpp
-	Util.cpp
-)
-
-set(Common_HDRS	
-    ${CommonPlatHeaders}	
-	Clock.h
-	ConsoleUtils.h
-	defs.h
-	FileSystem.h
-	FmtUtils.h
-	GuidUtils.h
-	Log.h
-	LogUtils.h
-	NetMessenger.h
-	NmraUtil.h
-	Object.h
-	PathUtils.h
-    SerialPort.h
-	Sha1.h
-	Socket.h  
-	Util.h
-)
-
-if(WIN32)
-
-	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-
-endif(WIN32)
-
-add_library(Common  ${Common_SRCS} ${Common_HDRS})
+		
 target_compile_features(Common PUBLIC cxx_std_17)     
 
 target_include_directories(Common
