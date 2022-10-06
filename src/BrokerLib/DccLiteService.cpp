@@ -504,7 +504,7 @@ namespace dcclite::broker
 					break;
 
 				default:
-					dcclite::broker::Messenger::MakeEvent< GenericNetworkEvent>(std::ref(*this), sender, pkt, msgType);					
+					dcclite::broker::Messenger::MakeEvent<GenericNetworkEvent>(std::ref(*this), sender, pkt, msgType);					
 					break;
 			}
 		}

@@ -25,3 +25,6 @@
 [submodule "contrib/EtherCard"]
 	path = contrib/EtherCard
 	url = https://github.com/bcsanches/EtherCard.git
+[submodule "contrib/sigslot"]
+	path = contrib/sigslot
+	url = https://github.com/palacaze/sigslot.git

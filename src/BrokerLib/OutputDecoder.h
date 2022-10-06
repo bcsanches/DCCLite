@@ -39,19 +39,19 @@ namespace dcclite::broker
 				return dcclite::DecoderTypes::DEC_OUTPUT;
 			}
 
-			void Activate(const char* requester)
+			void Activate(const char *requester)
 			{
 				this->SetState(dcclite::DecoderStates::ACTIVE, requester);			
 			}
 
-			void Deactivate(const char* requester)
+			void Deactivate(const char *requester)
 			{
 				this->SetState(dcclite::DecoderStates::INACTIVE, requester);			
 			}
 
 			void SetState(const dcclite::DecoderStates newState, const char *requester);
 
-			void ToggleState(const char* requester)
+			void ToggleState(const char *requester)
 			{
 				this->SetState(m_kRequestedState == dcclite::DecoderStates::ACTIVE ? dcclite::DecoderStates::INACTIVE : dcclite::DecoderStates::ACTIVE, requester);			
 			}

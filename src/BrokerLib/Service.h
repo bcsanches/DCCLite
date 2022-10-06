@@ -18,6 +18,8 @@
 
 #include <rapidjson/document.h>
 
+#include <sigslot/signal.hpp>
+
 namespace dcclite
 {
 	class Clock;
@@ -81,10 +83,9 @@ namespace dcclite::broker
 		public:
 			virtual void Initialize() {};			
 
-			virtual ~Service() {}			
+			virtual ~Service() {}						
 
-			void AddListener(IObjectManagerListener &listener);
-			void RemoveListener(IObjectManagerListener &listener);
+			mutable sigslot::signal< const ObjectManagerEvent &> m_sigEvent;
 	
 		protected:
 			Service(std::string name, Broker &broker, const rapidjson::Value &params, const Project &project):
@@ -129,9 +130,7 @@ namespace dcclite::broker
 		protected:		
 			Broker &m_rclBroker;
 
-			const Project &m_rclProject;
-
-			std::vector<IObjectManagerListener *> m_vecListeners;
+			const Project &m_rclProject;			
 	};
 }
 

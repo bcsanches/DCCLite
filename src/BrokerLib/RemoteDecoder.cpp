@@ -41,6 +41,7 @@ namespace dcclite::broker
 
 			dcclite::Log::Info("[{}::SyncRemoteState] changed: {}", this->GetName(), dcclite::DecoderStateName(state));
 
+			m_sigRemoteStateSync(*this);
 			m_rclManager.Decoder_OnStateChanged(*this);
 		}	
 	}

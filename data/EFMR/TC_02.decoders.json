@@ -1,39 +1,39 @@
 [
     {
-        "name": "TC_PL22B",
+        "name": "TC_PL24B",
         "class": "Output",
         "address": "1300",
         "pin": 18,
         "inverted": false,
         "ignoreSavedState": true,
-        "comment":"Power track L22B"
+        "comment":"Power track L24B"
     },
     {
-        "name": "TC_PL24",
+        "name": "TC_PL26",
         "class": "Output",
-        "address": "1324",
+        "address": "1326",
         "pin": 17,
         "inverted": false,
         "ignoreSavedState": true,
-        "comment":"Power track L24"
+        "comment":"Power track L26"
     },
     {
-        "name": "TC_PL22A",
+        "name": "TC_PL24A",
         "class": "Output",
-        "address": "1322",
+        "address": "1324",
         "pin": 16,
         "inverted": false,
         "ignoreSavedState": true,
-        "comment":"Power track L22A"
+        "comment":"Power track L24A"
     },
     {
-        "name": "TC_PL28",
+        "name": "TC_PL30",
         "class": "Output",
-        "address": "1328",
+        "address": "1330",
         "pin": 15,
         "inverted": false,
         "ignoreSavedState": true,
-        "comment":"Power track L28 / Turntable access"
+        "comment":"Power track L30 / Turntable access"
     } ,
     {
         "name": "TC_T02",

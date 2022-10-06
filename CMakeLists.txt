@@ -22,8 +22,9 @@ file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 set_property( GLOBAL PROPERTY USE_FOLDERS ON)
 
-add_subdirectory(src)
 add_subdirectory(contrib)
+add_subdirectory(src)
+
  
 set_property(TARGET fmt PROPERTY FOLDER "contrib")
 set_property(TARGET gtest PROPERTY FOLDER "contrib")

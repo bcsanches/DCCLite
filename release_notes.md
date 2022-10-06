@@ -1,3 +1,9 @@
+# Version 0.6.3 - ??/??/????
+
+## Code
+
+- Using sigslot library (https://github.com/palacaze/sigslot), removed manual listeners code from Services
+
 # Version 0.6.2 - 05/09/2022
 
 ## General Features

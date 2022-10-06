@@ -14,6 +14,8 @@
 
 #include "SharedLibDefs.h"
 
+#include <sigslot/signal.hpp>
+
 
 namespace dcclite
 {
@@ -70,6 +72,8 @@ namespace dcclite::broker
 			//
 		
 			void Serialize(dcclite::JsonOutputStream_t &stream) const override;		
+
+			sigslot::signal<RemoteDecoder &> m_sigRemoteStateSync;
 
 		protected:
 			virtual dcclite::DecoderTypes GetType() const noexcept = 0;

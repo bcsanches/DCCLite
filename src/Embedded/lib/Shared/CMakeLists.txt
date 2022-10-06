@@ -1,5 +1,5 @@
 
-# configure_file(Version.h.in Version.h @DCCLITE_VERSION)
+# configure_file(Version.h Version.h @DCCLITE_VERSION)
 
 # include_directories(${CMAKE_CURRENT_BINARY_DIR})
 

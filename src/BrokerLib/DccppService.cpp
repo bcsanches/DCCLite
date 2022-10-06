@@ -85,7 +85,9 @@ namespace dcclite::broker
 		private:
 			NetMessenger				m_clMessenger;
 			DccppServiceImplClientProxy &m_rclOwner;
-			DccLiteService				&m_rclSystem;			
+			DccLiteService				&m_rclSystem;	
+
+			sigslot::scoped_connection	m_slotSystemConnection;
 
 			const NetworkAddress	m_clAddress;
 
@@ -153,7 +155,7 @@ namespace dcclite::broker
 
 		private:
 			std::string		m_strDccServiceName;
-			DccLiteService *m_pclDccService = nullptr;
+			DccLiteService *m_pclDccService = nullptr;			
 
 			//
 			//Network communication
@@ -172,7 +174,7 @@ namespace dcclite::broker
 		m_rclSystem(system),
 		m_clAddress(address)
 	{
-		m_rclSystem.AddListener(*this);
+		m_slotSystemConnection = m_rclSystem.m_sigEvent.connect(&DccppClient::OnObjectManagerEvent, this);
 
 		m_clReceiveThread = std::thread{ [this] {this->ThreadProc(); } };
 	}
@@ -182,9 +184,7 @@ namespace dcclite::broker
 	{
 		m_clMessenger.Close();
 
-		m_clReceiveThread.join();
-
-		m_rclSystem.RemoveListener(*this);
+		m_clReceiveThread.join();		
 	}
 
 	static inline std::string CreateTurnoutDecoderStateResponse(const TurnoutDecoder& decoder)

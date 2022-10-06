@@ -1062,7 +1062,7 @@ namespace dcclite::broker
 			if (service == nullptr)
 				continue;
 
-			service->RemoveListener(*this);
+			service->m_sigEvent.disconnect(*this);
 		}
 
 		Messenger::CancelEvents(*this);
@@ -1116,7 +1116,7 @@ namespace dcclite::broker
 				continue;
 			}
 
-			service->AddListener(*this);
+			service->m_sigEvent.connect(&TerminalClient::OnObjectManagerEvent, this);			
 		}
 	}		
 

@@ -11,17 +11,7 @@
 #include "Service.h"
 
 namespace dcclite::broker
-{
-	void Service::AddListener(IObjectManagerListener &listener)
-	{
-		m_vecListeners.push_back(&listener);
-	}
-
-	void Service::RemoveListener(IObjectManagerListener &listener)
-	{
-		m_vecListeners.erase(std::remove(m_vecListeners.begin(), m_vecListeners.end(), &listener), m_vecListeners.end());
-	}
-
+{	
 	void Service::NotifyItemCreated(const dcclite::IItem &item) const
 	{
 		ObjectManagerEvent ev(
@@ -58,10 +48,7 @@ namespace dcclite::broker
 
 	void Service::DispatchEvent(const ObjectManagerEvent &event) const
 	{
-		for (auto listener : m_vecListeners)
-		{
-			listener->OnObjectManagerEvent(event);
-		}
+		m_sigEvent(event);		
 	}
 }
 

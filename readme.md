@@ -65,7 +65,8 @@ This code needs the following libraries to be built:
 - [magicenum][10]
 - [RapidJson][1]
 - [spdlog][4]
-- [wxWidgets][11] - Optional, only for building native apps (still in development)
+- [sigslot][15]
+- [wxWidgets][11] - Optional, only for building native GUI apps (still in development)
  
 
 ## License
@@ -86,3 +87,4 @@ All code is licensed under the [MPLv2 License][5].
 [12]: https://www.jmri.org/
 [13]: https://dcc-ex.com/
 [14]: https://github.com/DccPlusPlus/BaseStation/wiki
+[15]: https://github.com/palacaze/sigslot
