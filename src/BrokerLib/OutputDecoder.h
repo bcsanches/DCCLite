@@ -49,7 +49,7 @@ namespace dcclite::broker
 				this->SetState(dcclite::DecoderStates::INACTIVE, requester);			
 			}
 
-			void SetState(const dcclite::DecoderStates newState, const char *requester);
+			bool SetState(const dcclite::DecoderStates newState, const char *requester);
 
 			void ToggleState(const char *requester)
 			{

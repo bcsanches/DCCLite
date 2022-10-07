@@ -17,7 +17,7 @@
 namespace dcclite::broker
 {
 
-	void OutputDecoder::SetState(dcclite::DecoderStates newState, const char *requester)
+	bool OutputDecoder::SetState(dcclite::DecoderStates newState, const char *requester)
 	{
 		if (m_kRequestedState != newState)
 		{
@@ -31,7 +31,11 @@ namespace dcclite::broker
 			m_kRequestedState = newState;
 
 			m_rclManager.Decoder_OnStateChanged(*this);
+
+			return true;
 		}
+
+		return false;
 	}
 
 	void OutputDecoder::Serialize(dcclite::JsonOutputStream_t& stream) const

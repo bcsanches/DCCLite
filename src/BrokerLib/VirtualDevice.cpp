@@ -27,20 +27,7 @@ namespace dcclite::broker
 		Device{ std::move(name), dccService, project }
 	{
 		//emtpy
-	}
-
-
-	void VirtualDevice::Update(const dcclite::Clock::TimePoint_t ticks)
-	{		
-		for (auto it : m_vecDecoders)
-		{
-			auto *decoder = static_cast<SignalDecoder *>(it);
-			if (!decoder)
-				continue;
-
-			decoder->Update(ticks);
-		}
-	}
+	}	
 
 	void VirtualDevice::CheckLoadedDecoder(Decoder &decoder)
 	{

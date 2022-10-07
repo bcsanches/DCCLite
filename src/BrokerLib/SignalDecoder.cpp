@@ -24,6 +24,7 @@ namespace dcclite::broker
 {
 	using namespace std::chrono_literals;
 	static auto constexpr FLASH_INTERVAL = 500ms;
+	static auto constexpr WAIT_STATE_TIMEOUT = 250ms;
 
 
 	SignalDecoder::SignalDecoder(
@@ -104,7 +105,7 @@ namespace dcclite::broker
 			else
 			{
 				//if no off array defined, we simple add all heads not listed on the "on" table
-				for (auto headIt : m_mapHeads)
+				for (auto &headIt : m_mapHeads)
 				{
 					//skip existing heads
 					if (std::any_of(newAspect.m_vecOnHeads.begin(), newAspect.m_vecOnHeads.end(), [headIt](const std::string &onAspectName) { return onAspectName.compare(headIt.second) == 0; }))
@@ -128,13 +129,9 @@ namespace dcclite::broker
 			return b.m_eAspect < a.m_eAspect;
 		});
 
-		//start with most restrictive state, expected to be Stop
-		m_uCurrentAspectIndex = m_vecAspects.size() - 1;
-		m_eCurrentAspect = m_vecAspects[m_uCurrentAspectIndex].m_eAspect;
-
-		//go to a valid state
-		m_vState = State_TurnOff{};
-		m_pclCurrentState = std::get_if<State_TurnOff>(&m_vState);
+		//start with most restrictive aspect, expected to be Stop
+		const auto aspectIndex = static_cast<unsigned>(m_vecAspects.size() - 1);
+		this->ApplyAspect(m_vecAspects[aspectIndex].m_eAspect, aspectIndex);		
 	}
 
 
@@ -148,7 +145,7 @@ namespace dcclite::broker
 
 	void SignalDecoder::ForEachHead(const std::vector<std::string> &heads, const dcclite::SignalAspects aspect, std::function<bool(OutputDecoder &)> proc) const
 	{
-		for (auto head : heads)
+		for (const auto &head : heads)
 		{			
 			auto *dec = dynamic_cast<OutputDecoder *>(m_rclManager.TryFindDecoder(head));
 			if (dec == nullptr)
@@ -168,7 +165,7 @@ namespace dcclite::broker
 			return;
 
 		int index = 0;
-		for (auto it : m_vecAspects)
+		for (const auto &it : m_vecAspects)
 		{
 			if (it.m_eAspect <= aspect)
 			{
@@ -201,99 +198,141 @@ namespace dcclite::broker
 			requester
 		);
 
-		m_eCurrentAspect = aspect;
-		m_uCurrentAspectIndex = index;
-
-		//
-		//We have a turnoff state so on the first update the signal will go to a consistent state		
-		m_vState = State_TurnOff{};		
-		m_pclCurrentState = std::get_if<State_TurnOff>(&m_vState);		
-
+		this->ApplyAspect(aspect, index);
+			
 		m_rclManager.Decoder_OnStateChanged(*this);
 	}
 
-	void SignalDecoder::Update(const dcclite::Clock::TimePoint_t ticks)
+	void SignalDecoder::ApplyAspect(const dcclite::SignalAspects aspect, const unsigned aspectIndex)
 	{
-		if (m_pclCurrentState)
-			m_pclCurrentState->Update(*this, ticks);
+		m_eCurrentAspect = aspect;
+		m_uCurrentAspectIndex = aspectIndex;
+
+		//
+		//We have a turnoff state so on the first update the signal will go to a consistent state		
+		m_vState.emplace<State_WaitTurnOff>(*this);	
+		auto waitTurnOffState = std::get_if< State_WaitTurnOff>(&m_vState);		
+
+		//No heads changed to off state?
+		if (waitTurnOffState->GetWaitListSize() == 0)
+		{
+			waitTurnOffState->GotoNextState();
+		}		
+		//else
+		//wait for decoders events on State_WaitTurnOff
+	}	
+
+	SignalDecoder::State_WaitTurnOff::State_WaitTurnOff(SignalDecoder &self):
+		State{self},
+		m_clTimeoutThinker{ THINKER_MF_LAMBDA(OnThink) }
+	{
+		this->Init();
+
+		//do we have to wait for any heads to turn off?
+		if(m_uWaitListSize)
+			m_clTimeoutThinker.SetNext(dcclite::Clock::DefaultClock_t::now() + WAIT_STATE_TIMEOUT);
 	}
 
-	void SignalDecoder::State_TurnOff::Update(SignalDecoder &self, const dcclite::Clock::TimePoint_t time)
+	void SignalDecoder::State_WaitTurnOff::Init()
 	{
-		self.ForEachHead(self.m_vecAspects[self.m_uCurrentAspectIndex].m_vecOffHeads, self.m_eCurrentAspect, [&self](OutputDecoder &dec)
+		m_rclOwner.ForEachHead(m_rclOwner.m_vecAspects[m_rclOwner.m_uCurrentAspectIndex].m_vecOffHeads, m_rclOwner.m_eCurrentAspect, [this](OutputDecoder &dec)
 			{
-				dec.SetState(dcclite::DecoderStates::INACTIVE, self.GetName().data());
-
-				return true;
-			}
-		);
-
-		self.m_vState = State_WaitTurnOff{};
-		self.m_pclCurrentState = std::get_if<State_WaitTurnOff>(&self.m_vState);
-	}
-	
-	void SignalDecoder::State_WaitTurnOff::Update(SignalDecoder &self, const dcclite::Clock::TimePoint_t time)
-	{
-		bool stillPending = false;
-		self.ForEachHead(self.m_vecAspects[self.m_uCurrentAspectIndex].m_vecOffHeads, self.m_eCurrentAspect, [&stillPending](OutputDecoder &dec)
-			{
-				if (dec.GetRemoteState() != dcclite::DecoderStates::INACTIVE)
+				if (dec.SetState(dcclite::DecoderStates::INACTIVE, m_rclOwner.GetName().data()))
 				{
-					stillPending = true;
+					m_lstConnections.emplace_back<sigslot::scoped_connection>(
+						dec.m_sigRemoteStateSync.connect(&State_WaitTurnOff::OnDecoderStateSync, this)
+					);
 
-					return false;
+					m_uWaitListSize++;
 				}
 
 				return true;
 			}
 		);
+	}
 
-		if (stillPending)
+
+	/**
+	*	We have a simple timeout mechanism to cover some extreme cases, like a device disconnecting while we are waiting 
+	* 
+	*	It does not seems to be worth managing all the complexity and possible cenarios when a device goes down
+	*
+	*	So if we not get a state sync after a while, check all heads again and turn them off
+	*
+	*/
+	void SignalDecoder::State_WaitTurnOff::OnThink(const dcclite::Clock::TimePoint_t time)
+	{
+		m_uWaitListSize = 0;
+		this->Init();
+
+		//Somehow, all heads are off now... so go to next state
+		if (m_uWaitListSize == 0)
+		{
+			this->GotoNextState();
+		}
+
+		m_clTimeoutThinker.SetNext(time + WAIT_STATE_TIMEOUT);
+	}
+
+	void SignalDecoder::State_WaitTurnOff::OnDecoderStateSync(RemoteDecoder &decoder)
+	{
+		if (m_uWaitListSize == 0)
+		{
+			dcclite::Log::Error("[SignalDecoder::State_WaitTurnOff::OnDecoderStateSync] m_uWaitListSize == 0!! how? Decoder -> {}", decoder.GetName());
+
 			return;
+		}
 
-		self.ForEachHead(self.m_vecAspects[self.m_uCurrentAspectIndex].m_vecOnHeads, self.m_eCurrentAspect, [&self](OutputDecoder &dec)
+		--m_uWaitListSize;
+
+		if (m_uWaitListSize == 0)
+		{
+			this->GotoNextState();
+		}
+	}
+
+	void SignalDecoder::State_WaitTurnOff::GotoNextState()
+	{
+		m_rclOwner.ForEachHead(m_rclOwner.m_vecAspects[m_rclOwner.m_uCurrentAspectIndex].m_vecOnHeads, m_rclOwner.m_eCurrentAspect, [this](OutputDecoder &dec)
 			{
-				dec.Activate(self.GetName().data());
+				dec.Activate(m_rclOwner.GetName().data());
 
 				return true;
 			}
 		);
 
-		if (self.m_vecAspects[self.m_uCurrentAspectIndex].m_Flash)
+		if (m_rclOwner.m_vecAspects[m_rclOwner.m_uCurrentAspectIndex].m_Flash)
 		{
-			self.m_vState = State_Flash{time};
-			self.m_pclCurrentState = std::get_if<State_Flash>(&self.m_vState);
+			m_rclOwner.m_vState.emplace<State_Flash>(m_rclOwner, dcclite::Clock::DefaultClock_t::now());
 		}
 		else
 		{
-			self.m_vState = NullState{};
-			self.m_pclCurrentState = nullptr;
-		}		
+			m_rclOwner.m_vState.emplace<NullState>();
+		}
 	}
 	
-	SignalDecoder::State_Flash::State_Flash(const dcclite::Clock::TimePoint_t time):
-		m_tNextThink(time + FLASH_INTERVAL)
+	
+	SignalDecoder::State_Flash::State_Flash(SignalDecoder &self, const dcclite::Clock::TimePoint_t time):
+		State{self},
+		m_clThinker{ THINKER_MF_LAMBDA(OnThink) }
 	{
-		//empty
+		this->OnThink(time);
 	}
 	
-	void SignalDecoder::State_Flash::Update(SignalDecoder &self, const dcclite::Clock::TimePoint_t time)
-	{
-		if (time < m_tNextThink)
-			return;
-
+	void SignalDecoder::State_Flash::OnThink(const dcclite::Clock::TimePoint_t time)
+	{		
 		m_fOn = !m_fOn;
 
 		const auto state = m_fOn ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE;
 
-		self.ForEachHead(self.m_vecAspects[self.m_uCurrentAspectIndex].m_vecOnHeads, self.m_eCurrentAspect, [state, &self](OutputDecoder &dec)
+		m_rclOwner.ForEachHead(m_rclOwner.m_vecAspects[m_rclOwner.m_uCurrentAspectIndex].m_vecOnHeads, m_rclOwner.m_eCurrentAspect, [state, this](OutputDecoder &dec)
 			{
-				dec.SetState(state, self.GetName().data());
+				dec.SetState(state, m_rclOwner.GetName().data());
 
 				return true;
 			}
 		);
 
-		m_tNextThink = time + FLASH_INTERVAL;
+		m_clThinker.SetNext(time + FLASH_INTERVAL);		
 	}		
 }

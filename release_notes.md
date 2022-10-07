@@ -3,6 +3,7 @@
 ## Code
 
 - Using sigslot library (https://github.com/palacaze/sigslot), removed manual listeners code from Services
+- SignalManager does not needs a regular update, now it is fully based on events
 
 # Version 0.6.2 - 05/09/2022
 
