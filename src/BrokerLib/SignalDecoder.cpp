@@ -139,8 +139,12 @@ namespace dcclite::broker
 	{
 		Decoder::Serialize(stream);
 
-		stream.AddStringValue("currentRequestedAspectName", dcclite::ConvertAspectToName(m_eCurrentAspect));
-		stream.AddStringValue("selectedAspectName", dcclite::ConvertAspectToName(m_vecAspects[m_uCurrentAspectIndex].m_eAspect));
+		stream.AddStringValue("requestedAspectName", dcclite::ConvertAspectToName(m_eCurrentAspect));
+		stream.AddStringValue("currentAspectName", dcclite::ConvertAspectToName(m_vecAspects[m_uCurrentAspectIndex].m_eAspect));
+		auto aspectsData = stream.AddArray("aspects");
+		
+		for (const auto &item : m_vecAspects)
+			aspectsData.AddString(dcclite::ConvertAspectToName(item.m_eAspect));
 	}
 
 	void SignalDecoder::ForEachHead(const std::vector<std::string> &heads, const dcclite::SignalAspects aspect, std::function<bool(OutputDecoder &)> proc) const
@@ -255,14 +259,17 @@ namespace dcclite::broker
 	/**
 	*	We have a simple timeout mechanism to cover some extreme cases, like a device disconnecting while we are waiting 
 	* 
-	*	It does not seems to be worth managing all the complexity and possible cenarios when a device goes down
+	*	It does not seems to be worth managing all the complexity and possible scenarios when a device goes down
 	*
-	*	So if we not get a state sync after a while, check all heads again and turn them off
+	*	So if we not get a state sync after a while, check all heads again and turn them off if necessary
 	*
 	*/
 	void SignalDecoder::State_WaitTurnOff::OnThink(const dcclite::Clock::TimePoint_t time)
 	{
+		//restart again
+		m_lstConnections.clear();
 		m_uWaitListSize = 0;
+
 		this->Init();
 
 		//Somehow, all heads are off now... so go to next state

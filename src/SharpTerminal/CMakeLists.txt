@@ -33,10 +33,7 @@ add_executable(SharpTerminal
   ObjectsTreeViewUserControl.resx  
   Program.cs
   RequestManager.cs
-  RemoteDecoder.cs
-  RemoteObjectUserControl.cs
-  RemoteObjectUserControl.Designer.cs
-  RemoteObjectUserControl.resx
+  RemoteDecoder.cs  
   RemoteDevice.cs  
   RemoteDeviceUserControl.cs
   RemoteDeviceUserControl.Designer.cs
@@ -53,6 +50,9 @@ add_executable(SharpTerminal
   RemoteLoconetServiceUserControl.Designer.cs
   RemoteLoconetServiceUserControl.resx
   RemoteObject.cs
+  RemoteObjectUserControl.cs
+  RemoteObjectUserControl.Designer.cs
+  RemoteObjectUserControl.resx  
   RemoteShortcutUserControl.cs
   RemoteShortcutUserControl.Designer.cs
   RemoteShortcutUserControl.resx

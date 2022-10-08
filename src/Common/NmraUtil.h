@@ -58,7 +58,7 @@ namespace dcclite
     SignalAspects ConvertNameToAspect(const char *name);
     std::optional<SignalAspects> TryConvertNameToAspect(const char *name);
 
-    std::string ConvertAspectToName(const SignalAspects aspect);
+    std::string_view ConvertAspectToName(const SignalAspects aspect);
 
     std::tuple<int16_t, uint16_t> ConvertAddressToNMRA(uint16_t address);
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Json;
 using System.ComponentModel;
-
+using System.Windows.Forms;
 
 namespace SharpTerminal
 {
@@ -31,19 +31,29 @@ namespace SharpTerminal
 
     public class RemoteDecoderCmdAction : RemoteDecoderCmdBaseAction
     {        
-        private string mCmd;
+        private readonly string mCmd;
+        private readonly string[] mExtraParams;
 
-        public RemoteDecoderCmdAction(string cmd, string label, string description):
+        public RemoteDecoderCmdAction(string cmd, string label, string description, params string[] extraParams):
             base(label, description)
         {            
             mCmd = cmd ?? throw new System.ArgumentNullException(nameof(cmd));
+
+            mExtraParams = extraParams;
         }
 
         public override void Execute(IConsole console, RemoteObject target)
         {
             var decoder = (RemoteDecoder)target;
+            
+            string[] args = new string[3 + mExtraParams.Length];
+            args[0] = mCmd;
+            args[1] = decoder.SystemName;
+            args[2] = decoder.Name;
 
-            string[] args = new string[3] { mCmd, decoder.SystemName, decoder.Name };
+            for (var i = 0; i < mExtraParams.Length; i++)
+                args[3 + i] = mExtraParams[i];            
+
             console.ProcessCmd(args);
         }        
     }
@@ -134,15 +144,78 @@ namespace SharpTerminal
 
     public class RemoteSignalDecoder : RemoteDecoder
     {
+        public String []m_Aspects;
+        public string m_strCurrentAspect;
+        public string m_strRequestedAspect;
+
+        IRemoteObjectAction []m_arActions;
+
         public RemoteSignalDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
             base(name, className, path, internalId, parentInternalId, objectDef)
         {
+            this.ParseStateData(objectDef);
 
+            var aspectsData = objectDef["aspects"];
+
+            m_Aspects = new string[aspectsData.Count];
+            for (var i = 0; i < m_Aspects.Length; ++i)
+                m_Aspects[i] = aspectsData[i];
+        }
+
+        protected override void OnUpdateState(JsonValue objectDef)
+        {
+            base.OnUpdateState(objectDef);
+
+            this.ParseStateData(objectDef);
+        }
+
+        private void ParseStateData(JsonValue objectDef)
+        {
+            CurrentAspect = (String)objectDef["currentAspectName"];
+            RequestedAspect = (String)objectDef["requestedAspectName"];
         }
 
         public override string TryGetIconName()
         {
             return DefaultIcons.SIGNAL_ICON;
+        }
+
+        [Category("Aspect")]
+        public string CurrentAspect
+        {
+            get { return m_strCurrentAspect; }
+
+            set
+            {
+                this.UpdateProperty(ref m_strCurrentAspect, value);
+            }
+        }
+
+        [Category("Aspect")]
+        public string RequestedAspect
+        {
+            get { return m_strRequestedAspect; }
+
+            set
+            {
+                this.UpdateProperty(ref m_strRequestedAspect, value);
+            }
+        }
+
+        public override IRemoteObjectAction[] GetActions()
+        {
+            if(m_arActions == null)
+            {
+                m_arActions = new IRemoteObjectAction[m_Aspects.Length];
+
+                for(int i = 0; i < m_Aspects.Length; i++)
+                {
+                    var aspect = m_Aspects[i];
+                    m_arActions[i] = new RemoteDecoderCmdAction("Set-Aspect", aspect, "Set " + aspect + " aspect", aspect);
+                }
+            }
+
+            return m_arActions;
         }
     }
 

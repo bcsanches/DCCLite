@@ -1,5 +1,8 @@
 # Version 0.6.3 - ??/??/????
 
+## SharpTerminal
+- Allow user to set signal aspects from SignalDecoder panel
+
 ## Code
 
 - Using sigslot library (https://github.com/palacaze/sigslot), removed manual listeners code from Services

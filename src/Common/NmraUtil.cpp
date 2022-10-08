@@ -67,9 +67,9 @@ dcclite::SignalAspects dcclite::ConvertNameToAspect(const char *name)
 	return v.value();
 }
 
-std::string dcclite::ConvertAspectToName(const SignalAspects aspect)
+std::string_view dcclite::ConvertAspectToName(const SignalAspects aspect)
 {
-	return std::string{ magic_enum::enum_name(aspect) };
+	return magic_enum::enum_name(aspect);
 }
 
 

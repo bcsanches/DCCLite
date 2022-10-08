@@ -1062,7 +1062,7 @@ namespace dcclite::broker
 			if (service == nullptr)
 				continue;
 
-			service->m_sigEvent.disconnect(*this);
+			service->m_sigEvent.disconnect(this);
 		}
 
 		Messenger::CancelEvents(*this);
