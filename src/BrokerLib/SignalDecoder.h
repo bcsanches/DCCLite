@@ -12,7 +12,8 @@
 
 #include "Decoder.h"
 
-#include<functional>
+#include <functional>
+#include <list>
 #include <set>
 #include <variant>
 #include <vector>
