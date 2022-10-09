@@ -306,6 +306,24 @@ bool DecoderManager::ProduceStatesDelta(dcclite::StatesBitPack_t &changedStates,
 	return hasDelta;
 }
 
+void DecoderManager::WriteOutputDecoderStates(dcclite::StatesBitPack_t &changedStates, dcclite::StatesBitPack_t &states)
+{
+	changedStates.ClearAll();
+	states.ClearAll();	
+
+	for (unsigned i = 0; i < MAX_DECODERS; ++i)
+	{
+		if (!g_pDecoders[i])
+			continue;
+
+		if (!g_pDecoders[i]->IsOutputDecoder())
+			continue;
+
+		changedStates.SetBit(i);
+		states.SetBitValue(i, g_pDecoders[i]->IsActive());		
+	}	
+}
+
 void DecoderManager::WriteStates(dcclite::StatesBitPack_t &changedStates, dcclite::StatesBitPack_t &states)
 {
 	changedStates.ClearAll();

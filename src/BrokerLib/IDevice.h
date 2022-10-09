@@ -30,7 +30,7 @@ namespace dcclite::broker
 				return nullptr;
 			}
 
-
+			virtual void Decoder_OnChangeStateRequest(const Decoder &decoder) noexcept = 0;
 	};
 
 	class INetworkDevice_DecoderServices

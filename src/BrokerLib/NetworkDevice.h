@@ -47,9 +47,7 @@ namespace dcclite::broker
 			NetworkDevice(const NetworkDevice &) = delete;
 			NetworkDevice(NetworkDevice &&) = delete;
 
-			~NetworkDevice();
-
-			void Update(const dcclite::Clock::TimePoint_t ticks) override;
+			~NetworkDevice();			
 
 			void AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::NetworkAddress remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken);
 
@@ -149,6 +147,8 @@ namespace dcclite::broker
 				m_clPinManager.UnregisterPin(decoder, pin);
 			}
 
+			void Decoder_OnChangeStateRequest(const Decoder &decoder) noexcept override;
+
 		private:						
 			PinManager				m_clPinManager;		
 
@@ -173,9 +173,7 @@ namespace dcclite::broker
 					const dcclite::NetworkAddress remoteAddress, 
 					const dcclite::Guid remoteConfigToken
 				);
-
-				virtual void Update(const dcclite::Clock::TimePoint_t time) = 0;
-				
+								
 				[[nodiscard]] virtual const char *GetName() const = 0;
 
 				protected:
@@ -190,12 +188,12 @@ namespace dcclite::broker
 
 			struct ConfigState: State
 			{
-				std::vector<bool>	m_vecAcks;
-
-				dcclite::Clock::TimePoint_t m_RetryTime;
+				std::vector<bool>	m_vecAcks;				
 
 				uint8_t				m_uSeqCount = { 0 };
 				bool				m_fAckReceived = { false };
+
+				Thinker				m_clTimeoutThinker;
 
 				ConfigState(NetworkDevice &self, const dcclite::Clock::TimePoint_t time);			
 
@@ -205,16 +203,17 @@ namespace dcclite::broker
 					const dcclite::MsgTypes msgType,
 					const dcclite::NetworkAddress remoteAddress,
 					const dcclite::Guid remoteConfigToken
-				) override;
+				) override;				
 
-				void Update(const dcclite::Clock::TimePoint_t time) override;
-
-				[[nodiscard]] const char *GetName() const override { return "ConfigState"; }
+				[[nodiscard]] 
+				const char *GetName() const override { return "ConfigState"; }
 
 				private:				
 					void SendDecoderConfigPacket(const size_t index) const;
 					void SendConfigStartPacket() const;
 					void SendConfigFinishedPacket() const;
+
+					void OnTimeout(const dcclite::Clock::TimePoint_t time);
 
 					void OnPacket_ConfigAck(						
 						dcclite::Packet &packet,
@@ -234,9 +233,7 @@ namespace dcclite::broker
 			};			
 
 			struct SyncState: State
-			{
-				dcclite::Clock::TimePoint_t m_SyncTimeout;
-
+			{				
 				SyncState(NetworkDevice &self);
 
 				void OnPacket(
@@ -245,11 +242,14 @@ namespace dcclite::broker
 					const dcclite::MsgTypes msgType,
 					const dcclite::NetworkAddress remoteAddress,
 					const dcclite::Guid remoteConfigToken
-				) override;
-
-				void Update(const dcclite::Clock::TimePoint_t time) override;
+				) override;				
 
 				[[nodiscard]] const char *GetName() const override { return "SyncState"; }
+
+				private:
+					void OnTimeout(const dcclite::Clock::TimePoint_t time);
+
+					Thinker				m_clTimeoutThinker;
 			};
 
 			struct OnlineState: State
@@ -262,25 +262,24 @@ namespace dcclite::broker
 					const dcclite::MsgTypes msgType,
 					const dcclite::NetworkAddress remoteAddress,
 					const dcclite::Guid remoteConfigToken
-				) override;
-
-				void Update(const dcclite::Clock::TimePoint_t time) override;
+				) override;				
 
 				[[nodiscard]] const char *GetName() const override { return "OnlineState"; }
 
+				void OnChangeStateRequest(const Decoder &decoder);
+
 				private:
-					void SendStateDelta(const bool sendSensorsState, const dcclite::Clock::TimePoint_t time);
+					bool SendStateDelta(const bool sendSensorsState, const dcclite::Clock::TimePoint_t time, const std::string_view requester);
 
 					void OnPingThink(const dcclite::Clock::TimePoint_t time);
-
-					dcclite::Clock::TimePoint_t m_tLastStateSentTimeout;
-					dcclite::StatesBitPack_t	m_tLastStateSent;
+					void OnStateDeltaThink(const dcclite::Clock::TimePoint_t time);									
 
 					uint64_t			m_uLastReceivedStatePacketId = 0;
 
 					uint64_t			m_uOutgoingStatePacketId = 0;
 
 					Thinker				m_clPingThinker;
+					Thinker				m_clSendStateDeltaThinker;
 			};
 
 			class TimeoutController

@@ -60,6 +60,9 @@ SensorDecoder::SensorDecoder(Storage::EpromStream& stream) :
 	stream.Get(m_uActivateDelay);
 	stream.Get(m_uDeactivateDelay);
 
+	//only read pull up and inverted flag, the others are internal
+	m_fFlags = m_fFlags & (dcclite::SNRD_PULL_UP | dcclite::SNRD_INVERTED);
+
 	this->Init(pin);
 }
 

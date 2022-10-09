@@ -7,6 +7,8 @@
 
 - Using sigslot library (https://github.com/palacaze/sigslot), removed manual listeners code from Services
 - SignalManager does not needs a regular update, now it is fully based on events
+- NetworkDevice now only relies on Events, does not need fixed udpates anymore
+- Improved state exchange protocol for server and clients, avoid too may extra messages
 
 # Version 0.6.2 - 05/09/2022
 

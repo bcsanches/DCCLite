@@ -48,8 +48,7 @@ namespace dcclite::broker
 
 
 	DccLiteService::DccLiteService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :
-		Service(name, broker, params, project),
-		m_tThinker{ {}, THINKER_MF_LAMBDA(Think) }
+		Service(name, broker, params, project)		
 	{
 		m_pDecoders = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("decoders")));
 		m_pAddresses = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("addresses")));
@@ -92,8 +91,7 @@ namespace dcclite::broker
 
 			throw;
 		}
-
-		m_tThinker.SetNext(dcclite::Clock::DefaultClock_t::now());	
+		
 		m_clNetworkThread = std::thread{ [this] {this->NetworkThreadProc(); } };
 	}
 
@@ -294,21 +292,8 @@ namespace dcclite::broker
 
 	void DccLiteService::Decoder_OnStateChanged(Decoder& decoder)
 	{
-		this->NotifyItemChanged(decoder);		
-	}	
-
-	void DccLiteService::Think(const dcclite::Clock::TimePoint_t ticks)
-	{
-		m_tThinker.SetNext(ticks + 50ms);
-
-		auto enumerator = this->m_pDevices->GetEnumerator();
-		while (enumerator.MoveNext())
-		{
-			auto dev = enumerator.TryGetCurrent<Device>();
-
-			dev->Update(ticks);
-		}
-	}
+		this->NotifyItemChanged(decoder);	
+	}		
 
 	//
 	//

@@ -33,6 +33,11 @@ class NetworkDeviceDecoderServicesMockup: public dcclite::broker::INetworkDevice
 		}
 };
 
+namespace dcclite::broker
+{
+	class Decoder;
+}
+
 class DeviceDecoderServicesMockup : public dcclite::broker::IDevice_DecoderServices
 {
 	public:
@@ -44,6 +49,11 @@ class DeviceDecoderServicesMockup : public dcclite::broker::IDevice_DecoderServi
 		dcclite::broker::INetworkDevice_DecoderServices *TryGetINetworkDevice() noexcept override
 		{
 			return &m_DecoderServices;
+		}
+
+		void Decoder_OnChangeStateRequest(const dcclite::broker::Decoder &decoder) noexcept override
+		{
+			//empty
 		}
 
 	private:

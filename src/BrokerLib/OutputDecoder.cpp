@@ -13,6 +13,7 @@
 #include <Log.h>
 
 #include "IDccLiteService.h"
+#include "IDevice.h"
 
 namespace dcclite::broker
 {
@@ -30,7 +31,11 @@ namespace dcclite::broker
 
 			m_kRequestedState = newState;
 
+			//Allow manager to know it and allow it to propagate changes
 			m_rclManager.Decoder_OnStateChanged(*this);
+
+			//device will take care of sending this down the network if necessary
+			m_rclDevice.Decoder_OnChangeStateRequest(*this);
 
 			return true;
 		}

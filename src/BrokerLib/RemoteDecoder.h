@@ -44,7 +44,7 @@ namespace dcclite::broker
 			);		
 				
 
-			void SyncRemoteState(dcclite::DecoderStates state);
+			bool SyncRemoteState(dcclite::DecoderStates state);
 
 			inline dcclite::DecoderStates GetRemoteState() const
 			{

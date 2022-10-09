@@ -33,7 +33,7 @@ namespace dcclite::broker
 		this->GetAddress().WriteConfig(packet);	
 	}
 
-	void RemoteDecoder::SyncRemoteState(dcclite::DecoderStates state)
+	bool RemoteDecoder::SyncRemoteState(dcclite::DecoderStates state)
 	{
 		if((state != m_kRemoteState) && !m_fBroken)
 		{
@@ -43,7 +43,11 @@ namespace dcclite::broker
 
 			m_sigRemoteStateSync(*this);
 			m_rclManager.Decoder_OnStateChanged(*this);
+
+			return true;
 		}	
+
+		return false;
 	}
 
 	void RemoteDecoder::Serialize(dcclite::JsonOutputStream_t &stream) const

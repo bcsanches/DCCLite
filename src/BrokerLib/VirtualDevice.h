@@ -19,12 +19,7 @@ namespace dcclite::broker
 	{
 		public:
 			VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project);
-			VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const Project &project);
-
-			void Update(const dcclite::Clock::TimePoint_t ticks) override
-			{
-				//empty
-			}
+			VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const Project &project);			
 
 			//
 			//IObject
@@ -34,6 +29,8 @@ namespace dcclite::broker
 			{
 				return "VirtualDevice";
 			}
+
+			void Decoder_OnChangeStateRequest(const Decoder &decoder) noexcept override;
 
 		protected:
 			void CheckLoadedDecoder(Decoder &decoder) override;

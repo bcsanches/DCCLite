@@ -33,7 +33,8 @@
 
 #define MODULE_NAME F("CONSOLE")
 
-extern int __heap_start, *__brkval;
+extern int __heap_start;
+extern char *__brkval;
 
 void Console::Init() 
 {

@@ -10,6 +10,8 @@
 
 #include <Arduino.h>
 
+#include <limits.h>
+
 #include "main.h"
 #include "Blinker.h"
 #include "Console.h"
@@ -205,6 +207,7 @@ void Storage_LoadDecoders(uint32_t position)
 		return;
 	}
 
+	Console::SendLogEx(MODULE_NAME, F("Loading config"));
 	DecoderManager::LoadConfig(stream);
 }
 

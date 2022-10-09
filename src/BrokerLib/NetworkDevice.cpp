@@ -33,7 +33,7 @@ namespace dcclite::broker
 
 	static auto constexpr SYNC_TIMEOUT = 100ms;
 
-	static auto constexpr PING_TIMEOUT = 2s;
+	static auto constexpr PING_TIMEOUT = 4s;
 
 	static uint32_t	g_u32TaskId = 0;
 
@@ -153,10 +153,12 @@ namespace dcclite::broker
 	//
 
 	NetworkDevice::ConfigState::ConfigState(NetworkDevice &self, const dcclite::Clock::TimePoint_t time):
-		State(self)
+		State(self),
+		m_clTimeoutThinker{THINKER_MF_LAMBDA(OnTimeout)}
 	{
 		this->m_vecAcks.resize(self.m_vecDecoders.size());
-		this->m_RetryTime = time + CONFIG_RETRY_TIME;
+
+		m_clTimeoutThinker.SetNext(time + CONFIG_RETRY_TIME);
 
 		this->SendConfigStartPacket();
 
@@ -164,6 +166,13 @@ namespace dcclite::broker
 		{
 			this->SendDecoderConfigPacket(i);
 		}
+	}
+
+	void NetworkDevice::ConfigState::SendConfigStartPacket() const
+	{
+		DevicePacket pkt{ dcclite::MsgTypes::CONFIG_START, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
+
+		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
 	}
 
 	void NetworkDevice::ConfigState::SendDecoderConfigPacket(const size_t index) const
@@ -183,14 +192,7 @@ namespace dcclite::broker
 		pkt.Write8(static_cast<uint8_t>(m_rclSelf.m_vecDecoders.size()));
 
 		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
-	}
-
-	void NetworkDevice::ConfigState::SendConfigStartPacket() const
-	{
-		DevicePacket pkt{ dcclite::MsgTypes::CONFIG_START, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
-
-		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
-	}
+	}	
 
 	void NetworkDevice::ConfigState::OnPacket_ConfigAck(
 		dcclite::Packet &packet,
@@ -219,7 +221,7 @@ namespace dcclite::broker
 		m_uSeqCount += m_vecAcks[seq] == false;
 		m_vecAcks[seq] = true;
 
-		m_RetryTime = time + CONFIG_RETRY_TIME;
+		m_clTimeoutThinker.SetNext(time + CONFIG_RETRY_TIME);		
 
 		dcclite::Log::Info("[{}::Device::OnPacket_ConfigAck] Config ACK {} - {}", m_rclSelf.GetName(), seq, m_rclSelf.m_vecDecoders[seq]->GetName());
 
@@ -272,13 +274,10 @@ namespace dcclite::broker
 		}
 	}
 
-	void NetworkDevice::ConfigState::Update(const dcclite::Clock::TimePoint_t time)
-	{
-		//should retry sending config packets?	
-		if (m_RetryTime > time)
-			return;
-
+	void NetworkDevice::ConfigState::OnTimeout(const dcclite::Clock::TimePoint_t time)
+	{		
 		//we havent received ack for some time, wake up the device (timeout keeps counting)
+		m_clTimeoutThinker.SetNext(time + CONFIG_RETRY_TIME);
 
 		//go thought all the decoders and check what does not have an ACK
 		int pos = 0, packetCount = 0;
@@ -320,9 +319,11 @@ namespace dcclite::broker
 	//
 
 	NetworkDevice::SyncState::SyncState(NetworkDevice &self):
-		State{ self }
+		State{ self },
+		m_clTimeoutThinker{THINKER_MF_LAMBDA(OnTimeout)}
 	{
-		//empty
+		//force it to run ASAP
+		m_clTimeoutThinker.SetNext({});
 	}
 
 	void NetworkDevice::SyncState::OnPacket(		
@@ -385,21 +386,17 @@ namespace dcclite::broker
 		m_rclSelf.GotoOnlineState(time);
 	}
 
-	void NetworkDevice::SyncState::Update(const dcclite::Clock::TimePoint_t time)
+	void NetworkDevice::SyncState::OnTimeout(const dcclite::Clock::TimePoint_t time)
 	{
 		assert(m_rclSelf.m_kStatus == Status::CONNECTING);
-
-		//too soon?
-		if (m_SyncTimeout > time)
-			return;
-
+				
 		dcclite::Log::Info("[{}::Device::SyncState::Update] request sent", m_rclSelf.GetName());
 
 		DevicePacket pkt{ dcclite::MsgTypes::SYNC, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
 
 		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
 
-		m_SyncTimeout = time + SYNC_TIMEOUT;
+		m_clTimeoutThinker.SetNext(time + SYNC_TIMEOUT);		
 	}
 
 	//
@@ -410,17 +407,18 @@ namespace dcclite::broker
 
 	NetworkDevice::OnlineState::OnlineState(NetworkDevice &self, const dcclite::Clock::TimePoint_t time):
 		State{ self },
-		m_clPingThinker{THINKER_MF_LAMBDA(OnPingThink)}
-	{
-		m_tLastStateSent.ClearAll();
-		m_tLastStateSentTimeout = {};
-
+		m_clPingThinker{THINKER_MF_LAMBDA(OnPingThink)},
+		m_clSendStateDeltaThinker{THINKER_MF_LAMBDA(OnStateDeltaThink)}
+	{		
 		m_clPingThinker.SetNext(time + PING_TIMEOUT);
+
+		//force it to send states ASAP
+		m_clSendStateDeltaThinker.SetNext({});
 
 		m_rclSelf.m_clTimeoutController.Enable(time);		
 	}
 
-	void NetworkDevice::OnlineState::SendStateDelta(const bool sendSensorsState, const dcclite::Clock::TimePoint_t time)
+	bool NetworkDevice::OnlineState::SendStateDelta(const bool sendSensorsState, const dcclite::Clock::TimePoint_t time, const std::string_view requester)
 	{
 		dcclite::BitPack<dcclite::MAX_DECODERS_STATES_PER_PACKET> states;
 		dcclite::BitPack<dcclite::MAX_DECODERS_STATES_PER_PACKET> changedStates;
@@ -493,26 +491,21 @@ namespace dcclite::broker
 			}
 		}
 
-		if (stateChanged)
-		{			
-			if ((m_tLastStateSent == states) && (time < m_tLastStateSentTimeout))
-			{				
-				return;
-			}				
+		//nothing to do?
+		if (!stateChanged)
+			return false;
 
-			DevicePacket pkt{ dcclite::MsgTypes::STATE, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
+		dcclite::Log::Debug("[{}::Device::OnPacket] Sending state - requester {}", m_rclSelf.GetName(), requester);
+					
+		DevicePacket pkt{ dcclite::MsgTypes::STATE, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
 
-			pkt.Write64(++m_uOutgoingStatePacketId);
-			pkt.Write(changedStates);
-			pkt.Write(states);
+		pkt.Write64(++m_uOutgoingStatePacketId);
+		pkt.Write(changedStates);
+		pkt.Write(states);
 
-			m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
+		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);		
 
-			m_tLastStateSentTimeout = time + STATE_TIMEOUT;
-			m_tLastStateSent = states;
-
-			//Log::Debug("[NetworkDevice::OnlineState::SendStateDelta] Sent {} sensor {}", m_uOutgoingStatePacketId, sendSensorsState);
-		}
+		return true;		
 	}
 
 
@@ -576,10 +569,9 @@ namespace dcclite::broker
 		dcclite::StatesBitPack_t states;
 
 		packet.ReadBitPack(changedStates);
-		packet.ReadBitPack(states);
-		
-		//dcclite::Log::Debug("[{}::Device::OnPacket] m_uOutgoingStatePacketAck {}", self.GetName(), m_uOutgoingStatePacketAck);
+		packet.ReadBitPack(states);			
 
+		bool sensorStateRefresh = false;
 		bool stateRefresh = false;
 
 		for (unsigned i = 0; i < changedStates.size(); ++i)
@@ -599,16 +591,15 @@ namespace dcclite::broker
 			So if we received any sensor state, we send back to the client our current state so it can ACK our current state
 			*/
 
-			if (remoteDecoder->IsInputDecoder())
-			{
-				stateRefresh = true;
-			}
-		}
+			sensorStateRefresh = remoteDecoder->IsInputDecoder() || sensorStateRefresh;			
+		}		
 
-		if (stateRefresh)
+		if (sensorStateRefresh)
 		{
-			SendStateDelta(true, time);
-		}
+			//
+			//Send it back to the device, so it can ACK that we got the last state
+			SendStateDelta(sensorStateRefresh, time, "OnPacket");
+		}		
 	}
 
 	void NetworkDevice::OnlineState::OnPingThink(const dcclite::Clock::TimePoint_t time)
@@ -616,16 +607,46 @@ namespace dcclite::broker
 		m_clPingThinker.SetNext(time + PING_TIMEOUT);
 
 		DevicePacket pkt{ dcclite::MsgTypes::MSG_PING, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
-		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
-
-		//m_rclSelf.PostponeTimeout(time);
-
-		//dcclite::Log::Debug("[{}::Device::OnPacket] sending ping", m_rclSelf.GetName());
+		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);		
 	}
 
-	void NetworkDevice::OnlineState::Update(const dcclite::Clock::TimePoint_t time)
+	void NetworkDevice::OnlineState::OnChangeStateRequest(const Decoder &decoder)
+	{		
+		//Run this ASAP
+		m_clSendStateDeltaThinker.SetNext({});
+	}
+
+	void NetworkDevice::OnlineState::OnStateDeltaThink(const dcclite::Clock::TimePoint_t time)
 	{
-		this->SendStateDelta(false, time);
+		if (!this->SendStateDelta(false, time, "OnStateDeltaThink"))
+		{
+			//no state sent? nothing else to do here
+			return;
+		}
+
+		/*
+		* 
+		* State sent, so we schedule to send it again for covering packet lost cases
+		* 
+		* If  the state arrive on the other side, we will get a reply that will sync our state,
+		* and hopefully, the lastStateSent will be the same, so the send will fail and we will not schedule it again		
+		*/
+		m_clSendStateDeltaThinker.SetNext(time + STATE_TIMEOUT);
+	}
+
+	//
+	//
+	//
+	//
+	//
+
+	void NetworkDevice::Decoder_OnChangeStateRequest(const Decoder &decoder) noexcept
+	{
+		auto *onlineState = std::get_if<OnlineState>(&m_vState);
+		if (onlineState == nullptr)
+			return;
+
+		onlineState->OnChangeStateRequest(decoder);
 	}
 
 	void NetworkDevice::Serialize(dcclite::JsonOutputStream_t &stream) const
@@ -763,14 +784,6 @@ namespace dcclite::broker
 		}		
 
 		m_pclCurrentState->OnPacket(packet, time, msgType, remoteAddress, remoteConfigToken);
-	}
-
-	void NetworkDevice::Update(const dcclite::Clock::TimePoint_t ticks)
-	{
-		if (m_kStatus == Status::OFFLINE)
-			return;					
-
-		m_pclCurrentState->Update(ticks);
 	}
 
 	void NetworkDevice::ClearState()

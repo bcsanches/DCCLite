@@ -137,9 +137,7 @@ namespace dcclite::broker
 				return this->GetName();
 			}
 
-		private:
-			Thinker m_tThinker;
-
+		private:			
 			dcclite::Socket m_clSocket;		
 
 			std::thread		m_clNetworkThread;

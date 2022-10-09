@@ -34,9 +34,7 @@ namespace dcclite::broker
 			Device(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project);
 			Device(std::string name, IDccLite_DeviceServices &dccService, const Project &project);	
 
-			virtual ~Device();
-
-			virtual void Update(const dcclite::Clock::TimePoint_t tp) = 0;
+			virtual ~Device();			
 
 			//
 			// IDeviceDEcoderServices

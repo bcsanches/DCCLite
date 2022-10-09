@@ -55,7 +55,7 @@ static uint64_t g_uLastReceivedDecodersStatePacket = 0;
 static uint64_t g_uDecodersStateSequence = 0;
 
 static ConnectionStates g_eConnectionState = ConnectionStates::OFFLINE;
-static bool g_fForceStateRefresh = false;
+static bool g_fRefreshServerAboutOutputDecoders = false;
 
 
 
@@ -310,10 +310,14 @@ static void GotoOnlineState(const unsigned long ticks, int callerLine)
 {
 	Console::SendLogEx(MODULE_NAME, OnOnlineStateNameStr, ' ', __LINE__, ' ', callerLine);
 
-	g_eConnectionState = ConnectionStates::ONLINE;
-	g_fForceStateRefresh = true;
+	g_eConnectionState = ConnectionStates::ONLINE;	
 	g_uLastReceivedDecodersStatePacket = 0;
-	g_uDecodersStateSequence = 0;
+	g_uDecodersStateSequence = 0;	
+
+	//
+	//Force a full state refresh
+	g_fRefreshServerAboutOutputDecoders = true;
+	g_uNextStateThink = 0;
 
 	PingManager::Reset(ticks);
 }
@@ -380,6 +384,30 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 //
 //
 
+/**
+ * Here we have two purposes:
+ * 	- First: detect if we must send a state packet to server
+ * 	- Second: if we must send a state, decide what needs to be sent
+ * 
+ * 	There are three possible situations to force us to send a packet to server:
+ * 		- We got a stateChangeDetectedHint, that means that:
+ * 			- An output decoder changed a slow state (like a servo turnout)
+ * 			- A sensor changed state (detected or stopped dectecting something)
+ * 
+ * 		- g_fRefreshServerAboutOutputDecoders is true
+ * 			- This means that the server requested us to change a output decoder state, so we send the state back to server, so its knows
+ * 				that we ack the request
+ * 
+ * 		- g_uNextStateThink expired: 
+ * 			- this means that a previous sent state does not reached the server
+ * 			- in such case, we only worry about sensors, because output decoders (like a servo),
+ * 				the server will request it to change again (and this will force g_fRefreshServerAboutOutputDecoders to true, thus forcing a state to be sent)
+ * 
+ * 
+ * 	We should only send sensors to the server when we are sure that their state was not ack by the server, otherwise, the server will keep
+ * 	sending it state back to us (for a ack) and we will stay in a ping pong all the time
+ * 
+*/
 static void OnlineTick(const unsigned long ticks, const bool stateChangeDetectedHint)
 {	
 	if (PingManager::CheckTimeout(ticks))
@@ -389,38 +417,57 @@ static void OnlineTick(const unsigned long ticks, const bool stateChangeDetected
 
 	ServoProgrammer::Update(ticks);
 
-	if (stateChangeDetectedHint || g_fForceStateRefresh || (g_uNextStateThink <= ticks))
-	{		
-		StatesBitPack_t states;
-		StatesBitPack_t changedStates;						
+	const bool stateTimeout = (g_uNextStateThink <= ticks);	
+	const bool sendSensors = stateTimeout || stateChangeDetectedHint;
+
+	//if nothing to do?
+	if((!sendSensors) && (!g_fRefreshServerAboutOutputDecoders))
+		return;
+			
+	StatesBitPack_t states;
+	StatesBitPack_t changedStates;						
 
 #if 1
-		if(stateChangeDetectedHint)
-			Console::SendLogEx("SESSION", "State stateChangeDetectedHint");
+	if(stateChangeDetectedHint)
+		Console::SendLogEx("SESSION", "State stateChangeDetectedHint");
 #endif
 
-		if (g_fForceStateRefresh || stateChangeDetectedHint)
-			DecoderManager::WriteStates(changedStates, states);					
-		else
-			//If any delta, set flag so we dispatch the packet
-			g_fForceStateRefresh = DecoderManager::ProduceStatesDelta(changedStates, states);
+	bool hasDataToSend = true;
+	if(sendSensors && g_fRefreshServerAboutOutputDecoders)
+	{
+		//Send everything, outputs and sensors
+		DecoderManager::WriteStates(changedStates, states);				
+	}
+	else if(sendSensors)
+	{
+		//send only sensors that have no ACK from server
+		hasDataToSend = DecoderManager::ProduceStatesDelta(changedStates, states);
+	}
+	else //if g_fRefreshServerAboutOutputDecoders
+	{
+		//send only output decoders state
+		DecoderManager::WriteOutputDecoderStates(changedStates, states);
+	}
 
-		if (g_fForceStateRefresh || stateChangeDetectedHint)
-		{
-			dcclite::Packet pkt;
-			PacketBuilder builder{ pkt, MsgTypes::STATE, g_SessionToken, g_ConfigToken };
+	//clear flag
+	g_fRefreshServerAboutOutputDecoders = false;
+				
+	//Do we really have any data to send? (ProduceStatesDelta may have produced nothing)
+	if (hasDataToSend)
+	{
+		dcclite::Packet pkt;
+		PacketBuilder builder{ pkt, MsgTypes::STATE, g_SessionToken, g_ConfigToken };
 
-			pkt.Write64(++g_uDecodersStateSequence);
-			pkt.Write(changedStates);
-			pkt.Write(states);			
+		pkt.Write64(++g_uDecodersStateSequence);
+		pkt.Write(changedStates);
+		pkt.Write(states);			
 
-			NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);			
+		//finally, send it...
+		NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);			
+	}
 
-			g_fForceStateRefresh = false;
-		}
-
-		g_uNextStateThink = ticks + Config::g_cfgStateTicks;
-	}	
+	//wait a bit before sending sensors again...
+	g_uNextStateThink = ticks + Config::g_cfgStateTicks;
 }
 
 static void OnStatePacket(dcclite::Packet &packet)
@@ -455,7 +502,7 @@ static void OnStatePacket(dcclite::Packet &packet)
 
 	*/	
 
-	g_fForceStateRefresh = DecoderManager::ReceiveServerStates(changedStates, states) || g_fForceStateRefresh;
+	g_fRefreshServerAboutOutputDecoders = DecoderManager::ReceiveServerStates(changedStates, states) || g_fRefreshServerAboutOutputDecoders;
 }
 
 static void OnSyncPacket(dcclite::Packet &packet)

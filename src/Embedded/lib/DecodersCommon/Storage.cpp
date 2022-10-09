@@ -67,7 +67,7 @@ extern size_t Storage::Length() noexcept
 bool Storage::LoadConfig()
 {	
     //Console::SendLog(MODULE_NAME, "init %d", sizeof(STORAGE_MAGIC));		
-	Console::SendLogEx(MODULE_NAME, 0, FSTR_INIT, ' ', static_cast<unsigned>(FStrLen(STORAGE_MAGIC)));
+	Console::SendLogEx(MODULE_NAME, FSTR_INIT, ' ', static_cast<unsigned>(FStrLen(STORAGE_MAGIC)));
 
 	Lump header;
 

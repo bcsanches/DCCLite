@@ -99,11 +99,13 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 
 		if(!validMac)
 		{
-			Console::SendLogEx(MODULE_NAME, "no", ' ', "mac");
+			Console::SendLogEx(MODULE_NAME, F("no"), ' ', F("mac"));
 
 			return false;			
 		}
 	}
+
+	Console::SendLogEx(MODULE_NAME, F("mac"), FSTR_OK);
 
 #ifdef ARDUINO_AVR_MEGA2560	
 	if (ether.begin(BUFFER_SIZE, g_u8Mac, 53) == 0)
@@ -111,24 +113,24 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 	if (ether.begin(BUFFER_SIZE, g_u8Mac, 10) == 0)
 #endif
 	{
-		Console::SendLogEx(MODULE_NAME, "ether", '.', "begin", ' ', FSTR_NOK);
+		Console::SendLogEx(MODULE_NAME, F("ether"), '.', F("begin"), ' ', FSTR_NOK);
 
 		return false;
 	}
 
-	Console::SendLogEx(MODULE_NAME, "net", ' ', "begin", ' ', FSTR_OK);
+	Console::SendLogEx(MODULE_NAME, F("net"), ' ', F("begin"), ' ', FSTR_OK);
 
 #if 1
 	for(int i = 0; !ether.dhcpSetup(g_szNodeName, true); ++i )
 	{
-		Console::SendLogEx(MODULE_NAME, "dhcp", ' ', FSTR_NOK," ", g_szNodeName);
+		Console::SendLogEx(MODULE_NAME, F("dhcp"), ' ', FSTR_NOK," ", g_szNodeName);
 
 		//return false;
 		if(i == 10)
 			return false;
 	}		
 
-	Console::SendLogEx(MODULE_NAME, "dhcp", ' ', FSTR_OK);
+	Console::SendLogEx(MODULE_NAME, F("dhcp"), ' ', FSTR_OK);
 #else
 
 	uint8_t ip[] = {192,168,0,180};
