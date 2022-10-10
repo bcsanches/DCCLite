@@ -43,6 +43,8 @@ namespace Session
 
 	extern NetUdp::ReceiveCallback_t GetReceiverCallback();
 
+	extern void UpdateFreeRam(uint16_t freeRam);
+
 	namespace detail
 	{
 		extern void InitTaskPacket(dcclite::Packet &packet, const uint32_t taskId);

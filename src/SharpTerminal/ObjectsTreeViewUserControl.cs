@@ -145,26 +145,34 @@ namespace SharpTerminal
             }
         }
 
-        private void UpdateNodesIcon(RemoteObject remoteObject)
+        private void UpdateNodesData(RemoteObject remoteObject)
         {
             if (!mObjectsNodes.TryGetValue(remoteObject.InternalId, out var nodes))
                 return;
 
             var customIcon = remoteObject.TryGetIconName();
 
+            var name = GenerateObjectName(remoteObject);
             foreach (var node in nodes)
             {
                 node.ImageKey = customIcon;
                 node.SelectedImageKey = customIcon;
+
+                node.Text = name;
             }            
+        }
+
+        private string GenerateObjectName(RemoteObject remoteObject)
+        {
+            return remoteObject.Name + remoteObject.GetNameSuffix();
         }
 
         private void RemoteObject_StateChanged(RemoteObject sender, EventArgs args)
         {            
             if (sender.TryGetIconName() == null)
-                return;                        
+                return;
 
-            UpdateNodesIcon(sender);                        
+            UpdateNodesData(sender);                        
         }
 
         private async void mRequestManager_ConnectionStateChanged(RequestManager sender, ConnectionStateEventArgs args)
@@ -203,7 +211,7 @@ namespace SharpTerminal
 
         private void AddNewNode(RemoteObject remoteObject, TreeNode parent)
         {
-            TreeNode newNode = parent.Nodes.Add(remoteObject.Name);
+            TreeNode newNode = parent.Nodes.Add(GenerateObjectName(remoteObject));
             newNode.Name = newNode.Text;
             newNode.Tag = remoteObject;
 

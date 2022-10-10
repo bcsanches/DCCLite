@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Json;
 using System.Linq;
 using System.Text;
@@ -38,6 +39,17 @@ namespace SharpTerminal
 
         public Status ConnectionStatus { get; set; }
 
+        private int mFreeRam;
+        public int FreeRam
+        {
+            get { return mFreeRam; }
+
+            set
+            {
+                this.UpdateProperty(ref mFreeRam, value);
+            }
+        }
+
         public RemotePin[] Pins;
 
         public RemoteDevice(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef):
@@ -51,6 +63,7 @@ namespace SharpTerminal
             base.OnUpdateState(objectDef);
 
             ConnectionStatus = (Status)(int)objectDef["connectionStatus"];
+            FreeRam = (int)objectDef["freeRam"];
 
             if (!objectDef.ContainsKey("pins"))
                 return;
@@ -102,6 +115,11 @@ namespace SharpTerminal
         public override Control CreateControl(IConsole console)
         {
             return new RemoteDeviceUserControl(this, Pins);
+        }
+
+        public override string GetNameSuffix()
+        {
+            return " [" + mFreeRam.ToString() + "]";
         }
     }
 }

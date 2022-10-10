@@ -143,7 +143,7 @@ namespace dcclite::broker
 		const dcclite::Guid remoteConfigToken
 	)
 	{
-		dcclite::Log::Error("[{}::Device::{}::OnPacket] Unexpected msg type: {}", m_rclSelf.GetName(), this->GetName(), dcclite::MsgName(msgType));
+		dcclite::Log::Error("[{}::Device::{}::OnPacket] Unexpected msg type: {} - {}", m_rclSelf.GetName(), this->GetName(), (int)msgType, dcclite::MsgName(msgType));
 	}
 
 	//
@@ -335,7 +335,7 @@ namespace dcclite::broker
 	)
 	{
 		//we simple ignore state msgs as the device client does not keeps waiting for sync messages
-		if (msgType == dcclite::MsgTypes::STATE)
+		if ((msgType == dcclite::MsgTypes::STATE) || (msgType == dcclite::MsgTypes::RAM_DATA))
 		{
 			//dcclite::Log::Warn("[{}::Device::SyncState::OnPacket] FIXME change client to stop sending STATE msg on sync state", self.GetName());
 			return;
@@ -550,6 +550,22 @@ namespace dcclite::broker
 			return;
 		}
 
+		if (msgType == dcclite::MsgTypes::RAM_DATA)
+		{			
+			m_rclSelf.m_uRemoteFreeRam = packet.Read<uint16_t>();
+
+			dcclite::Log::Warn("[{}::Device::OnPacket] Got RAM update: {}", m_rclSelf.GetName(), m_rclSelf.m_uRemoteFreeRam);
+
+			DevicePacket pkt{ dcclite::MsgTypes::RAM_DATA, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
+
+			pkt.Write16(m_rclSelf.m_uRemoteFreeRam);			
+
+			m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
+			m_rclSelf.m_clDccService.Device_NotifyStateChange(m_rclSelf);
+
+			return;
+		}
+
 		if (msgType != dcclite::MsgTypes::STATE)
 		{
 			State::OnPacket(packet, time, msgType, remoteAddress, remoteConfigToken);
@@ -658,6 +674,7 @@ namespace dcclite::broker
 		stream.AddStringValue("sessionToken", dcclite::GuidToString(m_SessionToken));
 		stream.AddStringValue("remoteAddress", m_RemoteAddress.GetIpString());
 		stream.AddIntValue("connectionStatus", static_cast<int>(m_kStatus));
+		stream.AddIntValue("freeRam", m_uRemoteFreeRam);
 
 		m_clPinManager.Serialize(stream);
 	}

@@ -36,7 +36,8 @@ namespace dcclite
 		SYNC,
 		DISCONNECT,
 		TASK_REQUEST,
-		TASK_DATA
+		TASK_DATA,
+		RAM_DATA
 	};
 
 	enum class NetworkTaskTypes: uint8_t
@@ -83,7 +84,7 @@ namespace dcclite
 
 	constexpr uint8_t MAX_DECODERS_STATES_PER_PACKET = 64;
 
-	constexpr uint16_t PROTOCOL_VERSION = 5;
+	constexpr uint16_t PROTOCOL_VERSION = 6;
 
 	typedef BitPack<MAX_DECODERS_STATES_PER_PACKET> StatesBitPack_t;
 
@@ -130,8 +131,11 @@ namespace dcclite
 			case MsgTypes::DISCONNECT:
 				return "disconnect";
 
+			case MsgTypes::RAM_DATA:
+				return "ram data";
+
 			default:
-				return nullptr;
+				return "unknown msg name";
 		}
 	}	
 

@@ -56,6 +56,11 @@ namespace dcclite
 		
 		combined_logger->info("Log started");
 
+#ifdef WIN32
+		// can be set globally or per logger(logger->set_error_handler(..))
+		spdlog::set_error_handler([](const std::string &msg) { spdlog::get("console")->error("*** LOGGER ERROR ***: {}", msg); });
+#endif
+
 		g_spLogger = combined_logger;
 	}
 

@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -6,6 +7,8 @@ namespace SharpTerminal
 {
     public partial class RemoteDeviceUserControl : UserControl
     {
+        private readonly RemoteDevice mRemoteDevice;
+
         public RemoteDeviceUserControl()
         {
             InitializeComponent();
@@ -13,8 +16,10 @@ namespace SharpTerminal
 
         public RemoteDeviceUserControl(RemoteDevice remoteDevice, RemotePin[] pins) :
             this()
-        {
-            m_lbTitle.Text += " - " + remoteDevice.Name;
+        {            
+            mRemoteDevice = remoteDevice ?? throw new ArgumentNullException(nameof(remoteDevice));
+
+            this.UpdateLabel();
 
             if (pins == null)
                 return;
@@ -36,7 +41,20 @@ namespace SharpTerminal
                 {
                     row.DefaultCellStyle.BackColor = Color.Red;
                 }
-            }            
+            }
+
+            remoteDevice.PropertyChanged += RemoteDevice_PropertyChanged;
         }
+
+        private void UpdateLabel()
+        {
+            m_lbTitle.Text = "RemoteDevice: " + mRemoteDevice.Name + " - mem: " + mRemoteDevice.FreeRam.ToString() + " bytes";
+        }
+
+        private void RemoteDevice_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            //We only expect free ram to change...
+            UpdateLabel();
+        }        
     }
 }

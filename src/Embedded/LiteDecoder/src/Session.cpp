@@ -57,7 +57,8 @@ static uint64_t g_uDecodersStateSequence = 0;
 static ConnectionStates g_eConnectionState = ConnectionStates::OFFLINE;
 static bool g_fRefreshServerAboutOutputDecoders = false;
 
-
+static uint16_t g_uRemoteRamValue = UINT16_MAX;
+static uint16_t g_uFreeRam = UINT16_MAX;
 
 
 //
@@ -314,6 +315,8 @@ static void GotoOnlineState(const unsigned long ticks, int callerLine)
 	g_uLastReceivedDecodersStatePacket = 0;
 	g_uDecodersStateSequence = 0;	
 
+	g_uRemoteRamValue = UINT16_MAX;
+
 	//
 	//Force a full state refresh
 	g_fRefreshServerAboutOutputDecoders = true;
@@ -419,6 +422,17 @@ static void OnlineTick(const unsigned long ticks, const bool stateChangeDetected
 
 	const bool stateTimeout = (g_uNextStateThink <= ticks);	
 	const bool sendSensors = stateTimeout || stateChangeDetectedHint;
+
+	//Is server freeRam value out of sync?
+	if((stateTimeout) && (g_uRemoteRamValue != g_uFreeRam))
+	{
+		dcclite::Packet pkt;
+		PacketBuilder builder{ pkt, MsgTypes::RAM_DATA, g_SessionToken, g_ConfigToken };
+
+		pkt.Write16(g_uFreeRam);
+		
+		NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
+	}
 
 	//if nothing to do?
 	if((!sendSensors) && (!g_fRefreshServerAboutOutputDecoders))
@@ -607,20 +621,27 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 			}
 			break;
 
+		case dcclite::MsgTypes::STATE:
+			//Console::SendLogEx(MODULE_NAME, "got state");
+			OnStatePacket(packet);			
+			break;		
+
 		case dcclite::MsgTypes::CONFIG_FINISHED:		
 			//this may happen when we send a CONFIG_FINISHED to server to ACK that we are configured but for some reason
 			//server does not get it and so, it resends the CONFIG_FINISHED for us to ACK
 			//we simple ignore and ack again to the server, yes
 			SendConfigPacket(packet, dcclite::MsgTypes::CONFIG_FINISHED, 255);
-			break;
-		
-		case dcclite::MsgTypes::STATE:
-			//Console::SendLogEx(MODULE_NAME, "got state");
-			OnStatePacket(packet);			
-			break;
+			break;			
 
 		case dcclite::MsgTypes::SYNC:
 			OnSyncPacket(packet);
+			break;
+
+		case dcclite::MsgTypes::RAM_DATA:
+			{
+				//just update the value
+				g_uRemoteRamValue = packet.Read<uint16_t>();
+			}
 			break;
 
 		case dcclite::MsgTypes::TASK_REQUEST:
@@ -767,6 +788,10 @@ static void ReceiveCallback(
 	OnOnlinePacket(type, packet);	
 }
 
+void Session::UpdateFreeRam(uint16_t freeRam)
+{
+	g_uFreeRam = freeRam;
+}
 
 NetUdp::ReceiveCallback_t Session::GetReceiverCallback()
 {

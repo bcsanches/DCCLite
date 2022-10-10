@@ -2,6 +2,7 @@
 
 ## SharpTerminal
 - Allow user to set signal aspects from SignalDecoder panel
+- Display RemoteDevice free ram value
 
 ## Code
 
@@ -9,6 +10,9 @@
 - SignalManager does not needs a regular update, now it is fully based on events
 - NetworkDevice now only relies on Events, does not need fixed udpates anymore
 - Improved state exchange protocol for server and clients, avoid too may extra messages
+- Fixed possible bug on arduino servo programmer task management
+- Bumped protocol version to 6
+- Fixed bug on unknown messages handling that sends null to the log
 
 # Version 0.6.2 - 05/09/2022
 

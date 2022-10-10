@@ -250,14 +250,15 @@ void loop()
 	if(seconds > 0)
 	{
 		g_uFps = g_uFrameCount / static_cast<float>(seconds);
-		g_uFrameCount = 0;
+		g_uFrameCount = 0;				
 
-		//Console::sendLog("main", "fps %d", (int)g_fps);
+		//Console::SendLogEx("main", "fps ", (int)g_uFps);
 
 		auto freeSpace = dcclite::GetHeapFreeSpace();
 		if (freeSpace < g_iMinHeapSpace)
 		{
 			g_iMinHeapSpace = freeSpace;
+			Session::UpdateFreeRam(g_iMinHeapSpace);
 
 			Console::SendLogEx(MODULE_NAME, F("ram "), g_iMinHeapSpace, F(" | fps "), (int)g_uFps);			
 		}

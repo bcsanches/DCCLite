@@ -311,6 +311,8 @@ namespace dcclite::broker
 
 			TimeoutController	m_clTimeoutController;
 
+			std::uint16_t		m_uRemoteFreeRam = UINT16_MAX;
+
 			//
 			//
 			//

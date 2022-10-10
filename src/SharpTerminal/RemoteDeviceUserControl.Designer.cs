@@ -1,4 +1,6 @@
-﻿namespace SharpTerminal
+﻿using System.Management.Instrumentation;
+
+namespace SharpTerminal
 {
     partial class RemoteDeviceUserControl
     {
@@ -13,9 +15,14 @@
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing)
             {
-                components.Dispose();
+                components?.Dispose();
+
+                if(mRemoteDevice != null)
+                {
+                    mRemoteDevice.PropertyChanged -= RemoteDevice_PropertyChanged;                    
+                }                    
             }
             base.Dispose(disposing);
         }

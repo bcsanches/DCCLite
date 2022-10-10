@@ -102,6 +102,11 @@ namespace SharpTerminal
         {
             return null;
         }
+
+        public virtual string GetNameSuffix()
+        {
+            return "";
+        }
     }
 
     public class RemoteFolder : RemoteObject
