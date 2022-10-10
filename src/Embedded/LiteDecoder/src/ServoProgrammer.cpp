@@ -157,7 +157,7 @@ class TaskList
 
 		inline void Update(const unsigned long ticks)
 		{
-			for (auto item = m_pclListHead; item; item = item->m_pclNext)
+			for (auto item = m_pclListHead; item;)
 			{
 				if ((item->m_fZombie) && (item->m_uDetachTime <= ticks))
 				{					
@@ -168,7 +168,11 @@ class TaskList
 					item = next;
 				}
 				else
+				{
 					item->Update(ticks);
+					item = item->m_pclNext;
+				}
+					
 			}
 		}
 
