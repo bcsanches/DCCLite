@@ -34,8 +34,8 @@ namespace dcclite::broker
 			throw std::invalid_argument(fmt::format("[{}::TurntableAutoInverterDecoder] Sensors cannot be the same: {}", this->GetName(), m_strSensorAName));
 		}
 
-		auto &trackAPins = params["trackPowerAPins"].GetArray();
-		auto &trackBPins = params["trackPowerBPins"].GetArray();
+		const auto &trackAPins = params["trackPowerAPins"].GetArray();
+		const auto &trackBPins = params["trackPowerBPins"].GetArray();
 
 		m_arTrackAPins[0] = dcclite::BasicPin{ static_cast<PinType_t>(trackAPins[0].GetInt()) };
 		m_arTrackAPins[1] = dcclite::BasicPin{ static_cast<PinType_t>(trackAPins[1].GetInt()) };
