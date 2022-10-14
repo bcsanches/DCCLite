@@ -40,7 +40,7 @@ namespace dcclite::broker
 
 				virtual void TaskServices_ForgetTask(NetworkTask &task) = 0;
 
-				[[nodiscard]] virtual uint8_t TaskServices_FindDecoderIndex(const Decoder &decoder) const = 0;
+				[[nodiscard]] virtual uint8_t FindDecoderIndex(const Decoder &decoder) const = 0;
 		};
 	}
 

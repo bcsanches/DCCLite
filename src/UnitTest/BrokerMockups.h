@@ -31,6 +31,16 @@ class NetworkDeviceDecoderServicesMockup: public dcclite::broker::INetworkDevice
 		{
 
 		}
+
+		[[nodiscard]] dcclite::broker::Decoder &FindDecoder(const std::string_view name) const override
+		{
+			throw std::exception("Not implemented: FindDecoder");
+		}
+
+		[[nodiscard]] uint8_t FindDecoderIndex(const dcclite::broker::Decoder &decoder) const override
+		{
+			throw std::exception("Not implemented: FindDecoderIndex");
+		}
 };
 
 namespace dcclite::broker

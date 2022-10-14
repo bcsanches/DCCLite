@@ -471,7 +471,7 @@ namespace dcclite::broker::detail
 	ServoTurnoutProgrammerTask::ServoTurnoutProgrammerTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, IObserver *observer, ServoTurnoutDecoder &decoder):
 		NetworkTaskImpl{ owner, taskId, observer },
 		m_rclDecoder{ decoder },
-		m_u8DecoderIndex{ owner.TaskServices_FindDecoderIndex(decoder) },
+		m_u8DecoderIndex{ owner.FindDecoderIndex(decoder) },
 		m_vState{ NullState{*this} }
 	{		
 		m_u8ServoPosition = decoder.GetStartPosition();

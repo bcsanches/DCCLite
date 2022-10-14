@@ -386,6 +386,7 @@ namespace SharpTerminal
                     break;
 
                 case "Decoder":
+                case "TurntableAutoInverterDecoder":
                     obj = new RemoteDecoder(name, className, path, id, parentInternalId, objectDef);
                     break;
 

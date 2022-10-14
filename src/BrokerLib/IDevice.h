@@ -28,7 +28,7 @@ namespace dcclite::broker
 			virtual INetworkDevice_DecoderServices *TryGetINetworkDevice() noexcept
 			{
 				return nullptr;
-			}
+			}			
 
 			virtual void Decoder_OnChangeStateRequest(const Decoder &decoder) noexcept = 0;
 	};
@@ -38,5 +38,8 @@ namespace dcclite::broker
 		public:
 			virtual void Decoder_RegisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage) = 0;
 			virtual void Decoder_UnregisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin) = 0;
+
+			[[nodiscard]] virtual Decoder &FindDecoder(const std::string_view name) const = 0;
+			[[nodiscard]] virtual uint8_t FindDecoderIndex(const Decoder &decoder) const = 0;
 	};
 }

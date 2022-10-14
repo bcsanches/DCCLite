@@ -56,7 +56,11 @@ namespace dcclite::broker
 			[[nodiscard]] inline const dcclite::Guid &GetConfigToken() noexcept
 			{
 				return m_ConfigToken;
-			}						
+			}				
+
+			[[nodiscard]] uint8_t FindDecoderIndex(const Decoder &decoder) const override;
+
+			[[nodiscard]] virtual Decoder &FindDecoder(const std::string_view name) const override;
 
 			//
 			//IObject
@@ -76,8 +80,7 @@ namespace dcclite::broker
 			[[nodiscard]] INetworkDevice_DecoderServices *TryGetINetworkDevice() noexcept override
 			{
 				return this;
-			}
-			
+			}								
 
 			//
 			//
@@ -91,9 +94,7 @@ namespace dcclite::broker
 
 			bool IsConnectionStable() const noexcept;
 
-			void TaskServices_ForgetTask(NetworkTask &task) override;
-
-			[[nodiscard]] uint8_t TaskServices_FindDecoderIndex(const Decoder &decoder) const override;
+			void TaskServices_ForgetTask(NetworkTask &task) override;			
 
 			//
 			//

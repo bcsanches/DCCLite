@@ -32,7 +32,8 @@ namespace dcclite
 		DEC_OUTPUT = 1,
 		DEC_SENSOR = 2,
 		DEC_SERVO_TURNOUT = 3,
-		DEC_SIGNAL = 4			//Only virtual, not implemented on Arduino
+		DEC_SIGNAL = 4,			//Only virtual, not implemented on Arduino
+		DEC_TURNTABLE_AUTO_INVERTER = 5
 	};
 
 	enum class DecoderStates
@@ -100,5 +101,11 @@ namespace dcclite
 		SNRD_COOLDOWN = 0x20,
 		SNRD_REMOTE_ACTIVE = 0x40,
 		SNRD_ACTIVE = 0x80
+	};
+
+	enum TurntableAutoInverterDecoderFlags: uint8_t
+	{
+		TRTD_REMOTE_ACTIVE = 0x40,
+		TRTD_ACTIVE = 0x80
 	};
 } //end of namespace dcclite

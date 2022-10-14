@@ -38,5 +38,34 @@
     "operationTime":4000,
     "startPos":48,
     "endPos":105
+  },
+  {
+    "name":"TurntableSensorA",
+    "class":"Sensor",
+    "pin":20,
+    "address":"0x114",
+    "pullup":true,
+    "inverted":true,
+    "activateDelay":0,
+    "deactivateDelay":0
+  },
+  {
+    "name":"TurntableSensorB",
+    "class":"Sensor",
+    "pin":21,
+    "address":"0x115",
+    "pullup":true,
+    "inverted":true,
+    "activateDelay":0,
+    "deactivateDelay":0
+  },  
+  {
+    "name": "TurntableInverter",
+    "class": "TurntableAutoInverter",
+    "address": "0x116",
+    "sensorA": "TurntableSensorA",
+    "sensorB": "TurntableSensorB",    
+    "trackPowerAPins": [8, 9],
+    "trackPowerBPins": [10, 11]
   }
 ]

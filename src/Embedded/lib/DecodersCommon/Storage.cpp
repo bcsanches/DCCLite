@@ -154,14 +154,11 @@ void Storage::UpdateField(unsigned int index, unsigned char byte)
 
 namespace Storage
 {
-
-
 	EpromStream::EpromStream(unsigned int index) :
 		m_uIndex(index)
 	{
 		//empty
 	}
-
 
 	void EpromStream::Get(char &ch)
 	{

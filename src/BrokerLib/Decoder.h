@@ -43,7 +43,12 @@ namespace dcclite::broker
 			inline const std::string &GetLocationHint() const
 			{
 				return m_strLocationHint;
-			}				
+			}		
+
+			virtual void InitAfterDeviceLoad()
+			{
+				//empty
+			}
 
 			//
 			//IObject

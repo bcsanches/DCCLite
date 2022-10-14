@@ -8,6 +8,7 @@ set(LiteDecoderLib_SRCS
   OutputDecoder.cpp
   ServoProgrammer.cpp  
   Session.cpp
+  TurntableAutoInverterDecoder.cpp        
 )
 
 set(LiteDecoderLib_HDRS
@@ -19,6 +20,7 @@ set(LiteDecoderLib_HDRS
   OutputDecoder.h
   ServoProgrammer.h    
   Session.h  
+  TurntableAutoInverterDecoder.h    
 )
 
 add_compile_definitions(LITEDECODERLIB_EXPORTS DCCLITE_ARDUINO_EMULATOR)

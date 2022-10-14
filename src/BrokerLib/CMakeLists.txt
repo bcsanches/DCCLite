@@ -1,5 +1,4 @@
 
-
 add_library(
     BrokerLib          	   	 
         BonjourService.cpp
@@ -57,7 +56,9 @@ add_library(
         ThrottleService.cpp
         ThrottleService.h
         TurnoutDecoder.cpp
-        TurnoutDecoder.h
+        TurnoutDecoder.h 
+        TurntableAutoInverterDecoder.cpp
+        TurntableAutoInverterDecoder.h       
         VirtualDevice.cpp
         VirtualDevice.h
         ZeroconfService.cpp
@@ -94,7 +95,7 @@ else(WIN32)
 
 endif(WIN32)
 
-target_compile_features(BrokerLib PUBLIC cxx_std_17)    
+target_compile_features(BrokerLib PUBLIC cxx_std_17)
 
 target_include_directories(BrokerLib 	
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/JsonCreator/include

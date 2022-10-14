@@ -149,6 +149,12 @@ namespace dcclite::broker
 				auto decShortcut = this->AddChild(std::make_unique<dcclite::Shortcut>(std::string(decoder.GetName()), decoder));
 				m_clDccService.Device_NotifyInternalItemCreated(*decShortcut);
 			}
+
+			//let decoder know that each decoder on this device has been created
+			for (auto &dec : m_vecDecoders)
+			{
+				dec->InitAfterDeviceLoad();
+			}
 		}
 		catch (...)
 		{

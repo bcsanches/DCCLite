@@ -42,6 +42,10 @@ namespace DecoderManager
 
 	bool PushDecoder(Decoder *decoder, const uint8_t slot) noexcept;
 
+	Decoder *TryGetDecoder(const uint8_t slot) noexcept;
+
+	[[nodiscard]] bool GetDecoderActiveStatus(const uint8_t slot, bool &result) noexcept;
+
 	/**
 	Updates all decoders with the bitpack.
 

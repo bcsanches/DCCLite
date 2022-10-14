@@ -745,7 +745,7 @@ static void ReceiveCallback(
 
 	token = packet.ReadGuid();
 
-	//if we are on config state, config_token is not set yet, so we ignore if for now and handle config packets
+	//if we are on config state, config_token is not set yet, so we ignore it for now and handle config packets
 	if (g_eConnectionState == ConnectionStates::CONFIGURING)
 	{		
 		if (type == dcclite::MsgTypes::CONFIG_FINISHED)

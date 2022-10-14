@@ -341,6 +341,13 @@ namespace dcclite::broker
 			return;
 		}
 
+		if (msgType == dcclite::MsgTypes::CONFIG_FINISHED)
+		{
+			dcclite::Log::Warn("[{}::Device::SyncState::OnPacket] Got a late CONFIG_FINISHED packet, ignoring", this->m_rclSelf.GetName());
+
+			return;
+		}
+
 		if (msgType != dcclite::MsgTypes::SYNC)
 		{
 			State::OnPacket(packet, time, msgType, remoteAddress, remoteConfigToken);
@@ -564,6 +571,16 @@ namespace dcclite::broker
 			m_rclSelf.m_clDccService.Device_NotifyStateChange(m_rclSelf);
 
 			return;
+		}
+
+		//a late sync message arrived?
+		if (msgType == dcclite::MsgTypes::SYNC)
+		{
+			//ignore
+			Log::Trace("[NetworkDevice::OnlineState::OnPacket] Got late SYNC message, ignoring");
+
+			return;
+
 		}
 
 		if (msgType != dcclite::MsgTypes::STATE)
@@ -849,6 +866,30 @@ namespace dcclite::broker
 		return std::holds_alternative<NetworkDevice::OnlineState>(m_vState);		
 	}
 
+	Decoder &NetworkDevice::FindDecoder(const std::string_view name) const
+	{		
+		for (size_t i = 0, len = m_vecDecoders.size(); i < len; ++i)
+		{
+			if (m_vecDecoders[i]->GetName().compare(name) == 0)
+				return *m_vecDecoders[i];
+		}
+
+		throw std::out_of_range(fmt::format("[NetworkDevice::FindDecoder] Decoder {} not found in device {}", name, this->GetName()));
+	}
+
+	uint8_t NetworkDevice::FindDecoderIndex(const Decoder &decoder) const
+	{
+		assert(m_vecDecoders.size() < 255);
+
+		for (size_t i = 0, len = m_vecDecoders.size(); i < len; ++i)
+		{
+			if (m_vecDecoders[i] == &decoder)
+				return static_cast<uint8_t>(i);
+		}
+
+		throw std::out_of_range(fmt::format("[NetworkDevice::FindDecoderIndex] Decoder {} not found in device {}", decoder.GetName(), this->GetName()));
+	}
+
 	void NetworkDevice::TaskServices_FillPacketHeader(dcclite::Packet &packet, const uint32_t taskId, const NetworkTaskTypes taskType) const noexcept
 	{
 		PacketBuilder builder{ packet, MsgTypes::TASK_REQUEST, m_SessionToken, m_ConfigToken };
@@ -872,21 +913,7 @@ namespace dcclite::broker
 			return;
 
 		m_lstTasks.erase(it);
-	}
-
-	uint8_t NetworkDevice::TaskServices_FindDecoderIndex(const Decoder &decoder) const
-	{
-		assert(m_vecDecoders.size() < 255);
-
-		for (size_t i = 0, len = m_vecDecoders.size(); i < len; ++i)
-		{
-			if (m_vecDecoders[i] == &decoder)
-				return static_cast<uint8_t>(i);
-		}
-
-		throw std::out_of_range(fmt::format("[NetworkDevice::TaskServices_FindDecoderIndex] Decoder {} not found in device {}", decoder.GetName(), this->GetName()));
-	}
-
+	}	
 
 	void NetworkDevice::AbortPendingTasks()
 	{

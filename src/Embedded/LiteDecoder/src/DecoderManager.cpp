@@ -16,6 +16,7 @@
 #include "ServoTurnoutDecoder.h"
 #include "Session.h"
 #include "Storage.h"
+#include "TurntableAutoInverterDecoder.h"
 
 #include <Packet.h>
 
@@ -46,6 +47,9 @@ static Decoder *Create(const dcclite::DecoderTypes type, dcclite::Packet &packet
 
 		case dcclite::DecoderTypes::DEC_SERVO_TURNOUT:
 			return new ServoTurnoutDecoder(packet);
+
+		case dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER:
+			return new TurntableAutoInverterDecoder(packet);
 
 		default:
 			Console::SendLogEx(MODULE_NAME, FSTR_INVALID_DECODER_TYPE, static_cast<int>(type));
@@ -115,6 +119,7 @@ void DecoderManager::SaveConfig(Storage::EpromStream &stream)
 		dcclite::DecoderTypes::DEC_OUTPUT , 
 		dcclite::DecoderTypes::DEC_SENSOR,
 		dcclite::DecoderTypes::DEC_SERVO_TURNOUT,
+		dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER,
 
 		dcclite::DecoderTypes::DEC_NULL
 	};
@@ -243,6 +248,13 @@ void DecoderManager::LoadConfig(Storage::EpromStream &stream)
 					Console::Send('T');
 					break;
 
+				case dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER:
+					decoder = new TurntableAutoInverterDecoder(stream);
+
+					usedMem += sizeof(TurntableAutoInverterDecoder);
+					Console::Send('U');
+					break;
+
 				default:
 					//should we check?
 					break;
@@ -359,7 +371,7 @@ Decoder *DecoderManager::TryPopDecoder(const uint8_t slot) noexcept
 {
 	if (slot >= MAX_DECODERS)
 	{
-		Console::SendLogEx(MODULE_NAME, FSTR_SLOT_OUT_OF_RANGE, ' ', slot);
+		Console::SendLogEx(MODULE_NAME, F("TryPopDecoder:"), FSTR_SLOT_OUT_OF_RANGE, ' ', slot);
 
 		return nullptr;
 	}
@@ -374,7 +386,7 @@ bool DecoderManager::PushDecoder(Decoder *decoder, const uint8_t slot) noexcept
 {
 	if (slot >= MAX_DECODERS)
 	{
-		Console::SendLogEx(MODULE_NAME, FSTR_SLOT_OUT_OF_RANGE, ' ', slot);
+		Console::SendLogEx(MODULE_NAME, F("PushDecoder:"), FSTR_SLOT_OUT_OF_RANGE, ' ', slot);
 
 		return false;
 	}
@@ -387,6 +399,39 @@ bool DecoderManager::PushDecoder(Decoder *decoder, const uint8_t slot) noexcept
 	}
 
 	g_pDecoders[slot] = decoder;
+
+	return true;
+}
+
+Decoder *DecoderManager::TryGetDecoder(const uint8_t slot) noexcept
+{
+	if (slot >= MAX_DECODERS)
+	{
+		Console::SendLogEx(MODULE_NAME, F("TryGetDecoder:"), FSTR_SLOT_OUT_OF_RANGE, ' ', slot);
+
+		return nullptr;
+	}
+
+	return g_pDecoders[slot];
+}
+
+bool DecoderManager::GetDecoderActiveStatus(const uint8_t slot, bool &result) noexcept
+{
+	if (slot >= MAX_DECODERS)
+	{
+		Console::SendLogEx(MODULE_NAME, F("IsDecoderActive:"), FSTR_SLOT_OUT_OF_RANGE, ' ', slot);
+
+		return false;
+	}
+
+	if (!g_pDecoders[slot])
+	{
+		Console::SendLogEx(MODULE_NAME, F("IsDecoderActive:"), F(" slot is empty"), ' ', slot);
+
+		return false;
+	}
+
+	result = g_pDecoders[slot]->IsActive();
 
 	return true;
 }

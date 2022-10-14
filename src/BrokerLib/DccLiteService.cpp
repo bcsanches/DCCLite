@@ -26,6 +26,7 @@
 #include "SignalDecoder.h"
 #include "SimpleOutputDecoder.h"
 #include "TurnoutDecoder.h"
+#include "TurntableAutoInverterDecoder.h"
 #include "VirtualDevice.h"
 
 using namespace std::chrono_literals;
@@ -42,6 +43,8 @@ namespace dcclite::broker
 			return std::make_unique<ServoTurnoutDecoder>(address, std::move(name), owner, dev, params);
 		else if (className.compare("VirtualSignal") == 0)
 			return std::make_unique<SignalDecoder>(address, std::move(name), owner, dev, params);
+		else if (className.compare("TurntableAutoInverter") == 0)
+			return std::make_unique<TurntableAutoInverterDecoder>(address, std::move(name), owner, dev, params);
 		else
 			return std::unique_ptr<Decoder>();
 	}

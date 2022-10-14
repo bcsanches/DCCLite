@@ -13,22 +13,23 @@
 #include "Decoder.h"
 #include "Pin.h"
 
-#define CFG_COOLDOWN_TIMEOUT_TICKS 25
+class SensorDecoder;
 
-class SensorDecoder : public Decoder
+class TurntableAutoInverterDecoder : public Decoder
 {
 	private:		
-		Pin				m_clPin;
-		uint8_t			m_fFlags = 0;
-		uint8_t			m_uActivateDelay = 0;
-		uint8_t			m_uDeactivateDelay = 0;
+		uint8_t			m_uSensorAIndex;
+		uint8_t			m_uSensorBIndex;
 
-		unsigned long m_uCoolDownTicks = 0;
+		//0 and 1, trackA | 2 and 3, track B
+		Pin				m_arTrackPins[4];		
+		uint8_t			m_fFlags = 0;		
 
-	public:
-		explicit SensorDecoder(uint8_t flags, dcclite::PinType_t pin, uint8_t activateDelay = 0, uint8_t deactivateDelay = 0) noexcept;
-		explicit SensorDecoder(dcclite::Packet& packet) noexcept;
-		explicit SensorDecoder(Storage::EpromStream& stream) noexcept;
+		unsigned long m_uWaitingTrackTurnOff = 0;
+
+	public:		
+		explicit TurntableAutoInverterDecoder(dcclite::Packet& packet) noexcept;
+		explicit TurntableAutoInverterDecoder(Storage::EpromStream& stream) noexcept;		
 
 		bool Update(const unsigned long ticks) noexcept override;
 
@@ -36,7 +37,7 @@ class SensorDecoder : public Decoder
 
 		dcclite::DecoderTypes GetType() const noexcept override
 		{
-			return dcclite::DecoderTypes::DEC_SENSOR;
+			return dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER;
 		};
 
 		bool IsOutputDecoder() const noexcept override
@@ -48,17 +49,19 @@ class SensorDecoder : public Decoder
 
 		bool IsActive() const noexcept override
 		{
-			return m_fFlags & dcclite::SNRD_ACTIVE;
+			return m_fFlags & dcclite::TRTD_ACTIVE;
 		}
 
 		bool IsSyncRequired() const noexcept override
 		{
-			bool active = this->IsActive();
-			bool remoteActive = m_fFlags & dcclite::SNRD_REMOTE_ACTIVE;
+			const bool active = this->IsActive();
+			const bool remoteActive = m_fFlags & dcclite::TRTD_REMOTE_ACTIVE;
 
 			return active != remoteActive;
-		}
+		}		
 
 	private:
-		void Init(const dcclite::PinType_t pin) noexcept;
+		void Init(const dcclite::PinType_t trackPins[4]) noexcept;
+
+		void TurnOnTrackPower() noexcept;
 };

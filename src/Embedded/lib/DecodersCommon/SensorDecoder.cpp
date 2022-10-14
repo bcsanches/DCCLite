@@ -22,7 +22,7 @@ const char SensorModuleName[] PROGMEM = {"SensorDecoder"} ;
 
 //#define DCCLITE_DBG
 
-SensorDecoder::SensorDecoder(uint8_t flags, dcclite::PinType_t pin, uint8_t activateDelay, uint8_t deactivateDelay):
+SensorDecoder::SensorDecoder(uint8_t flags, dcclite::PinType_t pin, uint8_t activateDelay, uint8_t deactivateDelay) noexcept:
 	m_fFlags{flags},
 	m_uActivateDelay{ activateDelay },
 	m_uDeactivateDelay{deactivateDelay}
@@ -35,7 +35,7 @@ SensorDecoder::SensorDecoder(uint8_t flags, dcclite::PinType_t pin, uint8_t acti
 	this->Init(pin);
 }
 
-SensorDecoder::SensorDecoder(dcclite::Packet& packet) :
+SensorDecoder::SensorDecoder(dcclite::Packet& packet) noexcept:
 	Decoder::Decoder(packet)
 {
 	const auto pin = packet.Read<dcclite::PinType_t>();
@@ -50,7 +50,7 @@ SensorDecoder::SensorDecoder(dcclite::Packet& packet) :
 	this->Init(pin);
 }
 
-SensorDecoder::SensorDecoder(Storage::EpromStream& stream) :
+SensorDecoder::SensorDecoder(Storage::EpromStream& stream) noexcept:
 	Decoder::Decoder(stream)
 {
 	dcclite::PinType_t pin;
@@ -67,7 +67,7 @@ SensorDecoder::SensorDecoder(Storage::EpromStream& stream) :
 }
 
 
-void SensorDecoder::SaveConfig(Storage::EpromStream& stream)
+void SensorDecoder::SaveConfig(Storage::EpromStream& stream) noexcept
 {
 	Decoder::SaveConfig(stream);
 
@@ -77,14 +77,14 @@ void SensorDecoder::SaveConfig(Storage::EpromStream& stream)
 	stream.Put(m_uDeactivateDelay);
 }
 
-void SensorDecoder::Init(const dcclite::PinType_t pin)
+void SensorDecoder::Init(const dcclite::PinType_t pin) noexcept
 {
 	using namespace dcclite;	
 
 	m_clPin.Attach(pin, (m_fFlags & SNRD_PULL_UP) ? Pin::MODE_INPUT_PULLUP : Pin::MODE_INPUT);	
 }
 
-bool SensorDecoder::AcceptServerState(dcclite::DecoderStates state)
+bool SensorDecoder::AcceptServerState(dcclite::DecoderStates state) noexcept
 {
 	if (state == dcclite::DecoderStates::ACTIVE)
 	{
@@ -103,7 +103,7 @@ bool SensorDecoder::AcceptServerState(dcclite::DecoderStates state)
 	return this->IsSyncRequired();
 }
 
-bool SensorDecoder::Update(const unsigned long ticks)
+bool SensorDecoder::Update(const unsigned long ticks) noexcept
 {
 	const bool coolDown = m_fFlags & dcclite::SNRD_COOLDOWN;	
 	const bool delay = m_fFlags & dcclite::SNRD_DELAY;
