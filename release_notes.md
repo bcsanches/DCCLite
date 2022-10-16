@@ -1,4 +1,4 @@
-# Version 0.6.3 - ??/??/????
+# Version 0.7.0 - 16/10/2022
 
 ## General Features
 - Added TurntableAutoInverterDecoder for easy turntable polarity inversion
