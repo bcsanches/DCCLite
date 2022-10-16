@@ -22,10 +22,13 @@ class TurntableAutoInverterDecoder : public Decoder
 		uint8_t			m_uSensorBIndex;
 
 		//0 and 1, trackA | 2 and 3, track B
-		Pin				m_arTrackPins[4];		
-		uint8_t			m_fFlags = 0;		
+		Pin				m_arTrackPins[4];				
 
-		unsigned long m_uWaitingTrackTurnOff = 0;
+		unsigned long	m_uWaitingTrackTurnOff = 0;
+
+		uint16_t		m_uFlagsStorageIndex = 0;
+
+		uint8_t			m_fFlags = 0;
 
 	public:		
 		explicit TurntableAutoInverterDecoder(dcclite::Packet& packet) noexcept;

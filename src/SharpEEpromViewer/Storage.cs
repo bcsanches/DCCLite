@@ -24,6 +24,7 @@ namespace SharpEEPromViewer
         protected Item(byte slot, UInt16 size)            
         {
             Size = size;
+            Slot = slot;
         }
     }
 
@@ -161,15 +162,50 @@ namespace SharpEEPromViewer
         }
     }
 
+    class TurntableAutoInverterDecoder: Item
+    {
+        [Flags]
+        enum Flags : byte
+        {
+            TRTD_REMOTE_ACTIVE = 0x40,
+            TRTD_ACTIVE = 0x80            
+        }
+
+        public bool IsActive { get; }
+
+        public byte SensorAIndex { get; }
+        public byte SensorBIndex { get; }
+
+        public byte TrackAPin0 { get; }
+        public byte TrackAPin1 { get; }
+        public byte TrackBPin0 { get; }
+        public byte TrackBPin1 { get; }
+
+        public TurntableAutoInverterDecoder(byte slot, BinaryReader reader):
+            base(slot, 7)
+        {
+            var flags = (Flags)reader.ReadByte();
+
+            IsActive = (flags & Flags.TRTD_ACTIVE) == Flags.TRTD_ACTIVE;
+
+            SensorAIndex = reader.ReadByte();
+            SensorBIndex = reader.ReadByte();
+
+            TrackAPin0 = reader.ReadByte();
+            TrackAPin1 = reader.ReadByte();
+            TrackBPin0 = reader.ReadByte();
+            TrackBPin1 = reader.ReadByte();
+        }
+    }
+
     class Lump
     {
         static Dictionary<string, Type> gKnownTypes = new()
         {
             { "Bcs0008\0", typeof(RootLump) },
             { "NetU002\0", typeof(NetworkLump) },
-            { "Sson001\0", typeof(SessionLump) },
-            { "DECS012\0", typeof(DecodersLump) },  //DECS012 is the same as DECS013, bumped version for testing
-            { "DECS013\0", typeof(DecodersLump) },
+            { "Sson001\0", typeof(SessionLump) },            
+            { "DECS015\0", typeof(DecodersLump) },
             { "ENDEND1\0", typeof(MarkerLump) }
         };
 
@@ -295,14 +331,16 @@ namespace SharpEEPromViewer
 		    DEC_OUTPUT = 1,
 		    DEC_SENSOR = 2,
 		    DEC_SERVO_TURNOUT = 3,
-		    DEC_SIGNAL = 4			//Only virtual, not implemented on Arduino
+		    DEC_SIGNAL = 4,			//Only virtual, not implemented on Arduino
+            DEC_TURNTABLE_AUTO_INVERTER = 5
 	    };
 
         static Dictionary<DecoderTypes, Type> gKnownTypes = new()
         {
-            { DecoderTypes.DEC_OUTPUT,          typeof(OutputDecoder) },
-            { DecoderTypes.DEC_SENSOR,          typeof(SensorDecoder) },
-            { DecoderTypes.DEC_SERVO_TURNOUT,   typeof(ServoTurnoutDecoder) },
+            { DecoderTypes.DEC_OUTPUT,                  typeof(OutputDecoder) },
+            { DecoderTypes.DEC_SENSOR,                  typeof(SensorDecoder) },
+            { DecoderTypes.DEC_SERVO_TURNOUT,           typeof(ServoTurnoutDecoder) },
+            { DecoderTypes.DEC_TURNTABLE_AUTO_INVERTER, typeof(TurntableAutoInverterDecoder) }
         };        
 
         public Guid Guid { get; }
@@ -336,7 +374,7 @@ namespace SharpEEPromViewer
                     --bytesLeft;
                     var slot = reader.ReadByte();
 
-                    var decoder = (Decoder) System.Activator.CreateInstance(decoderClassType, slot, reader);
+                    var decoder = (Item) System.Activator.CreateInstance(decoderClassType, slot, reader);
 
                     bytesLeft -= decoder.Size;
 

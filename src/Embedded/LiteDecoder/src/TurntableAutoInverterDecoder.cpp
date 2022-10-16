@@ -44,6 +44,8 @@ TurntableAutoInverterDecoder::TurntableAutoInverterDecoder(dcclite::Packet& pack
 TurntableAutoInverterDecoder::TurntableAutoInverterDecoder(Storage::EpromStream& stream) noexcept:
 	Decoder::Decoder(stream)
 {	
+	m_uFlagsStorageIndex = stream.GetIndex();
+
 	stream.Get(m_fFlags);
 
 	//Consider only active flag
@@ -65,6 +67,8 @@ TurntableAutoInverterDecoder::TurntableAutoInverterDecoder(Storage::EpromStream&
 void TurntableAutoInverterDecoder::SaveConfig(Storage::EpromStream& stream) noexcept
 {
 	Decoder::SaveConfig(stream);
+
+	m_uFlagsStorageIndex = stream.GetIndex();
 
 	stream.Put(m_fFlags);
 	stream.Put(m_uSensorAIndex);
@@ -183,6 +187,9 @@ bool TurntableAutoInverterDecoder::Update(const unsigned long ticks) noexcept
 
 		m_fFlags = m_fFlags | dcclite::TRTD_ACTIVE;		
 	}
+
+	if(m_uFlagsStorageIndex)
+		Storage::UpdateField(m_uFlagsStorageIndex, m_fFlags);
 
 	Console::SendLogEx(MODULE_NAME, F("Update waiting"));
 	m_uWaitingTrackTurnOff = ticks + TRACK_TURNOFF_TICKS;

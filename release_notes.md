@@ -1,8 +1,16 @@
 # Version 0.6.3 - ??/??/????
 
+## General Features
+- Added TurntableAutoInverterDecoder for easy turntable polarity inversion
+
 ## SharpTerminal
 - Allow user to set signal aspects from SignalDecoder panel
 - Display RemoteDevice free ram value
+- Added support to TurntableAutoInverterDecoder
+
+## SharpEEPromViewer
+- Correctly showing decoders slots
+- Added support to TurntableAutoInverterDecoder
 
 ## Code
 
@@ -12,6 +20,7 @@
 - Improved state exchange protocol for server and clients, avoid too may extra messages
 - Fixed possible bug on arduino servo programmer task management
 - Bumped protocol version to 6
+- Bumped EEPROM versoin for decoders
 - Fixed bug on unknown messages handling that sends null to the log
 
 # Version 0.6.2 - 05/09/2022
