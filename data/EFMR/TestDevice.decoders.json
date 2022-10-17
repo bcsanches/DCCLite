@@ -67,5 +67,16 @@
     "sensorB": "TurntableSensorB",    
     "trackPowerAPins": [8, 9],
     "trackPowerBPins": [10, 11]
+  },
+  {
+    "name":"BrokenSensor",
+    "class":"Sensor",
+    "pin":22,
+    "address":"0x117",
+    "pullup":true,
+    "inverted":false,
+    "activateDelay":0,
+    "deactivateDelay":0,
+    "broken":true
   }
 ]

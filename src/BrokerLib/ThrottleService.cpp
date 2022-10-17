@@ -682,7 +682,7 @@ namespace dcclite::broker
 	ThrottleServiceImpl::ThrottleServiceImpl(const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
 		ThrottleService(name, broker, params, project),		
 		m_clServerAddress{ dcclite::NetworkAddress::ParseAddress(DetermineServerAddress(params)) },
-		m_tThinker{THINKER_MF_LAMBDA(Think)}
+		m_tThinker{"ThrottleServiceImpl::Thinker", THINKER_MF_LAMBDA(Think)}
 	{				
 		dcclite::Log::Info("[ThrottleServiceImpl] Started, server at {}", m_clServerAddress);		
 	}

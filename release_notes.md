@@ -1,3 +1,10 @@
+# Version 0.7.1 - 17/10/2022
+
+## Broker
+- Fix: Correctly handling broken devices messages and avoiding infinite message loop
+- Fix: SignalController now correctlys handles WaitTurnOff timeout avoiding crash
+- Added name to Thinkers for easier debugging
+
 # Version 0.7.0 - 16/10/2022
 
 ## General Features

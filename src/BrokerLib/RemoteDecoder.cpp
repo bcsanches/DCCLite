@@ -35,15 +35,21 @@ namespace dcclite::broker
 
 	bool RemoteDecoder::SyncRemoteState(dcclite::DecoderStates state)
 	{
-		if((state != m_kRemoteState) && !m_fBroken)
+		if(state != m_kRemoteState)
 		{
 			m_kRemoteState = state;
 
 			dcclite::Log::Info("[{}::SyncRemoteState] changed: {}", this->GetName(), dcclite::DecoderStateName(state));
 
-			m_sigRemoteStateSync(*this);
-			m_rclManager.Decoder_OnStateChanged(*this);
-
+			//If it is broken, dont publish state change, probably is garbage
+			//
+			//It is not worth to add a special case to the network sync code, so we simple ignore it here
+			if (!m_fBroken)
+			{
+				m_sigRemoteStateSync(*this);
+				m_rclManager.Decoder_OnStateChanged(*this);
+			}
+			
 			return true;
 		}	
 

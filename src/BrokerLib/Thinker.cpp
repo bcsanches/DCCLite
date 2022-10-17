@@ -53,13 +53,15 @@ namespace dcclite::broker
 		}
 	}
 
-	Thinker::Thinker(Proc_t proc) noexcept:
+	Thinker::Thinker(const std::string_view name, Proc_t proc) noexcept:
+		m_strvName{name},
 		m_pfnCallback{proc}
 	{
 
 	}
 
-	Thinker::Thinker(const dcclite::Clock::TimePoint_t tp, Proc_t proc) noexcept:
+	Thinker::Thinker(const dcclite::Clock::TimePoint_t tp, const std::string_view name, Proc_t proc) noexcept:
+		m_strvName{ name },
 		m_pfnCallback{ proc }
 	{
 		this->SetNext(tp);
@@ -110,7 +112,12 @@ namespace dcclite::broker
 			thinker->m_pclNext = nullptr;
 			thinker->m_fScheduled = false;
 
+
+			//dcclite::Log::Debug("[Thinker::UpdateThinkers] Running: {}", thinker->m_strvName);
 			thinker->m_pfnCallback(tp);
+
+			//
+			//After the callback, does not touch the thinker anymore, it can be killed by the owner...
 		}
 
 		return std::nullopt;

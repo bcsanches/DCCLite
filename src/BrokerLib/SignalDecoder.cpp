@@ -228,7 +228,7 @@ namespace dcclite::broker
 
 	SignalDecoder::State_WaitTurnOff::State_WaitTurnOff(SignalDecoder &self):
 		State{self},
-		m_clTimeoutThinker{ THINKER_MF_LAMBDA(OnThink) }
+		m_clTimeoutThinker{ "SignalDecoder::State_WaitTurnOff::TimeoutThinker", THINKER_MF_LAMBDA(OnThink)}
 	{
 		this->Init();
 
@@ -276,6 +276,9 @@ namespace dcclite::broker
 		if (m_uWaitListSize == 0)
 		{
 			this->GotoNextState();
+
+			//we probably are dead now, so just jump off...
+			return;
 		}
 
 		m_clTimeoutThinker.SetNext(time + WAIT_STATE_TIMEOUT);
@@ -321,7 +324,7 @@ namespace dcclite::broker
 	
 	SignalDecoder::State_Flash::State_Flash(SignalDecoder &self, const dcclite::Clock::TimePoint_t time):
 		State{self},
-		m_clThinker{ THINKER_MF_LAMBDA(OnThink) }
+		m_clThinker{ "SignalDecoder::State_Flash", THINKER_MF_LAMBDA(OnThink)}
 	{
 		this->OnThink(time);
 	}

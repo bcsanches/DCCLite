@@ -49,9 +49,9 @@ TEST(Thinker, RunTest)
 {
 	g_iCounter = 0;
 
-	dcclite::broker::Thinker ta{ ProcA };
-	dcclite::broker::Thinker tb{ ProcB };
-	dcclite::broker::Thinker tc{ ProcC };
+	dcclite::broker::Thinker ta{ "ta", ProcA};
+	dcclite::broker::Thinker tb{ "tb", ProcB };
+	dcclite::broker::Thinker tc{ "tc", ProcC };
 
 	dcclite::Clock ck;
 
@@ -103,11 +103,11 @@ TEST(Thinker, SameTime)
 {
 	g_iCounter = 0;
 
-	dcclite::broker::Thinker ta{ ProcA };
-	dcclite::broker::Thinker tb{ ProcB };
-	dcclite::broker::Thinker tc{ ProcC };
+	dcclite::broker::Thinker ta{ "ta", ProcA };
+	dcclite::broker::Thinker tb{ "tb", ProcB };
+	dcclite::broker::Thinker tc{ "tc", ProcC };
 
-	dcclite::broker::Thinker taa{ ProcAA };
+	dcclite::broker::Thinker taa{ "taa", ProcAA };
 
 	dcclite::Clock ck;
 
@@ -134,9 +134,9 @@ TEST(Thinker, CancelTest)
 {
 	g_iCounter = 0;
 
-	dcclite::broker::Thinker ta{ ProcA };
-	dcclite::broker::Thinker tb{ ProcB };
-	dcclite::broker::Thinker tc{ ProcC };
+	dcclite::broker::Thinker ta{ "ta", ProcA };
+	dcclite::broker::Thinker tb{ "tb", ProcB };
+	dcclite::broker::Thinker tc{ "tc", ProcC };
 
 	dcclite::Clock ck;
 

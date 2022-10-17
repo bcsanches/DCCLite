@@ -55,7 +55,7 @@ namespace dcclite::broker
 	//
 
 	NetworkDevice::TimeoutController::TimeoutController(NetworkDevice &owner):
-		m_clThinker{ THINKER_MF_LAMBDA(OnThink) },
+		m_clThinker{ "NetworkDevice::TimeoutController", THINKER_MF_LAMBDA(OnThink)},
 		m_rclOwner(owner)
 	{
 		//empty
@@ -154,7 +154,7 @@ namespace dcclite::broker
 
 	NetworkDevice::ConfigState::ConfigState(NetworkDevice &self, const dcclite::Clock::TimePoint_t time):
 		State(self),
-		m_clTimeoutThinker{THINKER_MF_LAMBDA(OnTimeout)}
+		m_clTimeoutThinker{"NetworkDevice::ConfigState::TimeoutThinker", THINKER_MF_LAMBDA(OnTimeout)}
 	{
 		this->m_vecAcks.resize(self.m_vecDecoders.size());
 
@@ -320,7 +320,7 @@ namespace dcclite::broker
 
 	NetworkDevice::SyncState::SyncState(NetworkDevice &self):
 		State{ self },
-		m_clTimeoutThinker{THINKER_MF_LAMBDA(OnTimeout)}
+		m_clTimeoutThinker{"NetworkDevice::SyncState::TimeoutThinker", THINKER_MF_LAMBDA(OnTimeout)}
 	{
 		//force it to run ASAP
 		m_clTimeoutThinker.SetNext({});
@@ -414,8 +414,8 @@ namespace dcclite::broker
 
 	NetworkDevice::OnlineState::OnlineState(NetworkDevice &self, const dcclite::Clock::TimePoint_t time):
 		State{ self },
-		m_clPingThinker{THINKER_MF_LAMBDA(OnPingThink)},
-		m_clSendStateDeltaThinker{THINKER_MF_LAMBDA(OnStateDeltaThink)}
+		m_clPingThinker{"NetworkDevice::OnlineState::m_clPingThinker", THINKER_MF_LAMBDA(OnPingThink)},
+		m_clSendStateDeltaThinker{"NetworkDevice::OnlineState::m_clSendStateDeltaThinker", THINKER_MF_LAMBDA(OnStateDeltaThink)}
 	{		
 		m_clPingThinker.SetNext(time + PING_TIMEOUT);
 
@@ -577,7 +577,7 @@ namespace dcclite::broker
 		if (msgType == dcclite::MsgTypes::SYNC)
 		{
 			//ignore
-			Log::Trace("[NetworkDevice::OnlineState::OnPacket] Got late SYNC message, ignoring");
+			Log::Trace("[NetworkDevice::OnlineState::OnPacket] {}: Got late SYNC message, ignoring", this->GetName());
 
 			return;
 

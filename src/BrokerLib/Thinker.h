@@ -24,8 +24,8 @@ namespace dcclite::broker
 		typedef std::function<void(const dcclite::Clock::TimePoint_t)> Proc_t;
 
 		public:
-			Thinker(Proc_t proc) noexcept;
-			Thinker(const dcclite::Clock::TimePoint_t tp, Proc_t proc) noexcept;
+			Thinker(const std::string_view name, Proc_t proc) noexcept;
+			Thinker(const dcclite::Clock::TimePoint_t tp, const std::string_view name, Proc_t proc) noexcept;
 
 			Thinker(Thinker &&) = delete;
 			Thinker(const Thinker &) = delete;
@@ -55,6 +55,8 @@ namespace dcclite::broker
 			Proc_t m_pfnCallback;
 
 			dcclite::Clock::TimePoint_t m_tTimePoint;
+
+			const std::string_view m_strvName;
 
 			Thinker *m_pclNext = nullptr;
 

@@ -78,7 +78,7 @@ namespace dcclite::broker::detail
 			DownloadEEPromTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, IObserver *observer, DownloadEEPromTaskResult_t &results):
 				NetworkTaskImpl{owner, taskId, observer },
 				m_vecResults{ results },
-				m_clThinker{ THINKER_MF_LAMBDA(OnThink) }
+				m_clThinker{ "DownloadEEPromTask::Thinker", THINKER_MF_LAMBDA(OnThink)}
 			{
 				//start running
 				m_clThinker.SetNext({});
@@ -647,7 +647,7 @@ namespace dcclite::broker::detail
 
 	ServoTurnoutProgrammerTask::StartingState::StartingState(ServoTurnoutProgrammerTask &self):
 		State{self},
-		m_clThinker{ THINKER_MF_LAMBDA(SendStartPacket) }
+		m_clThinker{ "ServoTurnoutProgrammerTask::Thinker", THINKER_MF_LAMBDA(SendStartPacket)}
 	{		
 		this->SendStartPacket(dcclite::Clock::DefaultClock_t::now());		
 	}
@@ -698,7 +698,7 @@ namespace dcclite::broker::detail
 
 	ServoTurnoutProgrammerTask::RunningState::RunningState(ServoTurnoutProgrammerTask &self):
 		State{ self },
-		m_clThinker{THINKER_MF_LAMBDA(OnThink)}
+		m_clThinker{"ServoTurnoutProgrammerTask::RunningState", THINKER_MF_LAMBDA(OnThink)}
 	{
 		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::RunningState::RunningState] Running");
 	}
@@ -779,7 +779,7 @@ namespace dcclite::broker::detail
 
 	ServoTurnoutProgrammerTask::DeployState::DeployState(ServoTurnoutProgrammerTask &self):
 		TerminalState{ self },
-		m_clThinker{ THINKER_MF_LAMBDA(SendDeployPacket) }
+		m_clThinker{ "ServoTurnoutProgrammerTask::DeployState", THINKER_MF_LAMBDA(SendDeployPacket)}
 	{
 		this->SendDeployPacket(dcclite::Clock::DefaultClock_t::now());
 	}
@@ -859,7 +859,7 @@ namespace dcclite::broker::detail
 
 	ServoTurnoutProgrammerTask::StoppingState::StoppingState(ServoTurnoutProgrammerTask &self):
 		TerminalState{ self },
-		m_clThinker{THINKER_MF_LAMBDA(SendStopPacket)}
+		m_clThinker{"ServoTurnoutProgrammerTask::StoppingState", THINKER_MF_LAMBDA(SendStopPacket)}
 	{
 		this->SendStopPacket(dcclite::Clock::DefaultClock_t::now());
 	}

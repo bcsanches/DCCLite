@@ -26,7 +26,7 @@ namespace FileWatcher
 	class DirectoryWatcher;
 
 	static lfw::Watcher gWatcher;
-	static dcclite::broker::Thinker g_Thinker{ PumpEvents };
+	static dcclite::broker::Thinker g_Thinker{ "FileWatcher::PumpEvents", PumpEvents};
 	static std::map<dcclite::fs::path, DirectoryWatcher> g_mapWatchers;
 
 	constexpr auto DEFAULT_INTERVAL = 1s;
