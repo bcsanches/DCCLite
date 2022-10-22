@@ -593,6 +593,7 @@ namespace dcclite
 			{
 				case WSAECONNRESET:
 				case WSAECONNABORTED:
+				case WSAETIMEDOUT:
 					return std::make_pair(Status::DISCONNECTED, 0);
 
 				case WSAEWOULDBLOCK:

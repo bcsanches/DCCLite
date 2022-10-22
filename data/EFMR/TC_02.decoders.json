@@ -116,12 +116,25 @@
         "address": "1410",
         "pin": 35,
         "inverted": true,
-        "powerPin": 65,
-        "frogPin": 64,
+        "powerPin": 65,        
         "startPos":30,
         "endPos":45,
         "invertedFrog": false,
         "invertedPower": true,
         "operationTime": 3000
+    },
+    {
+        "name": "TC_T12",
+        "class": "ServoTurnout",
+        "address": "1412",
+        "pin": 37,
+        "inverted": false,
+        "powerPin": 63,
+        "frogPin": 64,
+        "startPos":23,
+        "endPos":65,
+        "invertedFrog": true,
+        "invertedPower": true,
+        "operationTime": 300
     }
 ]
