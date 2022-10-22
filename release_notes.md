@@ -1,3 +1,9 @@
+# Version 0.7.2 - ??/??/????
+
+## Broker
+- Fix: exception on certain terminal client disconnect behaviors
+
+
 # Version 0.7.1 - 17/10/2022
 
 ## Broker
