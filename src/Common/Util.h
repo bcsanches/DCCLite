@@ -11,6 +11,7 @@
 #pragma once
 
 #include <string_view>
+#include <thread>
 
 namespace dcclite
 {
@@ -46,4 +47,13 @@ namespace dcclite
 
 	std::uint16_t ntohs(const std::uint16_t v) noexcept;
 	std::uint32_t ntohl(const std::uint32_t v) noexcept;
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	//
+	// Thread helpers
+	//
+	// 
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+	void SetThreadName(std::thread &thread, const char *threadName);
 }

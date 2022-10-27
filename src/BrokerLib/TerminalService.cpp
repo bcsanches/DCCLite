@@ -1042,6 +1042,7 @@ namespace dcclite::broker
 		this->RegisterListeners();
 
 		m_thReceiveThread = std::thread{ [this] {this->ReceiveDataThreadProc(); } };
+		dcclite::SetThreadName(m_thReceiveThread, "TerminalClient::ReceiveThread");
 	}
 
 	TerminalClient::~TerminalClient()
@@ -1413,6 +1414,7 @@ namespace dcclite::broker
 		const auto port = params["port"].GetInt();
 		
 		m_thListenThread = std::thread{ [port, this] {this->ListenThreadProc(port); } };		
+		dcclite::SetThreadName(m_thListenThread, "TerminalService::ListenThread");
 
 		if(auto bonjourService = static_cast<BonjourService *>(m_rclBroker.TryFindService(BONJOUR_SERVICE_NAME)))
 			bonjourService->Register("terminal", "dcclite", NetworkProtocol::TCP, port, 36);

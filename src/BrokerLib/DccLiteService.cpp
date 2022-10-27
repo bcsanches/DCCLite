@@ -27,6 +27,7 @@
 #include "SimpleOutputDecoder.h"
 #include "TurnoutDecoder.h"
 #include "TurntableAutoInverterDecoder.h"
+#include "Util.h"
 #include "VirtualDevice.h"
 
 using namespace std::chrono_literals;
@@ -96,6 +97,7 @@ namespace dcclite::broker
 		}
 		
 		m_clNetworkThread = std::thread{ [this] {this->NetworkThreadProc(); } };
+		dcclite::SetThreadName(m_clNetworkThread, "DccLiteService::NetworkThread");
 	}
 
 	DccLiteService::~DccLiteService()

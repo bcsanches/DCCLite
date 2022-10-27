@@ -14,6 +14,7 @@
 #include "Parser.h"
 #include "SensorDecoder.h"
 #include "TurnoutDecoder.h"
+#include "Util.h"
 #include "ZeroconfService.h"
 
 using namespace std::chrono_literals;
@@ -177,6 +178,8 @@ namespace dcclite::broker
 		m_slotSystemConnection = m_rclSystem.m_sigEvent.connect(&DccppClient::OnObjectManagerEvent, this);
 
 		m_clReceiveThread = std::thread{ [this] {this->ThreadProc(); } };
+
+		dcclite::SetThreadName(m_clReceiveThread, "DccppClient::ReceiveThread");
 	}
 	
 
@@ -667,6 +670,7 @@ ERROR_RESPONSE:
 		//
 		//start listening thread
 		m_thListenThread = std::move(std::thread{ [this, port]() {this->ListenThreadProc(port); } });		
+		dcclite::SetThreadName(m_thListenThread, "DccppServiceImpl::ListenThread");
 		
 		if(auto bonjourService = static_cast<BonjourService *>(m_rclBroker.TryFindService(BONJOUR_SERVICE_NAME)))
 			bonjourService->Register(this->GetName(), "dccpp", NetworkProtocol::TCP, port, 36);

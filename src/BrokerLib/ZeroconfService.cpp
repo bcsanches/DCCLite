@@ -17,6 +17,7 @@
 
 #include "Clock.h"
 #include "Packet.h"
+#include "Util.h"
 
 using namespace std::chrono_literals;
 
@@ -221,6 +222,9 @@ namespace dcclite::broker::ZeroconfService
 
 		g_strProjectName = projectName;
 
-		std::thread{ WorkerThreadProc }.detach();		
+		std::thread worker{ WorkerThreadProc };
+		dcclite::SetThreadName(worker, "ZeroConfService::WorkerThread");
+
+		worker.detach();
 	}
 }

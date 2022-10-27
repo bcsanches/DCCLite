@@ -2,7 +2,7 @@
 
 ## Broker
 - Fix: exception on certain terminal client disconnect behaviors
-
+- win32: SetThreadName for easier debugging
 
 # Version 0.7.1 - 17/10/2022
 
