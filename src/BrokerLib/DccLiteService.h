@@ -20,7 +20,7 @@
 #include "Decoder.h"
 #include "Guid.h"
 #include "IDccLiteService.h"
-#include "Messenger.h"
+#include "EventHub.h"
 #include "Packet.h"
 #include "Socket.h"
 #include "Thinker.h"
@@ -35,7 +35,7 @@ namespace dcclite::broker
 	class SensorDecoder;
 	class TurnoutDecoder;
 
-	class DccLiteService : public Service, private IDccLite_DeviceServices, private IDccLite_DecoderServices, public Messenger::IEventTarget
+	class DccLiteService : public Service, private IDccLite_DeviceServices, private IDccLite_DecoderServices, public EventHub::IEventTarget
 	{
 		public:
 			DccLiteService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);

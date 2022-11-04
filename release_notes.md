@@ -4,6 +4,11 @@
 - Fix: exception on certain terminal client disconnect behaviors
 - win32: SetThreadName for easier debugging
 
+## Code
+
+- BrokerLib: renamed "Messenger" to EventHub 
+- Fixed SignalDecoder tests
+
 # Version 0.7.1 - 17/10/2022
 
 ## Broker

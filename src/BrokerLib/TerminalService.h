@@ -15,7 +15,7 @@
 #include <thread>
 
 #include "Service.h"
-#include "Messenger.h"
+#include "EventHub.h"
 
 #include "Socket.h"
 
@@ -30,7 +30,7 @@ namespace dcclite::broker
 			virtual void Async_DisconnectClient(TerminalClient &client) = 0;
 	};
 
-	class TerminalService : public Service, Messenger::IEventTarget, ITerminalServiceClientProxy
+	class TerminalService : public Service, EventHub::IEventTarget, ITerminalServiceClientProxy
 	{
 		private:		
 			dcclite::Socket m_clSocket;

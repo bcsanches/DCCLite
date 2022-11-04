@@ -507,7 +507,7 @@ namespace dcclite::broker
 	//
 
 
-	class ReadEEPromFiber : public TerminalCmdFiber, private NetworkTask::IObserver, public Messenger::IEventTarget
+	class ReadEEPromFiber : public TerminalCmdFiber, private NetworkTask::IObserver, public EventHub::IEventTarget
 	{
 		public:
 			ReadEEPromFiber(const CmdId_t id, TerminalContext &context, NetworkDevice &device):
@@ -529,7 +529,7 @@ namespace dcclite::broker
 				//Must wait, so we make sure the thread will not fire a event after it is destroyed
 				m_Future.wait();
 
-				Messenger::CancelEvents(*this);
+				EventHub::CancelEvents(*this);
 			}
 
 		private:
@@ -559,7 +559,7 @@ namespace dcclite::broker
 				}								
 			}
 
-			class DiskWriteFinishedEvent: public Messenger::IEvent
+			class DiskWriteFinishedEvent: public EventHub::IEvent
 			{
 				public:
 					DiskWriteFinishedEvent(ReadEEPromFiber &target):
@@ -606,7 +606,7 @@ namespace dcclite::broker
 
 				//
 				//Send results.. but we need to do this on main thread
-				Messenger::MakeEvent< DiskWriteFinishedEvent>(std::ref(fiber));
+				EventHub::MakeEvent< DiskWriteFinishedEvent>(std::ref(fiber));
 			}
 
 		private:			
@@ -964,7 +964,7 @@ namespace dcclite::broker
 	//
 	//
 
-	class TerminalClient: private IObjectManagerListener, ITerminalClient_ContextServices, Messenger::IEventTarget
+	class TerminalClient: private IObjectManagerListener, ITerminalClient_ContextServices, EventHub::IEventTarget
 	{
 		public:
 			TerminalClient(ITerminalServiceClientProxy &owner, TerminalCmdHost &cmdHost, dcclite::IObject &root, const dcclite::Path_t &ownerPath, const NetworkAddress address, Socket &&socket);
@@ -995,7 +995,7 @@ namespace dcclite::broker
 			TaskManager &GetTaskManager() override;
 			void SendClientNotification(const std::string_view msg) override;
 
-			class MsgArrivedEvent: public Messenger::IEvent
+			class MsgArrivedEvent: public EventHub::IEvent
 			{
 				public:
 					MsgArrivedEvent(TerminalClient &target, std::string &&msg):
@@ -1066,7 +1066,7 @@ namespace dcclite::broker
 			service->m_sigEvent.disconnect(this);
 		}
 
-		Messenger::CancelEvents(*this);
+		EventHub::CancelEvents(*this);
 	}
 
 	FolderObject *TerminalClient::TryGetServicesFolder() const
@@ -1298,7 +1298,7 @@ namespace dcclite::broker
 				throw std::logic_error(fmt::format("[TerminalClient::ReceiveDataThreadProc] Unexpected socket error: {}", magic_enum::enum_name(status)));
 			
 			//dcclite::Log::Trace("[TerminalClient::ReceiveDataThreadProc] Got data");
-			Messenger::PostEvent(std::make_unique<TerminalClient::MsgArrivedEvent>(std::ref(*this), std::move(msg)));
+			EventHub::PostEvent(std::make_unique<TerminalClient::MsgArrivedEvent>(std::ref(*this), std::move(msg)));
 		}
 
 		m_rclOwner.Async_DisconnectClient(*this);
@@ -1310,7 +1310,7 @@ namespace dcclite::broker
 	//
 	//
 
-	class TerminalServiceAcceptConnectionEvent: public Messenger::IEvent
+	class TerminalServiceAcceptConnectionEvent: public EventHub::IEvent
 	{
 		public:
 			TerminalServiceAcceptConnectionEvent(TerminalService &target, const dcclite::NetworkAddress &address, Socket s):
@@ -1332,7 +1332,7 @@ namespace dcclite::broker
 			dcclite::NetworkAddress m_clAddress;
 	};
 
-	class TerminalServiceClientDisconnectedEvent: public Messenger::IEvent
+	class TerminalServiceClientDisconnectedEvent: public EventHub::IEvent
 	{
 		public:
 			TerminalServiceClientDisconnectedEvent(TerminalService &target, TerminalClient &client):
@@ -1434,7 +1434,7 @@ namespace dcclite::broker
 		m_thListenThread.join();
 
 		//Cancel any events, because no one will be able to handle those
-		Messenger::CancelEvents(*this);
+		EventHub::CancelEvents(*this);
 	}	
 
 	void TerminalService::OnClientDisconnect(TerminalClient &client)
@@ -1453,7 +1453,7 @@ namespace dcclite::broker
 
 	void TerminalService::Async_DisconnectClient(TerminalClient &client)
 	{
-		Messenger::MakeEvent< TerminalServiceClientDisconnectedEvent>(std::ref(*this), std::ref(client));
+		EventHub::MakeEvent< TerminalServiceClientDisconnectedEvent>(std::ref(*this), std::ref(client));
 	}
 
 	void TerminalService::OnAcceptConnection(const dcclite::NetworkAddress &address, dcclite::Socket &&s)
@@ -1495,7 +1495,7 @@ namespace dcclite::broker
 			if (status != Socket::Status::OK)
 				break;			
 			
-			Messenger::PostEvent(
+			EventHub::PostEvent(
 				std::make_unique<TerminalServiceAcceptConnectionEvent>(
 					std::ref(*this), 
 					address, 

@@ -20,9 +20,9 @@
 
 #include "Clock.h"
 #include "ConsoleUtils.h"
+#include "EventHub.h"
 #include "Log.h"
 #include "LogUtils.h"
-#include "Messenger.h"
 #include "PathUtils.h"
 #include "TerminalCmd.h"
 #include "Thinker.h"
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 			
 			auto timeout = dcclite::broker::Thinker::UpdateThinkers(now);
 			
-			dcclite::broker::Messenger::PumpEvents(timeout);						
+			dcclite::broker::EventHub::PumpEvents(timeout);						
 		}			
 	}	
 	catch (std::exception &ex)

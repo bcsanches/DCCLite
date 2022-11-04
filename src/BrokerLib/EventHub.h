@@ -19,7 +19,7 @@
 
 namespace dcclite::broker
 {
-	namespace Messenger
+	namespace EventHub
 	{
 		class IEventTarget
 		{

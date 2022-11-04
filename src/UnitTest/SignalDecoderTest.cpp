@@ -5,6 +5,7 @@
 #include <rapidjson/document.h>
 
 #include "SignalDecoder.h"
+#include "Log.h"
 
 using testing::HasSubstr;
 
@@ -95,6 +96,8 @@ TEST(SignalDecoderTest, Basic)
 		]  
 	}
 	)JSON";
+
+	dcclite::LogInit("SignalDecoderTest.Basic.log");
 
 	SignalTester tester{ CreateSignal(json) };
 

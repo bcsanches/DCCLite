@@ -17,9 +17,9 @@
 
 #include "NetworkDevice.h"
 #include "FmtUtils.h"
+#include "EventHub.h"
 #include "GuidUtils.h"
 #include "LocationManager.h"
-#include "Messenger.h"
 #include "OutputDecoder.h"
 #include "Packet.h"
 #include "SensorDecoder.h"
@@ -318,7 +318,7 @@ namespace dcclite::broker
 		this->Device_SendPacket(senderAddress, pkt);
 	}
 
-	class NetworkHelloEvent: public dcclite::broker::Messenger::IEvent
+	class NetworkHelloEvent: public dcclite::broker::EventHub::IEvent
 	{
 		public:
 			NetworkHelloEvent(DccLiteService &target, dcclite::NetworkAddress address, std::string_view deviceName, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken):
@@ -371,7 +371,7 @@ namespace dcclite::broker
 
 		dcclite::Log::Info("[{}::DccLiteService::OnNet_Hello] received hello from {}, starting handshake", this->GetName(), name);
 
-		Messenger::MakeEvent<NetworkHelloEvent>(std::ref(*this), senderAddress, name, remoteSessionToken, remoteConfigToken);
+		EventHub::MakeEvent<NetworkHelloEvent>(std::ref(*this), senderAddress, name, remoteSessionToken, remoteConfigToken);
 	}
 
 	void DccLiteService::OnNetEvent_Hello(const dcclite::NetworkAddress &senderAddress, const std::string &deviceName, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken)
@@ -406,7 +406,7 @@ namespace dcclite::broker
 		netDevice->AcceptConnection(dcclite::Clock::DefaultClock_t::now(), senderAddress, remoteSessionToken, remoteConfigToken);
 	}
 
-	class GenericNetworkEvent: public dcclite::broker::Messenger::IEvent
+	class GenericNetworkEvent: public dcclite::broker::EventHub::IEvent
 	{
 		public:
 			GenericNetworkEvent(DccLiteService &target, dcclite::NetworkAddress address, const dcclite::Packet &packet, dcclite::MsgTypes msgType):
@@ -494,7 +494,7 @@ namespace dcclite::broker
 					break;
 
 				default:
-					dcclite::broker::Messenger::MakeEvent<GenericNetworkEvent>(std::ref(*this), sender, pkt, msgType);					
+					dcclite::broker::EventHub::MakeEvent<GenericNetworkEvent>(std::ref(*this), sender, pkt, msgType);					
 					break;
 			}
 		}

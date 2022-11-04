@@ -6,7 +6,7 @@
 #include "Broker.h"
 #include "Decoder.h"
 #include "DccLiteService.h"
-#include "Messenger.h"
+#include "EventHub.h"
 #include "NetMessenger.h"
 #include "NmraUtil.h"
 #include "SignalDecoder.h"
@@ -29,7 +29,7 @@ namespace dcclite::broker
 			virtual void Async_ClientDisconnected(DccppClient &client) = 0;
 	};
 
-	class DccppClient: private IObjectManagerListener, public Messenger::IEventTarget
+	class DccppClient: private IObjectManagerListener, public EventHub::IEventTarget
 	{
 		public:
 			DccppClient(DccppServiceImplClientProxy &owner, DccLiteService &dccLite, const NetworkAddress address, Socket&& socket);
@@ -64,7 +64,7 @@ namespace dcclite::broker
 
 			void ThreadProc();		
 
-			class ClientEvent: public Messenger::IEvent
+			class ClientEvent: public EventHub::IEvent
 			{
 				public:
 					ClientEvent(DccppClient &target, std::string msg):
@@ -95,7 +95,7 @@ namespace dcclite::broker
 			std::thread				m_clReceiveThread;
 	};		
 
-	class DccppServiceImpl: public DccppService, public Messenger::IEventTarget, DccppServiceImplClientProxy
+	class DccppServiceImpl: public DccppService, public EventHub::IEventTarget, DccppServiceImplClientProxy
 	{
 		public:
 			DccppServiceImpl(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
@@ -114,7 +114,7 @@ namespace dcclite::broker
 
 		private:
 			
-			class ClientDisconnectedEvent: public Messenger::IEvent
+			class ClientDisconnectedEvent: public EventHub::IEvent
 			{
 				public:
 					ClientDisconnectedEvent(DccppServiceImpl &target, DccppClient &client):
@@ -133,7 +133,7 @@ namespace dcclite::broker
 					DccppClient &m_rclClient;
 			};
 
-			class AcceptConnectionEvent: public Messenger::IEvent
+			class AcceptConnectionEvent: public EventHub::IEvent
 			{
 				public:
 					AcceptConnectionEvent(DccppServiceImpl &target, const dcclite::NetworkAddress address, dcclite::Socket &&socket):
@@ -637,7 +637,7 @@ ERROR_RESPONSE:
 			if (status != Socket::Status::OK)
 				break;
 			
-			Messenger::MakeEvent<ClientEvent>(std::ref(*this), std::move(msg));
+			EventHub::MakeEvent<ClientEvent>(std::ref(*this), std::move(msg));
 		}
 
 		m_rclOwner.Async_ClientDisconnected(*this);		
@@ -690,7 +690,7 @@ ERROR_RESPONSE:
 		m_vecClients.clear();
 
 		//cancel any pending events, includings clients telling us that they disconnected
-		Messenger::CancelEvents(*this);
+		EventHub::CancelEvents(*this);
 	}
 
 	void DccppServiceImpl::Initialize()
@@ -729,7 +729,7 @@ ERROR_RESPONSE:
 			{
 				dcclite::Log::Info("[DccppService] Client connected {}", address.GetIpString());								
 				
-				Messenger::PostEvent(std::make_unique< AcceptConnectionEvent>(std::ref(*this), address, std::move(socket)));
+				EventHub::PostEvent(std::make_unique< AcceptConnectionEvent>(std::ref(*this), address, std::move(socket)));
 			}
 			else if (status != Socket::Status::WOULD_BLOCK)
 				break;
@@ -738,7 +738,7 @@ ERROR_RESPONSE:
 
 	void DccppServiceImpl::Async_ClientDisconnected(DccppClient &client)
 	{
-		Messenger::MakeEvent<ClientDisconnectedEvent>(std::ref(*this), std::ref(client));
+		EventHub::MakeEvent<ClientDisconnectedEvent>(std::ref(*this), std::ref(client));
 	}
 
 	void DccppServiceImpl::OnClientDisconnected(DccppClient &client)

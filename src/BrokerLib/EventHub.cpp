@@ -8,7 +8,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "Messenger.h"
+#include "EventHub.h"
 
 #include <condition_variable>
 #include <list>
@@ -19,7 +19,7 @@
 namespace dcclite::broker
 {
 
-	namespace Messenger
+	namespace EventHub
 	{
 		typedef std::list<std::unique_ptr<IEvent>> EventQueue_t;
 

@@ -19,12 +19,12 @@ add_library(
         IDevice.h
         FileWatcher.cpp
         FileWatcher.h
+        EventHub.cpp
+        EventHub.h
         LocationManager.cpp
         LocationManager.h
         LoconetService.cpp
         LoconetService.h  
-        Messenger.cpp
-        Messenger.h
         NetworkDevice.cpp
         NetworkDevice.h
         NetworkDeviceTasks.cpp
