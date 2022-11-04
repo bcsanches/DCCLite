@@ -8,6 +8,7 @@
 
 - BrokerLib: renamed "Messenger" to EventHub 
 - Fixed SignalDecoder tests
+- Added UnitTest for EventHub
 
 # Version 0.7.1 - 17/10/2022
 

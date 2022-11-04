@@ -35,6 +35,11 @@ namespace dcclite::broker
 					//empty
 				}
 
+				virtual ~IEvent()
+				{
+					//empty
+				}
+
 				virtual void Fire() = 0;
 
 				inline IEventTarget &GetTarget() noexcept
