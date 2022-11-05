@@ -173,6 +173,8 @@ namespace dcclite
 	{
 		if (this != &other)
 		{
+			this->Close();
+
 			m_hHandle = other.m_hHandle;
 
 			other.m_hHandle = NULL_SOCKET;
