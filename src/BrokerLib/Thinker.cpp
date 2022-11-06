@@ -29,16 +29,39 @@ namespace dcclite::broker
 
 	void Thinker::RegisterThinker(Thinker &thinker) noexcept
 	{					
-		auto **p = &g_pclThinkers;
+#if 0
+		auto **p = &g_pclThinkers;		
 
 		for (; (*p) && ((*p)->m_tTimePoint < thinker.m_tTimePoint); p = &(*p)->m_pclNext);
 
 		thinker.m_pclNext = *p;
+		*p = &thinker;	
+
+#else		
+
+		auto **p = &g_pclThinkers;		
+		Thinker *previous = nullptr;
+
+		for (; (*p) && ((*p)->m_tTimePoint < thinker.m_tTimePoint); p = &(*p)->m_pclNext)
+		{
+			previous = *p;			
+		}
+			
+
+		thinker.m_pclNext = *p;
+
+		if (*p)
+			(*p)->m_pclPrev = &thinker;
+
 		*p = &thinker;
+
+		thinker.m_pclPrev = previous;		
+#endif
 	}
 
 	void Thinker::UnregisterThinker(Thinker &thinker) noexcept
 	{
+#if 0
 		auto **p = &g_pclThinkers;
 		
 		while(*p)
@@ -51,6 +74,27 @@ namespace dcclite::broker
 
 			p = &(*p)->m_pclNext;
 		}
+
+#else
+
+		if (thinker.m_pclPrev == nullptr)
+		{
+			g_pclThinkers = thinker.m_pclNext;
+		}
+		else
+		{
+			thinker.m_pclPrev->m_pclNext = thinker.m_pclNext;
+		}		
+
+		if (thinker.m_pclNext)
+		{
+			thinker.m_pclNext->m_pclPrev = thinker.m_pclPrev;			
+		}
+
+		thinker.m_pclNext = nullptr;
+		thinker.m_pclPrev = nullptr;
+
+#endif
 	}
 
 	Thinker::Thinker(const std::string_view name, Proc_t proc) noexcept:
@@ -64,7 +108,7 @@ namespace dcclite::broker
 		m_strvName{ name },
 		m_pfnCallback{ proc }
 	{
-		this->SetNext(tp);
+		this->Schedule(tp);
 	}	
 
 	Thinker::~Thinker() noexcept
@@ -72,7 +116,7 @@ namespace dcclite::broker
 		this->Cancel();
 	}
 
-	void Thinker::SetNext(dcclite::Clock::TimePoint_t tp) noexcept
+	void Thinker::Schedule(dcclite::Clock::TimePoint_t tp) noexcept
 	{
 		//
 		//Sometimes they get scheduled multiple times...
@@ -109,7 +153,18 @@ namespace dcclite::broker
 
 			auto thinker = g_pclThinkers;
 			g_pclThinkers = thinker->m_pclNext;
-			thinker->m_pclNext = nullptr;
+
+			//
+			//We could do this in the loop before updating the pointers and avoid an if
+			//but keep it here, so if the callback throws we are still in a consistent state
+			//
+			//If the callback throws we expect to abend, but, perhaps we change this someday  and to avoid a
+			//painful time chasing a dangling pointer, lets play safe....
+			if (g_pclThinkers)
+				g_pclThinkers->m_pclPrev = nullptr;
+
+
+			thinker->m_pclNext = nullptr;			
 			thinker->m_fScheduled = false;
 
 

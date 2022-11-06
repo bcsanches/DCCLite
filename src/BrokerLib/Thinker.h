@@ -35,7 +35,7 @@ namespace dcclite::broker
 			
 			~Thinker() noexcept;
 
-			void SetNext(const dcclite::Clock::TimePoint_t tp) noexcept;
+			void Schedule(const dcclite::Clock::TimePoint_t tp) noexcept;
 			void Cancel() noexcept;
 
 			inline bool IsScheduled() const noexcept
@@ -59,6 +59,7 @@ namespace dcclite::broker
 			const std::string_view m_strvName;
 
 			Thinker *m_pclNext = nullptr;
+			Thinker *m_pclPrev = nullptr;
 
 			bool m_fScheduled = false;
 	};

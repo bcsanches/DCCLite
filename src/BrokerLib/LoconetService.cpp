@@ -1360,12 +1360,12 @@ namespace dcclite::broker
 			}
 		);
 
-		m_tPurgeThinker.SetNext(ticks + PURGE_INTERVAL);
+		m_tPurgeThinker.Schedule(ticks + PURGE_INTERVAL);
 	}
 
 	void LoconetServiceImpl::Think(const dcclite::Clock::TimePoint_t ticks)
 	{			
-		m_tThinker.SetNext(ticks + 20ms);
+		m_tThinker.Schedule(ticks + 20ms);
 				
 		//pump outgoing messages
 		m_clMessageDispatcher.Update(m_clSerialPort);

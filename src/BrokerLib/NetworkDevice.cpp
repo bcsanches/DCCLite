@@ -63,7 +63,7 @@ namespace dcclite::broker
 
 	void NetworkDevice::TimeoutController::Enable(const dcclite::Clock::TimePoint_t currentTime)
 	{
-		m_clThinker.SetNext(currentTime + TIMEOUT_TICKS);
+		m_clThinker.Schedule(currentTime + TIMEOUT_TICKS);
 	}
 
 	void NetworkDevice::TimeoutController::Disable()
@@ -158,7 +158,7 @@ namespace dcclite::broker
 	{
 		this->m_vecAcks.resize(self.m_vecDecoders.size());
 
-		m_clTimeoutThinker.SetNext(time + CONFIG_RETRY_TIME);
+		m_clTimeoutThinker.Schedule(time + CONFIG_RETRY_TIME);
 
 		this->SendConfigStartPacket();
 
@@ -221,7 +221,7 @@ namespace dcclite::broker
 		m_uSeqCount += m_vecAcks[seq] == false;
 		m_vecAcks[seq] = true;
 
-		m_clTimeoutThinker.SetNext(time + CONFIG_RETRY_TIME);		
+		m_clTimeoutThinker.Schedule(time + CONFIG_RETRY_TIME);		
 
 		dcclite::Log::Info("[{}::Device::OnPacket_ConfigAck] Config ACK {} - {}", m_rclSelf.GetName(), seq, m_rclSelf.m_vecDecoders[seq]->GetName());
 
@@ -277,7 +277,7 @@ namespace dcclite::broker
 	void NetworkDevice::ConfigState::OnTimeout(const dcclite::Clock::TimePoint_t time)
 	{		
 		//we havent received ack for some time, wake up the device (timeout keeps counting)
-		m_clTimeoutThinker.SetNext(time + CONFIG_RETRY_TIME);
+		m_clTimeoutThinker.Schedule(time + CONFIG_RETRY_TIME);
 
 		//go thought all the decoders and check what does not have an ACK
 		int pos = 0, packetCount = 0;
@@ -323,7 +323,7 @@ namespace dcclite::broker
 		m_clTimeoutThinker{"NetworkDevice::SyncState::TimeoutThinker", THINKER_MF_LAMBDA(OnTimeout)}
 	{
 		//force it to run ASAP
-		m_clTimeoutThinker.SetNext({});
+		m_clTimeoutThinker.Schedule({});
 	}
 
 	void NetworkDevice::SyncState::OnPacket(		
@@ -403,7 +403,7 @@ namespace dcclite::broker
 
 		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
 
-		m_clTimeoutThinker.SetNext(time + SYNC_TIMEOUT);		
+		m_clTimeoutThinker.Schedule(time + SYNC_TIMEOUT);		
 	}
 
 	//
@@ -417,10 +417,10 @@ namespace dcclite::broker
 		m_clPingThinker{"NetworkDevice::OnlineState::m_clPingThinker", THINKER_MF_LAMBDA(OnPingThink)},
 		m_clSendStateDeltaThinker{"NetworkDevice::OnlineState::m_clSendStateDeltaThinker", THINKER_MF_LAMBDA(OnStateDeltaThink)}
 	{		
-		m_clPingThinker.SetNext(time + PING_TIMEOUT);
+		m_clPingThinker.Schedule(time + PING_TIMEOUT);
 
 		//force it to send states ASAP
-		m_clSendStateDeltaThinker.SetNext({});
+		m_clSendStateDeltaThinker.Schedule({});
 
 		m_rclSelf.m_clTimeoutController.Enable(time);		
 	}
@@ -637,7 +637,7 @@ namespace dcclite::broker
 
 	void NetworkDevice::OnlineState::OnPingThink(const dcclite::Clock::TimePoint_t time)
 	{
-		m_clPingThinker.SetNext(time + PING_TIMEOUT);
+		m_clPingThinker.Schedule(time + PING_TIMEOUT);
 
 		DevicePacket pkt{ dcclite::MsgTypes::MSG_PING, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
 		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);		
@@ -646,7 +646,7 @@ namespace dcclite::broker
 	void NetworkDevice::OnlineState::OnChangeStateRequest(const Decoder &decoder)
 	{		
 		//Run this ASAP
-		m_clSendStateDeltaThinker.SetNext({});
+		m_clSendStateDeltaThinker.Schedule({});
 	}
 
 	void NetworkDevice::OnlineState::OnStateDeltaThink(const dcclite::Clock::TimePoint_t time)
@@ -664,7 +664,7 @@ namespace dcclite::broker
 		* If  the state arrive on the other side, we will get a reply that will sync our state,
 		* and hopefully, the lastStateSent will be the same, so the send will fail and we will not schedule it again		
 		*/
-		m_clSendStateDeltaThinker.SetNext(time + STATE_TIMEOUT);
+		m_clSendStateDeltaThinker.Schedule(time + STATE_TIMEOUT);
 	}
 
 	//

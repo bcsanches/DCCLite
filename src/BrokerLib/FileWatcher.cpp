@@ -113,7 +113,7 @@ namespace FileWatcher
 	{
 		gWatcher.update();
 
-		g_Thinker.SetNext(tp + DEFAULT_INTERVAL);
+		g_Thinker.Schedule(tp + DEFAULT_INTERVAL);
 	}	
 
 	void WatchFile(const dcclite::fs::path &fileName, const uint32_t flags, const Callback_t &callback)
@@ -138,7 +138,7 @@ namespace FileWatcher
 
 		if (!g_Thinker.IsScheduled())
 		{
-			g_Thinker.SetNext(dcclite::Clock::DefaultClock_t::time_point{});
+			g_Thinker.Schedule(dcclite::Clock::DefaultClock_t::time_point{});
 		}
 	}
 

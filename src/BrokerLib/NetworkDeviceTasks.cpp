@@ -81,7 +81,7 @@ namespace dcclite::broker::detail
 				m_clThinker{ "DownloadEEPromTask::Thinker", THINKER_MF_LAMBDA(OnThink)}
 			{
 				//start running
-				m_clThinker.SetNext({});
+				m_clThinker.Schedule({});
 			}			
 
 			void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) override;			
@@ -168,7 +168,7 @@ namespace dcclite::broker::detail
 					m_kState = States::DOWNLOADING;
 
 					//force restart
-					m_clThinker.SetNext({});
+					m_clThinker.Schedule({});
 				}
 				break;
 
@@ -193,7 +193,7 @@ namespace dcclite::broker::detail
 					this->ReadSlice(packet, sliceSize, sequence);					
 
 					//force restart ... but wait a bit, so more packets may arrive
-					m_clThinker.SetNext(time + 10ms);
+					m_clThinker.Schedule(time + 10ms);
 				}
 				break;
 		}
@@ -212,7 +212,7 @@ namespace dcclite::broker::detail
 
 		owner.TaskServices_SendPacket(packet);		
 
-		m_clThinker.SetNext(time + DOWNLOAD_RETRY_TIMEOUT);		
+		m_clThinker.Schedule(time + DOWNLOAD_RETRY_TIMEOUT);		
 	}
 
 	void DownloadEEPromTask::OnThink(const dcclite::Clock::TimePoint_t time)
@@ -226,7 +226,7 @@ namespace dcclite::broker::detail
 				//Wait for a stable connection (after config, sync, etc)
 				if (!m_rclOwner.IsConnectionStable())
 				{
-					m_clThinker.SetNext(time + 100ms);
+					m_clThinker.Schedule(time + 100ms);
 
 					return;
 				}
@@ -656,7 +656,7 @@ namespace dcclite::broker::detail
 	{
 		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StartingState::SendStartPacket] Sent start packet - {}", m_rclSelf.m_u32TaskId);
 
-		m_clThinker.SetNext(time + 50ms);
+		m_clThinker.Schedule(time + 50ms);
 
 		//
 		// Start it
@@ -761,7 +761,7 @@ namespace dcclite::broker::detail
 
 		m_rclSelf.m_rclOwner.TaskServices_SendPacket(packet);
 
-		m_clThinker.SetNext(dcclite::Clock::DefaultClock_t::now() + 50ms);
+		m_clThinker.Schedule(dcclite::Clock::DefaultClock_t::now() + 50ms);
 	}
 
 	void ServoTurnoutProgrammerTask::RunningState::OnThink(const dcclite::Clock::TimePoint_t time)
@@ -832,7 +832,7 @@ namespace dcclite::broker::detail
 	{
 		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::DeployState::SendDeployPacket] Sending Deploy packet {} {}", m_rclSelf.m_u32TaskId, time.time_since_epoch().count());
 
-		m_clThinker.SetNext(time + 50ms);
+		m_clThinker.Schedule(time + 50ms);
 
 		//
 		// Deploy it
@@ -897,7 +897,7 @@ namespace dcclite::broker::detail
 	{
 		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StoppingState::SendStopPacket] Sending stop packet {} {}", m_rclSelf.m_u32TaskId, time.time_since_epoch().count());
 
-		m_clThinker.SetNext(time + 50ms);
+		m_clThinker.Schedule(time + 50ms);
 
 		//
 		// Stop it

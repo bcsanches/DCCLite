@@ -6,6 +6,7 @@
 
 ## Code
 
+- BrokerLib: Thinkers linked list now is double linked for fast removal
 - Common: Fixed Socket move assignement
 - BrokerLib: EventHub now has a pool and internal list, avoid excessive mem alloc.
 - BrokerLib: renamed "Messenger" to EventHub 

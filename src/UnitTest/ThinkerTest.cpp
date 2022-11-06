@@ -61,9 +61,9 @@ TEST(Thinker, RunTest)
 
 	using namespace std::chrono_literals;
 
-	tc.SetNext(tp + 150ms);
-	ta.SetNext(tp + 50ms);
-	tb.SetNext(tp + 100ms);
+	tc.Schedule(tp + 150ms);
+	ta.Schedule(tp + 50ms);
+	tb.Schedule(tp + 100ms);
 
 	dcclite::broker::Thinker::UpdateThinkers(tp + 10ms);
 	ASSERT_EQ(g_iCounter, 0);
@@ -81,9 +81,9 @@ TEST(Thinker, RunTest)
 	ASSERT_EQ(g_iCounter, 3);
 
 	g_iCounter = 0;
-	tc.SetNext(tp + 150ms);
-	ta.SetNext(tp + 50ms);
-	tb.SetNext(tp + 100ms);
+	tc.Schedule(tp + 150ms);
+	ta.Schedule(tp + 50ms);
+	tb.Schedule(tp + 100ms);
 
 	dcclite::broker::Thinker::UpdateThinkers(tp + 300ms);
 	ASSERT_EQ(g_iCounter, 3);
@@ -91,9 +91,9 @@ TEST(Thinker, RunTest)
 	//
 	//Check if multiple run in a row...
 	g_iCounter = 0;
-	ta.SetNext(tp + 50ms);
-	tc.SetNext(tp + 150ms);
-	tb.SetNext(tp + 100ms);
+	ta.Schedule(tp + 50ms);
+	tc.Schedule(tp + 150ms);
+	tb.Schedule(tp + 100ms);
 
 	dcclite::broker::Thinker::UpdateThinkers(tp + 100ms);
 	ASSERT_EQ(g_iCounter, 2);	
@@ -118,11 +118,11 @@ TEST(Thinker, SameTime)
 	using namespace std::chrono_literals;
 
 	//	
-	ta.SetNext(tp + 10ms);
-	tb.SetNext(tp + 100ms);	
-	tc.SetNext(tp + 200ms);
+	ta.Schedule(tp + 10ms);
+	tb.Schedule(tp + 100ms);	
+	tc.Schedule(tp + 200ms);
 
-	taa.SetNext(tp + 10ms);
+	taa.Schedule(tp + 10ms);
 
 	dcclite::broker::Thinker::UpdateThinkers(tp + 50ms);
 
@@ -148,17 +148,17 @@ TEST(Thinker, CancelTest)
 
 	//
 	//Check cancel functionality	
-	ta.SetNext(tp + 10ms);
-	tb.SetNext(tp + 100ms);	
+	ta.Schedule(tp + 10ms);
+	tb.Schedule(tp + 100ms);	
 	tb.Cancel();
 
 	dcclite::broker::Thinker::UpdateThinkers(tp + 300ms);
 	ASSERT_EQ(g_iCounter, 1);
 
 	g_iCounter = 0;
-	ta.SetNext(tp + 10ms);
-	tb.SetNext(tp + 100ms);
-	tc.SetNext(tp + 200ms);
+	ta.Schedule(tp + 10ms);
+	tb.Schedule(tp + 100ms);
+	tc.Schedule(tp + 200ms);
 
 	tc.Cancel();
 
@@ -166,9 +166,9 @@ TEST(Thinker, CancelTest)
 	ASSERT_EQ(g_iCounter, 2);
 
 	g_iCounter = 0;
-	ta.SetNext(tp + 10ms);
-	tb.SetNext(tp + 100ms);
-	tc.SetNext(tp + 200ms);
+	ta.Schedule(tp + 10ms);
+	tb.Schedule(tp + 100ms);
+	tc.Schedule(tp + 200ms);
 
 	ta.Cancel();
 

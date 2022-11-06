@@ -695,7 +695,7 @@ namespace dcclite::broker
 
 	void ThrottleServiceImpl::Think(const dcclite::Clock::TimePoint_t ticks)
 	{	
-		m_tThinker.SetNext(ticks + 20ms);
+		m_tThinker.Schedule(ticks + 20ms);
 
 		auto enumerator = this->GetEnumerator();
 		while (enumerator.MoveNext())
@@ -728,7 +728,7 @@ namespace dcclite::broker
 		auto throttle = dynamic_cast<IThrottle *>(this->AddChild(std::make_unique<Throttle>(this->m_clServerAddress, owner )));
 
 		if (!m_tThinker.IsScheduled())
-			m_tThinker.SetNext({});
+			m_tThinker.Schedule({});
 
 		++m_uThrottleCount;
 
