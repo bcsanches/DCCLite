@@ -262,7 +262,7 @@ namespace dcclite::broker
 				{
 					std::unique_lock<std::mutex> guard{ g_mtxEventQueueLock };
 
-					g_lstEventQueue.push_back(std::move(event));								
+					g_lstEventQueue.PushBack(std::move(event));
 				}
 
 				g_clQueueMonitor.notify_one();	
@@ -291,8 +291,10 @@ namespace dcclite::broker
 								
 				eventQueue = std::move(g_lstEventQueue);				
 				
+#ifdef DCCLITE_EVENT_HUB_INTERNAL_POOL
 				g_iActivePool = g_iActivePool ? 0 : 1;
 				g_arPools[g_iActivePool].Reset();
+#endif
 			}
 
 			//
