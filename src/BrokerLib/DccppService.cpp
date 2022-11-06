@@ -136,7 +136,7 @@ namespace dcclite::broker
 			class AcceptConnectionEvent: public EventHub::IEvent
 			{
 				public:
-					AcceptConnectionEvent(DccppServiceImpl &target, const dcclite::NetworkAddress address, dcclite::Socket &&socket):
+					AcceptConnectionEvent(DccppServiceImpl &target, const dcclite::NetworkAddress address, dcclite::Socket socket):
 						IEvent(target),
 						m_clAddress(address),
 						m_clSocket(std::move(socket))
@@ -637,7 +637,7 @@ ERROR_RESPONSE:
 			if (status != Socket::Status::OK)
 				break;
 			
-			EventHub::MakeEvent<ClientEvent>(std::ref(*this), std::move(msg));
+			EventHub::PostEvent<ClientEvent>(std::ref(*this), std::move(msg));
 		}
 
 		m_rclOwner.Async_ClientDisconnected(*this);		
@@ -729,7 +729,7 @@ ERROR_RESPONSE:
 			{
 				dcclite::Log::Info("[DccppService] Client connected {}", address.GetIpString());								
 				
-				EventHub::PostEvent(std::make_unique< AcceptConnectionEvent>(std::ref(*this), address, std::move(socket)));
+				EventHub::PostEvent<AcceptConnectionEvent>(std::ref(*this), address, std::move(socket));
 			}
 			else if (status != Socket::Status::WOULD_BLOCK)
 				break;
@@ -738,7 +738,7 @@ ERROR_RESPONSE:
 
 	void DccppServiceImpl::Async_ClientDisconnected(DccppClient &client)
 	{
-		EventHub::MakeEvent<ClientDisconnectedEvent>(std::ref(*this), std::ref(client));
+		EventHub::PostEvent<ClientDisconnectedEvent>(std::ref(*this), std::ref(client));
 	}
 
 	void DccppServiceImpl::OnClientDisconnected(DccppClient &client)

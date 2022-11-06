@@ -17,19 +17,27 @@
 
 #include <Clock.h>
 
+#define DCCLITE_EVENT_HUB_INTERNAL_POOL
+
 namespace dcclite::broker
 {
 	namespace EventHub
 	{
 		class IEventTarget
 		{
+			public:
+				virtual ~IEventTarget() { ; }
 
+			protected:
+				IEventTarget() { ; }
+				IEventTarget(const IEventTarget &rhs) = delete;
+				IEventTarget(IEventTarget &&other) = delete;
 		};
 
 		class IEvent
 		{
 			public:
-				IEvent(IEventTarget &target):
+				IEvent(IEventTarget &target) :
 					m_rclTarget(target)
 				{
 					//empty
@@ -47,19 +55,62 @@ namespace dcclite::broker
 					return m_rclTarget;
 				}
 
+#ifdef DCCLITE_EVENT_HUB_INTERNAL_POOL
+				void *operator new(size_t size);
+				void operator delete(void *p);
+#endif
+
 			private:
 				IEventTarget &m_rclTarget;
+
+				IEvent *m_pclNext = nullptr;
+				IEvent *m_pclPrev = nullptr;
+
+				friend class EventQueue;
 		};
 
-		void PostEvent(std::unique_ptr<IEvent> event);
+		namespace detail
+		{
+			void DoPostEvent(std::unique_ptr<IEvent> event);
+
+			void Lock();
+			void Unlock();
+		}
 		void PumpEvents(const std::optional<Clock::DefaultClock_t::time_point> &timeoutTime);
 
 		void CancelEvents(const IEventTarget &target);
 
+#ifdef DCCLITE_EVENT_HUB_INTERNAL_POOL
 		template <typename T, typename... Args>
-		void MakeEvent(Args ...args)
+		void PostEvent(Args ...args)
 		{
-			PostEvent(std::make_unique<T>(args...));
+			//
+			//we must lock before creating the event, because it will use the pool and we must guarantee that the pool will stay until the event is posted
+			detail::Lock();
+
+			std::unique_ptr<IEvent> ptr;
+
+			try
+			{
+				ptr = std::make_unique<T>(std::forward<Args>(args)...);
+			}
+			catch (...)
+			{
+				detail::Unlock();
+
+				throw;
+			}
+
+			//It will take care of unlocking the system...
+			detail::DoPostEvent(std::move(ptr));
 		}
+#else
+		template <typename T, typename... Args>
+		void PostEvent(Args ...args)
+		{
+			detail::DoPostEvent(std::make_unique<T>(std::forward<Args>(args)...));
+		}
+#endif
+
 	}
 }

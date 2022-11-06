@@ -95,6 +95,12 @@ else(WIN32)
 
 endif(WIN32)
 
+target_compile_definitions(BrokerLib 
+    PRIVATE
+        # If the debug configuration pass the DEBUG define to the compiler 
+        $<$<CONFIG:Debug>:-DDEBUG>>
+)
+
 target_compile_features(BrokerLib PUBLIC cxx_std_17)
 
 target_include_directories(BrokerLib 	

@@ -371,7 +371,7 @@ namespace dcclite::broker
 
 		dcclite::Log::Info("[{}::DccLiteService::OnNet_Hello] received hello from {}, starting handshake", this->GetName(), name);
 
-		EventHub::MakeEvent<NetworkHelloEvent>(std::ref(*this), senderAddress, name, remoteSessionToken, remoteConfigToken);
+		EventHub::PostEvent<NetworkHelloEvent>(std::ref(*this), senderAddress, name, remoteSessionToken, remoteConfigToken);
 	}
 
 	void DccLiteService::OnNetEvent_Hello(const dcclite::NetworkAddress &senderAddress, const std::string &deviceName, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken)
@@ -494,7 +494,7 @@ namespace dcclite::broker
 					break;
 
 				default:
-					dcclite::broker::EventHub::MakeEvent<GenericNetworkEvent>(std::ref(*this), sender, pkt, msgType);					
+					dcclite::broker::EventHub::PostEvent<GenericNetworkEvent>(std::ref(*this), sender, pkt, msgType);
 					break;
 			}
 		}

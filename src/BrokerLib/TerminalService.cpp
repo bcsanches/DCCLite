@@ -606,7 +606,7 @@ namespace dcclite::broker
 
 				//
 				//Send results.. but we need to do this on main thread
-				EventHub::MakeEvent< DiskWriteFinishedEvent>(std::ref(fiber));
+				EventHub::PostEvent< DiskWriteFinishedEvent>(std::ref(fiber));
 			}
 
 		private:			
@@ -1298,7 +1298,7 @@ namespace dcclite::broker
 				throw std::logic_error(fmt::format("[TerminalClient::ReceiveDataThreadProc] Unexpected socket error: {}", magic_enum::enum_name(status)));
 			
 			//dcclite::Log::Trace("[TerminalClient::ReceiveDataThreadProc] Got data");
-			EventHub::PostEvent(std::make_unique<TerminalClient::MsgArrivedEvent>(std::ref(*this), std::move(msg)));
+			EventHub::PostEvent<TerminalClient::MsgArrivedEvent>(std::ref(*this), std::move(msg));
 		}
 
 		m_rclOwner.Async_DisconnectClient(*this);
@@ -1453,7 +1453,7 @@ namespace dcclite::broker
 
 	void TerminalService::Async_DisconnectClient(TerminalClient &client)
 	{
-		EventHub::MakeEvent< TerminalServiceClientDisconnectedEvent>(std::ref(*this), std::ref(client));
+		EventHub::PostEvent< TerminalServiceClientDisconnectedEvent>(std::ref(*this), std::ref(client));
 	}
 
 	void TerminalService::OnAcceptConnection(const dcclite::NetworkAddress &address, dcclite::Socket &&s)
@@ -1495,12 +1495,10 @@ namespace dcclite::broker
 			if (status != Socket::Status::OK)
 				break;			
 			
-			EventHub::PostEvent(
-				std::make_unique<TerminalServiceAcceptConnectionEvent>(
-					std::ref(*this), 
-					address, 
-					std::move(socket)
-				)
+			EventHub::PostEvent<TerminalServiceAcceptConnectionEvent>(
+				std::ref(*this), 
+				address, 
+				std::move(socket)				
 			);
 		}
 	}	
