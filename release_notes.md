@@ -6,6 +6,8 @@
 
 ## Code
 
+- Common: Fixed Socket move assignement
+- BrokerLib: EventHub now has a pool and internal list, avoid excessive mem alloc.
 - BrokerLib: renamed "Messenger" to EventHub 
 - Fixed SignalDecoder tests
 - Added UnitTest for EventHub
