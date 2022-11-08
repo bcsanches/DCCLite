@@ -172,7 +172,7 @@ namespace dcclite::broker
 			thinker->m_pfnCallback(tp);
 
 			//
-			//After the callback, does not touch the thinker anymore, it can be killed by the owner...
+			//After the callback, does not touch the thinker anymore, it could be killed by the owner...
 		}
 
 		return std::nullopt;

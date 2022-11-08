@@ -1,7 +1,10 @@
 {
 	"folders": [
 		{
-			"path": "src\\LiteDecoder"
+			"path": "src\\Embedded\\LiteDecoder"
+		},
+		{	"path": "src\\Embedded\\lib\\DecodersCommon"},
+		{			"path": "src\\Embedded\\lib\\Shared"
 		}
 	],
 	"settings": {

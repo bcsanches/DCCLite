@@ -87,16 +87,6 @@ void Console::Send(char value)
 	Serial.print(value);
 }
 
-int Console::Available()
-{
-    return Serial.available();
-}
-
-int Console::ReadChar()
-{
-    return Serial.read();
-}
-
 static void Parse(const char *command)
 {
 	Console::SendLogEx(MODULE_NAME, "in:", " ", command);
@@ -127,9 +117,9 @@ void Console::Update()
 	static char command[MAX_COMMAND_LENGTH + 1];
     static int pos = 0;	
 
-    while(Console::Available() > 0)
+    while(Serial.available() > 0)
     {
-        char c = Console::ReadChar();		
+        char c = Serial.read();		
 
         if(c == '/')
         {
