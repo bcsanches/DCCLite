@@ -163,10 +163,6 @@ namespace Console
 		Console::SendLn(" ");
 	}	
 
-	extern int Available();
-
-	extern int ReadChar();
-
 	extern void Update();
 
 	extern bool Custom_ParseCommand(const char *command);

@@ -11,6 +11,7 @@
 #include <gtest/gtest.h>
 
 #include "EventHub.h"
+#include "Log.h"
 
 class EventTargetMockup : public dcclite::broker::EventHub::IEventTarget
 {
@@ -166,4 +167,38 @@ TEST(EventHub, CancelMultipleTargets)
 
 	ASSERT_EQ(MyTestEvent::GetObjectCount(), 0);
 	ASSERT_EQ(called, 2);
+}
+
+TEST(EventHub, BadAlloc)
+{
+	dcclite::LogInit("DccliteText.BadAlloc.log");
+
+	int called = 0;
+	ASSERT_EQ(MyTestEvent::GetObjectCount(), 0);
+
+	EventTargetMockup t1{ "t1" };
+
+	try
+	{
+		for (int i = 0;i < 200; ++i)
+			dcclite::broker::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { ++called;  });
+
+		//fail
+		ASSERT_TRUE(false);
+	}
+	catch (std::bad_alloc &)
+	{
+		//test passed
+		dcclite::broker::EventHub::CancelEvents(t1);
+
+		ASSERT_EQ(MyTestEvent::GetObjectCount(), 0);
+		dcclite::broker::EventHub::PumpEvents(dcclite::Clock::DefaultClock_t::now());
+
+		//memory is free
+		dcclite::broker::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { ++called;  });
+
+		return;
+	}
+
+	ASSERT_TRUE(false);
 }
