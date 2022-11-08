@@ -99,13 +99,15 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 
 		if(!validMac)
 		{
-			Console::SendLogEx(MODULE_NAME, F("no"), ' ', F("mac"));
+			//Console::SendLogEx(MODULE_NAME, F("no"), ' ', F("mac"));			
+			DCCLITE_LOG_MODULE_LN(F("no") << F("mac") << FSTR_OK);
 
 			return false;			
 		}
 	}
 
-	Console::SendLogEx(MODULE_NAME, F("mac"), FSTR_OK);
+	//Console::SendLogEx(MODULE_NAME, F("mac"), FSTR_OK);
+	DCCLITE_LOG_MODULE_LN(F("mac") << FSTR_OK);
 
 #ifdef ARDUINO_AVR_MEGA2560	
 	if (ether.begin(BUFFER_SIZE, g_u8Mac, 53) == 0)
@@ -113,24 +115,28 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 	if (ether.begin(BUFFER_SIZE, g_u8Mac, 10) == 0)
 #endif
 	{
-		Console::SendLogEx(MODULE_NAME, F("ether"), '.', F("begin"), ' ', FSTR_NOK);
+		//Console::SendLogEx(MODULE_NAME, F("ether"), '.', F("begin"), ' ', FSTR_NOK);
+		DCCLITE_LOG << MODULE_NAME << F("ether begin") << FSTR_NOK << DCCLITE_ENDL;
 
 		return false;
 	}
 
-	Console::SendLogEx(MODULE_NAME, F("net"), ' ', F("begin"), ' ', FSTR_OK);
+	//Console::SendLogEx(MODULE_NAME, F("net"), ' ', F("begin"), ' ', FSTR_OK);
+	DCCLITE_LOG << MODULE_NAME << F("ether begin") << FSTR_OK << DCCLITE_ENDL;
 
 #if 1
 	for(int i = 0; !ether.dhcpSetup(g_szNodeName, true); ++i )
 	{
-		Console::SendLogEx(MODULE_NAME, F("dhcp"), ' ', FSTR_NOK," ", g_szNodeName);
+		//Console::SendLogEx(MODULE_NAME, F("dhcp"), ' ', FSTR_NOK," ", g_szNodeName);
+		DCCLITE_LOG << MODULE_NAME << F("dhcp ") << FSTR_NOK << g_szNodeName << DCCLITE_ENDL;
 
 		//return false;
 		if(i == 10)
 			return false;
 	}		
 
-	Console::SendLogEx(MODULE_NAME, F("dhcp"), ' ', FSTR_OK);
+	//Console::SendLogEx(MODULE_NAME, F("dhcp"), ' ', FSTR_OK);
+	DCCLITE_LOG_MODULE_LN(F("dhcp ") << FSTR_OK);	
 #else
 
 	uint8_t ip[] = {192,168,0,180};
@@ -149,12 +155,14 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 	ether.printIp("GW IP: ", ether.gwip);
  	ether.printIp("DNS IP: ", ether.dnsip);
 	ether.printIp("IP:  ", ether.myip);	
-	Console::SendLogEx(MODULE_NAME, FSTR_PORT, ':', ' ', g_iSrcPort);
+	//Console::SendLogEx(MODULE_NAME, FSTR_PORT, ':', ' ', g_iSrcPort);
+	DCCLITE_LOG << MODULE_NAME << FSTR_PORT << F(": ") << g_iSrcPort << DCCLITE_ENDL;
 	//ether.printIp("DNS: ", ether.dnsip);    
 
 	//ether.parseIp(destip, "192.168.1.101");	
 
-	Console::SendLogEx(MODULE_NAME, FSTR_SETUP, ' ', FSTR_OK);
+	//Console::SendLogEx(MODULE_NAME, FSTR_SETUP, ' ', FSTR_OK);
+	DCCLITE_LOG_MODULE_LN(FSTR_SETUP << ' ' << FSTR_OK);	
 
 	ether.udpServerListenOnPort(callback, g_iSrcPort);
 
@@ -181,7 +189,12 @@ void NetUdp::SendPacket(const uint8_t *data, uint8_t length, const uint8_t *dest
 {	
 	if((destIp[0] != 255) && (destIp[1] != 255) && (destIp[2] != 255) && (destIp[3] != 255) && ether.clientWaitIp(destIp))	
 	{
-		Console::SendLogEx(MODULE_NAME, FSTR_ARP, ' ', FSTR_NOK, ' ', Console::IpPrinter(destIp), FSTR_INVALID);
+		//Console::SendLogEx(MODULE_NAME, FSTR_ARP, ' ', FSTR_NOK, ' ', Console::IpPrinter(destIp), FSTR_INVALID);
+		Console::OutputStream stream;
+
+		DCCLITE_LOG_MODULE_EX(stream) << FSTR_ARP << ' ' << FSTR_NOK << ' ';
+		stream.IpNumber(destIp) << FSTR_INVALID << DCCLITE_ENDL;
+		//DCCLITE_LOG << MODULE_NAME << FSTR_ARP << ' ' << FSTR_NOK << ' ' << Console::IpPrinter(destIp) << FSTR_INVALID << DCCLITE_ENDL;
 	}
 
 	ether.sendUdp(reinterpret_cast<const char *>(data), length, g_iSrcPort, destIp, destPort );   
@@ -196,11 +209,22 @@ void NetUdp::Update()
 
 void NetUdp::LogStatus()
 {
+#if 0
 	Console::SendLogEx(MODULE_NAME, FSTR_NAME, ':', ' ', 
 		g_szNodeName, ' ',
 		Console::Hex(g_u8Mac[0]), '-', Console::Hex(g_u8Mac[1]), '-', Console::Hex(g_u8Mac[2]), '-', Console::Hex(g_u8Mac[3]), '-', Console::Hex(g_u8Mac[4]), '-', Console::Hex(g_u8Mac[5]), ',', ' ',
 		FSTR_PORT, ':', ' ', g_iSrcPort
 	);
+
+#else
+	Console::OutputStream output;
+
+	output << MODULE_NAME << FSTR_NAME << ": " << g_szNodeName << ' ';
+	for(int i = 0;i < 6; ++i)
+		output.HexNumber(g_u8Mac[i]);
+
+	output << ' ' << FSTR_PORT << F(": ") << g_iSrcPort << DCCLITE_ENDL;
+#endif
 }
 
 const char *NetUdp::GetNodeName() noexcept

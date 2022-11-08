@@ -15,6 +15,8 @@
 #include "ArduinoLibDefs.h"
 #include "avr/pgmspace.h"
 
+#define HEX 16
+
 struct ARDUINO_API SerialImpl
 {
 	void begin(int frequency);
@@ -25,6 +27,7 @@ struct ARDUINO_API SerialImpl
 	void print(unsigned long value, int base = 10);
 	void print(char value);
 	void println(const char *str);
+	void println();
 
 
 	inline void print(const __FlashStringHelper *fstr)

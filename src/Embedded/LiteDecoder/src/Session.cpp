@@ -26,7 +26,7 @@
 
 //testar: https://github.com/ntruchsess/arduino_uip
 
-#define MODULE_NAME F("Session"), __LINE__, ' '
+#define MODULE_NAME F("Session")
 
 enum class ConnectionStates: uint8_t
 {
@@ -116,7 +116,8 @@ namespace PingManager
 		if (currentTime >= g_uTimeoutTicks)
 		{
 			//Server is dead?
-			Console::SendLogEx(MODULE_NAME, F("server"), ' ',  FSTR_TIMEOUT);
+			//Console::SendLogEx(MODULE_NAME, F("server"), ' ',  FSTR_TIMEOUT);
+			DCCLITE_LOG_MODULE_LN(F("server") << ' ' << FSTR_TIMEOUT);
 
 			GotoOfflineState();			
 
@@ -136,14 +137,16 @@ namespace PingManager
 
 static void LogInvalidPacket(const FlashStringHelper_t *fstr, dcclite::MsgTypes type)
 {
-	Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', F("pkt"), ' ', fstr, ' ', static_cast<int>(type));
+	//Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', F("pkt"), ' ', fstr, ' ', static_cast<int>(type));
+	DCCLITE_LOG_MODULE_LN(FSTR_INVALID << F("pkt ") << fstr << ' ' << static_cast<int>(type));
 }
 	
 static bool IsValidServer(uint8_t src_ip[4], uint16_t src_port)
 {
 	if (memcmp(src_ip, g_u8ServerIp, sizeof(g_u8ServerIp)) || (g_uSrvPort != src_port))
 	{
-		Console::SendLogEx(MODULE_NAME, FSTR_UNKNOWN, ' ', F("ip"));
+		//Console::SendLogEx(MODULE_NAME, FSTR_UNKNOWN, ' ', F("ip"));
+		DCCLITE_LOG_MODULE_LN(FSTR_UNKNOWN << F("ip "));
 		return false;
 	}
 
@@ -152,7 +155,12 @@ static bool IsValidServer(uint8_t src_ip[4], uint16_t src_port)
 
 void Session::LogStatus()
 {
-	Console::SendLogEx(MODULE_NAME, "srv", ':', ' ', Console::IpPrinter(g_u8ServerIp), ':', g_uSrvPort);
+	//Console::SendLogEx(MODULE_NAME, "srv", ':', ' ', Console::IpPrinter(g_u8ServerIp), ':', g_uSrvPort);
+
+	Console::OutputStream stream;
+
+	stream << '[' << MODULE_NAME << ']' << F(" srv: ");
+	stream.IpNumber(g_u8ServerIp) << ':' << g_uSrvPort << DCCLITE_ENDL;	
 }
 
 const dcclite::Guid &Session::GetConfigToken()
@@ -180,7 +188,8 @@ static void GotoOfflineState()
 
 static void OfflineTick(const unsigned long ticks)
 {	
-	Console::SendLogEx(MODULE_NAME, FSTR_BROADCAST, ':', g_uSrvPort);
+	//Console::SendLogEx(MODULE_NAME, FSTR_BROADCAST, ':', g_uSrvPort);
+	DCCLITE_LOG_MODULE_LN(FSTR_BROADCAST << ':' << g_uSrvPort);
 
 	//
 	//Just send a broadcast DISCOVERY packet
@@ -229,7 +238,8 @@ static void HandleConfigPacket(dcclite::Packet &packet)
 
 	DecoderManager::Create(seq, packet);
 
-	Console::SendLogEx(MODULE_NAME, OnConfiguringPacketStateNameStr, ' ', F("Ack"), ' ', seq);
+	//Console::SendLogEx(MODULE_NAME, OnConfiguringPacketStateNameStr, ' ', F("Ack"), ' ', seq);
+	DCCLITE_LOG_MODULE_LN(OnConfiguringPacketStateNameStr << F(" Ack ") << seq);
 
 	SendConfigPacket(packet, dcclite::MsgTypes::CONFIG_ACK, seq);
 }
@@ -288,7 +298,8 @@ static bool ArpTick(const unsigned long ticks)
 	if(NetUdp::IsIpCached(g_u8ServerIp))
 	{
 		//IP is in cache, go back to SEARCHING SERVER STATE
-		Console::SendLogEx(MODULE_NAME, FSTR_ARP,  FSTR_OK);
+		//Console::SendLogEx(MODULE_NAME, FSTR_ARP,  FSTR_OK);
+		DCCLITE_LOG_MODULE_LN(FSTR_ARP << FSTR_OK);
 		g_eConnectionState = ConnectionStates::SEARCHING_SERVER;
 
 		//Send an Hello to server
@@ -309,7 +320,8 @@ static bool ArpTick(const unsigned long ticks)
 
 static void GotoOnlineState(const unsigned long ticks, int callerLine)
 {
-	Console::SendLogEx(MODULE_NAME, OnOnlineStateNameStr, ' ', __LINE__, ' ', callerLine);
+	//Console::SendLogEx(MODULE_NAME, OnOnlineStateNameStr, ' ', __LINE__, ' ', callerLine);
+	DCCLITE_LOG_MODULE_LN(OnOnlineStateNameStr << ' ' << __LINE__ << ' ' << callerLine);
 
 	g_eConnectionState = ConnectionStates::ONLINE;	
 	g_uLastReceivedDecodersStatePacket = 0;
@@ -340,7 +352,9 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 		if(!NetUdp::IsIpCached(g_u8ServerIp))
 		{
 			//Not on ARP cache, so send an ARP request and go to ARPDISCOVER state
-			Console::SendLogEx(MODULE_NAME, FSTR_ARP, ' ', FSTR_INIT);
+			//Console::SendLogEx(MODULE_NAME, FSTR_ARP, ' ', FSTR_INIT);
+			DCCLITE_LOG_MODULE_LN(FSTR_ARP << ' ' << FSTR_INIT);
+
 			g_eConnectionState = ConnectionStates::ARPDISCOVER;
 
 			NetUdp::ResolveIp(src_ip);
@@ -348,7 +362,11 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 		else
 		{
 			//We already have the server IP on ARP cache, so let it knows we exists
-			Console::SendLogEx(MODULE_NAME, "IP", ' ', "CACHED", ' ', Console::IpPrinter(g_u8ServerIp));
+			//Console::SendLogEx(MODULE_NAME, "IP", ' ', "CACHED", ' ', Console::IpPrinter(g_u8ServerIp));
+			Console::OutputStream stream;
+
+			DCCLITE_LOG_MODULE_EX(stream) <<  F("IP CACHED ");
+			stream.IpNumber(g_u8ServerIp) << DCCLITE_ENDL;
 
 			SendHelloPacket();
 		}						
@@ -443,7 +461,10 @@ static void OnlineTick(const unsigned long ticks, const bool stateChangeDetected
 
 #if 1
 	if(stateChangeDetectedHint)
-		Console::SendLogEx("SESSION", "State stateChangeDetectedHint");
+	{
+		//Console::SendLogEx("SESSION", "State stateChangeDetectedHint");
+		DCCLITE_LOG_MODULE_LN(F("State stateChangeDetectedHint"));
+	}
 #endif
 
 	bool hasDataToSend = true;
@@ -499,7 +520,8 @@ static void OnStatePacket(dcclite::Packet &packet)
 
 	g_uLastReceivedDecodersStatePacket = sequenceNumber;
 
-	Console::SendLogEx(MODULE_NAME, "state", (int)sequenceNumber);
+	//Console::SendLogEx(MODULE_NAME, "state", (int)sequenceNumber);
+	DCCLITE_LOG_MODULE_LN(F("state ") << (int)sequenceNumber);
 
 	StatesBitPack_t states;
 	StatesBitPack_t changedStates;
@@ -598,7 +620,8 @@ static void OnTaskRequestPacket(dcclite::Packet &packet)
 			break;
 
 		default:
-			Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', "task", ' ', static_cast<int>(taskType));
+			//Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', "task", ' ', static_cast<int>(taskType));
+			DCCLITE_LOG_MODULE_LN(FSTR_INVALID << F(" task ") << static_cast<int>(taskType));
 			break;
 	}
 }
@@ -611,7 +634,9 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 	{
 		case dcclite::MsgTypes::MSG_PING:
 			Blinker::Play(Blinker::Animations::OK);
-			Console::SendLogEx(MODULE_NAME, "PING");
+
+			//Console::SendLogEx(MODULE_NAME, "PING");
+			DCCLITE_LOG_MODULE_LN(F("PING"));
 
 			{				
 				dcclite::Packet pkt;
@@ -704,7 +729,8 @@ static void ReceiveCallback(
 
 	if (packet.Read<uint32_t>() != dcclite::PACKET_ID)
 	{
-		Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', "pkt", ' ', "id");
+		//Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', "pkt", ' ', "id");
+		DCCLITE_LOG_MODULE_LN(FSTR_INVALID << F(" pkt id"));
 
 		return;
 	}
@@ -722,14 +748,20 @@ static void ReceiveCallback(
 	//does the packet comes from the known server?
 	if (!IsValidServer(src_ip, src_port))
 	{
-		Console::SendLogEx(MODULE_NAME, "pkt", ' ', "from", ' ', FSTR_INVALID, ' ', "srv", Console::IpPrinter(src_ip), ':', src_port);
+		//Console::SendLogEx(MODULE_NAME, "pkt", ' ', "from", ' ', FSTR_INVALID, ' ', "srv", Console::IpPrinter(src_ip), ':', src_port);
+
+		Console::OutputStream stream;
+
+		DCCLITE_LOG_MODULE_EX(stream) << F("pkt from ") << FSTR_INVALID << F(" srv");
+		stream.IpNumber(src_ip) << ':' << src_port;		
 		return;
 	}
 
 	dcclite::Guid token = packet.ReadGuid();
 	if (token != g_SessionToken)
 	{
-		Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', FSTR_SESSION, ' ', "id");
+		//Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', FSTR_SESSION, ' ', "id");
+		DCCLITE_LOG_MODULE_LN(FSTR_INVALID << ' ' << FSTR_SESSION << F(" id"));
 
 		// g_eState = States::OFFLINE;
 		return;
@@ -737,7 +769,8 @@ static void ReceiveCallback(
 
 	if(type == dcclite::MsgTypes::DISCONNECT)
 	{
-		Console::SendLogEx(MODULE_NAME, FSTR_DISCONNECT, ' ', FSTR_OFFLINE);
+		//Console::SendLogEx(MODULE_NAME, FSTR_DISCONNECT, ' ', FSTR_OFFLINE);
+		DCCLITE_LOG_MODULE_LN(FSTR_DISCONNECT << ' ' << FSTR_OFFLINE);
 
 		GotoOfflineState();		
 		return;
@@ -779,7 +812,8 @@ static void ReceiveCallback(
 	//we have been already configured, so validate the config token
 	if (token != g_ConfigToken)
 	{
-		Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', F("cfg"), ' ', F("id"), ',', ' ', F("to"), ' ', FSTR_OFFLINE);
+		//Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', F("cfg"), ' ', F("id"), ',', ' ', F("to"), ' ', FSTR_OFFLINE);
+		DCCLITE_LOG_MODULE_LN(FSTR_INVALID << F("cfg id, going to ") << FSTR_OFFLINE);
 
 		GotoOfflineState();		
 		return;

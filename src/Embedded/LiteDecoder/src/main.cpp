@@ -50,7 +50,8 @@ bool Console::Custom_ParseCommand(const char *command)
 		char nodeName[17];
 		if (parser.GetToken(nodeName, sizeof(nodeName)) != dcclite::Tokens::ID)
 		{
-			Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_NODE, " ", FSTR_NAME);
+			//Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_NODE, " ", FSTR_NAME);
+			DCCLITE_LOG << MODULE_NAME << FSTR_NOK << ' ' << FSTR_NODE << ' ' << FSTR_NAME << DCCLITE_ENDL;
 
 			return true;
 		}
@@ -65,7 +66,8 @@ bool Console::Custom_ParseCommand(const char *command)
 			int number;
 			if (parser.GetNumber(number) != dcclite::Tokens::NUMBER)
 			{
-				Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", "mac");
+				//Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", "mac");
+				DCCLITE_LOG << MODULE_NAME << FSTR_NOK << F(" mac") << DCCLITE_ENDL;
 
 				return true;
 			}
@@ -79,7 +81,8 @@ bool Console::Custom_ParseCommand(const char *command)
 
 			if (parser.GetToken(nullptr, 0) != dcclite::Tokens::DOT)
 			{
-				Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", "mac", " ", "sep");
+				//Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", "mac", " ", "sep");
+				DCCLITE_LOG << MODULE_NAME << FSTR_NOK << F(" mac sep") << DCCLITE_ENDL;
 
 				return true;
 			}
@@ -88,7 +91,8 @@ bool Console::Custom_ParseCommand(const char *command)
 		int port;
 		if (parser.GetNumber(port) != dcclite::Tokens::NUMBER)
 		{
-			Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_PORT);
+			//Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_PORT);
+			DCCLITE_LOG << MODULE_NAME << FSTR_NOK << ' ' << FSTR_PORT << DCCLITE_ENDL;
 
 			return true;
 		}
@@ -97,7 +101,8 @@ bool Console::Custom_ParseCommand(const char *command)
 		int srvport;
 		if (parser.GetNumber(srvport) != dcclite::Tokens::NUMBER)
 		{
-			Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_SRVPORT);
+			//Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_SRVPORT);
+			DCCLITE_LOG << MODULE_NAME << FSTR_NOK << ' ' << FSTR_SRVPORT << DCCLITE_ENDL;
 
 			return true;
 		}
@@ -105,24 +110,31 @@ bool Console::Custom_ParseCommand(const char *command)
 		NetUdp::Configure(nodeName, port, mac);
 		Session::Configure(ip, srvport);
 
-		Console::SendLogEx(MODULE_NAME, FSTR_OK);
+		//Console::SendLogEx(MODULE_NAME, FSTR_OK);
+		DCCLITE_LOG_MODULE_LN(FSTR_OK);
 
 		Storage::SaveConfig();
-		Console::SendLogEx(MODULE_NAME, FSTR_OK);
+
+		//Console::SendLogEx(MODULE_NAME, FSTR_OK);
+		DCCLITE_LOG_MODULE_LN(FSTR_OK);
 
 		return true;
 	}
 	else if (FStrNCmp(command, CMD_DUMP_NAME, 4) == 0)
 	{
 		Storage::Dump();
-		Console::SendLogEx(MODULE_NAME, FSTR_OK);
+
+		//Console::SendLogEx(MODULE_NAME, FSTR_OK);
+		DCCLITE_LOG_MODULE_LN(FSTR_OK);
 
 		return true;
 	}
 	else if (FStrNCmp(command, CMD_HDUMP_NAME, 5) == 0)
 	{
 		Storage::DumpHex();
-		Console::SendLogEx(MODULE_NAME, FSTR_OK);
+
+		//Console::SendLogEx(MODULE_NAME, FSTR_OK);
+		DCCLITE_LOG_MODULE_LN(FSTR_OK);
 
 		return true;
 	}
@@ -145,14 +157,17 @@ bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream
 		g_uDecodersPosition = stream.GetIndex() - static_cast<unsigned short>(sizeof(Storage::Lump));
 		stream.Skip(lump.m_uLength);
 
-		Console::SendLogEx(MODULE_NAME, FSTR_DECODERS, ' ', "cfg", ' ', g_uDecodersPosition);
+		//Console::SendLogEx(MODULE_NAME, FSTR_DECODERS, ' ', "cfg", ' ', g_uDecodersPosition);
+		DCCLITE_LOG << MODULE_NAME << FSTR_DECODERS << F(" cfg ") << g_uDecodersPosition << DCCLITE_ENDL;
 
 		return true;
 	}
 
 	if (FStrNCmp(lump.m_archName, NET_UDP_STORAGE_ID, FStrLen(NET_UDP_STORAGE_ID)) == 0)
 	{
-		Console::SendLogEx(MODULE_NAME, "net", "udp", ' ', "cfg");
+		//Console::SendLogEx(MODULE_NAME, "net", "udp", ' ', "cfg");
+		DCCLITE_LOG << MODULE_NAME << F(" net udp cfg") << DCCLITE_ENDL;
+
 		NetUdp::LoadConfig(stream);
 
 		return true;
@@ -160,7 +175,8 @@ bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream
 
 	if (FStrNCmp(lump.m_archName, SESSION_STORAGE_ID, FStrLen(SESSION_STORAGE_ID)) == 0)
 	{
-		Console::SendLogEx(MODULE_NAME, FSTR_SESSION, ' ', "cfg");
+		//Console::SendLogEx(MODULE_NAME, FSTR_SESSION, ' ', "cfg");
+		DCCLITE_LOG << MODULE_NAME << FSTR_SESSION << F(" cfg") << DCCLITE_ENDL;
 
 		Session::LoadConfig(stream);
 
@@ -202,12 +218,15 @@ void Storage_LoadDecoders(uint32_t position)
 
 	if (FStrNCmp(lump.m_archName, DECODERS_STORAGE_ID, FStrLen(DECODERS_STORAGE_ID)) != 0)
 	{
-		Console::SendLogEx(MODULE_NAME, FSTR_UNKNOWN, ' ', FSTR_LUMP, ' ', lump.m_archName);
+		//Console::SendLogEx(MODULE_NAME, FSTR_UNKNOWN, ' ', FSTR_LUMP, ' ', lump.m_archName);
+		DCCLITE_LOG << MODULE_NAME << FSTR_UNKNOWN << ' ' << FSTR_LUMP << ' ' << lump.m_archName << DCCLITE_ENDL;
 
 		return;
 	}
 
-	Console::SendLogEx(MODULE_NAME, F("Loading config"));
+	//Console::SendLogEx(MODULE_NAME, F("Loading config"));
+	DCCLITE_LOG_MODULE_LN(F("Loading config"));	
+
 	DecoderManager::LoadConfig(stream);
 }
 
@@ -229,7 +248,8 @@ void setup()
 		Storage_LoadDecoders(g_uDecodersPosition);
 	}
 
-	Console::SendLogEx(FSTR_SETUP, " ", FSTR_OK);
+	//Console::SendLogEx(FSTR_SETUP, " ", FSTR_OK);
+	DCCLITE_LOG << FSTR_SETUP << ' ' << FSTR_OK << DCCLITE_ENDL;
 }
 
 static int g_iMinHeapSpace = INT_MAX;
@@ -260,7 +280,8 @@ void loop()
 			g_iMinHeapSpace = freeSpace;
 			Session::UpdateFreeRam(g_iMinHeapSpace);
 
-			Console::SendLogEx(MODULE_NAME, F("ram "), g_iMinHeapSpace, F(" | fps "), (int)g_uFps);			
+			//Console::SendLogEx(MODULE_NAME, F("ram "), g_iMinHeapSpace, F(" | fps "), (int)g_uFps);			
+			DCCLITE_LOG << MODULE_NAME << F("ram ") << g_iMinHeapSpace << F(" | fps ") << (int)g_uFps << DCCLITE_ENDL;
 		}
 	}
 

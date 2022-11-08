@@ -38,7 +38,7 @@ TurntableAutoInverterDecoder::TurntableAutoInverterDecoder(dcclite::Packet& pack
 	
 	this->Init(trackPins);
 
-	Console::SendLogEx(MODULE_NAME, F("Packet"));
+	//Console::SendLogEx(MODULE_NAME, F("Packet"));
 }
 
 TurntableAutoInverterDecoder::TurntableAutoInverterDecoder(Storage::EpromStream& stream) noexcept:
@@ -61,7 +61,7 @@ TurntableAutoInverterDecoder::TurntableAutoInverterDecoder(Storage::EpromStream&
 
 	this->Init(trackPins);
 
-	Console::SendLogEx(MODULE_NAME, F("Stream"));
+	//Console::SendLogEx(MODULE_NAME, F("Stream"));
 }
 
 void TurntableAutoInverterDecoder::SaveConfig(Storage::EpromStream& stream) noexcept
@@ -94,12 +94,16 @@ void TurntableAutoInverterDecoder::TurnOnTrackPower() noexcept
 {
 	if (m_fFlags & dcclite::TRTD_ACTIVE)
 	{
-		Console::SendLogEx(MODULE_NAME, F("TurnOnTrackPower TrackB"));
+		//Console::SendLogEx(MODULE_NAME, F("TurnOnTrackPower TrackB"));
+		DCCLITE_LOG_MODULE_LN(F("TurnOnTrackPower Track") << 'B');
+
 		TurnTrackOn(m_arTrackPins + 2);
 	}
 	else
 	{
-		Console::SendLogEx(MODULE_NAME, F("TurnOnTrackPower TrackA"));
+		//Console::SendLogEx(MODULE_NAME, F("TurnOnTrackPower TrackA"));
+		DCCLITE_LOG_MODULE_LN(F("TurnOnTrackPower Track") << 'A');
+
 		TurnTrackOn(m_arTrackPins);
 	}
 }
@@ -114,8 +118,8 @@ void TurntableAutoInverterDecoder::Init(const dcclite::PinType_t trackPins[4]) n
 		m_arTrackPins[i].DigitalWrite(Pin::VLOW);
 	}		
 
-	Console::SendLogEx(MODULE_NAME, F("Init"));
-	//this->TurnOnTrackPower();
+	//Console::SendLogEx(MODULE_NAME, F("Init"));
+	DCCLITE_LOG_MODULE_LN(F("init"));	
 
 	//wait 5 seconds, should be enough to load everything and start pooling sensors
 	m_uWaitingTrackTurnOff = 5000;
@@ -150,7 +154,7 @@ bool TurntableAutoInverterDecoder::Update(const unsigned long ticks) noexcept
 
 		//
 		//track turnoff timeout, so do it
-		Console::SendLogEx(MODULE_NAME, F("Update cooldown finished"));
+		//Console::SendLogEx(MODULE_NAME, F("Update cooldown finished"));
 		this->TurnOnTrackPower();
 		m_uWaitingTrackTurnOff = 0;
 
@@ -167,7 +171,8 @@ bool TurntableAutoInverterDecoder::Update(const unsigned long ticks) noexcept
 		if (!sensorState)
 			return false;
 		
-		Console::SendLogEx(MODULE_NAME, F("Update m_pclSensorB"));
+		//Console::SendLogEx(MODULE_NAME, F("Update m_pclSensorB"));
+		DCCLITE_LOG_MODULE_LN(F("Update m_pclSensorB"));
 		TurnTrackOff(m_arTrackPins + 2);
 
 		m_fFlags = m_fFlags & ~dcclite::TRTD_ACTIVE;		
@@ -182,7 +187,9 @@ bool TurntableAutoInverterDecoder::Update(const unsigned long ticks) noexcept
 		if (!sensorState)
 			return false;
 
-		Console::SendLogEx(MODULE_NAME, F("Update m_pclSensorA"));
+		//Console::SendLogEx(MODULE_NAME, F("Update m_pclSensorA"));
+		DCCLITE_LOG_MODULE_LN(F("Update m_pclSensorA"));
+
 		TurnTrackOff(m_arTrackPins);		
 
 		m_fFlags = m_fFlags | dcclite::TRTD_ACTIVE;		
@@ -191,7 +198,9 @@ bool TurntableAutoInverterDecoder::Update(const unsigned long ticks) noexcept
 	if(m_uFlagsStorageIndex)
 		Storage::UpdateField(m_uFlagsStorageIndex, m_fFlags);
 
-	Console::SendLogEx(MODULE_NAME, F("Update waiting"));
+	//Console::SendLogEx(MODULE_NAME, F("Update waiting"));
+	DCCLITE_LOG_MODULE_LN(F("Update waiting"));
+
 	m_uWaitingTrackTurnOff = ticks + TRACK_TURNOFF_TICKS;
 	return true;		
 }

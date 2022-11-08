@@ -51,45 +51,10 @@ void Console::Init()
     Serial.println(__TIME__);    
 }
 
-
-void Console::Send(const char *str)
-{
-    Serial.print(str);
-}
-
-void Console:: SendLn(const char *str)
-{
-    Serial.println(str);
-}
-
-void Console::Send(int value, Format format)
-{
-    Serial.print(value, format == Format::DECIMAL ? DEC : HEX);
-}
-
-void Console::Send(unsigned int value, Format format)
-{
-	Serial.print(value, format == Format::DECIMAL ? DEC : HEX);
-}
-
-void Console::Send(const unsigned long value, Format format)
-{
-    Serial.print(value, format == Format::DECIMAL ? DEC : HEX);
-}
-
-void Console::Send(const ConsoleFlashStringHelper_t *fstr)
-{
-    Serial.print(fstr);
-}
-
-void Console::Send(char value)
-{
-	Serial.print(value);
-}
-
 static void Parse(const char *command)
 {
-	Console::SendLogEx(MODULE_NAME, "in:", " ", command);
+	//Console::SendLogEx(MODULE_NAME, "in:", " ", command);
+    DCCLITE_LOG << MODULE_NAME << "in: " << command << DCCLITE_ENDL;
 
 	if(FStrNCmp(command, F("mem"), 3) == 0)
 	{
@@ -97,15 +62,19 @@ static void Parse(const char *command)
 
 #ifndef WIN32
 		int v; 
-		Console::SendLogEx(MODULE_NAME, (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));		
+		//Console::SendLogEx(MODULE_NAME, (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));		
+        DCCLITE_LOG_MODULE_LN((int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval))
+        
 #else
-		Console::SendLogEx(MODULE_NAME, "LOTS LOTS LOTS");
+		//Console::SendLogEx(MODULE_NAME, "LOTS LOTS LOTS");
+        DCCLITE_LOG_MODULE_LN("LOTS LOTS LOTS");
 #endif
 
 	}
     else if(!Console::Custom_ParseCommand(command))
 	{
-		Console::SendLogEx(MODULE_NAME, FSTR_NOK, ' ', command);
+		//Console::SendLogEx(MODULE_NAME, FSTR_NOK, ' ', command);
+        DCCLITE_LOG << MODULE_NAME << FSTR_NOK << ' ' << command << DCCLITE_ENDL;
 	}
 }
 

@@ -83,8 +83,8 @@ void Button::Update()
 	//Sensor was pressed, now released... ok nothing to do
 	if (buttonPreviousState)
 	{
-		Console::SendLn("Button released");
-
+		//Console::SendLn("Button released");
+		DCCLITE_LOG_MODULE_LN(F("Button released"));
 		return;
 	}	
 
@@ -92,12 +92,14 @@ void Button::Update()
 	//if we reached here, button was pressed on this frame, so call the target....
 	if (m_kAction == LocalDecoderManager::kTHROW)
 	{	
-		Console::Send("Button pressed - Throw");
+		//Console::Send("Button pressed - Throw");
+		DCCLITE_LOG_MODULE_LN(F("Button pressed - Throw"));
 		m_rclTarget.AcceptServerState(dcclite::DecoderStates::ACTIVE);
 	}
 	else if (m_kAction == LocalDecoderManager::kCLOSE)
 	{
-		Console::Send("Button pressed - Close");
+		//Console::Send("Button pressed - Close");
+		DCCLITE_LOG_MODULE_LN(F("Button pressed - Close"));
 		m_rclTarget.AcceptServerState(dcclite::DecoderStates::INACTIVE);
 	}		
 	else
@@ -105,7 +107,8 @@ void Button::Update()
 		auto state = m_rclTarget.GetDecoderState();
 		state = !state;
 
-		Console::Send("Button pressed - Toggle");
+		//Console::Send("Button pressed - Toggle");
+		DCCLITE_LOG_MODULE_LN(F("Button pressed - Toggle"));
 
 		m_rclTarget.AcceptServerState(state);
 	}
@@ -132,7 +135,8 @@ ServoTurnoutDecoder *LocalDecoderManager::CreateServoTurnout(
 {
 	if (g_iNextSlot >= MAX_DECODERS)
 	{
-		Console::SendLogEx(MODULE_NAME, FSTR_NO_SLOTS);
+		//Console::SendLogEx(MODULE_NAME, FSTR_NO_SLOTS);
+		DCCLITE_LOG_MODULE_LN(FSTR_NO_SLOTS);
 
 		return nullptr;
 	}
@@ -154,7 +158,8 @@ SensorDecoder *LocalDecoderManager::CreateSensor(
 {
 	if (g_iNextSlot >= MAX_DECODERS)
 	{
-		Console::SendLogEx(MODULE_NAME, FSTR_NO_SLOTS);
+		//Console::SendLogEx(MODULE_NAME, FSTR_NO_SLOTS);
+		DCCLITE_LOG_MODULE_LN(FSTR_NO_SLOTS);
 
 		return nullptr;
 	}
@@ -170,12 +175,15 @@ void LocalDecoderManager::CreateButton(SensorDecoder &sensor, ServoTurnoutDecode
 {
 	if (g_iNextButton >= MAX_BUTTONS)
 	{
-		Console::SendLogEx(MODULE_NAME, FSTR_NO_BUTTONS);
+		//Console::SendLogEx(MODULE_NAME, FSTR_NO_BUTTONS);
+		DCCLITE_LOG_MODULE_LN(FSTR_NO_BUTTONS);
 
 		return;
 	}
 
-	Console::SendLogEx(MODULE_NAME, "Added button", ' ', g_iNextButton);
+	//Console::SendLogEx(MODULE_NAME, "Added button", ' ', g_iNextButton);
+	DCCLITE_LOG_MODULE_LN(F("Added button ") << g_iNextButton);
+
 	g_pButtons[g_iNextButton++] = new Button(sensor, target, actions);
 }
 
@@ -234,12 +242,16 @@ void LocalDecoderManager::Init(const char *time, const char *date)
 	
 	if (memcmp(storageData.m_u8Buffer, header.m_u8Buffer, sizeof(storageData.m_u8Buffer)) == 0)
 	{
-		Console::SendLogEx(MODULE_NAME, "Found valid eprom data");		
+		//Console::SendLogEx(MODULE_NAME, "Found valid eprom data");		
+		DCCLITE_LOG_MODULE_LN(F("Found valid eprom data"));
 	}
 	else
 	{
-		Console::SendLogEx(MODULE_NAME, "NO eprom data");
-		Console::SendLogEx(MODULE_NAME, storageData.m_u8Buffer, storageData.m_u8Buffer+16);
+		//Console::SendLogEx(MODULE_NAME, "NO eprom data");
+		//Console::SendLogEx(MODULE_NAME, storageData.m_u8Buffer, storageData.m_u8Buffer+16);
+
+		DCCLITE_LOG_MODULE_LN(F("NO eprom data"));
+		DCCLITE_LOG_MODULE_LN(storageData.m_u8Buffer << (storageData.m_u8Buffer+16));
 
 		delete g_pLoadStream;
 		g_pLoadStream = nullptr;
@@ -255,11 +267,13 @@ void LocalDecoderManager::PostInit()
 		delete g_pLoadStream;
 		g_pLoadStream = nullptr;
 
-		Console::SendLogEx(MODULE_NAME, "Post Init OK");
+		//Console::SendLogEx(MODULE_NAME, "Post Init OK");
+		DCCLITE_LOG_MODULE_LN(F("Post Init OK"));
 		return;
 	}
 
-	Console::SendLogEx(MODULE_NAME, "Initializing eprom");
+	//Console::SendLogEx(MODULE_NAME, "Initializing eprom");
+	DCCLITE_LOG_MODULE_LN(F("Initializing eprom"));
 
 	Header header;	
 	InitHeader(header);	
@@ -267,12 +281,15 @@ void LocalDecoderManager::PostInit()
 	Storage::EpromStream stream{ 0 };
 
 	stream.PutRawData(reinterpret_cast<uint8_t *>(header.m_u8Buffer), sizeof(header));
-	Console::SendLogEx(MODULE_NAME, header.m_u8Buffer, header.m_u8Buffer+16);	
+
+	//Console::SendLogEx(MODULE_NAME, header.m_u8Buffer, header.m_u8Buffer+16);	
+	DCCLITE_LOG_MODULE_LN(header.m_u8Buffer << (header.m_u8Buffer+16));
 
 	for (int i = 0; i < g_iNextSlot; ++i)
 	{
 		g_pDecoders[i]->SaveConfig(stream);
 	}
 
-	Console::SendLogEx(MODULE_NAME, "Saved ", g_iNextSlot, " decoders ", (int)stream.GetIndex());	
+	//Console::SendLogEx(MODULE_NAME, "Saved ", g_iNextSlot, " decoders ", (int)stream.GetIndex());	
+	DCCLITE_LOG_MODULE_LN(F("Saved ") << g_iNextSlot << F(" decoders ") << (int)stream.GetIndex());
 }

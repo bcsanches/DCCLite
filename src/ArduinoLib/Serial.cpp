@@ -49,6 +49,11 @@ void SerialImpl::println(const char *str)
 	printf("%s\n", str);
 }
 
+void SerialImpl::println()
+{
+	printf("\n");
+}
+
 int SerialImpl::available()
 {
 	return static_cast<int>(m_strData.length() - m_uPos);

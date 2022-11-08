@@ -12,160 +12,127 @@
 #define CONSOLE_NET_H
 
 #include "Strings.h"
+#include <Arduino.h>
 
 namespace Console
 {
 	typedef __FlashStringHelper ConsoleFlashStringHelper_t;
 
-	enum class Format
+	class EndLineMarkerTag
 	{
-		DECIMAL,
-		HEXADECIMAL
+
 	};
 
-	extern void Send(const char *str);
-	extern void Send(const ConsoleFlashStringHelper_t *fstr);
-	extern void SendLn(const char *str);
-	extern void Send(char value);		
-	extern void Send(int value, Format format = Format::DECIMAL);
-	extern void Send(unsigned int value, Format format = Format::DECIMAL);
-	extern void Send(const unsigned long value, Format format = Format::DECIMAL);
-
-	struct Hex
+	class OutputStream
 	{
-		unsigned int num;
-
-		explicit Hex(unsigned int n) :num{ n } {}
-	};
-
-	struct IpPrinter
-	{
-		const unsigned char *srcIp;
-
-		explicit IpPrinter(const unsigned char src_ip[4]) : srcIp(src_ip) {}
-	};
-
-	namespace detail
-	{	
-		template <typename T>
-		struct formatter
-		{
-			inline void format(const T &arg)
+		public:
+			OutputStream()
 			{
-				Send(arg);
+				//empty
 			}
-		};
 
-		template <>
-		struct formatter<char>
-		{
-			inline void format(char ch)
+			OutputStream &operator<<(const char *str)
 			{
-				Send(ch);
-			}
-		};
+				Serial.print(str);
 
-		template <>
-		struct formatter<const char *>
-		{
-			inline void format(const char *str)
+				return *this;
+			}		
+
+			OutputStream &operator<<(const ConsoleFlashStringHelper_t *fstr)
 			{
-				Send(str);
-			}
-		};	
+				Serial.print(fstr);
 
-		template <>
-		struct formatter<Hex>
-		{
-			inline void format(Hex hex)
+				return *this;
+			}
+
+			OutputStream &operator<<(char value)
 			{
-				Send(hex.num, Format::HEXADECIMAL);
-			}
-		};
+				Serial.print(value);
 
-		template <>
-		struct formatter<IpPrinter>
-		{
-			inline void format(const IpPrinter &ip)
+				return *this;
+			}
+
+			OutputStream &operator<<(unsigned char value)
 			{
-				Send(ip.srcIp[0]);
-				Send('.');
-				Send(ip.srcIp[1]);
-				Send('.');
-				Send(ip.srcIp[2]);
-				Send('.');
-				Send(ip.srcIp[3]);
+				Serial.print(value);
+
+				return *this;
 			}
-		};
 
-		template <>
-		struct formatter<ConsoleFlashStringHelper_t>
-		{			
-			//static_assert(sizeof(ConsoleFlashStringHelper_t) == 1);
-
-			inline void format(const ConsoleFlashStringHelper_t *fstr)
+			OutputStream &operator<<(int value)
 			{
-				Send(fstr);				
+				Serial.print(value);
+
+				return *this;
 			}
-		};		
 
-		template <typename T>
-		inline void DoSendLog(const T &arg1)
-		{
-			formatter<T> f;
-			f.format(arg1);
-		}
-		
-		inline void DoSendLog(const ConsoleFlashStringHelper_t *arg1)
-		{
-			formatter<ConsoleFlashStringHelper_t> f;
-			f.format(arg1);
-		}
+			OutputStream &operator<<(unsigned int value)
+			{
+				Serial.print(value);
 
-		template <typename T,typename... Args>
-		inline void DoSendLog(const T &arg1, Args ...args)
-		{
-			DoSendLog(arg1);
+				return *this;
+			}
 
-			DoSendLog(args...);
-		}
-	}	
+			OutputStream &operator<<(unsigned long int value)
+			{
+				Serial.print(value);
 
-	extern void Init();	
+				return *this;
+			}
+			
+			OutputStream &HexNumber(int value)
+			{
+				Serial.print(value, HEX);
 
-	template <typename... Args>
-	inline void SendLogEx(const char *module, Args... args)
-	{		
-		Console::Send('[');
-		Console::Send(module);
-		Console::Send(']');
+				return *this;
+			}
 
-		Console::Send(' ');
+			OutputStream &HexNumber(unsigned int value)
+			{
+				Serial.print(value, HEX);
 
-		detail::DoSendLog(args...);
+				return *this;
+			}
 
-		Console::SendLn(" ");
-	}
+			OutputStream &HexNumber(unsigned long int value)			
+			{
+				Serial.print(value, HEX);
 
-	template <typename... Args>
-	inline void SendLogEx(const ConsoleFlashStringHelper_t *fmodule, Args... args)
-	{
-		Console::Send('[');
+				return *this;
+			}			
 
-		detail::formatter<ConsoleFlashStringHelper_t> ffstr;
-		ffstr.format(fmodule);
+			OutputStream &operator<<(const EndLineMarkerTag &tag)
+			{
+				Serial.println();
 
-		Console::Send(']');
-		Console::Send(' ');
+				return *this;
+			}
 
-		detail::DoSendLog(args...);
+			OutputStream &IpNumber(const unsigned char src_ip[4])
+			{
+				*this << src_ip[0] << '.' << src_ip[1] << '.' << src_ip[2] << '.' << src_ip[3];
 
-		Console::SendLn(" ");
-	}	
+				return *this;
+			}
+	};	
+	
+	extern void Init();		
 
 	extern void Update();
 
 	extern bool Custom_ParseCommand(const char *command);
 };
+
+#define DCCLITE_LOG Console::OutputStream{}
+
+#define DCCLITE_ENDL Console::EndLineMarkerTag{}
+
+#define DCCLITE_LOG_MODULE_EX(MC_stream) MC_stream << '[' << MODULE_NAME << F("] ")
+
+#define DCCLITE_LOG_MODULE_LN_EX(MC_stream, x) DCCLITE_LOG_MODULE_EX(MC_stream) << x << DCCLITE_ENDL
+
+#define DCCLITE_LOG_MODULE_LN(x) DCCLITE_LOG_MODULE_LN_EX(Console::OutputStream{} , x)
+
+
 
 #endif

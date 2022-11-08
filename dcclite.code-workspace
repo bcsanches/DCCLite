@@ -14,7 +14,16 @@
 		},
 		"files.associations": {
 			"initializer_list": "cpp",
-			"xutility": "cpp"
+			"xutility": "cpp",
+			"regex": "cpp",
+			"system_error": "cpp",
+			"atomic": "cpp",
+			"bit": "cpp",
+			"charconv": "cpp",
+			"chrono": "cpp",
+			"cstdint": "cpp",
+			"format": "cpp",
+			"xstring": "cpp"
 		}
 	}
 }
