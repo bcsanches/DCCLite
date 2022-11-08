@@ -63,7 +63,7 @@ static void Parse(const char *command)
 #ifndef WIN32
 		int v; 
 		//Console::SendLogEx(MODULE_NAME, (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));		
-        DCCLITE_LOG_MODULE_LN((int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval))
+        DCCLITE_LOG_MODULE_LN((int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));
         
 #else
 		//Console::SendLogEx(MODULE_NAME, "LOTS LOTS LOTS");
