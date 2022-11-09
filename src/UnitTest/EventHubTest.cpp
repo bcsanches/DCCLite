@@ -16,7 +16,7 @@
 class EventTargetMockup : public dcclite::broker::EventHub::IEventTarget
 {
 	public:
-		EventTargetMockup(std::string_view name):
+		explicit EventTargetMockup(std::string_view name):
 			m_svDebugName{name}
 		{
 			//empty
@@ -196,6 +196,8 @@ TEST(EventHub, BadAlloc)
 
 		//memory is free
 		dcclite::broker::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { ++called;  });
+
+		dcclite::LogFinalize();
 
 		return;
 	}

@@ -55,7 +55,7 @@ namespace dcclite::broker
 			std::vector<PinInfo> m_vecPins;
 
 		public:
-			PinManager(ArduinoBoards board);
+			explicit PinManager(ArduinoBoards board);
 
 			void RegisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage);
 			void UnregisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin);

@@ -45,7 +45,7 @@ namespace dcclite
 				//empty
 			}
 
-			inline IpAddress(std::uint_fast32_t address) noexcept:
+			inline explicit IpAddress(std::uint_fast32_t address) noexcept:
 				m_uAddress{ address }
 			{
 

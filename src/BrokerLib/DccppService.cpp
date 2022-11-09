@@ -539,9 +539,7 @@ namespace dcclite::broker
 					goto ERROR_RESPONSE;
 				}
 				else
-				{
-					std::stringstream response;
-
+				{				
 					auto sensorDecoders = m_rclSystem.FindAllSensorDecoders();
 					m_clMessenger.Send(m_clAddress, CreateSensorStateRespnse(sensorDecoders));
 				}

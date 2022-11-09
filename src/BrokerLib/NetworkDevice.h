@@ -92,7 +92,7 @@ namespace dcclite::broker
 
 			void TaskServices_SendPacket(dcclite::Packet &packet) override;			
 
-			bool IsConnectionStable() const noexcept;
+			bool IsConnectionStable() const noexcept override;
 
 			void TaskServices_ForgetTask(NetworkTask &task) override;			
 
@@ -235,7 +235,7 @@ namespace dcclite::broker
 
 			struct SyncState: State
 			{				
-				SyncState(NetworkDevice &self);
+				explicit SyncState(NetworkDevice &self);
 
 				void OnPacket(
 					dcclite::Packet &packet,
@@ -286,7 +286,7 @@ namespace dcclite::broker
 			class TimeoutController
 			{
 				public:
-					TimeoutController(NetworkDevice &owner);
+					explicit TimeoutController(NetworkDevice &owner);
 
 					void Enable(const dcclite::Clock::TimePoint_t time);
 

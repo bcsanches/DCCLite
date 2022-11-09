@@ -24,7 +24,7 @@ namespace dcclite::broker
 	class ObjectPool
 	{
 		public:
-			ObjectPool(uint32_t size):
+			explicit ObjectPool(uint32_t size):
 				m_u32Size{size},
 				m_upPool{new std::byte[size]}
 			{
@@ -73,8 +73,8 @@ namespace dcclite::broker
 			std::unique_ptr<std::byte[]> m_upPool;
 
 #ifdef DEBUG
-			uint32_t	m_uAllocCount;
-			uint32_t	m_uUsedMem;
+			uint32_t	m_uAllocCount = 0;
+			uint32_t	m_uUsedMem = 0;
 #endif
 
 	};	

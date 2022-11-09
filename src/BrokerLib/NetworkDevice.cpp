@@ -605,8 +605,7 @@ namespace dcclite::broker
 		packet.ReadBitPack(states);			
 
 		bool sensorStateRefresh = false;
-		bool stateRefresh = false;
-
+		
 		for (unsigned i = 0; i < changedStates.size(); ++i)
 		{
 			if (!changedStates[i])

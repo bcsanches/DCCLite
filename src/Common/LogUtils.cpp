@@ -23,6 +23,15 @@
 namespace dcclite
 {
 	static std::shared_ptr<spdlog::logger> g_spLogger;
+
+	void LogFinalize()
+	{
+		g_spLogger.reset();
+
+		spdlog::drop("dcclite");
+
+		spdlog::shutdown();
+	}
 	
 	void LogInit(const char *fileName)
 	{

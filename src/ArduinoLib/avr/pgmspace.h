@@ -18,17 +18,17 @@ class __FlashStringHelper;
 
 inline size_t strlen_P(const __FlashStringHelper *fstr)
 {
-	return strlen((const char *)fstr);
+	return strlen(reinterpret_cast<const char *>(fstr));
 }
 
 inline int strncmp_P(const char *str1, const __FlashStringHelper *fstr2, size_t maxCount)
 {
-	return strncmp(str1, (const char *)fstr2, maxCount);
+	return strncmp(str1, reinterpret_cast<const char *>(fstr2), maxCount);
 }
 
 inline char *strncpy_P(char *dest, const __FlashStringHelper *fsrc, size_t count)
 {
-	return strncpy(dest, (const char *)fsrc, count);
+	return strncpy(dest, reinterpret_cast<const char *>(fsrc), count);
 }
 
 #define F(x) (reinterpret_cast<const __FlashStringHelper *>(x))

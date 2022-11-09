@@ -22,7 +22,7 @@ namespace dcclite::broker
 	{
 		public:
 			Location(std::string name, std::string prefix, const DccAddress beginAddress, const DccAddress endAddress):
-				Object(name),
+				Object(std::move(name)),
 				m_strPrefix(std::move(prefix)),
 				m_tBeginAddress(beginAddress),
 				m_tEndAddress(endAddress)
@@ -53,8 +53,6 @@ namespace dcclite::broker
 			void UnregisterDecoder(const Decoder &dec)
 			{
 				auto index = GetDecoderIndex(dec);
-
-				bool foundIt = m_vecDecoders[index] == &dec;
 
 				m_vecDecoders[index] = nullptr;
 			}
@@ -143,12 +141,12 @@ namespace dcclite::broker
 
 		for(auto &sectorData : sectorsData.GetArray())
 		{
-			auto name = sectorData["name"].GetString();
+			auto dname = sectorData["name"].GetString();
 			auto prefix = sectorData["prefix"].GetString();
 			auto beginAddress = DccAddress{static_cast<uint16_t>(sectorData["begin"].GetInt())};
 			auto endAddress = DccAddress{ static_cast<uint16_t>(sectorData["end"].GetInt())};
 
-			auto location = this->AddChild(std::make_unique<Location>(name, prefix, beginAddress, endAddress));
+			auto location = this->AddChild(std::make_unique<Location>(dname, prefix, beginAddress, endAddress));
 
 			m_vecIndex.push_back(static_cast<Location *>(location));
 		}

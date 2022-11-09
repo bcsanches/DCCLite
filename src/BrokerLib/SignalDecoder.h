@@ -102,7 +102,7 @@ namespace dcclite::broker
 
 			struct State
 			{
-				State(SignalDecoder &owner):
+				explicit State(SignalDecoder &owner):
 					m_rclOwner{ owner }
 				{
 					//empty
@@ -113,7 +113,7 @@ namespace dcclite::broker
 
 			struct State_WaitTurnOff: State
 			{				
-				State_WaitTurnOff(SignalDecoder &self);
+				explicit State_WaitTurnOff(SignalDecoder &self);
 
 				void GotoNextState();
 

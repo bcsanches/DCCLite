@@ -29,12 +29,12 @@ namespace dcclite::broker
 
 	SignalDecoder::SignalDecoder(
 		const DccAddress &address,
-		const std::string &name,
+		const std::string &decoderName,
 		IDccLite_DecoderServices &owner,
 		IDevice_DecoderServices &dev,
 		const rapidjson::Value &params
 	) :
-		Decoder(address, name, owner, dev, params)
+		Decoder(address, decoderName, owner, dev, params)
 	{
 		auto headsData = params.FindMember("heads");
 		if ((headsData == params.MemberEnd()) || (!headsData->value.IsObject()))
