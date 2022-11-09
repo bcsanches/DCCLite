@@ -116,7 +116,7 @@ namespace Console
 			}
 	};	
 
-	extern void Printf(ConsoleFlashStringHelper_t *format, ...);
+	extern void Printf(const ConsoleFlashStringHelper_t *format, ...);
 	
 	extern void Init();		
 

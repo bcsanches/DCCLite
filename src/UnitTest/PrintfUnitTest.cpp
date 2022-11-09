@@ -21,6 +21,11 @@ class TestStream
 			m_strStream << str;
 		}
 
+		void PrintFlash(const char *str)
+		{
+			m_strStream << str;
+		}
+
 		void Print(int n)
 		{
 			m_strStream << n;
@@ -95,6 +100,15 @@ TEST(Printf, StrData)
 	TestStream stream;
 
 	dcclite::Printf(stream, dcclite::StringWrapper{ "Hello %s" }, "world");
+
+	EXPECT_TRUE(stream.IsEqual("Hello world"));
+}
+
+TEST(Printf, FlashStr)
+{
+	TestStream stream;
+
+	dcclite::Printf(stream, dcclite::StringWrapper{ "%z %s" }, "Hello", "world");
 
 	EXPECT_TRUE(stream.IsEqual("Hello world"));
 }

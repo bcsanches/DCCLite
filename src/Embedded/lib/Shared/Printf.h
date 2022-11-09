@@ -77,6 +77,13 @@ namespace dcclite
 							stream.Print(str);
 							break;
 						}
+
+						case 'z':
+						{
+							const char *str = va_arg(args, const char *);
+							stream.PrintFlash(str);
+							break;
+						}
 					}
 				}
 				break;

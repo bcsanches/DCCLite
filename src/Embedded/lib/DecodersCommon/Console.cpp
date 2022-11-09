@@ -55,7 +55,8 @@ void Console::Init()
 static void Parse(const char *command)
 {
 	//Console::SendLogEx(MODULE_NAME, "in:", " ", command);
-    DCCLITE_LOG << MODULE_NAME << "in: " << command << DCCLITE_ENDL;
+    //DCCLITE_LOG << MODULE_NAME << "in: " << command << DCCLITE_ENDL;        
+    //Console::Printf(F("%z: in %s\n"), MODULE_NAME, command);
 
 	if(FStrNCmp(command, F("mem"), 3) == 0)
 	{
@@ -65,6 +66,7 @@ static void Parse(const char *command)
 		int v; 
 		//Console::SendLogEx(MODULE_NAME, (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));		
         DCCLITE_LOG_MODULE_LN((int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));
+        //Console::Printf(F("%z: %d\n"), MODULE_NAME, (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));
         
 #else
 		//Console::SendLogEx(MODULE_NAME, "LOTS LOTS LOTS");
@@ -75,14 +77,15 @@ static void Parse(const char *command)
     else if(!Console::Custom_ParseCommand(command))
 	{
 		//Console::SendLogEx(MODULE_NAME, FSTR_NOK, ' ', command);
-        DCCLITE_LOG << MODULE_NAME << FSTR_NOK << ' ' << command << DCCLITE_ENDL;
+        DCCLITE_LOG_MODULE_LN(FSTR_NOK << ' ' << command);
+        //Console::Printf(F("%z: %z %s"), FSTR_NOK, command);
 	}
 }
 
 class FlashStringWrapper
 {
     public:
-        inline FlashStringWrapper(Console::ConsoleFlashStringHelper_t *str) noexcept :
+        inline FlashStringWrapper(const Console::ConsoleFlashStringHelper_t *str) noexcept :
             m_fszStr{ str }
         {
             //empty
@@ -94,7 +97,7 @@ class FlashStringWrapper
         }
 
     private:
-        Console::ConsoleFlashStringHelper_t *m_fszStr;
+        const Console::ConsoleFlashStringHelper_t *m_fszStr;
 };
 
 class SerialWrapper
@@ -109,6 +112,13 @@ class SerialWrapper
         void Print(const char *str)
         {
             Serial.print(str);
+        }
+
+        void PrintFlash(const char *str)
+        {
+            auto *str2 = (Console::ConsoleFlashStringHelper_t *) str;
+
+            Serial.print(str2);
         }
 
         void Print(int n)
@@ -127,7 +137,7 @@ class SerialWrapper
         }
 };
 
-void Console::Printf(ConsoleFlashStringHelper_t *format, ...)
+void Console::Printf(const ConsoleFlashStringHelper_t *format, ...)
 {
     va_list args;
     va_start(args, format);

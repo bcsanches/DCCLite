@@ -139,6 +139,8 @@ int main(int, char **)
 	//ArduinoLib::SetSerialInput("/sv;");
 #endif
 
+	//ArduinoLib::SetSerialInput("/cfg TestDevice 242.69.116.44.41.93 7202 8989;sv;");
+
 	dcclite::Clock clock;
 
 	while(!fExitRequested)

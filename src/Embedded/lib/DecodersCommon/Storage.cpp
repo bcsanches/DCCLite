@@ -62,7 +62,7 @@ bool Storage::LoadConfig()
 {	
     //Console::SendLog(MODULE_NAME, "init %d", sizeof(STORAGE_MAGIC));		
 	//Console::SendLogEx(MODULE_NAME, FSTR_INIT, ' ', static_cast<unsigned>(FStrLen(STORAGE_MAGIC)));
-	DCCLITE_LOG << MODULE_NAME << FSTR_INIT << ' ' << static_cast<unsigned>(FStrLen(STORAGE_MAGIC)) << DCCLITE_ENDL;
+	DCCLITE_LOG_MODULE_LN(FSTR_INIT << ' ' << static_cast<unsigned>(FStrLen(STORAGE_MAGIC)));
 
 	Lump header;
 
