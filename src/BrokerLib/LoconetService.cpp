@@ -130,7 +130,7 @@ uint8_t DefaultMsgSizes(const Opcodes opcode)
 class LoconetMessageWriter
 {
 	public:
-		LoconetMessageWriter(Opcodes opcode)
+		explicit LoconetMessageWriter(Opcodes opcode)
 		{
 			m_tPacket.Write8(opcode);
 			
@@ -547,7 +547,7 @@ SlotManager::SlotManager()
 
 std::optional<uint8_t> SlotManager::AcquireLocomotive(const dcclite::broker::DccAddress address, const dcclite::Clock::TimePoint_t ticks)
 {
-	auto it = std::find_if(m_arSlots.begin(), m_arSlots.end(), [address](Slot &slot)
+	auto it = std::find_if(m_arSlots.begin(), m_arSlots.end(), [address](const Slot &slot)
 		{			
 			return !slot.IsFree() && (slot.GetLocomotiveAddress() == address);
 		}
@@ -557,7 +557,7 @@ std::optional<uint8_t> SlotManager::AcquireLocomotive(const dcclite::broker::Dcc
 	if (it == m_arSlots.end())
 	{		
 		//look for a free slot
-		it = std::find_if(m_arSlots.begin(), m_arSlots.end(), [](Slot &slot) {return slot.IsFree(); });
+		it = std::find_if(m_arSlots.begin(), m_arSlots.end(), [](const Slot &slot) {return slot.IsFree(); });
 		if (it == m_arSlots.end())
 			return false;
 
@@ -977,7 +977,7 @@ namespace dcclite::broker
 			void Serialize(JsonOutputStream_t &stream) const override;
 
 		private:
-			void DispatchLnMessage(LoconetMessageWriter &msg);
+			void DispatchLnMessage(const LoconetMessageWriter &msg);
 			void DispatchLnLongAckMessage(const Opcodes opcode, const uint8_t responseCode);
 
 			void ParseMessage(const uint8_t opcode, MiniPacket_t &payload, const dcclite::Clock::TimePoint_t ticks);
@@ -1061,7 +1061,7 @@ namespace dcclite::broker
 		this->DispatchLnMessage(msg);
 	}
 
-	void LoconetServiceImpl::DispatchLnMessage(LoconetMessageWriter &msg)
+	void LoconetServiceImpl::DispatchLnMessage(const LoconetMessageWriter &msg)
 	{
 		m_clMessageDispatcher.Send(msg, m_clSerialPort);		
 	}

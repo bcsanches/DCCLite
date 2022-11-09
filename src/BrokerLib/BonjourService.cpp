@@ -407,7 +407,7 @@ namespace dcclite::broker
 			char ch = *it;
 
 			//hyphens MUST NOT be adjacent to other hyphens
-			if((ch == '-') && (it != end) && (*(it+1) == '-'))
+			if((ch == '-') && (*(it+1) == '-'))
 				throw std::invalid_argument(fmt::format("[BonjourServiceImpl::Register] Service name cannot contains adjacent '-'.", serviceName));
 
 			if (((ch >= 'a') && (ch <= 'z')) || ((ch >= 'A') && (ch <= 'Z')) || ((ch >= '0') && (ch <= '9')) || (ch == '-'))
@@ -547,7 +547,6 @@ READ_NAME_AGAIN:
 				if (previousIndex >= 0)
 				{
 					packet.Seek(previousIndex);
-					previousIndex = -1;
 				}
 				break;
 			}
@@ -796,7 +795,7 @@ READ_NAME_AGAIN:
 	class DnsMesssageWriter
 	{
 		public:
-			DnsMesssageWriter(const DnsHeader &header)
+			explicit DnsMesssageWriter(const DnsHeader &header)
 			{
 				m_clPacket.WriteWord(header.m_uId);
 				m_clPacket.WriteByte(header.m_uFlags0);
@@ -918,7 +917,7 @@ READ_NAME_AGAIN:
 
 		DnsMesssageWriter writer{ rheader };
 
-		for (auto &service : m_mapServices)
+		for (const auto &service : m_mapServices)
 		{
 			writer.WriteNames(query.m_vecLabels);
 

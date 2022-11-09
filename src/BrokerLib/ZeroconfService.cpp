@@ -178,18 +178,17 @@ namespace dcclite::broker::ZeroconfService
 				if (!finished)
 					continue;
 
-				auto it = g_mapServices.end();
 				{
 					std::lock_guard guard{ g_lckMapServicesMutex };
 
-					it = g_mapServices.find(serviceName);
+					auto it = g_mapServices.find(serviceName);
 					if (it == g_mapServices.end())
 						continue;
-				}
-				
-				//
-				//found a service, send data...
-				SendReply(sender, it->first, it->second);
+
+					//
+					//found a service, send data...
+					SendReply(sender, it->first, it->second);
+				}				
 			}
 
 			auto endTime = dcclite::Clock::DefaultClock_t::now();

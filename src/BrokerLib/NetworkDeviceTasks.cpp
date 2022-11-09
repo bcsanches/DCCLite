@@ -344,7 +344,7 @@ namespace dcclite::broker::detail
 
 			struct NullState: State
 			{
-				NullState(ServoTurnoutProgrammerTask &self):
+				explicit NullState(ServoTurnoutProgrammerTask &self):
 					State{ self }
 				{
 					//empty
@@ -358,7 +358,7 @@ namespace dcclite::broker::detail
 
 			struct StartingState: State
 			{	
-				StartingState(ServoTurnoutProgrammerTask &self);
+				explicit StartingState(ServoTurnoutProgrammerTask &self);
 
 				void OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time) override;
 
@@ -371,7 +371,7 @@ namespace dcclite::broker::detail
 
 			struct RunningState: State
 			{
-				RunningState(ServoTurnoutProgrammerTask &self);
+				explicit RunningState(ServoTurnoutProgrammerTask &self);
 
 				void OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time) override;
 
@@ -390,7 +390,7 @@ namespace dcclite::broker::detail
 			struct TerminalState: State
 			{
 				protected:
-					TerminalState(ServoTurnoutProgrammerTask &self):
+					explicit TerminalState(ServoTurnoutProgrammerTask &self):
 						State{ self }
 					{
 						//empty
@@ -399,7 +399,7 @@ namespace dcclite::broker::detail
 			
 			struct DeployState: TerminalState
 			{
-				DeployState(ServoTurnoutProgrammerTask &self);
+				explicit DeployState(ServoTurnoutProgrammerTask &self);
 
 				void OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time) override;
 
@@ -412,7 +412,7 @@ namespace dcclite::broker::detail
 
 			struct StoppingState: TerminalState
 			{
-				StoppingState(ServoTurnoutProgrammerTask &self);							
+				explicit StoppingState(ServoTurnoutProgrammerTask &self);
 
 				void OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time) override;
 
@@ -425,7 +425,7 @@ namespace dcclite::broker::detail
 
 			struct FailureState: TerminalState
 			{
-				FailureState(ServoTurnoutProgrammerTask &self, std::string reason);
+				explicit FailureState(ServoTurnoutProgrammerTask &self, std::string reason);
 
 				void OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time) override;
 			};
@@ -785,7 +785,7 @@ namespace dcclite::broker::detail
 	}
 
 
-	void ServoTurnoutProgrammerTask::DeployState::OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time)
+	void ServoTurnoutProgrammerTask::DeployState::OnPacket(dcclite::Packet &dataPacket, const ServoProgrammerClientMsgTypes msg, const dcclite::Clock::TimePoint_t time)
 	{
 		switch (msg)
 		{

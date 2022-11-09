@@ -31,7 +31,7 @@ std::unique_ptr<SignalDecoder> CreateSignal(const char *json)
 class SignalTester
 {
 	public:
-		SignalTester(std::unique_ptr<SignalDecoder> signal):
+		explicit SignalTester(std::unique_ptr<SignalDecoder> signal):
 			m_Signal(std::move(signal))
 		{
 			//empty
