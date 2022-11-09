@@ -115,6 +115,8 @@ namespace Console
 				return *this;
 			}
 	};	
+
+	extern void Printf(ConsoleFlashStringHelper_t *format, ...);
 	
 	extern void Init();		
 

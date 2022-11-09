@@ -7,6 +7,7 @@ set(UnitTest_SRCS
   ObjectPathUnitTest.cpp
   PacketTest.cpp
   ParserUnitTest.cpp
+	PrintfUnitTest.cpp
   ProjectUnitTest.cpp
   ServoTurnoutDecoderTest.cpp
   SignalDecoderTest.cpp

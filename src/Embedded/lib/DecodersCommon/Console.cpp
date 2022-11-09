@@ -19,6 +19,7 @@
 #include "Parser.h"
 
 #include "ArduinoTypes.h"
+#include "Printf.h"
 #include "SharedLibDefs.h"
 #include "Strings.h"
 
@@ -78,6 +79,66 @@ static void Parse(const char *command)
 	}
 }
 
+class FlashStringWrapper
+{
+    public:
+        inline FlashStringWrapper(Console::ConsoleFlashStringHelper_t *str) noexcept :
+            m_fszStr{ str }
+        {
+            //empty
+        }
+
+        inline const char ReadChar(unsigned pos) noexcept
+        {
+            return FStrReadChar(m_fszStr, pos);
+        }
+
+    private:
+        Console::ConsoleFlashStringHelper_t *m_fszStr;
+};
+
+class SerialWrapper
+{
+    public:
+
+        void Println()
+        {
+            Serial.println();
+        }
+        
+        void Print(const char *str)
+        {
+            Serial.print(str);
+        }
+
+        void Print(int n)
+        {
+            Serial.print(n);
+        }
+
+        void Print(unsigned n)
+        {
+            Serial.print(n);
+        }
+
+        void Print(char ch)
+        {
+            Serial.print(ch);
+        }
+};
+
+void Console::Printf(ConsoleFlashStringHelper_t *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+
+    FlashStringWrapper wrapper(format);
+    SerialWrapper swrapper;
+
+    dcclite::PrintfImpl(swrapper, FlashStringWrapper{ format }, args);
+
+    va_end(args);
+}
 
 constexpr auto MAX_COMMAND_LENGTH = 65;
 

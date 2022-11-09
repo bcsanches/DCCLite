@@ -6,6 +6,7 @@
 set(SharedLib_SRCS    
 	Misc.cpp
     Parser.cpp
+	Printf.cpp
 )
 
 set(SharedLib_HDRS
@@ -17,6 +18,7 @@ set(SharedLib_HDRS
     Misc.h
     Packet.h
     Parser.h  
+	Printf.h
     Version.h
 )
 
