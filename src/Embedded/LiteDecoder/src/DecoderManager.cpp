@@ -28,11 +28,12 @@ constexpr auto MAX_DECODERS = 16;
 
 static Decoder *g_pDecoders[MAX_DECODERS] = { 0 };
 
-#define MODULE_NAME					F("DecoderManager")
+#define MODULE_NAME					F("DecoderMgr")
 
 #define FSTR_SLOT_IN_USE			F("Slot already in use")
 
 #define FSTR_SLOT_OUT_OF_RANGE		F("Slot out of range")
+
 #define FSTR_INVALID_DECODER_TYPE	F("Invalid decoder type")
 
 static Decoder *Create(const dcclite::DecoderTypes type, dcclite::Packet &packet)
@@ -53,7 +54,7 @@ static Decoder *Create(const dcclite::DecoderTypes type, dcclite::Packet &packet
 
 		default:
 			//Console::SendLogEx(MODULE_NAME, FSTR_INVALID_DECODER_TYPE, static_cast<int>(type));
-			DCCLITE_LOG << MODULE_NAME << FSTR_INVALID_DECODER_TYPE << ' ' << static_cast<int>(type) << DCCLITE_ENDL;
+			DCCLITE_LOG_MODULE_LN(FSTR_INVALID_DECODER_TYPE << ' ' << static_cast<int>(type));
 
 			return nullptr;
 	}
@@ -64,7 +65,7 @@ Decoder *DecoderManager::Create(const uint8_t slot, dcclite::Packet &packet)
 	if (slot >= MAX_DECODERS)
 	{
 		//Console::SendLogEx(MODULE_NAME, FSTR_SLOT_OUT_OF_RANGE, ' ', slot);
-		DCCLITE_LOG << MODULE_NAME << FSTR_SLOT_OUT_OF_RANGE << ' ' << slot << DCCLITE_ENDL;
+		DCCLITE_LOG_MODULE_LN(FSTR_SLOT_OUT_OF_RANGE << ' ' << slot);		
 
 		return nullptr;
 	}
@@ -72,7 +73,7 @@ Decoder *DecoderManager::Create(const uint8_t slot, dcclite::Packet &packet)
 	if (g_pDecoders[slot])
 	{
 		//Console::SendLogEx(MODULE_NAME, FSTR_SLOT_IN_USE, slot);
-		DCCLITE_LOG << MODULE_NAME << FSTR_SLOT_IN_USE << ' ' << slot << DCCLITE_ENDL;
+		DCCLITE_LOG_MODULE_LN(FSTR_SLOT_IN_USE << ' ' << slot);
 
 		return nullptr;
 	}		

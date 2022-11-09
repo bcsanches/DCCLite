@@ -129,7 +129,13 @@ namespace Console
 
 #define DCCLITE_ENDL Console::EndLineMarkerTag{}
 
-#define DCCLITE_LOG_MODULE_EX(MC_stream) MC_stream << '[' << MODULE_NAME << F("] ")
+//#define DCCLITE_LOG_MODULE_EX(MC_stream) MC_stream << '[' << MODULE_NAME << F("] ")
+
+//#define DCCLITE_LOG_MODULE_EX(MC_stream) MC_stream << MODULE_NAME << ']' << ' '
+
+#define DCCLITE_LOG_MODULE_EX(MC_stream) MC_stream << MODULE_NAME << F("] ")
+
+//#define DCCLITE_LOG_MODULE_EX(MC_stream) MC_stream << MODULE_NAME
 
 #define DCCLITE_LOG_MODULE_LN_EX(MC_stream, x) DCCLITE_LOG_MODULE_EX(MC_stream) << x << DCCLITE_ENDL
 
