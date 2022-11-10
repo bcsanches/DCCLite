@@ -37,7 +37,7 @@ bool g_fNetReady = false;
 #define CMD_DUMP_NAME F("dump")
 #define CMD_HDUMP_NAME F("hdump")
 
-#define MODULE_NAME F("LITE_DECODER")
+#define MODULE_NAME F("MAIN")
 
 bool Console::Custom_ParseCommand(const char *command)
 {
@@ -51,7 +51,7 @@ bool Console::Custom_ParseCommand(const char *command)
 		if (parser.GetToken(nodeName, sizeof(nodeName)) != dcclite::Tokens::ID)
 		{
 			//Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_NODE, " ", FSTR_NAME);
-			DCCLITE_LOG << MODULE_NAME << FSTR_NOK << ' ' << FSTR_NODE << ' ' << FSTR_NAME << DCCLITE_ENDL;
+			DCCLITE_LOG_MODULE_LN(FSTR_NOK << ' ' << FSTR_NODE << ' ' << FSTR_NAME);
 
 			return true;
 		}
@@ -158,7 +158,7 @@ bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream
 		stream.Skip(lump.m_uLength);
 
 		//Console::SendLogEx(MODULE_NAME, FSTR_DECODERS, ' ', "cfg", ' ', g_uDecodersPosition);
-		DCCLITE_LOG << MODULE_NAME << FSTR_DECODERS << F(" cfg ") << g_uDecodersPosition << DCCLITE_ENDL;
+		DCCLITE_LOG_MODULE_LN(FSTR_DECODERS << F(" cfg ") << g_uDecodersPosition);
 
 		return true;
 	}
@@ -166,7 +166,7 @@ bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream
 	if (FStrNCmp(lump.m_archName, NET_UDP_STORAGE_ID, FStrLen(NET_UDP_STORAGE_ID)) == 0)
 	{
 		//Console::SendLogEx(MODULE_NAME, "net", "udp", ' ', "cfg");
-		DCCLITE_LOG << MODULE_NAME << F(" net udp cfg") << DCCLITE_ENDL;
+		DCCLITE_LOG_MODULE_LN(MODULE_NAME << F(" net udp cfg"));
 
 		NetUdp::LoadConfig(stream);
 
@@ -176,7 +176,7 @@ bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream
 	if (FStrNCmp(lump.m_archName, SESSION_STORAGE_ID, FStrLen(SESSION_STORAGE_ID)) == 0)
 	{
 		//Console::SendLogEx(MODULE_NAME, FSTR_SESSION, ' ', "cfg");
-		DCCLITE_LOG << MODULE_NAME << FSTR_SESSION << F(" cfg") << DCCLITE_ENDL;
+		DCCLITE_LOG_MODULE_LN(FSTR_SESSION << F(" cfg"));
 
 		Session::LoadConfig(stream);
 
@@ -249,7 +249,7 @@ void setup()
 	}
 
 	//Console::SendLogEx(FSTR_SETUP, " ", FSTR_OK);
-	DCCLITE_LOG << FSTR_SETUP << ' ' << FSTR_OK << DCCLITE_ENDL;
+	DCCLITE_LOG_MODULE_LN(FSTR_SETUP << ' ' << FSTR_OK);
 }
 
 static int g_iMinHeapSpace = INT_MAX;

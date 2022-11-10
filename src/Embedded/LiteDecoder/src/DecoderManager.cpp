@@ -283,8 +283,9 @@ void DecoderManager::LoadConfig(Storage::EpromStream &stream)
 	Session::ReplaceConfigToken(configToken);
 	
 	//Console::SendLn("");
-	//Console::SendLogEx(MODULE_NAME, usedMem);
-	DCCLITE_LOG << DCCLITE_ENDL << MODULE_NAME << usedMem << DCCLITE_ENDL;
+	//Console::SendLogEx(MODULE_NAME, usedMem);	
+	DCCLITE_LOG << DCCLITE_ENDL;
+	DCCLITE_LOG_MODULE_LN(usedMem);
 }
 
 bool DecoderManager::ReceiveServerStates(const dcclite::StatesBitPack_t &changedStates, const dcclite::StatesBitPack_t &states)
