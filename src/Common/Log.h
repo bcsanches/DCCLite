@@ -49,6 +49,12 @@ namespace dcclite
 		}
 
 		template<typename... Args>
+		inline void Error(const std::string &fmt, const Args &... args)
+		{
+			LogGetDefault()->error(fmt, args...);
+		}
+
+		template<typename... Args>
 		inline void Critical(const char *fmt, const Args &... args)
 		{
 			LogGetDefault()->critical(fmt, args...);

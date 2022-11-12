@@ -443,7 +443,7 @@ namespace dcclite
 
 		auto sent_bytes = sendto(
 			m_hHandle, 
-			(const char*)data, 
+			reinterpret_cast<const char*>(data), 
 			static_cast<int>(size), 
 			0, 
 			(const sockaddr *)&saddr, 
@@ -463,7 +463,7 @@ namespace dcclite
 	{
 		assert(m_hHandle != NULL_SOCKET);
 
-		auto bytesSent = send(m_hHandle, (const char *)data, (int)size, 0);
+		auto bytesSent = send(m_hHandle, reinterpret_cast<const char *>(data), (int)size, 0);
 		
 #if PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
 		if (bytesSent < 0)
@@ -513,7 +513,7 @@ namespace dcclite
 
 		auto result = recvfrom(
 			m_hHandle, 
-			(char*)data, 
+			reinterpret_cast<char*>(data), 
 			static_cast<int>(size), 
 			0, 
 			(sockaddr*)&from, 
@@ -579,7 +579,7 @@ namespace dcclite
 
 		auto result = recv(
 			m_hHandle, 
-			(char*)data, 
+			reinterpret_cast<char*>(data), 
 			size, 
 			0
 		);

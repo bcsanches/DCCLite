@@ -326,7 +326,7 @@ namespace dcclite::broker
 			{				
 				auto& root = static_cast<FolderObject&>(context.GetItem()->GetRoot());
 
-				ObjectPath path = { SpecialFolders::GetPath(SpecialFolders::Folders::ServicesId) };
+				ObjectPath path{ SpecialFolders::GetPath(SpecialFolders::Folders::ServicesId) };
 				path.append(dccSystemName);
 
 				auto *service = dynamic_cast<DccLiteService *>(root.TryNavigate(path));
@@ -1080,7 +1080,7 @@ namespace dcclite::broker
 		}
 		auto folder = static_cast<FolderObject *>(item);
 
-		ObjectPath servicesPath = { SpecialFolders::GetPath(SpecialFolders::Folders::ServicesId) };
+		ObjectPath servicesPath{ SpecialFolders::GetPath(SpecialFolders::Folders::ServicesId) };
 		auto *servicesObj = folder->TryNavigate(servicesPath);
 
 		if (servicesObj == nullptr)

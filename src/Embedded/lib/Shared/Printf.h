@@ -17,7 +17,7 @@ namespace dcclite
 	class StringWrapper
 	{
 		public:
-			inline StringWrapper(const char *str) noexcept :
+			inline explicit StringWrapper(const char *str) noexcept :
 				m_pszStr{ str }
 			{
 				//empty

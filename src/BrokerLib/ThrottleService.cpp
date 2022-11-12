@@ -208,9 +208,9 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 
 		struct ErrorState : State
 		{
-			ErrorState(std::string reason)
+			explicit ErrorState(const std::string &reason)
 			{
-				dcclite::Log::Error(reason.c_str());
+				dcclite::Log::Error(reason);
 			}
 
 			void Update(Throttle &self, const dcclite::Clock::TimePoint_t time) override
@@ -222,7 +222,7 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 		struct ConnectState: State
 		{							
 			public:
-				ConnectState(const dcclite::NetworkAddress &serverAddress)
+				explicit ConnectState(const dcclite::NetworkAddress &serverAddress)
 				{
 					if (!m_clSocket.StartConnection(0, dcclite::Socket::Type::STREAM, serverAddress))
 						throw std::runtime_error("[Throttle::ConnectState] Cannot start connection");
@@ -230,7 +230,7 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 					dcclite::Log::Debug("[Throttle::ConnectState] Connecting to {}", serverAddress);
 				}
 
-				void Update(Throttle &self, const dcclite::Clock::TimePoint_t time)
+				void Update(Throttle &self, const dcclite::Clock::TimePoint_t time) override
 				{
 					auto status = m_clSocket.GetConnectionProgress();
 					if (status == dcclite::Socket::Status::DISCONNECTED)
@@ -250,13 +250,13 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 
 		struct HandShakeState : State
 		{
-			HandShakeState(dcclite::Socket socket) :
+			explicit HandShakeState(dcclite::Socket socket) :
 				m_clSocket{ std::move(socket) }
 			{
 				//empty
 			}
 
-			void Update(Throttle &self, const dcclite::Clock::TimePoint_t time)
+			void Update(Throttle &self, const dcclite::Clock::TimePoint_t time) override
 			{
 				char buffer[6];
 
@@ -361,7 +361,7 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 				dcclite::Clock::TimePoint_t m_tNextHeartBeat;
 
 			protected:
-				OnlineState(dcclite::NetMessenger &&other) :
+				explicit OnlineState(dcclite::NetMessenger &&other) :
 					m_clMessenger{ std::move(other) }
 				{
 					//empty

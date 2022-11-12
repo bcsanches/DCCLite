@@ -85,7 +85,7 @@ static void Parse(const char *command)
 class FlashStringWrapper
 {
     public:
-        inline FlashStringWrapper(const Console::ConsoleFlashStringHelper_t *str) noexcept :
+        inline explicit FlashStringWrapper(const Console::ConsoleFlashStringHelper_t *str) noexcept :
             m_fszStr{ str }
         {
             //empty
@@ -116,7 +116,7 @@ class SerialWrapper
 
         void PrintFlash(const char *str)
         {
-            auto *str2 = (Console::ConsoleFlashStringHelper_t *) str;
+            auto *str2 = reinterpret_cast<const Console::ConsoleFlashStringHelper_t *>(str);
 
             Serial.print(str2);
         }

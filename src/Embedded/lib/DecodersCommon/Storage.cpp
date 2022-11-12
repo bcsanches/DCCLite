@@ -111,9 +111,7 @@ bool Storage::LoadConfig()
 			stream.Skip(lump.m_uLength);
 
 			if (stream.GetIndex() >= EEPROM.length())
-				break;
-
-			continue;			
+				break;		
 		}
     }
 
