@@ -70,7 +70,7 @@ namespace dcclite
 			};
 
 		public:
-			SerialPort(std::string_view portName);
+			explicit SerialPort(std::string_view portName);
 			~SerialPort();			
 
 			void Read(DataPacket &packet);

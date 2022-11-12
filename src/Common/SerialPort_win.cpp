@@ -89,7 +89,7 @@ namespace dcclite
 
 
 	SerialPort::SerialPort(std::string_view portName):
-		m_strName(portName)
+		m_strName{portName}
 	{
 		m_hComPort = ::CreateFile(
 			portName.data(),

@@ -22,7 +22,7 @@ namespace dcclite
 	class NetMessenger
 	{
 		public:
-			NetMessenger(Socket &&socket, const char *separator = "\r\n", const char *initialBuffer = "");
+			explicit NetMessenger(Socket &&socket, const char *separator = "\r\n", const char *initialBuffer = "");
 			NetMessenger(NetMessenger&& rhs) noexcept;
 
 			NetMessenger &operator=(NetMessenger&& rhs) noexcept = default;

@@ -110,7 +110,7 @@ namespace dcclite
 			ObjectPath(const ObjectPath &rhs) = default;				
 			ObjectPath(ObjectPath &&rhs) = default;
 
-			ObjectPath(std::string_view str);
+			explicit ObjectPath(std::string_view str);
 
 			ObjectPath &operator=(const ObjectPath &rhs) = default;
 			ObjectPath &operator=(ObjectPath &&rhs) = default;
@@ -262,7 +262,7 @@ namespace dcclite
 	class Object: public IObject
 	{
 		public:
-			Object(std::string name);			
+			explicit Object(std::string name);			
 	};	
 
 	class Shortcut : public IObject
@@ -320,7 +320,7 @@ namespace dcclite
 			};
 
 		public:
-			FolderObject(std::string name);
+			explicit FolderObject(std::string name);
 
 			virtual IObject *AddChild(std::unique_ptr<IObject> obj);
 			

@@ -127,7 +127,7 @@ namespace dcclite::broker
 	class GetChildItemCmd : public TerminalCmd
 	{
 		public:
-			GetChildItemCmd(std::string name = "Get-ChildItem"):
+			explicit GetChildItemCmd(std::string name = "Get-ChildItem"):
 				TerminalCmd(std::move(name))
 			{
 				//empty
@@ -183,7 +183,7 @@ namespace dcclite::broker
 	class GetItemCmd: public TerminalCmd
 	{
 		public:
-			GetItemCmd(std::string name = "Get-Item"):
+			explicit GetItemCmd(std::string name = "Get-Item"):
 				TerminalCmd(std::move(name))
 			{
 				//empty
@@ -226,7 +226,7 @@ namespace dcclite::broker
 	class SetLocationCmd : public TerminalCmd
 	{
 		public:
-			SetLocationCmd(std::string name = "Set-Location") :
+			explicit SetLocationCmd(std::string name = "Set-Location") :
 				TerminalCmd(std::move(name))
 			{
 				//empty
@@ -279,7 +279,7 @@ namespace dcclite::broker
 	class GetCommandCmd : public TerminalCmd
 	{
 		public:
-			GetCommandCmd(std::string name = "Get-Command") :
+			explicit GetCommandCmd(std::string name = "Get-Command") :
 				TerminalCmd(std::move(name))
 			{
 				//empty
@@ -316,7 +316,7 @@ namespace dcclite::broker
 	class DccSystemCmdBase : public TerminalCmd
 	{
 		protected:
-			DccSystemCmdBase(std::string name) :
+			explicit DccSystemCmdBase(std::string name) :
 				TerminalCmd(std::move(name))
 			{
 				//empty
@@ -343,7 +343,7 @@ namespace dcclite::broker
 	class DecoderCmdBase : public DccSystemCmdBase
 	{
 		protected:
-			DecoderCmdBase(std::string name) :
+			explicit DecoderCmdBase(std::string name) :
 				DccSystemCmdBase(std::move(name))
 			{
 				//empty
@@ -388,7 +388,7 @@ namespace dcclite::broker
 	class ActivateItemCmd : public DecoderCmdBase
 	{
 		public:
-			ActivateItemCmd(std::string name = "Activate-Item") :
+			explicit ActivateItemCmd(std::string name = "Activate-Item") :
 				DecoderCmdBase(std::move(name))
 			{
 				//empty
@@ -412,7 +412,7 @@ namespace dcclite::broker
 	class DeactivateItemCmd : public DecoderCmdBase
 	{
 		public:
-			DeactivateItemCmd(std::string name = "Deactivate-Item") :
+			explicit DeactivateItemCmd(std::string name = "Deactivate-Item") :
 				DecoderCmdBase(std::move(name))
 			{
 				//empty
@@ -436,7 +436,7 @@ namespace dcclite::broker
 	class FlipItemCmd : public DecoderCmdBase
 	{
 		public:
-			FlipItemCmd(std::string name = "Flip-Item") :
+			explicit FlipItemCmd(std::string name = "Flip-Item") :
 				DecoderCmdBase(std::move(name))
 			{
 				//empty
@@ -460,7 +460,7 @@ namespace dcclite::broker
 	class SetAspectCmd : public DecoderCmdBase
 	{
 		public:
-			SetAspectCmd(std::string name = "Set-Aspect") :
+			explicit SetAspectCmd(std::string name = "Set-Aspect") :
 				DecoderCmdBase(std::move(name))
 			{
 				//empty
@@ -562,7 +562,7 @@ namespace dcclite::broker
 			class DiskWriteFinishedEvent: public EventHub::IEvent
 			{
 				public:
-					DiskWriteFinishedEvent(ReadEEPromFiber &target):
+					explicit DiskWriteFinishedEvent(ReadEEPromFiber &target):
 						IEvent{ target }
 					{
 						//empty
@@ -622,7 +622,7 @@ namespace dcclite::broker
 	class ReadEEPromCmd : public DccSystemCmdBase
 	{
 		public:
-			ReadEEPromCmd(std::string name = "Read-EEProm"):
+			explicit ReadEEPromCmd(std::string name = "Read-EEProm"):
 				DccSystemCmdBase(std::move(name))
 			{
 				//empty
@@ -666,7 +666,7 @@ namespace dcclite::broker
 	class StartServoProgrammerCmd: public DccSystemCmdBase
 	{
 		public:
-			StartServoProgrammerCmd(std::string name = "Start-ServoProgrammer"):
+			explicit StartServoProgrammerCmd(std::string name = "Start-ServoProgrammer"):
 				DccSystemCmdBase(std::move(name))
 			{
 				//empty
@@ -718,7 +718,7 @@ namespace dcclite::broker
 	class ServoProgrammerBaseCmd: public DccSystemCmdBase
 	{
 		protected:
-			ServoProgrammerBaseCmd(std::string name):
+			explicit ServoProgrammerBaseCmd(std::string name):
 				DccSystemCmdBase(std::move(name))
 			{
 				//empty
@@ -767,7 +767,7 @@ namespace dcclite::broker
 	class StopServoProgrammerCmd: public ServoProgrammerBaseCmd
 	{
 		public:
-			StopServoProgrammerCmd(std::string name = "Stop-ServoProgrammer"):
+			explicit StopServoProgrammerCmd(std::string name = "Stop-ServoProgrammer"):
 				ServoProgrammerBaseCmd(std::move(name))
 			{
 				//empty
@@ -820,7 +820,7 @@ namespace dcclite::broker
 			const static Action g_Actions[];
 
 		public:
-			EditServoProgrammerCmd(std::string name = "Edit-ServoProgrammer"):
+			explicit EditServoProgrammerCmd(std::string name = "Edit-ServoProgrammer"):
 				ServoProgrammerBaseCmd(std::move(name))
 			{
 				//empty
@@ -920,7 +920,7 @@ namespace dcclite::broker
 	class DeployServoProgrammerCmd: public ServoProgrammerBaseCmd
 	{
 		public:
-			DeployServoProgrammerCmd(std::string name = "Deploy-ServoProgrammer"):
+			explicit DeployServoProgrammerCmd(std::string name = "Deploy-ServoProgrammer"):
 				ServoProgrammerBaseCmd(std::move(name))
 			{
 				//empty

@@ -64,7 +64,7 @@ namespace dcclite
 
 		auto[status, size] = m_clSocket.Receive(tmpBuffer, sizeof(tmpBuffer));
 
-		if ((status == Socket::Status::DISCONNECTED) && (m_lstMessages.empty()))
+		if (status == Socket::Status::DISCONNECTED)
 			return std::make_tuple(Socket::Status::DISCONNECTED, std::string{});
 
 		if (status == Socket::Status::OK)
