@@ -140,12 +140,9 @@ class SerialWrapper
 void Console::Printf(const ConsoleFlashStringHelper_t *format, ...)
 {
     va_list args;
-    va_start(args, format);
+    va_start(args, format);        
 
-    FlashStringWrapper wrapper(format);
-    SerialWrapper swrapper;
-
-    dcclite::PrintfImpl(swrapper, FlashStringWrapper{ format }, args);
+    dcclite::PrintfImpl(SerialWrapper{}, FlashStringWrapper{ format }, args);
 
     va_end(args);
 }

@@ -133,7 +133,7 @@ namespace Console
 
 //#define DCCLITE_LOG_MODULE_EX(MC_stream) MC_stream << MODULE_NAME << ']' << ' '
 
-#define DCCLITE_LOG_MODULE_EX(MC_stream) MC_stream << MODULE_NAME << F("] ")
+#define DCCLITE_LOG_MODULE_EX(MC_stream) MC_stream << '[' << MODULE_NAME << ']'
 
 //#define DCCLITE_LOG_MODULE_EX(MC_stream) MC_stream << MODULE_NAME
 

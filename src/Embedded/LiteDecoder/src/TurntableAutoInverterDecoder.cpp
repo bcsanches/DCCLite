@@ -119,7 +119,7 @@ void TurntableAutoInverterDecoder::Init(const dcclite::PinType_t trackPins[4]) n
 	}		
 
 	//Console::SendLogEx(MODULE_NAME, F("Init"));
-	DCCLITE_LOG_MODULE_LN(F("init"));	
+	//DCCLITE_LOG_MODULE_LN(F("init"));	
 
 	//wait 5 seconds, should be enough to load everything and start pooling sensors
 	m_uWaitingTrackTurnOff = 5000;

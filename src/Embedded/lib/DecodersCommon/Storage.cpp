@@ -100,7 +100,7 @@ bool Storage::LoadConfig()
 			if (FStrNCmp(lump.m_archName, END_STORAGE_ID, FStrLen(END_STORAGE_ID)) == 0)
 			{
 				//Console::SendLogEx(MODULE_NAME, FSTR_ROM, ' ', "end");
-				DCCLITE_LOG << MODULE_NAME << FSTR_ROM << ' ' << F("end") << DCCLITE_ENDL;
+				//DCCLITE_LOG << MODULE_NAME << FSTR_ROM << ' ' << F("end") << DCCLITE_ENDL;
 
 				break;
 			}			

@@ -100,14 +100,14 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 		if(!validMac)
 		{
 			//Console::SendLogEx(MODULE_NAME, F("no"), ' ', F("mac"));			
-			DCCLITE_LOG_MODULE_LN(F("no") << F("mac") << FSTR_OK);
+			DCCLITE_LOG_MODULE_LN(F("no ") << F("mac ") << FSTR_OK);
 
 			return false;			
 		}
 	}
 
 	//Console::SendLogEx(MODULE_NAME, F("mac"), FSTR_OK);
-	DCCLITE_LOG_MODULE_LN(F("mac") << FSTR_OK);
+	DCCLITE_LOG_MODULE_LN(F("mac ") << FSTR_OK);
 
 #ifdef ARDUINO_AVR_MEGA2560	
 	if (ether.begin(BUFFER_SIZE, g_u8Mac, 53) == 0)
@@ -116,13 +116,13 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 #endif
 	{
 		//Console::SendLogEx(MODULE_NAME, F("ether"), '.', F("begin"), ' ', FSTR_NOK);
-		DCCLITE_LOG << MODULE_NAME << F("ether begin") << FSTR_NOK << DCCLITE_ENDL;
+		DCCLITE_LOG_MODULE_LN(F("ether begin") << FSTR_NOK);
 
 		return false;
 	}
 
 	//Console::SendLogEx(MODULE_NAME, F("net"), ' ', F("begin"), ' ', FSTR_OK);
-	DCCLITE_LOG << MODULE_NAME << F("ether begin") << FSTR_OK << DCCLITE_ENDL;
+	DCCLITE_LOG_MODULE_LN(F("ether begin ") << FSTR_OK);
 
 #if 1
 	for(int i = 0; !ether.dhcpSetup(g_szNodeName, true); ++i )
@@ -156,13 +156,13 @@ bool NetUdp::Init(ReceiveCallback_t callback)
  	ether.printIp("DNS IP: ", ether.dnsip);
 	ether.printIp("IP:  ", ether.myip);	
 	//Console::SendLogEx(MODULE_NAME, FSTR_PORT, ':', ' ', g_iSrcPort);
-	DCCLITE_LOG << MODULE_NAME << FSTR_PORT << F(": ") << g_iSrcPort << DCCLITE_ENDL;
+	DCCLITE_LOG_MODULE_LN(FSTR_PORT << F(": ") << g_iSrcPort);
 	//ether.printIp("DNS: ", ether.dnsip);    
 
 	//ether.parseIp(destip, "192.168.1.101");	
 
 	//Console::SendLogEx(MODULE_NAME, FSTR_SETUP, ' ', FSTR_OK);
-	DCCLITE_LOG_MODULE_LN(FSTR_SETUP << ' ' << FSTR_OK);	
+	DCCLITE_LOG_MODULE_LN(FSTR_OK);	
 
 	ether.udpServerListenOnPort(callback, g_iSrcPort);
 
