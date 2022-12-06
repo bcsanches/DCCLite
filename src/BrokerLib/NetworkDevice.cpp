@@ -115,7 +115,7 @@ namespace dcclite::broker
 	void NetworkDevice::CheckLoadedDecoder(Decoder &decoder)
 	{
 		if (!dynamic_cast<RemoteDecoder *>(&decoder))
-			throw std::invalid_argument(fmt::format("[NetworkDevice::CheckLoadedDecoder] Decoder {} must be a RemoteDecoder subtype, but it is: {}", decoder.GetName(), decoder.GetTypeName()));
+			throw std::invalid_argument(fmt::format("[NetworkDevice::{}] [CheckLoadedDecoder] Decoder {} must be a RemoteDecoder subtype, but it is: {}", this->GetName(), decoder.GetName(), decoder.GetTypeName()));
 	}
 
 	void NetworkDevice::OnUnload()
@@ -143,7 +143,7 @@ namespace dcclite::broker
 		const dcclite::Guid remoteConfigToken
 	)
 	{
-		dcclite::Log::Error("[{}::Device::{}::OnPacket] Unexpected msg type: {} - {}", m_rclSelf.GetName(), this->GetName(), (int)msgType, dcclite::MsgName(msgType));
+		dcclite::Log::Error("[Device::{}] [{}::OnPacket] Unexpected msg type: {} - {}", this->GetName(), m_rclSelf.GetName(), (int)msgType, dcclite::MsgName(msgType));
 	}
 
 	//
@@ -208,7 +208,7 @@ namespace dcclite::broker
 
 		if (seq >= m_vecAcks.size())
 		{
-			dcclite::Log::Error("[{}::Device::OnPacket_ConfigAck] config out of sync, dropping connection", m_rclSelf.GetName());
+			dcclite::Log::Error("[Device::{}] [{}::OnPacket_ConfigAck] config out of sync, dropping connection", m_rclSelf.GetName(), this->GetName());
 
 			m_rclSelf.GoOffline();
 
@@ -223,11 +223,11 @@ namespace dcclite::broker
 
 		m_clTimeoutThinker.Schedule(time + CONFIG_RETRY_TIME);		
 
-		dcclite::Log::Info("[{}::Device::OnPacket_ConfigAck] Config ACK {} - {}", m_rclSelf.GetName(), seq, m_rclSelf.m_vecDecoders[seq]->GetName());
+		dcclite::Log::Info("[Device::{}] [{}::OnPacket_ConfigAck] Config ACK {} - {}", m_rclSelf.GetName(), this->GetName(), seq, m_rclSelf.m_vecDecoders[seq]->GetName());
 
 		if (m_uSeqCount == m_vecAcks.size())
 		{
-			dcclite::Log::Info("[{}::Device::OnPacket_ConfigAck] Config Finished, configured {} decoders", m_rclSelf.GetName(), m_uSeqCount);
+			dcclite::Log::Info("[Device::{}] [{}::OnPacket_ConfigAck] Config Finished, configured {} decoders", m_rclSelf.GetName(), this->GetName(), m_uSeqCount);
 
 			this->SendConfigFinishedPacket();
 		}
@@ -244,7 +244,7 @@ namespace dcclite::broker
 		if (!m_rclSelf.CheckSession(remoteAddress))
 			return;
 
-		dcclite::Log::Info("[{}::Device::OnPacket_ConfigFinished] Config Finished, device is ready", m_rclSelf.GetName());
+		dcclite::Log::Info("[Device::{}] [{}::OnPacket_ConfigFinished] Config Finished, device is ready", m_rclSelf.GetName(), this->GetName());
 
 		m_rclSelf.m_clTimeoutController.Enable(time);
 
@@ -291,7 +291,14 @@ namespace dcclite::broker
 					this->SendConfigStartPacket();
 				}
 
-				dcclite::Log::Warn("[{}::Device::Update] retrying config for device {} at {}", m_rclSelf.GetName(), m_rclSelf.m_vecDecoders[pos]->GetName(), pos);
+				dcclite::Log::Warn(
+					"[Device::{}] [{}::OnTimeout] retrying config for device {} at {}", 
+					m_rclSelf.GetName(), 
+					this->GetName(), 
+					m_rclSelf.m_vecDecoders[pos]->GetName(), 
+					pos
+				);
+
 				this->SendDecoderConfigPacket(pos);
 
 				++packetCount;
@@ -307,7 +314,7 @@ namespace dcclite::broker
 		if (packetCount == 0)
 		{
 			//remote device already acked all decoders, but not acked the config finished, so, send it again
-			dcclite::Log::Warn("[{}::Device::Update] retrying config finished for remote device", m_rclSelf.GetName());
+			dcclite::Log::Warn("[Device::{}] [{}::Update] retrying config finished for remote device", m_rclSelf.GetName(), this->GetName());
 			this->SendConfigFinishedPacket();
 		}
 	}
@@ -343,7 +350,7 @@ namespace dcclite::broker
 
 		if (msgType == dcclite::MsgTypes::CONFIG_FINISHED)
 		{
-			dcclite::Log::Warn("[{}::Device::SyncState::OnPacket] Got a late CONFIG_FINISHED packet, ignoring", this->m_rclSelf.GetName());
+			dcclite::Log::Warn("[Device::{}] [SyncState::OnPacket] Got a late CONFIG_FINISHED packet, ignoring", this->m_rclSelf.GetName());
 
 			return;
 		}
@@ -388,7 +395,7 @@ namespace dcclite::broker
 			}
 		}
 
-		dcclite::Log::Info("[{}::Device::SyncState::OnPacket] Sync OK", m_rclSelf.GetName());
+		dcclite::Log::Info("[Device::{}] [SyncState::OnPacket] Sync OK", m_rclSelf.GetName());
 
 		m_rclSelf.GotoOnlineState(time);
 	}
@@ -397,7 +404,7 @@ namespace dcclite::broker
 	{
 		assert(m_rclSelf.m_kStatus == Status::CONNECTING);
 				
-		dcclite::Log::Info("[{}::Device::SyncState::Update] request sent", m_rclSelf.GetName());
+		dcclite::Log::Info("[Device::{}] [SyncState::OnTimeout] request sent", m_rclSelf.GetName());
 
 		DevicePacket pkt{ dcclite::MsgTypes::SYNC, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
 
@@ -502,7 +509,7 @@ namespace dcclite::broker
 		if (!stateChanged)
 			return false;
 
-		dcclite::Log::Debug("[{}::Device::OnPacket] Sending state - requester {}", m_rclSelf.GetName(), requester);
+		dcclite::Log::Debug("[Device::{}] [{}::OnPacket] Sending state - requester {}", m_rclSelf.GetName(), this->GetName(), requester);
 					
 		DevicePacket pkt{ dcclite::MsgTypes::STATE, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
 
@@ -552,7 +559,7 @@ namespace dcclite::broker
 				}
 			}
 			
-			dcclite::Log::Warn("[{}::Device::OnPacket] task data, but no task running or task not found for id {}", m_rclSelf.GetName(), taskId);
+			dcclite::Log::Warn("[Device::{}] [{}::OnPacket] task data, but no task running or task not found for id {}", m_rclSelf.GetName(), this->GetName(), taskId);
 
 			return;
 		}
@@ -561,13 +568,17 @@ namespace dcclite::broker
 		{			
 			m_rclSelf.m_uRemoteFreeRam = packet.Read<uint16_t>();
 
-			dcclite::Log::Warn("[{}::Device::OnPacket] Got RAM update: {}", m_rclSelf.GetName(), m_rclSelf.m_uRemoteFreeRam);
+			dcclite::Log::Warn("[Device::{}] [{}::OnPacket] Got RAM update: {}", m_rclSelf.GetName(), this->GetName(), m_rclSelf.m_uRemoteFreeRam);
 
+			//Send the same packet back, so the remote device can ACK we got it
 			DevicePacket pkt{ dcclite::MsgTypes::RAM_DATA, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
 
 			pkt.Write16(m_rclSelf.m_uRemoteFreeRam);			
 
+			//dispatch packet
 			m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
+
+			//let other systems know that our internal state changed...
 			m_rclSelf.m_clDccService.Device_NotifyStateChange(m_rclSelf);
 
 			return;
@@ -577,7 +588,7 @@ namespace dcclite::broker
 		if (msgType == dcclite::MsgTypes::SYNC)
 		{
 			//ignore
-			Log::Trace("[NetworkDevice::OnlineState::OnPacket] {}: Got late SYNC message, ignoring", this->GetName());
+			Log::Trace("[NetworkDevice::{}] [OnlineState::OnPacket] {}: Got late SYNC message, ignoring", this->GetName());
 
 			return;
 
@@ -704,7 +715,7 @@ namespace dcclite::broker
 
 		m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
 
-		dcclite::Log::Warn("[{}::Device::Disconnect] Sent disconnect packet", this->GetName());
+		dcclite::Log::Warn("[Device::{}] [Disconnect] Sent disconnect packet", this->GetName());
 
 		this->GoOffline();
 	}
@@ -721,7 +732,7 @@ namespace dcclite::broker
 
 		m_clTimeoutController.Disable();
 
-		dcclite::Log::Warn("[{}::Device::GoOffline] Is OFFLINE", this->GetName());
+		dcclite::Log::Warn("[Device::{}] [GoOffline] Is OFFLINE", this->GetName());
 		m_clDccService.Device_NotifyStateChange(*this);
 	}
 
@@ -730,7 +741,7 @@ namespace dcclite::broker
 	{
 		if (m_kStatus != Status::OFFLINE)
 		{
-			dcclite::Log::Error("[{}::Device::AcceptConnection] Already connected, cannot accept request from {}", this->GetName(), remoteAddress);
+			dcclite::Log::Error("[Device::{}] [AcceptConnection] Already connected, cannot accept request from {}", this->GetName(), remoteAddress);
 
 			return;
 		}
@@ -744,23 +755,23 @@ namespace dcclite::broker
 
 		m_clTimeoutController.Enable(time);
 
-		dcclite::Log::Info("[{}::Device::GoOnline] Is connecting", this->GetName());
+		dcclite::Log::Info("[Device::{}] [AcceptConnection] Is connecting", this->GetName());
 
 		//this->RefreshTimeout(time);
 
 		//Is device config expired?
 		if (remoteConfigToken != m_ConfigToken)
 		{
-			dcclite::Log::Info("[{}::Device::AcceptConnection] Started configuring for token {}", this->GetName(), m_ConfigToken);
+			dcclite::Log::Info("[Device::{}] [AcceptConnection] Started configuring for token {}", this->GetName(), m_ConfigToken);
 
 			this->GotoConfigState(time);
 
-			dcclite::Log::Info("[{}::Device::AcceptConnection] config data sent", this->GetName());
+			dcclite::Log::Info("[Device::{}] [AcceptConnection] config data sent", this->GetName());
 		}
 		else
 		{
 			//device config is fine...
-			dcclite::Log::Info("[{}::Device::AcceptConnection] Accepted connection {} {}", this->GetName(), remoteAddress, m_ConfigToken);
+			dcclite::Log::Info("[Device::{}] [AcceptConnection] Accepted connection {} {}", this->GetName(), remoteAddress, m_ConfigToken);
 
 			//tell device that connection was accepted
 			DevicePacket pkt{ dcclite::MsgTypes::ACCEPTED, m_SessionToken, m_ConfigToken };
@@ -780,7 +791,7 @@ namespace dcclite::broker
 
 		if (remoteConfigToken != m_ConfigToken)
 		{
-			dcclite::Log::Warn("[{}::Device::CheckSession] Received packet from invalid config...", this->GetName());
+			dcclite::Log::Warn("[Device::{}] [CheckSessionConfig] Received packet from invalid config...", this->GetName());
 
 			return false;
 		}
@@ -792,14 +803,14 @@ namespace dcclite::broker
 	{
 		if (m_kStatus == Status::OFFLINE)
 		{
-			dcclite::Log::Error("[{}::Device::CheckSession] got packet from disconnected device", this->GetName());
+			dcclite::Log::Error("[Device::{}] [CheckSession] got packet from disconnected device", this->GetName());
 
 			return false;
 		}
 
 		if (remoteAddress != m_RemoteAddress)
 		{
-			dcclite::Log::Warn("[{}::Device::CheckSession] Updating remote address, session valid", this->GetName());
+			dcclite::Log::Warn("[Device::{}] [CheckSession] Updating remote address, session valid", this->GetName());
 
 			m_RemoteAddress = remoteAddress;
 		}
@@ -811,7 +822,7 @@ namespace dcclite::broker
 	{
 		if (!m_pclCurrentState)
 		{
-			dcclite::Log::Error("[{}::Device::OnPacket] Cannot process packet on Offline mode, packet: {}", this->GetName(), dcclite::MsgName(msgType));
+			dcclite::Log::Error("[Device::{}] [OnPacket] Cannot process packet on Offline mode, packet: {}", this->GetName(), dcclite::MsgName(msgType));
 
 			return;
 		}		
@@ -832,7 +843,7 @@ namespace dcclite::broker
 		m_vState.emplace<SyncState>(*this);
 		m_pclCurrentState = std::get_if<SyncState>(&m_vState);
 
-		dcclite::Log::Trace("[{}::Device::GotoSyncState] Entered", this->GetName());
+		dcclite::Log::Trace("[Device::{}] [GotoSyncState] Entered", this->GetName());
 	}
 
 	void NetworkDevice::GotoOnlineState(const dcclite::Clock::TimePoint_t time)
@@ -844,7 +855,7 @@ namespace dcclite::broker
 		m_vState.emplace<OnlineState>(*this, time);
 		m_pclCurrentState = std::get_if<OnlineState>(&m_vState);
 
-		dcclite::Log::Trace("[{}::Device::GotoOnlineState] Entered", this->GetName());
+		dcclite::Log::Trace("[Device::{}] [GotoOnlineState] Entered", this->GetName());
 		m_clDccService.Device_NotifyStateChange(*this);
 	}
 
@@ -855,7 +866,7 @@ namespace dcclite::broker
 		m_vState.emplace<ConfigState>(*this, time);		
 		m_pclCurrentState = std::get_if<ConfigState>(&m_vState);
 
-		dcclite::Log::Trace("[{}::Device::GotoConfigState] Entered", this->GetName());
+		dcclite::Log::Trace("[Device::{}] [GotoConfigState] Entered", this->GetName());
 	}	
 
 	bool NetworkDevice::IsConnectionStable() const noexcept
@@ -873,7 +884,7 @@ namespace dcclite::broker
 				return *m_vecDecoders[i];
 		}
 
-		throw std::out_of_range(fmt::format("[NetworkDevice::FindDecoder] Decoder {} not found in device {}", name, this->GetName()));
+		throw std::out_of_range(fmt::format("[Device::{}] [FindDecoder] Decoder {} not found", this->GetName(), name));
 	}
 
 	uint8_t NetworkDevice::FindDecoderIndex(const Decoder &decoder) const
@@ -886,7 +897,7 @@ namespace dcclite::broker
 				return static_cast<uint8_t>(i);
 		}
 
-		throw std::out_of_range(fmt::format("[NetworkDevice::FindDecoderIndex] Decoder {} not found in device {}", decoder.GetName(), this->GetName()));
+		throw std::out_of_range(fmt::format("[Device::{}] [FindDecoderIndex] Decoder {} not found", this->GetName(), decoder.GetName()));
 	}
 
 	void NetworkDevice::TaskServices_FillPacketHeader(dcclite::Packet &packet, const uint32_t taskId, const NetworkTaskTypes taskType) const noexcept
@@ -929,7 +940,7 @@ namespace dcclite::broker
 	std::shared_ptr<NetworkTask> NetworkDevice::StartDownloadEEPromTask(NetworkTask::IObserver *observer, DownloadEEPromTaskResult_t &resultsStorage)
 	{		
 		if (!this->IsConnectionStable())		
-			throw std::runtime_error("[NetworkDevice::StartDownloadEEPromTask] Cannot start task without a connectd device");
+			throw std::runtime_error(fmt::format("[NetworkDevice::{}] [StartDownloadEEPromTask] Cannot start task without a connectd device", this->GetName()));
 
 		auto task = detail::StartDownloadEEPromTask(*this, ++g_u32TaskId, observer, resultsStorage);								
 
@@ -941,15 +952,15 @@ namespace dcclite::broker
 	std::shared_ptr<NetworkTask> NetworkDevice::StartServoTurnoutProgrammerTask(NetworkTask::IObserver *observer, const std::string_view servoDecoderName)
 	{		
 		if (!this->IsConnectionStable())
-			throw std::runtime_error("[NetworkDevice::StartServoTurnoutProgrammerTask] Cannot start task without a connectd device");
+			throw std::runtime_error(fmt::format("[NetworkDevice::{}] [StartServoTurnoutProgrammerTask] Cannot start task without a connectd device", this->GetName()));
 
 		auto obj = this->TryResolveChild(servoDecoderName);
 		if (!obj)
-			throw std::invalid_argument(fmt::format("[NetworkDevice::StartDownloadEEPromTask] Servo decoder {} not found", servoDecoderName));
+			throw std::invalid_argument(fmt::format("[NetworkDevice::{}] [StartDownloadEEPromTask] Servo decoder {} not found", this->GetName(), servoDecoderName));
 
 		auto servoTurnout = dynamic_cast<ServoTurnoutDecoder *>(obj);
 		if(!servoTurnout)
-			throw std::invalid_argument(fmt::format("[NetworkDevice::StartDownloadEEPromTask] Servo decoder {} is not a ServoTurnoutDecoder", servoDecoderName));
+			throw std::invalid_argument(fmt::format("[NetworkDevice::{}] [StartDownloadEEPromTask] Servo decoder {} is not a ServoTurnoutDecoder", this->GetName(), servoDecoderName));
 		
 		auto task = detail::StartServoTurnoutProgrammerTask(*this, ++g_u32TaskId, observer, *servoTurnout);
 		

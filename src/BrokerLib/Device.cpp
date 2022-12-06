@@ -33,7 +33,7 @@ namespace dcclite::broker
 	{
 		FileWatcher::WatchFile(m_pathConfigFile, FileWatcher::FW_MODIFIED, [this](const FileWatcher::Event &ev)
 			{
-				dcclite::Log::Info("[{}::Device::FileWatcher::Reload] Attempting to reload config: {}", this->GetName(), ev.m_strFileName);
+				dcclite::Log::Info("[Device::{}] [FileWatcher::Reload] Attempting to reload config: {}", this->GetName(), ev.m_strFileName);
 
 				try
 				{
@@ -41,7 +41,7 @@ namespace dcclite::broker
 				}
 				catch (const std::exception &ex)
 				{
-					dcclite::Log::Error("[{}::Device::FileWatcher::Reload] Reload failed: {}", this->GetName(), ex.what());
+					dcclite::Log::Error("[Device::{}] [FileWatcher::Reload] failed: {}", this->GetName(), ex.what());
 				}
 
 			});
@@ -92,11 +92,11 @@ namespace dcclite::broker
 
 	void Device::Load()
 	{
-		dcclite::Log::Info("[Device::Load] Loading {}", m_pathConfigFile.string());
+		dcclite::Log::Info("[Device::{}] [Load] Loading {}", this->GetName(), m_pathConfigFile.string());
 		std::ifstream configFile(m_pathConfigFile);
 		if (!configFile)
 		{
-			dcclite::Log::Error("[Device::Load] cannot find {}", m_pathConfigFile.string());
+			dcclite::Log::Error("[Device::{} [Load] cannot find {}", this->GetName(), m_pathConfigFile.string());
 
 			return;
 		}
@@ -105,21 +105,21 @@ namespace dcclite::broker
 
 		if (storedConfigToken == m_ConfigToken)
 		{
-			dcclite::Log::Info("[{}::Device::Load] Stored config token is the same loaded token, ignoring load request", this->GetName());
+			dcclite::Log::Info("[Device::{}] [Load] Stored config token is the same loaded token, ignoring load request", this->GetName());
 
 			return;
 		}
 
-		dcclite::Log::Trace("[Device::Device] {} stored config token {}", this->GetName(), storedConfigToken);
-		dcclite::Log::Trace("[Device::Device] {} config token {}", this->GetName(), m_ConfigToken);
-		dcclite::Log::Trace("[Device::Device] {} reading config {}", this->GetName(), m_pathConfigFile.string());
+		dcclite::Log::Trace("[Device::{}] [Load] stored config token {}", this->GetName(), storedConfigToken);
+		dcclite::Log::Trace("[Device::{}] [Load] config token {}", this->GetName(), m_ConfigToken);
+		dcclite::Log::Trace("[Device::{}] [Load] reading config {}", this->GetName(), m_pathConfigFile.string());
 
 		rapidjson::IStreamWrapper isw(configFile);
 		rapidjson::Document decodersData;
 		decodersData.ParseStream(isw);
 
 		if (!decodersData.IsArray())
-			throw std::runtime_error(fmt::format("error: invalid config {}, expected decoders array inside Node", this->GetName()));
+			throw std::runtime_error(fmt::format("[Device::{}] [Load] error: invalid config, expected decoders array inside Node", this->GetName()));
 
 		//
 		//
@@ -168,7 +168,6 @@ namespace dcclite::broker
 
 		//if this point is reached, data is load, so store new token
 		m_ConfigToken = storedConfigToken;
-		dcclite::Log::Info("[Device::Device] {} loaded.", this->GetName());
+		dcclite::Log::Info("[Device::{}] [Load] loaded.", this->GetName());
 	}
-
 }

@@ -109,7 +109,7 @@
     {
         "class": "LoconetService",
         "name": "loconet",
-        "port": "COM6",
+        "port": "COM7",
         "throttleService": "throttleService",
         "ignoreOnLoadFailure":true
     },

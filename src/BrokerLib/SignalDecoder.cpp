@@ -39,7 +39,7 @@ namespace dcclite::broker
 		auto headsData = params.FindMember("heads");
 		if ((headsData == params.MemberEnd()) || (!headsData->value.IsObject()))
 		{
-			throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: expected heads object for {}", this->GetName()));
+			throw std::invalid_argument(fmt::format("[SignalDecoder::{}] [SignalDecoder] Error: expected heads object", this->GetName()));
 		}
 
 		for (auto &headElement : headsData->value.GetObject())
@@ -50,7 +50,7 @@ namespace dcclite::broker
 		auto aspectsData = params.FindMember("aspects");
 		if ((aspectsData == params.MemberEnd()) || (!aspectsData->value.IsArray()) || (aspectsData->value.GetArray().Empty()))
 		{
-			throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: expected aspects array for {}", this->GetName()));
+			throw std::invalid_argument(fmt::format("[SignalDecoder::{}] [SignalDecoder] Error: expected aspects array", this->GetName()));
 		}
 
 		for (auto &aspectElement : aspectsData->value.GetArray())
@@ -61,7 +61,7 @@ namespace dcclite::broker
 
 			if (std::any_of(m_vecAspects.begin(), m_vecAspects.end(), [aspectId](const Aspect &aspect) { return aspect.m_eAspect == aspectId; }))
 			{
-				throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: aspect {} already defined", name));
+				throw std::invalid_argument(fmt::format("[SignalDecoder::{}] [SignalDecoder] Error: aspect {} already defined", this->GetName(), name));
 			}
 
 			Aspect newAspect;
@@ -76,7 +76,7 @@ namespace dcclite::broker
 					auto headIt = m_mapHeads.find(it.GetString());
 					if (headIt == m_mapHeads.end())
 					{
-						throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: aspect {} on \"on\" array not found on heads defintion", it.GetString()));
+						throw std::invalid_argument(fmt::format("[SignalDecoder::{}] [SignalDecoder] Error: aspect {} on \"on\" array not found on heads defintion", this->GetName(), it.GetString()));
 					}
 
 					newAspect.m_vecOnHeads.push_back(headIt->second);
@@ -91,12 +91,12 @@ namespace dcclite::broker
 					auto headIt = m_mapHeads.find(it.GetString());
 					if (headIt == m_mapHeads.end())
 					{
-						throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: aspect {} on \"off\" array not found on heads defintion", it.GetString()));
+						throw std::invalid_argument(fmt::format("[SignalDecoder::{}] [SignalDecoder] Error: aspect {} on \"off\" array not found on heads defintion", this->GetName(), it.GetString()));
 					}
 
 					if (std::any_of(newAspect.m_vecOnHeads.begin(), newAspect.m_vecOnHeads.end(), [&headIt](const std::string &onAspectName) { return onAspectName.compare(headIt->second) == 0; }))
 					{
-						throw std::invalid_argument(fmt::format("[SignalDecoder::SignalDecoder] Error: \"off\" head {} also defined on the \"on\" table", it.GetString()));
+						throw std::invalid_argument(fmt::format("[SignalDecoder::{}] [SignalDecoder] Error: \"off\" head {} also defined on the \"on\" table", this->GetName(), it.GetString()));
 					}
 
 					newAspect.m_vecOffHeads.push_back(headIt->second);
@@ -154,7 +154,7 @@ namespace dcclite::broker
 			auto *dec = dynamic_cast<OutputDecoder *>(m_rclManager.TryFindDecoder(head));
 			if (dec == nullptr)
 			{
-				dcclite::Log::Error("[SignalDecoder::SetAspect] {}: Head {} for aspect {} not found or is not an output decoder.", this->GetName(), head, dcclite::ConvertAspectToName(aspect));
+				dcclite::Log::Error("[SignalDecoder::{}] [SetAspect] Head {} for aspect {} not found or is not an output decoder.", this->GetName(), head, dcclite::ConvertAspectToName(aspect));
 				continue;
 			}
 
@@ -186,7 +186,7 @@ namespace dcclite::broker
 		if (aspect != m_vecAspects[index].m_eAspect)
 		{
 			Log::Warn(
-				"[SignalDecoder::SetAspect] {}: Aspect {} requested by {} not found, using {}", 
+				"[SignalDecoder::{}] [SetAspect] Aspect {} requested by {} not found, using {}", 
 				this->GetName(), 
 				dcclite::ConvertAspectToName(aspect), 
 				requester,
@@ -195,7 +195,7 @@ namespace dcclite::broker
 		}
 		
 		Log::Info(
-			"[SignalDecoder::SetAspect] {}: Changed from {} to {}, requested by {}",
+			"[SignalDecoder::{}] [SetAspect] Changed from {} to {}, requested by {}",
 			this->GetName(),
 			dcclite::ConvertAspectToName(m_vecAspects[m_uCurrentAspectIndex].m_eAspect),
 			dcclite::ConvertAspectToName(aspect),
@@ -288,7 +288,7 @@ namespace dcclite::broker
 	{
 		if (m_uWaitListSize == 0)
 		{
-			dcclite::Log::Error("[SignalDecoder::State_WaitTurnOff::OnDecoderStateSync] m_uWaitListSize == 0!! how? Decoder -> {}", decoder.GetName());
+			dcclite::Log::Error("[SignalDecoder::{}] [State_WaitTurnOff::OnDecoderStateSync] m_uWaitListSize == 0!! how? Decoder -> {}", decoder.GetName());
 
 			return;
 		}

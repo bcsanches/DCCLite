@@ -142,10 +142,10 @@ namespace dcclite::broker
 	void ServoTurnoutDecoder::CheckServoData(const std::uint8_t startPos, const std::uint8_t endPos, std::string_view name)
 	{
 		if (startPos > endPos)
-			throw std::logic_error(fmt::format("[ServoTurnoutDecoder::ValidateServoData] startPos must be < than endPos", name));
+			throw std::logic_error(fmt::format("[ServoTurnoutDecoder::{}] [ValidateServoData] startPos must be < than endPos", name));
 
 		if (startPos == endPos)
-			throw std::logic_error(fmt::format("[ServoTurnoutDecoder::ValidateServoData] startPos must be < than endPos", name));
+			throw std::logic_error(fmt::format("[ServoTurnoutDecoder::{}] [ValidateServoData] startPos must be < than endPos", name));
 	}
 
 	void ServoTurnoutDecoder::UpdateData(const std::uint8_t flags, const std::uint8_t startPos, const std::uint8_t endPos, const std::chrono::milliseconds operationTime)

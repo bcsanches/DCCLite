@@ -3,6 +3,7 @@
 ## Broker
 - Fix: exception on certain terminal client disconnect behaviors
 - win32: SetThreadName for easier debugging
+- Standarized log messages
 
 ## Code
 

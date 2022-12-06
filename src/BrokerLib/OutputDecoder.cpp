@@ -22,7 +22,7 @@ namespace dcclite::broker
 	{
 		if (m_kRequestedState != newState)
 		{
-			dcclite::Log::Info("[{}::OutputDecoder::SetState] requested change from {} to {} by {}",
+			dcclite::Log::Info("[OutputDecoder::{}] [SetState] requested change from {} to {} by {}",
 				this->GetName(),
 				dcclite::DecoderStateName(m_kRequestedState),
 				dcclite::DecoderStateName(newState),

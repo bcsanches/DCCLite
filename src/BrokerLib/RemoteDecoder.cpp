@@ -39,7 +39,7 @@ namespace dcclite::broker
 		{
 			m_kRemoteState = state;
 
-			dcclite::Log::Info("[{}::SyncRemoteState] changed: {}", this->GetName(), dcclite::DecoderStateName(state));
+			dcclite::Log::Info("[RemoteDecoder::{}] [SyncRemoteState] changed: {}", this->GetName(), dcclite::DecoderStateName(state));
 
 			//If it is broken, dont publish state change, probably is garbage
 			//

@@ -32,7 +32,7 @@ namespace dcclite::broker::ZeroconfService
 	{
 		if (!g_clSocket.Open(9381, dcclite::Socket::Type::DATAGRAM, dcclite::Socket::FLAG_ADDRESS_REUSE | dcclite::Socket::FLAG_BLOCKING_MODE))
 		{
-			throw std::runtime_error("[ZeroconfService::OpenSocket] Cannot open port 9381 for listening");
+			throw std::runtime_error("[ZeroconfService] [OpenSocket] Cannot open port 9381 for listening");
 		}
 	}
 
@@ -203,21 +203,21 @@ namespace dcclite::broker::ZeroconfService
 	void Register(const std::string_view serviceName, const uint16_t port)
 	{		
 		if (serviceName.length() > MAX_SERVICE_NAME)
-			throw std::invalid_argument(fmt::format("[ZeroconfServiceImpl::Register] Name length cannot be greater than {} - {}", MAX_SERVICE_NAME, serviceName));		
+			throw std::invalid_argument(fmt::format("[ZeroconfServiceImpl] [Register] Name length cannot be greater than {} - {}", MAX_SERVICE_NAME, serviceName));		
 
 		std::lock_guard guard{ g_lckMapServicesMutex };
 
 		auto result = g_mapServices.emplace(std::make_pair(serviceName, port));
 
 		if (!result.second)
-			throw std::runtime_error(fmt::format("[ZeroconfServiceImpl::Register] Service {} already registered with port {}", serviceName, result.first->second));				
+			throw std::runtime_error(fmt::format("[ZeroconfServiceImpl] [Register] Service {} already registered with port {}", serviceName, result.first->second));				
 	}
 
 	
 	void Start(std::string_view projectName)
 	{
 		if (g_clSocket.IsOpen())
-			throw std::logic_error("[ZeroconfService::Start] already called??");
+			throw std::logic_error("[ZeroconfService] [Start] already called??");
 
 		g_strProjectName = projectName;
 

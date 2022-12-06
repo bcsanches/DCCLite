@@ -44,7 +44,7 @@ namespace dcclite::broker
 		const char *className = data["class"].GetString();
 		const char *name = data["name"].GetString();
 
-		dcclite::Log::Info("Creating DccLite Service: {}", name);
+		dcclite::Log::Info("[Broker] [CreateBrokerService] Creating DccLite Service: {}", name);
 
 		if (strcmp(className, "Bonjour") == 0)
 		{
@@ -71,7 +71,7 @@ namespace dcclite::broker
 			return ThrottleService::Create(name, broker, data, project);
 		}
 
-		throw std::runtime_error(fmt::format("error: unknown service type {}", className));
+		throw std::runtime_error(fmt::format("[Broker] [CreateBrokerService] error: unknown service type {}", className));
 	}
 
 	Broker::Broker(dcclite::fs::path projectPath) :
@@ -106,10 +106,10 @@ namespace dcclite::broker
 
 		if (!configFile)
 		{
-			throw std::runtime_error(fmt::format("[Broker::LoadConfig] error: cannot open config file {}", configFileName.string()));
+			throw std::runtime_error(fmt::format("[Broker] [LoadConfig] error: cannot open config file {}", configFileName.string()));
 		}
 
-		dcclite::Log::Debug("[Broker::LoadConfig] Loaded config {}", configFileName.string());
+		dcclite::Log::Debug("[Broker] [LoadConfig] Loaded config {}", configFileName.string());
 
 		rapidjson::IStreamWrapper isw(configFile);
 		rapidjson::Document data;
@@ -121,14 +121,14 @@ namespace dcclite::broker
 
 		if (!services.IsArray())
 		{
-			throw std::runtime_error("[Broker::LoadConfig] error: invalid config, expected services array");
+			throw std::runtime_error("[Broker] [LoadConfig] error: invalid config, expected services array");
 		}
 
 		auto bonjourSetting = data.FindMember("bonjourService");
 		if ((bonjourSetting != data.MemberEnd()) && (bonjourSetting->value.GetBool()))
 			m_pServices->AddChild(BonjourService::Create(BONJOUR_SERVICE_NAME, *this, m_clProject));
 
-		dcclite::Log::Debug("Processing config services {}", services.Size());
+		dcclite::Log::Debug("[Broker] [LoadConfig] Processing config services array entries: {}", services.Size());
 
 		for (auto &serviceData : services.GetArray())
 		{
@@ -146,7 +146,7 @@ namespace dcclite::broker
 
 					const char *name = nameData != serviceData.MemberEnd() ? nameData->value.GetString() : "NO NAME SET";
 
-					Log::Error("[Broker::LoadConfig] Failed to load {}, but ignoring due to \"ignoreOnLoadFailure\" being set, exception: {}", name, ex.what());
+					Log::Error("[Broker] [LoadConfig] Failed to load {}, but ignoring due to \"ignoreOnLoadFailure\" being set, exception: {}", name, ex.what());
 
 					continue;
 				}

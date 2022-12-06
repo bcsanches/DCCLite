@@ -31,7 +31,7 @@ namespace dcclite::broker
 	{				
 		if (m_strSensorAName.compare(m_strSensorBName) == 0)
 		{
-			throw std::invalid_argument(fmt::format("[{}::TurntableAutoInverterDecoder] Sensors cannot be the same: {}", this->GetName(), m_strSensorAName));
+			throw std::invalid_argument(fmt::format("[TurntableAutoInverterDecoder::{}] Sensors cannot be the same: {}", this->GetName(), m_strSensorAName));
 		}
 
 		const auto &trackAPins = params["trackPowerAPins"].GetArray();

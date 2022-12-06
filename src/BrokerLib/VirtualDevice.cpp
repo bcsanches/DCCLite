@@ -32,7 +32,7 @@ namespace dcclite::broker
 	void VirtualDevice::CheckLoadedDecoder(Decoder &decoder)
 	{
 		if (!dynamic_cast<SignalDecoder *>(&decoder))
-			throw std::invalid_argument(fmt::format("[VirtualDevice::CheckLoadedDecoder] Decoder {} must be a SignalDecoder subtype, but it is: {}", decoder.GetName(), decoder.GetTypeName()));
+			throw std::invalid_argument(fmt::format("[VirtualDevice::{}] [CheckLoadedDecoder] Decoder {} must be a SignalDecoder subtype, but it is: {}", this->GetName(), decoder.GetName(), decoder.GetTypeName()));
 	}
 
 	void VirtualDevice::Decoder_OnChangeStateRequest(const Decoder &decoder) noexcept

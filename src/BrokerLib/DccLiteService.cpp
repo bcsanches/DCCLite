@@ -65,15 +65,15 @@ namespace dcclite::broker
 	
 		if (!m_clSocket.Open(port, dcclite::Socket::Type::DATAGRAM, dcclite::Socket::FLAG_BLOCKING_MODE))
 		{
-			throw std::runtime_error("[DccLiteService] error: cannot open socket");
+			throw std::runtime_error(fmt::format("[DccLiteService::{}] error: cannot open socket", name));
 		}
 
-		dcclite::Log::Info("[DccLiteService::DccLiteService] Listening on port {}", port);
+		dcclite::Log::Info("[DccLiteService::{}] Listening on port {}", this->GetName(), port);
 
 		const rapidjson::Value &devicesData = params["devices"];
 
 		if (!devicesData.IsArray())
-			throw std::runtime_error(fmt::format("error: invalid config {}, expected devices array inside DccLiteService", name));
+			throw std::runtime_error(fmt::format("[DccLiteService::{}] error: invalid config, expected devices array inside DccLiteService", name));
 
 		try
 		{
@@ -131,7 +131,7 @@ namespace dcclite::broker
 		auto decoder = TryCreateDecoder(className, address, name, *this, dev, params);	
 		if (!decoder)
 		{				
-			throw std::runtime_error(fmt::format("[DccLiteService::Device_CreateDecoder] Error: failed to instantiate decoder {} - {} [{}]", name, address, className));
+			throw std::runtime_error(fmt::format("[DccLiteService::{}] [Device_CreateDecoder] Error: failed to instantiate decoder {} - {} [{}]", name, address, className));
 		}
 
 		auto pDecoder = decoder.get();	
@@ -196,7 +196,7 @@ namespace dcclite::broker
 		auto dev = this->TryFindDeviceSession(sessionToken);
 		if (dev == nullptr)
 		{
-			dcclite::Log::Warn("[{}::DccLiteService::TryFindPacketDestination] Received packet from unknown session", this->GetName());
+			dcclite::Log::Warn("[DccLiteService::{}] [TryFindPacketDestination] Received packet from unknown session", this->GetName());
 
 			return nullptr;
 		}
@@ -208,7 +208,7 @@ namespace dcclite::broker
 	{
 		if (!m_clSocket.Send(destination, packet.GetData(), packet.GetSize()))
 		{
-			dcclite::Log::Error("[{}::DccLiteService::Device_SendPacket] Failed to send packet to {}", this->GetName(), destination);
+			dcclite::Log::Error("[DccLiteService::{}] [Device_SendPacket] Failed to send packet to {}", this->GetName(), destination);
 		}
 	}
 
@@ -308,7 +308,7 @@ namespace dcclite::broker
 
 	void DccLiteService::NetworkThread_OnDiscovery(const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet)
 	{
-		dcclite::Log::Info("[{}::DccLiteService::OnNet_Hello] received discovery from {}, sending reply", this->GetName(), senderAddress);
+		dcclite::Log::Info("[DccLiteService::{}] [OnNet_Hello] received discovery from {}, sending reply", this->GetName(), senderAddress);
 
 		dcclite::Packet pkt;
 
@@ -358,7 +358,7 @@ namespace dcclite::broker
 		const auto procotolVersion = packet.Read<std::uint16_t>();
 		if (procotolVersion != dcclite::PROTOCOL_VERSION)
 		{
-			dcclite::Log::Error("[{}::DccLiteService::OnNet_Hello] Hello from {} - {} with invalid protocol version {}, expected {}, ignoring",
+			dcclite::Log::Error("[DccLiteService::{}] [OnNet_Hello] Hello from {} - {} with invalid protocol version {}, expected {}, ignoring",
 				this->GetName(),
 				name,
 				senderAddress,
@@ -369,7 +369,7 @@ namespace dcclite::broker
 			return;
 		}
 
-		dcclite::Log::Info("[{}::DccLiteService::OnNet_Hello] received hello from {}, starting handshake", this->GetName(), name);
+		dcclite::Log::Info("[DccLiteService::{}] [OnNet_Hello] received hello from {}, starting handshake", this->GetName(), name);
 
 		EventHub::PostEvent<NetworkHelloEvent>(std::ref(*this), senderAddress, name, remoteSessionToken, remoteConfigToken);
 	}
@@ -382,7 +382,7 @@ namespace dcclite::broker
 		if (dev == nullptr)
 		{
 			//no device, create a temp one
-			dcclite::Log::Warn("[{}::DccLiteService::OnNetEvent_Hello] {} is not on config", this->GetName(), deviceName);
+			dcclite::Log::Warn("[DccLiteService::{}] [OnNetEvent_Hello] {} is not on config", this->GetName(), deviceName);
 
 			netDevice = static_cast<NetworkDevice *>(m_pDevices->AddChild(
 				std::make_unique<NetworkDevice>(
@@ -397,7 +397,7 @@ namespace dcclite::broker
 			netDevice = dynamic_cast<NetworkDevice *>(dev);
 			if (netDevice == nullptr)
 			{
-				dcclite::Log::Error("[{}::DccLiteService::OnNet_Hello] {} is not a network device, cannot accept connection. Please check config.", this->GetName(), deviceName);
+				dcclite::Log::Error("[DccLiteService::{}] [OnNet_Hello] {} is not a network device, cannot accept connection. Please check config.", this->GetName(), deviceName);
 
 				return;
 			}
@@ -436,7 +436,7 @@ namespace dcclite::broker
 		auto dev = TryFindPacketDestination(packet);
 		if (!dev)
 		{
-			dcclite::Log::Warn("[{}::DccLiteService::OnNet_Packet] Received packet from unkown device", this->GetName());
+			dcclite::Log::Warn("[DccLiteService::{}] [OnNetEvent_Packet] Received packet from unkown device", this->GetName());
 
 			return;
 		}
@@ -465,7 +465,7 @@ namespace dcclite::broker
 
 			if (size > dcclite::PACKET_MAX_SIZE)
 			{
-				dcclite::Log::Error("[DccLiteService::Update] packet size too big, truncating");
+				dcclite::Log::Error("[DccLiteService] [NetworkThreadProc::Update] packet size too big, truncating");
 
 				size = dcclite::PACKET_MAX_SIZE;
 			}
@@ -476,7 +476,7 @@ namespace dcclite::broker
 
 			if (pkt.Read<uint32_t>() != dcclite::PACKET_ID)
 			{
-				dcclite::Log::Warn("[DccLiteService::Update] Invalid packet id");
+				dcclite::Log::Warn("[DccLiteService] [NetworkThreadProc::Update] Invalid packet id");
 
 				return;
 			}
