@@ -9,7 +9,8 @@
     "frogPin": 42,
     "invertedFrog": true,
     "operationTime": 3000,
-    "range":25,
+    "startPos":22,
+    "endPos":40,
     "comment": "AMV 01 linha interna (travessao)"
   },
   {
@@ -48,7 +49,7 @@
     "invertedFrog": false,
     "range":20,
     "operationTime": 3000,
-    "comment": "AMV 04 - inferior saída para TC"
+    "comment": "AMV 04 - inferior saï¿½da para TC"
   },
   {
     "name": "HLX_T06",
@@ -59,7 +60,7 @@
     "powerPin": 51,    
     "invertedFrog": true,
     "operationTime": 1000,
-    "comment": "AMV 06 - superior saída para TC"
+    "comment": "AMV 06 - superior saï¿½da para TC"
   },      
   {
     "name":"HLX_DMT03",

@@ -73,7 +73,7 @@ namespace dcclite::broker
 
 	void NetworkDevice::TimeoutController::OnThink(const dcclite::Clock::TimePoint_t time)
 	{
-		dcclite::Log::Warn("[{}::Device::Update] timeout", m_rclOwner.GetName());
+		dcclite::Log::Warn("[Device::{}] [TimeoutController::OnThink] timeout", m_rclOwner.GetName());
 
 		//
 		//connection lost...
@@ -588,7 +588,7 @@ namespace dcclite::broker
 		if (msgType == dcclite::MsgTypes::SYNC)
 		{
 			//ignore
-			Log::Trace("[NetworkDevice::{}] [OnlineState::OnPacket] {}: Got late SYNC message, ignoring", this->GetName());
+			Log::Trace("[NetworkDevice::{}] [OnlineState::OnPacket] Got late SYNC message, ignoring", this->GetName());
 
 			return;
 
