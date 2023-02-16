@@ -10,23 +10,25 @@
 
 DccLite is an open source software for controlling a model railroad. It is loosely based on [DCC++][6], but it does not implement a full command station like it. This software is aimed for those who need to control model railroad accessories, like turnouts, lights, read input from sensors, etc.
 
+You can easily connect it to JMRI and use it to control your model railroad acessories, turnouts and signalling system.
+
 ## User Documentation
 
 If you would like to know more, please visit our (working in progress) wiki at: [DCCLite Documentation](https://github.com/bcsanches/DCCLite/wiki)
 
 ## Features
-Support to a infinite (depends on your network) number of IOT devices connected to the server for controlling model railroad devices.
+Support an infinite (depends on your network) number of IOT devices connected to the server for controlling model railroad devices.
 
-You can config and control using this tool, an Arduino or any other board for:
+You can configure and control each IOT node using this tool, an Arduino or any other board for:
 - Turning on / off leds or signals
 - Throwing / closing turnouts using servos
 - Reading sensor states
 
 And this can be easily integrated with JMRI and use all the rich features from JMRI to control your model railroad devices. 
 
-The main design goal of DCCLite is to be easy as possible to config and specially, to do fine tunning of devices without the need for recompiling code and uploading it to an Arduino. This is specially useful when you have a large model railroad that just one Arduino will not be enough for all devices. 
+The main design goal of DCCLite is to be easy as possible to config and specially, to do fine tunning of devices without the need for recompiling code and uploading it to an Arduino. This is specially useful when you have a large model railroad and in such case, a single Arduino will not be enough for all devices. 
 
-Another design goal is to allow the installation of the Arduino boards as close as possible to where they are needed. If you have a yard throat with several turnouts and signals, instead of running cables all over the place, you can put a single arduino mega (or perhaps two) close to it. For controlling it, you just need to provide power and connect it to a Ethernet cable connected to your local network. No need for running dozens (or even hundres) of wires from the devices to the Arduino meters away.
+Another design goal is to allow the installation of the Arduino boards as close as possible to where they are needed. If you have a yard throat with several turnouts and signals, instead of running wires all over the place, you can put a single arduino mega (or perhaps two) close to it. For controlling it, you just need to provide power and connect it to a Ethernet cable connected to your local network. No need for running dozens (or even hundres) of wires from the devices to the Arduino meters away.
 
 ### JMRI
 
