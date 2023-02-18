@@ -367,7 +367,7 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 					//empty
 				}
 
-				OnlineState(OnlineState &&other) :
+				OnlineState(OnlineState &&other) noexcept :
 					m_clMessenger{ std::move(other.m_clMessenger) },
 					m_uHeartBeatInterval{ other.m_uHeartBeatInterval },
 					m_tNextHeartBeat{ other.m_tNextHeartBeat }
