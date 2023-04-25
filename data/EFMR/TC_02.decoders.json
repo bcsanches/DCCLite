@@ -1,5 +1,14 @@
 [
     {
+        "name": "TC_PL22",
+        "class": "Output",
+        "address": "1322",
+        "pin": 14,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L22 - combustivel"
+    },
+    {
         "name": "TC_PL24B",
         "class": "Output",
         "address": "1300",
@@ -34,7 +43,34 @@
         "inverted": false,
         "ignoreSavedState": true,
         "comment":"Power track L30 / Turntable access"
-    } ,
+    },
+    {
+        "name": "TC_PL34",
+        "class": "Output",
+        "address": "1334",
+        "pin": 2,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L34 - deposito"
+    },    
+    {
+        "name": "TC_PL36",
+        "class": "Output",
+        "address": "1336",
+        "pin": 3,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L36 - deposito"
+    },
+    {
+        "name": "TC_PL38",
+        "class": "Output",
+        "address": "1338",
+        "pin": 4,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L38 - deposito"
+    },
     {
         "name": "TC_T02",
         "class": "ServoTurnout",

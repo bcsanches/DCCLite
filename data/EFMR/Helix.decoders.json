@@ -7,11 +7,10 @@
     "inverted": true,
     "powerPin": 43,    
     "frogPin": 42,
-    "invertedFrog": true,
-    "operationTime": 3000,
-    "startPos":22,
-    "endPos":40,
-    "comment": "AMV 01 linha interna (travessao)"
+    "invertedFrog": false,
+    "operationTime": 1500,
+    "range":25,
+    "comment": "AMV 01 divisão para staging (descendo)"
   },
   {
     "name": "HLX_T02",
@@ -23,8 +22,8 @@
     "frogPin": 44,
     "invertedFrog": false,
     "operationTime": 3000,
-    "range":45,
-    "comment": "AMV 02 - linha externa (travessao)"
+    "range":20,    
+    "comment": "AMV 04 - inferior saida para TC"
   },
   {
     "name": "HLX_T03",
@@ -36,31 +35,30 @@
     "frogPin": 46,
     "invertedFrog": false,
     "operationTime": 3000,
-    "comment": "AMV 03 - ponta do triangulo saida para TC"
-  },  
+    "comment": "AMV 03 - ponta do triangulo para TC"
+  },    
   {
     "name": "HLX_T04",
     "class": "ServoTurnout",
     "address": "1854",
-    "pin": 18,
-    "inverted": true,
-    "powerPin": 49,   
-    "frogPin": 48, 
-    "invertedFrog": false,
-    "range":20,
+    "pin": 17,
+    "inverted": false,
+    "powerPin": 51,   
+    "frogPin": 49, 
+    "invertedFrog": true,
     "operationTime": 3000,
-    "comment": "AMV 04 - inferior sa�da para TC"
+    "comment": "SEM USO"
   },
   {
     "name": "HLX_T06",
     "class": "ServoTurnout",
     "address": "1856",
-    "pin": 17,
+    "pin": 18,
     "inverted": false,
-    "powerPin": 51,    
+    "powerPin": 48,    
     "invertedFrog": true,
     "operationTime": 1000,
-    "comment": "AMV 06 - superior sa�da para TC"
+    "comment": "AMV 06 - superior saida para TC"
   },      
   {
     "name":"HLX_DMT03",

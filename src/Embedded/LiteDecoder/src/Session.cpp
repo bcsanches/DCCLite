@@ -502,7 +502,8 @@ static void OnlineTick(const unsigned long ticks, const bool stateChangeDetected
 	}
 
 	//wait a bit before sending sensors again...
-	g_uNextStateThink = ticks + Config::g_cfgStateTicks;
+	if(sendSensors)
+		g_uNextStateThink = ticks + Config::g_cfgStateTicks;
 }
 
 static void OnStatePacket(dcclite::Packet &packet)

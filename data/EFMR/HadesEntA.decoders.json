@@ -98,7 +98,8 @@
     "powerPin":40,
     "frogPin":41,
     "invertedFrog":true,
-    "operationTime":1000
+    "operationTime":1000,
+    "comment":"Accesso a llinha STA 11 e STA_T10 (aberto)"
   },
   {
     "name":"STA_T10",
@@ -110,7 +111,8 @@
     "frogPin":43,
     "invertedFrog":true,
     "operationTime":1000,
-    "range":45
+    "range":20,
+    "comment":"Acesso a linhas STA 09 (normal) e STA 10 (aberto)"
   },
 
   {
