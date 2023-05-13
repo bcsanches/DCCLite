@@ -72,6 +72,42 @@
         "comment":"Power track L38 - deposito"
     },
     {
+        "name": "TC_PL40",
+        "class": "Output",
+        "address": "1340",
+        "pin": 5,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L40 - deposito"
+    },
+    {
+        "name": "TC_PL42",
+        "class": "Output",
+        "address": "1342",
+        "pin": 8,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L42 - deposito"
+    },
+    {
+        "name": "TC_PL44",
+        "class": "Output",
+        "address": "1344",
+        "pin": 7,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L44 - deposito"
+    },
+    {
+        "name": "TC_PL46",
+        "class": "Output",
+        "address": "1346",
+        "pin": 6,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L46 - deposito"
+    },
+    {
         "name": "TC_T02",
         "class": "ServoTurnout",
         "address": "1402",
