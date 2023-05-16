@@ -28,3 +28,6 @@
 [submodule "contrib/sigslot"]
 	path = contrib/sigslot
 	url = https://github.com/palacaze/sigslot.git
+[submodule "contrib/sol2"]
+	path = contrib/sol2
+	url = https://github.com/ThePhD/sol2.git
