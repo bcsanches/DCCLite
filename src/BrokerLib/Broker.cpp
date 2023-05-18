@@ -28,6 +28,7 @@
 #include "TerminalService.h"
 #include "Thinker.h"
 #include "ThrottleService.h"
+#include "ScriptService.h"
 #include "SpecialFolders.h"
 #include "ZeroconfService.h"
 
@@ -92,6 +93,8 @@ namespace dcclite::broker
 		);				
 
 		this->LoadConfig();
+
+		ScriptService::Start(m_clProject.GetName());
 
 		//Start after load, so project name is already loaded
 		ZeroconfService::Start(m_clProject.GetName());

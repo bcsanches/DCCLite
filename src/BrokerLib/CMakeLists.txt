@@ -37,6 +37,8 @@ add_library(
         Project.h
         RemoteDecoder.cpp
         RemoteDecoder.h
+	ScriptService.cpp
+	ScriptService.h
         SensorDecoder.cpp
         SensorDecoder.h  
         Service.cpp
@@ -105,9 +107,11 @@ target_compile_features(BrokerLib PUBLIC cxx_std_17)
 
 target_include_directories(BrokerLib 	
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/JsonCreator/include
+    PUBLIC ${DCCLite_SOURCE_DIR}/contrib/lua-5.4.6/src
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/lfwatch/include    
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/rapidjson/include
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/sigslot/include
+    PUBLIC ${DCCLite_SOURCE_DIR}/contrib/sol2/include
     PUBLIC ${DCCLite_SOURCE_DIR}/src/Common
     PUBLIC ${DCCLite_SOURCE_DIR}/src/Embedded/lib/Shared
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/fmt/include

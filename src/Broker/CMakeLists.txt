@@ -13,6 +13,7 @@ target_include_directories(Broker
 if(WIN32)
     target_link_libraries(Broker   
         PUBLIC BrokerLib    
+	PRIVATE LuaLib
         PRIVATE bcrypt.lib 	        	
         PRIVATE fmt
 	)
@@ -28,6 +29,7 @@ else(WIN32)
 
 	target_link_libraries(Broker 
 		BrokerLib
+		LuaLib
         pthread
 	)
 
