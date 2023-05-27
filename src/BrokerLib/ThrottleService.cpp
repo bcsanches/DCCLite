@@ -700,7 +700,7 @@ namespace dcclite::broker
 		auto enumerator = this->GetEnumerator();
 		while (enumerator.MoveNext())
 		{
-			auto throttle = enumerator.TryGetCurrent<Throttle>();
+			auto throttle = enumerator.GetCurrent<Throttle>();
 
 			throttle->Update(ticks);
 		}

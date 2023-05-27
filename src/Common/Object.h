@@ -306,12 +306,12 @@ namespace dcclite
 
 					bool MoveNext();
 
-					IObject *TryGetCurrent();
+					IObject *GetCurrent();
 
 					template<typename T>
-					inline T *TryGetCurrent()
+					inline T *GetCurrent()
 					{
-						return static_cast<T*>(TryGetCurrent());
+						return static_cast<T*>(GetCurrent());
 					}
 
 				private:

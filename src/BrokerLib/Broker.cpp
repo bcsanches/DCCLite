@@ -94,7 +94,7 @@ namespace dcclite::broker
 
 		this->LoadConfig();
 
-		ScriptService::Start(m_clProject.GetName());
+		ScriptService::Start(*this, m_clProject);
 
 		//Start after load, so project name is already loaded
 		ZeroconfService::Start(m_clProject.GetName());
@@ -164,7 +164,7 @@ namespace dcclite::broker
 
 		while (enumerator.MoveNext())
 		{
-			enumerator.TryGetCurrent<Service>()->Initialize();
+			enumerator.GetCurrent<Service>()->Initialize();
 		}
 	}
 

@@ -171,7 +171,7 @@ namespace dcclite::broker
 
 					while (enumerator.MoveNext())
 					{
-						auto item = enumerator.TryGetCurrent();
+						auto item = enumerator.GetCurrent();
 
 						auto itemObject = dataArray.AddObject();
 						item->Serialize(itemObject);
@@ -303,7 +303,7 @@ namespace dcclite::broker
 
 						while (enumerator.MoveNext())
 						{
-							auto cmd = enumerator.TryGetCurrent();
+							auto cmd = enumerator.GetCurrent();
 
 							auto itemObject = dataArray.AddObject();
 							cmd->Serialize(itemObject);
@@ -1058,8 +1058,7 @@ namespace dcclite::broker
 		auto enumerator = servicesFolder->GetEnumerator();
 		while (enumerator.MoveNext())
 		{
-			auto *obj = enumerator.TryGetCurrent();
-			auto *service = dynamic_cast<Service *>(obj);
+			auto *service = dynamic_cast<Service *>(enumerator.GetCurrent());
 			if (service == nullptr)
 				continue;
 
@@ -1109,7 +1108,7 @@ namespace dcclite::broker
 		auto enumerator = servicesFolder->GetEnumerator();
 		while (enumerator.MoveNext())
 		{
-			auto *obj = enumerator.TryGetCurrent();
+			auto *obj = enumerator.GetCurrent();
 			auto *service = dynamic_cast<Service *>(obj);
 			if (service == nullptr)
 			{

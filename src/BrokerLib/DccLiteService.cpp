@@ -246,7 +246,7 @@ namespace dcclite::broker
 
 		while (enumerator.MoveNext())
 		{
-			auto decoder = dynamic_cast<SimpleOutputDecoder *>(enumerator.TryGetCurrent());
+			auto decoder = dynamic_cast<SimpleOutputDecoder *>(enumerator.GetCurrent());
 
 			if (!decoder)
 				continue;
@@ -265,7 +265,7 @@ namespace dcclite::broker
 
 		while (enumerator.MoveNext())
 		{
-			auto decoder = dynamic_cast<SensorDecoder *>(enumerator.TryGetCurrent());
+			auto decoder = dynamic_cast<SensorDecoder *>(enumerator.GetCurrent());
 
 			if (!decoder)
 				continue;
@@ -284,7 +284,7 @@ namespace dcclite::broker
 
 		while (enumerator.MoveNext())
 		{
-			auto decoder = dynamic_cast<TurnoutDecoder *>(enumerator.TryGetCurrent());
+			auto decoder = dynamic_cast<TurnoutDecoder *>(enumerator.GetCurrent());
 
 			if (!decoder)
 				continue;

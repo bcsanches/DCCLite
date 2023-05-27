@@ -12,7 +12,13 @@
 
 #include <string_view>
 
+namespace dcclite::broker
+{
+	class Project;
+	class Broker;
+}
+
 namespace dcclite::broker::ScriptService
 {
-	extern void Start(std::string_view projectName);
+	extern void Start(Broker &broker, const Project &project);
 }

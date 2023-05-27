@@ -33,9 +33,14 @@ namespace dcclite::broker
 		public:
 			explicit Broker(dcclite::fs::path projectPath);
 
-			void Update(const dcclite::Clock& clock);
+			Broker(const Broker &) = delete;
 
-			Service *TryFindService(std::string_view name);
+			Service *TryFindService(std::string_view name);			
+
+			inline FolderObject::FolderEnumerator GetServicesEnumerator() const 
+			{
+				return m_pServices->GetEnumerator();
+			}
 
 			TerminalCmdHost *GetTerminalCmdHost()
 			{

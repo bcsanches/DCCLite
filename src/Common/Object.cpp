@@ -233,7 +233,7 @@ namespace dcclite
 		return m_itCurrent != m_itEnd;
 	}
 
-	IObject *FolderObject::FolderEnumerator::TryGetCurrent()
+	IObject *FolderObject::FolderEnumerator::GetCurrent()
 	{
 		assert(m_itCurrent != m_itEnd);
 
@@ -242,5 +242,5 @@ namespace dcclite
 		return obj;
 
 		//return (obj->IsShortcut()) ? static_cast<Shortcut *>(obj)->TryResolve() : obj;		
-	}	
+	}
 }
