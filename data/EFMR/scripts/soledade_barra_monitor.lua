@@ -6,10 +6,10 @@ print(dcclite.dcc0)
 print(dcclite.terminal)
 print(dcclite.dccpp)
 
-dcclite.dcc0.HLX_T02:say_hello()
-
 print(dcclite.dcc0[1852].address)
 print(dcclite.dcc0.HLX_T02.address)
+
+print(dcclite.dcc0[dcclite.dcc0.HLX_T02.address].address)
 
 collectgarbage("collect") 
 

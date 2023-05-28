@@ -1,4 +1,7 @@
 
+# Treat the C files as C++, so we have good stack unwinding: https://sol2.readthedocs.io/en/latest/errors.html?highlight=unwinding#destructors-and-safety
+SET_SOURCE_FILES_PROPERTIES( *.c PROPERTIES LANGUAGE CXX )
+
 add_library(
 	LuaLib	   	 
 	lapi.c        

@@ -982,7 +982,7 @@ namespace dcclite::broker
 
 			void ParseMessage(const uint8_t opcode, MiniPacket_t &payload, const dcclite::Clock::TimePoint_t ticks);
 
-			void NotifySlotChanged(uint8_t slotIndex) const;
+			void NotifySlotChanged(uint8_t slotIndex);
 
 			void ParseLocomotiveDirf(const uint8_t slot, const uint8_t dirf, const dcclite::Clock::TimePoint_t ticks);
 			void ParseLocomotiveSnd(const uint8_t slot, const uint8_t snd, const dcclite::Clock::TimePoint_t ticks);
@@ -1446,7 +1446,7 @@ namespace dcclite::broker
 		m_clSlotManager.Serialize(stream);
 	}
 
-	void LoconetServiceImpl::NotifySlotChanged(uint8_t slotIndex) const
+	void LoconetServiceImpl::NotifySlotChanged(uint8_t slotIndex)
 	{		
 		this->NotifyItemChanged(*this,
 			[this, slotIndex](JsonOutputStream_t &stream)

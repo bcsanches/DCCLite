@@ -164,17 +164,17 @@ namespace dcclite::broker
 		return *pDecoder;
 	}
 
-	void DccLiteService::Device_NotifyInternalItemCreated(const dcclite::IObject &item) const
+	void DccLiteService::Device_NotifyInternalItemCreated(dcclite::IObject &item) const
 	{
 		this->NotifyItemCreated(item);
 	}
 
-	void DccLiteService::Device_NotifyInternalItemDestroyed(const dcclite::IObject &item) const
+	void DccLiteService::Device_NotifyInternalItemDestroyed(dcclite::IObject &item) const
 	{
 		this->NotifyItemDestroyed(item);
 	}
 
-	void DccLiteService::Device_NotifyStateChange(const NetworkDevice &device) const
+	void DccLiteService::Device_NotifyStateChange(NetworkDevice &device) const
 	{
 		this->NotifyItemChanged(device);
 	}

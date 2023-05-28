@@ -12,7 +12,7 @@
 
 namespace dcclite::broker
 {	
-	void Service::NotifyItemCreated(const dcclite::IItem &item) const
+	void Service::NotifyItemCreated(dcclite::IItem &item) const
 	{
 		ObjectManagerEvent ev(
 			ObjectManagerEvent::ITEM_CREATED,
@@ -23,7 +23,7 @@ namespace dcclite::broker
 		this->DispatchEvent(ev);
 	}
 
-	void Service::NotifyItemDestroyed(const dcclite::IItem &item) const
+	void Service::NotifyItemDestroyed(dcclite::IItem &item) const
 	{
 		ObjectManagerEvent ev(
 			ObjectManagerEvent::ITEM_DESTROYED,
@@ -34,7 +34,7 @@ namespace dcclite::broker
 		this->DispatchEvent(ev);
 	}
 
-	void Service::NotifyItemChanged(const dcclite::IItem &item, ObjectManagerEvent::SerializeDeltaProc_t proc) const
+	void Service::NotifyItemChanged(dcclite::IItem &item, ObjectManagerEvent::SerializeDeltaProc_t proc) const
 	{
 		ObjectManagerEvent ev(
 			ObjectManagerEvent::ITEM_CHANGED,

@@ -47,7 +47,7 @@ namespace dcclite::broker
 			};
 
 
-			ObjectManagerEvent(EventType ev, const Service &manager, const IItem *item, SerializeDeltaProc_t serializeDeltaProc = nullptr):
+			ObjectManagerEvent(EventType ev, const Service &manager, IItem *item, SerializeDeltaProc_t serializeDeltaProc = nullptr):
 				m_kType(ev),
 				m_rclManager(manager),
 				m_pclItem(item),
@@ -61,7 +61,7 @@ namespace dcclite::broker
 
 			const Service &m_rclManager;
 
-			const IItem *m_pclItem;
+			IItem *m_pclItem;
 
 			const SerializeDeltaProc_t m_pfnSerializeDeltaProc;
 	};
@@ -118,10 +118,10 @@ namespace dcclite::broker
 				//nothing
 			}	
 
-			void NotifyItemChanged(const dcclite::IItem &item, ObjectManagerEvent::SerializeDeltaProc_t proc = nullptr) const;
+			void NotifyItemChanged(dcclite::IItem &item, ObjectManagerEvent::SerializeDeltaProc_t proc = nullptr) const;
 
-			void NotifyItemCreated(const dcclite::IItem &item) const;
-			void NotifyItemDestroyed(const dcclite::IItem &item) const;
+			void NotifyItemCreated(dcclite::IItem &item) const;
+			void NotifyItemDestroyed(dcclite::IItem &item) const;
 
 		private:
 			void DispatchEvent(const ObjectManagerEvent &event) const;

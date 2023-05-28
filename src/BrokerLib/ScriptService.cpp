@@ -12,34 +12,78 @@
 
 #include <sol/sol.hpp>
 
+#include <fmt/format.h>
+
 #include "Broker.h"
 #include "DccLiteService.h"
 #include "Log.h"
 #include "Project.h"
+#include "RemoteDecoder.h"
 
 class DecoderProxy
 {
 	private:
-		dcclite::broker::Decoder &m_rclDecoder;
+		/**
+		* Internal ref to the oficial decoder
+		* 
+		* Note that if user changes the device config file, it will get unloaded and reloaded, this will invalidate the pointer and if the user removes the 
+		* decoder or the file fails to reload, it may stay null for a long time, so watch for a null pointer here....
+		*
+		*/
+		dcclite::broker::Decoder *m_pclDecoder;
+
+		void OnObjectManagerEvent(const dcclite::broker::ObjectManagerEvent &event);
 
 	public:
 		DecoderProxy(dcclite::broker::Decoder &decoder) :
-			m_rclDecoder{ decoder }
+			m_pclDecoder{ &decoder }
 		{
-			//empty
+			dcclite::Log::Trace("[ScriptService] [DecoderProxy] [{}]: Created.", this->GetName());
 		}
 
-		inline const uint16_t GetAddress() const noexcept
+		inline const uint16_t GetAddress() const
 		{
-			return m_rclDecoder.GetAddress().GetAddress();
+			if(!m_pclDecoder)
+				throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::GetAddress]: Decoder was destroyed, did you reload the config without it?"));
+
+			return m_pclDecoder->GetAddress().GetAddress();
+		}
+
+		inline std::string_view GetName() const
+		{
+			if (!m_pclDecoder)
+				throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::GetName]: Decoder was destroyed, did you reload the config without it?"));
+
+			return m_pclDecoder->GetName();
 		}
 
 		~DecoderProxy()
 		{
-			int a = 1;
-			++a;
+			dcclite::Log::Trace("[ScriptService] [DecoderProxy] [{}]: Destructor called", this->GetName());
 		}
 };
+
+void DecoderProxy::OnObjectManagerEvent(const dcclite::broker::ObjectManagerEvent &event)
+{
+	if (event.m_kType == dcclite::broker::ObjectManagerEvent::ITEM_CHANGED)
+		return;
+
+	if (event.m_pclItem != m_pclDecoder)
+		return;
+
+	if (event.m_kType == dcclite::broker::ObjectManagerEvent::ITEM_DESTROYED)
+	{
+		dcclite::Log::Trace("[ScriptService] [DecoderProxy::OnObjectManagerEvent] [{}]: Decoder destroyed", this->GetName());
+
+		m_pclDecoder = nullptr;
+	}
+	else if(event.m_kType == dcclite::broker::ObjectManagerEvent::ITEM_CREATED)
+	{
+		m_pclDecoder = static_cast<dcclite::broker::Decoder *>(event.m_pclItem);
+
+		dcclite::Log::Trace("[ScriptService] [DecoderProxy::OnObjectManagerEvent] [{}]: Decoder recreated", this->GetName());
+	}
+}
 
 class DccLiteProxy
 {
@@ -47,7 +91,7 @@ class DccLiteProxy
 		DccLiteProxy(dcclite::broker::DccLiteService &service):
 			m_rclService{service}
 		{
-			//empty
+			dcclite::Log::Trace("[ScriptService] [DccLiteProxy] [{}]: Created.", service.GetName());
 		}
 
 		DccLiteProxy(DccLiteProxy &&m) = default;
@@ -57,11 +101,10 @@ class DccLiteProxy
 
 		~DccLiteProxy()
 		{
-			int a = 0;
-			++a;
+			dcclite::Log::Trace("[ScriptService] [DccLiteProxy] [{}]: Destroyed.", m_rclService.GetName());
 		}		
 
-		sol::object OnIndexByName(std::string_view key, sol::this_state L)
+		DecoderProxy *OnIndexByName(std::string_view key, sol::this_state L)
 		{			
 			const auto decoder = this->m_rclService.TryFindDecoder(key);
 
@@ -69,30 +112,34 @@ class DccLiteProxy
 			{
 				dcclite::Log::Error("[ScriptService] [DccLiteProxy] [{}]: Trying to access non existent decoder: {}", m_rclService.GetName(), key);
 
-				return sol::lua_nil;
+				return nullptr;
 			}
 
 			const auto decAddress = decoder->GetAddress();
 			auto it = m_mapKnowDecoders.lower_bound(decAddress);
 
-			if((it != m_mapKnowDecoders.end()) && !(m_mapKnowDecoders.key_comp()(decAddress, it->first)))
-				return sol::make_object<DecoderProxy *>(L, it->second.get());
+			if ((it != m_mapKnowDecoders.end()) && !(m_mapKnowDecoders.key_comp()(decAddress, it->first)))
+			{
+				return it->second.get();
+			}
 			else
 			{
 				it = m_mapKnowDecoders.emplace_hint(it, decAddress, std::make_unique<DecoderProxy>(*decoder));
 
-				return sol::make_object<DecoderProxy *>(L, it->second.get());
-			}			
+				return it->second.get();
+			}
 		}
 
-		sol::object OnIndexByAddress(uint16_t key, sol::this_state L)
+		DecoderProxy *OnIndexByAddress(uint16_t key, sol::this_state L)
 		{
 			const auto decAddress = dcclite::broker::DccAddress{ key };
 						
 			auto it = m_mapKnowDecoders.lower_bound(decAddress);
 
 			if ((it != m_mapKnowDecoders.end()) && !(m_mapKnowDecoders.key_comp()(decAddress, it->first)))
-				return sol::make_object<DecoderProxy *>(L, it->second.get());
+			{
+				return it->second.get();
+			}
 			else
 			{
 				auto decoder = this->m_rclService.TryFindDecoder(decAddress);
@@ -100,12 +147,12 @@ class DccLiteProxy
 				{
 					dcclite::Log::Error("[ScriptService] [DccLiteProxy] [{}]: Trying to access non existent decoder: {}", m_rclService.GetName(), key);
 
-					return sol::lua_nil;
+					return nullptr;
 				}
 
 				it = m_mapKnowDecoders.emplace_hint(it, decAddress, std::make_unique<DecoderProxy>(*decoder));
 
-				return sol::make_object<DecoderProxy *>(L, it->second.get());
+				return it->second.get();
 			}
 		}
 

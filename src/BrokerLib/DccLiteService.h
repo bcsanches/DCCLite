@@ -120,9 +120,9 @@ namespace dcclite::broker
 
 			void Device_DestroyDecoder(Decoder &dec) override;
 
-			void Device_NotifyInternalItemCreated(const dcclite::IObject &item) const override;
-			void Device_NotifyInternalItemDestroyed(const dcclite::IObject &item) const override;
-			void Device_NotifyStateChange(const NetworkDevice &device) const override;
+			void Device_NotifyInternalItemCreated(dcclite::IObject &item) const override;
+			void Device_NotifyInternalItemDestroyed(dcclite::IObject &item) const override;
+			void Device_NotifyStateChange(NetworkDevice &device) const override;
 
 			//
 			//
