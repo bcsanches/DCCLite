@@ -23,7 +23,7 @@
     "invertedFrog": false,
     "operationTime": 3000,
     "range":20,    
-    "comment": "AMV 04 - inferior saida para TC"
+    "comment": "AMV 02 - inferior saida para TC"
   },
   {
     "name": "HLX_T03",
@@ -43,22 +43,21 @@
     "address": "1854",
     "pin": 17,
     "inverted": false,
-    "powerPin": 51,   
-    "frogPin": 49, 
+    "powerPin": 40,
     "invertedFrog": true,
     "operationTime": 3000,
-    "comment": "SEM USO"
+    "comment": "AMV 04 - superior saída para TC"
   },
   {
-    "name": "HLX_T06",
+    "name": "HLX_T05",
     "class": "ServoTurnout",
-    "address": "1856",
+    "address": "1855",
     "pin": 18,
     "inverted": false,
-    "powerPin": 48,    
+    "powerPin": 41,    
     "invertedFrog": true,
-    "operationTime": 1000,
-    "comment": "AMV 06 - superior saida para TC"
+    "operationTime": 3000,
+    "comment": "AMV 05 - ponta triângulo - Soledade x Barra do Piraí"
   },      
   {
     "name":"HLX_DMT03",

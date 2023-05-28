@@ -147,6 +147,7 @@ namespace dcclite::broker
 				m_vecDecoders.push_back(&decoder);
 
 				auto decShortcut = this->AddChild(std::make_unique<dcclite::Shortcut>(std::string(decoder.GetName()), decoder));
+				m_clDccService.Device_NotifyInternalItemCreated(decoder);
 				m_clDccService.Device_NotifyInternalItemCreated(*decShortcut);
 			}
 
@@ -166,7 +167,7 @@ namespace dcclite::broker
 		}
 
 
-		//if this point is reached, data is load, so store new token
+		//if this point is reached, data is loaded, so store new token
 		m_ConfigToken = storedConfigToken;
 		dcclite::Log::Info("[Device::{}] [Load] loaded.", this->GetName());
 	}

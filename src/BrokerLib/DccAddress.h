@@ -25,7 +25,7 @@ namespace dcclite::broker
 	class DccAddress
 	{
 		public:
-			inline explicit DccAddress(uint16_t address):
+			inline explicit DccAddress(uint16_t address) noexcept :
 				m_iAddress(address)
 			{
 				//empty
@@ -39,32 +39,37 @@ namespace dcclite::broker
 			DccAddress(const DccAddress &) = default;
 			DccAddress(DccAddress &&) = default;
 
-			inline int GetAddress() const
+			inline int GetAddress() const noexcept
 			{
 				return m_iAddress;
 			}		
 
-			inline bool operator>=(const DccAddress &rhs) const
+			inline bool operator>=(const DccAddress &rhs) const noexcept
 			{
 				return m_iAddress >= rhs.m_iAddress;
 			}
 
-			inline bool operator<(const DccAddress &rhs) const
+			inline bool operator<(const DccAddress &rhs) const noexcept
 			{
 				return m_iAddress < rhs.m_iAddress;
 			}
 
-			inline bool operator>(const DccAddress &rhs) const
+			inline bool operator>(const DccAddress &rhs) const noexcept
 			{
 				return m_iAddress > rhs.m_iAddress;
 			}
 
-			inline bool operator==(const DccAddress &rhs) const
+			inline bool operator==(const DccAddress &rhs) const noexcept
 			{
 				return m_iAddress == rhs.m_iAddress;
 			}
 
-			inline DccAddress &operator=(const DccAddress rhs)
+			inline bool operator!=(const DccAddress &rhs) const noexcept
+			{
+				return m_iAddress != rhs.m_iAddress;
+			}
+
+			inline DccAddress &operator=(const DccAddress rhs) noexcept
 			{
 				m_iAddress = rhs.m_iAddress;
 
