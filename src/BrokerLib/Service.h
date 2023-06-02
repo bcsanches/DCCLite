@@ -84,7 +84,7 @@ namespace dcclite::broker
 
 			virtual ~Service() {}						
 
-			mutable sigslot::signal< const ObjectManagerEvent &> m_sigEvent;			
+			mutable sigslot::signal< const ObjectManagerEvent &> m_sigEvent;
 	
 		protected:
 			Service(std::string name, Broker &broker, const rapidjson::Value &params, const Project &project):

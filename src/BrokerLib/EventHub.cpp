@@ -218,7 +218,7 @@ namespace dcclite::broker
 		static std::mutex				g_mtxEventQueueLock;
 		static std::condition_variable	g_clQueueMonitor;
 
-		static ObjectPool				g_arPools[2]{ ObjectPool{4096 * 4}, ObjectPool{4096 * 4} };		
+		static ObjectPool				g_arPools[2]{ ObjectPool{4096 * 8}, ObjectPool{4096 * 8} };		
 
 		static int						g_iActivePool = 0;
 

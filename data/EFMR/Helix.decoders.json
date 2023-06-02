@@ -22,7 +22,7 @@
     "frogPin": 44,
     "invertedFrog": false,
     "operationTime": 3000,
-    "range":20,    
+    "range":20,
     "comment": "AMV 02 - inferior saida para TC"
   },
   {
@@ -36,16 +36,17 @@
     "invertedFrog": false,
     "operationTime": 3000,
     "comment": "AMV 03 - ponta do triangulo para TC"
-  },    
+  },
   {
     "name": "HLX_T04",
     "class": "ServoTurnout",
     "address": "1854",
     "pin": 17,
-    "inverted": false,
+    "inverted": true,
     "powerPin": 40,
     "invertedFrog": true,
     "operationTime": 3000,
+    "range":25,
     "comment": "AMV 04 - superior saída para TC"
   },
   {

@@ -1,20 +1,27 @@
-print("Hello from monitor")
 
-print(dcclite)
+local hlx_t04 = dcclite.dcc0.HLX_T04;
+local hlx_t05 = dcclite.dcc0.HLX_T05;
 
-print(dcclite.dcc0)
-print(dcclite.terminal)
-print(dcclite.dccpp)
+function on_state_change(decoder)
+    print("Hello from 'on_state_change' ");
 
-print(dcclite.dcc0[1852].address)
-print(dcclite.dcc0.HLX_T02.address)
+    if(hlx_t04.thrown and hlx_t05.thrown) then
+        print("hlx_t04 and hlx_t05 closed - set route to normal");
 
-print(dcclite.dcc0[dcclite.dcc0.HLX_T02.address].address)
+        return;
+    end
+        
 
-collectgarbage("collect") 
+    if(hlx_t04.closed or hlx_t05.closed) then
+        print("hlx_t04 or hlx_t05 closed - set route to reverse");
 
-print(dcclite.dcc0.HLX_T02)
+        return;
+    end
 
-collectgarbage("collect") 
+end
 
--- dcclite.dcc0:get_turnout(1300):on_throw()
+
+print("Hello from monitor");
+
+hlx_t04:on_state_change(on_state_change);
+hlx_t05:on_state_change(on_state_change);
