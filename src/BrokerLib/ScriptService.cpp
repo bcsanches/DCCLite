@@ -288,7 +288,7 @@ namespace dcclite::broker::ScriptService
 	const Project *g_pclProject = nullptr;
 
 	static void WatchFile(const dcclite::fs::path &fileName);
-
+	
 	static void RunScripts()
 	{
 		auto path = g_pclProject->GetFilePath("scripts");
@@ -304,6 +304,41 @@ namespace dcclite::broker::ScriptService
 		g_clLua.open_libraries(sol::lib::base);
 
 		auto dccLiteTable = g_clLua["dcclite"].get_or_create<sol::table>();
+
+		g_clLua.set_function("run_script", [](const char *fileName)
+			{
+				auto path = g_pclProject->GetFilePath("scripts");
+				path.append(fileName);
+
+				WatchFile(path);
+
+				g_clLua.script_file(path.string());
+			}
+		);
+
+		g_clLua.set_function("log_error", [](std::string_view msg)
+			{
+				dcclite::Log::Error("[ScriptService] [Lua] {}", msg);
+			}
+		);
+		
+		g_clLua.set_function("log_info", [](std::string_view msg)
+			{
+				dcclite::Log::Info("[ScriptService] [Lua] {}", msg);
+			}
+		);
+
+		g_clLua.set_function("log_trace", [](std::string_view msg)
+			{
+				dcclite::Log::Trace("[ScriptService] [Lua] {}", msg);
+			}
+		);
+
+		g_clLua.set_function("log_warn", [](std::string_view msg)
+			{
+				dcclite::Log::Warn("[ScriptService] [Lua] {}", msg);
+			}
+		);
 
 		g_clLua.new_usertype<DccLiteProxy>(
 			"dcclite_service", sol::no_constructor,
@@ -338,16 +373,7 @@ namespace dcclite::broker::ScriptService
 			}
 		}				
 
-		g_clLua.set_function("run_script", [](const char *fileName)
-			{
-				auto path = g_pclProject->GetFilePath("scripts");
-				path.append(fileName);
-
-				WatchFile(path);
-
-				g_clLua.script_file(path.string());
-			}
-		);
+		
 
 		WatchFile(path);
 
