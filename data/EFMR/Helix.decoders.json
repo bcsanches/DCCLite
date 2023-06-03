@@ -32,7 +32,7 @@
     "pin": 19,
     "inverted": true,
     "powerPin": 47,
-    "frogPin": 46,
+    "frogPin": 46, 
     "invertedFrog": false,
     "operationTime": 3000,
     "comment": "AMV 03 - ponta do triangulo para TC"
@@ -52,17 +52,17 @@
   {
     "name": "HLX_T05",
     "class": "ServoTurnout",
-    "address": "1855",
+    "address": "1855",  
     "pin": 18,
     "inverted": false,
-    "powerPin": 41,    
+    "powerPin": 41,
     "invertedFrog": true,
     "operationTime": 3000,
     "comment": "AMV 05 - ponta triângulo - Soledade x Barra do Piraí"
   },      
   {
-    "name":"HLX_DMT03",
-    "class":"Sensor",
+    "name":"HLX_DMT03", 
+    "class":"Sensor", 
     "pin":69,
     "address":"1898",
     "pullup":false,

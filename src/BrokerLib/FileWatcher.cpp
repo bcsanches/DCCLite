@@ -54,17 +54,23 @@ namespace FileWatcher
 	class DirectoryWatcher
 	{
 		public:			
-			void AddHandle(std::string fileName, uint32_t flags, const Callback_t &callback)
+			bool TryAddHandle(std::string fileName, uint32_t flags, const Callback_t &callback)
 			{				
-				if(m_mapHandles.find(fileName) != m_mapHandles.end())
-					throw std::logic_error(fmt::format("[FileWatcher::DirectoryWatcher::AddHandler] Duplicated handle for {}", fileName));
+				if (m_mapHandles.find(fileName) != m_mapHandles.end())
+				{
+					dcclite::Log::Warn("[FileWatcher::DirectoryWatcher::AddHandler] Duplicated handle for {}", fileName);
 
+					return false;
+				}
+					
 				Handle h;
 
 				h.m_fFlags = flags;
 				h.m_pfnCallback = callback;
 
 				m_mapHandles.insert(std::make_pair(std::move(fileName), h));				
+
+				return true;
 			}
 
 			void RemoveHandle(const std::string &fileName)
@@ -116,7 +122,7 @@ namespace FileWatcher
 		g_Thinker.Schedule(tp + DEFAULT_INTERVAL);
 	}	
 
-	void WatchFile(const dcclite::fs::path &fileName, const uint32_t flags, const Callback_t &callback)
+	bool TryWatchFile(const dcclite::fs::path &fileName, const uint32_t flags, const Callback_t &callback)
 	{
 		assert(flags);
 
@@ -134,12 +140,15 @@ namespace FileWatcher
 			});
 		}
 
-		it->second.AddHandle(fileName.filename().string(), flags, callback);
+		if (!it->second.TryAddHandle(fileName.filename().string(), flags, callback))
+			return false;
 
 		if (!g_Thinker.IsScheduled())
 		{
 			g_Thinker.Schedule(dcclite::Clock::DefaultClock_t::time_point{});
 		}
+
+		return true;
 	}
 
 	void UnwatchFile(const dcclite::fs::path &fileName)

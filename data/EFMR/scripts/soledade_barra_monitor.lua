@@ -25,3 +25,5 @@ print("Hello from monitor");
 
 hlx_t04:on_state_change(on_state_change);
 hlx_t05:on_state_change(on_state_change);
+
+on_state_change(nil);

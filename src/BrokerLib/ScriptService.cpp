@@ -17,6 +17,7 @@
 #include "Broker.h"
 #include "Decoder.h"
 #include "DccLiteService.h"
+#include "FileWatcher.h"
 #include "Log.h"
 #include "Project.h"
 #include "RemoteDecoder.h"
@@ -281,42 +282,46 @@ DecoderProxy *DccLiteProxy::OnIndexByAddress(uint16_t key, sol::this_state L)
 
 namespace dcclite::broker::ScriptService
 {
-	static sol::state g_clLua;
-	sol::environment g_clSandbox{g_clLua, sol::create};
+	static sol::state g_clLua;	
 
 	Broker *g_pclBroker = nullptr;
+	const Project *g_pclProject = nullptr;
 
-	void Start(Broker &broker, const Project &project)
-	{				
-		g_pclBroker = &broker;
+	static void WatchFile(const dcclite::fs::path &fileName);
 
-		auto path = project.GetFilePath("scripts");
+	static void RunScripts()
+	{
+		auto path = g_pclProject->GetFilePath("scripts");
 		path.append("autoexec.lua");
 
 		if (!dcclite::fs::exists(path))
-			return;
+		{
+			dcclite::Log::Info("[ScriptService::Start] No autoexec.lua found.");
 
-		g_clLua.open_libraries(sol::lib::base);		
+			return;
+		}
+
+		g_clLua.open_libraries(sol::lib::base);
 
 		auto dccLiteTable = g_clLua["dcclite"].get_or_create<sol::table>();
 
 		g_clLua.new_usertype<DccLiteProxy>(
-			"dcclite_service", sol::no_constructor,			
+			"dcclite_service", sol::no_constructor,
 			sol::meta_function::index, sol::overload(&DccLiteProxy::OnIndexByAddress, &DccLiteProxy::OnIndexByName)
 		);
 
 		g_clLua.new_usertype<DecoderProxy>(
-			"decoder",			sol::no_constructor,			
-			"address",			sol::property(&DecoderProxy::GetAddress),
-			"thrown",			sol::property(&DecoderProxy::IsThrown),
-			"closed",			sol::property(&DecoderProxy::IsClosed),
-			"set_state",		&DecoderProxy::SetState,
-			"on_state_change",	&DecoderProxy::OnStateChange
+			"decoder", sol::no_constructor,
+			"address", sol::property(&DecoderProxy::GetAddress),
+			"thrown", sol::property(&DecoderProxy::IsThrown),
+			"closed", sol::property(&DecoderProxy::IsClosed),
+			"set_state", &DecoderProxy::SetState,
+			"on_state_change", &DecoderProxy::OnStateChange
 		);
 
 		//
 		//Export all services
-		auto servicesEnumerator = broker.GetServicesEnumerator();
+		auto servicesEnumerator = g_pclBroker->GetServicesEnumerator();
 
 		while (servicesEnumerator.MoveNext())
 		{
@@ -330,26 +335,55 @@ namespace dcclite::broker::ScriptService
 			else
 			{
 				dccLiteTable[service->GetName()] = service;
-			}			
-		}
+			}
+		}				
 
-		g_clSandbox["print"] = g_clLua["print"];
-		g_clSandbox["dcclite"] = dccLiteTable;
-		g_clSandbox["collectgarbage"] = g_clLua["collectgarbage"];
-
-		//g_clSandbox["dofile"] = g_clLua["dofile"];
-
-		g_clSandbox.set_function("dofile", [&project](const char *fileName)
+		g_clLua.set_function("run_script", [](const char *fileName)
 			{
-				auto path = project.GetFilePath("scripts");
+				auto path = g_pclProject->GetFilePath("scripts");
 				path.append(fileName);
+
+				WatchFile(path);
 
 				g_clLua.script_file(path.string());
 			}
 		);
 
-		auto r = g_clLua.safe_script_file(path.string(), g_clSandbox);
+		WatchFile(path);
 
-		return;
+		auto r = g_clLua.safe_script_file(path.string());
+	}
+
+
+	static void WatchFile(const dcclite::fs::path &fileName)
+	{
+#if 0
+		FileWatcher::TryWatchFile(fileName, FileWatcher::FW_MODIFIED, [](const FileWatcher::Event &ev)
+			{
+				dcclite::Log::Info("[ScriptService] [FileWatcher::Reload] Attempting to reload config: {}", ev.m_strFileName);
+
+				try
+				{					
+					g_clLua = sol::state{};					
+
+					RunScripts();
+
+					dcclite::Log::Info("[ScriptService] [FileWatcher::Reload] script system reloaded.");
+				}
+				catch (const std::exception &ex)
+				{
+					dcclite::Log::Error("[ScriptService] [FileWatcher::Reload] failed: {}", ex.what());
+				}
+
+			});
+#endif
+	}	
+
+	void Start(Broker &broker, const Project &project)
+	{				
+		g_pclBroker = &broker;
+		g_pclProject = &project;
+					
+		RunScripts();		
 	}
 }

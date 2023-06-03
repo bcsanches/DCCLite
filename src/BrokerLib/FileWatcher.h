@@ -31,7 +31,7 @@ namespace FileWatcher
 
 	typedef std::function<void(const Event &data)> Callback_t;
 
-	void WatchFile(const dcclite::fs::path &fileName, const uint32_t flags, const Callback_t &callback);
+	bool TryWatchFile(const dcclite::fs::path &fileName, const uint32_t flags, const Callback_t &callback);
 
 	void UnwatchFile(const dcclite::fs::path &fileName);
 }
