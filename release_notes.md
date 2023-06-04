@@ -1,4 +1,4 @@
-# Version 0.8.0 - ??/??/????
+# Version 0.8.0 - 04/06/2023
 
 ## General Features
 - Added QuadInverter decoder
