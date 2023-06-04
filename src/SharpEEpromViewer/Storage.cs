@@ -198,6 +198,43 @@ namespace SharpEEPromViewer
         }
     }
 
+    class QuadInverterDecoder : Item
+    {
+        [Flags]
+        enum Flags : byte
+        {
+            QUAD_IGNORE_SAVED_STATE = 0x02,
+            QUAD_ACTIVATE_ON_POWER_UP = 0x04,
+            QUAD_ACTIVE = 0x80
+        }
+
+        public bool IsActive { get; }
+
+        public bool IgnoreSavedState { get; }
+
+        public bool ActivateOnPowerUp { get; }
+
+        public byte TrackAPin0 { get; }
+        public byte TrackAPin1 { get; }
+        public byte TrackBPin0 { get; }
+        public byte TrackBPin1 { get; }
+
+        public QuadInverterDecoder(byte slot, BinaryReader reader) :
+            base(slot, 7)
+        {
+            var flags = (Flags)reader.ReadByte();
+
+            IsActive = (flags & Flags.QUAD_ACTIVE) == Flags.QUAD_ACTIVE;
+            IgnoreSavedState = (flags & Flags.QUAD_IGNORE_SAVED_STATE) == Flags.QUAD_IGNORE_SAVED_STATE;
+            ActivateOnPowerUp = (flags & Flags.QUAD_ACTIVATE_ON_POWER_UP) == Flags.QUAD_ACTIVATE_ON_POWER_UP;
+            
+            TrackAPin0 = reader.ReadByte();
+            TrackAPin1 = reader.ReadByte();
+            TrackBPin0 = reader.ReadByte();
+            TrackBPin1 = reader.ReadByte();
+        }
+    }
+
     class Lump
     {
         static Dictionary<string, Type> gKnownTypes = new()
@@ -206,6 +243,7 @@ namespace SharpEEPromViewer
             { "NetU002\0", typeof(NetworkLump) },
             { "Sson001\0", typeof(SessionLump) },            
             { "DECS015\0", typeof(DecodersLump) },
+            { "DECS016\0", typeof(DecodersLump) }, //015 and 016 the same, but 016 has QuadInverterDecoder
             { "ENDEND1\0", typeof(MarkerLump) }
         };
 
@@ -332,7 +370,8 @@ namespace SharpEEPromViewer
 		    DEC_SENSOR = 2,
 		    DEC_SERVO_TURNOUT = 3,
 		    DEC_SIGNAL = 4,			//Only virtual, not implemented on Arduino
-            DEC_TURNTABLE_AUTO_INVERTER = 5
+            DEC_TURNTABLE_AUTO_INVERTER = 5,
+            DEC_QUAD_INVERTER = 6
 	    };
 
         static Dictionary<DecoderTypes, Type> gKnownTypes = new()
@@ -340,7 +379,8 @@ namespace SharpEEPromViewer
             { DecoderTypes.DEC_OUTPUT,                  typeof(OutputDecoder) },
             { DecoderTypes.DEC_SENSOR,                  typeof(SensorDecoder) },
             { DecoderTypes.DEC_SERVO_TURNOUT,           typeof(ServoTurnoutDecoder) },
-            { DecoderTypes.DEC_TURNTABLE_AUTO_INVERTER, typeof(TurntableAutoInverterDecoder) }
+            { DecoderTypes.DEC_TURNTABLE_AUTO_INVERTER, typeof(TurntableAutoInverterDecoder) },
+            { DecoderTypes.DEC_QUAD_INVERTER,           typeof(QuadInverterDecoder) }
         };        
 
         public Guid Guid { get; }

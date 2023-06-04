@@ -405,6 +405,7 @@ namespace SharpTerminal
 
                 case "SimpleOutputDecoder":
                 case "OutputDecoder":
+                case "QuadInverterDecoder":
                     obj = new RemoteOutputDecoder(name, className, path, id, parentInternalId, objectDef);
                     break;
 

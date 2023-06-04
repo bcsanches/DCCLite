@@ -28,6 +28,8 @@ QuadInverterDecoder::QuadInverterDecoder(dcclite::Packet& packet) noexcept:
 {
 	//consider only configurable flags
 	m_fFlags = packet.Read<uint8_t>() & (dcclite::QUAD_IGNORE_SAVED_STATE | dcclite::QUAD_ACTIVATE_ON_POWER_UP);
+
+	//DCCLITE_LOG_MODULE_LN(F("QuadInverterDecoder packet flags") << (int) m_fFlags);
 		
 	dcclite::PinType_t trackPins[4];
 
@@ -45,6 +47,8 @@ QuadInverterDecoder::QuadInverterDecoder(Storage::EpromStream& stream) noexcept:
 	m_uFlagsStorageIndex = stream.GetIndex();
 
 	stream.Get(m_fFlags);	
+
+	//DCCLITE_LOG_MODULE_LN(F("QuadInverterDecoder eprom flags") << (int) m_fFlags);
 	
 	dcclite::PinType_t trackPins[4];
 
@@ -63,6 +67,7 @@ void QuadInverterDecoder::SaveConfig(Storage::EpromStream& stream) noexcept
 	m_uFlagsStorageIndex = stream.GetIndex();
 
 	stream.Put(m_fFlags);	
+	//DCCLITE_LOG_MODULE_LN(F("QuadInverterDecoder SaveConfig flags") << (int) m_fFlags);
 
 	for(int i = 0; i < 4; ++i)
 		stream.Put(m_arTrackPins[i].Raw());	
@@ -86,7 +91,7 @@ void QuadInverterDecoder::Init(const dcclite::PinType_t trackPins[4]) noexcept
 		}
 		else
 		{
-			m_fFlags &= QUAD_ACTIVE;
+			m_fFlags &= ~QUAD_ACTIVE;
 		}
 	}
 

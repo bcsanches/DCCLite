@@ -11,6 +11,10 @@ function on_t04_change(decoder)
         return;
     end
 
+    -- saida para soledade esta sentido helix (subida)
+    if(hxl_t05.thrown) then
+        return;
+    end
     
 end
 
