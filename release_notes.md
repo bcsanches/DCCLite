@@ -1,4 +1,8 @@
-# Version 0.7.2 - ??/??/????
+# Version 0.8.0 - ??/??/????
+
+## General Features
+- Added QuadInverter decoder
+- Added support to Lua scripts
 
 ## Broker
 - Fix: exception on certain terminal client disconnect behaviors
