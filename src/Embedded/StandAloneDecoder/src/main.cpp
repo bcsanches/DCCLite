@@ -101,7 +101,7 @@ class RouteManager
 			}
 		}
 
-		void Update()
+		void Update(const unsigned long time)
 		{
 			//Current route set and next route set?
 			if ((g_pstRoutes[m_iCurrentRoute][m_iCurrentRouteNode].m_iTurnoutIndex < 0) && (m_iNextRoute >= 0))
@@ -133,7 +133,7 @@ class RouteManager
 			if (currentNodeTurnout->GetDecoderState() != currentNode.m_kState)
 			{
 				//set position and check again
-				currentNodeTurnout->AcceptServerState(currentNode.m_kState);
+				currentNodeTurnout->AcceptServerState(currentNode.m_kState, time);
 
 				return;
 			}
@@ -217,5 +217,5 @@ void loop()
 		g_clRouteManager.Init();
 	}
 
-	g_clRouteManager.Update();
+	g_clRouteManager.Update(currentTime);
 }

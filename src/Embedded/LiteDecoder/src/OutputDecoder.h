@@ -37,7 +37,7 @@ class OutputDecoder : public Decoder
 			return dcclite::DecoderTypes::DEC_OUTPUT;
 		};
 
-		bool AcceptServerState(dcclite::DecoderStates state) override;
+		bool AcceptServerState(dcclite::DecoderStates state, const unsigned long time) override;
 
 		bool IsActive() const override
 		{

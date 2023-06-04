@@ -13,14 +13,9 @@
 #include "Decoder.h"
 #include "Pin.h"
 
-class SensorDecoder;
-
-class TurntableAutoInverterDecoder : public Decoder
+class QuadInverterDecoder : public Decoder
 {
-	private:		
-		uint8_t			m_uSensorAIndex;
-		uint8_t			m_uSensorBIndex;
-
+	private:				
 		//0 and 1, trackA | 2 and 3, track B
 		Pin				m_arTrackPins[4];				
 
@@ -31,8 +26,8 @@ class TurntableAutoInverterDecoder : public Decoder
 		uint8_t			m_fFlags = 0;
 
 	public:		
-		explicit TurntableAutoInverterDecoder(dcclite::Packet& packet) noexcept;
-		explicit TurntableAutoInverterDecoder(Storage::EpromStream& stream) noexcept;		
+		explicit QuadInverterDecoder(dcclite::Packet& packet) noexcept;
+		explicit QuadInverterDecoder(Storage::EpromStream& stream) noexcept;
 
 		bool Update(const unsigned long ticks) noexcept override;
 
@@ -40,27 +35,24 @@ class TurntableAutoInverterDecoder : public Decoder
 
 		dcclite::DecoderTypes GetType() const noexcept override
 		{
-			return dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER;
+			return dcclite::DecoderTypes::DEC_QUAD_INVERTER;
 		};
 
 		bool IsOutputDecoder() const noexcept override
 		{
-			return false;
+			return true;
 		}
 
 		bool AcceptServerState(dcclite::DecoderStates state, const unsigned long time) noexcept override;
 
 		bool IsActive() const noexcept override
 		{
-			return m_fFlags & dcclite::TRTD_ACTIVE;
+			return m_fFlags & dcclite::QUAD_ACTIVE;
 		}
 
 		bool IsSyncRequired() const noexcept override
 		{
-			const bool active = this->IsActive();
-			const bool remoteActive = m_fFlags & dcclite::TRTD_REMOTE_ACTIVE;
-
-			return active != remoteActive;
+			return false;
 		}		
 
 	private:

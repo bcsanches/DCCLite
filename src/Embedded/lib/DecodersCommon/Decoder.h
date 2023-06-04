@@ -64,5 +64,5 @@ class Decoder
 			//empty
 		}		
 
-		virtual bool AcceptServerState(dcclite::DecoderStates state) = 0;
+		virtual bool AcceptServerState(dcclite::DecoderStates state, const unsigned long ticks) = 0;
 };

@@ -52,7 +52,7 @@ class Button
 	public:		
 		Button(SensorDecoder &sensor, ServoTurnoutDecoder &target, LocalDecoderManager::ButtonActions action);
 
-		void Update();
+		void Update(const unsigned long ticks);
 
 	private:
 		SensorDecoder &m_rclSensor;
@@ -71,7 +71,7 @@ Button::Button(SensorDecoder &sensor, ServoTurnoutDecoder &target, LocalDecoderM
 	//empty
 }
 
-void Button::Update()
+void Button::Update(const unsigned long ticks)
 {
 	const bool buttonPreviousState = m_fButtonPressed;
 	m_fButtonPressed = m_rclSensor.IsActive();
@@ -94,13 +94,13 @@ void Button::Update()
 	{	
 		//Console::Send("Button pressed - Throw");
 		DCCLITE_LOG_MODULE_LN(F("Button pressed - Throw"));
-		m_rclTarget.AcceptServerState(dcclite::DecoderStates::ACTIVE);
+		m_rclTarget.AcceptServerState(dcclite::DecoderStates::ACTIVE, ticks);
 	}
 	else if (m_kAction == LocalDecoderManager::kCLOSE)
 	{
 		//Console::Send("Button pressed - Close");
 		DCCLITE_LOG_MODULE_LN(F("Button pressed - Close"));
-		m_rclTarget.AcceptServerState(dcclite::DecoderStates::INACTIVE);
+		m_rclTarget.AcceptServerState(dcclite::DecoderStates::INACTIVE, ticks);
 	}		
 	else
 	{
@@ -110,7 +110,7 @@ void Button::Update()
 		//Console::Send("Button pressed - Toggle");
 		DCCLITE_LOG_MODULE_LN(F("Button pressed - Toggle"));
 
-		m_rclTarget.AcceptServerState(state);
+		m_rclTarget.AcceptServerState(state, ticks);
 	}
 }
 
@@ -205,7 +205,7 @@ bool LocalDecoderManager::Update(const unsigned long ticks)
 
 	for (auto i = 0; i < g_iNextButton; ++i)
 	{
-		g_pButtons[i]->Update();
+		g_pButtons[i]->Update(ticks);
 	}
 
 	return stateChanged;

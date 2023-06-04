@@ -125,7 +125,7 @@ void TurntableAutoInverterDecoder::Init(const dcclite::PinType_t trackPins[4]) n
 	m_uWaitingTrackTurnOff = 5000;
 }
 
-bool TurntableAutoInverterDecoder::AcceptServerState(dcclite::DecoderStates state) noexcept
+bool TurntableAutoInverterDecoder::AcceptServerState(dcclite::DecoderStates state, const unsigned long time) noexcept
 {
 	if (state == dcclite::DecoderStates::ACTIVE)
 	{

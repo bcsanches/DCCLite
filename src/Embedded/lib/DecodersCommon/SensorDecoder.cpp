@@ -84,7 +84,7 @@ void SensorDecoder::Init(const dcclite::PinType_t pin) noexcept
 	m_clPin.Attach(pin, (m_fFlags & SNRD_PULL_UP) ? Pin::MODE_INPUT_PULLUP : Pin::MODE_INPUT);	
 }
 
-bool SensorDecoder::AcceptServerState(dcclite::DecoderStates state) noexcept
+bool SensorDecoder::AcceptServerState(dcclite::DecoderStates state, const unsigned long ticks) noexcept
 {
 	if (state == dcclite::DecoderStates::ACTIVE)
 	{

@@ -58,8 +58,28 @@
     "powerPin": 41,
     "invertedFrog": true,
     "operationTime": 3000,
-    "comment": "AMV 05 - ponta triângulo - Soledade x Barra do Piraí"
+    "comment": "AMV 05 - inferior - saída para Soledade"
   },      
+  {
+    "name": "HLX_T06",
+    "class": "ServoTurnout",
+    "address": "1856",  
+    "pin": 16,
+    "inverted": false,    
+    "invertedFrog": true,
+    "operationTime": 3000,
+    "comment": "AMV 06 - ponta triângulo - Soledade x Barra do Piraí"
+  }, 
+  {
+    "name": "HLX_T07",
+    "class": "ServoTurnout",
+    "address": "1857",  
+    "pin": 15,
+    "inverted": false,    
+    "invertedFrog": true,
+    "operationTime": 3000,
+    "comment": "AMV 07 - superior - saída para Barra do Piraí"
+  }, 
   {
     "name":"HLX_DMT03", 
     "class":"Sensor", 

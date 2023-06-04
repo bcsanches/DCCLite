@@ -31,8 +31,8 @@ namespace dcclite::broker
 		auto inverted = params.FindMember("inverted");
 		m_fInvertedOperation = inverted != params.MemberEnd() ? inverted->value.GetBool() : false;
 
-		auto setOnPower = params.FindMember("ignoreSavedState");
-		m_fIgnoreSavedState = setOnPower != params.MemberEnd() ? setOnPower->value.GetBool() : false;
+		auto ignoreSavedState = params.FindMember("ignoreSavedState");
+		m_fIgnoreSavedState = ignoreSavedState != params.MemberEnd() ? ignoreSavedState->value.GetBool() : false;
 
 		auto activateOnPowerUp = params.FindMember("activateOnPowerUp");
 		m_fActivateOnPowerUp = activateOnPowerUp != params.MemberEnd() ? activateOnPowerUp->value.GetBool() : false;

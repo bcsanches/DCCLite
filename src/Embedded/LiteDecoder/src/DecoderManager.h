@@ -51,7 +51,7 @@ namespace DecoderManager
 
 	Returns true if a state for any output decoder was processed.	
 	*/
-	bool ReceiveServerStates(const dcclite::StatesBitPack_t &changedStates, const dcclite::StatesBitPack_t &states);
+	bool ReceiveServerStates(const dcclite::StatesBitPack_t &changedStates, const dcclite::StatesBitPack_t &states, const unsigned long time);
 
 	bool ProduceStatesDelta(dcclite::StatesBitPack_t &changedStates, dcclite::StatesBitPack_t &states);
 	void WriteStates(dcclite::StatesBitPack_t &changedStates, dcclite::StatesBitPack_t &states);

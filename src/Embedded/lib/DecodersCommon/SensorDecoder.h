@@ -44,7 +44,7 @@ class SensorDecoder : public Decoder
 			return false;
 		}
 
-		bool AcceptServerState(dcclite::DecoderStates state) noexcept override;
+		bool AcceptServerState(dcclite::DecoderStates state, const unsigned long ticks) noexcept override;
 
 		bool IsActive() const noexcept override
 		{

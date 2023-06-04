@@ -506,7 +506,7 @@ static void OnlineTick(const unsigned long ticks, const bool stateChangeDetected
 		g_uNextStateThink = ticks + Config::g_cfgStateTicks;
 }
 
-static void OnStatePacket(dcclite::Packet &packet)
+static void OnStatePacket(dcclite::Packet &packet, const unsigned long time)
 {
 	using namespace dcclite;
 
@@ -539,7 +539,7 @@ static void OnStatePacket(dcclite::Packet &packet)
 
 	*/	
 
-	g_fRefreshServerAboutOutputDecoders = DecoderManager::ReceiveServerStates(changedStates, states) || g_fRefreshServerAboutOutputDecoders;
+	g_fRefreshServerAboutOutputDecoders = DecoderManager::ReceiveServerStates(changedStates, states, time) || g_fRefreshServerAboutOutputDecoders;
 }
 
 static void OnSyncPacket(dcclite::Packet &packet)
@@ -629,7 +629,8 @@ static void OnTaskRequestPacket(dcclite::Packet &packet)
 
 static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 {			
-	PingManager::Reset(millis());
+	const auto time = millis();
+	PingManager::Reset(time);
 
 	switch (type)
 	{
@@ -649,7 +650,7 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 
 		case dcclite::MsgTypes::STATE:
 			//Console::SendLogEx(MODULE_NAME, "got state");
-			OnStatePacket(packet);			
+			OnStatePacket(packet, time);
 			break;		
 
 		case dcclite::MsgTypes::CONFIG_FINISHED:		

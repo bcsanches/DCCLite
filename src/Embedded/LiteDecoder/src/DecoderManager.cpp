@@ -12,6 +12,7 @@
 
 #include "Console.h"
 #include "OutputDecoder.h"
+#include "QuadInverterDecoder.h"
 #include "SensorDecoder.h"
 #include "ServoTurnoutDecoder.h"
 #include "Session.h"
@@ -49,8 +50,11 @@ static Decoder *Create(const dcclite::DecoderTypes type, dcclite::Packet &packet
 		case dcclite::DecoderTypes::DEC_SERVO_TURNOUT:
 			return new ServoTurnoutDecoder(packet);
 
+		case dcclite::DecoderTypes::DEC_QUAD_INVERTER:
+			return new QuadInverterDecoder(packet);
+
 		case dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER:
-			return new TurntableAutoInverterDecoder(packet);
+			return new TurntableAutoInverterDecoder(packet);		
 
 		default:
 			//Console::SendLogEx(MODULE_NAME, FSTR_INVALID_DECODER_TYPE, static_cast<int>(type));
@@ -126,6 +130,7 @@ void DecoderManager::SaveConfig(Storage::EpromStream &stream)
 		dcclite::DecoderTypes::DEC_SENSOR,
 		dcclite::DecoderTypes::DEC_SERVO_TURNOUT,
 		dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER,
+		dcclite::DecoderTypes::DEC_QUAD_INVERTER,
 
 		dcclite::DecoderTypes::DEC_NULL
 	};
@@ -241,7 +246,7 @@ void DecoderManager::LoadConfig(Storage::EpromStream &stream)
 
 					//Console::Send('O');
 					DCCLITE_LOG << 'O';
-					break;
+					break;				
 
 				case dcclite::DecoderTypes::DEC_SENSOR:
 					decoder = new SensorDecoder(stream);
@@ -270,6 +275,14 @@ void DecoderManager::LoadConfig(Storage::EpromStream &stream)
 					DCCLITE_LOG << 'U';
 					break;
 
+				case dcclite::DecoderTypes::DEC_QUAD_INVERTER:
+					decoder = new QuadInverterDecoder(stream);
+
+					usedMem += sizeof(QuadInverterDecoder);
+
+					DCCLITE_LOG << 'Q';
+					break;
+
 				default:
 					//should we check?
 					break;
@@ -288,7 +301,7 @@ void DecoderManager::LoadConfig(Storage::EpromStream &stream)
 	DCCLITE_LOG_MODULE_LN(usedMem);
 }
 
-bool DecoderManager::ReceiveServerStates(const dcclite::StatesBitPack_t &changedStates, const dcclite::StatesBitPack_t &states)
+bool DecoderManager::ReceiveServerStates(const dcclite::StatesBitPack_t &changedStates, const dcclite::StatesBitPack_t &states, const unsigned long time)
 {
 	bool stateChanged = false;
 	for (unsigned i = 0; (i < changedStates.size()) && (i < MAX_DECODERS); ++i)
@@ -302,7 +315,7 @@ bool DecoderManager::ReceiveServerStates(const dcclite::StatesBitPack_t &changed
 		if (!decoder)
 			continue;
 
-		decoder->AcceptServerState(states[i] ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
+		decoder->AcceptServerState(states[i] ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE, time);
 
 		if (decoder->IsOutputDecoder())
 			stateChanged = true;

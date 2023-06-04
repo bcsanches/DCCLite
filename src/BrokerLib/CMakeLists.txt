@@ -35,6 +35,8 @@ add_library(
         PinManager.h
         Project.cpp
         Project.h
+	QuadInverter.cpp
+	QuadInverter.h
         RemoteDecoder.cpp
         RemoteDecoder.h
 	ScriptService.cpp

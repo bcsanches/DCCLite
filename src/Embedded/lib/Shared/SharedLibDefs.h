@@ -19,7 +19,7 @@
 #endif
 
 #ifndef DCCLITE_VERSION
-#define DCCLITE_VERSION "0.7.1"
+#define DCCLITE_VERSION "0.8.0"
 #endif
 
 namespace dcclite
@@ -33,7 +33,8 @@ namespace dcclite
 		DEC_SENSOR = 2,
 		DEC_SERVO_TURNOUT = 3,
 		DEC_SIGNAL = 4,			//Only virtual, not implemented on Arduino
-		DEC_TURNTABLE_AUTO_INVERTER = 5
+		DEC_TURNTABLE_AUTO_INVERTER = 5,
+		DEC_QUAD_INVERTER = 6
 	};
 
 	enum class DecoderStates
@@ -107,5 +108,12 @@ namespace dcclite
 	{
 		TRTD_REMOTE_ACTIVE = 0x40,
 		TRTD_ACTIVE = 0x80
+	};
+
+	enum QuadInverterDecodrFlags : uint8_t
+	{		
+		QUAD_IGNORE_SAVED_STATE = 0x02,
+		QUAD_ACTIVATE_ON_POWER_UP = 0x04,
+		QUAD_ACTIVE = 0x80
 	};
 } //end of namespace dcclite

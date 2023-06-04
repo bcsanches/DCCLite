@@ -22,6 +22,7 @@
 #include "LocationManager.h"
 #include "OutputDecoder.h"
 #include "Packet.h"
+#include "QuadInverter.h"
 #include "SensorDecoder.h"
 #include "SignalDecoder.h"
 #include "SimpleOutputDecoder.h"
@@ -36,18 +37,28 @@ namespace dcclite::broker
 {
 	std::unique_ptr<Decoder> TryCreateDecoder(const std::string &className, DccAddress address, std::string name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params)
 	{
+		//
+		//Check the most common first....
+		//
+		if (className.compare("ServoTurnout") == 0)
+			return std::make_unique<ServoTurnoutDecoder>(address, std::move(name), owner, dev, params);
+
 		if (className.compare("Output") == 0)
 			return std::make_unique<SimpleOutputDecoder>(address, std::move(name), owner, dev, params);
-		else if (className.compare("Sensor") == 0)
+
+		if (className.compare("Sensor") == 0)
 			return std::make_unique<SensorDecoder>(address, std::move(name), owner, dev, params);
-		else if (className.compare("ServoTurnout") == 0)
-			return std::make_unique<ServoTurnoutDecoder>(address, std::move(name), owner, dev, params);
-		else if (className.compare("VirtualSignal") == 0)
+
+		if (className.compare("VirtualSignal") == 0)
 			return std::make_unique<SignalDecoder>(address, std::move(name), owner, dev, params);
-		else if (className.compare("TurntableAutoInverter") == 0)
+		
+		if (className.compare("QuadInverter") == 0)
+			return std::make_unique<QuadInverter>(address, std::move(name), owner, dev, params);
+		
+		if (className.compare("TurntableAutoInverter") == 0)
 			return std::make_unique<TurntableAutoInverterDecoder>(address, std::move(name), owner, dev, params);
-		else
-			return std::unique_ptr<Decoder>();
+					
+		return std::unique_ptr<Decoder>();
 	}
 
 

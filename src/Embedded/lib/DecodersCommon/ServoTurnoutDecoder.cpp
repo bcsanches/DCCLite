@@ -101,7 +101,7 @@ void ServoTurnoutDecoder::SaveConfig(Storage::EpromStream& stream)
 	stream.Put(m_uTicks);
 }
 
-void ServoTurnoutDecoder::TurnOnPower(const unsigned long ticks) noexcept
+void ServoTurnoutDecoder::TurnOnPower(const unsigned long time) noexcept
 {
 	SERVO_WRITE(m_clServo, m_uServoPos);
 	m_clServo.attach(m_clPin.Raw());	
@@ -112,7 +112,7 @@ void ServoTurnoutDecoder::TurnOnPower(const unsigned long ticks) noexcept
 	}	
 		
 	m_fFlags |= dcclite::SRVT_POWER_ON;
-	m_uNextThink = ticks + POWER_WAIT_TICKS;
+	m_uNextThink = time + POWER_WAIT_TICKS;
 }
 
 void ServoTurnoutDecoder::TurnOffPower() noexcept
@@ -208,7 +208,7 @@ ServoTurnoutDecoder::States ServoTurnoutDecoder::DecoderState2State(dcclite::Dec
 	return activate ? States::THROWN : States::CLOSED;
 }
 
-bool ServoTurnoutDecoder::AcceptServerState(const dcclite::DecoderStates decoderState)
+bool ServoTurnoutDecoder::AcceptServerState(const dcclite::DecoderStates decoderState, const unsigned long time)
 {
 	using namespace dcclite;
 
@@ -225,9 +225,9 @@ bool ServoTurnoutDecoder::AcceptServerState(const dcclite::DecoderStates decoder
 	}
 
 	if (requestedState == States::THROWN)
-		this->OperateThrown(millis());
+		this->OperateThrown(time);
 	else
-		this->OperateClose(millis());
+		this->OperateClose(time);
 
 	return true;
 }
@@ -319,16 +319,16 @@ void ServoTurnoutDecoder::SetState(const States newState) noexcept
 	m_fFlags |= bits;	
 }
 
-void ServoTurnoutDecoder::OperateThrown(const unsigned long ticks) noexcept
+void ServoTurnoutDecoder::OperateThrown(const unsigned long time) noexcept
 {
-	this->TurnOnPower(ticks);
+	this->TurnOnPower(time);
 
 	this->SetState(States::THROWNING);
 }
 
-void ServoTurnoutDecoder::OperateClose(const unsigned long ticks) noexcept
+void ServoTurnoutDecoder::OperateClose(const unsigned long time) noexcept
 {
-	this->TurnOnPower(ticks);
+	this->TurnOnPower(time);
 
 	this->SetState(States::CLOSING);
 }

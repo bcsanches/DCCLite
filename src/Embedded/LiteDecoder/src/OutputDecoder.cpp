@@ -91,7 +91,7 @@ void OutputDecoder::Init()
 	this->OperatePin();
 }
 
-bool OutputDecoder::AcceptServerState(dcclite::DecoderStates state)
+bool OutputDecoder::AcceptServerState(dcclite::DecoderStates state, const unsigned long time)
 {
 	using namespace dcclite;
 

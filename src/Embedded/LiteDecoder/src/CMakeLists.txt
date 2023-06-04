@@ -6,6 +6,7 @@ set(LiteDecoderLib_SRCS
   main.cpp
   NetUdp.cpp
   OutputDecoder.cpp
+  QuadInverterDecoder.cpp
   ServoProgrammer.cpp  
   Session.cpp
   TurntableAutoInverterDecoder.cpp        
@@ -18,6 +19,7 @@ set(LiteDecoderLib_HDRS
   main.h
   NetUdp.h
   OutputDecoder.h
+  QuadInverterDecoder.h
   ServoProgrammer.h    
   Session.h  
   TurntableAutoInverterDecoder.h    
