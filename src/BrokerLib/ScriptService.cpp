@@ -383,7 +383,7 @@ namespace dcclite::broker::ScriptService
 
 	static void WatchFile(const dcclite::fs::path &fileName)
 	{
-#if 0
+#if 1
 		FileWatcher::TryWatchFile(fileName, FileWatcher::FW_MODIFIED, [](const FileWatcher::Event &ev)
 			{
 				dcclite::Log::Info("[ScriptService] [FileWatcher::Reload] Attempting to reload config: {}", ev.m_strFileName);

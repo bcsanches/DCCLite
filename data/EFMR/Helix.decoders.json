@@ -53,18 +53,19 @@
     "name": "HLX_T05",
     "class": "ServoTurnout",
     "address": "1855",  
-    "pin": 18,
+    "pin": 16,
     "inverted": false,
     "powerPin": 41,
     "invertedFrog": true,
     "operationTime": 3000,
+    "range":25,
     "comment": "AMV 05 - inferior - saída para Soledade"
   },      
   {
     "name": "HLX_T06",
     "class": "ServoTurnout",
     "address": "1856",  
-    "pin": 16,
+    "pin": 15,
     "inverted": false,    
     "invertedFrog": true,
     "operationTime": 3000,
@@ -74,12 +75,12 @@
     "name": "HLX_T07",
     "class": "ServoTurnout",
     "address": "1857",  
-    "pin": 15,
+    "pin": 14,
     "inverted": false,    
     "invertedFrog": true,
     "operationTime": 3000,
     "comment": "AMV 07 - superior - saída para Barra do Piraí"
-  }, 
+  },   
   {
     "name":"HLX_DMT03", 
     "class":"Sensor", 
@@ -121,5 +122,12 @@
     "activateDelay":1,
     "deactivateDelay":1,
     "comment":"unused"
-  } 
+  }, 
+  {
+    "name": "INV_HELIX_TC_SOL",
+    "class": "QuadInverter",
+    "address":1890,
+    "trackPowerAPins": [9, 10],
+    "trackPowerBPins": [11, 12]
+  }
 ]
