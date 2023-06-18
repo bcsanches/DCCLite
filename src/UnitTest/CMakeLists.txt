@@ -1,6 +1,7 @@
 
 set(UnitTest_SRCS
 	BitPackUnitTest.cpp
+	DirectoryMonitorTest.cpp
 	EventHubTest.cpp
     NetMessengerTest.cpp
     NmraUtilUnitTest.cpp

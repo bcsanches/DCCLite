@@ -1,3 +1,9 @@
+# Version ?????
+
+## Code
+
+- Added own implementation of DirectoryMonitor (win32 only for now)
+
 # Version 0.8.0 - 04/06/2023
 
 ## General Features

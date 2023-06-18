@@ -180,7 +180,7 @@ TEST(EventHub, BadAlloc)
 
 	try
 	{
-		for (int i = 0;i < 200; ++i)
+		for (int i = 0;i < 1024; ++i)
 			dcclite::broker::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { ++called;  });
 
 		//fail
