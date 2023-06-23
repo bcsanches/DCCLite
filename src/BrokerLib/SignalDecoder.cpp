@@ -37,9 +37,14 @@ namespace dcclite::broker
 		Decoder(address, decoderName, owner, dev, params)
 	{
 		auto headsData = params.FindMember("heads");
-		if ((headsData == params.MemberEnd()) || (!headsData->value.IsObject()))
+		if (headsData == params.MemberEnd())
 		{
 			throw std::invalid_argument(fmt::format("[SignalDecoder::{}] [SignalDecoder] Error: expected heads object", this->GetName()));
+		}
+
+		if (!headsData->value.IsObject())
+		{
+			throw std::invalid_argument(fmt::format("[SignalDecoder::{}] [SignalDecoder] Error: heads data is not an object", this->GetName()));
 		}
 
 		for (auto &headElement : headsData->value.GetObject())
@@ -48,9 +53,19 @@ namespace dcclite::broker
 		}
 
 		auto aspectsData = params.FindMember("aspects");
-		if ((aspectsData == params.MemberEnd()) || (!aspectsData->value.IsArray()) || (aspectsData->value.GetArray().Empty()))
+		if (aspectsData == params.MemberEnd())
 		{
 			throw std::invalid_argument(fmt::format("[SignalDecoder::{}] [SignalDecoder] Error: expected aspects array", this->GetName()));
+		}
+
+		if (!aspectsData->value.IsArray())
+		{
+			throw std::invalid_argument(fmt::format("[SignalDecoder::{}] [SignalDecoder] Error: expected aspects data to be an array", this->GetName()));
+		}
+
+		if (aspectsData->value.GetArray().Empty())
+		{
+			throw std::invalid_argument(fmt::format("[SignalDecoder::{}] [SignalDecoder] Error: aspects array is empty", this->GetName()));
 		}
 
 		for (auto &aspectElement : aspectsData->value.GetArray())

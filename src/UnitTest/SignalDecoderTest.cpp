@@ -193,11 +193,14 @@ TEST(SignalDecoderTest, NoHeadsData)
 			"class":"VirtualSignal",    
 			"address":"1840"		
 		}
-	)JSON";	
+	)JSON";
 
-	ASSERT_THAT(ExtractSignalExceptionString(json), HasSubstr("Error: expected heads object for"));
+	ASSERT_THAT(ExtractSignalExceptionString(json), HasSubstr("[SignalDecoder] Error: expected heads object"));
+}
 
-	json = R"JSON(
+TEST(SignalDecoderTest, HeadsDataIsNotObject)
+{
+	auto json = R"JSON(
 		{
 			"name":"STC_SIG_12",
 			"class":"VirtualSignal",    
@@ -206,10 +209,53 @@ TEST(SignalDecoderTest, NoHeadsData)
 		}
 	)JSON";
 
-	ASSERT_THAT(ExtractSignalExceptionString(json), HasSubstr("Error: expected heads object for")) << "Heads data in JSON is not an object";
+	ASSERT_THAT(ExtractSignalExceptionString(json), HasSubstr("[SignalDecoder] Error: heads data is not an object")) << "Heads data in JSON is not an object";
 }
 
-TEST(SignalDecoderTest, NoAspectsData)
+TEST(SignalDecoderTest, Aspects_EmptyArray)
+{
+	const char *json = R"JSON(
+		{
+			"name":"STC_SIG_12",
+			"class":"VirtualSignal",    
+			"address":"1840",  
+			"heads":
+			{
+				"red":"STC_HR12",
+				"green":"STC_HG12"			
+			},        
+			"aspects":
+			[			
+			]  
+		}
+	)JSON";
+
+	ASSERT_THAT(ExtractSignalExceptionString(json), HasSubstr(" [SignalDecoder] Error: aspects array is empty"));
+};
+
+
+TEST(SignalDecoderTest, Aspects_DataIsNotArray)
+{
+	auto json = R"JSON(
+		{
+			"name":"STC_SIG_12",
+			"class":"VirtualSignal",    
+			"address":"1840",
+			"heads":
+			{
+				"red":"STC_HR12",
+				"green":"STC_HG12",
+				"yellow":"STC_HY12",
+				"caution":"STC_BLA"
+			},
+			"aspects":1
+		}
+	)JSON";
+
+	ASSERT_THAT(ExtractSignalExceptionString(json), HasSubstr("[SignalDecoder] Error: expected aspects data to be an array"));
+}
+
+TEST(SignalDecoderTest, Aspects_NoData)
 {
 	auto json = R"JSON(
 		{
@@ -226,26 +272,9 @@ TEST(SignalDecoderTest, NoAspectsData)
 		}
 	)JSON";
 
-	ASSERT_THAT(ExtractSignalExceptionString(json), HasSubstr("Error: expected aspects array for"));
-
-	json = R"JSON(
-		{
-			"name":"STC_SIG_12",
-			"class":"VirtualSignal",    
-			"address":"1840",
-			"heads":
-			{
-				"red":"STC_HR12",
-				"green":"STC_HG12",
-				"yellow":"STC_HY12",
-				"caution":"STC_BLA"
-			},
-			"aspects":1
-		}
-	)JSON";
-
-	ASSERT_THAT(ExtractSignalExceptionString(json), HasSubstr("Error: expected aspects array for"));
+	ASSERT_THAT(ExtractSignalExceptionString(json), HasSubstr("[SignalDecoder] Error: expected aspects array"));
 }
+
 
 TEST(SignalDecoderTest, DuplicatedAspect)
 {
@@ -394,23 +423,4 @@ TEST(SignalDecoderTest, InvalidAspectName)
 	)JSON")) << "Signal definition in JSON uses an name for aspect that is not know [BLA]";
 };
 
-TEST(SignalDecoderTest, EmptyAspectsArray)
-{
-	const char *json = R"JSON(
-		{
-			"name":"STC_SIG_12",
-			"class":"VirtualSignal",    
-			"address":"1840",  
-			"heads":
-			{
-				"red":"STC_HR12",
-				"green":"STC_HG12"			
-			},        
-			"aspects":
-			[			
-			]  
-		}
-	)JSON";
 
-	ASSERT_THAT(ExtractSignalExceptionString(json), HasSubstr(" Error: expected aspects array for"));	
-};

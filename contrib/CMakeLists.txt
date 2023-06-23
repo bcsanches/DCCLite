@@ -1,7 +1,7 @@
 add_subdirectory(fmt)
 add_subdirectory(lfwatch)
 add_subdirectory(lua-5.4.6)
-add_subdirectory(googletest)
+#add_subdirectory(googletest)
 add_subdirectory(sigslot)
 
 if(${DCCLITE_GUI_TOOLS})

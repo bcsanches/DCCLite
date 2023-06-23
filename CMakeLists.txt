@@ -53,7 +53,6 @@ set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
-
 if (${DCCLITE_GUI_TOOLS})
     set_property(TARGET wxrc PROPERTY FOLDER "contrib/wxWidgets/Utilities")
     set_property(TARGET clean_cotire PROPERTY FOLDER "contrib/wxWidgets/cotire")

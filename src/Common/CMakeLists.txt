@@ -5,7 +5,6 @@ add_library(
         Clock.h
         ConsoleUtils.h	
         defs.h
-	DirectoryMonitor.h
         FileSystem.h
         FmtUtils.h
         GuidUtils.cpp
@@ -36,7 +35,6 @@ if(WIN32)
     
     target_sources(Common PRIVATE
         ConsoleUtils_win.cpp
-	DirectoryMonitor_win.cpp
         GuidUtils_win.cpp
         SerialPort_win.cpp
         SerialPort_win.h
