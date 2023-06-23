@@ -103,64 +103,7 @@ bool dcclite::StrEndsWith(std::string_view str, std::string_view suffix) noexcep
 
 std::string dcclite::GetSystemErrorMessage(const unsigned int error) noexcept
 {
-#ifndef WIN32	
-
-	return std::string(strerror(error));
-
-#elif defined WIN32
-	LPWSTR lpMsgBuf;
-	auto numWChars = FormatMessageW(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER |
-		FORMAT_MESSAGE_FROM_SYSTEM |
-		FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL,
-		error,
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPWSTR)&lpMsgBuf,
-		0,
-		NULL
-	);
-
-	if (!numWChars)
-		return "GetSystemLastErrorMessage::FormatMessageW failed";
-
-	auto requiredStrSize = WideCharToMultiByte(
-		CP_UTF8,
-		0,					// no flags
-		lpMsgBuf,
-		numWChars,
-		nullptr,
-		0,
-		nullptr,
-		nullptr
-	);
-
-	if (!requiredStrSize)
-	{
-		// Free the buffer.
-		LocalFree(lpMsgBuf);
-
-		return "GetSystemLastErrorMessage::WideCharToMultiByte failed";
-	}
-
-	std::string ret(requiredStrSize, '\0');
-
-	WideCharToMultiByte(
-		CP_UTF8,
-		0,					// no flags
-		lpMsgBuf,
-		numWChars,
-		&ret[0],
-		requiredStrSize,
-		nullptr,
-		nullptr
-	);
-
-	// Free the buffer.
-	LocalFree(lpMsgBuf);
-
-	return ret;
-#endif
+	return std::system_category().message(error);
 }
 
 std::string dcclite::GetSystemLastErrorMessage() noexcept

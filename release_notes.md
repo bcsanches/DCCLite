@@ -3,6 +3,8 @@
 ## Code
 
 - Added own implementation of DirectoryMonitor (win32 only for now)
+- Removed code to convert win32 error messages and replaced with std::system_category
+- Moved DirectoryMonitor to its own library
 
 # Version 0.8.0 - 04/06/2023
 

@@ -64,13 +64,14 @@ This code needs the following libraries to be built:
 - [GoogleTest][9]
 - [JsonCreator][2]
 - [lfwatch][7]
+- [Lua][16]
 - [magicenum][10]
 - [RapidJson][1]
+- [Sol][17]
 - [spdlog][4]
 - [sigslot][15]
 - [wxWidgets][11] - Optional, only for building native GUI apps (still in development)
  
-
 ## License
 
 All code is licensed under the [MPLv2 License][5].
@@ -81,7 +82,7 @@ All code is licensed under the [MPLv2 License][5].
 [4]: https://github.com/gabime/spdlog
 [5]: https://choosealicense.com/licenses/mpl-2.0/
 [6]: https://sites.google.com/site/dccppsite/
-[7]: https://github.com/bcsanches/lfwatch
+[7]: https://github.com/Twinklebear/lfwatch
 [8]: https://github.com/njh/EtherCard
 [9]: https://github.com/google/googletest
 [10]: https://github.com/Neargye/magic_enum
@@ -90,3 +91,5 @@ All code is licensed under the [MPLv2 License][5].
 [13]: https://dcc-ex.com/
 [14]: https://github.com/DccPlusPlus/BaseStation/wiki
 [15]: https://github.com/palacaze/sigslot
+[16]: http://www.lua.org/
+[17]: https://github.com/ThePhD/sol2
