@@ -10,9 +10,6 @@
 [submodule "contrib/rapidjson"]
 	path = contrib/rapidjson
 	url = https://github.com/Tencent/rapidjson.git
-[submodule "contrib/lfwatch"]
-	path = contrib/lfwatch
-	url = https://github.com/bcsanches/lfwatch.git
 [submodule "contrib/wxWidgets"]
 	path = contrib/wxWidgets
 	url = https://github.com/wxWidgets/wxWidgets.git
