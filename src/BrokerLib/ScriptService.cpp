@@ -373,8 +373,6 @@ namespace dcclite::broker::ScriptService
 			}
 		}				
 
-		
-
 		WatchFile(path);
 
 		auto r = g_clLua.safe_script_file(path.string());
@@ -384,9 +382,9 @@ namespace dcclite::broker::ScriptService
 	static void WatchFile(const dcclite::fs::path &fileName)
 	{
 #if 1
-		FileWatcher::TryWatchFile(fileName, FileWatcher::FW_MODIFIED, [](const FileWatcher::Event &ev)
+		FileWatcher::TryWatchFile(fileName, [](dcclite::fs::path path, std::string fileName)
 			{
-				dcclite::Log::Info("[ScriptService] [FileWatcher::Reload] Attempting to reload config: {}", ev.m_strFileName);
+				dcclite::Log::Info("[ScriptService] [FileWatcher::Reload] Attempting to reload config: {}", fileName);
 
 				try
 				{					

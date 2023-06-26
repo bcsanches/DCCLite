@@ -31,7 +31,7 @@ set_property(TARGET gtest PROPERTY FOLDER "contrib")
 set_property(TARGET gtest_main PROPERTY FOLDER "contrib")
 set_property(TARGET gmock PROPERTY FOLDER "contrib")
 set_property(TARGET gmock_main PROPERTY FOLDER "contrib")
-set_property(TARGET lfwatch PROPERTY FOLDER "contrib")
+set_property(TARGET ldmonitor PROPERTY FOLDER "contrib")
 set_property(TARGET LuaLib PROPERTY FOLDER "contrib")
 
 set_property(TARGET ArduinoLib PROPERTY FOLDER "Emulator")

@@ -31,3 +31,6 @@
 [submodule "contrib/sol2"]
 	path = contrib/sol2
 	url = https://github.com/ThePhD/sol2.git
+[submodule "contrib/ldmonitor"]
+	path = contrib/ldmonitor
+	url = https://github.com/bcsanches/ldmonitor.git

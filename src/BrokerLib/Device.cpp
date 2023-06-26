@@ -31,9 +31,9 @@ namespace dcclite::broker
 		m_pathConfigFile{ project.GetFilePath(m_strConfigFileName) },
 		m_rclProject{ project }
 	{
-		FileWatcher::TryWatchFile(m_pathConfigFile, FileWatcher::FW_MODIFIED, [this](const FileWatcher::Event &ev)
+		FileWatcher::TryWatchFile(m_pathConfigFile, [this](const dcclite::fs::path path, std::string fileName)
 			{
-				dcclite::Log::Info("[Device::{}] [FileWatcher::Reload] Attempting to reload config: {}", this->GetName(), ev.m_strFileName);
+				dcclite::Log::Info("[Device::{}] [FileWatcher::Reload] Attempting to reload config: {}", this->GetName(), fileName);
 
 				try
 				{

@@ -15,23 +15,10 @@
 #include <FileSystem.h>
 
 namespace FileWatcher
-{
-	enum Flags
-	{
-		FW_MODIFIED = 0x01,		
-	};
+{	
+	typedef std::function<void(dcclite::fs::path path, std::string fileName)> Callback_t;
 
-	struct Event
-	{
-		std::string m_strPath;
-		std::string m_strFileName;
-
-		uint32_t	m_fFlags;
-	};
-
-	typedef std::function<void(const Event &data)> Callback_t;
-
-	bool TryWatchFile(const dcclite::fs::path &fileName, const uint32_t flags, const Callback_t &callback);
+	bool TryWatchFile(const dcclite::fs::path &fileName, const Callback_t &callback);
 
 	void UnwatchFile(const dcclite::fs::path &fileName);
 }

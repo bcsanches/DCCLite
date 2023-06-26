@@ -10,53 +10,41 @@
 
 #include "FileWatcher.h"
 
-#include "Thinker.h"
-
 #include <fmt/format.h>
 #include <Log.h>
-#include <lfwatch.h>
+#include <ldmonitor/DirectoryMonitor.h>
 #include <map>
+
+#include "EventHub.h"
+#include "Thinker.h"
 
 using namespace std::chrono_literals;
 
 namespace FileWatcher
-{		
-	static void PumpEvents(const dcclite::Clock::TimePoint_t tp);
+{			
+	class EventTarget : public dcclite::broker::EventHub::IEventTarget
+	{
+		public:
+			EventTarget()
+			{
+				//empty
+			}
+	};
 
 	class DirectoryWatcher;
+		
+	static std::mutex										g_lckMutex;
+	static std::map<dcclite::fs::path, DirectoryWatcher>	g_mapWatchers;
+	static EventTarget										g_clSentinel;
 
-	static lfw::Watcher gWatcher;
-	static dcclite::broker::Thinker g_Thinker{ "FileWatcher::PumpEvents", PumpEvents};
-	static std::map<dcclite::fs::path, DirectoryWatcher> g_mapWatchers;
-
-	constexpr auto DEFAULT_INTERVAL = 1s;
-
-	inline uint32_t FlagBroker2Lfw(const uint32_t flags)
-	{
-		uint32_t newFlag = 0;
-
-		if (flags & FW_MODIFIED)
-			newFlag |= lfw::FILE_MODIFIED;
-
-		return newFlag;
-	}
-
-	inline uint32_t FlagLfw2Broker(const uint32_t flags)
-	{
-		uint32_t newFlag = 0;
-
-		if(flags == lfw::FILE_MODIFIED)
-			newFlag |= FW_MODIFIED;
-
-		return newFlag;
-	}
+	static bool IsHandleValid(const ldmonitor::fs::path &path, const std::string &fileName) noexcept;	
 
 	class DirectoryWatcher
 	{
 		public:			
-			bool TryAddHandle(std::string fileName, uint32_t flags, const Callback_t &callback)
-			{				
-				if (m_mapHandles.find(fileName) != m_mapHandles.end())
+			bool TryAddHandle(std::string fileName, const Callback_t &callback)
+			{			
+				if(IsHandleValid(fileName))				
 				{
 					dcclite::Log::Warn("[FileWatcher::DirectoryWatcher::AddHandler] Duplicated handle for {}", fileName);
 
@@ -64,8 +52,7 @@ namespace FileWatcher
 				}
 					
 				Handle h;
-
-				h.m_fFlags = flags;
+				
 				h.m_pfnCallback = callback;
 
 				m_mapHandles.insert(std::make_pair(std::move(fileName), h));				
@@ -83,70 +70,80 @@ namespace FileWatcher
 				return m_mapHandles.empty();
 			}
 
-			void OnFileEvent(const lfw::EventData &data)
+			bool IsHandleValid(std::string fileName) const
 			{
-				auto it = m_mapHandles.find(data.fname);
-				if(it == m_mapHandles.end())
+				return m_mapHandles.find(fileName) != m_mapHandles.end();
+			}
+
+			void TryFireEvent(ldmonitor::fs::path path, std::string fileName)
+			{
+				auto it = m_mapHandles.find(fileName);
+				if (it == m_mapHandles.end())
 					return;
 
-				auto flags = FlagLfw2Broker(data.event);
-
-				auto &handle = it->second;
-
-				if (handle.m_fFlags & flags)
-				{
-					Event ev;
-
-					ev.m_fFlags = handle.m_fFlags;
-					ev.m_strFileName = data.fname;
-					ev.m_strPath = data.dir;
-
-					it->second.m_pfnCallback(ev);
-				}
+				it->second.m_pfnCallback(std::move(path), std::move(fileName));
 			}
 
 		private:	
 			struct Handle
-			{
-				uint32_t m_fFlags;
+			{				
 				Callback_t m_pfnCallback;
 			};
 
 			std::map<std::string, Handle> m_mapHandles;
 	};	
 
-	static void PumpEvents(const dcclite::Clock::TimePoint_t tp)
+	class FileWatcherEvent : public dcclite::broker::EventHub::IEvent
 	{
-		gWatcher.update();
+		public:
+			FileWatcherEvent(EventTarget &target, const ldmonitor::fs::path &path, std::string fileName) :
+				IEvent(target),
+				m_pthPath{ path },
+				m_strFileName{ std::move(fileName) }
+			{
+				//empty
+			}
 
-		g_Thinker.Schedule(tp + DEFAULT_INTERVAL);
-	}	
+			void Fire() override
+			{
+				auto it = g_mapWatchers.find(m_pthPath);
 
-	bool TryWatchFile(const dcclite::fs::path &fileName, const uint32_t flags, const Callback_t &callback)
-	{
-		assert(flags);
+				//removed? Ignore...
+				if (it == g_mapWatchers.end())
+					return;
 
-		auto filePath = fileName.parent_path();
+				it->second.TryFireEvent(std::move(m_pthPath), std::move(m_strFileName));
+			}
+
+		private:
+			ldmonitor::fs::path	m_pthPath;
+			std::string			m_strFileName;
+	};
+
+	bool TryWatchFile(const dcclite::fs::path &fileName, const Callback_t &callback)
+	{		
+		auto filePath = fileName.parent_path();		
 
 		auto it = g_mapWatchers.find(filePath);
 		if (it == g_mapWatchers.end())
 		{
-			it = g_mapWatchers.insert(std::make_pair(filePath, DirectoryWatcher{})).first;
-
-			auto watcher = &it->second;
+			it = g_mapWatchers.insert(std::make_pair(filePath, DirectoryWatcher{})).first;			
 			
-			gWatcher.watch(filePath.string(), FlagBroker2Lfw(flags), [watcher](const lfw::EventData &data){
-				watcher->OnFileEvent(data);
-			});
+			////////////////
+			// 
+			// Because the callback can be called by any thread, we forward all data to it, to avoid race conditions
+			//
+			//
+			ldmonitor::Watch(filePath.string(), [](const ldmonitor::fs::path &path, std::string fileName, const uint32_t action)
+				{
+					dcclite::broker::EventHub::PostEvent<FileWatcherEvent>(std::ref(g_clSentinel), path, std::move(fileName));
+				}, 
+				ldmonitor::MONITOR_ACTION_FILE_MODIFY
+			);
 		}
 
-		if (!it->second.TryAddHandle(fileName.filename().string(), flags, callback))
-			return false;
-
-		if (!g_Thinker.IsScheduled())
-		{
-			g_Thinker.Schedule(dcclite::Clock::DefaultClock_t::time_point{});
-		}
+		if (!it->second.TryAddHandle(fileName.filename().string(), callback))
+			return false;		
 
 		return true;
 	}
@@ -154,7 +151,7 @@ namespace FileWatcher
 	void UnwatchFile(const dcclite::fs::path &fileName)
 	{
 		const auto filePath = fileName.parent_path();
-		const auto name = fileName.filename().string();
+		const auto name = fileName.filename().string();		
 
 		auto it = g_mapWatchers.find(filePath);
 		if (it == g_mapWatchers.end())
@@ -167,13 +164,11 @@ namespace FileWatcher
 		it->second.RemoveHandle(name);
 
 		if (it->second.IsEmpty())
-		{
+		{			
+			ldmonitor::Unwatch(filePath);			
+
+			//Remove after unwatch, to make sure thread does not access it
 			g_mapWatchers.erase(it);
-
-			gWatcher.remove(filePath.string());
-
-			if (g_mapWatchers.empty())
-				g_Thinker.Cancel();
 		}		
 	}	
 }
