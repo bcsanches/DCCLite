@@ -75,19 +75,29 @@ namespace FileWatcher
 				return m_mapHandles.find(fileName) != m_mapHandles.end();
 			}
 
-			void TryFireEvent(ldmonitor::fs::path path, std::string fileName)
+			void TryFireEvent(ldmonitor::fs::path path, std::string fileName, std::chrono::milliseconds time)
 			{
 				auto it = m_mapHandles.find(fileName);
 				if (it == m_mapHandles.end())
 					return;
 
+				//too fast? Probably filesystem noise...
+				if ((time - it->second.m_tLastTime) < 50ms)
+				{
+					dcclite::Log::Trace("[FileWatcher::DirectoryWatcher::TryFireEvent] Ignoring event for {}, too soon", fileName);
+
+					return;
+				}
+					
+				it->second.m_tLastTime = time;
 				it->second.m_pfnCallback(std::move(path), std::move(fileName));
 			}
 
 		private:	
 			struct Handle
 			{				
-				Callback_t m_pfnCallback;
+				Callback_t					m_pfnCallback;
+				std::chrono::milliseconds	m_tLastTime;
 			};
 
 			std::map<std::string, Handle> m_mapHandles;
@@ -96,10 +106,11 @@ namespace FileWatcher
 	class FileWatcherEvent : public dcclite::broker::EventHub::IEvent
 	{
 		public:
-			FileWatcherEvent(EventTarget &target, const ldmonitor::fs::path &path, std::string fileName) :
+			FileWatcherEvent(EventTarget &target, const ldmonitor::fs::path &path, std::string fileName, std::chrono::milliseconds time) :
 				IEvent(target),
 				m_pthPath{ path },
-				m_strFileName{ std::move(fileName) }
+				m_strFileName{ std::move(fileName) },
+				m_tTime{ time }
 			{
 				//empty
 			}
@@ -112,12 +123,13 @@ namespace FileWatcher
 				if (it == g_mapWatchers.end())
 					return;
 
-				it->second.TryFireEvent(std::move(m_pthPath), std::move(m_strFileName));
+				it->second.TryFireEvent(std::move(m_pthPath), std::move(m_strFileName), m_tTime);
 			}
 
 		private:
-			ldmonitor::fs::path	m_pthPath;
-			std::string			m_strFileName;
+			ldmonitor::fs::path			m_pthPath;
+			std::string					m_strFileName;
+			std::chrono::milliseconds	m_tTime;
 	};
 
 	bool TryWatchFile(const dcclite::fs::path &fileName, const Callback_t &callback)
@@ -134,9 +146,9 @@ namespace FileWatcher
 			// Because the callback can be called by any thread, we forward all data to it, to avoid race conditions
 			//
 			//
-			ldmonitor::Watch(filePath.string(), [](const ldmonitor::fs::path &path, std::string fileName, const uint32_t action)
+			ldmonitor::Watch(filePath.string(), [](const ldmonitor::fs::path &path, std::string fileName, const uint32_t action, std::chrono::milliseconds time)
 				{
-					dcclite::broker::EventHub::PostEvent<FileWatcherEvent>(std::ref(g_clSentinel), path, std::move(fileName));
+					dcclite::broker::EventHub::PostEvent<FileWatcherEvent>(std::ref(g_clSentinel), path, std::move(fileName), time);
 				}, 
 				ldmonitor::MONITOR_ACTION_FILE_MODIFY
 			);
