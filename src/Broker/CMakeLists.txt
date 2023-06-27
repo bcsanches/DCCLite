@@ -16,7 +16,6 @@ if(WIN32)
 	PRIVATE LuaLib
         PRIVATE bcrypt.lib 	        	
         PRIVATE fmt
-	PRIVATE Winmm.lib
 	)
 
 	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
