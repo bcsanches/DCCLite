@@ -359,27 +359,31 @@
     "pullup":true,
     "inverted":true,
     "activateDelay":0,
-    "deactivateDelay":0
+    "deactivateDelay":0,
+    "comment":"usado onde? apenas definido?"
   },
   {
     "name":"STA_D08A",
     "class":"Sensor",
-    "pin":40,
+    "pin":15,
     "address":"1796",
     "pullup":true,
     "inverted":true,
     "activateDelay":0,
-    "deactivateDelay":0
+    "deactivateDelay":0,
+    "comment":"usado onde? apenas definido? - era pino 40"
   },
   {
     "name":"STA_D09A",
     "class":"Sensor",
-    "pin":41,
+    "pin":14,
     "address":"1797",
     "pullup":true,
     "inverted":true,
     "activateDelay":0,
-    "deactivateDelay":0
+    "deactivateDelay":0,
+    "broken":true,
+    "comment":"usado onde? apenas definido? - era pino 39"
   },
   {
     "name":"STA_D10A",
@@ -400,7 +404,8 @@
     "inverted":true,
     "activateDelay":0,
     "deactivateDelay":0,
-    "broken":true
+    "broken":true,
+    "comment":"Nao usado"
   },
   {
     "name":"STA_DEXT_YT01",
@@ -447,5 +452,29 @@
     "activateDelay":0,
     "deactivateDelay":0,
     "comment":"Sensor infrared - linha conexao ultimo grupo de amvs"
-  } 
+  },
+  {
+    "name":"SL_BP_MAIN_D01",
+    "class":"Sensor",
+    "pin":41,
+    "address":"1650",
+    "pullup":true,
+    "inverted":true,
+    "activateDelay":0,
+    "deactivateDelay":5,
+    "location":"Soledade",
+    "comment":"Sensor infrared 01 - Principal Soledade x Barra"
+  },
+  {
+    "name":"SL_BP_MAIN_D02",
+    "class":"Sensor",
+    "pin":40,
+    "address":"1651",
+    "pullup":true,
+    "inverted":true,
+    "activateDelay":0,
+    "deactivateDelay":5,
+    "location":"Soledade",
+    "comment":"Sensor infrared 02 - Principal Soledade x Barra"
+  }
 ]          

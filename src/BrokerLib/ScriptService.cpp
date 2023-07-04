@@ -54,7 +54,7 @@ class DecoderProxy
 			return this->GetDecoder().GetName();
 		}
 
-		inline bool IsThrown() const
+		inline bool IsActive() const
 		{
 			auto turnout = DynamicDecoderCast<dcclite::broker::TurnoutDecoder>();
 
@@ -68,9 +68,9 @@ class DecoderProxy
 			decoder->SetState(active ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE, "DecoderProxy");
 		}
 
-		inline bool IsClosed() const
+		inline bool IsInactive() const
 		{
-			return !this->IsThrown();
+			return !this->IsActive();
 		}
 
 		void OnStateChange(sol::function callBack)
@@ -305,7 +305,9 @@ namespace dcclite::broker::ScriptService
 
 		auto dccLiteTable = g_clLua["dcclite"].get_or_create<sol::table>();
 
-		g_clLua.set_function("run_script", [](const char *fileName)
+		g_clLua.set_function(
+			"run_script", 
+			[](const char *fileName)
 			{
 				auto path = g_pclProject->GetFilePath("scripts");
 				path.append(fileName);
@@ -316,40 +318,52 @@ namespace dcclite::broker::ScriptService
 			}
 		);
 
-		g_clLua.set_function("log_error", [](std::string_view msg)
+		g_clLua.set_function(
+			"log_error", 
+			[](std::string_view msg)
 			{
 				dcclite::Log::Error("[ScriptService] [Lua] {}", msg);
 			}
 		);
 		
-		g_clLua.set_function("log_info", [](std::string_view msg)
+		g_clLua.set_function(
+			"log_info", 
+			[](std::string_view msg)
 			{
 				dcclite::Log::Info("[ScriptService] [Lua] {}", msg);
 			}
 		);
 
-		g_clLua.set_function("log_trace", [](std::string_view msg)
+		g_clLua.set_function(
+			"log_trace", 
+			[](std::string_view msg)
 			{
 				dcclite::Log::Trace("[ScriptService] [Lua] {}", msg);
 			}
 		);
 
-		g_clLua.set_function("log_warn", [](std::string_view msg)
+		g_clLua.set_function(
+			"log_warn", 
+			[](std::string_view msg)
 			{
 				dcclite::Log::Warn("[ScriptService] [Lua] {}", msg);
 			}
 		);
 
 		g_clLua.new_usertype<DccLiteProxy>(
-			"dcclite_service", sol::no_constructor,
-			sol::meta_function::index, sol::overload(&DccLiteProxy::OnIndexByAddress, &DccLiteProxy::OnIndexByName)
+			"dcclite_service", 
+			sol::no_constructor,
+			sol::meta_function::index, 
+			sol::overload(&DccLiteProxy::OnIndexByAddress, &DccLiteProxy::OnIndexByName)
 		);
 
 		g_clLua.new_usertype<DecoderProxy>(
 			"decoder", sol::no_constructor,
 			"address", sol::property(&DecoderProxy::GetAddress),
-			"thrown", sol::property(&DecoderProxy::IsThrown),
-			"closed", sol::property(&DecoderProxy::IsClosed),
+			"thrown", sol::property(&DecoderProxy::IsActive),
+			"closed", sol::property(&DecoderProxy::IsInactive),
+			"active", sol::property(&DecoderProxy::IsActive),
+			"inactive", sol::property(&DecoderProxy::IsInactive),
 			"set_state", &DecoderProxy::SetState,
 			"on_state_change", &DecoderProxy::OnStateChange
 		);
@@ -361,9 +375,8 @@ namespace dcclite::broker::ScriptService
 		while (servicesEnumerator.MoveNext())
 		{
 			auto service = servicesEnumerator.GetCurrent<Service>();
-
-			auto dccLiteService = dynamic_cast<DccLiteService *>(service);
-			if (dccLiteService)
+			
+			if (auto dccLiteService = dynamic_cast<DccLiteService *>(service))
 			{
 				dccLiteTable[dccLiteService->GetName()] = DccLiteProxy{ *dccLiteService };
 			}
