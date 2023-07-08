@@ -56,7 +56,7 @@ class DecoderProxy
 
 		inline bool IsActive() const
 		{
-			auto turnout = DynamicDecoderCast<dcclite::broker::TurnoutDecoder>();
+			auto turnout = DynamicDecoderCast<dcclite::broker::RemoteDecoder>();
 
 			return turnout->GetRemoteState() == dcclite::DecoderStates::ACTIVE;
 		}

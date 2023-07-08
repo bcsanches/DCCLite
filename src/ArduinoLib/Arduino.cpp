@@ -22,7 +22,7 @@
 
 using namespace std;
 
-#define MAX_PINS 64
+#define MAX_PINS 70
 
 namespace ArduinoLib
 {

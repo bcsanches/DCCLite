@@ -102,7 +102,23 @@ namespace dcclite::broker
 		vecPins[18].m_pszSpecialName = "A04";
 	}
 
-	PinManager::PinManager(ArduinoBoards board)
+	static bool IsProtectedPin(ArduinoBoards board, dcclite::BasicPin pin)
+	{
+		switch (board)
+		{
+			case ArduinoBoards::MEGA:
+				return ((pin.Raw() >= 50) && (pin.Raw() <= 53));				
+
+			case ArduinoBoards::UNO:
+				return ((pin.Raw() >= 10) && (pin.Raw() <= 13));
+
+			default:
+				throw std::logic_error(fmt::format("[IsProtectedPin] Invalid board {}", magic_enum::enum_name(board)));
+		}
+	}
+
+	PinManager::PinManager(ArduinoBoards board):
+		m_kBoard{board}
 	{
 		switch (board)
 		{
@@ -126,6 +142,9 @@ namespace dcclite::broker
 
 		if (pin.Raw() >= m_vecPins.size())
 			throw std::out_of_range(fmt::format("[PinManager::RegisterPin] Decoder {} requested pin {} for {} that is out of range", decoder.GetName(), pin.Raw(), usage));
+
+		if (IsProtectedPin(this->m_kBoard, pin))
+			throw std::invalid_argument(fmt::format("[PinManager::RegisterPin] Decoder {} tried to register protected pin {} for {}", decoder.GetName(), pin.Raw(), usage));
 
 		auto &info = m_vecPins[pin.Raw()];
 		if (info.m_pclUser != nullptr)
@@ -196,7 +215,7 @@ namespace dcclite::broker
 			}
 
 			if (pinInfo.m_pszSpecialName)
-				pinObj.AddStringValue("specialName", pinInfo.m_pszSpecialName);
+				pinObj.AddStringValue("specialName", pinInfo.m_pszSpecialName);			
 		}
 	}
 }

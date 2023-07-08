@@ -52,7 +52,8 @@ namespace dcclite::broker
 			};
 
 		private:	
-			std::vector<PinInfo> m_vecPins;
+			std::vector<PinInfo>	m_vecPins;
+			ArduinoBoards			m_kBoard;
 
 		public:
 			explicit PinManager(ArduinoBoards board);

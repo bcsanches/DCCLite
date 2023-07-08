@@ -8,6 +8,8 @@
 - Removed built in DirectoryMonitor
 - Fixed unit tests inside visual studio
 - Improved SignalDecoder tests
+- Added code to detect usage of special arduino pins, like ethercard pins
+- fixed lua script to correctly handle sensor events
 
 # Version 0.8.0 - 04/06/2023
 
