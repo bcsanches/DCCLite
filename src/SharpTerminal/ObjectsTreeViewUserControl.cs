@@ -202,6 +202,9 @@ namespace SharpTerminal
 
                     RegisterNode(locationService, locationNode);                        
                 }
+
+                var emulatorNode = mTreeView.Nodes.Add("Emulator");
+                emulatorNode.Name = "Emulator";
             }
             else if (args.State == ConnectionState.DISCONNECTED)
             {

@@ -1,5 +1,5 @@
 
-local SECTION_STATES = {
+SECTION_STATES = {
     clear = {},
     up_start = {},
     up = {},
@@ -8,7 +8,7 @@ local SECTION_STATES = {
 }
 
 function get_section_state_name(state)
-    lgo_trace("trying to find state name")
+    --log_trace("trying to find state name")
 
     if state == SECTION_STATES.clear then
         return "clear"
@@ -18,8 +18,10 @@ function get_section_state_name(state)
         return "up"
     elseif state == SECTION_STATES.down_start then
         return "down_start"
-    else
+    elseif state == SECTION_STATES.down then
         return "down"
+    else
+        return nil
     end
 end
 
@@ -72,29 +74,30 @@ end
 
 function MiniBlock:on_finished()
     self.owner.state = SECTION_STATES.clear;
+    self.owner.mini_block = nil;
 
-    self.owner.callback(self);
-
-    self.mini_block = nil;
+    self.owner.callback(self.owner);    
 end
 
 function MiniBlock:on_start_sensor_change(sensor)
     -- we simple ignore the start sensor oscilatting    
 end
 
-function MiniBlock:on_end_sensor_change(sensor)
+function MiniBlock:on_end_sensor_change(sensor)    
+
+    log_trace("[MiniBlock:on_end_sensor_change] starting it")    
 
     if sensor.active then
-        if self.owner.state == state_table.complete then
+        if self.owner.state == self.state_table.complete then
             log_warn("[MiniBlock:on_end_sensor_change] miniblock end sensor activated again, did start sensor was active when deactivated?")
 
             return
         end
 
         log_trace("[MiniBlock:on_end_sensor_change] end sensor active - block is complete - train touched second sensor")
-        self.owner.state = state_table.complete;
+        self.owner.state = self.state_table.complete;
 
-        self.owner.callback(owner)
+        self.owner.callback(self.owner)
     else
         if self.start_sensor.active then
             -- on this case, we ignore and expect end sensor to be re activated
@@ -109,73 +112,57 @@ function MiniBlock:on_end_sensor_change(sensor)
 
 end
 
-function dispatch_mini_block_sensor_event(sensor, mini_block)
+function dispatch_mini_block_sensor_event(sensor, mini_block)    
     if mini_block.start_sensor == sensor then
-        mini_block.on_start_sensor_change(sensor);
+        mini_block:on_start_sensor_change(sensor);
     else
-        mini_block.on_end_sensor_change(sensor);
+        mini_block:on_end_sensor_change(sensor);
     end
 end
 
-function Section:on_start_sensor_change(sensor)
-    if self.mini_block then
-        dispatch_mini_block_sensor_event(sensor, self.mini_block);
-    elseif sensor.active then
+function Section:handle_sensor_change(sensor, start_sensor, end_sensor, new_state, complete_state)
 
-        log_trace("[Section:on_start_sensor_change] start sensor active - train entered the block and is going up")
+    if sensor.active then
 
-        --local a = SECTION_STATES.up_start
+        log_trace("[Section:handle_sensor_change] train entered the block and is " .. get_section_state_name(new_state))        
+        
+        self.state = new_state;
 
-        --log_trace("test " .. get_section_state_name(SECTION_STATES.up_start))
+        log_trace("[Section:handle_sensor_change] state changed to: " .. get_section_state_name(self.state))
 
-        log_trace("[Section:on_start_sensor_change] sgt" .. type(self.state))
-
-        -- train entered the block
-        self.state = SECTION_STATES.up_start;
-
-        log_trace("[Section:on_start_sensor_change] state changed to: " .. self.state)
-
-        self.mini_block = MiniBlock.new({
-            start_sensor = self.start_sensor,
-            end_sensor = self.end_sensor,
+        self.mini_block = MiniBlock:new({
+            start_sensor = start_sensor,
+            end_sensor = end_sensor,
             owner = self,
             state_table = {
-                complete = SECTION_STATES.up
+                complete = complete_state
             }
         });
 
-        log_trace("[Section:on_start_sensor_change] created mini bloco: " .. type(self.mini_block))
+        log_trace("[Section:handle_sensor_change] created mini block")
 
         self.callback(self);
     else
         -- sensor disabled... but no miniblock active... invalid state
-        log_error("[Section:on_start_sensor_change] start sensor inactive event... but block was not active...");
+        log_error("[Section:handle_sensor_change] start sensor inactive event... but block was not active...");
 
+    end
+end
+
+
+function Section:on_start_sensor_change(sensor)
+    if self.mini_block then
+        dispatch_mini_block_sensor_event(sensor, self.mini_block);
+    else
+        self:handle_sensor_change(sensor, self.start_sensor, self.end_sensor, SECTION_STATES.up_start, SECTION_STATES.up)
     end
 end
 
 function Section:on_end_sensor_change(sensor)
     if self.mini_block then
         dispatch_mini_block_sensor_event(sensor, self.mini_block);
-    elseif sensor.active then
-
-        log_trace("[Section:on_end_sensor_change] end sensor active - train entered the block and is going down")
-
-        -- train entered the block
-        self.state = SECTION_STATES.down_start;
-
-        self.mini_block = MiniBlock.new({
-            start_sensor = self.end_sensor,
-            end_sensor = self.start_sensor,
-            owner = self,
-            state_table = {
-                complete = SECTION_STATES.down
-            }
-        });
-    else    
-        -- sensor disabled... but no miniblock active... invalid state
-        log_error("[Section:on_start_sensor_change] end sensor inactive event... but block was not active...");
-
+    else
+        self:handle_sensor_change(sensor, self.end_sensor, self.start_sensor, SECTION_STATES.down_start, SECTION_STATES.down)        
     end
 end
 
@@ -185,6 +172,14 @@ end
 
 function Section:is_going_down()
     return self.state == SECTION_STATES.going_down or self.state == SECTION_STATES.down
+end
+
+function Section:is_clear()
+    return self.state == SECTION_STATES.clear
+end
+
+function Section:get_state_name()
+    return get_section_state_name(self.state)
 end
 
 function Section:new(o)
@@ -206,14 +201,14 @@ function Section:new(o)
 
     log_trace("[Section:new] Registering callback for start sensor")
     o.start_sensor:on_state_change(
-        function(sensor) 
+        function(sensor)            
             o:on_start_sensor_change(sensor);
         end
     );
 
     log_trace("[Section:new] Registering callback for end sensor")
     o.end_sensor:on_state_change(
-        function(sensor) 
+        function(sensor)                        
             o:on_end_sensor_change(sensor);
         end
     );

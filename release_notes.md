@@ -1,5 +1,13 @@
 # Version ?????
 
+## SharpTerminal
+
+- Server selection screen accepts ENTER as a shortcut
+
+## Scripts
+
+- section scripts seems to be working
+
 ## Code
 
 - Added own implementation of DirectoryMonitor (win32 only for now)
@@ -10,6 +18,7 @@
 - Improved SignalDecoder tests
 - Added code to detect usage of special arduino pins, like ethercard pins
 - fixed lua script to correctly handle sensor events
+- ScriptService shows debug info when a Lua function blows up...
 
 # Version 0.8.0 - 04/06/2023
 

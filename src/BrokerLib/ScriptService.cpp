@@ -13,6 +13,7 @@
 #include <sol/sol.hpp>
 
 #include <fmt/format.h>
+#include <magic_enum.hpp>
 
 #include "Broker.h"
 #include "Decoder.h"
@@ -103,7 +104,7 @@ class DecoderProxy
 		sigslot::scoped_connection	m_slotObjectManagerConnection;
 		sigslot::scoped_connection	m_slotRemoteDecoderStateSyncConnection;
 
-		std::vector<sol::function> m_vStateChangeCallbacks;
+		std::vector<sol::protected_function> m_vStateChangeCallbacks;
 
 		template <typename T>
 		inline T *DynamicDecoderCast()
@@ -133,7 +134,14 @@ class DecoderProxy
 		{
 			for (auto f : m_vStateChangeCallbacks)
 			{				
-				f.call(std::ref(*this));
+				auto r = f.call(std::ref(*this));
+				
+				if (!r.valid())
+				{
+					sol::error err = r;
+
+					dcclite::Log::Error("[ScriptService] [DecoderProxy::OnRemoteDecoderStateSync] Call failed with result: {} - {}", magic_enum::enum_name(r.status()), err.what());
+				}
 			}
 		}
 

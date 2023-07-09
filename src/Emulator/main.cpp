@@ -94,7 +94,7 @@ class TerminalService
 
 TerminalService::TerminalService()
 {
-	if (!m_clSocket.Open(7202, Socket::Type::STREAM))
+	if (!m_clSocket.Open(5256, Socket::Type::STREAM))
 	{
 		throw std::runtime_error("[TerminalService] Cannot open socket");
 	}

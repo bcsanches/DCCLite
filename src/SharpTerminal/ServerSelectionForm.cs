@@ -285,6 +285,12 @@ namespace SharpTerminal
 
         private void ServerSelectionForm_KeyDown(object sender, KeyEventArgs e)
         {
+            if((e.KeyCode == Keys.Enter) && (mSelectedService != null)) 
+            {
+                this.DialogResult = DialogResult.OK;
+                this.Close();
+            }
+
             this.StopCountdown();
         }
 
