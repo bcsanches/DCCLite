@@ -15,14 +15,16 @@
 #include <fmt/format.h>
 #include <magic_enum.hpp>
 
+#include "../dcc/Decoder.h"
+#include "../dcc/DccLiteService.h"
+#include "../dcc/RemoteDecoder.h"
+#include "../dcc/TurnoutDecoder.h"
+
 #include "Broker.h"
-#include "Decoder.h"
-#include "DccLiteService.h"
 #include "FileWatcher.h"
 #include "Log.h"
 #include "Project.h"
-#include "RemoteDecoder.h"
-#include "TurnoutDecoder.h"
+
 
 
 class DecoderProxy

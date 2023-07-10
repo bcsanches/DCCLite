@@ -11,10 +11,12 @@
 
 #pragma once
 
-#include "Service.h"
+#include <Packet.h>
 
-#include "DccAddress.h"
-#include "Packet.h"
+#include "../sys/Service.h"
+
+#include "../dcc/DccAddress.h"
+
 
 namespace dcclite::broker
 { 

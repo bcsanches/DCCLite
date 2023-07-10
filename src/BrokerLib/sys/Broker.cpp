@@ -20,20 +20,23 @@
 #include <rapidjson/istreamwrapper.h>
 #include <spdlog/logger.h>
 
-#include "Log.h"
+#include <Log.h>
+
+#include "../dcc/DccLiteService.h"
+#include "../dcc/DccppService.h"
+
+#include "../ln/LoconetService.h"
+#include "../ln/ThrottleService.h"
+
+#include "../terminal/TerminalCmd.h"
+#include "../terminal/TerminalService.h"
 
 #include "BonjourService.h"
-#include "LoconetService.h"
-#include "TerminalCmd.h"
-#include "TerminalService.h"
+
 #include "Thinker.h"
-#include "ThrottleService.h"
 #include "ScriptService.h"
 #include "SpecialFolders.h"
 #include "ZeroconfService.h"
-
-#include "DccLiteService.h"
-#include "DccppService.h"
 
 //fucking header leak
 #undef GetObject

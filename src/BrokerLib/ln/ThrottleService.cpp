@@ -16,12 +16,13 @@
 #include <fmt/chrono.h>
 #include <variant>
 
+#include "../sys/Thinker.h"
+
 #include "Clock.h"
 #include "FmtUtils.h"
 #include "LoconetService.h"
 #include "NetMessenger.h"
 #include "Parser.h"
-#include "Thinker.h"
 
 using namespace std::chrono_literals;
 

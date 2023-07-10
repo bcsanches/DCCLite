@@ -19,13 +19,14 @@
 #include <optional>
 #include <deque>
 
-#include "magic_enum.hpp"
+#include <magic_enum.hpp>
 
-#include "Broker.h"
+#include "../sys/Broker.h"
+#include "../sys/Thinker.h"
+
 #include "Clock.h"
 #include "ThrottleService.h"
 #include "SerialPort.h"
-#include "Thinker.h"
 
 enum Bits : uint8_t
 {
