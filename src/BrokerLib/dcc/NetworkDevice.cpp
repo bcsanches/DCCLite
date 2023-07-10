@@ -12,13 +12,14 @@
 
 #include <magic_enum.hpp>
 
+#include "../sys/Project.h"
+
 #include "BitPack.h"
 #include "IDccLiteService.h"
 #include "FmtUtils.h"
 #include "GuidUtils.h"
 #include "Log.h"
 #include "OutputDecoder.h"
-#include "Project.h"
 #include "SensorDecoder.h"
 #include "TurnoutDecoder.h"
 

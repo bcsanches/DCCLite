@@ -2,11 +2,13 @@
 
 #include <Log.h>
 
-#include "BonjourService.h"
-#include "Broker.h"
+#include "../sys/BonjourService.h"
+#include "../sys/Broker.h"
+#include "../sys/EventHub.h"
+#include "../sys/ZeroconfService.h"
+
 #include "Decoder.h"
 #include "DccLiteService.h"
-#include "EventHub.h"
 #include "NetMessenger.h"
 #include "NmraUtil.h"
 #include "SignalDecoder.h"
@@ -15,7 +17,6 @@
 #include "SensorDecoder.h"
 #include "TurnoutDecoder.h"
 #include "Util.h"
-#include "ZeroconfService.h"
 
 using namespace std::chrono_literals;
 

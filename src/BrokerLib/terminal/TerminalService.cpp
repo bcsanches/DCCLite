@@ -25,19 +25,24 @@
 
 #include <rapidjson/document.h>
 
-#include "magic_enum.hpp"
+#include <magic_enum.hpp>
 
-#include "BonjourService.h"
-#include "Broker.h"
-#include "DccLiteService.h"
-#include "NetMessenger.h"
-#include "NetworkDevice.h"
-#include "OutputDecoder.h"
-#include "SignalDecoder.h"
-#include "SpecialFolders.h"
+#include <NetMessenger.h>
+
+#include "../dcc/DccLiteService.h"
+#include "../dcc/NetworkDevice.h"
+#include "../dcc/OutputDecoder.h"
+#include "../dcc/SignalDecoder.h"
+
+#include "../sys/BonjourService.h"
+#include "../sys/Broker.h"
+#include "../sys/ZeroconfService.h"
+#include "../sys/SpecialFolders.h"
+
 #include "TerminalCmd.h"
 #include "Util.h"
-#include "ZeroconfService.h"
+
+
 
 #include <thread>
 

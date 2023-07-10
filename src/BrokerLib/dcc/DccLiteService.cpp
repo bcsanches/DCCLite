@@ -15,21 +15,23 @@
 #include <exception>
 #include <Log.h>
 
+#include <FmtUtils.h>
+#include <GuidUtils.h>
+#include <Packet.h>
+#include <Util.h>
+
 #include "NetworkDevice.h"
-#include "FmtUtils.h"
-#include "EventHub.h"
-#include "GuidUtils.h"
 #include "LocationManager.h"
 #include "OutputDecoder.h"
-#include "Packet.h"
 #include "QuadInverter.h"
 #include "SensorDecoder.h"
 #include "SignalDecoder.h"
 #include "SimpleOutputDecoder.h"
 #include "TurnoutDecoder.h"
 #include "TurntableAutoInverterDecoder.h"
-#include "Util.h"
 #include "VirtualDevice.h"
+
+#include "../sys/EventHub.h"
 
 using namespace std::chrono_literals;
 

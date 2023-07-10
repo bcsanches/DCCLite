@@ -10,7 +10,7 @@
 
 #include <gtest/gtest.h>
 
-#include "EventHub.h"
+#include "sys/EventHub.h"
 #include "Log.h"
 
 class EventTargetMockup : public dcclite::broker::EventHub::IEventTarget

@@ -22,7 +22,8 @@
 #include "Packet.h"
 #include "PinManager.h"
 #include "Socket.h"
-#include "Thinker.h"
+
+#include "../sys/Thinker.h"
 
 #include <rapidjson/document.h>
 

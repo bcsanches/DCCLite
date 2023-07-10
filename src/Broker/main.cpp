@@ -16,16 +16,18 @@
 
 #include <fmt/chrono.h>
 
-#include "Broker.h"
+#include <Clock.h>
+#include <ConsoleUtils.h>
+#include <Log.h>
+#include <LogUtils.h>
+#include <PathUtils.h>
 
-#include "Clock.h"
-#include "ConsoleUtils.h"
-#include "EventHub.h"
-#include "Log.h"
-#include "LogUtils.h"
-#include "PathUtils.h"
-#include "TerminalCmd.h"
-#include "Thinker.h"
+
+#include "sys/Broker.h"
+#include "sys/EventHub.h"
+#include "sys/Thinker.h"
+
+#include "terminal/TerminalCmd.h"
 
 #include <spdlog/logger.h>
 

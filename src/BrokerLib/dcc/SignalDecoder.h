@@ -24,7 +24,8 @@
 
 #include "NmraUtil.h"
 #include "SharedLibDefs.h"
-#include "Thinker.h"
+
+#include "../sys/Thinker.h"
 
 class SignalTester;
 

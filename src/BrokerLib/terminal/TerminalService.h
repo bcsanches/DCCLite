@@ -14,10 +14,10 @@
 
 #include <thread>
 
-#include "Service.h"
-#include "EventHub.h"
+#include <Socket.h>
 
-#include "Socket.h"
+#include "../sys/Service.h"
+#include "../sys/EventHub.h"
 
 namespace dcclite::broker
 {

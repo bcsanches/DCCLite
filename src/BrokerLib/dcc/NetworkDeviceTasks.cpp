@@ -12,15 +12,16 @@
 
 #include <magic_enum.hpp>
 
+#include "../sys/Project.h"
+#include "../sys/Thinker.h"
+
 #include "BitPack.h"
 #include "IDccLiteService.h"
 #include "FmtUtils.h"
 #include "GuidUtils.h"
 #include "Log.h"
 #include "OutputDecoder.h"
-#include "Project.h"
 #include "SensorDecoder.h"
-#include "Thinker.h"
 #include "TurnoutDecoder.h"
 
 namespace dcclite::broker

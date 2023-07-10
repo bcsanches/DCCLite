@@ -4,7 +4,7 @@
 
 #include <rapidjson/document.h>
 
-#include "SignalDecoder.h"
+#include "dcc/SignalDecoder.h"
 #include "Log.h"
 
 using testing::HasSubstr;

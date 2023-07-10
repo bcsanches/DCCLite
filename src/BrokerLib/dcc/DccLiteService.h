@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "Service.h"
+#include "../sys/Service.h"
 
 #include <map>
 #include <string>
@@ -20,10 +20,11 @@
 #include "Decoder.h"
 #include "Guid.h"
 #include "IDccLiteService.h"
-#include "EventHub.h"
 #include "Packet.h"
 #include "Socket.h"
-#include "Thinker.h"
+
+#include "../sys/EventHub.h"
+#include "../sys/Thinker.h"
 
 namespace dcclite::broker
 {

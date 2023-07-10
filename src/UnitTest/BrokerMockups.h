@@ -10,8 +10,8 @@
 
 #pragma once
 
-#include "IDccLiteService.h"
-#include "IDevice.h"
+#include "dcc/IDccLiteService.h"
+#include "dcc/IDevice.h"
 
 namespace dcclite::broker
 {

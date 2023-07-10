@@ -11,7 +11,7 @@
 #include <gtest/gtest.h>
 
 #include "Clock.h"
-#include "Thinker.h"
+#include "sys/Thinker.h"
 
 using namespace dcclite;
 

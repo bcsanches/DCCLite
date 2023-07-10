@@ -1,73 +1,97 @@
+file(GLOB_RECURSE SRC_DCC
+    "dcc/*.cpp"
+    "dcc/*.h"
+)
+
+file(GLOB_RECURSE SRC_LN
+    "ln/*.cpp"
+    "ln/*.h"
+)
+
+file(GLOB_RECURSE SRC_SYS
+    "sys/*.cpp"
+    "sys/*.h"
+)
+
+file(GLOB_RECURSE SRC_TERMINAL
+    "terminal/*.cpp"
+    "terminal/*.h"
+)
 
 add_library(
-    BrokerLib          	   	 
-        BonjourService.cpp
-        BonjourService.h        
-        Broker.cpp        
-        Broker.h    
-        DccAddress.cpp
-        DccAddress.h
-        DccLiteService.cpp
-        DccLiteService.h  
-        DccppService.cpp
-        DccppService.h
-        Decoder.cpp
-        Decoder.h
-        Device.cpp
-        Device.h      
-        IDccLiteService.h  
-        IDevice.h
-        FileWatcher.cpp
-        FileWatcher.h
-        EventHub.cpp
-        EventHub.h
-        LocationManager.cpp
-        LocationManager.h
-        LoconetService.cpp
-        LoconetService.h  
-        NetworkDevice.cpp
-        NetworkDevice.h
-        NetworkDeviceTasks.cpp
-        NetworkDeviceTasks.h
-        OutputDecoder.cpp
-        OutputDecoder.h
-        PinManager.cpp
-        PinManager.h
-        Project.cpp
-        Project.h
-	QuadInverter.cpp
-	QuadInverter.h
-        RemoteDecoder.cpp
-        RemoteDecoder.h
-	ScriptService.cpp
-	ScriptService.h
-        SensorDecoder.cpp
-        SensorDecoder.h  
-        Service.cpp
-        Service.h
-        SignalDecoder.cpp
-        SignalDecoder.h
-        SimpleOutputDecoder.cpp
-        SimpleOutputDecoder.h
-        SpecialFolders.cpp
-        SpecialFolders.h
-        TerminalCmd.cpp
-        TerminalCmd.h
-        TerminalService.cpp
-        TerminalService.h
-        Thinker.cpp
-        Thinker.h
-        ThrottleService.cpp
-        ThrottleService.h
-        TurnoutDecoder.cpp
-        TurnoutDecoder.h 
-        TurntableAutoInverterDecoder.cpp
-        TurntableAutoInverterDecoder.h       
-        VirtualDevice.cpp
-        VirtualDevice.h
-        ZeroconfService.cpp
-        ZeroconfService.h
+    BrokerLib          	   	     
+        dcc/DccAddress.cpp
+        dcc/DccAddress.h
+        dcc/DccLiteService.cpp
+        dcc/DccLiteService.h  
+        dcc/DccppService.cpp
+        dcc/DccppService.h
+        dcc/Decoder.cpp
+        dcc/Decoder.h
+        dcc/Device.cpp
+        dcc/Device.h      
+        dcc/IDccLiteService.h  
+        dcc/IDevice.h
+	    dcc/LocationManager.cpp
+        dcc/LocationManager.h
+	    dcc/NetworkDevice.cpp
+        dcc/NetworkDevice.h
+        dcc/NetworkDeviceTasks.cpp
+        dcc/NetworkDeviceTasks.h
+        dcc/OutputDecoder.cpp
+        dcc/OutputDecoder.h
+        dcc/PinManager.cpp
+        dcc/PinManager.h
+        dcc/QuadInverter.cpp
+	    dcc/QuadInverter.h
+        dcc/RemoteDecoder.cpp
+        dcc/RemoteDecoder.h
+        dcc/SensorDecoder.cpp
+        dcc/SensorDecoder.h
+        dcc/SignalDecoder.cpp
+        dcc/SignalDecoder.h
+        dcc/SimpleOutputDecoder.cpp
+        dcc/SimpleOutputDecoder.h
+        dcc/TurnoutDecoder.cpp
+        dcc/TurnoutDecoder.h 
+        dcc/TurntableAutoInverterDecoder.cpp
+        dcc/TurntableAutoInverterDecoder.h       
+        dcc/VirtualDevice.cpp
+        dcc/VirtualDevice.h
+        ln/LoconetService.cpp
+        ln/LoconetService.h
+        ln/ThrottleService.cpp
+        ln/ThrottleService.h
+        sys/BonjourService.cpp
+        sys/BonjourService.h        
+        sys/Broker.cpp        
+        sys/Broker.h
+        sys/FileWatcher.cpp
+        sys/FileWatcher.h
+        sys/EventHub.cpp
+        sys/EventHub.h
+        sys/Project.cpp
+        sys/Project.h
+	    sys/ScriptService.cpp
+	    sys/ScriptService.h
+        sys/Service.cpp
+        sys/Service.h
+        sys/SpecialFolders.cpp
+        sys/SpecialFolders.h
+        sys/Thinker.cpp
+        sys/Thinker.h
+        sys/ZeroconfService.cpp
+        sys/ZeroconfService.h
+        terminal/TerminalCmd.cpp
+        terminal/TerminalCmd.h
+        terminal/TerminalService.cpp
+        terminal/TerminalService.h
 )
+
+source_group("dcc"      FILES ${SRC_DCC})
+source_group("ln"       FILES ${SRC_LN})
+source_group("sys"      FILES ${SRC_SYS})
+source_group("terminal" FILES ${SRC_TERMINAL})
 
 if(WIN32)
     target_link_libraries(BrokerLib         
