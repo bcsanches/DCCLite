@@ -1,3 +1,4 @@
+log_info("SL - BP - Monitor initializing");
 
 local main_line_quad_inverter = dcclite.dcc0.SL_BP_MAIN_INVERTER;
 
@@ -6,13 +7,7 @@ local hlx_quad_inverter = dcclite.dcc0.INV_HELIX_TC_SOL;
 local sl_bp_main_d01 = dcclite.dcc0.SL_BP_MAIN_D01;
 local sl_bp_main_d02 = dcclite.dcc0.SL_BP_MAIN_D02;
 
-function on_hlx_quad_inverter_state_change(quad_inverter)
-    if section:is_clear() then
-        return
-    end
-    
-    main_line_quad_inverter:set_state(hlx_quad_inverter.active);
-end
+local on_hlx_quad_inverter_state_change
 
 function on_section01_state_change(section)
     log_info("section 01 state change: " .. section:get_state_name())
@@ -20,7 +15,7 @@ function on_section01_state_change(section)
     if section:is_clear() then
         log_trace("[SoledadeBarraMonitor] train left the block")     
 
-        main_line_quad_inverter:set_state(true);
+        on_hlx_quad_inverter_state_change(hlx_quad_inverter)        
 
         return
     end
@@ -34,7 +29,7 @@ function on_section01_state_change(section)
 
     end
     
-    main_line_quad_inverter:set_state(hlx_quad_inverter.active);
+    main_line_quad_inverter:set_state(true);
     
 end
 
@@ -46,20 +41,29 @@ function on_sensor_change_test(sensor)
     
 end
 
-
 local section01 = Section:new({
     start_sensor = sl_bp_main_d01,
     end_sensor = sl_bp_main_d02,
     callback = on_section01_state_change
 })
 
+function on_hlx_quad_inverter_state_change(quad_inverter)
 
---sl_bp_main_d01:on_state_change(on_sensor_change_test);
+    log_trace("[SoledadeBarraMonitor] on_hlx_quad_inverter_state_change")
 
-log_info("SL - BP - Monitor initializing");
+    if not section01:is_clear() then
+        log_trace("[SoledadeBarraMonitor] section is busy, ignoring")
+
+        return
+    end
+    
+    log_trace("[SoledadeBarraMonitor] section is clear, updating")
+    main_line_quad_inverter:set_state(hlx_quad_inverter.active);
+end
 
 hlx_quad_inverter:on_state_change(on_hlx_quad_inverter_state_change)
 
 on_section01_state_change(section01)
+on_hlx_quad_inverter_state_change(hlx_quad_inverter)
 
-
+log_info("SL - BP - init OK");
