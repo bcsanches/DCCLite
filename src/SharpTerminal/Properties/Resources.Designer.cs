@@ -19,7 +19,7 @@ namespace Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -93,6 +93,16 @@ namespace Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap empty_circle {
+            get {
+                object obj = ResourceManager.GetObject("empty_circle", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap file_gear {
             get {
                 object obj = ResourceManager.GetObject("file_gear", resourceCulture);
@@ -113,68 +123,108 @@ namespace Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        public static System.Drawing.Bitmap icons8_downward_arrow_64 {
+            get {
+                object obj = ResourceManager.GetObject("icons8_downward_arrow_64", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap icons8_downward_arrow_64_empty {
+            get {
+                object obj = ResourceManager.GetObject("icons8_downward_arrow_64_empty", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap icons8_upward_arrow_64 {
+            get {
+                object obj = ResourceManager.GetObject("icons8_upward_arrow_64", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap icons8_upward_arrow_64_empty {
+            get {
+                object obj = ResourceManager.GetObject("icons8_upward_arrow_64_empty", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap lamp_off {
+            get {
+                object obj = ResourceManager.GetObject("lamp_off", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap lamp_on {
+            get {
+                object obj = ResourceManager.GetObject("lamp_on", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap sensor_off {
+            get {
+                object obj = ResourceManager.GetObject("sensor_off", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap sensor_on {
+            get {
+                object obj = ResourceManager.GetObject("sensor_on", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         public static System.Drawing.Bitmap signal {
             get {
                 object obj = ResourceManager.GetObject("signal", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        public static System.Drawing.Bitmap sensor_on
-        {
-            get
-            {
-                object obj = ResourceManager.GetObject("sensor_on", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap sensor_off
-        {
-            get
-            {
-                object obj = ResourceManager.GetObject("sensor_off", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-
-        public static System.Drawing.Bitmap lamp_off
-        {
-            get
-            {
-                object obj = ResourceManager.GetObject("lamp_off", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-
-        public static System.Drawing.Bitmap lamp_on
-        {
-            get
-            {
-                object obj = ResourceManager.GetObject("lamp_on", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-
-        public static System.Drawing.Bitmap turnout_off
-        {
-            get
-            {
+        public static System.Drawing.Bitmap turnout_off {
+            get {
                 object obj = ResourceManager.GetObject("turnout_off", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-
-        public static System.Drawing.Bitmap turnout_on
-        {
-            get
-            {
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap turnout_on {
+            get {
                 object obj = ResourceManager.GetObject("turnout_on", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }

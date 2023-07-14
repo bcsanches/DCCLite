@@ -107,6 +107,10 @@
       "system":"dcc0"
     },
     {
+      "class": "DispatcherService",
+      "name": "dispatcher"
+    },
+    {
         "class": "LoconetService",
         "name": "loconet",
         "port": "COM7",

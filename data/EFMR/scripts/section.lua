@@ -1,10 +1,10 @@
 
 SECTION_STATES = {
-    clear = {},
-    up_start = {},
-    up = {},
-    down_start = {},
-    down = {}
+    clear = 0,
+    up_start = 1,
+    up = 2,
+    down_start = 3,
+    down = 4
 }
 
 function get_section_state_name(state)
@@ -73,10 +73,14 @@ function MiniBlock:new(o)
 end
 
 function MiniBlock:on_finished()
-    self.owner.state = SECTION_STATES.clear;
+    self.owner:_update_state(SECTION_STATES.clear);    
     self.owner.mini_block = nil;
 
     self.owner.callback(self.owner);    
+end
+
+function Section:reset()
+    self:on_finished()
 end
 
 function MiniBlock:on_start_sensor_change(sensor)
@@ -95,7 +99,7 @@ function MiniBlock:on_end_sensor_change(sensor)
         end
 
         log_trace("[MiniBlock:on_end_sensor_change] end sensor active - block is complete - train touched second sensor")
-        self.owner.state = self.state_table.complete;
+        self.owner:_update_state(self.state_table.complete);        
 
         self.owner.callback(self.owner)
     else
@@ -126,7 +130,7 @@ function Section:handle_sensor_change(sensor, start_sensor, end_sensor, new_stat
 
         log_trace("[Section:handle_sensor_change] train entered the block and is " .. get_section_state_name(new_state))        
         
-        self.state = new_state;
+        self:_update_state(new_state);        
 
         log_trace("[Section:handle_sensor_change] state changed to: " .. get_section_state_name(self.state))
 
@@ -182,6 +186,12 @@ function Section:get_state_name()
     return get_section_state_name(self.state)
 end
 
+function Section:_update_state(newState)
+    self.state = newState;
+    self.dispatcher:on_section_state_change(self, newState);
+end
+
+
 function Section:new(o)
 
     if not o then
@@ -190,6 +200,10 @@ function Section:new(o)
     
     setmetatable(o, self);
     self.__index = self;
+
+    if not o.name then
+        error("[Section:new] name is required")
+    end
 
     if not o.start_sensor or not o.end_sensor then
         error("[Section:new] start_sensor and end_sensor must be provided");
@@ -213,6 +227,9 @@ function Section:new(o)
         end
     );
 
+    o.dispatcher = dcclite.dispatcher;
+    o.dispatcher:register_section(o.name, o);
+
     -- how are the sensors?
     if o.start_sensor.active and o.end_sensor.active then
         log_error("[Section:new] both sensors active, state will be undefined")        
@@ -222,9 +239,9 @@ function Section:new(o)
         elseif o.end_sensor.active then
             o:on_end_sensor_change(o.end_sensor);            
         else
-            o.state = SECTION_STATES.clear;
+            o:_update_state(SECTION_STATES.clear);            
         end
-    end    
+    end        
     
     return o;
 end

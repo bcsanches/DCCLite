@@ -26,10 +26,13 @@ function on_section01_state_change(section)
 
         -- train is aproaching Soledade and entered the block?
         log_trace("[SoledadeBarraMonitor] train aproaching soledade")
-
+    elseif section.state == SECTION_STATES.up then
+        log_trace("[SoledadeBarraMonitor] train leaving soledade - block complete")    
+    elseif section.state == SECTION_STATES.down then
+        log_trace("[SoledadeBarraMonitor] train aproaching soledade - block complete")    
     end
     
-    main_line_quad_inverter:set_state(true);
+    main_line_quad_inverter:set_state(false);
     
 end
 
@@ -42,6 +45,7 @@ function on_sensor_change_test(sensor)
 end
 
 local section01 = Section:new({
+    name = "sl_bp_main_s01",
     start_sensor = sl_bp_main_d01,
     end_sensor = sl_bp_main_d02,
     callback = on_section01_state_change

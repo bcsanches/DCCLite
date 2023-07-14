@@ -119,7 +119,7 @@
     "name": "SL_BP_MAIN_INVERTER",
     "class": "QuadInverter",
     "address":1690,
-    "trackPowerAPins": [9, 10],
-    "trackPowerBPins": [11, 12]
+    "trackPowerAPins": [11, 12],
+    "trackPowerBPins": [9, 10]
   }
 ]          

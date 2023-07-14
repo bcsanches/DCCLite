@@ -15,6 +15,11 @@ set(ICON_RESOURCE_SENSOR_ON "Resources/sensor_on.png")
 set(ICON_RESOURCE_SIGNAL "Resources/signal.png")
 set(ICON_RESOURCE_TURNOUT_OFF "Resources/turnout_off.png")
 set(ICON_RESOURCE_TURNOUT_ON "Resources/turnout_on.png")
+set(ICON_RESOURCE_UP_ARROW_FULL "Resources/icons8-upward-arrow-64.png")
+set(ICON_RESOURCE_UP_ARROW "Resources/icons8-upward-arrow-64_empty.png")
+set(ICON_RESOURCE_DOWN_ARROW_FULL "Resources/icons8-downward-arrow-64.png")
+set(ICON_RESOURCE_DOWN_ARROW "Resources/icons8-downward-arrow-64_empty.png")
+set(ICON_RESOURCE_EMPTY_CIRCLE "Resources/empty_circle.png")
 
 add_executable(SharpTerminal 
   App.config
@@ -38,6 +43,7 @@ add_executable(SharpTerminal
   RemoteDeviceUserControl.cs
   RemoteDeviceUserControl.Designer.cs
   RemoteDeviceUserControl.resx
+  RemoteDispatcher.cs
   RemoteLocationManager.cs
   RemoteLocationManagerUserControl.cs
   RemoteLocationManagerUserControl.Designer.cs
@@ -83,6 +89,12 @@ add_executable(SharpTerminal
   ${ICON_RESOURCE_SIGNAL}
   ${ICON_RESOURCE_TURNOUT_OFF}
   ${ICON_RESOURCE_TURNOUT_ON}
+
+	${ICON_RESOURCE_UP_ARROW_FULL}
+	${ICON_RESOURCE_UP_ARROW}
+	${ICON_RESOURCE_DOWN_ARROW_FULL}
+	${ICON_RESOURCE_DOWN_ARROW}
+	${ICON_RESOURCE_EMPTY_CIRCLE}
   
   SharpTerminal.RemoteLoconetSlot.datasource
 )

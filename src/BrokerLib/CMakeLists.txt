@@ -18,6 +18,11 @@ file(GLOB_RECURSE SRC_TERMINAL
     "terminal/*.h"
 )
 
+file(GLOB_RECURSE SRC_DISPATCHER
+    "dispatcher/*.cpp"
+    "dispatcher/*.h"
+)
+
 add_library(
     BrokerLib          	   	     
         dcc/DccAddress.cpp
@@ -58,6 +63,8 @@ add_library(
         dcc/TurntableAutoInverterDecoder.h       
         dcc/VirtualDevice.cpp
         dcc/VirtualDevice.h
+        dispatcher/DispatcherService.cpp
+        dispatcher/DispatcherService.h
         ln/LoconetService.cpp
         ln/LoconetService.h
         ln/ThrottleService.cpp
@@ -88,10 +95,11 @@ add_library(
         terminal/TerminalService.h
 )
 
-source_group("dcc"      FILES ${SRC_DCC})
-source_group("ln"       FILES ${SRC_LN})
-source_group("sys"      FILES ${SRC_SYS})
-source_group("terminal" FILES ${SRC_TERMINAL})
+source_group("dcc"          FILES ${SRC_DCC})
+source_group("dispatcher"   FILES ${SRC_DISPATCHER})
+source_group("ln"           FILES ${SRC_LN})
+source_group("sys"          FILES ${SRC_SYS})
+source_group("terminal"     FILES ${SRC_TERMINAL})
 
 if(WIN32)
     target_link_libraries(BrokerLib         

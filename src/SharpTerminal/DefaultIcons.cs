@@ -22,6 +22,11 @@ namespace SharpTerminal
         public static string SENSOR_ON_ICON = "sensor_on";
         public static string TURNOUT_OFF_ICON = "TURNOUT_off";
         public static string TURNOUT_ON_ICON = "TURNOUT_on";
+        public static string UP_ARROW_ICON = "icons8_upward_arrow_64";
+        public static string UP_EMPTY_ARROW_ICON = "icons8_upward_arrow_64_empty";
+        public static string DOWN_ARROW_ICON = "icons8_downward_arrow_64";
+        public static string DOWN_EMPTY_ARROW_ICON = "icons8_downward_arrow_64_empty";
+        public static string EMPTY_CIRCLE = "empty_circle";
 
 
         public static void LoadIcons(ImageList imageList)
@@ -38,6 +43,13 @@ namespace SharpTerminal
             imageList.Images.Add(SIGNAL_ICON, Resources.signal);
             imageList.Images.Add(TURNOUT_OFF_ICON, Resources.turnout_off);
             imageList.Images.Add(TURNOUT_ON_ICON, Resources.turnout_on);
+
+            imageList.Images.Add(UP_ARROW_ICON, Resources.icons8_upward_arrow_64);
+            imageList.Images.Add(UP_EMPTY_ARROW_ICON, Resources.icons8_upward_arrow_64_empty);
+            imageList.Images.Add(DOWN_ARROW_ICON, Resources.icons8_downward_arrow_64);
+            imageList.Images.Add(DOWN_EMPTY_ARROW_ICON, Resources.icons8_downward_arrow_64_empty);
+
+            imageList.Images.Add(EMPTY_CIRCLE, Resources.empty_circle);
         }
     }
 }

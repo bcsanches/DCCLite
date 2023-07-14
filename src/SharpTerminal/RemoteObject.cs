@@ -425,6 +425,14 @@ namespace SharpTerminal
                     obj = new RemoteLoconetService(name, className, path, id, parentInternalId, objectDef);
                     break;
 
+                case "Dispatcher":
+                    obj = new Dispatcher.RemoteDispatcher(name, className, path, id, parentInternalId);
+                    break;
+
+                case "Dispatcher::Section":
+                    obj = new Dispatcher.RemoteSection(name, className, path, id, parentInternalId, objectDef);
+                    break;
+
                 default:
                     obj = objectDef["isFolder"] ? new RemoteFolder(name, className, path, id, parentInternalId) : new RemoteObject(name, className, path, id, parentInternalId);
                     break;

@@ -25,6 +25,8 @@
 #include "../dcc/DccLiteService.h"
 #include "../dcc/DccppService.h"
 
+#include "../dispatcher/DispatcherService.h"
+
 #include "../ln/LoconetService.h"
 #include "../ln/ThrottleService.h"
 
@@ -61,6 +63,10 @@ namespace dcclite::broker
 		else if (strcmp(className, "DccppService") == 0)
 		{
 			return DccppService::Create(name, broker, data, project);
+		}
+		else if (strcmp(className, "DispatcherService") == 0)
+		{
+			return DispatcherService::Create(name, broker, data, project);
 		}
 		else if (strcmp(className, "LoconetService") == 0)
 		{
@@ -102,8 +108,6 @@ namespace dcclite::broker
 		//Start after load, so project name is already loaded
 		ZeroconfService::Start(m_clProject.GetName());
 	}
-
-
 
 	void Broker::LoadConfig()
 	{

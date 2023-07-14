@@ -297,6 +297,8 @@ namespace dcclite::broker::ScriptService
 	Broker *g_pclBroker = nullptr;
 	const Project *g_pclProject = nullptr;
 
+	std::vector<IScriptSupport *> g_vecRegisteredServices;
+
 	static void WatchFile(const dcclite::fs::path &fileName);
 	
 	static void RunScripts()
@@ -386,17 +388,28 @@ namespace dcclite::broker::ScriptService
 		{
 			auto service = servicesEnumerator.GetCurrent<Service>();
 			
+			//HACK.... intercept main service... FIXME: move this into dcclite class?
 			if (auto dccLiteService = dynamic_cast<DccLiteService *>(service))
 			{
 				dccLiteTable[dccLiteService->GetName()] = DccLiteProxy{ *dccLiteService };
 			}
 			else
 			{
-				dccLiteTable[service->GetName()] = service;
+				auto *scripter = dynamic_cast<IScriptSupport *>(service);
+				if (!scripter)
+					continue;
+				
+				scripter->IScriptSupport_RegisterProxy(dccLiteTable);				
+				g_vecRegisteredServices.push_back(scripter);
 			}
-		}				
+		}	
 
-		WatchFile(path);
+		//
+		//Notify whoever wants to register something that VM is ready to start running
+		for (auto it : g_vecRegisteredServices)
+			it->IScriptSupport_OnVMInit(g_clLua);
+
+		WatchFile(path);		
 
 		auto r = g_clLua.safe_script_file(path.string());
 	}
@@ -410,7 +423,14 @@ namespace dcclite::broker::ScriptService
 				dcclite::Log::Info("[ScriptService] [FileWatcher::Reload] Attempting to reload config: {}", fileName);
 
 				try
-				{					
+				{		
+					//
+					//Before destroying VM, let others know
+					for (auto it : g_vecRegisteredServices)
+						it->IScriptSupport_OnVMFinalize(g_clLua);
+
+					g_vecRegisteredServices.clear();
+
 					g_clLua = sol::state{};					
 
 					RunScripts();

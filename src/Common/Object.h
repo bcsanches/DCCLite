@@ -325,6 +325,7 @@ namespace dcclite
 			virtual IObject *AddChild(std::unique_ptr<IObject> obj);
 			
 			std::unique_ptr<IObject> RemoveChild(std::string_view name);
+			void RemoveAllChildren();
 
 			IObject *TryGetChild(std::string_view name);
 

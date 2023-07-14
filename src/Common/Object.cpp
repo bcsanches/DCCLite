@@ -197,6 +197,11 @@ namespace dcclite
 		return currentNode;
 	}
 
+	void FolderObject::RemoveAllChildren()
+	{
+		m_mapObjects.clear();
+	}
+
 	std::unique_ptr<IObject> FolderObject::RemoveChild(std::string_view name) 
 	{
 		auto it = m_mapObjects.find(name);
