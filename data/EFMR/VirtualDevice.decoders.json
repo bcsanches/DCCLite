@@ -1,0 +1,7 @@
+[
+  {
+    "name":"SL_BP_ResetButton",
+    "class":"VirtualTurnout",    
+    "address":"1652"    
+  }
+]

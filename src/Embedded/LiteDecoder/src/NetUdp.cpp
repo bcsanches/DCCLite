@@ -109,16 +109,26 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 	//Console::SendLogEx(MODULE_NAME, F("mac"), FSTR_OK);
 	DCCLITE_LOG_MODULE_LN(F("mac ") << FSTR_OK);
 
-#ifdef ARDUINO_AVR_MEGA2560	
-	if (ether.begin(BUFFER_SIZE, g_u8Mac, 53) == 0)
-#else
-	if (ether.begin(BUFFER_SIZE, g_u8Mac, 10) == 0)
-#endif
+	for(int i = 1;; ++i)
 	{
-		//Console::SendLogEx(MODULE_NAME, F("ether"), '.', F("begin"), ' ', FSTR_NOK);
-		DCCLITE_LOG_MODULE_LN(F("ether begin") << FSTR_NOK);
+		DCCLITE_LOG_MODULE_LN(F("ether begin try ") << i);
 
-		return false;
+#ifdef ARDUINO_AVR_MEGA2560	
+		if (ether.begin(BUFFER_SIZE, g_u8Mac, 53) == 0)
+#else
+		if (ether.begin(BUFFER_SIZE, g_u8Mac, 10) == 0)
+#endif	
+		{
+			//Console::SendLogEx(MODULE_NAME, F("ether"), '.', F("begin"), ' ', FSTR_NOK);
+			DCCLITE_LOG_MODULE_LN(F("ether begin") << FSTR_NOK);
+
+			if(i == 5)
+				return false;
+
+			continue;
+		}
+
+		break;
 	}
 
 	//Console::SendLogEx(MODULE_NAME, F("net"), ' ', F("begin"), ' ', FSTR_OK);

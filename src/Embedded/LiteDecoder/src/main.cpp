@@ -143,7 +143,7 @@ bool Console::Custom_ParseCommand(const char *command)
 	return false;
 }
 
-#define DECODERS_STORAGE_ID F("DECS016")
+#define DECODERS_STORAGE_ID F("DECS017")
 #define NET_UDP_STORAGE_ID	F("NetU002")
 #define SESSION_STORAGE_ID  F("Sson001")
 

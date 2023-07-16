@@ -73,14 +73,7 @@ function MiniBlock:new(o)
 end
 
 function MiniBlock:on_finished()
-    self.owner:_update_state(SECTION_STATES.clear);    
-    self.owner.mini_block = nil;
-
-    self.owner.callback(self.owner);    
-end
-
-function Section:reset()
-    self:on_finished()
+    self.owner:_on_mini_block_finished()
 end
 
 function MiniBlock:on_start_sensor_change(sensor)
@@ -122,6 +115,17 @@ function dispatch_mini_block_sensor_event(sensor, mini_block)
     else
         mini_block:on_end_sensor_change(sensor);
     end
+end
+
+function Section:_on_mini_block_finished()
+    self:_update_state(SECTION_STATES.clear);    
+    self.mini_block = nil;
+
+    self.callback(self);    
+end
+
+function Section:reset()
+    self:_on_mini_block_finished()
 end
 
 function Section:handle_sensor_change(sensor, start_sensor, end_sensor, new_state, complete_state)

@@ -21,13 +21,13 @@
 
 #define MODULE_NAME F("QuadAID")
 
-auto constexpr TRACK_TURNOFF_TICKS = 5;
-
 QuadInverterDecoder::QuadInverterDecoder(dcclite::Packet& packet) noexcept:
 	Decoder::Decoder(packet)	
 {
 	//consider only configurable flags
 	m_fFlags = packet.Read<uint8_t>() & (dcclite::QUAD_IGNORE_SAVED_STATE | dcclite::QUAD_ACTIVATE_ON_POWER_UP);
+
+	m_u8FlipInterval = packet.Read<uint8_t>();
 
 	//DCCLITE_LOG_MODULE_LN(F("QuadInverterDecoder packet flags") << (int) m_fFlags);
 		
@@ -47,6 +47,7 @@ QuadInverterDecoder::QuadInverterDecoder(Storage::EpromStream& stream) noexcept:
 	m_uFlagsStorageIndex = stream.GetIndex();
 
 	stream.Get(m_fFlags);	
+	stream.Get(m_u8FlipInterval);
 
 	//DCCLITE_LOG_MODULE_LN(F("QuadInverterDecoder eprom flags") << (int) m_fFlags);
 	
@@ -67,6 +68,7 @@ void QuadInverterDecoder::SaveConfig(Storage::EpromStream& stream) noexcept
 	m_uFlagsStorageIndex = stream.GetIndex();
 
 	stream.Put(m_fFlags);	
+	stream.Put(m_u8FlipInterval);
 	//DCCLITE_LOG_MODULE_LN(F("QuadInverterDecoder SaveConfig flags") << (int) m_fFlags);
 
 	for(int i = 0; i < 4; ++i)
@@ -156,7 +158,7 @@ bool QuadInverterDecoder::AcceptServerState(dcclite::DecoderStates state, const 
 		m_fFlags &= ~dcclite::QUAD_ACTIVE;
 	}
 
-	m_uWaitingTrackTurnOff = time + TRACK_TURNOFF_TICKS;
+	m_uWaitingTrackTurnOff = time + m_u8FlipInterval;
 
 	if (m_uFlagsStorageIndex)
 		Storage::UpdateField(m_uFlagsStorageIndex, m_fFlags);

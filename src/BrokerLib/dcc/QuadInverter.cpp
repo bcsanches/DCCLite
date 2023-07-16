@@ -49,6 +49,9 @@ namespace dcclite::broker
 		auto activateOnPowerUp = params.FindMember("activateOnPowerUp");
 		m_fActivateOnPowerUp = activateOnPowerUp != params.MemberEnd() ? activateOnPowerUp->value.GetBool() : false;
 
+		auto flipIntervalData = params.FindMember("flipInterval");
+		m_u8FlipInterval = flipIntervalData != params.MemberEnd() ? flipIntervalData->value.GetInt() : m_u8FlipInterval;
+
 		this->SyncRemoteState(m_fIgnoreSavedState && m_fActivateOnPowerUp ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
 	}
 
@@ -69,7 +72,8 @@ namespace dcclite::broker
 
 		const uint8_t flags = (m_fIgnoreSavedState ? dcclite::QUAD_IGNORE_SAVED_STATE : 0) | (m_fActivateOnPowerUp ? dcclite::QUAD_ACTIVATE_ON_POWER_UP : 0);
 		
-		packet.Write8(flags);		
+		packet.Write8(flags);	
+		packet.Write8(m_u8FlipInterval);
 
 		packet.Write8(m_arTrackAPins[0].Raw());
 		packet.Write8(m_arTrackAPins[1].Raw());
@@ -83,6 +87,8 @@ namespace dcclite::broker
 
 		stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
 		stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
+
+		stream.AddIntValue("flipInterval", m_u8FlipInterval);
 
 		stream.AddIntValue("trackA0Pin", m_arTrackAPins[0].Raw());
 		stream.AddIntValue("trackA1Pin", m_arTrackAPins[1].Raw());

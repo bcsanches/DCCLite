@@ -119,6 +119,7 @@
     "name": "SL_BP_MAIN_INVERTER",
     "class": "QuadInverter",
     "address":1690,
+    "flipInterval":10,
     "trackPowerAPins": [11, 12],
     "trackPowerBPins": [9, 10]
   }

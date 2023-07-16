@@ -11,6 +11,7 @@
 #include "VirtualDevice.h"
 
 #include "SignalDecoder.h"
+#include "VirtualTurnoutDecoder.h"
 
 #include <fmt/format.h>
 
@@ -30,14 +31,24 @@ namespace dcclite::broker
 	}	
 
 	void VirtualDevice::CheckLoadedDecoder(Decoder &decoder)
-	{
-		if (!dynamic_cast<SignalDecoder *>(&decoder))
-			throw std::invalid_argument(fmt::format("[VirtualDevice::{}] [CheckLoadedDecoder] Decoder {} must be a SignalDecoder subtype, but it is: {}", this->GetName(), decoder.GetName(), decoder.GetTypeName()));
+	{		
+		if (dynamic_cast<SignalDecoder *>(&decoder))
+			return;
+
+		if (dynamic_cast<VirtualTurnoutDecoder *>(&decoder))
+			return;
+
+		throw std::invalid_argument(fmt::format("[VirtualDevice::{}] [CheckLoadedDecoder] Decoder {} must be a SignalDecoder or VirtualTurnoutDecoder subtype, but it is: {}", this->GetName(), decoder.GetName(), decoder.GetTypeName()));
 	}
 
 	void VirtualDevice::Decoder_OnChangeStateRequest(const Decoder &decoder) noexcept
 	{
-		//nothing to do
-		//empty
+		if (auto t = dynamic_cast<const VirtualTurnoutDecoder *>(&decoder))
+		{
+			//sorry kids...
+			auto turnout = const_cast<VirtualTurnoutDecoder *>(t);
+
+			turnout->SyncRemoteState(turnout->GetRequestedState());
+		}
 	}
 }

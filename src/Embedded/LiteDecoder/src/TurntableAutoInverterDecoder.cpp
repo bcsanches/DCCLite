@@ -21,12 +21,11 @@
 
 #define MODULE_NAME F("TurntableAID")
 
-auto constexpr TRACK_TURNOFF_TICKS = 5;
-
 TurntableAutoInverterDecoder::TurntableAutoInverterDecoder(dcclite::Packet& packet) noexcept:
 	Decoder::Decoder(packet)	
 {
 	m_fFlags = packet.Read<uint8_t>() & dcclite::TRTD_ACTIVE;
+	m_u8FlipInterval = packet.Read<uint8_t>();
 	
 	m_uSensorAIndex = packet.Read<uint8_t>();
 	m_uSensorBIndex = packet.Read<uint8_t>();
@@ -47,6 +46,7 @@ TurntableAutoInverterDecoder::TurntableAutoInverterDecoder(Storage::EpromStream&
 	m_uFlagsStorageIndex = stream.GetIndex();
 
 	stream.Get(m_fFlags);
+	stream.Get(m_u8FlipInterval);
 
 	//Consider only active flag
 	m_fFlags = m_fFlags & dcclite::TRTD_ACTIVE;
@@ -71,6 +71,7 @@ void TurntableAutoInverterDecoder::SaveConfig(Storage::EpromStream& stream) noex
 	m_uFlagsStorageIndex = stream.GetIndex();
 
 	stream.Put(m_fFlags);
+	stream.Put(m_u8FlipInterval);
 	stream.Put(m_uSensorAIndex);
 	stream.Put(m_uSensorBIndex);
 
@@ -201,6 +202,6 @@ bool TurntableAutoInverterDecoder::Update(const unsigned long ticks) noexcept
 	//Console::SendLogEx(MODULE_NAME, F("Update waiting"));
 	DCCLITE_LOG_MODULE_LN(F("Update waiting"));
 
-	m_uWaitingTrackTurnOff = ticks + TRACK_TURNOFF_TICKS;
+	m_uWaitingTrackTurnOff = ticks + m_u8FlipInterval;
 	return true;		
 }

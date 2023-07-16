@@ -52,6 +52,8 @@ namespace dcclite::broker
 			dcclite::BasicPin m_arTrackAPins[2];
 			dcclite::BasicPin m_arTrackBPins[2];
 
+			uint8_t		m_u8FlipInterval = 5;
+
 			bool m_fIgnoreSavedState = false;
 			bool m_fActivateOnPowerUp = false;
 	};

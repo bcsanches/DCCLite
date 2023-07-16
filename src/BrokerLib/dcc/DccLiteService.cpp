@@ -30,6 +30,7 @@
 #include "TurnoutDecoder.h"
 #include "TurntableAutoInverterDecoder.h"
 #include "VirtualDevice.h"
+#include "VirtualTurnoutDecoder.h"
 
 #include "../sys/EventHub.h"
 
@@ -53,6 +54,9 @@ namespace dcclite::broker
 
 		if (className.compare("VirtualSignal") == 0)
 			return std::make_unique<SignalDecoder>(address, std::move(name), owner, dev, params);
+
+		if (className.compare("VirtualTurnout") == 0)
+			return std::make_unique<VirtualTurnoutDecoder>(address, std::move(name), owner, dev, params);
 		
 		if (className.compare("QuadInverter") == 0)
 			return std::make_unique<QuadInverter>(address, std::move(name), owner, dev, params);
@@ -310,7 +314,7 @@ namespace dcclite::broker
 
 	void DccLiteService::Decoder_OnStateChanged(Decoder& decoder)
 	{
-		this->NotifyItemChanged(decoder);	
+		this->NotifyItemChanged(decoder);
 	}		
 
 	//

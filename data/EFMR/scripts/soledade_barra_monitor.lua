@@ -7,6 +7,8 @@ local hlx_quad_inverter = dcclite.dcc0.INV_HELIX_TC_SOL;
 local sl_bp_main_d01 = dcclite.dcc0.SL_BP_MAIN_D01;
 local sl_bp_main_d02 = dcclite.dcc0.SL_BP_MAIN_D02;
 
+local sl_bp_d01_reset_button = dcclite.dcc0.SL_BP_ResetButton;
+
 local on_hlx_quad_inverter_state_change
 
 function on_section01_state_change(section)
@@ -65,7 +67,14 @@ function on_hlx_quad_inverter_state_change(quad_inverter)
     main_line_quad_inverter:set_state(hlx_quad_inverter.active);
 end
 
+function on_sl_bp_d01_reset_button_state_change(turnout)
+    log_trace("[SoledadeBarraMonitor] on_sl_bp_d01_reset_button_state_change")
+
+    section01:reset()
+end
+
 hlx_quad_inverter:on_state_change(on_hlx_quad_inverter_state_change)
+sl_bp_d01_reset_button:on_state_change(on_sl_bp_d01_reset_button_state_change)
 
 on_section01_state_change(section01)
 on_hlx_quad_inverter_state_change(hlx_quad_inverter)

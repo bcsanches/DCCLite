@@ -6,4 +6,5 @@ file_gear.png -> https://freeicons.io/regular-life-icons/file-exe-icon-17813#
 signal.png -> https://freeicons.io/traffic-signals/traffic-signal-red-green-yellow-signal-road-signals-trafficsignals-road-cars-stopwork-stop-icon-44908# By Shivani https://freeicons.io/profile/5596
 lamp_off.png -> https://freeicons.io/test/creative-idea-bulb-icon-948 ->                                     Icon by <a href="https://freeicons.io/profile/3">icon king1</a> on <a href="https://freeicons.io">freeicons.io</a>
 lamp_on.png -> derived from lamp_off.png                
-icons8-upward-arrow-50.png -> https://icons8.com/icon/39975/upward-arrow                
+icons8-upward-arrow-64_empty.png -> https://icons8.com/icon/114180/upward-arrow
+icons8-upward-arrow-64_empty -> https://icons8.com/icon/114041/upward-arrow

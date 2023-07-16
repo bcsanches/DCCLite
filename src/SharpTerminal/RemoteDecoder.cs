@@ -253,6 +253,25 @@ namespace SharpTerminal
     }    
 
     public class RemoteTurnoutDecoder: RemoteDecoder
+    {                
+        public RemoteTurnoutDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
+            base(name, className, path, internalId, parentInternalId, objectDef)
+        {
+            //empty
+        }
+
+        public override string TryGetIconName()
+        {
+            return RemoteState ? DefaultIcons.TURNOUT_ON_ICON : DefaultIcons.TURNOUT_OFF_ICON;
+        }
+
+        public override IRemoteObjectAction[] GetActions()
+        {
+            return new IRemoteObjectAction[1] { g_FlipAction };
+        }
+    }
+
+    public class RemoteServoTurnoutDecoder: RemoteTurnoutDecoder
     {
         protected static IRemoteObjectAction gProgrammerAction = new ServoProgrammerAction("Program", "Program the turnout servo");
 
@@ -371,15 +390,10 @@ namespace SharpTerminal
         }
 
 
-        public RemoteTurnoutDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
+        public RemoteServoTurnoutDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
             base(name, className, path, internalId, parentInternalId, objectDef)
         {
             this.ParseState(objectDef);
-        }
-
-        public override string TryGetIconName()
-        {
-            return RemoteState ? DefaultIcons.TURNOUT_ON_ICON : DefaultIcons.TURNOUT_OFF_ICON;
         }
 
         public override IRemoteObjectAction[] GetActions()

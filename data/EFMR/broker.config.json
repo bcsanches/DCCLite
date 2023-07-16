@@ -37,6 +37,10 @@
         {
             "name": "SignalController",
             "class": "Virtual"
+        },
+        {
+            "name": "VirtualDevice",
+            "class":"Virtual"
         }
       ],
       "locations": [      

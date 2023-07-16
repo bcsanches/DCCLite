@@ -1,11 +1,11 @@
 TODO
-- Dispatcher code no Broker e mostrar info das sections no sharp terminal
-    - mover codigo do script do dcclite para dentro da classe dcclite (DccLiteService_script.cpp)
-- Configurar tempo de liga / desliga quad inverter
-- Desvio virtual para criar botoes virtuais no EngineDriver
-- Botão de reset da section
+- mover codigo do script do dcclite para dentro da classe dcclite (DccLiteService_script.cpp)
 
 # Version ?????
+
+## General Features
+
+- Added support to config flip interval on quad inverter
 
 ## SharpTerminal
 

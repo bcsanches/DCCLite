@@ -43,6 +43,9 @@ namespace dcclite::broker
 		m_arTrackBPins[0] = dcclite::BasicPin{ static_cast<PinType_t>(trackBPins[0].GetInt()) };
 		m_arTrackBPins[1] = dcclite::BasicPin{ static_cast<PinType_t>(trackBPins[1].GetInt()) };
 
+		auto flipIntervalData = params.FindMember("flipInterval");
+		m_u8FlipInterval = flipIntervalData != params.MemberEnd() ? flipIntervalData->value.GetInt() : m_u8FlipInterval;
+
 		auto networkDevice = m_rclDevice.TryGetINetworkDevice();		
 
 		networkDevice->Decoder_RegisterPin(*this, m_arTrackAPins[0], "trackA0");
@@ -89,6 +92,7 @@ namespace dcclite::broker
 
 		//unused flags (send it, so in future less changes and no protocol change)
 		packet.Write8(0);
+		packet.Write8(m_u8FlipInterval);
 
 		packet.Write8(m_u8SensorAIndex);
 		packet.Write8(m_u8SensorBIndex);
@@ -102,6 +106,8 @@ namespace dcclite::broker
 	void TurntableAutoInverterDecoder::Serialize(dcclite::JsonOutputStream_t &stream) const
 	{
 		RemoteDecoder::Serialize(stream);
+
+		stream.AddIntValue("flipInterval", m_u8FlipInterval);
 
 		stream.AddStringValue("sensorAName", m_strSensorAName);
 		stream.AddStringValue("sensorBName", m_strSensorBName);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Json;
 using System.Linq;
+using System.Management.Instrumentation;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -390,9 +391,13 @@ namespace SharpTerminal
                     obj = new RemoteDecoder(name, className, path, id, parentInternalId, objectDef);
                     break;
 
-                case "ServoTurnoutDecoder":
                 case "TurnoutDecoder":
+                case "VirtualTurnoutDecoder":
                     obj = new RemoteTurnoutDecoder(name, className, path, id, parentInternalId, objectDef);
+                    break;
+
+                case "ServoTurnoutDecoder":                
+                    obj = new RemoteServoTurnoutDecoder(name, className, path, id, parentInternalId, objectDef);
                     break;                
 
                 case "SensorDecoder":

@@ -24,6 +24,7 @@ class QuadInverterDecoder : public Decoder
 		uint16_t		m_uFlagsStorageIndex = 0;
 
 		uint8_t			m_fFlags = 0;
+		uint8_t			m_u8FlipInterval = 5;
 
 	public:		
 		explicit QuadInverterDecoder(dcclite::Packet& packet) noexcept;

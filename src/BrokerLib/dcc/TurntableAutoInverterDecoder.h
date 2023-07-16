@@ -70,7 +70,9 @@ namespace dcclite::broker
 			dcclite::BasicPin m_arTrackBPins[2];
 
 			uint8_t		m_u8SensorAIndex = 0;
-			uint8_t		m_u8SensorBIndex = 0;			
+			uint8_t		m_u8SensorBIndex = 0;		
+
+			uint8_t		m_u8FlipInterval = 5;
 	};
 
 }

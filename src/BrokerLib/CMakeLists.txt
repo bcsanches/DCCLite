@@ -37,9 +37,9 @@ add_library(
         dcc/Device.h      
         dcc/IDccLiteService.h  
         dcc/IDevice.h
-	    dcc/LocationManager.cpp
+        dcc/LocationManager.cpp
         dcc/LocationManager.h
-	    dcc/NetworkDevice.cpp
+        dcc/NetworkDevice.cpp
         dcc/NetworkDevice.h
         dcc/NetworkDeviceTasks.cpp
         dcc/NetworkDeviceTasks.h
@@ -48,7 +48,7 @@ add_library(
         dcc/PinManager.cpp
         dcc/PinManager.h
         dcc/QuadInverter.cpp
-	    dcc/QuadInverter.h
+        dcc/QuadInverter.h
         dcc/RemoteDecoder.cpp
         dcc/RemoteDecoder.h
         dcc/SensorDecoder.cpp
@@ -63,6 +63,8 @@ add_library(
         dcc/TurntableAutoInverterDecoder.h       
         dcc/VirtualDevice.cpp
         dcc/VirtualDevice.h
+	dcc/VirtualTurnoutDecoder.cpp
+	dcc/VirtualTurnoutDecoder.h        
         dispatcher/DispatcherService.cpp
         dispatcher/DispatcherService.h
         ln/LoconetService.cpp

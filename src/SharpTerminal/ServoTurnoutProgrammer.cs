@@ -18,10 +18,10 @@ namespace SharpTerminal
 {
     class ServoTurnoutProxy : SharpCommon.IServoTurnout
     {
-        private readonly RemoteTurnoutDecoder m_clRemoteTurnout;
+        private readonly RemoteServoTurnoutDecoder m_clRemoteTurnout;
         private readonly IConsole m_clConsole;
 
-        public ServoTurnoutProxy(RemoteTurnoutDecoder turnout, IConsole console)
+        public ServoTurnoutProxy(RemoteServoTurnoutDecoder turnout, IConsole console)
         {
             m_clRemoteTurnout = turnout ?? throw new ArgumentNullException(nameof(turnout));
             m_clConsole = console ?? throw new ArgumentNullException(nameof(console));
@@ -148,7 +148,7 @@ namespace SharpTerminal
                 }
             }
 
-            var turnout = (RemoteTurnoutDecoder)target;
+            var turnout = (RemoteServoTurnoutDecoder)target;
 
             var form = new SharpCommon.ServoTurnoutProgrammerForm(
                 new ServoProgrammerProxy(turnout, console),
