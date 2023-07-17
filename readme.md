@@ -30,6 +30,10 @@ The main design goal of DCCLite is to be easy as possible to config and speciall
 
 Another design goal is to allow the installation of the Arduino boards as close as possible to where they are needed. If you have a yard throat with several turnouts and signals, instead of running wires all over the place, you can put a single arduino mega (or perhaps two) close to it. For controlling it, you just need to provide power and connect it to a Ethernet cable connected to your local network. No need for running dozens (or even hundres) of wires from the devices to the Arduino meters away.
 
+### Scripting
+
+[Lua][16] scripting support was added. This allow you to add custom behavior to your layout when something happens, like changing a signal aspect when throwing a turnout. 
+
 ### JMRI
 
 This tool can be integrated with [JMRI][12] for easily controlling your devices. The Broker server emulates a DCC++ connection and JMRI will think that it is simple talking with a DCC++ device. But diferent of a regular DCC++ device, DccLite can be composed of several Arduino boards spread all over your model railroad talking with your PC throught an Ethernet network.  
@@ -63,7 +67,7 @@ This code needs the following libraries to be built:
 - [Fmt][3]
 - [GoogleTest][9]
 - [JsonCreator][2]
-- [lfwatch][7]
+- [ldmonitor][7]
 - [Lua][16]
 - [magicenum][10]
 - [RapidJson][1]
@@ -82,7 +86,7 @@ All code is licensed under the [MPLv2 License][5].
 [4]: https://github.com/gabime/spdlog
 [5]: https://choosealicense.com/licenses/mpl-2.0/
 [6]: https://sites.google.com/site/dccppsite/
-[7]: https://github.com/Twinklebear/lfwatch
+[7]: https://github.com/bcsanches/ldmonitor
 [8]: https://github.com/njh/EtherCard
 [9]: https://github.com/google/googletest
 [10]: https://github.com/Neargye/magic_enum
