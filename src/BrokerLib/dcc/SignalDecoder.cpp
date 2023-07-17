@@ -228,13 +228,14 @@ namespace dcclite::broker
 		m_uCurrentAspectIndex = aspectIndex;
 
 		//
-		//We have a turnoff state so on the first update the signal will go to a consistent state		
+		//We have a turnoff state so on the first init it to turn off all heads...
 		m_vState.emplace<State_WaitTurnOff>(*this);	
 		auto waitTurnOffState = std::get_if< State_WaitTurnOff>(&m_vState);		
 
 		//No heads changed to off state?
 		if (waitTurnOffState->GetWaitListSize() == 0)
 		{
+			//Ok, so turn on whatever needs t be 
 			waitTurnOffState->GotoNextState();
 		}		
 		//else

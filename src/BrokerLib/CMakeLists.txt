@@ -28,6 +28,7 @@ add_library(
         dcc/DccAddress.cpp
         dcc/DccAddress.h
         dcc/DccLiteService.cpp
+        dcc/DccLiteService_script.cpp
         dcc/DccLiteService.h  
         dcc/DccppService.cpp
         dcc/DccppService.h

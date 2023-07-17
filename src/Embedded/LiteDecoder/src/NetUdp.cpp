@@ -106,8 +106,14 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 		}
 	}
 
-	//Console::SendLogEx(MODULE_NAME, F("mac"), FSTR_OK);
-	DCCLITE_LOG_MODULE_LN(F("mac ") << FSTR_OK);
+	{
+		auto stream = DCCLITE_LOG_MODULE_EX(Console::OutputStream{}) << F("mac ");
+
+		for(int i = 0;i < 6; ++i)
+			stream.HexNumber(g_u8Mac[i]) << ':';
+
+		stream << DCCLITE_ENDL;
+	}	
 
 	for(int i = 1;; ++i)
 	{

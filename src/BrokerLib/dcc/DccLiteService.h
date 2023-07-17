@@ -24,6 +24,7 @@
 #include "Socket.h"
 
 #include "../sys/EventHub.h"
+#include "../sys/ScriptService.h"
 #include "../sys/Thinker.h"
 
 namespace dcclite::broker
@@ -36,7 +37,7 @@ namespace dcclite::broker
 	class SensorDecoder;
 	class TurnoutDecoder;
 
-	class DccLiteService : public Service, private IDccLite_DeviceServices, private IDccLite_DecoderServices, public EventHub::IEventTarget
+	class DccLiteService : public Service, private IDccLite_DeviceServices, private IDccLite_DecoderServices, public EventHub::IEventTarget, public ScriptService::IScriptSupport
 	{
 		public:
 			DccLiteService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
@@ -82,6 +83,17 @@ namespace dcclite::broker
 
 			std::vector<TurnoutDecoder*> FindAllTurnoutDecoders();
 
+			//
+			//
+			// Scripting
+			//
+			//
+
+			void IScriptSupport_RegisterProxy(sol::table &table) override;
+
+			void IScriptSupport_OnVMInit(sol::state &state) override;
+			void IScriptSupport_OnVMFinalize(sol::state &state) override;
+
 		private:			
 			void OnNetEvent_Hello(const dcclite::NetworkAddress &senderAddress, const std::string &deviceName, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken);
 
@@ -89,9 +101,7 @@ namespace dcclite::broker
 
 			NetworkDevice *TryFindDeviceSession(const dcclite::Guid &guid);
 
-			NetworkDevice *TryFindPacketDestination(dcclite::Packet &packet);	
-
-			void Think(const dcclite::Clock::TimePoint_t ticks);
+			NetworkDevice *TryFindPacketDestination(dcclite::Packet &packet);				
 
 			void NetworkThreadProc();
 
