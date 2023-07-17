@@ -29,12 +29,12 @@ namespace SharpTerminal
         }
     }
 
-    public class RemoteDecoderCmdAction : RemoteDecoderCmdBaseAction
+    public class RemoteServiceObjectCmdAction : RemoteDecoderCmdBaseAction
     {        
         private readonly string mCmd;
         private readonly string[] mExtraParams;
 
-        public RemoteDecoderCmdAction(string cmd, string label, string description, params string[] extraParams):
+        public RemoteServiceObjectCmdAction(string cmd, string label, string description, params string[] extraParams):
             base(label, description)
         {            
             mCmd = cmd ?? throw new System.ArgumentNullException(nameof(cmd));
@@ -44,7 +44,7 @@ namespace SharpTerminal
 
         public override void Execute(IConsole console, RemoteObject target)
         {
-            var decoder = (RemoteDecoder)target;
+            var decoder = (RemoteServiceObject)target;
             
             string[] args = new string[3 + mExtraParams.Length];
             args[0] = mCmd;
@@ -58,15 +58,23 @@ namespace SharpTerminal
         }        
     }
 
-
-    public class RemoteDecoder : RemoteObject
+    public class RemoteServiceObject: RemoteObject
     {
-        protected static IRemoteObjectAction g_FlipAction = new RemoteDecoderCmdAction("Flip-Item", "Flip", "Activate / deactivate the item");
+        public string SystemName { get; }
+
+        public RemoteServiceObject(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
+          base(name, className, path, internalId, parentInternalId)
+        {
+            SystemName = objectDef["systemName"];
+        }
+    }   
+
+    public class RemoteDecoder : RemoteServiceObject
+    {
+        protected static IRemoteObjectAction g_FlipAction = new RemoteServiceObjectCmdAction("Flip-Item", "Flip", "Activate / deactivate the item");
 
         public int Address { get; }
         public string LocationHint { get; }
-
-        public string SystemName { get; }
 
         private bool mBroken;
         
@@ -102,19 +110,17 @@ namespace SharpTerminal
             {
                 this.UpdateProperty(ref mRemoteState, value);
             }
-        }
+        }  
 
         public RemoteDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
-            base(name, className, path, internalId, parentInternalId)
+            base(name, className, path, internalId, parentInternalId, objectDef)
         {
             DeviceName = objectDef["deviceName"];
 
             Address = objectDef["address"];
 
             if (objectDef.ContainsKey("locationHint"))
-                LocationHint = objectDef["locationHint"];
-
-            SystemName = objectDef["systemName"];
+                LocationHint = objectDef["locationHint"];            
 
             this.ParseState(objectDef);
         }
@@ -211,7 +217,7 @@ namespace SharpTerminal
                 for(int i = 0; i < m_Aspects.Length; i++)
                 {
                     var aspect = m_Aspects[i];
-                    m_arActions[i] = new RemoteDecoderCmdAction("Set-Aspect", aspect, "Set " + aspect + " aspect", aspect);
+                    m_arActions[i] = new RemoteServiceObjectCmdAction("Set-Aspect", aspect, "Set " + aspect + " aspect", aspect);
                 }
             }
 

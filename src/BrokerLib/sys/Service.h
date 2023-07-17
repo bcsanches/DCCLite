@@ -77,6 +77,12 @@ namespace dcclite::broker
 			}
 	};
 
+	class IResettableService
+	{
+		public:
+			virtual void IResettableService_ResetItem(std::string_view name) = 0;
+	};
+
 	class Service: public dcclite::FolderObject
 	{
 		public:

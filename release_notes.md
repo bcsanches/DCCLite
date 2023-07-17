@@ -1,6 +1,3 @@
-TODO
-- mover codigo do script do dcclite para dentro da classe dcclite (DccLiteService_script.cpp)
-
 # Version ?????
 
 ## General Features
@@ -10,6 +7,7 @@ TODO
 ## SharpTerminal
 
 - Server selection screen accepts ENTER as a shortcut
+- Added support to reset sections from SharpTerminal
 
 ## Scripts
 

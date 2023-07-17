@@ -27,14 +27,14 @@ namespace SharpTerminal.Dispatcher
         DOWN = 4
     }
 
-    public class RemoteSection : RemoteObject
+    public class RemoteSection : RemoteServiceObject
     {
-        protected static IRemoteObjectAction g_ResetAction = new RemoteDecoderCmdAction("Reset", "Reset", "Reset the section");
+        protected static IRemoteObjectAction g_ResetAction = new RemoteServiceObjectCmdAction("Reset", "Reset", "Reset the section");
 
         public SectionStates m_kState;                
 
         public RemoteSection(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
-            base(name, className, path, internalId, parentInternalId)
+            base(name, className, path, internalId, parentInternalId, objectDef)
         {
             this.ParseStateData(objectDef);           
         }

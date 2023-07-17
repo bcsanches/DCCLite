@@ -316,40 +316,96 @@ namespace dcclite::broker
 					}
 				);				
 			}
-	};
+	};	
 
-	class DccSystemCmdBase : public TerminalCmd
+	class ServiceCmdBase : public TerminalCmd
 	{
 		protected:
-			explicit DccSystemCmdBase(std::string name) :
+			explicit ServiceCmdBase(std::string name) :
 				TerminalCmd(std::move(name))
 			{
 				//empty
 			}
 
-			DccLiteService &GetService(const TerminalContext& context, const CmdId_t id, std::string_view dccSystemName)
-			{				
-				auto& root = static_cast<FolderObject&>(context.GetItem()->GetRoot());
+			template <typename T>
+			T &GetService(const TerminalContext &context, const CmdId_t id, std::string_view serviceName)
+			{
+				auto &root = static_cast<FolderObject &>(context.GetItem()->GetRoot());
 
 				ObjectPath path{ SpecialFolders::GetPath(SpecialFolders::Folders::ServicesId) };
-				path.append(dccSystemName);
+				path.append(serviceName);
 
-				auto *service = dynamic_cast<DccLiteService *>(root.TryNavigate(path));
+				auto obj = root.TryNavigate(path);
+				if (obj == nullptr)
+				{
+					throw TerminalCmdException(fmt::format("Service {} not found", serviceName), id);
+				}
+
+				auto *service = dynamic_cast<T *>(obj);
 				if (service == nullptr)
 				{
-					throw TerminalCmdException(fmt::format("DCC System {} not found", dccSystemName), id);
+					throw TerminalCmdException(fmt::format("Service {} does not has requested type", serviceName, typeid(T).name()), id);
 				}
 
 				return *service;
 			}
+	};
+
+	class ResetCmd : public ServiceCmdBase
+	{
+		public:
+			explicit ResetCmd(std::string name = "Reset") :
+				ServiceCmdBase(std::move(name))
+			{
+				//empty
+			}
+
+			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
+			{
+				auto paramsIt = request.FindMember("params");
+				if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() < 2))
+				{
+					throw TerminalCmdException(fmt::format("Usage: {} <service> <item>", this->GetName()), id);
+				}
+
+				auto serviceName = paramsIt->value[0].GetString();
+				auto itemName = paramsIt->value[1].GetString();
+
+				auto &ireset = this->GetService<IResettableService>(context, id, serviceName);
+
+				dcclite::Log::Info("[ResetCmd] Resetting {} at {}.", itemName, serviceName);
+				ireset.IResettableService_ResetItem(itemName);
+
+				return MakeRpcResultMessage(id, [](Result_t &results)
+					{
+						results.AddStringValue("classname", "string");
+						results.AddStringValue("msg", "OK");
+					}
+				);
+			}
+	};
+
+	class DccLiteCmdBase : public ServiceCmdBase
+	{
+		protected:
+			explicit DccLiteCmdBase(std::string name) :
+				ServiceCmdBase(std::move(name))
+			{
+				//empty
+			}
+
+			inline DccLiteService &GetDccLiteService(const TerminalContext& context, const CmdId_t id, std::string_view dccSystemName)
+			{		
+				return this->GetService<DccLiteService>(context, id, dccSystemName);
+			}
 
 	};
 
-	class DecoderCmdBase : public DccSystemCmdBase
+	class DecoderCmdBase : public DccLiteCmdBase
 	{
 		protected:
 			explicit DecoderCmdBase(std::string name) :
-				DccSystemCmdBase(std::move(name))
+				DccLiteCmdBase(std::move(name))
 			{
 				//empty
 			}
@@ -365,7 +421,7 @@ namespace dcclite::broker
 				auto dccSystemName = paramsIt->value[0].GetString();
 				auto decoderId = paramsIt->value[1].GetString();
 
-				auto &service = GetService(context, id, dccSystemName);
+				auto &service = this->GetDccLiteService(context, id, dccSystemName);
 
 				auto *decoder = service.TryFindDecoder(decoderId);
 				if (decoder == nullptr)
@@ -624,11 +680,11 @@ namespace dcclite::broker
 			std::future<void> m_Future;
 	};
 
-	class ReadEEPromCmd : public DccSystemCmdBase
+	class ReadEEPromCmd : public DccLiteCmdBase
 	{
 		public:
 			explicit ReadEEPromCmd(std::string name = "Read-EEProm"):
-				DccSystemCmdBase(std::move(name))
+				DccLiteCmdBase(std::move(name))
 			{
 				//empty
 			}
@@ -644,7 +700,7 @@ namespace dcclite::broker
 				auto systemName = paramsIt->value[0].GetString();
 				auto deviceName = paramsIt->value[1].GetString();
 
-				auto& service = this->GetService(context, id, systemName);
+				auto &service = this->GetDccLiteService(context, id, systemName);
 
 				auto device = service.TryFindDeviceByName(deviceName);
 				if (device == nullptr)
@@ -668,11 +724,11 @@ namespace dcclite::broker
 	//
 	//
 
-	class StartServoProgrammerCmd: public DccSystemCmdBase
+	class StartServoProgrammerCmd: public DccLiteCmdBase
 	{
 		public:
 			explicit StartServoProgrammerCmd(std::string name = "Start-ServoProgrammer"):
-				DccSystemCmdBase(std::move(name))
+				DccLiteCmdBase(std::move(name))
 			{
 				//empty
 			}
@@ -689,7 +745,7 @@ namespace dcclite::broker
 				auto deviceName = paramsIt->value[1].GetString();
 				auto decoderName = paramsIt->value[2].GetString();
 
-				auto &service = this->GetService(context, id, systemName);
+				auto &service = this->GetDccLiteService(context, id, systemName);
 
 				auto device = service.TryFindDeviceByName(deviceName);
 				if (device == nullptr)
@@ -720,11 +776,11 @@ namespace dcclite::broker
 			}
 	};
 
-	class ServoProgrammerBaseCmd: public DccSystemCmdBase
+	class ServoProgrammerBaseCmd: public DccLiteCmdBase
 	{
 		protected:
 			explicit ServoProgrammerBaseCmd(std::string name):
-				DccSystemCmdBase(std::move(name))
+				DccLiteCmdBase(std::move(name))
 			{
 				//empty
 			}
@@ -1413,6 +1469,10 @@ namespace dcclite::broker
 
 		{
 			cmdHost->AddCmd(std::make_unique<ReadEEPromCmd>());
+		}
+
+		{
+			cmdHost->AddCmd(std::make_unique<ResetCmd>());
 		}
 
 		const auto port = params["port"].GetInt();

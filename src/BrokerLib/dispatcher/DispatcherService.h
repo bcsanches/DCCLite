@@ -25,7 +25,7 @@ namespace dcclite::broker
 			~DispatcherService() override
 			{
 				//empty
-			}
+			}			
 
 			//
 			// Main interface

@@ -39,7 +39,13 @@ namespace dcclite::broker
 			{
 				IObject::Serialize(stream);
 
+				stream.AddStringValue("systemName", this->GetParent()->GetParent()->GetName());
 				stream.AddIntValue("state", m_clObject["state"]);
+			}
+
+			void Reset()
+			{
+				m_clObject["reset"](m_clObject);
 			}
 
 		private:
@@ -52,13 +58,15 @@ namespace dcclite::broker
 	//
 	///////////////////////////////////////////////////////////////////////////////
 
-	class DispatcherServiceImpl : public DispatcherService, public ScriptService::IScriptSupport
+	class DispatcherServiceImpl : public DispatcherService, public ScriptService::IScriptSupport, public IResettableService
 	{
 		public:
 			DispatcherServiceImpl(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
 			~DispatcherServiceImpl() override;
 
-			void Serialize(JsonOutputStream_t &stream) const override;			
+			void Serialize(JsonOutputStream_t &stream) const override;		
+
+			void IResettableService_ResetItem(std::string_view name) override;
 
 		private:			
 			void RegisterSection(std::string_view name, sol::table obj);
@@ -137,6 +145,15 @@ namespace dcclite::broker
 		this->NotifyItemChanged(*section);
 
 		//section->OnStateChange(newState);
+	}
+
+	void DispatcherServiceImpl::IResettableService_ResetItem(std::string_view name)
+	{
+		auto section = static_cast<SectionWrapper *>(m_pSections->TryGetChild(name));
+		if(section == nullptr)
+			throw std::runtime_error(fmt::format("[DispatcherServiceImpl::IResettableService_ResetItem] Section {} not registered", name));
+
+		section->Reset();
 	}
 
 	//
