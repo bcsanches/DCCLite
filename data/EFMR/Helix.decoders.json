@@ -59,17 +59,18 @@
     "invertedFrog": true,
     "operationTime": 3000,
     "range":25,
-    "comment": "AMV 05 - inferior - saída para Soledade"
+    "comment": "AMV 05 - inferior - saída do helix para Soledade"
   },      
   {
     "name": "HLX_T06",
-    "class": "ServoTurnout",
+    "class": "IgnoreMe",
     "address": "1856",  
     "pin": 15,
     "inverted": false,    
     "invertedFrog": true,
     "operationTime": 3000,
-    "comment": "AMV 06 - ponta triângulo - Soledade x Barra do Piraí"
+    "comment0": "Definido em HadesEntA.decoders",
+    "comment1": "AMV 06 - ponta triângulo - Soledade x Barra do Piraí"
   }, 
   {
     "name": "HLX_T07",
@@ -79,7 +80,7 @@
     "inverted": false,    
     "invertedFrog": true,
     "operationTime": 3000,
-    "comment": "AMV 07 - superior - saída para Barra do Piraí"
+    "comment": "AMV 07 - superior - saída do helix para Soledade"
   },   
   {
     "name":"HLX_DMT03", 

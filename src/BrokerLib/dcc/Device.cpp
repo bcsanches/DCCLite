@@ -137,8 +137,13 @@ namespace dcclite::broker
 		{
 			for (auto &element : decodersData.GetArray())
 			{
-				auto decoderName = element["name"].GetString();
 				auto className = element["class"].GetString();
+
+				//Just used for annotations on JSON file...as the parser does not support comments
+				if (strcmp(className, "IgnoreMe") == 0)
+					continue;
+
+				auto decoderName = element["name"].GetString();				
 				DccAddress address{ element["address"] };
 
 				auto &decoder = m_clDccService.Device_CreateDecoder(*this, className, address, decoderName, element);

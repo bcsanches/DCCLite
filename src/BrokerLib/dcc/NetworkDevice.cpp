@@ -351,7 +351,7 @@ namespace dcclite::broker
 
 		if (msgType == dcclite::MsgTypes::CONFIG_FINISHED)
 		{
-			dcclite::Log::Warn("[Device::{}] [SyncState::OnPacket] Got a late CONFIG_FINISHED packet, ignoring", this->m_rclSelf.GetName());
+			dcclite::Log::Warn("[NetworkDevice::{}] [SyncState::OnPacket] Got a late CONFIG_FINISHED packet, ignoring", this->m_rclSelf.GetName());
 
 			return;
 		}
@@ -589,7 +589,7 @@ namespace dcclite::broker
 		if (msgType == dcclite::MsgTypes::SYNC)
 		{
 			//ignore
-			Log::Trace("[NetworkDevice::{}] [OnlineState::OnPacket] Got late SYNC message, ignoring", this->GetName());
+			Log::Trace("[NetworkDevice::{}] [OnlineState::OnPacket] Got late SYNC message, ignoring", this->m_rclSelf.GetName());
 
 			return;
 

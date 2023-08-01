@@ -1,8 +1,15 @@
+# TODO
+
+- virtual sensor for showing sections on JMRI
+    - allow section name to include service: "sectionName":"dispatcher/section01"
+
+
 # Version ?????
 
 ## General Features
 
 - Added support to config flip interval on quad inverter
+- Added support to "IgnoreMe" class on device decoders config, to create annotations on JSON
 
 ## SharpTerminal
 
@@ -24,6 +31,7 @@
 - Added code to detect usage of special arduino pins, like ethercard pins
 - fixed lua script to correctly handle sensor events
 - ScriptService shows debug info when a Lua function blows up...
+- Fixed NetworkDevice trace message
 
 # Version 0.8.0 - 04/06/2023
 

@@ -115,7 +115,14 @@ namespace dcclite::broker
 
 	void DispatcherServiceImpl::IScriptSupport_OnVMFinalize(sol::state &sol)
 	{
-		//FIXME
+		auto enumerator = m_pSections->GetEnumerator();
+
+		while (enumerator.MoveNext())
+		{
+			auto current = enumerator.GetCurrent();
+			this->NotifyItemDestroyed(*current);
+		}
+		
 		m_pSections->RemoveAllChildren();
 	}
 
