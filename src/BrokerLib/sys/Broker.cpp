@@ -45,6 +45,12 @@
 
 namespace dcclite::broker
 {
+	static bool CheckIfServiceIsIgnorable(const rapidjson::Value &data)
+	{
+		auto ignoreServiceFlag = data.FindMember("ignoreOnLoadFailure");
+		return ((ignoreServiceFlag != data.MemberEnd()) && (ignoreServiceFlag->value.GetBool()));		
+	}
+
 	static std::unique_ptr<Service> CreateBrokerService(Broker &broker, const rapidjson::Value &data, const Project &project)
 	{
 		const char *className = data["class"].GetString();
@@ -52,36 +58,50 @@ namespace dcclite::broker
 
 		dcclite::Log::Info("[Broker] [CreateBrokerService] Creating DccLite Service: {}", name);
 
-		if (strcmp(className, "Bonjour") == 0)
+		try
 		{
-			return BonjourService::Create(name, broker, project);
-		}
-		if (strcmp(className, "DccLite") == 0)
-		{
-			return std::make_unique<DccLiteService>(name, broker, data, project);
-		}
-		else if (strcmp(className, "DccppService") == 0)
-		{
-			return DccppService::Create(name, broker, data, project);
-		}
-		else if (strcmp(className, "DispatcherService") == 0)
-		{
-			return DispatcherService::Create(name, broker, data, project);
-		}
-		else if (strcmp(className, "LoconetService") == 0)
-		{
-			return LoconetService::Create(name, broker, data, project);
-		}
-		else if (strcmp(className, "Terminal") == 0)
-		{
-			return std::make_unique<TerminalService>(name, broker, data, project);
-		}
-		else if (strcmp(className, "ThrottleService") == 0)
-		{
-			return ThrottleService::Create(name, broker, data, project);
-		}
+			if (strcmp(className, "Bonjour") == 0)
+			{
+				return BonjourService::Create(name, broker, project);
+			}
+			if (strcmp(className, "DccLiteService") == 0)
+			{
+				return std::make_unique<DccLiteService>(name, broker, data, project);
+			}
+			else if (strcmp(className, "DccppService") == 0)
+			{
+				return DccppService::Create(name, broker, data, project);
+			}
+			else if (strcmp(className, "DispatcherService") == 0)
+			{
+				return DispatcherService::Create(name, broker, data, project);
+			}
+			else if (strcmp(className, "LoconetService") == 0)
+			{
+				return LoconetService::Create(name, broker, data, project);
+			}
+			else if (strcmp(className, "Terminal") == 0)
+			{
+				return std::make_unique<TerminalService>(name, broker, data, project);
+			}
+			else if (strcmp(className, "ThrottleService") == 0)
+			{
+				return ThrottleService::Create(name, broker, data, project);
+			}
 
-		throw std::runtime_error(fmt::format("[Broker] [CreateBrokerService] error: unknown service type {}", className));
+			throw std::runtime_error(fmt::format("[Broker] [CreateBrokerService] error: unknown service type {}", className));
+		}
+		catch (std::exception &ex)
+		{
+			if (CheckIfServiceIsIgnorable(data))
+			{				
+				Log::Error("[Broker] [LoadConfig] Failed to load {}, but ignoring due to \"ignoreOnLoadFailure\" being set, exception: {}", name, ex.what());
+
+				return nullptr;
+			}
+
+			throw;
+		}
 	}
 
 	Broker::Broker(dcclite::fs::path projectPath) :
@@ -140,39 +160,61 @@ namespace dcclite::broker
 
 		dcclite::Log::Debug("[Broker] [LoadConfig] Processing config services array entries: {}", services.Size());
 
-		for (auto &serviceData : services.GetArray())
+		auto servicesDataArray = services.GetArray();
+
+		std::vector<const rapidjson::Value *> pendingServices;		
+
+		for (auto &serviceData : servicesDataArray)
 		{
-			std::unique_ptr<Service> service;
-			try
+			auto requiresData = serviceData.FindMember("requires");
+			if (requiresData == serviceData.MemberEnd())
 			{
-				service = CreateBrokerService(*this, serviceData, m_clProject);
-			}
-			catch (std::exception &ex)
-			{
-				auto ignoreServiceFlag = serviceData.FindMember("ignoreOnLoadFailure");
-				if ((ignoreServiceFlag != serviceData.MemberEnd()) && (ignoreServiceFlag->value.GetBool()))
-				{
-					auto nameData = serviceData.FindMember("name");
+				std::unique_ptr<Service> service{ CreateBrokerService(*this, serviceData, m_clProject)};
 
-					const char *name = nameData != serviceData.MemberEnd() ? nameData->value.GetString() : "NO NAME SET";
-
-					Log::Error("[Broker] [LoadConfig] Failed to load {}, but ignoring due to \"ignoreOnLoadFailure\" being set, exception: {}", name, ex.what());
-
+				if (!service)
 					continue;
-				}
 
-				throw;
-			}			
+				m_pServices->AddChild(std::move(service));
+			}
+			else
+			{								
+				pendingServices.push_back(&serviceData);
+			}
+		}
+
+		for (auto &serviceData : pendingServices)
+		{
+			std::unique_ptr<Service> service{ CreateBrokerService(*this, *serviceData, m_clProject)};
+			
+			if (!service)
+				continue;			
 
 			m_pServices->AddChild(std::move(service));
+		}		
+	}
+
+	Service &Broker::ResolveRequirement(std::string_view requirement)
+	{
+		if (requirement.size() == 0)
+			throw std::invalid_argument("[Broker::ResolveRequirement] Requirement string is empty");
+
+		if (requirement[0] == '$')
+		{			
+			if (auto *service = this->TryFindService(requirement.substr(1)))			
+				return *service;							
+
+			throw std::invalid_argument(fmt::format("[Broker::ResolveRequirement] Requested service {} not found", requirement));
 		}
 
 		auto enumerator = m_pServices->GetEnumerator();
-
 		while (enumerator.MoveNext())
 		{
-			enumerator.GetCurrent<Service>()->Initialize();
+			auto obj = enumerator.GetCurrent();
+			if (requirement.compare(obj->GetTypeName()) == 0)
+				return *static_cast<Service *>(obj);
 		}
+
+		throw std::invalid_argument(fmt::format("[Broker::ResolveRequirement] Requested service of type {} not found", requirement));
 	}
 
 	Service *Broker::TryFindService(std::string_view name)

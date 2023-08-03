@@ -100,9 +100,7 @@ namespace dcclite::broker
 	{
 		public:
 			DccppServiceImpl(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
-			~DccppServiceImpl() override;
-
-			void Initialize() override;			
+			~DccppServiceImpl() override;				
 
 		private:			
 			void ListenThreadProc(const int port);
@@ -155,9 +153,8 @@ namespace dcclite::broker
 					dcclite::Socket m_clSocket;
 			};
 
-		private:
-			std::string		m_strDccServiceName;
-			DccLiteService *m_pclDccService = nullptr;			
+		private:			
+			DccLiteService  &m_rclDccService;			
 
 			//
 			//Network communication
@@ -651,9 +648,11 @@ ERROR_RESPONSE:
 
 
 	DccppServiceImpl::DccppServiceImpl(const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
-		DccppService(name, broker, params, project),
-		m_strDccServiceName(params["system"].GetString())
+		DccppService(name, broker, params, project),		
+		m_rclDccService{ static_cast<DccLiteService &>(m_rclBroker.ResolveRequirement(params["requires"].GetString())) }
 	{
+		
+
 		//standard port used by DCC++
 		int port = 2560;
 
@@ -674,7 +673,7 @@ ERROR_RESPONSE:
 		if(auto bonjourService = static_cast<BonjourService *>(m_rclBroker.TryFindService(BONJOUR_SERVICE_NAME)))
 			bonjourService->Register(this->GetName(), "dccpp", NetworkProtocol::TCP, port, 36);
 
-		ZeroconfService::Register(this->GetTypeName(), port);
+		ZeroconfService::Register(this->GetTypeName(), port);		
 	}
 
 	DccppServiceImpl::~DccppServiceImpl()
@@ -692,21 +691,11 @@ ERROR_RESPONSE:
 		EventHub::CancelEvents(*this);
 	}
 
-	void DccppServiceImpl::Initialize()
-	{
-		m_pclDccService = static_cast<DccLiteService *>(m_rclBroker.TryFindService(m_strDccServiceName));
-
-		if (!m_pclDccService)
-			throw std::runtime_error(fmt::format("[DccppService::Initialize] Cannot find dcc service: {}", m_strDccServiceName));
-	}
-
 	void DccppServiceImpl::OnAcceptConnection(const dcclite::NetworkAddress &address, Socket s)
-	{
-		assert(m_pclDccService);
-
+	{		
 		std::unique_lock<std::mutex> guard{ m_mtxClientsLock };
 
-		auto client = std::unique_ptr<DccppClient>{ new DccppClient(*this, *m_pclDccService, address, std::move(s)) };
+		auto client = std::unique_ptr<DccppClient>{ new DccppClient(*this, m_rclDccService, address, std::move(s)) };
 
 		m_vecClients.push_back(std::move(client));
 	}

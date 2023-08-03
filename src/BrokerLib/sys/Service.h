@@ -86,8 +86,6 @@ namespace dcclite::broker
 	class Service: public dcclite::FolderObject
 	{
 		public:
-			virtual void Initialize() {};			
-
 			virtual ~Service() {}						
 
 			mutable sigslot::signal< const ObjectManagerEvent &> m_sigEvent;

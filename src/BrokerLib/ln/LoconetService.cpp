@@ -971,8 +971,6 @@ namespace dcclite::broker
 			LoconetServiceImpl(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
 			~LoconetServiceImpl() override;			
 
-			void Initialize() override;
-
 			static std::unique_ptr<Service> Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
 			void Serialize(JsonOutputStream_t &stream) const override;
@@ -1000,9 +998,7 @@ namespace dcclite::broker
 
 			SerialPort::DataPacket m_clInputPacket;			
 
-			MessageDispatcher m_clMessageDispatcher;
-
-			std::string m_strThrottleServiceName;			
+			MessageDispatcher m_clMessageDispatcher;				
 
 			Thinker m_tThinker;
 			Thinker m_tPurgeThinker;
@@ -1014,10 +1010,11 @@ namespace dcclite::broker
 	LoconetServiceImpl::LoconetServiceImpl(const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
 		LoconetService(name, broker, params, project),
 		m_clSerialPort(params["port"].GetString()),
-		m_strThrottleServiceName(params["throttleService"].GetString()),
 		m_tThinker{ {}, THINKER_MF_LAMBDA(Think)},
 		m_tPurgeThinker{ {}, THINKER_MF_LAMBDA(PurgeThink) }
-	{				
+	{			
+		g_pclThrottleService = &static_cast<ThrottleService &>(m_rclBroker.ResolveRequirement(params["requires"].GetString()));
+
 		dcclite::Log::Info("[LoconetService] Started, listening on port {}", params["port"].GetString());
 
 		this->ResetPr3();
@@ -1042,15 +1039,6 @@ namespace dcclite::broker
 
 		this->DispatchLnMessage(msg);
 	}
-
-
-	void LoconetServiceImpl::Initialize()
-	{
-		g_pclThrottleService = static_cast<ThrottleService *>(m_rclBroker.TryFindService(m_strThrottleServiceName));
-
-		if (!g_pclThrottleService)
-			throw std::runtime_error(fmt::format("[LoconetServiceImpl::Initialize] Cannot find throttle service instance: {}", m_strThrottleServiceName));
-	}	
 
 	void LoconetServiceImpl::DispatchLnLongAckMessage(const Opcodes opcode, const uint8_t responseCode)
 	{

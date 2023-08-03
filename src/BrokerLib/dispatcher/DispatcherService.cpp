@@ -16,7 +16,9 @@
 
 #include <Log.h>
 
+#include "../sys/Broker.h"
 #include "../sys/ScriptService.h"
+#include "../dcc/DccLiteService.h"
 
 namespace dcclite::broker
 {	
@@ -79,13 +81,16 @@ namespace dcclite::broker
 
 		private:
 			sigslot::scoped_connection m_slotScriptVMInit;
-			sigslot::scoped_connection m_slotScriptVMFinalize;
+			sigslot::scoped_connection m_slotScriptVMFinalize;			
+
+			DccLiteService &m_rclDccLite;
 
 			FolderObject *m_pSections;
 	};	
 
 	DispatcherServiceImpl::DispatcherServiceImpl(const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
-		DispatcherService(name, broker, params, project)
+		DispatcherService(name, broker, params, project),
+		m_rclDccLite{ static_cast<DccLiteService &>(broker.ResolveRequirement(params["requires"].GetString())) }
 	{				
 		dcclite::Log::Info("[DispatcherServiceImpl] Started");		
 
@@ -160,7 +165,7 @@ namespace dcclite::broker
 		if(section == nullptr)
 			throw std::runtime_error(fmt::format("[DispatcherServiceImpl::IResettableService_ResetItem] Section {} not registered", name));
 
-		section->Reset();
+		section->Reset();		
 	}
 
 	//

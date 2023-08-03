@@ -2,7 +2,7 @@
   "name": "EFMR",
   "services": [
     {
-      "class": "DccLite",
+      "class": "DccLiteService",
       "name": "dcc0",
       "port": 8989,
       "devices": [
@@ -108,17 +108,18 @@
     {
       "class": "DccppService",
       "name": "dccpp",
-      "system":"dcc0"
+      "requires":"$dcc0"
     },
     {
       "class": "DispatcherService",
-      "name": "dispatcher"
+      "name": "dispatcher",
+      "requires":"DccLiteService"
     },
     {
         "class": "LoconetService",
         "name": "loconet",
         "port": "COM7",
-        "throttleService": "throttleService",
+        "requires": "ThrottleService",
         "ignoreOnLoadFailure":true
     },
     {
