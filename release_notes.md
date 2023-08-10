@@ -2,6 +2,8 @@
 
 - virtual sensor for showing sections on JMRI
     - allow section name to include service: "sectionName":"dispatcher/section01"
+- simple junction section for turnouts
+- Allow pin specs on JSON to use A11, a10, etc
 
 
 # Version ?????
@@ -22,6 +24,7 @@
 
 ## Code
 
+- Parser support to variable names with $ prefix
 - Added own implementation of DirectoryMonitor (win32 only for now)
 - Removed code to convert win32 error messages and replaced with std::system_category
 - Moved DirectoryMonitor to its own library

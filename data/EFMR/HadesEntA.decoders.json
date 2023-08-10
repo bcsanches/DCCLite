@@ -236,5 +236,41 @@
     "activateDelay":0,
     "deactivateDelay":0,
     "broken":true
-  } 
+  },
+  {
+    "name":"SL_BP_MAIN_D03",
+    "class":"Sensor",
+    "pin":65,
+    "address":"1653",
+    "pullup":true,
+    "inverted":true,
+    "activateDelay":0,
+    "deactivateDelay":5,
+    "location":"Soledade",
+    "comment":"Sensor infrared 03 - Principal Soledade x Barra - Entrada AMV Triângulo"
+  },
+  {
+    "name":"SL_BP_MAIN_D04",
+    "class":"Sensor",
+    "pin":66,
+    "address":"1654",
+    "pullup":true,
+    "inverted":true,
+    "activateDelay":0,
+    "deactivateDelay":5,
+    "location":"Soledade",
+    "comment":"Sensor infrared 04 - Principal Soledade x Barra - Perna Triângulo para o staging"
+  },
+  {
+    "name":"SL_BP_MAIN_D05",
+    "class":"Sensor",
+    "pin":67,
+    "address":"1655",
+    "pullup":true,
+    "inverted":true,
+    "activateDelay":0,
+    "deactivateDelay":5,
+    "location":"Soledade",
+    "comment":"Sensor infrared 05 - Principal Soledade x Barra - Perna Triângulo para subir helix"
+  }
 ]

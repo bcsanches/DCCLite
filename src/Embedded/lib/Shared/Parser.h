@@ -29,6 +29,8 @@ namespace dcclite
 
 		HASH,
 
+		VARIABLE_NAME,
+
 		SYNTAX_ERROR
 	};
 
@@ -42,12 +44,14 @@ namespace dcclite
 
 			void SkipBlanks();
 
+			[[nodiscard]] Tokens ParseId(char *dest, unsigned int destPos, const unsigned int destSize, const Tokens returnType);
+
 		public:
 			explicit Parser(const char *cmd);
 
-			Tokens GetToken(char *dest, unsigned int destSize, bool forceHexMode = false);
-			Tokens GetNumber(int &dest);
-			Tokens GetHexNumber(int &dest);
+			[[nodiscard]] Tokens GetToken(char *dest, const unsigned int destSize, bool forceHexMode = false);
+			[[nodiscard]] Tokens GetNumber(int &dest);
+			[[nodiscard]] Tokens GetHexNumber(int &dest);
 
 			void PushToken();
 	};

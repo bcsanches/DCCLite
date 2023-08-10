@@ -6,6 +6,7 @@ local hlx_quad_inverter = dcclite.dcc0.INV_HELIX_TC_SOL;
 
 local sl_bp_main_d01 = dcclite.dcc0.SL_BP_MAIN_D01;
 local sl_bp_main_d02 = dcclite.dcc0.SL_BP_MAIN_D02;
+local sl_bp_main_d03 = dcclite.dcc0.SL_BP_MAIN_D03;
 
 local sl_bp_d01_reset_button = dcclite.dcc0.SL_BP_ResetButton;
 
@@ -38,6 +39,30 @@ function on_section01_state_change(section)
     
 end
 
+function on_section02_state_change(section)
+    log_info("section 02 state change: " .. section:get_state_name())
+
+    if section:is_clear() then
+        log_trace("[SoledadeBarraMonitor] train left the block")     
+
+        on_hlx_quad_inverter_state_change(hlx_quad_inverter)        
+
+        return
+    end
+
+    if section.state == SECTION_STATES.up_start then
+        log_trace("[SoledadeBarraMonitor] train on midway from soledade")    
+    elseif section.state == SECTION_STATES.down_start then
+
+        -- train is aproaching Soledade and entered the block?
+        log_trace("[SoledadeBarraMonitor] train on midway to soledade")
+    elseif section.state == SECTION_STATES.up then
+        log_trace("[SoledadeBarraMonitor] train on midway leaving soledade - block complete")    
+    elseif section.state == SECTION_STATES.down then
+        log_trace("[SoledadeBarraMonitor] train on midway aproaching soledade - block complete")    
+    end
+end
+
 function on_sensor_change_test(sensor)
 
     log_trace("[SoledadeBarraMonitor] on_sensor_change_test")
@@ -51,6 +76,13 @@ local section01 = Section:new({
     start_sensor = sl_bp_main_d01,
     end_sensor = sl_bp_main_d02,
     callback = on_section01_state_change
+})
+
+local section02 = Section:new({
+    name = "sl_bp_main_s02",
+    start_sensor = sl_bp_main_d02,
+    end_sensor = sl_bp_main_d03,
+    callback = on_section02_state_change
 })
 
 function on_hlx_quad_inverter_state_change(quad_inverter)

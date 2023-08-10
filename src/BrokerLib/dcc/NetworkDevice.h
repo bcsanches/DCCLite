@@ -81,7 +81,7 @@ namespace dcclite::broker
 			[[nodiscard]] INetworkDevice_DecoderServices *TryGetINetworkDevice() noexcept override
 			{
 				return this;
-			}								
+			}						
 
 			//
 			//

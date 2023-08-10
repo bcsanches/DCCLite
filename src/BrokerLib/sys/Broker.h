@@ -47,7 +47,7 @@ namespace dcclite::broker
 				return m_pclTerminalCmdHost;
 			}
 
-			Service &ResolveRequirement(std::string_view requirement);
+			Service &ResolveRequirement(const char *requirement);
 
 		private:	
 			dcclite::FolderObject	m_clRoot;

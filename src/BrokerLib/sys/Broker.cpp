@@ -21,6 +21,7 @@
 #include <spdlog/logger.h>
 
 #include <Log.h>
+#include <Parser.h>
 
 #include "../dcc/DccLiteService.h"
 #include "../dcc/DccppService.h"
@@ -193,28 +194,34 @@ namespace dcclite::broker
 		}		
 	}
 
-	Service &Broker::ResolveRequirement(std::string_view requirement)
+	Service &Broker::ResolveRequirement(const char *requirement)
 	{
-		if (requirement.size() == 0)
-			throw std::invalid_argument("[Broker::ResolveRequirement] Requirement string is empty");
+		Parser parser{ requirement };
 
-		if (requirement[0] == '$')
-		{			
-			if (auto *service = this->TryFindService(requirement.substr(1)))			
-				return *service;							
+		char reqName[128];
+		auto token = parser.GetToken(reqName, sizeof(reqName));
+
+		if (token == Tokens::VARIABLE_NAME)
+		{
+			if (auto *service = this->TryFindService(reqName))
+				return *service;
 
 			throw std::invalid_argument(fmt::format("[Broker::ResolveRequirement] Requested service {} not found", requirement));
 		}
-
-		auto enumerator = m_pServices->GetEnumerator();
-		while (enumerator.MoveNext())
+		else if (token == Tokens::ID)
 		{
-			auto obj = enumerator.GetCurrent();
-			if (requirement.compare(obj->GetTypeName()) == 0)
-				return *static_cast<Service *>(obj);
-		}
+			auto enumerator = m_pServices->GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				auto obj = enumerator.GetCurrent();
+				if (strcmp(reqName, obj->GetTypeName()) == 0)
+					return *static_cast<Service *>(obj);
+			}
 
-		throw std::invalid_argument(fmt::format("[Broker::ResolveRequirement] Requested service of type {} not found", requirement));
+			throw std::invalid_argument(fmt::format("[Broker::ResolveRequirement] Requested service of type {} not found", requirement));
+		}
+		
+		throw std::invalid_argument(fmt::format("[Broker::ResolveRequirement] Sybtax error parsing requirement {} ", requirement));
 	}
 
 	Service *Broker::TryFindService(std::string_view name)

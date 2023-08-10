@@ -10,6 +10,8 @@
 
 #include "TurnoutDecoder.h"
 
+#include <fmt/format.h>
+
 #include "IDccLiteService.h"
 #include "IDevice.h"
 
@@ -38,8 +40,8 @@ namespace dcclite::broker
 		m_clPin(params["pin"].GetInt())
 	{
 		auto networkDevice = m_rclDevice.TryGetINetworkDevice();
-
-		assert(networkDevice);
+		if (!networkDevice)
+			throw std::logic_error(fmt::format("[ServoTurnoutDecoder::{}] Requires a NetworkDevice, but {} is not.", this->GetName(), m_rclDevice.GetDeviceName()));		
 
 		networkDevice->Decoder_RegisterPin(*this, m_clPin, "pin");
 

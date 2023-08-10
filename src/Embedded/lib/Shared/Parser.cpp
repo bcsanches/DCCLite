@@ -49,9 +49,7 @@ namespace dcclite
 			SafeCopy(dest, destPos, destSize, 0);
 
 			//make sure string is closed if safeCopy does nothing
-			dest[destSize - 1] = 0;
-
-			//NetClient::sendLog("finishTokendest", dest);
+			dest[destSize - 1] = 0;			
 		}
 	}
 
@@ -68,6 +66,26 @@ namespace dcclite
 			}
 
 			break;
+		}
+	}
+
+	Tokens Parser::ParseId(char *dest, unsigned int destPos, const unsigned int destSize, const Tokens returnType)
+	{				
+		for (;;)
+		{
+			char ch = m_pszCmd[m_iPos];
+
+			if (IS_ID(ch))
+			{
+				SafeCopy(dest, destPos, destSize, ch);
+				++m_iPos;
+			}
+			else
+			{
+				FinishToken(dest, destPos, destSize);
+
+				return returnType;
+			}
 		}
 	}
 
@@ -107,6 +125,17 @@ namespace dcclite
 
 				case '#':
 					return Tokens::HASH;
+
+				case '$':
+					ch = m_pszCmd[m_iPos];
+					if (!IS_ID_START(ch))
+						return Tokens::SYNTAX_ERROR;
+
+					SafeCopy(dest, destPos, destSize, ch);
+
+					++m_iPos;
+
+					return this->ParseId(dest, destPos, destSize, Tokens::VARIABLE_NAME);
 
 				case '0':
 					ch = m_pszCmd[m_iPos];
@@ -154,22 +183,7 @@ namespace dcclite
 					{
 						SafeCopy(dest, destPos, destSize, ch);
 
-						for (;;)
-						{
-							ch = m_pszCmd[m_iPos];
-
-							if (IS_ID(ch))
-							{
-								SafeCopy(dest, destPos, destSize, ch);
-								++m_iPos;
-							}
-							else
-							{							
-								FinishToken(dest, destPos, destSize);
-								
-								return Tokens::ID;
-							}
-						}
+						return this->ParseId(dest, destPos, destSize, Tokens::ID);						
 					}
 
 					return Tokens::SYNTAX_ERROR;

@@ -50,6 +50,46 @@ TEST(Parser, GetNumber_HEX)
 	TestNum("0xFF", 0xFF);
 }
 
+TEST(Parser, GetVariable)
+{
+	char cmd[] = "   $VaRiA01_B   ";
+	Parser parser(cmd);
+
+	char dest[32];
+	ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::VARIABLE_NAME);
+
+	ASSERT_STREQ(dest, "VaRiA01_B");
+}
+
+TEST(Parser, GetVariableErrors)
+{	
+	char dest[32];
+
+	{
+		Parser parser("$ Var");
+		
+		ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::SYNTAX_ERROR);
+	}
+
+	{
+		Parser parser("$0Var");
+
+		ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::SYNTAX_ERROR);
+	}
+	
+	{
+		Parser parser("$");
+
+		ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::SYNTAX_ERROR);
+	}
+
+	{
+		Parser parser("$-as");
+
+		ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::SYNTAX_ERROR);
+	}
+}
+
 static void TestHexNum(const char *cmd, const int expectedNum)
 {
 	int num;
@@ -63,4 +103,23 @@ TEST(Parser, GetHexNumber)
 {
 	TestHexNum("8B", 0x8B);
 	TestHexNum("0x8B", 0x8B);	
+}
+
+TEST(Parser, GetId)
+{
+	char cmd[] = "   abc def _kij1a   ";
+	Parser parser(cmd);
+
+	char dest[32];
+	ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::ID);	
+
+	ASSERT_STREQ(dest, "abc");
+
+	ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::ID);
+
+	ASSERT_STREQ(dest, "def");
+
+	ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::ID);
+
+	ASSERT_STREQ(dest, "_kij1a");
 }
