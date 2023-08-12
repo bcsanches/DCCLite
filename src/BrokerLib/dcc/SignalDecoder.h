@@ -148,13 +148,11 @@ namespace dcclite::broker
 				Thinker	m_clThinker;
 			};
 
-			struct NullState {};
-
 		private:
 			dcclite::SignalAspects	m_eCurrentAspect;
 			unsigned				m_uCurrentAspectIndex;
 
-			std::variant<NullState, State_Flash, State_WaitTurnOff> m_vState;			
+			std::variant<std::monostate, State_Flash, State_WaitTurnOff> m_vState;			
 
 			//Heads definitions, std::map key is the head "user name" and std::map value is the decoder name
 			std::map<std::string, std::string> m_mapHeads;

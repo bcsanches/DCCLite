@@ -684,13 +684,11 @@ namespace dcclite::broker
 	//
 	//
 
+
 	void NetworkDevice::Decoder_OnChangeStateRequest(const Decoder &decoder) noexcept
 	{
-		auto *onlineState = std::get_if<OnlineState>(&m_vState);
-		if (onlineState == nullptr)
-			return;
-
-		onlineState->OnChangeStateRequest(decoder);
+		if (auto *onlineState = std::get_if<OnlineState>(&m_vState))
+			onlineState->OnChangeStateRequest(decoder);
 	}
 
 	void NetworkDevice::Serialize(dcclite::JsonOutputStream_t &stream) const
@@ -833,28 +831,29 @@ namespace dcclite::broker
 
 	void NetworkDevice::ClearState()
 	{
-		m_vState = NullState{};
+		m_vState = std::monostate{};
 		m_pclCurrentState = nullptr;
+	}
+
+	template <typename T, class... Args>
+	void NetworkDevice::SetState(Args&&...args)
+	{
+		m_vState.emplace<T>(*this, args...);
+		m_pclCurrentState = &std::get<T>(m_vState);
 	}
 
 	void NetworkDevice::GotoSyncState()
 	{
-		this->ClearState();
-
-		m_vState.emplace<SyncState>(*this);
-		m_pclCurrentState = std::get_if<SyncState>(&m_vState);
+		this->SetState<SyncState>();
 
 		dcclite::Log::Trace("[Device::{}] [GotoSyncState] Entered", this->GetName());
 	}
 
 	void NetworkDevice::GotoOnlineState(const dcclite::Clock::TimePoint_t time)
 	{
-		this->ClearState();
-
 		m_kStatus = Status::ONLINE;
 
-		m_vState.emplace<OnlineState>(*this, time);
-		m_pclCurrentState = std::get_if<OnlineState>(&m_vState);
+		this->SetState<OnlineState>(time);
 
 		dcclite::Log::Trace("[Device::{}] [GotoOnlineState] Entered", this->GetName());
 		m_clDccService.Device_NotifyStateChange(*this);
@@ -862,10 +861,7 @@ namespace dcclite::broker
 
 	void NetworkDevice::GotoConfigState(const dcclite::Clock::TimePoint_t time)
 	{
-		this->ClearState();
-
-		m_vState.emplace<ConfigState>(*this, time);		
-		m_pclCurrentState = std::get_if<ConfigState>(&m_vState);
+		this->SetState<ConfigState>(time);
 
 		dcclite::Log::Trace("[Device::{}] [GotoConfigState] Entered", this->GetName());
 	}	

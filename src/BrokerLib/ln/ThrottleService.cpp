@@ -43,7 +43,7 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 			m_vState{ ConnectState {serverAddress} },			
 			m_rclOwnerSlot{ owner }
 		{
-			m_pclCurrentState = std::get_if<ConnectState>(&m_vState);
+			m_pclCurrentState = &std::get<ConnectState>(m_vState);
 
 			assert(m_pclCurrentState);
 		}
@@ -135,24 +135,23 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 		}
 
 	private:
-		void GotoConnectState()
+		template <typename T, class... Args>
+		void SetState(Args&&...args)
 		{
-			m_vState = ConnectState{ m_clServerAddress };
-			m_pclCurrentState = std::get_if<ConnectState>(&m_vState);
-
-			assert(m_pclCurrentState);
+			m_vState.emplace<T>(static_cast<Args &&>(args)...);
+			m_pclCurrentState = &std::get<T>(m_vState);
 
 			m_pclConnectedState = nullptr;
 		}
 
+		void GotoConnectState()
+		{
+			this->SetState<ConnectState>(m_clServerAddress);
+		}
+
 		void GotoErrorState(std::string reason)
 		{
-			m_vState = ErrorState{std::move(reason)};
-			m_pclCurrentState = std::get_if<ErrorState>(&m_vState);
-
-			assert(m_pclCurrentState);
-
-			m_pclConnectedState = nullptr;
+			this->SetState<ErrorState>(std::move(reason));
 		}
 
 		void GotoHandShakeState()
@@ -162,12 +161,7 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 			if (!connectingState)
 				throw std::logic_error("[Throttle::GotoHandShakeState] Invalid state, must be in ConnectingState state");
 
-			m_vState = HandShakeState{ std::move(connectingState->m_clSocket) };
-			m_pclCurrentState = std::get_if<HandShakeState>(&m_vState);
-
-			assert(m_pclCurrentState);
-
-			m_pclConnectedState = nullptr;
+			this->SetState<HandShakeState>(std::move(connectingState->m_clSocket) );
 		}
 
 		void GotoConfiguringThrottleIdState(const char *separator, const char *initialBuffer = "")
@@ -179,12 +173,7 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 			
 			dcclite::Log::Debug("[Throttle::GotoConfiguringState] Detected line ending as {} - entering configuring state", separator[0] == '\n' ? "\\n" : separator[1] ? "\\r\\n" : "\\r");
 			
-			m_vState.emplace<ConfiguringThrottleIdState>( *this, dcclite::NetMessenger{std::move(handShakeState->m_clSocket), separator, initialBuffer});
-			m_pclCurrentState = std::get_if<ConfiguringThrottleIdState>(&m_vState);
-
-			assert(m_pclCurrentState);
-
-			m_pclConnectedState = nullptr;
+			this->SetState<ConfiguringThrottleIdState>( *this, dcclite::NetMessenger{std::move(handShakeState->m_clSocket), separator, initialBuffer});
 		}
 
 		void GotoConnectedState()
@@ -195,10 +184,9 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 				throw std::logic_error("[Throttle::GotoConnectedState] Invalid state, must be in ConfiguringState state");
 
 			auto tmp = std::move(*configuringState);
-			m_vState.emplace<ConnectedState>(*this, std::move(tmp));
-			m_pclCurrentState = m_pclConnectedState = std::get_if<ConnectedState>(&m_vState);	
 
-			assert(m_pclCurrentState);
+			this->SetState<ConnectedState>(*this, std::move(tmp));
+			m_pclConnectedState = &std::get<ConnectedState>(m_vState);	
 		}
 
 	private:		

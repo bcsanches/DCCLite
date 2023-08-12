@@ -230,13 +230,13 @@ namespace dcclite::broker
 		//
 		//We have a turnoff state so on the first init it to turn off all heads...
 		m_vState.emplace<State_WaitTurnOff>(*this);	
-		auto waitTurnOffState = std::get_if< State_WaitTurnOff>(&m_vState);		
+		auto &waitTurnOffState = std::get<State_WaitTurnOff>(m_vState);		
 
 		//No heads changed to off state?
-		if (waitTurnOffState->GetWaitListSize() == 0)
+		if (waitTurnOffState.GetWaitListSize() == 0)
 		{
 			//Ok, so turn on whatever needs t be 
-			waitTurnOffState->GotoNextState();
+			waitTurnOffState.GotoNextState();
 		}		
 		//else
 		//wait for decoders events on State_WaitTurnOff
@@ -333,7 +333,7 @@ namespace dcclite::broker
 		}
 		else
 		{
-			m_rclOwner.m_vState.emplace<NullState>();
+			m_rclOwner.m_vState.emplace<std::monostate>();
 		}
 	}
 	

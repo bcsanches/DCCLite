@@ -621,8 +621,8 @@ namespace dcclite::broker::detail
 
 		//
 		//If terminal already requested a new position, we may intercept it now and request the servo to move
-		auto state = std::get_if<RunningState>(&m_vState);
-		state->OnNewServoPosition();
+		auto &state = std::get<RunningState>(m_vState);
+		state.OnNewServoPosition();
 	}
 
 	void ServoTurnoutProgrammerTask::GotoStateFailure(const char *stateName, const ServoProgammerClientErrors errorCode)

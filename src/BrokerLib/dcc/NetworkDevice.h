@@ -125,7 +125,10 @@ namespace dcclite::broker
 			* Disconnect does a graceful disconnect telling the device that we are disconnecting, after that, it goes to OFFLINE state
 			* 
 			*/
-			void Disconnect();			
+			void Disconnect();
+
+			template <typename T, class... Args>
+			void SetState(Args&&...args);
 		
 			void ClearState();
 			void GotoSyncState();
@@ -306,9 +309,8 @@ namespace dcclite::broker
 			//
 			//
 			//Connection state
-			struct NullState {};
 		
-			std::variant< NullState, ConfigState, SyncState, OnlineState> m_vState;
+			std::variant< std::monostate, ConfigState, SyncState, OnlineState> m_vState;
 			State *m_pclCurrentState = nullptr;			
 
 			TimeoutController	m_clTimeoutController;
