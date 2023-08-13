@@ -1,0 +1,8 @@
+TCP/IP ports in use by the project:
+
+4190 (tcp): TerminalService default port
+5353 (udp): Bonjour service, default port
+7202 (udp): used by arduino clients 
+8989 (udp): DccLite service default port
+9381 (udp): Zeroconf service, default port
+12090 (tcp): ThrottleService, default port used by WiThrottle servers

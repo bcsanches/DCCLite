@@ -32,44 +32,45 @@ end
 
 --]]
 
-local MiniBlock = {};
-Section = {};
+local MiniBlock = {}
+Section = {}
+TSection = {}
 
 function MiniBlock:new(o)
 
     if not o then
-        error("[MiniBlock:new]  parameters required");
+        error("[MiniBlock:new]  parameters required")
     end
     
-    setmetatable(o, self);
-    self.__index = self;
+    setmetatable(o, self)
+    self.__index = self
 
     if not o.start_sensor then
-        error("[MiniBlock:new] start sensor is required");
+        error("[MiniBlock:new] start sensor is required")
     end
 
     if not o.end_sensor then
-        error("[MiniBlock:new] end sensor is required");
+        error("[MiniBlock:new] end sensor is required")
     end
 
     if not o.state_table then
-        error("[MiniBlock:new] state_table is required");
+        error("[MiniBlock:new] state_table is required")
     end
 
     if not o.owner then
-        error("[MiniBlock:new] owner is required");
+        error("[MiniBlock:new] owner is required")
     end
 
     --[[
-    o.start_sensor = start_sensor;
-    o.end_sensor = end_sensor;
+    o.start_sensor = start_sensor
+    o.end_sensor = end_sensor
 
-    o.state_table = state_table;    
+    o.state_table = state_table    
 
-    o.owner = owner;
+    o.owner = owner
     --]]
 
-    return o;
+    return o
 end
 
 function MiniBlock:on_finished()
@@ -92,36 +93,36 @@ function MiniBlock:on_end_sensor_change(sensor)
         end
 
         log_trace("[MiniBlock:on_end_sensor_change] end sensor active - block is complete - train touched second sensor")
-        self.owner:_update_state(self.state_table.complete);        
+        self.owner:_update_state(self.state_table.complete)        
 
         self.owner.callback(self.owner)
     else
         if self.start_sensor.active then
             -- on this case, we ignore and expect end sensor to be re activated
-            log_warn("[MiniBlock:on_end_sensor_change] miniblock end sensor deactivated, but start sensor is active!!!");
+            log_warn("[MiniBlock:on_end_sensor_change] miniblock end sensor deactivated, but start sensor is active!!!")
 
-            return;
+            return
         end
 
-        log_trace("[MiniBlock:on_end_sensor_change] miniblock finished - train left the block");
-        self:on_finished();
+        log_trace("[MiniBlock:on_end_sensor_change] miniblock finished - train left the block")
+        self:on_finished()
     end
 
 end
 
 function dispatch_mini_block_sensor_event(sensor, mini_block)    
     if mini_block.start_sensor == sensor then
-        mini_block:on_start_sensor_change(sensor);
+        mini_block:on_start_sensor_change(sensor)
     else
-        mini_block:on_end_sensor_change(sensor);
+        mini_block:on_end_sensor_change(sensor)
     end
 end
 
 function Section:_on_mini_block_finished()
-    self:_update_state(SECTION_STATES.clear);    
-    self.mini_block = nil;
+    self:_update_state(SECTION_STATES.clear)    
+    self.mini_block = nil
 
-    self.callback(self);    
+    self.callback(self)    
 end
 
 function Section:reset()
@@ -134,7 +135,7 @@ function Section:handle_sensor_change(sensor, start_sensor, end_sensor, new_stat
 
         log_trace("[Section:handle_sensor_change] train entered the block and is " .. get_section_state_name(new_state))        
         
-        self:_update_state(new_state);        
+        self:_update_state(new_state)        
 
         log_trace("[Section:handle_sensor_change] state changed to: " .. get_section_state_name(self.state))
 
@@ -145,14 +146,14 @@ function Section:handle_sensor_change(sensor, start_sensor, end_sensor, new_stat
             state_table = {
                 complete = complete_state
             }
-        });
+        })
 
         log_trace("[Section:handle_sensor_change] created mini block")
 
-        self.callback(self);
+        self.callback(self)
     else
         -- sensor disabled... but no miniblock active... invalid state
-        log_error("[Section:handle_sensor_change] start sensor inactive event... but block was not active...");
+        log_error("[Section:handle_sensor_change] start sensor inactive event... but block was not active...")
 
     end
 end
@@ -160,7 +161,7 @@ end
 
 function Section:on_start_sensor_change(sensor)
     if self.mini_block then
-        dispatch_mini_block_sensor_event(sensor, self.mini_block);
+        dispatch_mini_block_sensor_event(sensor, self.mini_block)
     else
         self:handle_sensor_change(sensor, self.start_sensor, self.end_sensor, SECTION_STATES.up_start, SECTION_STATES.up)
     end
@@ -168,7 +169,7 @@ end
 
 function Section:on_end_sensor_change(sensor)
     if self.mini_block then
-        dispatch_mini_block_sensor_event(sensor, self.mini_block);
+        dispatch_mini_block_sensor_event(sensor, self.mini_block)
     else
         self:handle_sensor_change(sensor, self.end_sensor, self.start_sensor, SECTION_STATES.down_start, SECTION_STATES.down)        
     end
@@ -191,26 +192,26 @@ function Section:get_state_name()
 end
 
 function Section:_update_state(newState)
-    self.state = newState;
-    self.dispatcher:on_section_state_change(self, newState);
+    self.state = newState
+    self.dispatcher:on_section_state_change(self, newState)
 end
 
 
 function Section:new(o)
 
     if not o then
-        error("[Section:new]  parameters required");
+        error("[Section:new]  parameters required")
     end
     
-    setmetatable(o, self);
-    self.__index = self;
+    setmetatable(o, self)
+    self.__index = self
 
     if not o.name then
         error("[Section:new] name is required")
     end
 
     if not o.start_sensor or not o.end_sensor then
-        error("[Section:new] start_sensor and end_sensor must be provided");
+        error("[Section:new] start_sensor and end_sensor must be provided")
     end    
 
     if not o.callback and type(o.callback) ~= "function" then
@@ -220,35 +221,207 @@ function Section:new(o)
     log_trace("[Section:new] Registering callback for start sensor")
     o.start_sensor:on_state_change(
         function(sensor)            
-            o:on_start_sensor_change(sensor);
+            o:on_start_sensor_change(sensor)
         end
-    );
+    )
 
     log_trace("[Section:new] Registering callback for end sensor")
     o.end_sensor:on_state_change(
         function(sensor)                        
-            o:on_end_sensor_change(sensor);
+            o:on_end_sensor_change(sensor)
         end
-    );
+    )
 
-    o.dispatcher = dcclite.dispatcher;
-    o.dispatcher:register_section(o.name, o);
+    o.dispatcher = dcclite.dispatcher
+    o.dispatcher:register_section(o.name, o)
 
     -- how are the sensors?
     if o.start_sensor.active and o.end_sensor.active then
         log_error("[Section:new] both sensors active, state will be undefined")        
     else
         if o.start_sensor.active then
-            o:on_start_sensor_change(o.start_sensor);            
+            o:on_start_sensor_change(o.start_sensor)            
         elseif o.end_sensor.active then
-            o:on_end_sensor_change(o.end_sensor);            
+            o:on_end_sensor_change(o.end_sensor)            
         else
-            o:_update_state(SECTION_STATES.clear);            
+            o:_update_state(SECTION_STATES.clear)            
         end
     end        
     
-    return o;
+    return o
 end
 
+--
+--
+-- TSECTION
+--
+--
+
+function TSection:handle_sensor_change(sensor, start_sensor, end_sensor, new_state, complete_state)
+
+    if sensor.active then
+
+        log_trace("[TSection:handle_sensor_change] train entered the block and is " .. get_section_state_name(new_state))        
+        
+        self:_update_state(new_state)        
+
+        log_trace("[TSection:handle_sensor_change] state changed to: " .. get_section_state_name(self.state))
+
+        self.mini_block = MiniBlock:new({
+            start_sensor = start_sensor,
+            end_sensor = end_sensor,
+            owner = self,
+            state_table = {
+                complete = complete_state
+            }
+        })
+
+        log_trace("[TSection:handle_sensor_change] created mini block")
+
+        self.callback(self)
+    else
+        -- sensor disabled... but no miniblock active... invalid state
+        log_error("[TSection:handle_sensor_change] start sensor inactive event... but block was not active...")
+
+    end
+end
+
+function TSection:on_start_sensor_change(sensor)
+    if self.mini_block then
+        dispatch_mini_block_sensor_event(sensor, self.mini_block)
+    else
+        self:handle_sensor_change(sensor, self.start_sensor, self.end_sensor, SECTION_STATES.up_start, SECTION_STATES.up)
+    end
+end
+
+function TSection:on_closed_sensor_change(sensor)
+
+    if not self.turnout.closed then
+
+        if sensor.active then
+            self.dispatcher.panic(self, "[TSection::on_closed_sensor_change] Closed sensor activated, but turnout is not closed")        
+        else 
+            -- if sensor deactivated, we ignore, train may have just left the block 
+            dcclite.log_trace("[TSection:on_closed_sensor_change] Closed sensor deactivated with a thrown turnout")            
+        end
+        
+        return
+    end
+
+    if self.mini_block then
+        dispatch_mini_block_sensor_event(sensor, self.mini_block)
+    else
+        self:handle_sensor_change(sensor, self.end_sensor, self.start_sensor, SECTION_STATES.down_start, SECTION_STATES.down)        
+    end
+end
+
+function TSection:on_thrown_sensor_change(sensor)
+
+    if self.turnout.closed then
+
+        if sensor.active then
+            self.dispatcher.panic(self, "[TSection::on_thrown_sensor_change] Thrown sensor activated, but turnout is closed")        
+        else 
+            -- if sensor deactivated, we ignore, train may have just left the block 
+            dcclite.log_trace("[TSection:on_closed_sensor_change] Throw sensor deactivated with a closed turnout")            
+        end
+        
+        return
+    end
+
+    if self.mini_block then
+        dispatch_mini_block_sensor_event(sensor, self.mini_block)
+    else
+        self:handle_sensor_change(sensor, self.end_sensor, self.start_sensor, SECTION_STATES.down_start, SECTION_STATES.down)        
+    end
+end
+
+function TSection:on_turnout_state_change(self, turnout)
+    if self.state ~= SECTION_STATES.clear then
+        self.dispatcher:panic(self, "turnout changed state while section is ACTIVE")
+
+        return
+    end
+
+    if self.turnout.closed then
+        self.end_sensor = self.closed_sensor
+    else
+        self.end_sensor = self.thrown_sensor
+    end
+end
+
+function TSection:new(o)
+
+    if not o then
+        error("[TSection:new]  parameters required")
+    end
+    
+    setmetatable(o, self)
+    self.__index = self
+
+    if not o.name then
+        error("[TSection:new] name is required")
+    end
+
+    if not o.start_sensor or not o.closed_sensor or not o.thrown_sensor then
+        error("[TSection:new] start_sensor, end_sensor and thrown_sensor must be provided")
+    end    
+
+    if not o.callback and type(o.callback) ~= "function" then
+        error("[TSection:new] callback is nil or not a function]")
+    end
+
+    if not o.turnout then
+        error("[TSection:new] turnout is required")
+    end
+
+    log_trace("[TSection:new] Registering callback for start sensor")
+    o.start_sensor:on_state_change(
+        function(sensor)            
+            o:on_start_sensor_change(sensor)
+        end
+    )
+
+    log_trace("[TSection:new] Registering callback for closed sensor")
+    o.closed_sensor:on_state_change(
+        function(sensor)                        
+            o:on_end_sensor_change(sensor)
+        end
+    )
+
+    log_trace("[TSection:new] Registering callback for thrown sensor")
+    o.thrown_sensor:on_state_change(
+        function(sensor)                        
+            o:on_thrown_sensor_change(sensor)
+        end
+    )
+
+    log_trace("[TSection:new] Registering callback for turnout")
+    o.turnout:on_state_change(
+        function(turnout)
+            o:on_turnout_state_change(turnout)
+        end
+    )
+
+    o.dispatcher = dcclite.dispatcher
+    o.dispatcher:register_tsection(o.name, o)
+
+    o:on_turnout_state_change(o.turnout)
+
+    -- how are the sensors?
+    if o.start_sensor.active and o.end_sensor.active then
+        log_error("[TSection:new] both sensors active, state will be undefined")        
+    else
+        if o.start_sensor.active then
+            o:on_start_sensor_change(o.start_sensor)            
+        elseif o.end_sensor.active then
+            o:on_end_sensor_change(o.end_sensor)            
+        else
+            o:_update_state(SECTION_STATES.clear)            
+        end
+    end        
+    
+    return o
+end
 
 

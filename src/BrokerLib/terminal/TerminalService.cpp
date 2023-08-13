@@ -1494,7 +1494,7 @@ namespace dcclite::broker
 		//kill all clients...
 		m_vecClients.clear();
 
-		//wait for listen thread to finishes, so we are sure no more events will be posted
+		//wait for listen thread to finish, so we are sure no more events will be posted
 		m_thListenThread.join();
 
 		//Cancel any events, because no one will be able to handle those
@@ -1503,10 +1503,11 @@ namespace dcclite::broker
 
 	void TerminalService::OnClientDisconnect(TerminalClient &client)
 	{
-		auto it = std::find_if(m_vecClients.begin(), m_vecClients.end(), [&client](std::unique_ptr<TerminalClient> &item)
+		auto it = std::find_if(m_vecClients.begin(), m_vecClients.end(), [&client](auto &item)
 			{
 				return item.get() == &client;
-			});
+			}
+		);
 
 		assert(it != m_vecClients.end());
 

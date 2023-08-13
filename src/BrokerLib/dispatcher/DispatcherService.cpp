@@ -72,12 +72,16 @@ namespace dcclite::broker
 
 		private:			
 			void RegisterSection(std::string_view name, sol::table obj);
+			void RegisterTSection(std::string_view name, sol::table obj);
+
 			void OnSectionStateChange(sol::table obj, int newState);
 
 			void IScriptSupport_RegisterProxy(sol::table &table) override;
 
 			void IScriptSupport_OnVMInit(sol::state &state) override;
 			void IScriptSupport_OnVMFinalize(sol::state &state) override;
+
+			void Panic(sol::table src, const char *reason);
 
 		private:
 			sigslot::scoped_connection m_slotScriptVMInit;
@@ -113,8 +117,10 @@ namespace dcclite::broker
 		sol.new_usertype<DispatcherServiceImpl>(
 			"dispatcher_service",
 			sol::no_constructor,
-			"register_section", &DispatcherServiceImpl::RegisterSection,
-			"on_section_state_change", &DispatcherServiceImpl::OnSectionStateChange
+			"register_section",			&DispatcherServiceImpl::RegisterSection,
+			"register_tsection",		&DispatcherServiceImpl::RegisterTSection,
+			"on_section_state_change",	&DispatcherServiceImpl::OnSectionStateChange,
+			"panic",					&DispatcherServiceImpl::Panic
 		);
 	}
 
@@ -135,6 +141,12 @@ namespace dcclite::broker
 	{
 		table[this->GetName()] = std::ref(*this);
 	}
+
+	void DispatcherServiceImpl::RegisterTSection(std::string_view name, sol::table obj)
+	{
+
+	}
+
 
 	void DispatcherServiceImpl::RegisterSection(std::string_view name, sol::table obj)
 	{
@@ -166,6 +178,13 @@ namespace dcclite::broker
 			throw std::runtime_error(fmt::format("[DispatcherServiceImpl::IResettableService_ResetItem] Section {} not registered", name));
 
 		section->Reset();		
+	}
+
+	void DispatcherServiceImpl::Panic(sol::table src, const char *reason)
+	{
+		SectionWrapper *section = src["dispatcher_handler"];
+
+		dcclite::Log::Error("[DispatcherService::Panic] Fatal error on section [{}]: {}", section->GetName(), reason);
 	}
 
 	//
