@@ -22,21 +22,16 @@
 
 namespace dcclite::broker
 {	
-	class SectionWrapper: public IObject
+	class BaseSectionWrapper: public IObject
 	{
 		public:
-			SectionWrapper(std::string name, sol::table obj) :
+			BaseSectionWrapper(std::string name, sol::table obj) :
 				IObject(name),
 				m_clObject{ obj }
 			{
 				//empty
 			}
-
-			inline const char *GetTypeName() const noexcept override
-			{
-				return "Dispatcher::Section";
-			}
-
+			
 			void Serialize(JsonOutputStream_t &stream) const override
 			{
 				IObject::Serialize(stream);
@@ -50,8 +45,45 @@ namespace dcclite::broker
 				m_clObject["reset"](m_clObject);
 			}
 
-		private:
+		protected:
 			sol::table m_clObject;
+	};
+
+	class SectionWrapper: public BaseSectionWrapper
+	{
+		public:
+			SectionWrapper(std::string name, sol::table obj) :
+				BaseSectionWrapper(name, obj)
+			{
+				//empty
+			}
+
+			inline const char *GetTypeName() const noexcept override
+			{
+				return "Dispatcher::Section";
+			}					
+	};
+
+	class TSectionWrapper : public BaseSectionWrapper
+	{
+		public:
+			TSectionWrapper(std::string name, sol::table obj) :
+				BaseSectionWrapper(name, obj)
+			{
+				//empty
+			}
+
+			inline const char *GetTypeName() const noexcept override
+			{
+				return "Dispatcher::TSection";
+			}
+
+			void Serialize(JsonOutputStream_t &stream) const override
+			{
+				BaseSectionWrapper::Serialize(stream);
+
+				//stream.AddStringValue("turnout", m_clObject["turnout"]);
+			}
 	};
 
 	///////////////////////////////////////////////////////////////////////////////
@@ -144,27 +176,31 @@ namespace dcclite::broker
 
 	void DispatcherServiceImpl::RegisterTSection(std::string_view name, sol::table obj)
 	{
+#if 1
+		auto wrapper = static_cast<TSectionWrapper *>(m_pSections->AddChild(std::make_unique<TSectionWrapper>(std::string{ name }, obj)));
+		obj["dispatcher_handler"] = static_cast<BaseSectionWrapper *>(wrapper);
 
+		this->NotifyItemCreated(*wrapper);
+#endif
 	}
 
 
 	void DispatcherServiceImpl::RegisterSection(std::string_view name, sol::table obj)
 	{
 		auto wrapper = static_cast<SectionWrapper *>(m_pSections->AddChild(std::make_unique<SectionWrapper>(std::string{name}, obj)));
-		obj["dispatcher_handler"] = wrapper;
+		obj["dispatcher_handler"] = static_cast<BaseSectionWrapper *>(wrapper);
 
 		this->NotifyItemCreated(*wrapper);
 	}
 
 	void DispatcherServiceImpl::OnSectionStateChange(sol::table obj, int newState)
 	{
-#if 0
-		auto obj = this->TryGetChild(name);
-		if (obj == nullptr)
+#if 1
+		std::string name = obj["name"];
+		auto section = static_cast<BaseSectionWrapper *>(m_pSections->TryGetChild(name));
+		if (section == nullptr)
 			throw std::runtime_error(fmt::format("[DispatcherServiceImpl::OnSectionStateChange] Section {} not registered", name));
-#endif
-
-		SectionWrapper *section = obj["dispatcher_handler"];
+#endif		
 
 		this->NotifyItemChanged(*section);
 
@@ -173,7 +209,7 @@ namespace dcclite::broker
 
 	void DispatcherServiceImpl::IResettableService_ResetItem(std::string_view name)
 	{
-		auto section = static_cast<SectionWrapper *>(m_pSections->TryGetChild(name));
+		auto section = static_cast<BaseSectionWrapper *>(m_pSections->TryGetChild(name));
 		if(section == nullptr)
 			throw std::runtime_error(fmt::format("[DispatcherServiceImpl::IResettableService_ResetItem] Section {} not registered", name));
 
@@ -182,7 +218,7 @@ namespace dcclite::broker
 
 	void DispatcherServiceImpl::Panic(sol::table src, const char *reason)
 	{
-		SectionWrapper *section = src["dispatcher_handler"];
+		BaseSectionWrapper *section = src["dispatcher_handler"];
 
 		dcclite::Log::Error("[DispatcherService::Panic] Fatal error on section [{}]: {}", section->GetName(), reason);
 	}

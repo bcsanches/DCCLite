@@ -34,7 +34,11 @@ end
 
 local MiniBlock = {}
 Section = {}
+Section.__index = Section
+
 TSection = {}
+TSection.__index = TSection
+setmetatable(TSection, Section)
 
 function MiniBlock:new(o)
 
@@ -118,7 +122,7 @@ function dispatch_mini_block_sensor_event(sensor, mini_block)
     end
 end
 
-function Section:_on_mini_block_finished()
+function Section:_on_mini_block_finished()    
     self:_update_state(SECTION_STATES.clear)    
     self.mini_block = nil
 
@@ -160,6 +164,8 @@ end
 
 
 function Section:on_start_sensor_change(sensor)
+    log_trace("[Section:" .. self.name .. "] on_start_sensor_change")    
+
     if self.mini_block then
         dispatch_mini_block_sensor_event(sensor, self.mini_block)
     else
@@ -168,6 +174,8 @@ function Section:on_start_sensor_change(sensor)
 end
 
 function Section:on_end_sensor_change(sensor)
+    log_trace("[Section:" .. self.name .. "] on_end_sensor_change")
+
     if self.mini_block then
         dispatch_mini_block_sensor_event(sensor, self.mini_block)
     else
@@ -191,7 +199,7 @@ function Section:get_state_name()
     return get_section_state_name(self.state)
 end
 
-function Section:_update_state(newState)
+function Section:_update_state(newState)    
     self.state = newState
     self.dispatcher:on_section_state_change(self, newState)
 end
@@ -204,7 +212,6 @@ function Section:new(o)
     end
     
     setmetatable(o, self)
-    self.__index = self
 
     if not o.name then
         error("[Section:new] name is required")
@@ -257,36 +264,9 @@ end
 --
 --
 
-function TSection:handle_sensor_change(sensor, start_sensor, end_sensor, new_state, complete_state)
-
-    if sensor.active then
-
-        log_trace("[TSection:handle_sensor_change] train entered the block and is " .. get_section_state_name(new_state))        
-        
-        self:_update_state(new_state)        
-
-        log_trace("[TSection:handle_sensor_change] state changed to: " .. get_section_state_name(self.state))
-
-        self.mini_block = MiniBlock:new({
-            start_sensor = start_sensor,
-            end_sensor = end_sensor,
-            owner = self,
-            state_table = {
-                complete = complete_state
-            }
-        })
-
-        log_trace("[TSection:handle_sensor_change] created mini block")
-
-        self.callback(self)
-    else
-        -- sensor disabled... but no miniblock active... invalid state
-        log_error("[TSection:handle_sensor_change] start sensor inactive event... but block was not active...")
-
-    end
-end
-
 function TSection:on_start_sensor_change(sensor)
+    log_trace("[TSection:on_start_sensor_change] on_start_sensor_change")
+
     if self.mini_block then
         dispatch_mini_block_sensor_event(sensor, self.mini_block)
     else
@@ -296,13 +276,15 @@ end
 
 function TSection:on_closed_sensor_change(sensor)
 
+    log_trace("[TSection:on_closed_sensor_change] on_closed_sensor_change")
+
     if not self.turnout.closed then
 
         if sensor.active then
-            self.dispatcher.panic(self, "[TSection::on_closed_sensor_change] Closed sensor activated, but turnout is not closed")        
+            self.dispatcher:panic(self, "[TSection::on_closed_sensor_change] Closed sensor activated, but turnout is not closed")        
         else 
-            -- if sensor deactivated, we ignore, train may have just left the block 
-            dcclite.log_trace("[TSection:on_closed_sensor_change] Closed sensor deactivated with a thrown turnout")            
+            -- if sensor deactivated, we ignore, train may have just left the block and turnout changed before sensor went off
+            log_trace("[TSection:on_closed_sensor_change] Closed sensor deactivated with a thrown turnout")            
         end
         
         return
@@ -317,13 +299,15 @@ end
 
 function TSection:on_thrown_sensor_change(sensor)
 
+    log_trace("[TSection:on_thrown_sensor_change] on_thrown_sensor_change")
+
     if self.turnout.closed then
 
         if sensor.active then
-            self.dispatcher.panic(self, "[TSection::on_thrown_sensor_change] Thrown sensor activated, but turnout is closed")        
+            self.dispatcher:panic(self, "[TSection::on_thrown_sensor_change] Thrown sensor activated, but turnout is closed")        
         else 
             -- if sensor deactivated, we ignore, train may have just left the block 
-            dcclite.log_trace("[TSection:on_closed_sensor_change] Throw sensor deactivated with a closed turnout")            
+            log_trace("[TSection:on_closed_sensor_change] Throw sensor deactivated with a closed turnout")            
         end
         
         return
@@ -336,11 +320,12 @@ function TSection:on_thrown_sensor_change(sensor)
     end
 end
 
-function TSection:on_turnout_state_change(self, turnout)
-    if self.state ~= SECTION_STATES.clear then
-        self.dispatcher:panic(self, "turnout changed state while section is ACTIVE")
+function TSection:on_turnout_state_change(turnout)    
 
-        return
+    log_trace("[TSection:on_turnout_state_change] Turnout state changed")
+
+    if self.state ~= SECTION_STATES.clear then
+        self.dispatcher:panic(self, "turnout changed state while section is ACTIVE")        
     end
 
     if self.turnout.closed then
@@ -356,8 +341,7 @@ function TSection:new(o)
         error("[TSection:new]  parameters required")
     end
     
-    setmetatable(o, self)
-    self.__index = self
+    setmetatable(o, self)    
 
     if not o.name then
         error("[TSection:new] name is required")
@@ -385,7 +369,7 @@ function TSection:new(o)
     log_trace("[TSection:new] Registering callback for closed sensor")
     o.closed_sensor:on_state_change(
         function(sensor)                        
-            o:on_end_sensor_change(sensor)
+            o:on_closed_sensor_change(sensor)
         end
     )
 
@@ -403,10 +387,12 @@ function TSection:new(o)
         end
     )
 
+    o.state = SECTION_STATES.clear
     o.dispatcher = dcclite.dispatcher
     o.dispatcher:register_tsection(o.name, o)
-
-    o:on_turnout_state_change(o.turnout)
+        
+    log_trace("[TSection:new] Calling turnout state change for initializing")
+    TSection.on_turnout_state_change(o, o.turnout)
 
     -- how are the sensors?
     if o.start_sensor.active and o.end_sensor.active then

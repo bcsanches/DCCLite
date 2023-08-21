@@ -37,6 +37,41 @@ namespace dcclite::broker
 	class SensorDecoder;
 	class TurnoutDecoder;
 
+	class DecoderWeakPointer
+	{
+		public:
+			DecoderWeakPointer(dcclite::broker::Decoder &decoder, dcclite::broker::Service &dccLiteService);
+
+			inline Decoder *TryGetDecoder() const noexcept
+			{
+				return m_pclDecoder;
+			}
+
+			inline DccAddress GetAddress() const noexcept
+			{
+				return m_clAddress;
+			}
+
+			sigslot::signal< dcclite::broker::Decoder &> m_sigDecoderCreated;
+			sigslot::signal< dcclite::broker::Decoder &> m_sigDecoderDestroy;
+
+		private:
+			void OnObjectManagerEvent(const dcclite::broker::ObjectManagerEvent &event);
+
+		private:
+			/**
+			* Internal ref to the oficial decoder
+			*
+			* Note that if user changes the device config file, it will get unloaded and reloaded, this will invalidate the pointer and if the user removes the
+			* decoder or the file fails to reload, it may stay null for a long time, so watch for a null pointer here....
+			*
+			*/
+			dcclite::broker::Decoder	*m_pclDecoder;
+			dcclite::broker::DccAddress	m_clAddress;
+
+			sigslot::scoped_connection	m_slotObjectManagerConnection;
+	};
+
 	class DccLiteService : public Service, private IDccLite_DeviceServices, private IDccLite_DecoderServices, public EventHub::IEventTarget, public ScriptService::IScriptSupport
 	{
 		public:

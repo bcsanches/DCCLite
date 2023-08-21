@@ -433,8 +433,9 @@ namespace SharpTerminal
                 case "Dispatcher":
                     obj = new Dispatcher.RemoteDispatcher(name, className, path, id, parentInternalId);
                     break;
-
+                
                 case "Dispatcher::Section":
+                case "Dispatcher::TSection":
                     obj = new Dispatcher.RemoteSection(name, className, path, id, parentInternalId, objectDef);
                     break;
 

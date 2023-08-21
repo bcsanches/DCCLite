@@ -34,12 +34,12 @@ class DecoderProxy
 {
 	public:
 		DecoderProxy(dcclite::broker::Decoder &decoder, dcclite::broker::Service &dccLiteService) :
-			m_pclDecoder{ &decoder },
-			m_clAddress{ decoder.GetAddress() }
-		{
-			m_slotObjectManagerConnection = dccLiteService.m_sigEvent.connect(&DecoderProxy::OnObjectManagerEvent, this);
-
+			m_wpDecoder{decoder, dccLiteService}			
+		{			
 			dcclite::Log::Trace("[ScriptService] [DecoderProxy] [{}]: Created.", this->GetName());
+
+			m_slotDecoderCreatedConnection = m_wpDecoder.m_sigDecoderCreated.connect(&DecoderProxy::OnDecoderCreated, this);
+			m_slotDecoderDestroyConnection = m_wpDecoder.m_sigDecoderDestroy.connect(&DecoderProxy::OnDecoderDestroy, this);
 		}
 
 		~DecoderProxy()
@@ -49,13 +49,13 @@ class DecoderProxy
 
 		inline const uint16_t GetAddress() const
 		{
-			return m_clAddress.GetAddress();
+			return m_wpDecoder.GetAddress().GetAddress();
 		}
 
 		inline std::string_view GetName() const
 		{
-			if (!m_pclDecoder)
-				throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::GetName] [{}]: Decoder was destroyed, did you reload the config without it?", m_clAddress.GetAddress()));
+			if (!m_wpDecoder.TryGetDecoder())
+				throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::GetName] [{}]: Decoder was destroyed, did you reload the config without it?", m_wpDecoder.GetAddress()));
 
 			return this->GetDecoder().GetName();
 		}
@@ -96,21 +96,6 @@ class DecoderProxy
 		}
 
 	private:
-		/**
-		* Internal ref to the oficial decoder
-		*
-		* Note that if user changes the device config file, it will get unloaded and reloaded, this will invalidate the pointer and if the user removes the
-		* decoder or the file fails to reload, it may stay null for a long time, so watch for a null pointer here....
-		*
-		*/
-		dcclite::broker::Decoder *m_pclDecoder;
-		dcclite::broker::DccAddress m_clAddress;
-
-		sigslot::scoped_connection	m_slotObjectManagerConnection;
-		sigslot::scoped_connection	m_slotRemoteDecoderStateSyncConnection;
-
-		std::vector<sol::protected_function> m_vStateChangeCallbacks;
-
 		template <typename T>
 		inline T *DynamicDecoderCast()
 		{
@@ -150,7 +135,8 @@ class DecoderProxy
 			}
 		}
 
-		void OnObjectManagerEvent(const dcclite::broker::ObjectManagerEvent &event);
+		void OnDecoderCreated(dcclite::broker::Decoder &decoder);
+		void OnDecoderDestroy(dcclite::broker::Decoder &decoder);		
 
 		void RegisterStateSyncCallback()
 		{
@@ -161,19 +147,35 @@ class DecoderProxy
 
 		inline const dcclite::broker::Decoder &GetDecoder() const
 		{
-			if (!m_pclDecoder)
-				throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::GetDecoder] [{}]: Decoder was destroyed, did you reload the config without it?", m_clAddress.GetAddress()));
-
-			return *m_pclDecoder;
+			if (auto *dec = m_wpDecoder.TryGetDecoder())
+				return *dec;
+			
+			throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::GetDecoder] [{}]: Decoder was destroyed, did you reload the config without it?", m_wpDecoder.GetAddress()));
 		}
 
 		inline dcclite::broker::Decoder &GetDecoder()
 		{
-			if (!m_pclDecoder)
-				throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::GetDecoder] [{}]: Decoder was destroyed, did you reload the config without it?", m_clAddress.GetAddress()));
+			if (auto *dec = m_wpDecoder.TryGetDecoder())
+				return *dec;
+			
+			throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::GetDecoder] [{}]: Decoder was destroyed, did you reload the config without it?", m_wpDecoder.GetAddress()));
+		}		
 
-			return *m_pclDecoder;
-		}
+		/**
+		* Internal ref to the oficial decoder
+		*
+		* Note that if user changes the device config file, it will get unloaded and reloaded, this will invalidate the pointer and if the user removes the
+		* decoder or the file fails to reload, it may stay null for a long time, so watch for a null pointer here....
+		*
+		*/
+		dcclite::broker::DecoderWeakPointer m_wpDecoder;
+
+		sigslot::scoped_connection	m_slotRemoteDecoderStateSyncConnection;
+
+		sigslot::scoped_connection	m_slotDecoderCreatedConnection;
+		sigslot::scoped_connection	m_slotDecoderDestroyConnection;
+
+		std::vector<sol::protected_function> m_vStateChangeCallbacks;
 };
 
 /**
@@ -186,40 +188,24 @@ class DecoderProxy
 * If this become too costly, we should modify DccLiteService to directly manage those proxies
 * 
 */
-void DecoderProxy::OnObjectManagerEvent(const dcclite::broker::ObjectManagerEvent &event)
+void DecoderProxy::OnDecoderCreated(dcclite::broker::Decoder &decoder)
 {
-	if (event.m_kType == dcclite::broker::ObjectManagerEvent::ITEM_CHANGED)
-		return;
-
-	if (event.m_kType == dcclite::broker::ObjectManagerEvent::ITEM_DESTROYED)
+	if (!m_vStateChangeCallbacks.empty())
 	{
-		if (event.m_pclItem != m_pclDecoder)
-			return;
+		this->RegisterStateSyncCallback();
 
-		dcclite::Log::Trace("[ScriptService] [DecoderProxy::OnObjectManagerEvent] [{}]: Decoder destroyed", this->GetName());
-
-		m_slotRemoteDecoderStateSyncConnection.disconnect();
-		m_pclDecoder = nullptr;
+		//make sure we notify because of possible state change
+		OnRemoteDecoderStateSync(*this->DynamicDecoderCast<dcclite::broker::RemoteDecoder>());
 	}
-	else if (!m_pclDecoder && (event.m_kType == dcclite::broker::ObjectManagerEvent::ITEM_CREATED))
-	{
-		auto createdDecoder = static_cast<dcclite::broker::Decoder *>(event.m_pclItem);
 
-		if (createdDecoder->GetAddress() != m_clAddress)
-			return;
+	dcclite::Log::Trace("[ScriptService] [DecoderProxy::OnObjectManagerEvent] [{}]: Decoder recreated", this->GetName());
+}
 
-		m_pclDecoder = createdDecoder;
+void DecoderProxy::OnDecoderDestroy(dcclite::broker::Decoder &decoder)
+{
+	dcclite::Log::Trace("[ScriptService] [DecoderProxy::OnObjectManagerEvent] [{}]: Decoder destroyed", this->GetName());
 
-		if (!m_vStateChangeCallbacks.empty())
-		{
-			this->RegisterStateSyncCallback();
-
-			//make sure we notify because of possible state change
-			OnRemoteDecoderStateSync(*this->DynamicDecoderCast<dcclite::broker::RemoteDecoder>());
-		}
-
-		dcclite::Log::Trace("[ScriptService] [DecoderProxy::OnObjectManagerEvent] [{}]: Decoder recreated", this->GetName());
-	}
+	m_slotRemoteDecoderStateSyncConnection.disconnect();
 }
 
 /******************************************************************************

@@ -7,6 +7,10 @@ local hlx_quad_inverter = dcclite.dcc0.INV_HELIX_TC_SOL;
 local sl_bp_main_d01 = dcclite.dcc0.SL_BP_MAIN_D01;
 local sl_bp_main_d02 = dcclite.dcc0.SL_BP_MAIN_D02;
 local sl_bp_main_d03 = dcclite.dcc0.SL_BP_MAIN_D03;
+local sl_bp_main_d04 = dcclite.dcc0.SL_BP_MAIN_D04;
+local sl_bp_main_d05 = dcclite.dcc0.SL_BP_MAIN_D05;
+
+local sl_bp_triangle_turnout = dcclite.dcc0.HLX_T06;
 
 local sl_bp_d01_reset_button = dcclite.dcc0.SL_BP_ResetButton;
 
@@ -63,12 +67,9 @@ function on_section02_state_change(section)
     end
 end
 
-function on_sensor_change_test(sensor)
 
-    log_trace("[SoledadeBarraMonitor] on_sensor_change_test")
-
-    main_line_quad_inverter:set_state(sensor.active);
-    
+function on_tsection03_state_change(tsection)    
+    log_trace("[SoledadeBarraMonitor] on_tsection03_state_change")
 end
 
 local section01 = Section:new({
@@ -78,11 +79,23 @@ local section01 = Section:new({
     callback = on_section01_state_change
 })
 
+--[[
 local section02 = Section:new({
     name = "sl_bp_main_s02",
     start_sensor = sl_bp_main_d02,
     end_sensor = sl_bp_main_d03,
     callback = on_section02_state_change
+})
+]]--
+
+
+local section03 = TSection:new({
+    name = "sl_bp_main_s03",
+    start_sensor = sl_bp_main_d03,
+    closed_sensor = sl_bp_main_d04,
+    thrown_sensor = sl_bp_main_d05,
+    turnout = sl_bp_triangle_turnout,
+    callback = on_tsection03_state_change
 })
 
 function on_hlx_quad_inverter_state_change(quad_inverter)
