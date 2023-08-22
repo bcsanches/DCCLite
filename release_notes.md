@@ -1,22 +1,15 @@
-# TODO
-
-- virtual sensor for showing sections on JMRI
-    - allow section name to include service: "sectionName":"dispatcher/section01"
-- simple junction section for turnouts
-- Allow pin specs on JSON to use A11, a10, etc
-
+TODO
+- como enviar sections como sensores para o JMRI? VirtualSensor e associar com section?
 
 # Version ?????
 
 ## General Features
 
 - Added support to config flip interval on quad inverter
-- Added support to "IgnoreMe" class on device decoders config, to create annotations on JSON
 
 ## SharpTerminal
 
 - Server selection screen accepts ENTER as a shortcut
-- Added support to reset sections from SharpTerminal
 
 ## Scripts
 
@@ -24,7 +17,7 @@
 
 ## Code
 
-- Parser support to variable names with $ prefix
+- Added DecoderWeakPointer
 - Added own implementation of DirectoryMonitor (win32 only for now)
 - Removed code to convert win32 error messages and replaced with std::system_category
 - Moved DirectoryMonitor to its own library
@@ -34,7 +27,6 @@
 - Added code to detect usage of special arduino pins, like ethercard pins
 - fixed lua script to correctly handle sensor events
 - ScriptService shows debug info when a Lua function blows up...
-- Fixed NetworkDevice trace message
 
 # Version 0.8.0 - 04/06/2023
 

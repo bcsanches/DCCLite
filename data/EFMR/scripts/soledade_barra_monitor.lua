@@ -76,18 +76,17 @@ local section01 = Section:new({
     name = "sl_bp_main_s01",
     start_sensor = sl_bp_main_d01,
     end_sensor = sl_bp_main_d02,
-    callback = on_section01_state_change
+    callback = on_section01_state_change,
+    address = 1691
 })
 
---[[
 local section02 = Section:new({
     name = "sl_bp_main_s02",
     start_sensor = sl_bp_main_d02,
     end_sensor = sl_bp_main_d03,
-    callback = on_section02_state_change
+    callback = on_section02_state_change,
+    address = 1692
 })
-]]--
-
 
 local section03 = TSection:new({
     name = "sl_bp_main_s03",
@@ -95,7 +94,8 @@ local section03 = TSection:new({
     closed_sensor = sl_bp_main_d04,
     thrown_sensor = sl_bp_main_d05,
     turnout = sl_bp_triangle_turnout,
-    callback = on_tsection03_state_change
+    callback = on_tsection03_state_change,    
+    address = 1693
 })
 
 function on_hlx_quad_inverter_state_change(quad_inverter)

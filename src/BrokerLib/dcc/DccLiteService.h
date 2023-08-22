@@ -111,12 +111,18 @@ namespace dcclite::broker
 			//			
 			Device *TryFindDeviceByName(std::string_view name);
 
+			//
+			// 
+			// Queries, used most by the JMRI x DccLite bridge (DccppService) 
+			// 
+			//
+
 			//This returns only pure outputs, turnouts are ignored
 			std::vector<SimpleOutputDecoder *> FindAllSimpleOutputDecoders();
 
-			std::vector<SensorDecoder*> FindAllSensorDecoders();
+			std::vector<SensorDecoder *> FindAllSensorDecoders();
 
-			std::vector<TurnoutDecoder*> FindAllTurnoutDecoders();
+			std::vector<TurnoutDecoder *> FindAllTurnoutDecoders();
 
 			//
 			//
