@@ -10,12 +10,9 @@
 
 #pragma once
 
-#include "Decoder.h"
-
-#include "SharedLibDefs.h"
+#include "StateDecoder.h"
 
 #include <sigslot/signal.hpp>
-
 
 namespace dcclite
 {
@@ -24,7 +21,6 @@ namespace dcclite
 
 namespace dcclite::broker
 {
-
 	/**
 		RemoteDecoders are decoders that represent a decoder implemented on a remote device, like an Arduino.
 
@@ -32,7 +28,7 @@ namespace dcclite::broker
 
 
 	*/
-	class RemoteDecoder: public Decoder
+	class RemoteDecoder: public StateDecoder
 	{	
 		public:
 			RemoteDecoder(			
@@ -46,25 +42,12 @@ namespace dcclite::broker
 
 			bool SyncRemoteState(dcclite::DecoderStates state);
 
-			inline dcclite::DecoderStates GetRemoteState() const
-			{
-				return m_kRemoteState;
-			}		
-
 			inline bool IsBroken() const noexcept
 			{
 				return m_fBroken;
 			}
 
-			virtual void WriteConfig(dcclite::Packet &packet) const;
-
-			virtual bool IsOutputDecoder() const = 0;
-			virtual bool IsInputDecoder() const = 0;
-
-			virtual bool IsTurnoutDecoder() const
-			{
-				return false;
-			}
+			virtual void WriteConfig(dcclite::Packet &packet) const;			
 
 			//
 			//IObject
@@ -78,9 +61,7 @@ namespace dcclite::broker
 		protected:
 			virtual dcclite::DecoderTypes GetType() const noexcept = 0;
 
-		private:				
-			dcclite::DecoderStates m_kRemoteState = dcclite::DecoderStates::INACTIVE;				
-
+		private:							
 			bool		m_fBroken = false;			
 	};
 }

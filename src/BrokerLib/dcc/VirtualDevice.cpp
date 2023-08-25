@@ -12,6 +12,7 @@
 
 #include "SignalDecoder.h"
 #include "VirtualTurnoutDecoder.h"
+#include "VirtualSensorDecoder.h"
 
 #include <fmt/format.h>
 
@@ -38,7 +39,15 @@ namespace dcclite::broker
 		if (dynamic_cast<VirtualTurnoutDecoder *>(&decoder))
 			return;
 
-		throw std::invalid_argument(fmt::format("[VirtualDevice::{}] [CheckLoadedDecoder] Decoder {} must be a SignalDecoder or VirtualTurnoutDecoder subtype, but it is: {}", this->GetName(), decoder.GetName(), decoder.GetTypeName()));
+		if (dynamic_cast<VirtualSensorDecoder *>(&decoder))
+			return;
+
+		throw std::invalid_argument(fmt::format("[VirtualDevice::{}] [CheckLoadedDecoder] Decoder {} must be a SignalDecoder, VirtualSensorDecoder or VirtualTurnoutDecoder subtype, but it is: {}", this->GetName(), decoder.GetName(), decoder.GetTypeName()));
+	}
+
+	bool VirtualDevice::IsInternalDecoderAllowed() const noexcept
+	{
+		return true;
 	}
 
 	void VirtualDevice::Decoder_OnChangeStateRequest(const Decoder &decoder) noexcept

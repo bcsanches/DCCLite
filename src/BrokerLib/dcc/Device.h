@@ -14,6 +14,7 @@
 #include <string>
 
 #include "Clock.h"
+#include "DccAddress.h"
 #include "IDevice.h"
 #include "Guid.h"
 #include "FileSystem.h"
@@ -51,13 +52,19 @@ namespace dcclite::broker
 				return m_rclProject;
 			}
 
+			Decoder &CreateInternalDecoder(const char *className, DccAddress address, const std::string &name, const rapidjson::Value &params);
+
 		protected:
 			void Load();
 			void Unload();
 
 			virtual void OnUnload();
 
-			virtual void CheckLoadedDecoder(Decoder &decoder) = 0;
+			virtual void CheckLoadedDecoder(Decoder &decoder) = 0;	
+			[[nodiscard]] virtual bool IsInternalDecoderAllowed() const noexcept = 0;
+
+		private:
+			void RegisterDecoder(Decoder &decoder);
 
 		protected:
 			std::vector<Decoder *>	m_vecDecoders;

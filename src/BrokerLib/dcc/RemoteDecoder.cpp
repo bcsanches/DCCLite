@@ -17,10 +17,8 @@
 
 namespace dcclite::broker
 {
-
-
 	RemoteDecoder::RemoteDecoder(const DccAddress &address, std::string name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params):
-		Decoder(address, std::move(name), owner, dev, params)	
+		StateDecoder(address, std::move(name), owner, dev, params)	
 	{	
 		auto it = params.FindMember("broken");
 		if (it != params.MemberEnd())
@@ -35,10 +33,8 @@ namespace dcclite::broker
 
 	bool RemoteDecoder::SyncRemoteState(dcclite::DecoderStates state)
 	{
-		if(state != m_kRemoteState)
-		{
-			m_kRemoteState = state;
-
+		if(this->SetState(state, !m_fBroken))
+		{			
 			dcclite::Log::Info("[RemoteDecoder::{}] [SyncRemoteState] changed: {}", this->GetName(), dcclite::DecoderStateName(state));
 
 			//If it is broken, dont publish state change, probably is garbage
@@ -46,8 +42,7 @@ namespace dcclite::broker
 			//It is not worth to add a special case to the network sync code, so we simple ignore it here
 			if (!m_fBroken)
 			{
-				m_sigRemoteStateSync(*this);
-				m_rclManager.Decoder_OnStateChanged(*this);
+				m_sigRemoteStateSync(*this);				
 			}
 			
 			return true;
@@ -58,9 +53,8 @@ namespace dcclite::broker
 
 	void RemoteDecoder::Serialize(dcclite::JsonOutputStream_t &stream) const
 	{
-		Decoder::Serialize(stream);
-	
-		stream.AddBool("remoteActive", m_kRemoteState == dcclite::DecoderStates::ACTIVE);	
+		StateDecoder::Serialize(stream);
+			
 		stream.AddBool("broken", m_fBroken);
 	}
 

@@ -33,8 +33,8 @@ namespace dcclite::broker
 	class NetworkDevice;
 	class LocationManager;
 	class OutputDecoder;
-	class SimpleOutputDecoder;
-	class SensorDecoder;
+	class SimpleOutputDecoder;	
+	class StateDecoder;
 	class TurnoutDecoder;
 
 	class DecoderWeakPointer
@@ -120,7 +120,7 @@ namespace dcclite::broker
 			//This returns only pure outputs, turnouts are ignored
 			std::vector<SimpleOutputDecoder *> FindAllSimpleOutputDecoders();
 
-			std::vector<SensorDecoder *> FindAllSensorDecoders();
+			std::vector<StateDecoder *> FindAllInputDecoders();
 
 			std::vector<TurnoutDecoder *> FindAllTurnoutDecoders();
 
@@ -164,11 +164,11 @@ namespace dcclite::broker
 
 			Decoder& Device_CreateDecoder(
 				IDevice_DecoderServices &dev,
-				const std::string& className,
+				const std::string &className,
 				DccAddress address,
-				const std::string& name,
-				const rapidjson::Value& params
-			) override;
+				const std::string &name,
+				const rapidjson::Value &params
+			) override;			
 
 			void Device_DestroyDecoder(Decoder &dec) override;
 

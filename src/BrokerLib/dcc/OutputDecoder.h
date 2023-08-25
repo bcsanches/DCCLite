@@ -73,7 +73,7 @@ namespace dcclite::broker
 
 			std::optional<dcclite::DecoderStates> GetPendingStateChange() const
 			{
-				return m_kRequestedState != this->GetRemoteState() ? std::optional{ m_kRequestedState } : std::nullopt;
+				return m_kRequestedState != this->GetState() ? std::optional{ m_kRequestedState } : std::nullopt;
 			}		
 
 			void Serialize(dcclite::JsonOutputStream_t& stream) const override;

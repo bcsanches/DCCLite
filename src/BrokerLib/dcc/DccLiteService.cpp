@@ -31,6 +31,7 @@
 #include "TurntableAutoInverterDecoder.h"
 #include "VirtualDevice.h"
 #include "VirtualTurnoutDecoder.h"
+#include "VirtualSensorDecoder.h"
 
 #include "../sys/EventHub.h"
 
@@ -98,8 +99,11 @@ namespace dcclite::broker
 		
 		if (className.compare("TurntableAutoInverter") == 0)
 			return std::make_unique<TurntableAutoInverterDecoder>(address, std::move(name), owner, dev, params);
+
+		if (className.compare(VIRTUAL_SENSOR_DECODER_CLASSNAME) == 0)
+			return std::make_unique<VirtualSensorDecoder>(address, std::move(name), owner, dev, params);
 					
-		return std::unique_ptr<Decoder>();
+		return nullptr;
 	}
 
 
@@ -309,17 +313,19 @@ namespace dcclite::broker
 		return vecDecoders;
 	}
 
-	std::vector<SensorDecoder*> DccLiteService::FindAllSensorDecoders()
+	std::vector<StateDecoder *> DccLiteService::FindAllInputDecoders()
 	{
-		std::vector<SensorDecoder*> vecDecoders;
+		std::vector<StateDecoder *> vecDecoders;
 
 		auto enumerator = m_pDecoders->GetEnumerator();
 
 		while (enumerator.MoveNext())
 		{
-			auto decoder = dynamic_cast<SensorDecoder *>(enumerator.GetCurrent());
-
+			auto decoder = dynamic_cast<StateDecoder *>(enumerator.GetCurrent());
 			if (!decoder)
+				continue;
+
+			if (!decoder->IsInputDecoder())
 				continue;
 
 			vecDecoders.push_back(decoder);

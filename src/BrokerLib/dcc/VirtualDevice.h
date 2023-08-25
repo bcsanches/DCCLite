@@ -34,6 +34,7 @@ namespace dcclite::broker
 
 		protected:
 			void CheckLoadedDecoder(Decoder &decoder) override;
+			bool IsInternalDecoderAllowed() const noexcept override;
 	};
 
 }

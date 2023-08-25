@@ -19,15 +19,18 @@
 #include "../sys/Broker.h"
 #include "../sys/ScriptService.h"
 #include "../dcc/DccLiteService.h"
+#include "../dcc/Device.h"
+#include "../dcc/VirtualSensorDecoder.h"
 
 namespace dcclite::broker
 {	
 	class BaseSectionWrapper: public IObject
 	{
 		public:
-			BaseSectionWrapper(std::string name, sol::table obj) :
+			BaseSectionWrapper(std::string name, sol::table obj, VirtualSensorDecoder &sensor) :
 				IObject(name),
-				m_clObject{ obj }
+				m_clObject{ obj },
+				m_rclSensor{sensor}
 			{
 				//empty
 			}
@@ -45,15 +48,23 @@ namespace dcclite::broker
 				m_clObject["reset"](m_clObject);
 			}
 
+			void OnStateUpdate()
+			{
+				const bool clear = m_clObject["is_clear"](m_clObject);
+
+				m_rclSensor.SetSensorState(clear ? dcclite::DecoderStates::INACTIVE : dcclite::DecoderStates::ACTIVE);
+			}
+
 		protected:
-			sol::table m_clObject;
+			sol::table				m_clObject;
+			VirtualSensorDecoder	&m_rclSensor;
 	};
 
 	class SectionWrapper: public BaseSectionWrapper
 	{
 		public:
-			SectionWrapper(std::string name, sol::table obj) :
-				BaseSectionWrapper(name, obj)
+			SectionWrapper(std::string name, sol::table obj, VirtualSensorDecoder &sensor) :
+				BaseSectionWrapper(name, obj, sensor)
 			{
 				//empty
 			}
@@ -67,8 +78,8 @@ namespace dcclite::broker
 	class TSectionWrapper : public BaseSectionWrapper
 	{
 		public:
-			TSectionWrapper(std::string name, sol::table obj) :
-				BaseSectionWrapper(name, obj)
+			TSectionWrapper(std::string name, sol::table obj, VirtualSensorDecoder &sensor) :
+				BaseSectionWrapper(name, obj, sensor)
 			{
 				//empty
 			}
@@ -115,6 +126,8 @@ namespace dcclite::broker
 
 			void Panic(sol::table src, const char *reason);
 
+			VirtualSensorDecoder &CreateSectionSensor(sol::table obj);
+
 		private:
 			sigslot::scoped_connection m_slotScriptVMInit;
 			sigslot::scoped_connection m_slotScriptVMFinalize;			
@@ -122,15 +135,27 @@ namespace dcclite::broker
 			DccLiteService &m_rclDccLite;
 
 			FolderObject *m_pSections;
+			Device *m_pclDevice = nullptr;
 	};	
 
 	DispatcherServiceImpl::DispatcherServiceImpl(const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
 		DispatcherService(name, broker, params, project),
-		m_rclDccLite{ static_cast<DccLiteService &>(broker.ResolveRequirement(params["requires"].GetString())) }
+		m_rclDccLite{ static_cast<DccLiteService &>(broker.ResolveRequirement(params["requires"].GetString())) },
+		m_pSections{ static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>("sections"))) }
 	{				
-		dcclite::Log::Info("[DispatcherServiceImpl] Started");		
+		dcclite::Log::Info("[DispatcherServiceImpl] Init");		
 
-		m_pSections = static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>("sections")));		
+		auto it = params.FindMember("device");
+		if (it == params.MemberEnd())
+		{
+			throw std::invalid_argument(fmt::format("[DispatcherServiceImpl::{}] device name not set, sensors will not be created", this->GetName()));
+		}
+
+		m_pclDevice = m_rclDccLite.TryFindDeviceByName(it->value.GetString());
+		if (!m_pclDevice)
+		{
+			throw std::invalid_argument(fmt::format("[DispatcherServiceImpl::{}] device {} not found", this->GetName(), it->value.GetString()));
+		}
 	}
 	
 
@@ -176,21 +201,24 @@ namespace dcclite::broker
 
 	void DispatcherServiceImpl::RegisterTSection(std::string_view name, sol::table obj)
 	{
+		auto &sensor = this->CreateSectionSensor(obj);
+
 #if 1
-		auto wrapper = static_cast<TSectionWrapper *>(m_pSections->AddChild(std::make_unique<TSectionWrapper>(std::string{ name }, obj)));
+		auto wrapper = static_cast<TSectionWrapper *>(m_pSections->AddChild(std::make_unique<TSectionWrapper>(std::string{ name }, obj, sensor)));
 		obj["dispatcher_handler"] = static_cast<BaseSectionWrapper *>(wrapper);
 
 		this->NotifyItemCreated(*wrapper);
 #endif
 	}
 
-
 	void DispatcherServiceImpl::RegisterSection(std::string_view name, sol::table obj)
 	{
-		auto wrapper = static_cast<SectionWrapper *>(m_pSections->AddChild(std::make_unique<SectionWrapper>(std::string{name}, obj)));
-		obj["dispatcher_handler"] = static_cast<BaseSectionWrapper *>(wrapper);
+		auto &sensor = this->CreateSectionSensor(obj);
 
-		this->NotifyItemCreated(*wrapper);
+		auto wrapper = static_cast<SectionWrapper *>(m_pSections->AddChild(std::make_unique<SectionWrapper>(std::string{name}, obj, sensor)));
+		obj["dispatcher_handler"] = static_cast<BaseSectionWrapper *>(wrapper);		
+
+		this->NotifyItemCreated(*wrapper);		
 	}
 
 	void DispatcherServiceImpl::OnSectionStateChange(sol::table obj, int newState)
@@ -202,9 +230,8 @@ namespace dcclite::broker
 			throw std::runtime_error(fmt::format("[DispatcherServiceImpl::OnSectionStateChange] Section {} not registered", name));
 #endif		
 
-		this->NotifyItemChanged(*section);
-
-		//section->OnStateChange(newState);
+		section->OnStateUpdate();
+		this->NotifyItemChanged(*section);		
 	}
 
 	void DispatcherServiceImpl::IResettableService_ResetItem(std::string_view name)
@@ -220,6 +247,23 @@ namespace dcclite::broker
 		BaseSectionWrapper *section = src["dispatcher_handler"];
 
 		dcclite::Log::Error("[DispatcherService::Panic] Fatal error on section [{}]: {}", section->GetName(), reason);
+	}
+
+	VirtualSensorDecoder &DispatcherServiceImpl::CreateSectionSensor(sol::table obj)
+	{	
+		rapidjson::Document json;
+
+		auto &params = json.SetObject();
+
+		int address = obj["address"];
+		std::string name = obj["name"];
+
+		if (address > std::numeric_limits<uint16_t>::max())
+			throw std::invalid_argument(fmt::format("[DispatcherServiceImpl::CreateSectionSensor] Invalid address {} for {}", address, name));
+
+		auto &decoder = m_pclDevice->CreateInternalDecoder(VIRTUAL_SENSOR_DECODER_CLASSNAME, DccAddress{ static_cast<uint16_t>(address)}, std::move(name), params);
+
+		return static_cast<VirtualSensorDecoder &>(decoder);
 	}
 
 	//

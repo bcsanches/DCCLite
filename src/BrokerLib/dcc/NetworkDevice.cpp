@@ -119,6 +119,11 @@ namespace dcclite::broker
 			throw std::invalid_argument(fmt::format("[NetworkDevice::{}] [CheckLoadedDecoder] Decoder {} must be a RemoteDecoder subtype, but it is: {}", this->GetName(), decoder.GetName(), decoder.GetTypeName()));
 	}
 
+	bool NetworkDevice::IsInternalDecoderAllowed() const noexcept
+	{
+		return false;
+	}
+
 	void NetworkDevice::OnUnload()
 	{
 		Device::OnUnload();
@@ -496,7 +501,7 @@ namespace dcclite::broker
 				if (!decoder->IsInputDecoder())
 					continue;
 
-				state = decoder->GetRemoteState();
+				state = decoder->GetState();
 
 				//mark on bit vector that this decoder has a change
 				changedStates.SetBit(i);

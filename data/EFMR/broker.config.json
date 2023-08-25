@@ -114,7 +114,7 @@
       "class": "DispatcherService",
       "name": "dispatcher",
       "requires":"DccLiteService",
-      "virtualDevice":"VirtualDevice"
+      "device":"VirtualDevice"
     },
     {
         "class": "LoconetService",

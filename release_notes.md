@@ -1,11 +1,9 @@
-TODO
-- como enviar sections como sensores para o JMRI? VirtualSensor e associar com section?
-
 # Version ?????
 
 ## General Features
 
 - Added support to config flip interval on quad inverter
+- Lua sections now publish state to JMRI thought VirtualSensors
 
 ## SharpTerminal
 

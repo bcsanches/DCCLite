@@ -109,6 +109,7 @@ namespace dcclite::broker
 			void OnUnload() override;
 
 			void CheckLoadedDecoder(Decoder &decoder) override;
+			[[nodiscard]] bool IsInternalDecoderAllowed() const noexcept override;
 
 		private:									
 			[[nodiscard]] bool CheckSessionConfig(const dcclite::Guid remoteConfigToken, const dcclite::NetworkAddress remoteAddress);

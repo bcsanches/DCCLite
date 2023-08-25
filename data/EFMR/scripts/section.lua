@@ -217,6 +217,10 @@ function Section:new(o)
         error("[Section:new] name is required")
     end
 
+    if not o.address then
+        error("[Section:new] address is required")
+    end
+
     if not o.start_sensor or not o.end_sensor then
         error("[Section:new] start_sensor and end_sensor must be provided")
     end    
@@ -357,6 +361,10 @@ function TSection:new(o)
 
     if not o.turnout then
         error("[TSection:new] turnout is required")
+    end
+
+    if not o.address then
+        error("[TSection:new] address is required")
     end
 
     log_trace("[TSection:new] Registering callback for start sensor")

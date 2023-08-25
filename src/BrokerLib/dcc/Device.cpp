@@ -91,6 +91,40 @@ namespace dcclite::broker
 		m_vecDecoders.clear();
 	}
 
+	Decoder &Device::CreateInternalDecoder(const char *className, DccAddress address, const std::string &name, const rapidjson::Value &params)
+	{
+		if (!this->IsInternalDecoderAllowed())
+			throw std::logic_error(fmt::format("[Device::CreateInternalDecoder] Not supported by {}", this->GetName()));
+
+		auto &decoder = m_clDccService.Device_CreateDecoder(*this, className, address, name, params);
+
+		this->RegisterDecoder(decoder);
+
+		return decoder;
+	}
+
+    void Device::RegisterDecoder(Decoder &decoder)
+	{
+		this->CheckLoadedDecoder(decoder);
+
+		m_vecDecoders.push_back(&decoder);
+
+		dcclite::IObject *decShortcut;
+		try
+		{
+			decShortcut = this->AddChild(std::make_unique<dcclite::Shortcut>(std::string(decoder.GetName()), decoder));			
+		}	
+		catch (...)
+		{
+			m_vecDecoders.pop_back();
+
+			throw;
+		}		
+
+		m_clDccService.Device_NotifyInternalItemCreated(decoder);
+		m_clDccService.Device_NotifyInternalItemCreated(*decShortcut);
+	}
+
 	void Device::Load()
 	{
 		dcclite::Log::Info("[Device::{}] [Load] Loading {}", this->GetName(), m_pathConfigFile.string());
@@ -148,13 +182,7 @@ namespace dcclite::broker
 
 				auto &decoder = m_clDccService.Device_CreateDecoder(*this, className, address, decoderName, element);
 
-				this->CheckLoadedDecoder(decoder);
-
-				m_vecDecoders.push_back(&decoder);
-
-				auto decShortcut = this->AddChild(std::make_unique<dcclite::Shortcut>(std::string(decoder.GetName()), decoder));
-				m_clDccService.Device_NotifyInternalItemCreated(decoder);
-				m_clDccService.Device_NotifyInternalItemCreated(*decShortcut);
+				this->RegisterDecoder(decoder);				
 			}
 
 			//let decoder know that each decoder on this device has been created

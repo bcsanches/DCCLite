@@ -52,6 +52,8 @@ add_library(
         dcc/QuadInverter.h
         dcc/RemoteDecoder.cpp
         dcc/RemoteDecoder.h
+        dcc/StateDecoder.cpp
+        dcc/StateDecoder.h
         dcc/SensorDecoder.cpp
         dcc/SensorDecoder.h
         dcc/SignalDecoder.cpp
@@ -64,6 +66,8 @@ add_library(
         dcc/TurntableAutoInverterDecoder.h       
         dcc/VirtualDevice.cpp
         dcc/VirtualDevice.h
+	dcc/VirtualSensorDecoder.cpp
+	dcc/VirtualSensorDecoder.h
 	dcc/VirtualTurnoutDecoder.cpp
 	dcc/VirtualTurnoutDecoder.h        
         dispatcher/DispatcherService.cpp

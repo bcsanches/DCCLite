@@ -138,8 +138,8 @@ namespace SharpTerminal
             if (objectDef.ContainsKey("broken"))
                 Broken = objectDef["broken"];
 
-            if (objectDef.ContainsKey("remoteActive"))
-                RemoteState = objectDef["remoteActive"];
+            if (objectDef.ContainsKey("active"))
+                RemoteState = objectDef["active"];
 
             if (objectDef.ContainsKey("requestedState"))
                 RequestedState = objectDef["requestedState"];

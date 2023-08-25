@@ -30,8 +30,6 @@ namespace dcclite::broker
 			m_strLocationHint = it->value.GetString();
 	}
 
-
-
 	void Decoder::Serialize(dcclite::JsonOutputStream_t &stream) const
 	{
 		Object::Serialize(stream);

@@ -190,7 +190,7 @@ namespace dcclite::broker
 
 	static inline std::string CreateTurnoutDecoderStateResponse(const TurnoutDecoder& decoder)
 	{
-		return fmt::format("<H{} {}>", decoder.GetAddress(), (decoder.GetRemoteState() == DecoderStates::ACTIVE ? 1 : 0));
+		return fmt::format("<H{} {}>", decoder.GetAddress(), (decoder.GetState() == DecoderStates::ACTIVE ? 1 : 0));
 	}
 
 	static inline std::string CreateOutputDecoderStateResponse(const OutputDecoder& decoder)
@@ -201,15 +201,15 @@ namespace dcclite::broker
 		}
 		else
 		{
-			return fmt::format("<Y {} {}>", decoder.GetAddress(), (decoder.GetRemoteState() == DecoderStates::ACTIVE ? 1 : 0));
+			return fmt::format("<Y {} {}>", decoder.GetAddress(), (decoder.GetState() == DecoderStates::ACTIVE ? 1 : 0));
 		}
 	}
 
-	static inline std::string CreateDecoderStateResponse(const RemoteDecoder& decoder)
+	static inline std::string CreateDecoderStateResponse(const StateDecoder &decoder)
 	{	
 		if (decoder.IsInputDecoder())
 		{
-			return fmt::format("<{} {}>", decoder.GetRemoteState() == DecoderStates::ACTIVE ? 'Q' : 'q', decoder.GetAddress());		
+			return fmt::format("<{} {}>", decoder.GetState() == DecoderStates::ACTIVE ? 'Q' : 'q', decoder.GetAddress());
 		}	
 		else
 		{
@@ -217,7 +217,7 @@ namespace dcclite::broker
 		}
 	}
 
-	static inline std::string CreateSensorStateRespnse(const std::vector<SensorDecoder *> &sensorDecoders)
+	static inline std::string CreateSensorStateResponse(const std::vector<StateDecoder *> &sensorDecoders)
 	{
 		std::stringstream response;
 	
@@ -227,7 +227,7 @@ namespace dcclite::broker
 			{
 
 				response <<
-					"<" << (dec->GetRemoteState() == DecoderStates::ACTIVE ? 'Q' : 'q') <<
+					"<" << (dec->GetState() == DecoderStates::ACTIVE ? 'Q' : 'q') <<
 					dec->GetAddress().GetAddress() <<
 					'>';
 			}
@@ -360,7 +360,7 @@ namespace dcclite::broker
 				addressNum << ' ' << 
 				std::get<0>(nmraAddress) << ' ' << 
 				std::get<1>(nmraAddress) << ' ' << 
-				((turnout->GetRemoteState() == DecoderStates::ACTIVE) ? 1 : 0 ) << 
+				((turnout->GetState() == DecoderStates::ACTIVE) ? 1 : 0 ) << 
 			">";
 		}
 
@@ -382,7 +382,7 @@ namespace dcclite::broker
 				dec->GetAddress() << ' ' << 
 				dec->GetPin() << ' ' << 
 				(int)dec->GetDccppFlags() << ' ' << 
-				((dec->GetRemoteState() == DecoderStates::ACTIVE) ? 1 : 0) << 
+				((dec->GetState() == DecoderStates::ACTIVE) ? 1 : 0) <<
 			">";
 
 			response << CreateOutputDecoderStateResponse(*dec);
@@ -417,7 +417,7 @@ namespace dcclite::broker
 		//DCCPP by default seems to do not request this, so we send so it has sensors states at load
 		auto sensorDecoders = m_rclSystem.FindAllSensorDecoders();
 		if (!sensorDecoders.empty())		
-			m_clMessenger.Send(m_clAddress, CreateSensorStateRespnse(sensorDecoders));
+			m_clMessenger.Send(m_clAddress, CreateSensorStateResponse(sensorDecoders));
 	}
 
 	bool DccppClient::ParseSensorCommand(dcclite::Parser &parser, const std::string &msg)
@@ -437,7 +437,9 @@ namespace dcclite::broker
 		if (!sensorDecoders.empty())
 		{
 			for (auto dec : sensorDecoders)
-			{
+			{	
+				response << "<Q" << dec->GetAddress().GetAddress() << " 1 false>;";
+#if 0
 				response <<
 					"<Q" <<
 					dec->GetAddress().GetAddress() <<
@@ -446,6 +448,7 @@ namespace dcclite::broker
 					' ' <<
 					dec->HasPullUp() <<
 					'>';
+#endif
 			}
 		}
 		else
@@ -464,10 +467,8 @@ namespace dcclite::broker
 		if (event.m_kType != ObjectManagerEvent::ITEM_CHANGED)
 			return;
 	
-		auto remoteDecoder = dynamic_cast<const RemoteDecoder *>(event.m_pclItem);
-
-		if(remoteDecoder)
-			m_clMessenger.Send(m_clAddress, CreateDecoderStateResponse(*remoteDecoder));	
+		if(auto decoder = dynamic_cast<const StateDecoder *>(event.m_pclItem))
+			m_clMessenger.Send(m_clAddress, CreateDecoderStateResponse(*decoder));					
 	}
 
 	void DccppClient::OnMessage(const std::string &msg)
@@ -539,7 +540,7 @@ namespace dcclite::broker
 				else
 				{				
 					auto sensorDecoders = m_rclSystem.FindAllSensorDecoders();
-					m_clMessenger.Send(m_clAddress, CreateSensorStateRespnse(sensorDecoders));
+					m_clMessenger.Send(m_clAddress, CreateSensorStateResponse(sensorDecoders));
 				}
 				break;
 
@@ -599,7 +600,7 @@ namespace dcclite::broker
 				auto newState = direction ? DecoderStates::ACTIVE : DecoderStates::INACTIVE;
 
 				//if no state change pending and remote state is the requested one
-				if (!outputDecoder->GetPendingStateChange() && outputDecoder->GetRemoteState() == newState)
+				if (!outputDecoder->GetPendingStateChange() && outputDecoder->GetState() == newState)
 				{
 					//we force an output, because we should not have a incoming state, so tell JMRI that we are on requested state
 					m_clMessenger.Send(m_clAddress, CreateOutputDecoderStateResponse(*outputDecoder));
