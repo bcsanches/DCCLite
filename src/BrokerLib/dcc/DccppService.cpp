@@ -415,7 +415,7 @@ namespace dcclite::broker
 		m_clMessenger.Send(m_clAddress, response.str());
 
 		//DCCPP by default seems to do not request this, so we send so it has sensors states at load
-		auto sensorDecoders = m_rclSystem.FindAllSensorDecoders();
+		auto sensorDecoders = m_rclSystem.FindAllInputDecoders();
 		if (!sensorDecoders.empty())		
 			m_clMessenger.Send(m_clAddress, CreateSensorStateResponse(sensorDecoders));
 	}
@@ -433,7 +433,7 @@ namespace dcclite::broker
 		std::stringstream response;
 
 		//Send all sensors definition
-		auto sensorDecoders = m_rclSystem.FindAllSensorDecoders();
+		auto sensorDecoders = m_rclSystem.FindAllInputDecoders();
 		if (!sensorDecoders.empty())
 		{
 			for (auto dec : sensorDecoders)
@@ -539,7 +539,7 @@ namespace dcclite::broker
 				}
 				else
 				{				
-					auto sensorDecoders = m_rclSystem.FindAllSensorDecoders();
+					auto sensorDecoders = m_rclSystem.FindAllInputDecoders();
 					m_clMessenger.Send(m_clAddress, CreateSensorStateResponse(sensorDecoders));
 				}
 				break;
