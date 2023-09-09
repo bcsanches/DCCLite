@@ -12,7 +12,7 @@
 
 #include "LogUtils.h"
 
-#include <spdlog/logger.h>
+#include <spdlog/spdlog.h>
 
 #include <Windows.h>
 
@@ -61,7 +61,7 @@ namespace dcclite
 
 		if (!GetCurrentConsoleFontEx(hStdout, false, &fontInfo))
 		{
-			LogGetDefault()->error("GetCurrentConsoleFontEx failed");
+			spdlog::error("GetCurrentConsoleFontEx failed");
 			return false;
 		}
 
@@ -75,7 +75,7 @@ namespace dcclite
 
 		if (!GetConsoleScreenBufferInfoEx(hStdout, &bufferInfo))
 		{
-			LogGetDefault()->error("GetConsoleScreenBufferInfoEx failed");
+			spdlog::error("GetConsoleScreenBufferInfoEx failed");
 			return false;
 		}
 
@@ -93,7 +93,7 @@ namespace dcclite
 #if 1
 		if (!SetConsoleOutputCP(CP_UTF8))
 		{
-			LogGetDefault()->error("SetConsoleOutputCP failed");
+			spdlog::error("SetConsoleOutputCP failed");
 			return false;
 		}
 #endif

@@ -170,9 +170,7 @@ TEST(EventHub, CancelMultipleTargets)
 }
 
 TEST(EventHub, BadAlloc)
-{
-	dcclite::LogInit("DccliteText.BadAlloc.log");
-
+{	
 	int called = 0;
 	ASSERT_EQ(MyTestEvent::GetObjectCount(), 0);
 
@@ -195,9 +193,7 @@ TEST(EventHub, BadAlloc)
 		dcclite::broker::EventHub::PumpEvents(dcclite::Clock::DefaultClock_t::now());
 
 		//memory is free
-		dcclite::broker::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { ++called;  });
-
-		dcclite::LogFinalize();
+		dcclite::broker::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { ++called;  });		
 
 		return;
 	}

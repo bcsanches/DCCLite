@@ -31,6 +31,7 @@ namespace dcclite
 		spdlog::drop("dcclite");
 
 		spdlog::shutdown();
+		spdlog::set_default_logger(nullptr);
 	}
 	
 	void LogInit(const char *fileName)
@@ -71,11 +72,13 @@ namespace dcclite
 #endif
 
 		g_spLogger = combined_logger;
+		spdlog::set_default_logger(g_spLogger);
 	}
 
 	void LogReplace(Logger_t log)
 	{
 		g_spLogger = log;
+		spdlog::set_default_logger(g_spLogger);
 	}
 
 	extern std::shared_ptr<spdlog::logger> LogGetDefault()

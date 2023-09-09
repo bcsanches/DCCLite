@@ -18,7 +18,7 @@
 #include <optional>
 #include <stdexcept>
 
-#include <spdlog/logger.h>
+#include <spdlog/spdlog.h>
 
 #include <fmt/format.h>
 
@@ -197,7 +197,7 @@ namespace dcclite
 
 		if (m_hHandle == NULL_SOCKET)
 		{
-			LogGetDefault()->error("[Socket::Open] Failed to create socket.");
+			spdlog::error("[Socket::Open] Failed to create socket.");
 			return false;
 		}
 
@@ -220,7 +220,7 @@ namespace dcclite
 			{
 				this->Close();
 
-				LogGetDefault()->error("[Socket::Open] Failed to set socket to non-blocking mode.");
+				spdlog::error("[Socket::Open] Failed to set socket to non-blocking mode.");
 				return false;
 			}
 #endif
@@ -233,7 +233,7 @@ namespace dcclite
 		{
 			this->Close();
 
-			LogGetDefault()->error("[Socket::Open] Failed to enable NO_DELAY.");
+			spdlog::error("[Socket::Open] Failed to enable NO_DELAY.");
 			return false;
 		}
 
@@ -244,7 +244,7 @@ namespace dcclite
 			{
 				this->Close();
 
-				LogGetDefault()->error("[Socket::Open] Failed to enable SO_BROADCAST.");
+				spdlog::error("[Socket::Open] Failed to enable SO_BROADCAST.");
 				return false;
 			}
 		}		
@@ -255,10 +255,10 @@ namespace dcclite
 			if (setsockopt(m_hHandle, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&reuseaddr), sizeof(reuseaddr)) != 0)
 			{
 #if PLATFORM == PLATFORM_WINDOWS
-				LogGetDefault()->error("[Socket::Open] Failed to enable SO_REUSEADDR.");
+				spdlog::error("[Socket::Open] Failed to enable SO_REUSEADDR.");
 #else
 				const auto errsv = errno;
-				LogGetDefault()->error("[Socket::Open] Failed to enable SO_REUSEADDR: {}.", strerror(errsv));
+				spdlog::error("[Socket::Open] Failed to enable SO_REUSEADDR: {}.", strerror(errsv));
 #endif
 
 				this->Close();
@@ -282,9 +282,9 @@ namespace dcclite
 
 #if PLATFORM == PLATFORM_WINDOWS
 			auto error = WSAGetLastError();
-			LogGetDefault()->error("[Socket::Open] Failed to bind socket {}.", error);
+			spdlog::error("[Socket::Open] Failed to bind socket {}.", error);
 #else
-			LogGetDefault()->error("[Socket::Open] Failed to bind socket.");
+			spdlog::error("[Socket::Open] Failed to bind socket.");
 #endif
 			return false;
 		}
@@ -338,7 +338,7 @@ namespace dcclite
 		if((rc < 0) && (errno != EINPROGRESS))
 #endif
 		{			
-			LogGetDefault()->error("Unknown connect error");			
+			spdlog::error("Unknown connect error");
 
 			return false;
 		}		
@@ -452,7 +452,7 @@ namespace dcclite
 
 		if (sent_bytes != size)
 		{
-			LogGetDefault()->error("Failed to send packet.");
+			spdlog::error("Failed to send packet.");
 			return false;
 		}
 
@@ -649,7 +649,7 @@ namespace dcclite
 		{
 			auto error = WSAGetLastError();
 
-			LogGetDefault()->error("[Socket::JoinMulticastGroup] setsockopt failed with IP_ADD_MEMBERSHIP {}.", error);
+			spdlog::error("[Socket::JoinMulticastGroup] setsockopt failed with IP_ADD_MEMBERSHIP {}.", error);
 
 			return false;
 		}
