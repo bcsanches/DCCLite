@@ -184,6 +184,8 @@ static void GotoOfflineState()
 	ServoProgrammer::Stop();
 
 	g_eConnectionState = ConnectionStates::OFFLINE;
+
+	Blinker::SetState(Blinker::State::FAST_FLASH);
 }
 
 static void OfflineTick(const unsigned long ticks)
@@ -335,6 +337,8 @@ static void GotoOnlineState(const unsigned long ticks, int callerLine)
 	g_uNextStateThink = 0;
 
 	PingManager::Reset(ticks);
+
+	Blinker::SetState(Blinker::State::ON);
 }
 
 
@@ -632,12 +636,13 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 	const auto time = millis();
 	PingManager::Reset(time);
 
+	Blinker::Pulse(3);
+
 	switch (type)
 	{
 		case dcclite::MsgTypes::MSG_PING:
-			Blinker::Play(Blinker::Animations::OK);
-
-			//Console::SendLogEx(MODULE_NAME, "PING");
+			Blinker::Pulse(5);
+			
 			DCCLITE_LOG_MODULE_LN(F("PING"));
 
 			{				
@@ -648,8 +653,7 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 			}
 			break;
 
-		case dcclite::MsgTypes::STATE:
-			//Console::SendLogEx(MODULE_NAME, "got state");
+		case dcclite::MsgTypes::STATE:						
 			OnStatePacket(packet, time);
 			break;		
 
@@ -671,13 +675,15 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 			}
 			break;
 
-		case dcclite::MsgTypes::TASK_REQUEST:
+		case dcclite::MsgTypes::TASK_REQUEST:			
 			OnTaskRequestPacket(packet);
 			break;
 
 		default:
 			LogInvalidPacket(OnOnlineStateNameStr, type);
-	}
+			Blinker::Pulse(20);
+			break;
+	}		
 }
 
 

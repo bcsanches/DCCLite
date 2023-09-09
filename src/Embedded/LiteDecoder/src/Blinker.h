@@ -13,17 +13,22 @@
 
 namespace Blinker
 {
-	enum class Animations
+
+	enum class State: unsigned char
 	{
-		OK,
-		ERROR
+		ON,
+		SLOW_FLASH,
+		FAST_FLASH,
+		OFF
 	};
 
 	extern void Init();
 
-	extern void Update();
+	extern void Update(unsigned long ticks);
 
-	extern void Play(Animations animation);
+	extern void SetState(State state);
+
+	extern void Pulse(unsigned char count);
 }
 
 #endif

@@ -235,18 +235,20 @@ void setup()
 	Console::Init();
 	Blinker::Init();
 
+	Blinker::SetState(Blinker::State::SLOW_FLASH);
+
 	Storage::LoadConfig();
 
 	g_fNetReady = NetUdp::Init(Session::GetReceiverCallback());
 
-	g_uStartTime = millis();
-
-	Blinker::Play(Blinker::Animations::OK);		
+	g_uStartTime = millis();	
 
 	if(g_uDecodersPosition > 0)
 	{
 		Storage_LoadDecoders(g_uDecodersPosition);
 	}
+
+	Blinker::SetState(Blinker::State::FAST_FLASH);
 
 	//Console::SendLogEx(FSTR_SETUP, " ", FSTR_OK);
 	DCCLITE_LOG_MODULE_LN(FSTR_SETUP << ' ' << FSTR_OK);
@@ -286,7 +288,7 @@ void loop()
 	}
 
 	Console::Update();
-	Blinker::Update();
+	Blinker::Update(currentTime);
 	const bool stateChangeDetected = DecoderManager::Update(currentTime);
 
 	if (g_fNetReady)

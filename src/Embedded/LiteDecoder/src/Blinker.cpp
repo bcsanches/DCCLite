@@ -15,34 +15,18 @@
 
 constexpr auto LOCAL_LED = 13;
 
-constexpr auto SLOW = 1000;
-constexpr auto FAST = 100;
-constexpr auto MAX_FRAMES = 3;
+constexpr auto SLOW_INTERVAL = 1000;
+constexpr auto FAST_INTERVAL = 100;
 
 static unsigned long g_iNextThink = 0;
-static short g_iAnimation = -1;
-static uint8_t g_iVoltage = 0;
-static char g_iFrame = 0;
+static Blinker::State g_kState = Blinker::State::OFF;
+
+static uint8_t g_iPulse = 0;
+static unsigned long g_iPulseThink = 0;
+
+static bool g_fVoltage = false;
 
 constexpr auto MAX_ANIMATIONS = 2;
-
-static void StartAnimation(uint8_t animation)
-{
-	assert(animation < MAX_ANIMATIONS);
-
-    g_iAnimation = animation;
-	g_iFrame = -1;
-    g_iVoltage = LOW;    
-
-	g_iNextThink = millis() + FAST;
-
-    digitalWrite(LOCAL_LED, g_iVoltage);    
-}
-
-void Blinker::Play(Animations animation)
-{
-	StartAnimation(static_cast<uint8_t>(animation));
-}
 
 void Blinker::Init()
 {
@@ -51,47 +35,70 @@ void Blinker::Init()
 	digitalWrite(LOCAL_LED, LOW);
 }
 
-void Blinker::Update()
+void Blinker::SetState(State state)
 {
-	if(g_iAnimation < 0)
+	if (state == g_kState)
 		return;
 
-    unsigned long ticks = millis();
-    if(g_iNextThink <= ticks)
-    {
-		if(g_iVoltage == LOW)
-		{
-			++g_iFrame;
-			if(g_iFrame == MAX_FRAMES)
+	g_kState = state;
+	g_iPulse = 0;
+
+	switch (g_kState)
+	{
+		case State::ON:			
+			digitalWrite(LOCAL_LED, HIGH);				
+			break;
+
+		case State::OFF:			
+			digitalWrite(LOCAL_LED, LOW);			
+			break;
+
+		case State::FAST_FLASH:
+		case State::SLOW_FLASH:
+			digitalWrite(LOCAL_LED, LOW);
+			g_iNextThink = 0;
+			break;
+	}	
+}
+
+void Blinker::Pulse(unsigned char count)
+{
+	//ignore pulse when flashing
+	if ((g_kState != State::OFF) && (g_kState != State::ON))
+		return;
+
+	g_iPulse = count * 2;
+	g_iPulseThink = 0;
+
+	g_fVoltage = (g_kState == State::ON);
+}
+
+void Blinker::Update(unsigned long ticks)
+{
+	switch (g_kState)
+	{
+		case State::OFF:
+		case State::ON:
+			if ((g_iPulse) && (ticks >= g_iPulseThink))
 			{
-				g_iAnimation = -1;
-				return;
+				--g_iPulse;
+
+				g_fVoltage = !g_fVoltage;
+				digitalWrite(LOCAL_LED, g_fVoltage ? HIGH : LOW);
+
+				g_iPulseThink = ticks + (FAST_INTERVAL >> 1);
 			}
+			break;
 
-			g_iVoltage = HIGH;			
-		}
-		else
-		{
-			g_iVoltage = LOW;			
-		}
+		case State::SLOW_FLASH:
+		case State::FAST_FLASH:
+			if (ticks < g_iNextThink)
+				return;
 
-		const uint8_t animations[MAX_ANIMATIONS] = {
-			(1 << 0) | (1 << 1) | (1 << 2), //OK
-			(0 << 0) | (0 << 1) | (0 << 2), //ERROR
-		};
+			g_fVoltage = !g_fVoltage;
+			digitalWrite(LOCAL_LED, g_fVoltage ? HIGH : LOW);
 
-
-		g_iNextThink = ticks + (bitRead(animations[g_iAnimation], g_iFrame) ? FAST : SLOW);
-
-#if 0
-		Serial.println("bit / think / frame");
-		Serial.print(bitRead(g_uAnimations[g_iAnimation], g_iFrame));
-		Serial.print("  ");
-		Serial.print(g_iNextThink);
-		Serial.print("  ");
-		Serial.println(g_iFrame);
-#endif
-
-        digitalWrite(LOCAL_LED, g_iVoltage);
+			g_iNextThink = ticks + (g_kState == State::SLOW_FLASH ? SLOW_INTERVAL : FAST_INTERVAL);
+			break;	
     }
 }

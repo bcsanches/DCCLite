@@ -13,6 +13,14 @@
 
 - section scripts seems to be working
 
+## Embedded
+
+- arduino will blink according to state: 
+    - slow flash: network init
+    - fast flag: trying to connect
+    - on: connected
+    - quick pulse while on: packet received
+
 ## Code
 
 - Added DecoderWeakPointer
