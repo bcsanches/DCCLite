@@ -95,9 +95,7 @@ TEST(SignalDecoderTest, Basic)
 			}      
 		]  
 	}
-	)JSON";
-
-	dcclite::LogInit("SignalDecoderTest.Basic.log");
+	)JSON";	
 
 	SignalTester tester{ CreateSignal(json) };
 
@@ -166,9 +164,7 @@ TEST(SignalDecoderTest, Basic)
 
 	ASSERT_TRUE(VectorHasStr(aspects[3].m_vecOffHeads, "STC_HY12"));
 	ASSERT_TRUE(VectorHasStr(aspects[3].m_vecOffHeads, "STC_HG12"));
-	ASSERT_TRUE(VectorHasStr(aspects[3].m_vecOffHeads, "STC_BLA"));
-
-	dcclite::LogFinalize();
+	ASSERT_TRUE(VectorHasStr(aspects[3].m_vecOffHeads, "STC_BLA"));	
 }
 
 static std::string ExtractSignalExceptionString(const char *json)
