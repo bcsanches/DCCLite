@@ -11,6 +11,7 @@
 
 #include "LocationManager.h"
 
+#include <FmtUtils.h>
 #include <Log.h>
 
 #include "Decoder.h"
@@ -21,9 +22,9 @@ namespace dcclite::broker
 	class Location: public Object
 	{
 		public:
-			Location(std::string name, std::string prefix, const DccAddress beginAddress, const DccAddress endAddress):
-				Object(std::move(name)),
-				m_strPrefix(std::move(prefix)),
+			Location(RName name, RName prefix, const DccAddress beginAddress, const DccAddress endAddress):
+				Object{name},
+				m_rnPrefix(prefix),
 				m_tBeginAddress(beginAddress),
 				m_tEndAddress(endAddress)
 			{
@@ -71,7 +72,7 @@ namespace dcclite::broker
 			{
 				Object::Serialize(stream);
 
-				stream.AddStringValue("prefix", m_strPrefix);
+				stream.AddStringValue("prefix", m_rnPrefix.GetData());
 				stream.AddIntValue("begin", m_tBeginAddress.GetAddress());
 				stream.AddIntValue("end", m_tEndAddress.GetAddress());
 
@@ -104,9 +105,9 @@ namespace dcclite::broker
 				return m_tEndAddress;
 			}
 
-			inline const std::string &GetPrefix() const
+			inline RName GetPrefix() const
 			{
-				return m_strPrefix;
+				return m_rnPrefix;
 			}
 
 		private:
@@ -118,15 +119,15 @@ namespace dcclite::broker
 			}
 
 		private:	
-			std::string m_strPrefix;
+			RName m_rnPrefix;
 			DccAddress m_tBeginAddress;
 			DccAddress m_tEndAddress;
 
 			std::vector<const Decoder *> m_vecDecoders;
 	};
 
-	LocationManager::LocationManager(std::string name, const rapidjson::Value& params):
-		FolderObject(std::move(name))
+	LocationManager::LocationManager(RName name, const rapidjson::Value& params):
+		FolderObject{name}
 	{
 		auto it = params.FindMember("locations");
 		if(it == params.MemberEnd())
@@ -141,8 +142,8 @@ namespace dcclite::broker
 
 		for(auto &sectorData : sectorsData.GetArray())
 		{
-			auto dname = sectorData["name"].GetString();
-			auto prefix = sectorData["prefix"].GetString();
+			RName dname{ sectorData["name"].GetString()};
+			RName prefix{ sectorData["prefix"].GetString() };
 			auto beginAddress = DccAddress{static_cast<uint16_t>(sectorData["begin"].GetInt())};
 			auto endAddress = DccAddress{ static_cast<uint16_t>(sectorData["end"].GetInt())};
 
@@ -188,8 +189,8 @@ namespace dcclite::broker
 				continue;
 
 			//found it
-			auto &locationHint = decoder.GetLocationHint();
-			if ((!locationHint.empty()) && (locationHint.compare(location->GetPrefix())) && (locationHint.compare(location->GetName())))
+			auto locationHint = decoder.GetLocationHint();
+			if ((locationHint) && (locationHint != location->GetPrefix()) && (locationHint != location->GetName()))
 			{			
 				//loaction hint does not match
 				m_vecMismatches.emplace_back(				
@@ -289,7 +290,7 @@ namespace dcclite::broker
 
 			auto location = std::get<2>(tuple);
 			if(location != nullptr)
-				obj.AddStringValue("location", location->GetName());
+				obj.AddStringValue("location", location->GetName().GetData());
 		}
 	}
 

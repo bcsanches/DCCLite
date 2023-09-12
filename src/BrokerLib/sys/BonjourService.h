@@ -27,20 +27,20 @@ namespace dcclite::broker
 	class BonjourService: public Service
 	{	
 		public:
-			BonjourService(const std::string &name, Broker &broker, const Project& project);
+			BonjourService(RName name, Broker &broker, const Project& project);
 		
 			~BonjourService() override
 			{
 				//empty
 			}			
 
-			virtual void Register(const std::string_view instanceName, const std::string_view serviceName, const NetworkProtocol protocol, const uint16_t port, const uint32_t ttl) = 0;
+			virtual void Register(std::string_view instanceName, std::string_view serviceName, const NetworkProtocol protocol, const uint16_t port, const uint32_t ttl) = 0;
 
 			//
 			//
 			//
 		
-			static std::unique_ptr<Service> Create(const std::string &name, Broker &broker, const Project &project);
+			static std::unique_ptr<Service> Create(RName name, Broker &broker, const Project &project);
 
 			const char *GetTypeName() const noexcept override
 			{

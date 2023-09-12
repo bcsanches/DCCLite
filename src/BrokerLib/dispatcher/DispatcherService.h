@@ -20,7 +20,7 @@ namespace dcclite::broker
 	class DispatcherService: public Service
 	{	
 		public:
-			DispatcherService(const std::string &name, Broker &broker, const rapidjson::Value& params, const Project& project);
+			DispatcherService(RName name, Broker &broker, const rapidjson::Value& params, const Project& project);
 		
 			~DispatcherService() override
 			{
@@ -37,7 +37,7 @@ namespace dcclite::broker
 			//
 			//
 		
-			static std::unique_ptr<Service> Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+			static std::unique_ptr<Service> Create(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
 			const char *GetTypeName() const noexcept override
 			{

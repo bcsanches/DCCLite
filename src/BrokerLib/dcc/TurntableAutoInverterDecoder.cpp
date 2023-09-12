@@ -10,6 +10,7 @@
 
 #include "TurntableAutoInverterDecoder.h"
 
+#include <FmtUtils.h>
 #include <Packet.h>
 
 #include "IDevice.h"
@@ -20,18 +21,18 @@ namespace dcclite::broker
 
 	TurntableAutoInverterDecoder::TurntableAutoInverterDecoder(
 		const DccAddress &address,
-		const std::string &name,
+		RName name,
 		IDccLite_DecoderServices &owner,
 		IDevice_DecoderServices &dev,
 		const rapidjson::Value &params
 	) :
 		RemoteDecoder(address, name, owner, dev, params),
-		m_strSensorAName{ params["sensorA"].GetString() },
-		m_strSensorBName{ params["sensorB"].GetString() }		
+		m_rnSensorAName{ params["sensorA"].GetString() },
+		m_rnSensorBName{ params["sensorB"].GetString() }		
 	{				
-		if (m_strSensorAName.compare(m_strSensorBName) == 0)
+		if (m_rnSensorAName == m_rnSensorBName)
 		{
-			throw std::invalid_argument(fmt::format("[TurntableAutoInverterDecoder::{}] Sensors cannot be the same: {}", this->GetName(), m_strSensorAName));
+			throw std::invalid_argument(fmt::format("[TurntableAutoInverterDecoder::{}] Sensors cannot be the same: {}", this->GetName(), m_rnSensorAName));
 		}
 
 		const auto &trackAPins = params["trackPowerAPins"].GetArray();
@@ -66,7 +67,7 @@ namespace dcclite::broker
 		networkDevice->Decoder_UnregisterPin(*this, m_arTrackBPins[1]);
 	}
 
-	static uint8_t FindSensorDecoderIndex(const std::string_view name, INetworkDevice_DecoderServices &service)
+	static uint8_t FindSensorDecoderIndex(RName name, INetworkDevice_DecoderServices &service)
 	{
 		auto &decoder = service.FindDecoder(name);
 
@@ -82,8 +83,8 @@ namespace dcclite::broker
 
 		auto networkDevice = m_rclDevice.TryGetINetworkDevice();
 
-		m_u8SensorAIndex = FindSensorDecoderIndex(m_strSensorAName, *networkDevice);
-		m_u8SensorBIndex = FindSensorDecoderIndex(m_strSensorBName, *networkDevice);
+		m_u8SensorAIndex = FindSensorDecoderIndex(m_rnSensorAName, *networkDevice);
+		m_u8SensorBIndex = FindSensorDecoderIndex(m_rnSensorBName, *networkDevice);
 	}
 
 	void TurntableAutoInverterDecoder::WriteConfig(dcclite::Packet &packet) const
@@ -109,8 +110,8 @@ namespace dcclite::broker
 
 		stream.AddIntValue("flipInterval", m_u8FlipInterval);
 
-		stream.AddStringValue("sensorAName", m_strSensorAName);
-		stream.AddStringValue("sensorBName", m_strSensorBName);
+		stream.AddStringValue("sensorAName", m_rnSensorAName.GetData());
+		stream.AddStringValue("sensorBName", m_rnSensorBName.GetData());
 
 		stream.AddIntValue("trackA0Pin", m_arTrackAPins[0].Raw());
 		stream.AddIntValue("trackA1Pin", m_arTrackAPins[1].Raw());

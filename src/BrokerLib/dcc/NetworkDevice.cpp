@@ -89,8 +89,8 @@ namespace dcclite::broker
 
 
 
-	NetworkDevice::NetworkDevice(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project):
-		Device(std::move(name), dccService, params, project),		
+	NetworkDevice::NetworkDevice(RName name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project):
+		Device(name, dccService, params, project),		
 		m_clPinManager(DecodeBoardName(params["class"].GetString())),
 		m_fRegistered(true),
 		m_clTimeoutController{ *this }
@@ -99,8 +99,8 @@ namespace dcclite::broker
 	}
 
 
-	NetworkDevice::NetworkDevice(std::string name, IDccLite_DeviceServices &dccService, const Project &project) :
-		Device(std::move(name), dccService, project),		
+	NetworkDevice::NetworkDevice(RName name, IDccLite_DeviceServices &dccService, const Project &project) :
+		Device(name, dccService, project),		
 		m_clPinManager(ArduinoBoards::MEGA),		
 		m_fRegistered(false),
 		m_clTimeoutController{*this}
@@ -878,11 +878,11 @@ namespace dcclite::broker
 		return std::holds_alternative<NetworkDevice::OnlineState>(m_vState);		
 	}
 
-	Decoder &NetworkDevice::FindDecoder(const std::string_view name) const
+	Decoder &NetworkDevice::FindDecoder(RName name) const
 	{		
 		for (size_t i = 0, len = m_vecDecoders.size(); i < len; ++i)
 		{
-			if (m_vecDecoders[i]->GetName().compare(name) == 0)
+			if (m_vecDecoders[i]->GetName() == name)
 				return *m_vecDecoders[i];
 		}
 
@@ -951,7 +951,7 @@ namespace dcclite::broker
 		return task;
 	}
 
-	std::shared_ptr<NetworkTask> NetworkDevice::StartServoTurnoutProgrammerTask(NetworkTask::IObserver *observer, const std::string_view servoDecoderName)
+	std::shared_ptr<NetworkTask> NetworkDevice::StartServoTurnoutProgrammerTask(NetworkTask::IObserver *observer, RName servoDecoderName)
 	{		
 		if (!this->IsConnectionStable())
 			throw std::runtime_error(fmt::format("[NetworkDevice::{}] [StartServoTurnoutProgrammerTask] Cannot start task without a connectd device", this->GetName()));

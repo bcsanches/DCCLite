@@ -28,6 +28,7 @@ https://datatracker.ietf.org/doc/html/rfc6335 -> Internet Assigned Numbers Autho
 #include <magic_enum.hpp>
 #include <mutex>
 
+#include <FmtUtils.h>
 #include <Log.h>
 
 #include "Clock.h"
@@ -293,11 +294,11 @@ namespace dcclite::broker
 
 	struct ServiceKey
 	{
-		const std::string m_strServiceName;
+		const RName m_rnServiceName;
 		const NetworkProtocol m_tProtocol;
 
-		ServiceKey(std::string_view serviceName, NetworkProtocol protocol):
-			m_strServiceName{ serviceName },
+		ServiceKey(RName serviceName, NetworkProtocol protocol):
+			m_rnServiceName{ serviceName },
 			m_tProtocol{ protocol }
 		{
 			//empty
@@ -306,7 +307,7 @@ namespace dcclite::broker
 		inline bool operator<(const ServiceKey &rhs) const noexcept
 		{
 			if (m_tProtocol == rhs.m_tProtocol)
-				return m_strServiceName.compare(rhs.m_strServiceName) < 0;
+				return m_rnServiceName < rhs.m_rnServiceName;
 
 			return m_tProtocol < rhs.m_tProtocol;
 		}
@@ -315,12 +316,12 @@ namespace dcclite::broker
 	class BonjourServiceImpl : public BonjourService
 	{
 		public:
-			BonjourServiceImpl(const std::string &name, Broker &broker, const Project &project);
+			BonjourServiceImpl(RName name, Broker &broker, const Project &project);
 			~BonjourServiceImpl() override;			
 
 			void Serialize(JsonOutputStream_t &stream) const override;		
 
-			void Register(const std::string_view instanceName, const std::string_view serviceName, const NetworkProtocol protocol, const uint16_t port, const uint32_t ttl) override;
+			void Register(std::string_view instanceName, std::string_view serviceName, const NetworkProtocol protocol, const uint16_t port, const uint32_t ttl) override;
 
 		private:
 			void ParsePacket(NetworkPacket &packet);
@@ -330,8 +331,8 @@ namespace dcclite::broker
 
 			static void CheckCNameSize(const std::string_view cname, const size_t maxLen = 63);
 
-			static void CheckServiceName(const std::string_view serviceName);
-			static void CheckInstanceName(const std::string_view instanceName);
+			static void CheckServiceName(std::string_view serviceName);
+			static void CheckInstanceName(std::string_view instanceName);
 
 			void SendServiceList(const DnsHeader &header, const QSection &query);
 
@@ -349,7 +350,7 @@ namespace dcclite::broker
 	};
 
 
-	BonjourServiceImpl::BonjourServiceImpl(const std::string& name, Broker &broker, const Project& project):
+	BonjourServiceImpl::BonjourServiceImpl(RName name, Broker &broker, const Project& project):
 		BonjourService(name, broker, project),
 		m_tNetworkThread{ [this]() { this->NetworkProc(); }}		
 	{				
@@ -378,8 +379,8 @@ namespace dcclite::broker
 		}
 	}
 
-	void BonjourServiceImpl::CheckServiceName(const std::string_view serviceName)
-	{
+	void BonjourServiceImpl::CheckServiceName(std::string_view serviceName)
+	{		
 		//should we use a regex?
 
 		//https://datatracker.ietf.org/doc/html/rfc6335
@@ -416,7 +417,7 @@ namespace dcclite::broker
 			throw std::invalid_argument(fmt::format("[BonjourServiceImpl::Register] Service contains invalid characters, only letters and numbers allowed: {}", serviceName));
 		}
 	}
-	void BonjourServiceImpl::CheckInstanceName(const std::string_view instanceName)
+	void BonjourServiceImpl::CheckInstanceName(std::string_view instanceName)
 	{	
 		CheckCNameSize(instanceName);
 
@@ -435,7 +436,7 @@ namespace dcclite::broker
 		}
 	}
 
-	void BonjourServiceImpl::Register(const std::string_view instanceName, const std::string_view serviceName, const NetworkProtocol protocol, const uint16_t port, const uint32_t ttl)
+	void BonjourServiceImpl::Register(std::string_view instanceName, std::string_view serviceName, const NetworkProtocol protocol, const uint16_t port, const uint32_t ttl)
 	{			
 		CheckInstanceName(instanceName);
 		CheckServiceName(serviceName);
@@ -446,7 +447,7 @@ namespace dcclite::broker
 
 		std::lock_guard guard{ m_mtxMapServicesLock };
 
-		auto r = m_mapServices.emplace(std::make_pair(ServiceKey{ localServiceName, protocol }, ServiceRecord{ std::move(localInstanceName), std::move(localServiceName), protocol, port, ttl }));
+		auto r = m_mapServices.emplace(std::make_pair(ServiceKey{ RName{localServiceName}, protocol }, ServiceRecord{ std::move(localInstanceName), std::move(localServiceName), protocol, port, ttl }));
 		if (!r.second)
 		{
 			throw std::invalid_argument(fmt::format("[BonjourServiceImpl::Register] Service {} already exists for protocol {}", serviceName, magic_enum::enum_name(protocol)));
@@ -507,7 +508,7 @@ namespace dcclite::broker
 
 		//
 		//Not a generic query, so lookup local services
-		ServiceKey key{ qsection.m_vecLabels[numLabels - 3], protocol.value() };
+		ServiceKey key{ RName{qsection.m_vecLabels[numLabels - 3]}, protocol.value() };
 
 		std::lock_guard guard{ m_mtxMapServicesLock };
 
@@ -953,13 +954,13 @@ READ_NAME_AGAIN:
 	//
 	///////////////////////////////////////////////////////////////////////////////
 
-	BonjourService::BonjourService(const std::string &name, Broker &broker, const Project &project) :
+	BonjourService::BonjourService(RName name, Broker &broker, const Project &project) :
 		Service(name, broker, project)
 	{
 		//empty
 	}
 
-	std::unique_ptr<Service> BonjourService::Create(const std::string &name, Broker &broker, const Project &project)
+	std::unique_ptr<Service> BonjourService::Create(RName name, Broker &broker, const Project &project)
 	{
 		return std::make_unique<BonjourServiceImpl>(name, broker, project);
 	}

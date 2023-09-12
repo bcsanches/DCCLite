@@ -44,7 +44,7 @@ namespace dcclite::broker
 	class ThrottleService: public Service
 	{	
 		public:
-			ThrottleService(const std::string &name, Broker &broker, const rapidjson::Value& params, const Project& project);
+			ThrottleService(RName name, Broker &broker, const rapidjson::Value& params, const Project& project);
 		
 			~ThrottleService() override
 			{
@@ -63,7 +63,7 @@ namespace dcclite::broker
 			//
 			//
 		
-			static std::unique_ptr<Service> Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+			static std::unique_ptr<Service> Create(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
 			const char *GetTypeName() const noexcept override
 			{

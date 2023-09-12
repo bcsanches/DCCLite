@@ -23,7 +23,7 @@ namespace dcclite::broker
 		public:
 			TurnoutDecoder(
 				const DccAddress& address,
-				const std::string& name,
+				RName name,
 				IDccLite_DecoderServices &owner,
 				IDevice_DecoderServices &dev,
 				const rapidjson::Value& params
@@ -49,7 +49,7 @@ namespace dcclite::broker
 		public:
 			ServoTurnoutDecoder(
 				const DccAddress& address,
-				const std::string& name,
+				RName name,
 				IDccLite_DecoderServices &owner,
 				IDevice_DecoderServices &dev,
 				const rapidjson::Value& params
@@ -90,7 +90,7 @@ namespace dcclite::broker
 
 			void UpdateData(const std::uint8_t flags, const std::uint8_t startPos, const std::uint8_t endPos, const std::chrono::milliseconds operationTime);
 
-			static void CheckServoData(const std::uint8_t startPos, const std::uint8_t endPos, std::string_view name);
+			static void CheckServoData(const std::uint8_t startPos, const std::uint8_t endPos, std::string_view source);
 
 		private:
 			dcclite::BasicPin	m_clPin;

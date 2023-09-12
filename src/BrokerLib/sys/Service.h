@@ -80,7 +80,7 @@ namespace dcclite::broker
 	class IResettableService
 	{
 		public:
-			virtual void IResettableService_ResetItem(std::string_view name) = 0;
+			virtual void IResettableService_ResetItem(RName name) = 0;
 	};
 
 	class Service: public dcclite::FolderObject
@@ -91,16 +91,16 @@ namespace dcclite::broker
 			mutable sigslot::signal< const ObjectManagerEvent &> m_sigEvent;
 	
 		protected:
-			Service(std::string name, Broker &broker, const rapidjson::Value &params, const Project &project):
-				FolderObject(std::move(name)),			
+			Service(RName name, Broker &broker, const rapidjson::Value &params, const Project &project):
+				FolderObject{name},
 				m_rclBroker(broker),
 				m_rclProject(project)
 			{
 				//empty
 			}
 
-			Service(std::string name, Broker& broker, const Project& project) :
-				FolderObject(std::move(name)),
+			Service(RName name, Broker& broker, const Project& project) :
+				FolderObject{name},
 				m_rclBroker(broker),
 				m_rclProject(project)
 			{

@@ -52,7 +52,7 @@ namespace dcclite::broker
 			friend class TerminalServiceAcceptConnectionEvent;
 
 		public:
-			TerminalService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+			TerminalService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
 			virtual ~TerminalService();			
 

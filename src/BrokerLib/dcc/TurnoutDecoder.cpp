@@ -12,6 +12,8 @@
 
 #include <fmt/format.h>
 
+#include "FmtUtils.h"
+
 #include "IDccLiteService.h"
 #include "IDevice.h"
 
@@ -31,7 +33,7 @@ namespace dcclite::broker
 
 	ServoTurnoutDecoder::ServoTurnoutDecoder(
 		const DccAddress &address,
-		const std::string &name,
+		RName name,
 		IDccLite_DecoderServices &owner,
 		IDevice_DecoderServices &dev,
 		const rapidjson::Value &params
@@ -85,7 +87,7 @@ namespace dcclite::broker
 			}			
 		}		
 
-		this->CheckServoData(m_uStartPos, m_uEndPos, this->GetName());
+		this->CheckServoData(m_uStartPos, m_uEndPos, this->GetName().GetData());
 
 		auto operationTime = params.FindMember("operationTime");
 		m_tOperationTime = operationTime != params.MemberEnd() ? std::chrono::milliseconds{ operationTime->value.GetUint() } : m_tOperationTime;
@@ -141,18 +143,18 @@ namespace dcclite::broker
 		stream.AddIntValue("msOperationTime", static_cast<int>(m_tOperationTime.count()));
 	}
 
-	void ServoTurnoutDecoder::CheckServoData(const std::uint8_t startPos, const std::uint8_t endPos, std::string_view name)
+	void ServoTurnoutDecoder::CheckServoData(const std::uint8_t startPos, const std::uint8_t endPos, std::string_view source)
 	{
 		if (startPos > endPos)
-			throw std::logic_error(fmt::format("[ServoTurnoutDecoder::{}] [ValidateServoData] startPos must be < than endPos", name));
+			throw std::logic_error(fmt::format("[ServoTurnoutDecoder::{}] [ValidateServoData] startPos must be < than endPos", source));
 
 		if (startPos == endPos)
-			throw std::logic_error(fmt::format("[ServoTurnoutDecoder::{}] [ValidateServoData] startPos must be < than endPos", name));
+			throw std::logic_error(fmt::format("[ServoTurnoutDecoder::{}] [ValidateServoData] startPos must be < than endPos", source));
 	}
 
 	void ServoTurnoutDecoder::UpdateData(const std::uint8_t flags, const std::uint8_t startPos, const std::uint8_t endPos, const std::chrono::milliseconds operationTime)
 	{
-		CheckServoData(startPos, endPos, this->GetName());
+		CheckServoData(startPos, endPos, this->GetName().GetData());
 
 		m_fFlags = flags;
 		m_uStartPos = startPos;

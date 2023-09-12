@@ -19,15 +19,15 @@
 
 namespace dcclite::broker
 {	
-	Decoder::Decoder(const DccAddress &address, std::string name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params) :
-		Object(std::move(name)),
+	Decoder::Decoder(const DccAddress &address, RName name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params) :
+		Object{name},
 		m_iAddress(address),
 		m_rclManager(owner),
 		m_rclDevice(dev)
 	{
 		auto it = params.FindMember("location");
 		if (it != params.MemberEnd())
-			m_strLocationHint = it->value.GetString();
+			m_rnLocationHint = RName{ it->value.GetString() };
 	}
 
 	void Decoder::Serialize(dcclite::JsonOutputStream_t &stream) const
@@ -35,11 +35,11 @@ namespace dcclite::broker
 		Object::Serialize(stream);
 
 		stream.AddIntValue("address", m_iAddress.GetAddress());
-		stream.AddStringValue("deviceName", m_rclDevice.GetDeviceName());
-		stream.AddStringValue("systemName", m_rclManager.Decoder_GetSystemName());
+		stream.AddStringValue("deviceName", m_rclDevice.GetDeviceName().GetData());
+		stream.AddStringValue("systemName", m_rclManager.Decoder_GetSystemName().GetData());
 
-		if (!m_strLocationHint.empty())
-			stream.AddStringValue("locationHint", m_strLocationHint);
+		if (m_rnLocationHint)
+			stream.AddStringValue("locationHint", m_rnLocationHint.GetData());
 	}
 }
 

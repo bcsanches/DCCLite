@@ -13,6 +13,8 @@
 #include "dcc/IDccLiteService.h"
 #include "dcc/IDevice.h"
 
+#include "RName.h"
+
 namespace dcclite::broker
 {
 	class Decoder;
@@ -32,7 +34,7 @@ class NetworkDeviceDecoderServicesMockup: public dcclite::broker::INetworkDevice
 
 		}
 
-		[[nodiscard]] dcclite::broker::Decoder &FindDecoder(const std::string_view name) const override
+		[[nodiscard]] dcclite::broker::Decoder &FindDecoder(const dcclite::RName name) const override
 		{
 			throw std::exception("Not implemented: FindDecoder");
 		}
@@ -51,9 +53,9 @@ namespace dcclite::broker
 class DeviceDecoderServicesMockup : public dcclite::broker::IDevice_DecoderServices
 {
 	public:
-		std::string_view GetDeviceName() const noexcept override
+		dcclite::RName GetDeviceName() const noexcept override
 		{
-			return "mockup";
+			return dcclite::RName("mockup");
 		}
 
 		dcclite::broker::INetworkDevice_DecoderServices *TryGetINetworkDevice() noexcept override
@@ -78,13 +80,13 @@ class DecoderServicesMockup : public dcclite::broker::IDccLite_DecoderServices
 			//empty
 		}
 
-		dcclite::broker::Decoder *TryFindDecoder(std::string_view id) const override
+		dcclite::broker::Decoder *TryFindDecoder(dcclite::RName id) const override
 		{
 			return nullptr;
 		}
 
-		[[nodiscard]] std::string_view Decoder_GetSystemName() const noexcept override
+		[[nodiscard]] dcclite::RName Decoder_GetSystemName() const noexcept override
 		{
-			return "dccsystem";
+			return dcclite::RName("dccsystem");
 		}
 };

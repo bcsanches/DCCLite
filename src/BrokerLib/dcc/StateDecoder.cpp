@@ -15,7 +15,7 @@
 
 namespace dcclite::broker
 {
-	StateDecoder::StateDecoder(const DccAddress &address, std::string name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params):
+	StateDecoder::StateDecoder(const DccAddress &address, RName name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params):
 		Decoder(address, std::move(name), owner, dev, params)	
 	{	
 		//empty

@@ -17,6 +17,8 @@
 #include <fmt/format.h>
 #include <magic_enum.hpp>
 
+#include <FmtUtils.h>
+
 namespace dcclite::broker
 {
 
@@ -208,7 +210,7 @@ namespace dcclite::broker
 
 			if (pinInfo.m_pclUser)
 			{
-				pinObj.AddStringValue("decoder", pinInfo.m_pclUser->GetName());
+				pinObj.AddStringValue("decoder", pinInfo.m_pclUser->GetName().GetData());
 				pinObj.AddIntValue("decoderAddress", pinInfo.m_pclUser->GetAddress().GetAddress());
 				pinObj.AddBool("decoderBroken", pinInfo.m_pclUser->IsBroken());
 				pinObj.AddStringValue("usage", pinInfo.m_pszUsage);

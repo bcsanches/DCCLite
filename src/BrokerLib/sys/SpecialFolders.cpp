@@ -2,18 +2,21 @@
 
 namespace SpecialFolders
 {
-	const char *GetName(Folders id)
+	dcclite::RName GetName(Folders id)
 	{
+		static dcclite::RName services{ "services" };
+		static dcclite::RName cmds{ "cmds" };
+
 		switch (id)
 		{
 			case Folders::ServicesId:
-				return "services";
+				return services;
 
 			case Folders::CmdHostId:
-				return "cmds";
+				return cmds;
 
 			default:
-				return nullptr;
+				return dcclite::RName{};
 		}
 	}
 

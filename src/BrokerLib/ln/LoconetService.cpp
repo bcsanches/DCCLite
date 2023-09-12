@@ -124,7 +124,7 @@ uint8_t DefaultMsgSizes(const Opcodes opcode)
 			return 6;
 
 		default:
-			throw std::domain_error(fmt::format("[LoconetService::DefaultMsgSizes] Unknown opcode: {}", opcode).c_str());
+			throw std::domain_error(fmt::format("[LoconetService::DefaultMsgSizes] Unknown opcode: {}", magic_enum::enum_integer(opcode)));
 	}
 }
 
@@ -968,10 +968,10 @@ namespace dcclite::broker
 	class LoconetServiceImpl : public LoconetService
 	{
 		public:
-			LoconetServiceImpl(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+			LoconetServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);
 			~LoconetServiceImpl() override;			
 
-			static std::unique_ptr<Service> Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+			static std::unique_ptr<Service> Create(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
 			void Serialize(JsonOutputStream_t &stream) const override;
 
@@ -1007,7 +1007,7 @@ namespace dcclite::broker
 	};
 
 
-	LoconetServiceImpl::LoconetServiceImpl(const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
+	LoconetServiceImpl::LoconetServiceImpl(RName name, Broker &broker, const rapidjson::Value& params, const Project& project):
 		LoconetService(name, broker, params, project),
 		m_clSerialPort(params["port"].GetString()),
 		m_tThinker{ {}, THINKER_MF_LAMBDA(Think)},
@@ -1454,13 +1454,13 @@ namespace dcclite::broker
 		);
 	}
 
-	LoconetService::LoconetService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :
+	LoconetService::LoconetService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project) :
 		Service(name, broker, params, project)
 	{
 		//empty
 	}
 
-	std::unique_ptr<Service> LoconetService::Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project)
+	std::unique_ptr<Service> LoconetService::Create(RName name, Broker &broker, const rapidjson::Value &params, const Project &project)
 	{
 		return std::make_unique<LoconetServiceImpl>(name, broker, params, project);
 	}

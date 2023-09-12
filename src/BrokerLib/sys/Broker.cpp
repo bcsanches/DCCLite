@@ -23,6 +23,8 @@
 #include <Log.h>
 #include <Parser.h>
 
+#include <FmtUtils.h>
+
 #include "../dcc/DccLiteService.h"
 #include "../dcc/DccppService.h"
 
@@ -41,7 +43,7 @@
 #include "SpecialFolders.h"
 #include "ZeroconfService.h"
 
-//fucking header leak
+//win32 header leak
 #undef GetObject
 
 namespace dcclite::broker
@@ -55,7 +57,7 @@ namespace dcclite::broker
 	static std::unique_ptr<Service> CreateBrokerService(Broker &broker, const rapidjson::Value &data, const Project &project)
 	{
 		const char *className = data["class"].GetString();
-		const char *name = data["name"].GetString();
+		RName name{ data["name"].GetString() };
 
 		dcclite::Log::Info("[Broker] [CreateBrokerService] Creating DccLite Service: {}", name);
 
@@ -106,7 +108,7 @@ namespace dcclite::broker
 	}
 
 	Broker::Broker(dcclite::fs::path projectPath) :
-		m_clRoot("root"),
+		m_clRoot(RName{ "root" }),
 		m_clProject(std::move(projectPath))
 	{		
 		{
@@ -157,7 +159,7 @@ namespace dcclite::broker
 
 		auto bonjourSetting = data.FindMember("bonjourService");
 		if ((bonjourSetting != data.MemberEnd()) && (bonjourSetting->value.GetBool()))
-			m_pServices->AddChild(BonjourService::Create(BONJOUR_SERVICE_NAME, *this, m_clProject));
+			m_pServices->AddChild(BonjourService::Create(RName{ BONJOUR_SERVICE_NAME }, *this, m_clProject));
 
 		dcclite::Log::Debug("[Broker] [LoadConfig] Processing config services array entries: {}", services.Size());
 
@@ -203,7 +205,8 @@ namespace dcclite::broker
 
 		if (token == Tokens::VARIABLE_NAME)
 		{
-			if (auto *service = this->TryFindService(reqName))
+			auto name = RName::GetName(reqName);
+			if (auto *service = this->TryFindService(name))
 				return *service;
 
 			throw std::invalid_argument(fmt::format("[Broker::ResolveRequirement] Requested service {} not found", requirement));
@@ -224,7 +227,7 @@ namespace dcclite::broker
 		throw std::invalid_argument(fmt::format("[Broker::ResolveRequirement] Sybtax error parsing requirement {} ", requirement));
 	}
 
-	Service *Broker::TryFindService(std::string_view name)
+	Service *Broker::TryFindService(RName name)
 	{
 		return static_cast<Service *>(m_pServices->TryGetChild(name));
 	}

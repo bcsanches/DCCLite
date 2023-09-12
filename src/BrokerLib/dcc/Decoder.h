@@ -29,7 +29,7 @@ namespace dcclite::broker
 		public:
 			Decoder(			
 				const DccAddress &address, 
-				std::string name,
+				RName name,
 				IDccLite_DecoderServices &owner,
 				IDevice_DecoderServices &dev,
 				const rapidjson::Value &params
@@ -40,9 +40,9 @@ namespace dcclite::broker
 				return m_iAddress;
 			}
 
-			inline const std::string &GetLocationHint() const
+			inline RName GetLocationHint() const
 			{
-				return m_strLocationHint;
+				return m_rnLocationHint;
 			}		
 
 			virtual void InitAfterDeviceLoad()
@@ -65,7 +65,7 @@ namespace dcclite::broker
 		private:
 			DccAddress m_iAddress;				
 
-			std::string m_strLocationHint;		
+			RName m_rnLocationHint;
 
 		protected:
 			IDccLite_DecoderServices &m_rclManager;

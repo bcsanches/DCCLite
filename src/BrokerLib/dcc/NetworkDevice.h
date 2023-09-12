@@ -42,8 +42,8 @@ namespace dcclite::broker
 			};		
 
 		public:
-			NetworkDevice(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project);
-			NetworkDevice(std::string name, IDccLite_DeviceServices &dccService, const Project &project);
+			NetworkDevice(RName name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project);
+			NetworkDevice(RName name, IDccLite_DeviceServices &dccService, const Project &project);
 
 			NetworkDevice(const NetworkDevice &) = delete;
 			NetworkDevice(NetworkDevice &&) = delete;
@@ -61,7 +61,7 @@ namespace dcclite::broker
 
 			[[nodiscard]] uint8_t FindDecoderIndex(const Decoder &decoder) const override;
 
-			[[nodiscard]] virtual Decoder &FindDecoder(const std::string_view name) const override;
+			[[nodiscard]] virtual Decoder &FindDecoder(RName name) const override;
 
 			//
 			//IObject
@@ -103,7 +103,7 @@ namespace dcclite::broker
 			//
 			//			
 			[[nodiscard]] std::shared_ptr<NetworkTask> StartDownloadEEPromTask(NetworkTask::IObserver *observer, DownloadEEPromTaskResult_t &resultsStorage);
-			[[nodiscard]] std::shared_ptr<NetworkTask> StartServoTurnoutProgrammerTask(NetworkTask::IObserver *observer, const std::string_view servoDecoderName);
+			[[nodiscard]] std::shared_ptr<NetworkTask> StartServoTurnoutProgrammerTask(NetworkTask::IObserver *observer, RName servoDecoderName);
 
 		protected:
 			void OnUnload() override;

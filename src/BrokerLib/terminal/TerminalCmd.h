@@ -183,9 +183,9 @@ namespace dcclite::broker
 
 			virtual IObject *AddChild(std::unique_ptr<IObject> obj);
 			TerminalCmd *AddCmd(std::unique_ptr<TerminalCmd> cmd);
-			void AddAlias(std::string name, TerminalCmd &target);
+			void AddAlias(RName name, TerminalCmd &target);
 
-			TerminalCmd *TryFindCmd(std::string_view name);
+			TerminalCmd *TryFindCmd(RName name);
 
 			virtual const char *GetTypeName() const noexcept
 			{
@@ -227,7 +227,7 @@ namespace dcclite::broker
 			typedef std::variant<std::string, std::unique_ptr<TerminalCmdFiber>> CmdResult_t;
 
 		public:
-			TerminalCmd(std::string name);
+			TerminalCmd(RName name);
 
 			TerminalCmd(const TerminalCmd &) = delete;
 			TerminalCmd(TerminalCmd &&) = delete;

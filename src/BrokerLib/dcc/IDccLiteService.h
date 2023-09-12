@@ -14,6 +14,8 @@
 
 #include <rapidjson/document.h>
 
+#include <RName.h>
+
 namespace dcclite
 {
 	class Guid;
@@ -86,9 +88,9 @@ namespace dcclite::broker
 		public:
 			virtual void Decoder_OnStateChanged(Decoder& decoder) = 0;
 
-			virtual Decoder *TryFindDecoder(std::string_view id) const = 0;
+			virtual Decoder *TryFindDecoder(RName id) const = 0;
 
-			[[nodiscard]] virtual std::string_view Decoder_GetSystemName() const noexcept = 0;
+			[[nodiscard]] virtual RName Decoder_GetSystemName() const noexcept = 0;
 	};
 
 	class IDccLite_DeviceServices
@@ -98,7 +100,7 @@ namespace dcclite::broker
 				IDevice_DecoderServices &dev,
 				const std::string &className,
 				DccAddress address,
-				const std::string &name,
+				RName name,
 				const rapidjson::Value &params
 			) = 0;
 

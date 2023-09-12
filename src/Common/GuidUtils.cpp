@@ -14,7 +14,7 @@
 #include "Guid.h"
 #include "Util.h"
 
-std::string dcclite::GuidToString(const dcclite::Guid& g)
+std::string dcclite::GuidToString(const dcclite::Guid &g)
 {
 	return fmt::format("{}", g);
 }

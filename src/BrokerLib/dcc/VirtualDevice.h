@@ -18,8 +18,8 @@ namespace dcclite::broker
 	class VirtualDevice : public Device
 	{
 		public:
-			VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project);
-			VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const Project &project);			
+			VirtualDevice(RName name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project);
+			VirtualDevice(RName name, IDccLite_DeviceServices &dccService, const Project &project);			
 
 			//
 			//IObject

@@ -35,7 +35,7 @@ namespace dcclite::broker
 
 			Broker(const Broker &) = delete;
 
-			Service *TryFindService(std::string_view name);			
+			Service *TryFindService(RName name);			
 
 			inline FolderObject::FolderEnumerator GetServicesEnumerator() const 
 			{

@@ -12,13 +12,14 @@
 #include "IDccLiteService.h"
 #include "RemoteDecoder.h"
 
+#include "FmtUtils.h"
 #include "Log.h"
 #include "Packet.h"
 
 namespace dcclite::broker
 {
-	RemoteDecoder::RemoteDecoder(const DccAddress &address, std::string name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params):
-		StateDecoder(address, std::move(name), owner, dev, params)	
+	RemoteDecoder::RemoteDecoder(const DccAddress &address, RName name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params):
+		StateDecoder(address, name, owner, dev, params)	
 	{	
 		auto it = params.FindMember("broken");
 		if (it != params.MemberEnd())

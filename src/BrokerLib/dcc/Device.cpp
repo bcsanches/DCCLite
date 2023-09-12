@@ -25,10 +25,10 @@
 namespace dcclite::broker
 {
 
-	Device::Device(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project) :
-		FolderObject{ std::move(name) },
+	Device::Device(RName name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project) :
+		FolderObject{ name },
 		m_clDccService{ dccService },
-		m_strConfigFileName{ std::string(this->GetName()) + ".decoders.json" },
+		m_strConfigFileName{ std::string(this->GetName().GetData()) + ".decoders.json" },
 		m_pathConfigFile{ project.GetFilePath(m_strConfigFileName) },
 		m_rclProject{ project }
 	{
@@ -48,8 +48,8 @@ namespace dcclite::broker
 			});
 	}
 
-	Device::Device(std::string name, IDccLite_DeviceServices &dccService, const Project &project) :
-		FolderObject{ std::move(name) },
+	Device::Device(RName name, IDccLite_DeviceServices &dccService, const Project &project) :
+		FolderObject{ name },
 		m_clDccService{ dccService },
 		m_rclProject{ project },
 		m_pathConfigFile{ project.GetFilePath(m_strConfigFileName) }
@@ -91,7 +91,7 @@ namespace dcclite::broker
 		m_vecDecoders.clear();
 	}
 
-	Decoder &Device::CreateInternalDecoder(const char *className, DccAddress address, const std::string &name, const rapidjson::Value &params)
+	Decoder &Device::CreateInternalDecoder(const char *className, DccAddress address, RName name, const rapidjson::Value &params)
 	{
 		if (!this->IsInternalDecoderAllowed())
 			throw std::logic_error(fmt::format("[Device::CreateInternalDecoder] Not supported by {}", this->GetName()));
@@ -112,7 +112,7 @@ namespace dcclite::broker
 		dcclite::IObject *decShortcut;
 		try
 		{
-			decShortcut = this->AddChild(std::make_unique<dcclite::Shortcut>(std::string(decoder.GetName()), decoder));			
+			decShortcut = this->AddChild(std::make_unique<dcclite::Shortcut>(decoder.GetName(), decoder));			
 		}	
 		catch (...)
 		{
@@ -177,7 +177,7 @@ namespace dcclite::broker
 				if (strcmp(className, "IgnoreMe") == 0)
 					continue;
 
-				auto decoderName = element["name"].GetString();				
+				auto decoderName = RName{ element["name"].GetString() };
 				DccAddress address{ element["address"] };
 
 				auto &decoder = m_clDccService.Device_CreateDecoder(*this, className, address, decoderName, element);

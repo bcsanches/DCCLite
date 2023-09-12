@@ -75,7 +75,7 @@ namespace dcclite::broker
 	class DccLiteService : public Service, private IDccLite_DeviceServices, private IDccLite_DecoderServices, public EventHub::IEventTarget, public ScriptService::IScriptSupport
 	{
 		public:
-			DccLiteService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+			DccLiteService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
 			~DccLiteService() override;				
 
@@ -102,14 +102,14 @@ namespace dcclite::broker
 			//
 
 			Decoder *TryFindDecoder(const DccAddress address) const;
-			Decoder *TryFindDecoder(std::string_view id) const override;
+			Decoder *TryFindDecoder(RName name) const override;
 
 			//
 			//
 			// DEVICES management
 			//
 			//			
-			Device *TryFindDeviceByName(std::string_view name);
+			Device *TryFindDeviceByName(RName name);
 
 			//
 			// 
@@ -136,7 +136,7 @@ namespace dcclite::broker
 			void IScriptSupport_OnVMFinalize(sol::state &state) override;
 
 		private:			
-			void OnNetEvent_Hello(const dcclite::NetworkAddress &senderAddress, const std::string &deviceName, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken);
+			void OnNetEvent_Hello(const dcclite::NetworkAddress &senderAddress, RName name, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken);
 
 			void OnNetEvent_Packet(const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType);
 
@@ -166,7 +166,7 @@ namespace dcclite::broker
 				IDevice_DecoderServices &dev,
 				const std::string &className,
 				DccAddress address,
-				const std::string &name,
+				RName name,
 				const rapidjson::Value &params
 			) override;			
 
@@ -184,7 +184,7 @@ namespace dcclite::broker
 
 			void Decoder_OnStateChanged(Decoder& decoder) override;
 
-			[[nodiscard]] std::string_view Decoder_GetSystemName() const noexcept override
+			[[nodiscard]] RName Decoder_GetSystemName() const noexcept override
 			{
 				return this->GetName();
 			}

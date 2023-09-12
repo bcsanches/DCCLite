@@ -23,7 +23,7 @@ namespace dcclite::broker
 		public:
 			TurntableAutoInverterDecoder(
 				const DccAddress &address,
-				const std::string &name,
+				RName name,
 				IDccLite_DecoderServices &owner,
 				IDevice_DecoderServices &dev,
 				const rapidjson::Value &params
@@ -63,8 +63,8 @@ namespace dcclite::broker
 			void Serialize(dcclite::JsonOutputStream_t &stream) const override;
 
 		private:
-			std::string m_strSensorAName;
-			std::string m_strSensorBName;
+			RName m_rnSensorAName;
+			RName m_rnSensorBName;
 
 			dcclite::BasicPin m_arTrackAPins[2];
 			dcclite::BasicPin m_arTrackBPins[2];

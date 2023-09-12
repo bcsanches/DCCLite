@@ -13,6 +13,7 @@
 #include <string_view>
 
 #include "BasicPin.h"
+#include "RName.h"
 
 namespace dcclite::broker
 {
@@ -23,7 +24,7 @@ namespace dcclite::broker
 	class IDevice_DecoderServices
 	{
 		public:
-			virtual std::string_view GetDeviceName() const noexcept = 0;		
+			virtual RName GetDeviceName() const noexcept = 0;		
 
 			virtual INetworkDevice_DecoderServices *TryGetINetworkDevice() noexcept
 			{
@@ -39,7 +40,7 @@ namespace dcclite::broker
 			virtual void Decoder_RegisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage) = 0;
 			virtual void Decoder_UnregisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin) = 0;			
 
-			[[nodiscard]] virtual Decoder &FindDecoder(const std::string_view name) const = 0;
+			[[nodiscard]] virtual Decoder &FindDecoder(RName name) const = 0;
 			[[nodiscard]] virtual uint8_t FindDecoderIndex(const Decoder &decoder) const = 0;
 	};
 }

@@ -13,6 +13,7 @@
 
 #include <fmt/format.h>
 
+#include "FmtUtils.h"
 #include "Util.h"
 
 namespace dcclite
@@ -71,7 +72,7 @@ namespace dcclite
 		{
 			m_pParent->GetPath_r(path);
 
-			path.append(this->GetName());
+			path.append(this->GetNameData());
 		}				
 		else
 		{
@@ -81,7 +82,7 @@ namespace dcclite
 
 	void IObject::SerializeIdentification(JsonOutputStream_t &stream) const
 	{
-		stream.AddStringValue("name", this->GetName());
+		stream.AddStringValue("name", this->GetNameData());
 		stream.AddPointerValue("internalId", this);
 		stream.AddStringValue("path", this->GetPath().string());
 	}
@@ -96,13 +97,13 @@ namespace dcclite
 
 		if (m_pParent)
 		{
-			stream.AddStringValue("parentName", m_pParent->GetName());
+			stream.AddStringValue("parentName", m_pParent->GetNameData());
 			stream.AddPointerValue("parentInternalId", m_pParent);
 		}			
 	}
 
-	Object::Object(std::string name) :
-		IObject(std::move(name))		
+	Object::Object(RName name) :
+		IObject(name)		
 	{
 		//empty
 	}
@@ -115,8 +116,8 @@ namespace dcclite
 		stream.AddStringValue("targetClassName", m_rTarget.GetTypeName());
 	}
 
-	FolderObject::FolderObject(std::string name):
-		IObject(std::move(name))
+	FolderObject::FolderObject(RName name):
+		IObject(name)
 	{
 		//empty
 	}
@@ -137,20 +138,20 @@ namespace dcclite
 
 		auto ptr = obj.get();
 
-		m_mapObjects.insert(it, std::pair<std::string_view, std::unique_ptr<IObject>>(obj->GetName(), std::move(obj)));
+		m_mapObjects.insert(it, std::pair<RName, std::unique_ptr<IObject>>(obj->GetName(), std::move(obj)));
 		ptr->m_pParent = this;
 
 		return ptr;
 	}
 
-	IObject *FolderObject::TryGetChild(std::string_view name)
+	IObject *FolderObject::TryGetChild(RName name)
 	{
 		auto it = m_mapObjects.find(name);		
 
 		return it == m_mapObjects.end() ? nullptr : it->second.get();
 	}
 
-	IObject *FolderObject::TryResolveChild(std::string_view name)
+	IObject *FolderObject::TryResolveChild(RName name)
 	{
 		if (auto *obj = this->TryGetChild(name))
 			return (obj->IsShortcut()) ? static_cast<Shortcut*>(obj)->TryResolve() : obj;
@@ -183,7 +184,8 @@ namespace dcclite
 			{
 				auto *folder = static_cast<FolderObject *>(currentNode);				
 
-				currentNode = folder->TryResolveChild(path);
+				//FIXME: optmize
+				currentNode = folder->TryResolveChild(RName{ path });
 
 				if (!currentNode)
 					return nullptr;
@@ -202,7 +204,7 @@ namespace dcclite
 		m_mapObjects.clear();
 	}
 
-	std::unique_ptr<IObject> FolderObject::RemoveChild(std::string_view name) 
+	std::unique_ptr<IObject> FolderObject::RemoveChild(RName name) 
 	{
 		auto it = m_mapObjects.find(name);
 		if (it == m_mapObjects.end())

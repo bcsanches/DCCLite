@@ -12,6 +12,8 @@
 
 #include <Log.h>
 
+#include "FmtUtils.h"
+
 #include "IDccLiteService.h"
 #include "OutputDecoder.h"
 
@@ -29,7 +31,7 @@ namespace dcclite::broker
 
 	SignalDecoder::SignalDecoder(
 		const DccAddress &address,
-		const std::string &decoderName,
+		RName decoderName,
 		IDccLite_DecoderServices &owner,
 		IDevice_DecoderServices &dev,
 		const rapidjson::Value &params
@@ -88,13 +90,13 @@ namespace dcclite::broker
 			{
 				for (auto &it : onLights->value.GetArray())
 				{
-					auto headIt = m_mapHeads.find(it.GetString());
+					auto headIt = m_mapHeads.find(RName{ it.GetString() });
 					if (headIt == m_mapHeads.end())
 					{
 						throw std::invalid_argument(fmt::format("[SignalDecoder::{}] [SignalDecoder] Error: aspect {} on \"on\" array not found on heads defintion", this->GetName(), it.GetString()));
 					}
 
-					newAspect.m_vecOnHeads.push_back(headIt->second);
+					newAspect.m_vecOnHeads.push_back(RName{ headIt->second });
 				}
 			}
 
@@ -103,18 +105,18 @@ namespace dcclite::broker
 			{
 				for (auto &it : offLights->value.GetArray())
 				{
-					auto headIt = m_mapHeads.find(it.GetString());
+					auto headIt = m_mapHeads.find(RName{ it.GetString() });
 					if (headIt == m_mapHeads.end())
 					{
 						throw std::invalid_argument(fmt::format("[SignalDecoder::{}] [SignalDecoder] Error: aspect {} on \"off\" array not found on heads defintion", this->GetName(), it.GetString()));
 					}
 
-					if (std::any_of(newAspect.m_vecOnHeads.begin(), newAspect.m_vecOnHeads.end(), [&headIt](const std::string &onAspectName) { return onAspectName.compare(headIt->second) == 0; }))
+					if (std::any_of(newAspect.m_vecOnHeads.begin(), newAspect.m_vecOnHeads.end(), [&headIt](RName onAspectName) { return onAspectName == RName{ headIt->second }; }))
 					{
 						throw std::invalid_argument(fmt::format("[SignalDecoder::{}] [SignalDecoder] Error: \"off\" head {} also defined on the \"on\" table", this->GetName(), it.GetString()));
 					}
 
-					newAspect.m_vecOffHeads.push_back(headIt->second);
+					newAspect.m_vecOffHeads.push_back(RName{ headIt->second });
 				}
 			}
 			else
@@ -123,12 +125,12 @@ namespace dcclite::broker
 				for (auto &headIt : m_mapHeads)
 				{
 					//skip existing heads
-					if (std::any_of(newAspect.m_vecOnHeads.begin(), newAspect.m_vecOnHeads.end(), [headIt](const std::string &onAspectName) { return onAspectName.compare(headIt.second) == 0; }))
+					if (std::any_of(newAspect.m_vecOnHeads.begin(), newAspect.m_vecOnHeads.end(), [headIt](RName onAspectName) { return onAspectName == RName{ headIt.second }; }))
 					{
 						continue;
 					}
 
-					newAspect.m_vecOffHeads.push_back(headIt.second);
+					newAspect.m_vecOffHeads.push_back(RName{ headIt.second });
 				}
 			}
 
@@ -162,7 +164,7 @@ namespace dcclite::broker
 			aspectsData.AddString(dcclite::ConvertAspectToName(item.m_eAspect));
 	}
 
-	void SignalDecoder::ForEachHead(const std::vector<std::string> &heads, const dcclite::SignalAspects aspect, std::function<bool(OutputDecoder &)> proc) const
+	void SignalDecoder::ForEachHead(const std::vector<RName> &heads, const dcclite::SignalAspects aspect, std::function<bool(OutputDecoder &)> proc) const
 	{
 		for (const auto &head : heads)
 		{			
@@ -257,7 +259,7 @@ namespace dcclite::broker
 	{
 		m_rclOwner.ForEachHead(m_rclOwner.m_vecAspects[m_rclOwner.m_uCurrentAspectIndex].m_vecOffHeads, m_rclOwner.m_eCurrentAspect, [this](OutputDecoder &dec)
 			{
-				if (dec.SetState(dcclite::DecoderStates::INACTIVE, m_rclOwner.GetName().data()))
+				if (dec.SetState(dcclite::DecoderStates::INACTIVE, m_rclOwner.GetName().GetData().data()))
 				{
 					m_lstConnections.emplace_back<sigslot::scoped_connection>(
 						dec.m_sigRemoteStateSync.connect(&State_WaitTurnOff::OnDecoderStateSync, this)
@@ -321,7 +323,7 @@ namespace dcclite::broker
 	{
 		m_rclOwner.ForEachHead(m_rclOwner.m_vecAspects[m_rclOwner.m_uCurrentAspectIndex].m_vecOnHeads, m_rclOwner.m_eCurrentAspect, [this](OutputDecoder &dec)
 			{
-				dec.Activate(m_rclOwner.GetName().data());
+				dec.Activate(m_rclOwner.GetName().GetData().data());
 
 				return true;
 			}
@@ -353,7 +355,7 @@ namespace dcclite::broker
 
 		m_rclOwner.ForEachHead(m_rclOwner.m_vecAspects[m_rclOwner.m_uCurrentAspectIndex].m_vecOnHeads, m_rclOwner.m_eCurrentAspect, [state, this](OutputDecoder &dec)
 			{
-				dec.SetState(state, m_rclOwner.GetName().data());
+				dec.SetState(state, m_rclOwner.GetName().GetData().data());
 
 				return true;
 			}

@@ -33,7 +33,7 @@ namespace dcclite::broker
 		public:
 			RemoteDecoder(			
 				const DccAddress &address, 
-				std::string name,
+				RName name,
 				IDccLite_DecoderServices &owner,
 				IDevice_DecoderServices &dev,
 				const rapidjson::Value &params

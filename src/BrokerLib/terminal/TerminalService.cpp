@@ -29,6 +29,8 @@
 
 #include <NetMessenger.h>
 
+#include "FmtUtils.h"
+
 #include "../dcc/DccLiteService.h"
 #include "../dcc/NetworkDevice.h"
 #include "../dcc/OutputDecoder.h"
@@ -132,8 +134,8 @@ namespace dcclite::broker
 	class GetChildItemCmd : public TerminalCmd
 	{
 		public:
-			explicit GetChildItemCmd(std::string name = "Get-ChildItem"):
-				TerminalCmd(std::move(name))
+			explicit GetChildItemCmd(RName name = RName{ "Get-ChildItem" }) :
+				TerminalCmd(name)
 			{
 				//empty
 			}
@@ -188,8 +190,8 @@ namespace dcclite::broker
 	class GetItemCmd: public TerminalCmd
 	{
 		public:
-			explicit GetItemCmd(std::string name = "Get-Item"):
-				TerminalCmd(std::move(name))
+			explicit GetItemCmd(RName name = RName{ "Get-Item" }) :
+				TerminalCmd(name)
 			{
 				//empty
 			}
@@ -231,8 +233,8 @@ namespace dcclite::broker
 	class SetLocationCmd : public TerminalCmd
 	{
 		public:
-			explicit SetLocationCmd(std::string name = "Set-Location") :
-				TerminalCmd(std::move(name))
+			explicit SetLocationCmd(RName name = RName{ "Set-Location" }) :
+				TerminalCmd(name)
 			{
 				//empty
 			}
@@ -284,8 +286,8 @@ namespace dcclite::broker
 	class GetCommandCmd : public TerminalCmd
 	{
 		public:
-			explicit GetCommandCmd(std::string name = "Get-Command") :
-				TerminalCmd(std::move(name))
+			explicit GetCommandCmd(RName name = RName{ "Get-Command" }) :
+				TerminalCmd(name)
 			{
 				//empty
 			}
@@ -321,8 +323,8 @@ namespace dcclite::broker
 	class ServiceCmdBase : public TerminalCmd
 	{
 		protected:
-			explicit ServiceCmdBase(std::string name) :
-				TerminalCmd(std::move(name))
+			explicit ServiceCmdBase(RName name) :
+				TerminalCmd(name)
 			{
 				//empty
 			}
@@ -354,8 +356,8 @@ namespace dcclite::broker
 	class ResetCmd : public ServiceCmdBase
 	{
 		public:
-			explicit ResetCmd(std::string name = "Reset") :
-				ServiceCmdBase(std::move(name))
+			explicit ResetCmd(RName name = RName{ "Reset" }) :
+				ServiceCmdBase(name)
 			{
 				//empty
 			}
@@ -369,7 +371,7 @@ namespace dcclite::broker
 				}
 
 				auto serviceName = paramsIt->value[0].GetString();
-				auto itemName = paramsIt->value[1].GetString();
+				auto itemName = RName::GetName(paramsIt->value[1].GetString());
 
 				auto &ireset = this->GetService<IResettableService>(context, id, serviceName);
 
@@ -388,8 +390,8 @@ namespace dcclite::broker
 	class DccLiteCmdBase : public ServiceCmdBase
 	{
 		protected:
-			explicit DccLiteCmdBase(std::string name) :
-				ServiceCmdBase(std::move(name))
+			explicit DccLiteCmdBase(RName name) :
+				ServiceCmdBase(name)
 			{
 				//empty
 			}
@@ -404,13 +406,13 @@ namespace dcclite::broker
 	class DecoderCmdBase : public DccLiteCmdBase
 	{
 		protected:
-			explicit DecoderCmdBase(std::string name) :
-				DccLiteCmdBase(std::move(name))
+			explicit DecoderCmdBase(RName name) :
+				DccLiteCmdBase(name)
 			{
 				//empty
 			}
 
-			std::tuple<Decoder *, const char *, const char *> FindDecoder(const TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
+			std::tuple<Decoder *, const char *, RName> FindDecoder(const TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
 			{
 				auto paramsIt = request.FindMember("params");
 				if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() < 2))
@@ -419,7 +421,7 @@ namespace dcclite::broker
 				}
 
 				auto dccSystemName = paramsIt->value[0].GetString();
-				auto decoderId = paramsIt->value[1].GetString();
+				auto decoderId = RName::GetName(paramsIt->value[1].GetString());
 
 				auto &service = this->GetDccLiteService(context, id, dccSystemName);
 
@@ -449,8 +451,8 @@ namespace dcclite::broker
 	class ActivateItemCmd : public DecoderCmdBase
 	{
 		public:
-			explicit ActivateItemCmd(std::string name = "Activate-Item") :
-				DecoderCmdBase(std::move(name))
+			explicit ActivateItemCmd(RName name = RName{ "Activate-Item" }) :
+				DecoderCmdBase(name)
 			{
 				//empty
 			}
@@ -473,8 +475,8 @@ namespace dcclite::broker
 	class DeactivateItemCmd : public DecoderCmdBase
 	{
 		public:
-			explicit DeactivateItemCmd(std::string name = "Deactivate-Item") :
-				DecoderCmdBase(std::move(name))
+			explicit DeactivateItemCmd(RName name = RName{ "Deactivate-Item" }) :
+				DecoderCmdBase(name)
 			{
 				//empty
 			}
@@ -497,8 +499,8 @@ namespace dcclite::broker
 	class FlipItemCmd : public DecoderCmdBase
 	{
 		public:
-			explicit FlipItemCmd(std::string name = "Flip-Item") :
-				DecoderCmdBase(std::move(name))
+			explicit FlipItemCmd(RName name = RName{ "Flip-Item" }) :
+				DecoderCmdBase(name)
 			{
 				//empty
 			}
@@ -521,8 +523,8 @@ namespace dcclite::broker
 	class SetAspectCmd : public DecoderCmdBase
 	{
 		public:
-			explicit SetAspectCmd(std::string name = "Set-Aspect") :
-				DecoderCmdBase(std::move(name))
+			explicit SetAspectCmd(RName name = RName{ "Set-Aspect" }) :
+				DecoderCmdBase(name)
 			{
 				//empty
 			}
@@ -550,7 +552,7 @@ namespace dcclite::broker
 					throw TerminalCmdException(fmt::format("Invalid aspect name {}", aspectName), id);
 				}
 
-				signalDecoder->SetAspect(aspect.value(), this->GetName().data());		
+				signalDecoder->SetAspect(aspect.value(), this->GetName().GetData().data());
 
 				return MakeRpcResultMessage(id, [aspectName](Result_t &results)
 					{
@@ -578,7 +580,7 @@ namespace dcclite::broker
 				if (!m_spTask)
 					throw TerminalCmdException("No task provided for ReadEEPromFiber", id);
 				
-				std::string fileName{ device.GetName() };
+				std::string fileName{ device.GetName().GetData() };
 				fileName.append(".rom");
 				
 				m_pathRomFileName = device.GetProject().GetAppFilePath(fileName);				
@@ -683,8 +685,8 @@ namespace dcclite::broker
 	class ReadEEPromCmd : public DccLiteCmdBase
 	{
 		public:
-			explicit ReadEEPromCmd(std::string name = "Read-EEProm"):
-				DccLiteCmdBase(std::move(name))
+			explicit ReadEEPromCmd(RName name = RName{ "Read-EEProm" }) :
+				DccLiteCmdBase(name)
 			{
 				//empty
 			}
@@ -698,7 +700,7 @@ namespace dcclite::broker
 				}				
 
 				auto systemName = paramsIt->value[0].GetString();
-				auto deviceName = paramsIt->value[1].GetString();
+				auto deviceName{ RName::GetName(paramsIt->value[1].GetString()) };
 
 				auto &service = this->GetDccLiteService(context, id, systemName);
 
@@ -727,8 +729,8 @@ namespace dcclite::broker
 	class StartServoProgrammerCmd: public DccLiteCmdBase
 	{
 		public:
-			explicit StartServoProgrammerCmd(std::string name = "Start-ServoProgrammer"):
-				DccLiteCmdBase(std::move(name))
+			explicit StartServoProgrammerCmd(RName name = RName{ "Start-ServoProgrammer" }) :
+				DccLiteCmdBase(name)
 			{
 				//empty
 			}
@@ -742,8 +744,8 @@ namespace dcclite::broker
 				}
 
 				auto systemName = paramsIt->value[0].GetString();
-				auto deviceName = paramsIt->value[1].GetString();
-				auto decoderName = paramsIt->value[2].GetString();
+				auto deviceName{ RName::GetName(paramsIt->value[1].GetString()) };
+				auto decoderName{ RName::GetName(paramsIt->value[2].GetString()) };
 
 				auto &service = this->GetDccLiteService(context, id, systemName);
 
@@ -779,8 +781,8 @@ namespace dcclite::broker
 	class ServoProgrammerBaseCmd: public DccLiteCmdBase
 	{
 		protected:
-			explicit ServoProgrammerBaseCmd(std::string name):
-				DccLiteCmdBase(std::move(name))
+			explicit ServoProgrammerBaseCmd(RName name):
+				DccLiteCmdBase(name)
 			{
 				//empty
 			}
@@ -828,8 +830,8 @@ namespace dcclite::broker
 	class StopServoProgrammerCmd: public ServoProgrammerBaseCmd
 	{
 		public:
-			explicit StopServoProgrammerCmd(std::string name = "Stop-ServoProgrammer"):
-				ServoProgrammerBaseCmd(std::move(name))
+			explicit StopServoProgrammerCmd(RName name = RName{ "Stop-ServoProgrammer" }) :
+				ServoProgrammerBaseCmd(name)
 			{
 				//empty
 			}			
@@ -881,8 +883,8 @@ namespace dcclite::broker
 			const static Action g_Actions[];
 
 		public:
-			explicit EditServoProgrammerCmd(std::string name = "Edit-ServoProgrammer"):
-				ServoProgrammerBaseCmd(std::move(name))
+			explicit EditServoProgrammerCmd(RName name = RName{ "Edit-ServoProgrammer" }) :
+				ServoProgrammerBaseCmd(name)
 			{
 				//empty
 			}
@@ -981,8 +983,8 @@ namespace dcclite::broker
 	class DeployServoProgrammerCmd: public ServoProgrammerBaseCmd
 	{
 		public:
-			explicit DeployServoProgrammerCmd(std::string name = "Deploy-ServoProgrammer"):
-				ServoProgrammerBaseCmd(std::move(name))
+			explicit DeployServoProgrammerCmd(RName name = RName{ "Deploy-ServoProgrammer" }) :
+				ServoProgrammerBaseCmd(name)
 			{
 				//empty
 			}
@@ -1299,7 +1301,7 @@ namespace dcclite::broker
 				throw TerminalCmdException(fmt::format("Invalid method name in msg: {}", msg), -1);
 			}
 
-			const auto methodName = methodKey->value.GetString();
+			const auto methodName = RName::GetName(methodKey->value.GetString());
 
 			auto idKey = doc.FindMember("id");
 			if ((idKey == doc.MemberEnd()) || (!idKey->value.IsInt()))
@@ -1417,7 +1419,7 @@ namespace dcclite::broker
 	//
 	//
 
-	TerminalService::TerminalService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :
+	TerminalService::TerminalService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project) :
 		Service(name, broker, params, project)		
 	{	
 		auto cmdHost = broker.GetTerminalCmdHost();
@@ -1426,8 +1428,8 @@ namespace dcclite::broker
 
 		{
 			auto getChildItemCmd = cmdHost->AddCmd(std::make_unique<GetChildItemCmd>());
-			cmdHost->AddAlias("dir", *getChildItemCmd);
-			cmdHost->AddAlias("ls", *getChildItemCmd);
+			cmdHost->AddAlias(RName{ "dir" }, *getChildItemCmd);
+			cmdHost->AddAlias(RName{ "ls" }, *getChildItemCmd);
 		}
 
 		{
@@ -1436,12 +1438,12 @@ namespace dcclite::broker
 
 		{
 			auto setLocationCmd = cmdHost->AddCmd(std::make_unique<SetLocationCmd>());
-			cmdHost->AddAlias("cd", *setLocationCmd);
+			cmdHost->AddAlias(RName{ "cd" }, *setLocationCmd);
 		}	
 
 		{
 			auto getCommandCmd = cmdHost->AddCmd(std::make_unique<GetCommandCmd>());
-			cmdHost->AddAlias("gcm", *getCommandCmd);
+			cmdHost->AddAlias(RName{ "gcm" }, *getCommandCmd);
 		}	
 
 		{
@@ -1480,7 +1482,7 @@ namespace dcclite::broker
 		m_thListenThread = std::thread{ [port, this] {this->ListenThreadProc(port); } };		
 		dcclite::SetThreadName(m_thListenThread, "TerminalService::ListenThread");
 
-		if(auto bonjourService = static_cast<BonjourService *>(m_rclBroker.TryFindService(BONJOUR_SERVICE_NAME)))
+		if (auto bonjourService = static_cast<BonjourService *>(m_rclBroker.TryFindService(RName{ BONJOUR_SERVICE_NAME })))
 			bonjourService->Register("terminal", "dcclite", NetworkProtocol::TCP, port, 36);
 
 		ZeroconfService::Register(this->GetTypeName(), port);

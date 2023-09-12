@@ -32,8 +32,8 @@ namespace dcclite::broker
 	class Device : public dcclite::FolderObject, IDevice_DecoderServices
 	{
 		public:
-			Device(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project);
-			Device(std::string name, IDccLite_DeviceServices &dccService, const Project &project);	
+			Device(RName name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project);
+			Device(RName name, IDccLite_DeviceServices &dccService, const Project &project);	
 
 			virtual ~Device();			
 
@@ -42,7 +42,7 @@ namespace dcclite::broker
 			//
 			//
 
-			std::string_view GetDeviceName() const noexcept override
+			RName GetDeviceName() const noexcept override
 			{
 				return this->GetName();
 			}
@@ -52,7 +52,7 @@ namespace dcclite::broker
 				return m_rclProject;
 			}
 
-			Decoder &CreateInternalDecoder(const char *className, DccAddress address, const std::string &name, const rapidjson::Value &params);
+			Decoder &CreateInternalDecoder(const char *className, DccAddress address, RName name, const rapidjson::Value &params);
 
 		protected:
 			void Load();

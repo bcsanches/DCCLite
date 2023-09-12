@@ -18,6 +18,8 @@ add_library(
         NmraUtil.h
         Object.cpp
         Object.h
+	RName.cpp
+	RName.h
         Sha1.cpp
         PathUtils.cpp
         PathUtils.h	

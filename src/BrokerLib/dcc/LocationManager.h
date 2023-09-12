@@ -32,7 +32,7 @@ namespace dcclite::broker
 	class LocationManager: public dcclite::FolderObject
 	{	
 		public:
-			LocationManager(std::string name, const rapidjson::Value& params);
+			LocationManager(RName name, const rapidjson::Value& params);
 			~LocationManager() override
 			{
 				//empty

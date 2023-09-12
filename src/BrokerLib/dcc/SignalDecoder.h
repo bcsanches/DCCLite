@@ -57,7 +57,7 @@ namespace dcclite::broker
 		public:
 			SignalDecoder(			
 				const DccAddress &address,
-				const std::string &name,
+				RName name,
 				IDccLite_DecoderServices &owner,
 				IDevice_DecoderServices &dev,
 				const rapidjson::Value &params
@@ -84,7 +84,7 @@ namespace dcclite::broker
 			void SetAspect(const dcclite::SignalAspects aspect, const char *requester);			
 
 		private:
-			void ForEachHead(const std::vector<std::string> &heads, const dcclite::SignalAspects aspect, std::function<bool(OutputDecoder &)> proc) const;
+			void ForEachHead(const std::vector<RName> &heads, const dcclite::SignalAspects aspect, std::function<bool(OutputDecoder &)> proc) const;
 
 			void ApplyAspect(const dcclite::SignalAspects aspect, const unsigned aspectIndex);
 
@@ -93,8 +93,8 @@ namespace dcclite::broker
 			{			
 				dcclite::SignalAspects m_eAspect;
 
-				std::vector<std::string> m_vecOnHeads;
-				std::vector<std::string> m_vecOffHeads;
+				std::vector<RName> m_vecOnHeads;
+				std::vector<RName> m_vecOffHeads;
 
 				bool m_Flash = false;
 			};
@@ -155,7 +155,7 @@ namespace dcclite::broker
 			std::variant<std::monostate, State_Flash, State_WaitTurnOff> m_vState;			
 
 			//Heads definitions, std::map key is the head "user name" and std::map value is the decoder name
-			std::map<std::string, std::string> m_mapHeads;
+			std::map<dcclite::RName, dcclite::RName> m_mapHeads;
 
 			//User defined aspects
 			std::vector<Aspect> m_vecAspects;

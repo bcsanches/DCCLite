@@ -67,6 +67,8 @@ function configure_sections()
     local sl_bp_main_d04 = dcclite.dcc0.SL_BP_MAIN_D04;
     local sl_bp_main_d05 = dcclite.dcc0.SL_BP_MAIN_D05;
 
+    log_trace("[SoledadeBarraMonitor] section 01 init")
+
     section01 = Section:new({
         name = "sl_bp_main_s01",
         start_sensor = sl_bp_main_d01,
@@ -75,6 +77,8 @@ function configure_sections()
         address = 1691
     })
 
+    log_trace("[SoledadeBarraMonitor] section 02 init")
+
     section02 = Section:new({
         name = "sl_bp_main_s02",
         start_sensor = sl_bp_main_d02,
@@ -82,6 +86,8 @@ function configure_sections()
         callback = on_section02_state_change,
         address = 1692
     })
+
+    log_trace("[SoledadeBarraMonitor] section 03 init")
 
     section03 = TSection:new({
         name = "sl_bp_main_s03",
@@ -92,6 +98,8 @@ function configure_sections()
         callback = on_tsection03_state_change,    
         address = 1693
     })
+
+    log_trace("[SoledadeBarraMonitor] configure_sections OK")
 end
 
 function on_hlx_quad_inverter_state_change(quad_inverter)
@@ -114,7 +122,11 @@ function on_sl_bp_d01_reset_button_state_change(turnout)
     section01:reset()
 end
 
+log_trace("SL - BP - config sections");
+
 configure_sections()
+
+log_trace("SL - BP - config sections OK");
 
 hlx_quad_inverter:on_state_change(on_hlx_quad_inverter_state_change)
 dcclite.dcc0.SL_BP_ResetButton:on_state_change(on_sl_bp_d01_reset_button_state_change)

@@ -12,6 +12,7 @@
 
 #include <magic_enum.hpp>
 
+#include <FmtUtils.h>
 #include <Log.h>
 
 #include "RemoteDecoder.h"
@@ -36,7 +37,7 @@ class DecoderProxy
 		DecoderProxy(dcclite::broker::Decoder &decoder, dcclite::broker::Service &dccLiteService) :
 			m_wpDecoder{decoder, dccLiteService}			
 		{			
-			dcclite::Log::Trace("[ScriptService] [DecoderProxy] [{}]: Created.", this->GetName());
+			dcclite::Log::Trace("[ScriptService] [DecoderProxy] [{}]: Created.", decoder.GetName());
 
 			m_slotDecoderCreatedConnection = m_wpDecoder.m_sigDecoderCreated.connect(&DecoderProxy::OnDecoderCreated, this);
 			m_slotDecoderDestroyConnection = m_wpDecoder.m_sigDecoderDestroy.connect(&DecoderProxy::OnDecoderDestroy, this);
@@ -57,7 +58,7 @@ class DecoderProxy
 			if (!m_wpDecoder.TryGetDecoder())
 				throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::GetName] [{}]: Decoder was destroyed, did you reload the config without it?", m_wpDecoder.GetAddress()));
 
-			return this->GetDecoder().GetName();
+			return this->GetDecoder().GetName().GetData();
 		}
 
 		inline bool IsActive() const
@@ -198,12 +199,12 @@ void DecoderProxy::OnDecoderCreated(dcclite::broker::Decoder &decoder)
 		OnRemoteDecoderStateSync(*this->DynamicDecoderCast<dcclite::broker::RemoteDecoder>());
 	}
 
-	dcclite::Log::Trace("[ScriptService] [DecoderProxy::OnObjectManagerEvent] [{}]: Decoder recreated", this->GetName());
+	dcclite::Log::Trace("[ScriptService] [DecoderProxy::OnObjectManagerEvent] [{}]: Decoder recreated", decoder.GetName());
 }
 
 void DecoderProxy::OnDecoderDestroy(dcclite::broker::Decoder &decoder)
 {
-	dcclite::Log::Trace("[ScriptService] [DecoderProxy::OnObjectManagerEvent] [{}]: Decoder destroyed", this->GetName());
+	dcclite::Log::Trace("[ScriptService] [DecoderProxy::OnObjectManagerEvent] [{}]: Decoder destroyed", decoder.GetName());
 
 	m_slotRemoteDecoderStateSyncConnection.disconnect();
 }
@@ -246,7 +247,7 @@ class DccLiteProxy
 
 DecoderProxy *DccLiteProxy::OnIndexByName(std::string_view key, sol::this_state L)
 {
-	const auto decoder = this->m_rclService.TryFindDecoder(key);
+	const auto decoder = this->m_rclService.TryFindDecoder(dcclite::RName{ key });
 
 	if (!decoder)
 	{
@@ -300,7 +301,7 @@ namespace dcclite::broker
 {
 	void DccLiteService::IScriptSupport_RegisterProxy(sol::table &table)
 	{
-		table[this->GetName()] = DccLiteProxy{ *this };
+		table[this->GetName().GetData()] = DccLiteProxy{*this};
 	}
 
 	void DccLiteService::IScriptSupport_OnVMInit(sol::state &state)

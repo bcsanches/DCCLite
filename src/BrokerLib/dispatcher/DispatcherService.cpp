@@ -16,6 +16,8 @@
 
 #include <Log.h>
 
+#include "FmtUtils.h"
+
 #include "../sys/Broker.h"
 #include "../sys/ScriptService.h"
 #include "../dcc/DccLiteService.h"
@@ -27,7 +29,7 @@ namespace dcclite::broker
 	class BaseSectionWrapper: public IObject
 	{
 		public:
-			BaseSectionWrapper(std::string name, sol::table obj, VirtualSensorDecoder &sensor) :
+			BaseSectionWrapper(RName name, sol::table obj, VirtualSensorDecoder &sensor) :
 				IObject(name),
 				m_clObject{ obj },
 				m_rclSensor{sensor}
@@ -39,7 +41,7 @@ namespace dcclite::broker
 			{
 				IObject::Serialize(stream);
 
-				stream.AddStringValue("systemName", this->GetParent()->GetParent()->GetName());
+				stream.AddStringValue("systemName", this->GetParent()->GetParent()->GetNameData());
 				stream.AddIntValue("state", m_clObject["state"]);
 			}
 
@@ -63,7 +65,7 @@ namespace dcclite::broker
 	class SectionWrapper: public BaseSectionWrapper
 	{
 		public:
-			SectionWrapper(std::string name, sol::table obj, VirtualSensorDecoder &sensor) :
+			SectionWrapper(RName name, sol::table obj, VirtualSensorDecoder &sensor) :
 				BaseSectionWrapper(name, obj, sensor)
 			{
 				//empty
@@ -78,7 +80,7 @@ namespace dcclite::broker
 	class TSectionWrapper : public BaseSectionWrapper
 	{
 		public:
-			TSectionWrapper(std::string name, sol::table obj, VirtualSensorDecoder &sensor) :
+			TSectionWrapper(RName name, sol::table obj, VirtualSensorDecoder &sensor) :
 				BaseSectionWrapper(name, obj, sensor)
 			{
 				//empty
@@ -106,12 +108,12 @@ namespace dcclite::broker
 	class DispatcherServiceImpl : public DispatcherService, public ScriptService::IScriptSupport, public IResettableService
 	{
 		public:
-			DispatcherServiceImpl(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+			DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);
 			~DispatcherServiceImpl() override;
 
 			void Serialize(JsonOutputStream_t &stream) const override;		
 
-			void IResettableService_ResetItem(std::string_view name) override;
+			void IResettableService_ResetItem(RName name) override;
 
 		private:			
 			void RegisterSection(std::string_view name, sol::table obj);
@@ -138,10 +140,10 @@ namespace dcclite::broker
 			Device *m_pclDevice = nullptr;
 	};	
 
-	DispatcherServiceImpl::DispatcherServiceImpl(const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
+	DispatcherServiceImpl::DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value& params, const Project& project):
 		DispatcherService(name, broker, params, project),
 		m_rclDccLite{ static_cast<DccLiteService &>(broker.ResolveRequirement(params["requires"].GetString())) },
-		m_pSections{ static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>("sections"))) }
+		m_pSections{ static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{"sections"}))) }
 	{				
 		dcclite::Log::Info("[DispatcherServiceImpl] Init");		
 
@@ -151,7 +153,7 @@ namespace dcclite::broker
 			throw std::invalid_argument(fmt::format("[DispatcherServiceImpl::{}] device name not set, sensors will not be created", this->GetName()));
 		}
 
-		m_pclDevice = m_rclDccLite.TryFindDeviceByName(it->value.GetString());
+		m_pclDevice = m_rclDccLite.TryFindDeviceByName(RName::GetName(it->value.GetString()));
 		if (!m_pclDevice)
 		{
 			throw std::invalid_argument(fmt::format("[DispatcherServiceImpl::{}] device {} not found", this->GetName(), it->value.GetString()));
@@ -196,7 +198,7 @@ namespace dcclite::broker
 
 	void DispatcherServiceImpl::IScriptSupport_RegisterProxy(sol::table &table)
 	{
-		table[this->GetName()] = std::ref(*this);
+		table[this->GetName().GetData()] = std::ref(*this);
 	}
 
 	void DispatcherServiceImpl::RegisterTSection(std::string_view name, sol::table obj)
@@ -204,7 +206,7 @@ namespace dcclite::broker
 		auto &sensor = this->CreateSectionSensor(obj);
 
 #if 1
-		auto wrapper = static_cast<TSectionWrapper *>(m_pSections->AddChild(std::make_unique<TSectionWrapper>(std::string{ name }, obj, sensor)));
+		auto wrapper = static_cast<TSectionWrapper *>(m_pSections->AddChild(std::make_unique<TSectionWrapper>(RName{ name }, obj, sensor)));
 		obj["dispatcher_handler"] = static_cast<BaseSectionWrapper *>(wrapper);
 
 		this->NotifyItemCreated(*wrapper);
@@ -215,7 +217,7 @@ namespace dcclite::broker
 	{
 		auto &sensor = this->CreateSectionSensor(obj);
 
-		auto wrapper = static_cast<SectionWrapper *>(m_pSections->AddChild(std::make_unique<SectionWrapper>(std::string{name}, obj, sensor)));
+		auto wrapper = static_cast<SectionWrapper *>(m_pSections->AddChild(std::make_unique<SectionWrapper>( RName{name}, obj, sensor)));
 		obj["dispatcher_handler"] = static_cast<BaseSectionWrapper *>(wrapper);		
 
 		this->NotifyItemCreated(*wrapper);		
@@ -225,16 +227,17 @@ namespace dcclite::broker
 	{
 #if 1
 		std::string name = obj["name"];
-		auto section = static_cast<BaseSectionWrapper *>(m_pSections->TryGetChild(name));
+		RName rname{ name };
+		auto section = static_cast<BaseSectionWrapper *>(m_pSections->TryGetChild(rname));
 		if (section == nullptr)
-			throw std::runtime_error(fmt::format("[DispatcherServiceImpl::OnSectionStateChange] Section {} not registered", name));
+			throw std::runtime_error(fmt::format("[DispatcherServiceImpl::OnSectionStateChange] Section {} not registered", rname));
 #endif		
 
 		section->OnStateUpdate();
 		this->NotifyItemChanged(*section);		
 	}
 
-	void DispatcherServiceImpl::IResettableService_ResetItem(std::string_view name)
+	void DispatcherServiceImpl::IResettableService_ResetItem(RName name)
 	{
 		if(auto section = static_cast<BaseSectionWrapper *>(m_pSections->TryGetChild(name)))
 			section->Reset();
@@ -257,11 +260,12 @@ namespace dcclite::broker
 
 		int address = obj["address"];
 		std::string name = obj["name"];
+		RName rname{ name };
 
 		if (address > std::numeric_limits<uint16_t>::max())
 			throw std::invalid_argument(fmt::format("[DispatcherServiceImpl::CreateSectionSensor] Invalid address {} for {}", address, name));
 
-		auto &decoder = m_pclDevice->CreateInternalDecoder(VIRTUAL_SENSOR_DECODER_CLASSNAME, DccAddress{ static_cast<uint16_t>(address)}, std::move(name), params);
+		auto &decoder = m_pclDevice->CreateInternalDecoder(VIRTUAL_SENSOR_DECODER_CLASSNAME, DccAddress{ static_cast<uint16_t>(address)}, rname, params);
 
 		return static_cast<VirtualSensorDecoder &>(decoder);
 	}
@@ -272,13 +276,13 @@ namespace dcclite::broker
 	//
 	//
 
-	DispatcherService::DispatcherService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :
+	DispatcherService::DispatcherService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project) :
 		Service(name, broker, params, project)
 	{
 		//empty
 	}
 
-	std::unique_ptr<Service> DispatcherService::Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project)
+	std::unique_ptr<Service> DispatcherService::Create(RName name, Broker &broker, const rapidjson::Value &params, const Project &project)
 	{
 		return std::make_unique<DispatcherServiceImpl>(name, broker, params, project);
 	}

@@ -45,6 +45,7 @@ package_add_test(UnitTest
   	ParserUnitTest.cpp
 	PrintfUnitTest.cpp
   	ProjectUnitTest.cpp
+	RNameTest.cpp
   	ServoTurnoutDecoderTest.cpp
   	SignalDecoderTest.cpp
   	SocketTest.cpp

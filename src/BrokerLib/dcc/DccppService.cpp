@@ -1,5 +1,6 @@
 #include "DccppService.h"
 
+#include <FmtUtils.h>
 #include <Log.h>
 
 #include "../sys/BonjourService.h"
@@ -99,7 +100,7 @@ namespace dcclite::broker
 	class DccppServiceImpl: public DccppService, public EventHub::IEventTarget, DccppServiceImplClientProxy
 	{
 		public:
-			DccppServiceImpl(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+			DccppServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);
 			~DccppServiceImpl() override;				
 
 		private:			
@@ -587,10 +588,10 @@ namespace dcclite::broker
 					goto ERROR_RESPONSE;
 				}
 
-				auto remoteDecoder = dynamic_cast<RemoteDecoder *>(dec);
+				auto remoteDecoder = dynamic_cast<RemoteDecoder *>(dec);				
 				if ((!remoteDecoder) || (!remoteDecoder->IsOutputDecoder()))
 				{
-					Log::Error("[DccppClient::OnMessage] Error decoder {} - {} is not an output type", id, dec ? dec->GetName() : "NOT FOUND");
+					Log::Error("[DccppClient::OnMessage] Error decoder {} - {} is not an output type", id, dec->GetName());
 
 					goto ERROR_RESPONSE;
 				}
@@ -648,7 +649,7 @@ ERROR_RESPONSE:
 	//
 
 
-	DccppServiceImpl::DccppServiceImpl(const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
+	DccppServiceImpl::DccppServiceImpl(RName name, Broker &broker, const rapidjson::Value& params, const Project& project):
 		DccppService(name, broker, params, project),		
 		m_rclDccService{ static_cast<DccLiteService &>(m_rclBroker.ResolveRequirement(params["requires"].GetString())) }
 	{
@@ -671,8 +672,8 @@ ERROR_RESPONSE:
 		m_thListenThread = std::move(std::thread{ [this, port]() {this->ListenThreadProc(port); } });		
 		dcclite::SetThreadName(m_thListenThread, "DccppServiceImpl::ListenThread");
 		
-		if(auto bonjourService = static_cast<BonjourService *>(m_rclBroker.TryFindService(BONJOUR_SERVICE_NAME)))
-			bonjourService->Register(this->GetName(), "dccpp", NetworkProtocol::TCP, port, 36);
+		if (auto bonjourService = static_cast<BonjourService *>(m_rclBroker.TryFindService(RName{ BONJOUR_SERVICE_NAME })))
+			bonjourService->Register(this->GetName().GetData(), "dccpp", NetworkProtocol::TCP, port, 36);
 
 		ZeroconfService::Register(this->GetTypeName(), port);		
 	}
@@ -749,13 +750,13 @@ ERROR_RESPONSE:
 		}
 	}
 
-	DccppService::DccppService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :
-		Service(name, broker, params, project)
+	DccppService::DccppService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project) :
+		Service{ name, broker, params, project }
 	{
 		//empty
 	}
 
-	std::unique_ptr<Service> DccppService::Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project)
+	std::unique_ptr<Service> DccppService::Create(RName name, Broker &broker, const rapidjson::Value &params, const Project &project)
 	{
 		return std::make_unique<DccppServiceImpl>(name, broker, params, project);
 	}

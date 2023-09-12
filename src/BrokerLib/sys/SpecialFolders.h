@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include "RName.h"
+
 namespace SpecialFolders
 {
 	enum class Folders
@@ -19,6 +21,6 @@ namespace SpecialFolders
 		CmdHostId
 	};
 
-	const char *GetName(Folders id);
+	dcclite::RName GetName(Folders id);
 	const char *GetPath(Folders id);
 }

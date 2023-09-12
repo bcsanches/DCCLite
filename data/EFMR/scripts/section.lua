@@ -1,3 +1,4 @@
+log_info("[Section] Init started")
 
 SECTION_STATES = {
     clear = 0,
@@ -173,7 +174,7 @@ function Section:on_start_sensor_change(sensor)
     end
 end
 
-function Section:on_end_sensor_change(sensor)
+function Section:on_end_sensor_change(sensor)    
     log_trace("[Section:" .. self.name .. "] on_end_sensor_change")
 
     if self.mini_block then
@@ -200,6 +201,8 @@ function Section:get_state_name()
 end
 
 function Section:_update_state(newState)    
+    log_trace("[Section] _update_state")
+
     self.state = newState
     self.dispatcher:on_section_state_change(self, newState)
 end
@@ -243,8 +246,12 @@ function Section:new(o)
         end
     )
 
+    log_trace("[Section:new] acessing dispatcher and registering")
+
     o.dispatcher = dcclite.dispatcher
     o.dispatcher:register_section(o.name, o)
+
+    log_trace("[Section:new] configuring initial state")
 
     -- how are the sensors?
     if o.start_sensor.active and o.end_sensor.active then
@@ -257,7 +264,9 @@ function Section:new(o)
         else
             o:_update_state(SECTION_STATES.clear)            
         end
-    end        
+    end       
+    
+    log_trace("[Section:new] OK")
     
     return o
 end
@@ -418,4 +427,4 @@ function TSection:new(o)
     return o
 end
 
-
+log_info("[Section] Init finished")

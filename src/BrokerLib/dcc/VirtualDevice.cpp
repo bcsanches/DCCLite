@@ -16,17 +16,19 @@
 
 #include <fmt/format.h>
 
+#include "FmtUtils.h"
+
 namespace dcclite::broker
 {
 
-	VirtualDevice::VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project) :
-		Device{ std::move(name), dccService, params, project }
+	VirtualDevice::VirtualDevice(RName name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project) :
+		Device{ name, dccService, params, project }
 	{
 		this->Load();
 	}
 
-	VirtualDevice::VirtualDevice(std::string name, IDccLite_DeviceServices &dccService, const Project &project) :
-		Device{ std::move(name), dccService, project }
+	VirtualDevice::VirtualDevice(RName name, IDccLite_DeviceServices &dccService, const Project &project) :
+		Device{ name, dccService, project }
 	{
 		//emtpy
 	}	

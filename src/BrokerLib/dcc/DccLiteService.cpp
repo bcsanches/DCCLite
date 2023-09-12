@@ -74,48 +74,48 @@ namespace dcclite::broker
 	}
 
 
-	std::unique_ptr<Decoder> TryCreateDecoder(const std::string &className, DccAddress address, std::string name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params)
+	std::unique_ptr<Decoder> TryCreateDecoder(const std::string &className, DccAddress address, RName name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params)
 	{
 		//
 		//Check the most common first....
 		//
 		if (className.compare("ServoTurnout") == 0)
-			return std::make_unique<ServoTurnoutDecoder>(address, std::move(name), owner, dev, params);
+			return std::make_unique<ServoTurnoutDecoder>(address, name, owner, dev, params);
 
 		if (className.compare("Output") == 0)
-			return std::make_unique<SimpleOutputDecoder>(address, std::move(name), owner, dev, params);
+			return std::make_unique<SimpleOutputDecoder>(address, name, owner, dev, params);
 
 		if (className.compare("Sensor") == 0)
-			return std::make_unique<SensorDecoder>(address, std::move(name), owner, dev, params);
+			return std::make_unique<SensorDecoder>(address, name, owner, dev, params);
 
 		if (className.compare("VirtualSignal") == 0)
-			return std::make_unique<SignalDecoder>(address, std::move(name), owner, dev, params);
+			return std::make_unique<SignalDecoder>(address, name, owner, dev, params);
 
 		if (className.compare("VirtualTurnout") == 0)
-			return std::make_unique<VirtualTurnoutDecoder>(address, std::move(name), owner, dev, params);
+			return std::make_unique<VirtualTurnoutDecoder>(address, name, owner, dev, params);
 		
 		if (className.compare("QuadInverter") == 0)
-			return std::make_unique<QuadInverter>(address, std::move(name), owner, dev, params);
+			return std::make_unique<QuadInverter>(address, name, owner, dev, params);
 		
 		if (className.compare("TurntableAutoInverter") == 0)
-			return std::make_unique<TurntableAutoInverterDecoder>(address, std::move(name), owner, dev, params);
+			return std::make_unique<TurntableAutoInverterDecoder>(address, name, owner, dev, params);
 
 		if (className.compare(VIRTUAL_SENSOR_DECODER_CLASSNAME) == 0)
-			return std::make_unique<VirtualSensorDecoder>(address, std::move(name), owner, dev, params);
+			return std::make_unique<VirtualSensorDecoder>(address, name, owner, dev, params);
 					
 		return nullptr;
 	}
 
 
-	DccLiteService::DccLiteService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :
+	DccLiteService::DccLiteService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project) :
 		Service(name, broker, params, project)		
 	{
-		m_pDecoders = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("decoders")));
-		m_pAddresses = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("addresses")));
-		m_pDevices = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("devices")));	
-		m_pSessions = static_cast<FolderObject*>(this->AddChild(std::make_unique<FolderObject>("sessions")));
+		m_pDecoders = static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{ "decoders" })));
+		m_pAddresses = static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{ "addresses" })));
+		m_pDevices = static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{ "devices" })));
+		m_pSessions = static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{ "sessions" })));
 
-		m_pLocations = static_cast<LocationManager *>(this->AddChild(std::make_unique<LocationManager>("locations", params)));
+		m_pLocations = static_cast<LocationManager *>(this->AddChild(std::make_unique<LocationManager>(RName{ "locations" }, params)));
 
 		auto port = params["port"].GetInt();
 	
@@ -135,7 +135,7 @@ namespace dcclite::broker
 		{
 			for (auto &device : devicesData.GetArray())
 			{
-				auto nodeName = device["name"].GetString();
+				RName nodeName{ device["name"].GetString() };
 				auto className = device["class"].GetString();
 
 				if (strcmp(className, "Virtual"))
@@ -167,7 +167,7 @@ namespace dcclite::broker
 		//send mesage before we destroy it
 		this->NotifyItemDestroyed(dec);
 
-		auto addressName = dec.GetAddress().ToString();
+		auto addressName = RName{ dec.GetAddress().ToString() };
 		this->NotifyItemDestroyed(*(m_pAddresses->TryGetChild(addressName)));
 
 		m_pLocations->UnregisterDecoder(dec);
@@ -180,7 +180,7 @@ namespace dcclite::broker
 		IDevice_DecoderServices &dev,
 		const std::string &className,
 		DccAddress address,
-		const std::string &name,
+		RName name,
 		const rapidjson::Value &params
 	)
 	{
@@ -198,7 +198,7 @@ namespace dcclite::broker
 		{
 			auto addressShortcut = m_pAddresses->AddChild(
 				std::make_unique<dcclite::Shortcut>(
-					pDecoder->GetAddress().ToString(),
+					RName{ pDecoder->GetAddress().ToString() },
 					*pDecoder
 				)
 			);
@@ -235,14 +235,14 @@ namespace dcclite::broker
 		this->NotifyItemChanged(device);
 	}
 
-	Device *DccLiteService::TryFindDeviceByName(std::string_view name)
+	Device *DccLiteService::TryFindDeviceByName(RName name)
 	{	
 		return static_cast<Device *>(m_pDevices->TryGetChild(name));
 	}
 
 	NetworkDevice *DccLiteService::TryFindDeviceSession(const dcclite::Guid &guid)
 	{
-		return static_cast<NetworkDevice *>(m_pSessions->TryResolveChild(dcclite::GuidToString(guid)));
+		return static_cast<NetworkDevice *>(m_pSessions->TryResolveChild(RName{ dcclite::GuidToString(guid) }));
 	}	
 
 	NetworkDevice *DccLiteService::TryFindPacketDestination(dcclite::Packet &packet)
@@ -270,24 +270,29 @@ namespace dcclite::broker
 
 	void DccLiteService::Device_RegisterSession(NetworkDevice &dev, const dcclite::Guid &sessionToken)
 	{
-		auto session = m_pSessions->AddChild(std::make_unique<dcclite::Shortcut>(dcclite::GuidToString(sessionToken), dev));
+		auto session = m_pSessions->AddChild(std::make_unique<dcclite::Shortcut>(RName{ dcclite::GuidToString(sessionToken) }, dev));
 
 		this->NotifyItemCreated(*session);		
 	}
 
 	void DccLiteService::Device_UnregisterSession(NetworkDevice& dev, const dcclite::Guid &sessionToken)
 	{	
-		auto session = m_pSessions->RemoveChild(dcclite::GuidToString(sessionToken));				
+		auto session = m_pSessions->RemoveChild(RName{ dcclite::GuidToString(sessionToken) });
 					
 		this->NotifyItemDestroyed(*session);
 	}
 
 	Decoder* DccLiteService::TryFindDecoder(const DccAddress address) const
 	{
-		return this->TryFindDecoder(address.ToString());
+		//Name is registered?
+		auto opt = RName::TryGetName(address.ToString());
+		if (!opt)
+			return nullptr;
+
+		return static_cast<Decoder *>(m_pAddresses->TryResolveChild(opt.value()));
 	}
 
-	Decoder *DccLiteService::TryFindDecoder(std::string_view id) const
+	Decoder *DccLiteService::TryFindDecoder(RName id) const
 	{
 		auto *decoder = m_pAddresses->TryResolveChild(id);
 
@@ -379,19 +384,19 @@ namespace dcclite::broker
 	class NetworkHelloEvent: public dcclite::broker::EventHub::IEvent
 	{
 		public:
-			NetworkHelloEvent(DccLiteService &target, dcclite::NetworkAddress address, std::string_view deviceName, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken):
+			NetworkHelloEvent(DccLiteService &target, dcclite::NetworkAddress address, RName deviceName, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken):
 				IEvent(target),
 				m_clAddress(address),
 				m_clRemoteSessionToken{ remoteSessionToken },
 				m_clRemoteConfigToken{ remoteConfigToken },
-				m_strDeviceName{ deviceName }
+				m_rnDeviceName{ deviceName }
 			{
 				//empty
 			}
 
 			void Fire() override
 			{
-				static_cast<DccLiteService &>(this->GetTarget()).OnNetEvent_Hello(m_clAddress, m_strDeviceName, m_clRemoteSessionToken, m_clRemoteConfigToken);
+				static_cast<DccLiteService &>(this->GetTarget()).OnNetEvent_Hello(m_clAddress, m_rnDeviceName, m_clRemoteSessionToken, m_clRemoteConfigToken);
 			}
 
 		private:
@@ -400,7 +405,7 @@ namespace dcclite::broker
 			const dcclite::Guid m_clRemoteSessionToken;
 			const dcclite::Guid m_clRemoteConfigToken;
 
-			std::string m_strDeviceName;
+			RName m_rnDeviceName;
 	};
 
 	void DccLiteService::NetworkThread_OnNetHello(const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet)
@@ -429,10 +434,10 @@ namespace dcclite::broker
 
 		dcclite::Log::Info("[DccLiteService::{}] [OnNet_Hello] received hello from {}, starting handshake", this->GetName(), name);
 
-		EventHub::PostEvent<NetworkHelloEvent>(std::ref(*this), senderAddress, name, remoteSessionToken, remoteConfigToken);
+		EventHub::PostEvent<NetworkHelloEvent>(std::ref(*this), senderAddress, RName{ name }, remoteSessionToken, remoteConfigToken);
 	}
 
-	void DccLiteService::OnNetEvent_Hello(const dcclite::NetworkAddress &senderAddress, const std::string &deviceName, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken)
+	void DccLiteService::OnNetEvent_Hello(const dcclite::NetworkAddress &senderAddress, RName deviceName, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken)
 	{		
 		//lookup device
 		auto dev = this->TryFindDeviceByName(deviceName);

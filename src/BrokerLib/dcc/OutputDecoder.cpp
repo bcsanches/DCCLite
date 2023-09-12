@@ -10,6 +10,7 @@
 
 #include "OutputDecoder.h"
 
+#include <FmtUtils.h>
 #include <Log.h>
 
 #include "IDccLiteService.h"

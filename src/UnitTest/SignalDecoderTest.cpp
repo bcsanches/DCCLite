@@ -25,7 +25,7 @@ std::unique_ptr<SignalDecoder> CreateSignal(const char *json)
 	Document d;
 	d.Parse(json);
 
-	return std::make_unique<SignalDecoder>( address, "test", g_DecoderServices, g_DeviceDecoderServices,  d );
+	return std::make_unique<SignalDecoder>(address, dcclite::RName{ "test" }, g_DecoderServices, g_DeviceDecoderServices, d);
 }
 
 class SignalTester
@@ -37,7 +37,7 @@ class SignalTester
 			//empty
 		}
 
-		const std::map<std::string, std::string> &GetHeads()
+		const std::map<dcclite::RName, dcclite::RName> &GetHeads()
 		{
 			return m_Signal->m_mapHeads;
 		}
@@ -51,9 +51,9 @@ class SignalTester
 		std::unique_ptr<SignalDecoder> m_Signal;
 };
 
-bool VectorHasStr(const std::vector<std::string> &vec, const char *str)
+bool VectorHasStr(const std::vector<dcclite::RName> &vec, const char *str)
 {
-	return std::any_of(vec.begin(), vec.end(), [str](auto &it) {return it.compare(str) == 0; });
+	return std::any_of(vec.begin(), vec.end(), [str](auto &it) {return it.GetData().compare(str) == 0; });
 }
 
 TEST(SignalDecoderTest, Basic)
@@ -103,15 +103,15 @@ TEST(SignalDecoderTest, Basic)
 
 	auto &heads = tester.GetHeads();
 
-	ASSERT_TRUE(heads.find("red") != heads.end());
-	ASSERT_TRUE(heads.find("green") != heads.end());
-	ASSERT_TRUE(heads.find("yellow") != heads.end());
-	ASSERT_TRUE(heads.find("caution") != heads.end());
+	ASSERT_TRUE(heads.find(dcclite::RName{ "red" }) != heads.end());
+	ASSERT_TRUE(heads.find(dcclite::RName{ "green" }) != heads.end());
+	ASSERT_TRUE(heads.find(dcclite::RName{ "yellow" }) != heads.end());
+	ASSERT_TRUE(heads.find(dcclite::RName{ "caution" }) != heads.end());
 
-	ASSERT_STREQ(heads.find("red")->second.c_str(), "STC_HR12");
-	ASSERT_STREQ(heads.find("green")->second.c_str(), "STC_HG12");
-	ASSERT_STREQ(heads.find("yellow")->second.c_str(), "STC_HY12");
-	ASSERT_STREQ(heads.find("caution")->second.c_str(), "STC_BLA");
+	ASSERT_STREQ(heads.find(dcclite::RName{ "red" })->second.GetData().data(), "STC_HR12");
+	ASSERT_STREQ(heads.find(dcclite::RName{ "green" })->second.GetData().data(), "STC_HG12");
+	ASSERT_STREQ(heads.find(dcclite::RName{ "yellow" })->second.GetData().data(), "STC_HY12");
+	ASSERT_STREQ(heads.find(dcclite::RName{ "caution" })->second.GetData().data(), "STC_BLA");
 
 	auto &aspects = tester.GetAspects();
 
@@ -149,9 +149,9 @@ TEST(SignalDecoderTest, Basic)
 	}
 
 	//size was checked to be 1, so just confirm correct head is there
-	ASSERT_STREQ(aspects[1].m_vecOnHeads[0].c_str(), "STC_HG12");
-	ASSERT_STREQ(aspects[2].m_vecOnHeads[0].c_str(), "STC_HY12");
-	ASSERT_STREQ(aspects[3].m_vecOnHeads[0].c_str(), "STC_HR12");
+	ASSERT_STREQ(aspects[1].m_vecOnHeads[0].GetData().data(), "STC_HG12");
+	ASSERT_STREQ(aspects[2].m_vecOnHeads[0].GetData().data(), "STC_HY12");
+	ASSERT_STREQ(aspects[3].m_vecOnHeads[0].GetData().data(), "STC_HR12");
 
 	//size was checked to be 3, so just confirm the heads are there
 	ASSERT_TRUE(VectorHasStr(aspects[1].m_vecOffHeads, "STC_HR12"));

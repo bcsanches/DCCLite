@@ -21,7 +21,7 @@ namespace dcclite::broker
 		public:
 			QuadInverter(
 				const DccAddress &address,
-				const std::string &name,
+				RName name,
 				IDccLite_DecoderServices &owner,
 				IDevice_DecoderServices &dev,
 				const rapidjson::Value &params

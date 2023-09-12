@@ -38,7 +38,7 @@ class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
 	public:
 #if 1
 		Throttle(const dcclite::NetworkAddress &serverAddress, const dcclite::broker::ILoconetSlot &owner) :
-			IObject(std::move(fmt::format("slot[{}][{}]", owner.GetId(), owner.GetLocomotiveAddress().GetAddress()))),
+			IObject(dcclite::RName{ fmt::format("slot[{}][{}]", owner.GetId(), owner.GetLocomotiveAddress().GetAddress()) }),
 			m_clServerAddress{serverAddress},
 			m_vState{ ConnectState {serverAddress} },			
 			m_rclOwnerSlot{ owner }
@@ -649,7 +649,7 @@ namespace dcclite::broker
 	class ThrottleServiceImpl : public ThrottleService
 	{
 		public:
-			ThrottleServiceImpl(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+			ThrottleServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);
 			~ThrottleServiceImpl() override;			
 
 			void Serialize(JsonOutputStream_t &stream) const override;	
@@ -668,7 +668,7 @@ namespace dcclite::broker
 	};
 
 
-	ThrottleServiceImpl::ThrottleServiceImpl(const std::string& name, Broker &broker, const rapidjson::Value& params, const Project& project):
+	ThrottleServiceImpl::ThrottleServiceImpl(RName name, Broker &broker, const rapidjson::Value& params, const Project& project):
 		ThrottleService(name, broker, params, project),		
 		m_clServerAddress{ dcclite::NetworkAddress::ParseAddress(DetermineServerAddress(params)) },
 		m_tThinker{"ThrottleServiceImpl::Thinker", THINKER_MF_LAMBDA(Think)}
@@ -700,13 +700,13 @@ namespace dcclite::broker
 		ThrottleService::Serialize(stream);		
 	}	
 
-	ThrottleService::ThrottleService(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project) :
+	ThrottleService::ThrottleService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project) :
 		Service(name, broker, params, project)
 	{
 		//empty
 	}
 
-	std::unique_ptr<Service> ThrottleService::Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project)
+	std::unique_ptr<Service> ThrottleService::Create(RName name, Broker &broker, const rapidjson::Value &params, const Project &project)
 	{
 		return std::make_unique<ThrottleServiceImpl>(name, broker, params, project);
 	}

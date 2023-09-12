@@ -14,6 +14,8 @@
 
 #include <fmt/format.h>
 
+#include <FmtUtils.h>
+
 #include "Broker.h"
 #include "FileWatcher.h"
 #include "Log.h"
@@ -129,7 +131,7 @@ namespace dcclite::broker::ScriptService
 
 		dcclite::Log::Trace("[ScriptService::Start] Running autoexec.lua");
 
-		auto r = g_clLua.safe_script_file(path.string());
+		sol::protected_function_result r = g_clLua.safe_script_file(path.string());
 
 		dcclite::Log::Info("[ScriptService::Start] done.");
 	}

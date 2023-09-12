@@ -1,3 +1,5 @@
+log_info("[Section] soledade barra helix monitor init started")
+
 
 local hlx_t04 = dcclite.dcc0.HLX_T04;
 local hlx_t05 = dcclite.dcc0.HLX_T05;
@@ -71,3 +73,5 @@ hlx_t04:on_state_change(on_t04_change);
 hlx_t05:on_state_change(on_t05_change);
 
 initialize();
+
+log_info("[Section] soledade barra helix monitor init finished")

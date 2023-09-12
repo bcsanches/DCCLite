@@ -19,7 +19,7 @@ namespace dcclite::broker
 	class DccppService: public Service
 	{	
 		public:
-			DccppService(const std::string &name, Broker &broker, const rapidjson::Value& params, const Project& project);
+			DccppService(RName name, Broker &broker, const rapidjson::Value& params, const Project& project);
 		
 			~DccppService() override 
 			{
@@ -27,6 +27,6 @@ namespace dcclite::broker
 			}
 		
 
-			static std::unique_ptr<Service> Create(const std::string &name, Broker &broker, const rapidjson::Value &params, const Project &project);
+			static std::unique_ptr<Service> Create(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);
 	};
 }

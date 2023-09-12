@@ -19,6 +19,8 @@
 #include <JsonCreator/Object.h>
 #include <JsonCreator/StringWriter.h>
 
+#include "RName.h"
+
 namespace dcclite
 {
 	class FolderObject;
@@ -161,8 +163,8 @@ namespace dcclite
 		friend class FolderObject;
 
 		public:
-			IObject(std::string name) :
-				m_strName(std::move(name)),
+			explicit IObject(RName name) :
+				m_rnName{ name },
 				m_pParent(nullptr)
 			{
 				//empty
@@ -172,7 +174,8 @@ namespace dcclite
 
 			IObject(const IObject &rhs) = delete;
 
-			inline std::string_view GetName() const noexcept { return m_strName; }
+			inline RName GetName() const noexcept { return m_rnName; }
+			inline std::string_view GetNameData() const noexcept { return m_rnName.GetData(); }
 
 			virtual bool IsShortcut() const noexcept { return false; }
 			virtual bool IsFolder() const noexcept { return false; }
@@ -192,7 +195,7 @@ namespace dcclite
 			}
 
 		private:
-			const std::string m_strName;
+			const RName m_rnName;
 
 			void GetPath_r(Path_t &path) const;
 
@@ -262,14 +265,14 @@ namespace dcclite
 	class Object: public IObject
 	{
 		public:
-			explicit Object(std::string name);			
+			explicit Object(RName name);			
 	};	
 
 	class Shortcut : public IObject
 	{
 		public:
-			Shortcut(std::string name, IObject &target) :
-				IObject(std::move(name)),
+			Shortcut(RName name, IObject &target) :
+				IObject(name),
 				m_rTarget(target)
 			{
 				//empty
@@ -296,7 +299,7 @@ namespace dcclite
 	class FolderObject : public IObject
 	{
 		public:
-			typedef std::map<std::string_view, std::unique_ptr<IObject>> Container_t;
+			typedef std::map<RName, std::unique_ptr<IObject>> Container_t;
 			typedef Container_t::iterator Iterator_t;
 
 			class FolderEnumerator
@@ -320,16 +323,16 @@ namespace dcclite
 			};
 
 		public:
-			explicit FolderObject(std::string name);
+			explicit FolderObject(RName name);
 
 			virtual IObject *AddChild(std::unique_ptr<IObject> obj);
 			
-			std::unique_ptr<IObject> RemoveChild(std::string_view name);
+			std::unique_ptr<IObject> RemoveChild(RName name);
 			void RemoveAllChildren();
 
-			IObject *TryGetChild(std::string_view name);
+			IObject *TryGetChild(RName name);
 
-			IObject *TryResolveChild(std::string_view name);			
+			IObject *TryResolveChild(RName name);			
 
 			IObject *TryNavigate(const Path_t &path);
 

@@ -15,6 +15,8 @@
 #include <map>
 #include <sstream>
 
+#include <FmtUtils.h>
+
 #include "../sys/SpecialFolders.h"
 
 namespace dcclite::broker
@@ -62,23 +64,23 @@ namespace dcclite::broker
 		return tmp;
 	}
 
-	void TerminalCmdHost::AddAlias(std::string name, TerminalCmd &target)
+	void TerminalCmdHost::AddAlias(RName name, TerminalCmd &target)
 	{
 		if (target.GetParent() != this)
 		{
 			throw std::logic_error(fmt::format("[TerminalCmdHost::AddAlias] Invalid parent for {}", target.GetName()));
 		}
 
-		FolderObject::AddChild(std::make_unique<dcclite::Shortcut>(std::move(name), target));
+		FolderObject::AddChild(std::make_unique<dcclite::Shortcut>(name, target));
 	}
 
-	TerminalCmd *TerminalCmdHost::TryFindCmd(std::string_view name)
+	TerminalCmd *TerminalCmdHost::TryFindCmd(RName name)
 	{
 		return static_cast<TerminalCmd *>(this->TryResolveChild(name));
 	}
 
-	TerminalCmd::TerminalCmd(std::string name):
-		IObject(std::move(name))
+	TerminalCmd::TerminalCmd(RName name):
+		IObject(name)
 	{
 		//empty
 	}
