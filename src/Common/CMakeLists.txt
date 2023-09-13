@@ -58,6 +58,7 @@ endif(WIN32)
 target_compile_features(Common PUBLIC cxx_std_17)     
 
 target_include_directories(Common
+  PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/cityhash/
   PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/fmt/include
   PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/JsonCreator/include
   PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/rapidjson/include

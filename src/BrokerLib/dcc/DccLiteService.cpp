@@ -285,11 +285,11 @@ namespace dcclite::broker
 	Decoder* DccLiteService::TryFindDecoder(const DccAddress address) const
 	{
 		//Name is registered?
-		auto opt = RName::TryGetName(address.ToString());
-		if (!opt)
+		auto rname = RName::TryGetName(address.ToString());
+		if (!rname)
 			return nullptr;
 
-		return static_cast<Decoder *>(m_pAddresses->TryResolveChild(opt.value()));
+		return static_cast<Decoder *>(m_pAddresses->TryResolveChild(rname));
 	}
 
 	Decoder *DccLiteService::TryFindDecoder(RName id) const

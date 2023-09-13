@@ -63,6 +63,7 @@ I do not claim that this way of doing things is better or worse for any solution
 
 This code needs the following libraries to be built:
 
+- [cityhash][18]
 - [Ethercard][8]
 - [Fmt][3]
 - [GoogleTest][9]
@@ -97,3 +98,4 @@ All code is licensed under the [MPLv2 License][5].
 [15]: https://github.com/palacaze/sigslot
 [16]: http://www.lua.org/
 [17]: https://github.com/ThePhD/sol2
+[18]: https://github.com/google/cityhash

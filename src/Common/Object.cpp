@@ -185,7 +185,7 @@ namespace dcclite
 				auto *folder = static_cast<FolderObject *>(currentNode);				
 
 				//FIXME: optmize
-				currentNode = folder->TryResolveChild(RName{ path });
+				currentNode = folder->TryResolveChild(RName::Create(path));
 
 				if (!currentNode)
 					return nullptr;

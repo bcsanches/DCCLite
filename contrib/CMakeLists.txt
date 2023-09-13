@@ -1,3 +1,4 @@
+add_subdirectory(cityhash)
 add_subdirectory(fmt)
 add_subdirectory(ldmonitor)
 add_subdirectory(lua-5.4.6)

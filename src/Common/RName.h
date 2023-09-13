@@ -23,17 +23,24 @@ namespace dcclite
 	class RName
 	{
 		public:
-			static std::optional<RName> TryGetName(std::string_view name);
+			static RName TryGetName(std::string_view name);
 
-			static RName GetName(std::string_view name);
+			//
+			// We only allow creation thought static methods to make it clear when it is registering and just grabbing
+			//
+			static RName Get(std::string_view name);
+			inline static RName Create(std::string_view name)
+			{
+				return RName{ name };
+			}
+
+			explicit RName(std::string_view name);
 
 			inline RName():
 				m_uNameIndex{ 0 }
 			{
 				//empty	
-			}
-
-			explicit RName(std::string_view name);
+			}			
 
 			RName(const RName &) = default;
 			RName(RName &&) = default;
@@ -64,7 +71,7 @@ namespace dcclite
 
 			std::string_view GetData() const;
 
-		private:
+		private:			
 			RName(uint32_t index) :
 				m_uNameIndex{ index }
 			{

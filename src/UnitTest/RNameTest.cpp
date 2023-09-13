@@ -42,3 +42,8 @@ TEST(RName, BasicTest)
 
 	ASSERT_STREQ(nullName.GetData().data(), "null_name");
 }
+
+TEST(RName, LimitTest)
+{
+
+}

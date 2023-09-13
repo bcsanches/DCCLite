@@ -10,9 +10,12 @@
 
 #include "RName.h"
 
+#include <cassert>
 #include <array>
 #include <map>
 #include <mutex>
+
+#include <city.h>
 
 #include <fmt/format.h>
 
@@ -37,12 +40,14 @@ namespace dcclite::detail
 
 			inline std::string_view GetName(uint32_t index) const
 			{
+				assert(index < m_uInfoIndex);
+
 				auto &info = m_arInfo[index];
 
 				return std::string_view{ &m_arNames[info.m_uPosition], info.m_uSize };
 			}
 
-			inline std::optional<dcclite::RName> TryGetName(std::string_view name);
+			inline dcclite::RName TryGetName(std::string_view name);
 
 		private:
 			std::array<char, MAX_NAMES *MAX_NAME_LEN>	m_arNames;
@@ -64,7 +69,7 @@ namespace dcclite::detail
 		this->RegisterName("null_name");
 	}
 
-	inline std::optional<dcclite::RName> RNameState::TryGetName(std::string_view name)
+	inline dcclite::RName RNameState::TryGetName(std::string_view name)
 	{
 		std::unique_lock lock{ m_clLock };
 
@@ -75,7 +80,7 @@ namespace dcclite::detail
 			return RName{ it->second };
 		}
 
-		return {};
+		return RName{};
 	}
 
 	uint32_t RNameState::RegisterName(std::string_view name)
@@ -143,18 +148,18 @@ namespace dcclite
 		return detail::GetState().GetName(m_uNameIndex);
 	}
 
-	std::optional<RName> RName::TryGetName(std::string_view name)
+	RName RName::TryGetName(std::string_view name)
 	{
 		return detail::GetState().TryGetName(name);		
 	}
 
-	RName RName::GetName(std::string_view name)
+	RName RName::Get(std::string_view name)
 	{
-		auto opt = RName::TryGetName(name);
+		auto rname = RName::TryGetName(name);
 
-		if (!opt)
+		if (!rname)
 			throw std::invalid_argument(fmt::format("[RName::GetName] Name \"{}\" is not registered", name));
 
-		return opt.value();
+		return rname;
 	}
 }

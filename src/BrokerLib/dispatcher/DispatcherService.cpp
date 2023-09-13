@@ -153,7 +153,7 @@ namespace dcclite::broker
 			throw std::invalid_argument(fmt::format("[DispatcherServiceImpl::{}] device name not set, sensors will not be created", this->GetName()));
 		}
 
-		m_pclDevice = m_rclDccLite.TryFindDeviceByName(RName::GetName(it->value.GetString()));
+		m_pclDevice = m_rclDccLite.TryFindDeviceByName(RName::Get(it->value.GetString()));
 		if (!m_pclDevice)
 		{
 			throw std::invalid_argument(fmt::format("[DispatcherServiceImpl::{}] device {} not found", this->GetName(), it->value.GetString()));

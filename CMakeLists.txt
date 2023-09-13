@@ -25,7 +25,8 @@ set_property( GLOBAL PROPERTY USE_FOLDERS ON)
 add_subdirectory(contrib)
 add_subdirectory(src)
 
- 
+
+set_property(TARGET CityHash PROPERTY FOLDER "contrib") 
 set_property(TARGET fmt PROPERTY FOLDER "contrib")
 set_property(TARGET gtest PROPERTY FOLDER "contrib")
 set_property(TARGET gtest_main PROPERTY FOLDER "contrib")

@@ -371,7 +371,7 @@ namespace dcclite::broker
 				}
 
 				auto serviceName = paramsIt->value[0].GetString();
-				auto itemName = RName::GetName(paramsIt->value[1].GetString());
+				auto itemName = RName::Get(paramsIt->value[1].GetString());
 
 				auto &ireset = this->GetService<IResettableService>(context, id, serviceName);
 
@@ -421,7 +421,7 @@ namespace dcclite::broker
 				}
 
 				auto dccSystemName = paramsIt->value[0].GetString();
-				auto decoderId = RName::GetName(paramsIt->value[1].GetString());
+				auto decoderId = RName::Get(paramsIt->value[1].GetString());
 
 				auto &service = this->GetDccLiteService(context, id, dccSystemName);
 
@@ -700,7 +700,7 @@ namespace dcclite::broker
 				}				
 
 				auto systemName = paramsIt->value[0].GetString();
-				auto deviceName{ RName::GetName(paramsIt->value[1].GetString()) };
+				auto deviceName{ RName::Get(paramsIt->value[1].GetString()) };
 
 				auto &service = this->GetDccLiteService(context, id, systemName);
 
@@ -744,8 +744,8 @@ namespace dcclite::broker
 				}
 
 				auto systemName = paramsIt->value[0].GetString();
-				auto deviceName{ RName::GetName(paramsIt->value[1].GetString()) };
-				auto decoderName{ RName::GetName(paramsIt->value[2].GetString()) };
+				auto deviceName{ RName::Get(paramsIt->value[1].GetString()) };
+				auto decoderName{ RName::Get(paramsIt->value[2].GetString()) };
 
 				auto &service = this->GetDccLiteService(context, id, systemName);
 
@@ -1301,7 +1301,7 @@ namespace dcclite::broker
 				throw TerminalCmdException(fmt::format("Invalid method name in msg: {}", msg), -1);
 			}
 
-			const auto methodName = RName::GetName(methodKey->value.GetString());
+			const auto methodName = RName::Get(methodKey->value.GetString());
 
 			auto idKey = doc.FindMember("id");
 			if ((idKey == doc.MemberEnd()) || (!idKey->value.IsInt()))

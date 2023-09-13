@@ -205,7 +205,7 @@ namespace dcclite::broker
 
 		if (token == Tokens::VARIABLE_NAME)
 		{
-			auto name = RName::GetName(reqName);
+			auto name = RName::Get(reqName);
 			if (auto *service = this->TryFindService(name))
 				return *service;
 
