@@ -13,6 +13,19 @@
 #include <string_view>
 #include <optional>
 
+/**
+* 
+* Registered Name System (RName)
+* 
+* A simple way for caching strings used as names. 
+* 
+* It guarantees that the strings will be kept forever while the program is running, there is no way to remove 
+* a string from the cache. Once registered, it goes forever
+* 
+* Strings are assumed to be imutable, so do not change then or behavior will be undefined
+* 
+*/
+
 namespace dcclite
 {
 	namespace detail
@@ -37,6 +50,11 @@ namespace dcclite
 			inline bool operator <(const NameIndex &index) const
 			{
 				return (m_uCluster == index.m_uCluster) ? (m_uIndex < index.m_uIndex) : (m_uCluster < index.m_uCluster);
+			}
+
+			explicit operator bool() const
+			{
+				return m_uCluster || m_uIndex;
 			}
 		};
 
@@ -103,7 +121,7 @@ namespace dcclite
 				return m_stIndex.m_uCluster || m_stIndex.m_uIndex;
 			}
 
-			std::string_view GetData() const;
+			const std::string_view GetData() const;
 
 			//
 			//
