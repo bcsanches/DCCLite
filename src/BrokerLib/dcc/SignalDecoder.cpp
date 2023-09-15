@@ -111,12 +111,14 @@ namespace dcclite::broker
 						throw std::invalid_argument(fmt::format("[SignalDecoder::{}] [SignalDecoder] Error: aspect {} on \"off\" array not found on heads defintion", this->GetName(), it.GetString()));
 					}
 
-					if (std::any_of(newAspect.m_vecOnHeads.begin(), newAspect.m_vecOnHeads.end(), [&headIt](RName onAspectName) { return onAspectName == RName{ headIt->second }; }))
+					RName headName{ headIt->second };
+
+					if (std::any_of(newAspect.m_vecOnHeads.begin(), newAspect.m_vecOnHeads.end(), [headName](RName onAspectName) { return onAspectName == headName; }))
 					{
 						throw std::invalid_argument(fmt::format("[SignalDecoder::{}] [SignalDecoder] Error: \"off\" head {} also defined on the \"on\" table", this->GetName(), it.GetString()));
 					}
 
-					newAspect.m_vecOffHeads.push_back(RName{ headIt->second });
+					newAspect.m_vecOffHeads.push_back(headName);
 				}
 			}
 			else
@@ -124,13 +126,15 @@ namespace dcclite::broker
 				//if no off array defined, we simple add all heads not listed on the "on" table
 				for (auto &headIt : m_mapHeads)
 				{
+					RName headName{ headIt.second };
+
 					//skip existing heads
-					if (std::any_of(newAspect.m_vecOnHeads.begin(), newAspect.m_vecOnHeads.end(), [headIt](RName onAspectName) { return onAspectName == RName{ headIt.second }; }))
+					if (std::any_of(newAspect.m_vecOnHeads.begin(), newAspect.m_vecOnHeads.end(), [headName](RName onAspectName) { return onAspectName == headName; }))
 					{
 						continue;
 					}
 
-					newAspect.m_vecOffHeads.push_back(RName{ headIt.second });
+					newAspect.m_vecOffHeads.push_back(headName);
 				}
 			}
 

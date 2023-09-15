@@ -18,6 +18,41 @@ namespace dcclite
 	namespace detail
 	{
 		class RNameState;
+
+		struct NameIndex
+		{
+			uint16_t m_uCluster = 0;
+			uint16_t m_uIndex = 0;
+
+			inline bool operator ==(const NameIndex &index) const
+			{
+				return (m_uCluster == index.m_uCluster) && (m_uIndex == index.m_uIndex);
+			}
+
+			inline bool operator !=(const NameIndex &index) const
+			{
+				return (m_uCluster != index.m_uCluster) || (m_uIndex != index.m_uIndex);
+			}
+
+			inline bool operator <(const NameIndex &index) const
+			{
+				return (m_uCluster == index.m_uCluster) ? (m_uIndex < index.m_uIndex) : (m_uCluster < index.m_uCluster);
+			}
+		};
+
+		struct RNameClusterInfo
+		{
+			uint32_t m_uNumNames;
+			uint32_t m_uNumChars;
+
+			uint32_t m_uRoomLeft;
+
+			uint32_t m_uRoomForNamesLeft;
+		};
+
+		uint16_t RName_GetNumClusters() noexcept;
+
+		RNameClusterInfo RName_GetClusterInfo(uint16_t cluster);
 	}
 
 	class RName
@@ -36,8 +71,7 @@ namespace dcclite
 
 			explicit RName(std::string_view name);
 
-			inline RName():
-				m_uNameIndex{ 0 }
+			inline RName()				
 			{
 				//empty	
 			}			
@@ -50,30 +84,45 @@ namespace dcclite
 
 			inline bool operator==(const RName &rhs) const
 			{
-				return m_uNameIndex == rhs.m_uNameIndex;
+				return m_stIndex == rhs.m_stIndex;
 			}
 
 			inline bool operator!=(const RName &rhs) const
 			{
-				return m_uNameIndex != rhs.m_uNameIndex;
+				return m_stIndex != rhs.m_stIndex;
 			}
 
 			//This is not lexicographic, just for comparing indices....
 			inline bool operator<(const RName &rhs) const
 			{
-				return m_uNameIndex < rhs.m_uNameIndex;
+				return m_stIndex < rhs.m_stIndex;
 			}
 
 			explicit operator bool() const
 			{
-				return m_uNameIndex;
+				return m_stIndex.m_uCluster || m_stIndex.m_uIndex;
 			}
 
 			std::string_view GetData() const;
 
+			//
+			//
+			// Helpers for unit testing, should be useless on regular systems
+			//
+
+			inline uint16_t GetCluster() const noexcept
+			{
+				return m_stIndex.m_uCluster;
+			}
+
+			inline uint16_t GetIndex() const
+			{
+				return m_stIndex.m_uIndex;
+			}
+
 		private:			
-			RName(uint32_t index) :
-				m_uNameIndex{ index }
+			RName(detail::NameIndex index) :
+				m_stIndex{ index }
 			{
 				//empty
 			}
@@ -81,6 +130,6 @@ namespace dcclite
 			friend class detail::RNameState;
 
 		private:
-			uint32_t	m_uNameIndex;
+			detail::NameIndex m_stIndex;
 	};
 }
