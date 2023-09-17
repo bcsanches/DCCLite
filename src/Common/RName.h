@@ -139,7 +139,12 @@ namespace dcclite
 			}
 
 		private:			
+#ifdef DCCLITE_DEBUG
+			RName(detail::NameIndex index, std::string_view data) :
+				m_svName{data},
+#else
 			RName(detail::NameIndex index) :
+#endif
 				m_stIndex{ index }
 			{
 				//empty
@@ -149,5 +154,9 @@ namespace dcclite
 
 		private:
 			detail::NameIndex m_stIndex;
+
+#ifdef DCCLITE_DEBUG
+			std::string_view m_svName;
+#endif
 	};
 }

@@ -137,7 +137,11 @@ namespace dcclite::detail
 
 				auto registeredName = this->GetName(index);
 				if (registeredName.compare(name) == 0)
+#ifdef DCCLITE_DEBUG
+					return RName{ index,  registeredName };
+#else
 					return RName{ index };
+#endif
 			}
 		}
 
@@ -275,7 +279,7 @@ namespace dcclite::detail
 			index.m_uIndex = cluster->m_uInfoIndex++;
 
 			//hash collision? 
-			if (it != m_mapIndex.end())
+			if (hashChainIndex > 0)
 			{
 				//Add to the chain...
 				assert(hashChainIndex < CHAIN_SIZE);
@@ -308,7 +312,9 @@ namespace dcclite
 	RName::RName(std::string_view name) :
 		m_stIndex{ detail::GetState().RegisterName(name) }
 	{
-		//empty
+#ifdef DCCLITE_DEBUG
+		m_svName = detail::GetState().GetName(m_stIndex);
+#endif
 	}
 
 	const std::string_view RName::GetData() const

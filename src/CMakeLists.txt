@@ -1,5 +1,14 @@
 add_compile_definitions(SPDLOG_FMT_EXTERNAL)
 
+set(MY_DEFINITION 
+    $<$<CONFIG:Debug>:DCCLITE_DEBUG>
+    $<$<CONFIG:RelWithDebInfo>:DCCLITE_DEBUG>
+    $<$<CONFIG:Release>:DCCLITE_RELEASE> 
+    $<$<CONFIG:MinSizeRel>:DCCLITE_RELEASE>
+)
+
+add_compile_definitions(${MY_DEFINITION})
+
 add_subdirectory(ArduinoLib)
 add_subdirectory(Broker)
 add_subdirectory(BrokerLib)
