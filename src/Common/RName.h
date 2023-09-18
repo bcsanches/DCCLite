@@ -28,44 +28,42 @@
 
 namespace dcclite
 {
+	typedef uint32_t NameIndexType_t;
+
 	namespace detail
 	{
 		class RNameState;
 
 		struct NameIndex
-		{
-			uint16_t m_uCluster = 0;
-			uint16_t m_uIndex = 0;
+		{			
+			NameIndexType_t m_uIndex = 0;
 
 			inline bool operator ==(const NameIndex &index) const
 			{
-				return (m_uCluster == index.m_uCluster) && (m_uIndex == index.m_uIndex);
+				return (m_uIndex == index.m_uIndex);
 			}
 
 			inline bool operator !=(const NameIndex &index) const
 			{
-				return (m_uCluster != index.m_uCluster) || (m_uIndex != index.m_uIndex);
+				return (m_uIndex != index.m_uIndex);
 			}
 
 			inline bool operator <(const NameIndex &index) const
 			{
-				return (m_uCluster == index.m_uCluster) ? (m_uIndex < index.m_uIndex) : (m_uCluster < index.m_uCluster);
+				return (m_uIndex < index.m_uIndex);
 			}
 
 			explicit operator bool() const
 			{
-				return m_uCluster || m_uIndex;
+				return m_uIndex;
 			}
 		};
 
 		struct RNameClusterInfo
-		{
-			uint32_t m_uNumNames;
+		{			
 			uint32_t m_uNumChars;
 
-			uint32_t m_uRoomLeft;
-
-			uint32_t m_uRoomForNamesLeft;
+			uint32_t m_uRoomLeft;			
 		};
 
 		uint16_t RName_GetNumClusters() noexcept;
@@ -118,7 +116,7 @@ namespace dcclite
 
 			explicit operator bool() const
 			{
-				return m_stIndex.m_uCluster || m_stIndex.m_uIndex;
+				return m_stIndex.m_uIndex;
 			}
 
 			const std::string_view GetData() const;
@@ -126,17 +124,14 @@ namespace dcclite
 			//
 			//
 			// Helpers for unit testing, should be useless on regular systems
-			//
+			//			
 
-			inline uint16_t GetCluster() const noexcept
-			{
-				return m_stIndex.m_uCluster;
-			}
-
-			inline uint16_t GetIndex() const
+			inline NameIndexType_t GetIndex() const
 			{
 				return m_stIndex.m_uIndex;
 			}
+
+			uint32_t FindCluster() const;
 
 		private:			
 #ifdef DCCLITE_DEBUG

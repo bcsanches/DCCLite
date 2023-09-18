@@ -22,24 +22,12 @@
 
 #include "Log.h"
 
-#define MAX_NAMES		64
-#define MAX_NAME_LEN	512
-
 #define CHAIN_SIZE		2
 
-constexpr auto DATA_BUFFER_SIZE = MAX_NAMES * MAX_NAME_LEN;
+constexpr auto DATA_BUFFER_SIZE = 1024;
 
 namespace dcclite::detail
 {	
-	/// <summary>
-	/// Just story the starting position of the name and its length on the cluster buffer
-	/// </summary>
-	struct NameData
-	{
-		uint16_t m_uPosition;
-		uint16_t m_uSize;		
-	};
-
 	/**
 	* This is a bit complicate because we want to make sure strings stays in the same place whatever it happens...
 	*
@@ -51,9 +39,6 @@ namespace dcclite::detail
 	{
 		std::array<char, DATA_BUFFER_SIZE>			m_arNames;
 		uint32_t									m_uPosition;
-
-		std::array<NameData, MAX_NAMES>				m_arInfo;
-		uint32_t									m_uInfoIndex;
 	};	
 
 	//Make sure if fits on 16 bits
@@ -67,15 +52,10 @@ namespace dcclite::detail
 			NameIndex RegisterName(std::string_view name);
 
 			inline const std::string_view GetName(detail::NameIndex index) const
-			{
-				assert(index.m_uCluster < m_vecClusters.size());
-				assert(index.m_uIndex < m_vecClusters[index.m_uCluster]->m_uInfoIndex);
+			{				
+				assert(index.m_uIndex < m_vecNames.size());
 
-				auto cluster = m_vecClusters[index.m_uCluster].get();
-
-				auto &info = cluster->m_arInfo[index.m_uIndex];
-
-				return std::string_view{ &cluster->m_arNames[info.m_uPosition], info.m_uSize };
+				return m_vecNames[index.m_uIndex];				
 			}
 
 			inline dcclite::RName TryGetName(std::string_view name);
@@ -91,19 +71,20 @@ namespace dcclite::detail
 
 				dcclite::detail::RNameClusterInfo info;
 
-				info.m_uNumChars = cluster->m_uPosition;
-				info.m_uNumNames = cluster->m_uInfoIndex;
-				info.m_uRoomLeft = static_cast<uint32_t>(cluster->m_arNames.size()) - cluster->m_uPosition;
-				info.m_uRoomForNamesLeft = static_cast<uint32_t>(cluster->m_arInfo.size()) - cluster->m_uInfoIndex;
+				info.m_uNumChars = cluster->m_uPosition;				
+				info.m_uRoomLeft = static_cast<uint32_t>(cluster->m_arNames.size()) - cluster->m_uPosition;				
 
 				return info;
 			}
+
+			uint32_t FindNameCluster(NameIndexType_t index);
 			
 
 		private:
 			//Dynamically allocate each cluster so when a new cluster is created, the old ones does not change ther memory location
 			//This way string views are always valids
 			std::vector<std::unique_ptr<Cluster>>					m_vecClusters;
+			std::vector<std::string_view>							m_vecNames;
 
 			std::map<uint64_t, std::array<NameIndex, CHAIN_SIZE>>	m_mapIndex;
 
@@ -191,25 +172,49 @@ namespace dcclite::detail
 				throw std::runtime_error(fmt::format("[RNameState::RegisterName] Too many hash collisions: {} with {}", name, this->GetName(it->second[0])));
 			}
 		}
+		
+		//
+		//need to register a new name
+		//
+				
+		//plus \0
+		const auto nameLength = name.length();
 
-		Cluster *cluster = nullptr;
-		size_t clusterIndex = m_uFirstNonFullCluster;
+		if (nameLength + 1 >= DATA_BUFFER_SIZE)
+		{
+			throw std::runtime_error(fmt::format("[RNameState::TryRegisterName] Name {} is too big", name));
+		}
+		
+		//should never happens... but...
+		if (m_vecNames.size() >= std::numeric_limits<uint32_t>::max())
+		{
+			throw std::runtime_error(fmt::format("[RNameState::TryRegisterName] Too many names! Cannot register {}", name));
+		}
 
 		//only update m_uFirstNonFullCluster on first interaction, to avoid not checking again clusters that have name room, but could not fit large strings
 		bool first = true;
+		Cluster *cluster = nullptr;
 
 		for (;;)
 		{			
-			for (auto len = m_vecClusters.size(); clusterIndex < len; ++clusterIndex)
+			for (size_t clusterIndex = m_uFirstNonFullCluster, clusterVecLen = m_vecClusters.size(); clusterIndex < clusterVecLen; ++clusterIndex)
 			{
 				auto item = m_vecClusters[clusterIndex].get();
-				if (item->m_uInfoIndex == item->m_arInfo.size())
+
+				//does the data fits on the buffer?
+				if ((nameLength + 1) + item->m_uPosition >= item->m_arNames.size())
 				{
-					m_uFirstNonFullCluster = first ? clusterIndex + 1 : m_uFirstNonFullCluster;
+					//should have at least 2 bytes
+					if ((item->m_uPosition >= item->m_arNames.size() - 2) && (first))
+					{
+						m_uFirstNonFullCluster = clusterIndex + 1;
+					}
+
+					first = false;
 					continue;
 				}
 
-				//found a cluster with room for at least one extra index...
+				//found a cluster with room 
 				cluster = item;
 				break;
 			}			
@@ -219,64 +224,21 @@ namespace dcclite::detail
 			{
 				//create a new cluster...
 				m_vecClusters.emplace_back(new Cluster());
-				cluster = m_vecClusters.back().get();
-
-				//update index so late we know where the cluster is
-				clusterIndex = m_vecClusters.size() - 1;
-
-				m_uFirstNonFullCluster = first ? clusterIndex : m_uFirstNonFullCluster;
+				cluster = m_vecClusters.back().get();							
 			}			
-
-			//plus \0
-			const auto len = name.length();
-
-			//should not be necessary, as it will not fit on array... but just in case we change this array size later and forget this...
-			if (len >= std::numeric_limits<uint16_t>().max())
-			{
-				throw std::runtime_error(fmt::format("[RNameState::TryRegisterName] Name {} is too big", name));
-			}
-
-			//does the data fits on the buffer?
-			if ((len + 1) + cluster->m_uPosition >= cluster->m_arNames.size())
-			{
-				//cluster is full and we have more clusters? - UnitTest LimitTest should test this condition
-				if (clusterIndex < m_vecClusters.size() - 1)
-				{
-					//do not update "m_uFirstNonFullCluster" anymore if the buffer is NOT full, we may use this space later
-					first = cluster->m_uPosition >= cluster->m_arNames.size();
-
-					//skip to next cluster and start over
-					//This is the case when the cluster has free name indices, but not room for the string
-					++clusterIndex;
-					cluster = nullptr;					
-
-					//try next cluster
-					continue;
-				}
-
-				//we checked all clusters, so we need to allocate a new one
-				m_vecClusters.emplace_back(new Cluster());
-				cluster = m_vecClusters.back().get();
-
-				clusterIndex = m_vecClusters.size() - 1;
-			}
-			
-			//
-			//Create a new index on the cluster
-			cluster->m_arInfo[cluster->m_uInfoIndex].m_uPosition = cluster->m_uPosition;
-			cluster->m_arInfo[cluster->m_uInfoIndex].m_uSize = static_cast<uint16_t>(len);
-
+					
 			const auto startPosition = cluster->m_uPosition;
 
 			//
 			//copy the string
-			strncpy(&cluster->m_arNames[cluster->m_uPosition], name.data(), len);
+			strncpy(&cluster->m_arNames[cluster->m_uPosition], name.data(), nameLength);
 			cluster->m_uPosition += static_cast<uint32_t>(name.size());
 			cluster->m_arNames[cluster->m_uPosition++] = '\0';
 
+			m_vecNames.emplace_back(&cluster->m_arNames[startPosition], nameLength);
+
 			NameIndex index;
-			index.m_uCluster = static_cast<uint16_t>(clusterIndex);
-			index.m_uIndex = cluster->m_uInfoIndex++;
+			index.m_uIndex = static_cast<uint16_t>(m_vecNames.size() - 1);
 
 			//hash collision? 
 			if (hashChainIndex > 0)
@@ -297,6 +259,19 @@ namespace dcclite::detail
 
 			return index;
 		}
+	}
+
+	uint32_t RNameState::FindNameCluster(NameIndexType_t index)
+	{
+		auto name = m_vecNames[index];
+
+		for (size_t i = 0, len = m_vecClusters.size(); i < len; ++i)
+		{
+			if((name.data() >= &m_vecClusters[i]->m_arNames[0]) && ((name.data() + len) < (&m_vecClusters[i]->m_arNames[0] + m_vecClusters[i]->m_arNames.size())))
+				return static_cast<uint32_t>(i);
+		}
+
+		throw std::runtime_error(fmt::format("[RNameState::FindNameCluster] cluster for {} not found, where is it?", name));
 	}
 
 	static RNameState &GetState()
@@ -336,6 +311,11 @@ namespace dcclite
 
 		return rname;
 	}	
+
+	uint32_t RName::FindCluster() const
+	{
+		return detail::GetState().FindNameCluster(this->m_stIndex.m_uIndex);
+	}
 }
 
 namespace dcclite::detail
