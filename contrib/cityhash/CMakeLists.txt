@@ -8,6 +8,6 @@ add_library(
   citycrc.h
 )
 
-target_link_library(City Hash) 
+target_link_libraries(CityHash)
 
 target_compile_features(CityHash PUBLIC cxx_std_17)    
