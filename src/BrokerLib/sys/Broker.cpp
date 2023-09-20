@@ -39,7 +39,7 @@
 #include "BonjourService.h"
 
 #include "Thinker.h"
-#include "ScriptService.h"
+#include "ScriptSystem.h"
 #include "SpecialFolders.h"
 #include "ZeroConfSystem.h"
 
@@ -126,7 +126,7 @@ namespace dcclite::broker
 
 		this->LoadConfig();
 
-		ScriptService::Start(*this, m_clProject);
+		ScriptSystem::Start(*this, m_clProject);
 
 		//Start after load, so project name is already loaded
 		ZeroConfSystem::Start(m_clProject.GetName());
