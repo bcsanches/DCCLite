@@ -38,7 +38,7 @@
 
 #include "../sys/BonjourService.h"
 #include "../sys/Broker.h"
-#include "../sys/ZeroconfService.h"
+#include "../sys/ZeroConfSystem.h"
 #include "../sys/SpecialFolders.h"
 
 #include "TerminalCmd.h"
@@ -1485,7 +1485,7 @@ namespace dcclite::broker
 		if (auto bonjourService = static_cast<BonjourService *>(m_rclBroker.TryFindService(RName{ BONJOUR_SERVICE_NAME })))
 			bonjourService->Register("terminal", "dcclite", NetworkProtocol::TCP, port, 36);
 
-		ZeroconfService::Register(this->GetTypeName(), port);
+		ZeroConfSystem::Register(this->GetTypeName(), port);
 	}
 
 	TerminalService::~TerminalService()

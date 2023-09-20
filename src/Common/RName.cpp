@@ -158,17 +158,17 @@ namespace dcclite::detail
 				//
 				//If someones besides me reads this and knows two diferent strings that generate the same hash for CityHash, please let me know....
 
-				//OMG, we go a collision!!!
-				//lets try to see this...
+				//OMG, we got a collision!!!
+				//lets try to see this on the log...
 				for (int i = 0; i < 30; ++i)
 					dcclite::Log::Warn("[RNameState::RegisterName] Hash collision {} with {}", name, this->GetName(index));
-
+								
 				break;
 			}	
 
 			if (hashChainIndex == it->second.size())
 			{
-				//Filled all the chain... sorry...
+				//Filled all the chain... sorry... should I use those chars ASCII as lottery numbers? Or perhaps the hash?
 				throw std::runtime_error(fmt::format("[RNameState::RegisterName] Too many hash collisions: {} with {}", name, this->GetName(it->second[0])));
 			}
 		}
@@ -191,7 +191,7 @@ namespace dcclite::detail
 			throw std::runtime_error(fmt::format("[RNameState::TryRegisterName] Too many names! Cannot register {}", name));
 		}
 
-		//only update m_uFirstNonFullCluster on first interaction, to avoid not checking again clusters that have name room, but could not fit large strings
+		//only update m_uFirstNonFullCluster on first interaction, to avoid not checking again clusters that are filled up
 		bool first = true;
 		Cluster *cluster = nullptr;
 
@@ -217,7 +217,7 @@ namespace dcclite::detail
 				//found a cluster with room 
 				cluster = item;
 				break;
-			}			
+			}
 
 			//all clusters full?
 			if (!cluster)

@@ -9,7 +9,7 @@
 // defined by the Mozilla Public License, v. 2.0.
 
 
-#include "ZeroconfService.h"
+#include "ZeroConfSystem.h"
 
 #include <Log.h>
 
@@ -21,7 +21,7 @@
 
 using namespace std::chrono_literals;
 
-namespace dcclite::broker::ZeroconfService
+namespace dcclite::broker::ZeroConfSystem
 {		
 	static std::map<std::string_view, uint16_t> g_mapServices;
 	static dcclite::Socket						g_clSocket;	

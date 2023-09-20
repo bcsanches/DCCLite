@@ -94,8 +94,8 @@ add_library(
         sys/SpecialFolders.h
         sys/Thinker.cpp
         sys/Thinker.h
-        sys/ZeroconfService.cpp
-        sys/ZeroconfService.h
+        sys/ZeroConfSystem.cpp
+        sys/ZeroConfSystem.h
         terminal/TerminalCmd.cpp
         terminal/TerminalCmd.h
         terminal/TerminalService.cpp
