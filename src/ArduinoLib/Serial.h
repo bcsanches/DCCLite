@@ -13,7 +13,6 @@
 #include <string>
 
 #include "ArduinoLibDefs.h"
-#include "avr/pgmspace.h"
 
 #define HEX 16
 
@@ -30,7 +29,7 @@ struct ARDUINO_API SerialImpl
 	void println();
 
 
-	inline void print(const __FlashStringHelper *fstr)
+	inline void print(const class __FlashStringHelper *fstr)
 	{
 		print(reinterpret_cast<const char *>(fstr));
 	}
