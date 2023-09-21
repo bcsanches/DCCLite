@@ -110,10 +110,13 @@ source_group("terminal"     FILES ${SRC_TERMINAL})
 
 if(WIN32)
     target_link_libraries(BrokerLib         
-		PRIVATE Common 
-		PRIVATE SharedLib 		 
-		PRIVATE fmt
+        PRIVATE bcrypt.lib
+        PRIVATE CityHash
+        PRIVATE Common
+        PRIVATE fmt
         PRIVATE ldmonitor
+	    PRIVATE LuaLib
+		PRIVATE SharedLib		        
         PRIVATE sigslot
 	)
 
@@ -123,17 +126,20 @@ else(WIN32)
 
 	find_package(OpenSSL REQUIRED)
 
-	target_link_libraries(Broker 
-		OpenSSL::Crypto
-		OpenSSL::SSL
-		Common 
-		SharedLib
-		stdc++fs 
-		fmt 
-		uuid 		
-        ldmonitor
+	target_link_libraries(BrokerLib 		
+        CityHash
+        Common 
         dl
+        fmt 
+        ldmonitor
+		LuaLib
+        OpenSSL::Crypto
+		OpenSSL::SSL
+        pthread	
         sigslot
+		SharedLib
+		stdc++fs 		
+		uuid 		                        
 	)
 
 endif(WIN32)
