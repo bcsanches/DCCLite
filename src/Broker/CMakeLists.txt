@@ -12,11 +12,7 @@ target_include_directories(Broker
 
 if(WIN32)
     target_link_libraries(Broker   
-        PUBLIC BrokerLib    
-        PRIVATE CityHash
-	    PRIVATE LuaLib
-        PRIVATE bcrypt.lib 	        	
-        PRIVATE fmt
+        PRIVATE BrokerLib    
 	)
 
 	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
@@ -26,13 +22,8 @@ if(WIN32)
       
 else(WIN32)
 
-	find_package(OpenSSL REQUIRED)
-
 	target_link_libraries(Broker         
-		BrokerLib
-        CityHash
-		LuaLib
-        pthread
+		BrokerLib        
 	)
 
 endif(WIN32)
