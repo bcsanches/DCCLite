@@ -21,13 +21,9 @@
 #endif
 
 namespace dcclite
-{
-	static std::shared_ptr<spdlog::logger> g_spLogger;
-
+{	
 	void LogFinalize()
-	{
-		g_spLogger.reset();
-
+	{		
 		spdlog::drop("dcclite");
 
 		spdlog::shutdown();
@@ -70,19 +66,17 @@ namespace dcclite
 		// can be set globally or per logger(logger->set_error_handler(..))
 		spdlog::set_error_handler([](const std::string &msg) { spdlog::get("console")->error("*** LOGGER ERROR ***: {}", msg); });
 #endif
-
-		g_spLogger = combined_logger;
-		spdlog::set_default_logger(g_spLogger);
+		
+		spdlog::set_default_logger(combined_logger);
 	}
 
 	void LogReplace(Logger_t log)
-	{
-		g_spLogger = log;
-		spdlog::set_default_logger(g_spLogger);
-	}
-
-	extern std::shared_ptr<spdlog::logger> LogGetDefault()
 	{		
-		return g_spLogger;
+		spdlog::set_default_logger(log);
+	}	
+
+	extern Logger_t LogGetDefault()
+	{
+		return spdlog::default_logger();
 	}
 }

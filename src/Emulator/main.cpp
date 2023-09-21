@@ -12,14 +12,13 @@
 
 #include "Clock.h"
 #include "ConsoleUtils.h"
+#include "Log.h"
 #include "LogUtils.h"
 #include "NetMessenger.h"
 #include "PathUtils.h"
 #include "Socket.h"
 
 #include "ArduinoLib.h"
-
-#include <spdlog/logger.h>
 
 
 using namespace dcclite;
@@ -68,7 +67,7 @@ bool TerminalClient::Update()
 
 	if (status == Socket::Status::OK)
 	{
-		dcclite::LogGetDefault()->info("Received {}", msg);		
+		dcclite::Log::Info("Received {}", msg);		
 
 		std::stringstream stream;
 		stream << msg;
