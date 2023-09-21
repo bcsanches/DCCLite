@@ -62,7 +62,7 @@ static void Parse(const char *command)
 	{
 		//based on https://github.com/DccPlusPlus/BaseStation/blob/master/DCCpp_Uno/SerialCommand.cpp
 
-#ifndef WIN32
+#if (!defined BCS_ARDUINO_EMULATOR)
 		int v; 
 		//Console::SendLogEx(MODULE_NAME, (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));		
         DCCLITE_LOG_MODULE_LN((int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));

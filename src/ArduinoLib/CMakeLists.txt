@@ -33,3 +33,10 @@ target_include_directories(ArduinoLib PRIVATE ${DCCLite_SOURCE_DIR}/src/Common)
 
 target_link_libraries(ArduinoLib PUBLIC Common fmt SharedLib)
 
+if(!WIN32)
+	add_library(ArduinoLibStatic ${ArduinoLib_SRCS} ${ArduinoLib_HDRS})
+	target_compile_features(ArduinoLibStatic PUBLIC cxx_std_17)  
+	target_include_directories(ArduinoLibStatic PRIVATE ${DCCLite_SOURCE_DIR}/src/Common)
+	target_link_libraries(ArduinoLibStatic PUBLIC Common fmt SharedLib)
+endif()
+

@@ -42,7 +42,7 @@ namespace Storage
 
 			void Skip(uint32_t bytes);
 
-	#ifndef WIN32
+	#ifndef BCS_ARDUINO_EMULATOR
 			void Get(unsigned short &number);
 	#endif
 			void Get(uint16_t &number);
@@ -53,7 +53,7 @@ namespace Storage
 			void Put(char ch);
 			void Put(unsigned char byte);
 
-	#ifndef WIN32
+	#ifndef BCS_ARDUINO_EMULATOR
 			void Put(unsigned short number);
 	#endif
 

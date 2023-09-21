@@ -11,11 +11,11 @@
 #include <array>
 #include <vector>
 
+#include <fmt/format.h>
+
 #include "Ethercard.h"
 
 #include "Serial.h"
-
-#include <fmt/format.h>
 
 #include <Socket.h>
 

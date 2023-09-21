@@ -171,7 +171,7 @@ namespace Storage
 		++m_uIndex;
 	}
 
-#ifndef WIN32
+#ifndef BCS_ARDUINO_EMULATOR
 	void EpromStream::Get(unsigned short &number)
 	{
 
@@ -243,7 +243,7 @@ namespace Storage
 		m_uIndex += sizeof(byte);
 	}
 
-#ifndef WIN32
+#ifndef BCS_ARDUINO_EMULATOR
 	void EpromStream::Put(unsigned short number)
 	{
 		//NetClient::sendLog(MODULE_NAME, "w %u bytes (short) %u at %u", sizeof(number), number,  m_uIndex);
