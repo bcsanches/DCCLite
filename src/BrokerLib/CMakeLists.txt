@@ -82,6 +82,8 @@ add_library(
         sys/Broker.h
         sys/FileWatcher.cpp
         sys/FileWatcher.h
+	sys/InfoService.cpp
+	sys/InfoService.h
         sys/EventHub.cpp
         sys/EventHub.h
         sys/Project.cpp

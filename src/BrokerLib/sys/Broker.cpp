@@ -38,6 +38,7 @@
 
 #include "BonjourService.h"
 
+#include "InfoService.h"
 #include "Thinker.h"
 #include "ScriptSystem.h"
 #include "SpecialFolders.h"
@@ -155,6 +156,11 @@ namespace dcclite::broker
 		if (!services.IsArray())
 		{
 			throw std::runtime_error("[Broker] [LoadConfig] error: invalid config, expected services array");
+		}
+
+		{
+			auto infoService = std::make_unique<InfoService>(RName{ "infoService" }, *this, this->m_clProject);
+			m_pServices->AddChild(std::move(infoService));
 		}
 
 		auto bonjourSetting = data.FindMember("bonjourService");
