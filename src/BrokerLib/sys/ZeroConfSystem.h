@@ -14,7 +14,7 @@
 #include "Service.h"
 #include "Socket.h"
 
-namespace dcclite::broker::ZeroconfService
+namespace dcclite::broker::ZeroConfSystem
 { 		
 	extern void Start(std::string_view projectName);
 		

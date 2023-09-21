@@ -24,7 +24,7 @@
 #include "Socket.h"
 
 #include "../sys/EventHub.h"
-#include "../sys/ScriptService.h"
+#include "../sys/ScriptSystem.h"
 #include "../sys/Thinker.h"
 
 namespace dcclite::broker
@@ -72,7 +72,7 @@ namespace dcclite::broker
 			sigslot::scoped_connection	m_slotObjectManagerConnection;
 	};
 
-	class DccLiteService : public Service, private IDccLite_DeviceServices, private IDccLite_DecoderServices, public EventHub::IEventTarget, public ScriptService::IScriptSupport
+	class DccLiteService : public Service, private IDccLite_DeviceServices, private IDccLite_DecoderServices, public EventHub::IEventTarget, public ScriptSystem::IScriptSupport
 	{
 		public:
 			DccLiteService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);

@@ -6,7 +6,7 @@
 #include "../sys/BonjourService.h"
 #include "../sys/Broker.h"
 #include "../sys/EventHub.h"
-#include "../sys/ZeroconfService.h"
+#include "../sys/ZeroconfSystem.h"
 
 #include "Decoder.h"
 #include "DccLiteService.h"
@@ -675,7 +675,7 @@ ERROR_RESPONSE:
 		if (auto bonjourService = static_cast<BonjourService *>(m_rclBroker.TryFindService(RName{ BONJOUR_SERVICE_NAME })))
 			bonjourService->Register(this->GetName().GetData(), "dccpp", NetworkProtocol::TCP, port, 36);
 
-		ZeroconfService::Register(this->GetTypeName(), port);		
+		ZeroConfSystem::Register(this->GetTypeName(), port);
 	}
 
 	DccppServiceImpl::~DccppServiceImpl()

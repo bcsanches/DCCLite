@@ -19,8 +19,8 @@
 #include "FmtUtils.h"
 
 #include "../sys/Broker.h"
-#include "../sys/ScriptService.h"
 #include "../dcc/DccLiteService.h"
+#include "../sys/ScriptSystem.h"
 #include "../dcc/Device.h"
 #include "../dcc/VirtualSensorDecoder.h"
 
@@ -105,7 +105,7 @@ namespace dcclite::broker
 	//
 	///////////////////////////////////////////////////////////////////////////////
 
-	class DispatcherServiceImpl : public DispatcherService, public ScriptService::IScriptSupport, public IResettableService
+	class DispatcherServiceImpl : public DispatcherService, public ScriptSystem::IScriptSupport, public IResettableService
 	{
 		public:
 			DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);

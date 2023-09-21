@@ -20,7 +20,7 @@ namespace dcclite::broker
 	class Broker;
 }
 
-namespace dcclite::broker::ScriptService
+namespace dcclite::broker::ScriptSystem
 {
 	class IScriptSupport
 	{

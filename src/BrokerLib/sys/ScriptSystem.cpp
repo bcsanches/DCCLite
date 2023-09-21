@@ -8,7 +8,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "ScriptService.h"
+#include "ScriptSystem.h"
 
 #include <sol/sol.hpp>
 
@@ -22,7 +22,7 @@
 #include "Project.h"
 
 
-namespace dcclite::broker::ScriptService
+namespace dcclite::broker::ScriptSystem
 {
 	static sol::state g_clLua;	
 

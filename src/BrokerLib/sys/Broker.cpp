@@ -39,9 +39,9 @@
 #include "BonjourService.h"
 
 #include "Thinker.h"
-#include "ScriptService.h"
+#include "ScriptSystem.h"
 #include "SpecialFolders.h"
-#include "ZeroconfService.h"
+#include "ZeroConfSystem.h"
 
 //win32 header leak
 #undef GetObject
@@ -126,10 +126,10 @@ namespace dcclite::broker
 
 		this->LoadConfig();
 
-		ScriptService::Start(*this, m_clProject);
+		ScriptSystem::Start(*this, m_clProject);
 
 		//Start after load, so project name is already loaded
-		ZeroconfService::Start(m_clProject.GetName());
+		ZeroConfSystem::Start(m_clProject.GetName());
 	}
 
 	void Broker::LoadConfig()

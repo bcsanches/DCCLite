@@ -86,16 +86,16 @@ add_library(
         sys/EventHub.h
         sys/Project.cpp
         sys/Project.h
-	    sys/ScriptService.cpp
-	    sys/ScriptService.h
+	    sys/ScriptSystem.cpp
+	    sys/ScriptSystem.h
         sys/Service.cpp
         sys/Service.h
         sys/SpecialFolders.cpp
         sys/SpecialFolders.h
         sys/Thinker.cpp
         sys/Thinker.h
-        sys/ZeroconfService.cpp
-        sys/ZeroconfService.h
+        sys/ZeroConfSystem.cpp
+        sys/ZeroConfSystem.h
         terminal/TerminalCmd.cpp
         terminal/TerminalCmd.h
         terminal/TerminalService.cpp
