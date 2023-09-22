@@ -1019,6 +1019,44 @@ namespace dcclite::broker
 				return std::make_unique<ServoProgrammerDeployMonitorFiber>(id, context, *task);				
 			}
 	};
+
+	//
+	//
+	// RName
+	//
+	//
+
+	class GetRNames : public TerminalCmd
+	{
+		public:
+			explicit GetRNames(RName name = RName{ "Get-RNames" }) :
+				TerminalCmd(name)
+			{
+				//empty
+			}
+
+			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
+			{
+				auto names = dcclite::detail::RName_GetAll();				
+
+				return MakeRpcResultMessage(id, [&names](Result_t &results)
+					{
+						auto dataArray = results.AddArray("rnames");
+						for (auto it : names)
+						{
+							auto obj = dataArray.AddObject();
+
+							obj.AddStringValue("name", it.GetData());
+							obj.AddIntValue("index", it.GetIndex());
+
+							auto clusterInfo = it.FindClusterInfo();
+							obj.AddIntValue("cluster", clusterInfo.first);
+							obj.AddIntValue("position", clusterInfo.second);
+						}						
+					}
+				);
+			}
+	};
 	
 
 	//
@@ -1475,6 +1513,10 @@ namespace dcclite::broker
 
 		{
 			cmdHost->AddCmd(std::make_unique<ResetCmd>());
+		}
+
+		{
+			cmdHost->AddCmd(std::make_unique<GetRNames>());
 		}
 
 		const auto port = params["port"].GetInt();

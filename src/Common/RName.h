@@ -12,6 +12,7 @@
 
 #include <string_view>
 #include <optional>
+#include <vector>
 
 /**
 * 
@@ -29,6 +30,8 @@
 namespace dcclite
 {
 	typedef uint32_t NameIndexType_t;
+
+	class RName;
 
 	namespace detail
 	{
@@ -69,6 +72,8 @@ namespace dcclite
 		uint16_t RName_GetNumClusters() noexcept;
 
 		RNameClusterInfo RName_GetClusterInfo(uint16_t cluster);
+
+		std::vector<RName> RName_GetAll();
 	}
 
 	class RName
@@ -125,6 +130,8 @@ namespace dcclite
 			//
 			// Helpers for unit testing, should be useless on regular systems
 			//			
+			// Those are internal data, interface is not guarantee, so you SHOULD not use it or depend on it...
+			//
 
 			inline NameIndexType_t GetIndex() const
 			{
@@ -132,6 +139,9 @@ namespace dcclite
 			}
 
 			uint32_t FindCluster() const;
+
+			//returns cluster id (first) and position inside cluster
+			std::pair<uint32_t, uint32_t> FindClusterInfo() const;
 
 		private:			
 #ifdef DCCLITE_DEBUG

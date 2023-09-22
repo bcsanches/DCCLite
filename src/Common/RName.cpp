@@ -78,6 +78,9 @@ namespace dcclite::detail
 			}
 
 			uint32_t FindNameCluster(NameIndexType_t index);
+			std::pair<uint32_t, uint32_t> FindClusterInfo(NameIndexType_t index);
+
+			std::vector<RName> GetAll();
 			
 
 		private:
@@ -261,6 +264,35 @@ namespace dcclite::detail
 		}
 	}
 
+	std::vector<RName> RNameState::GetAll()
+	{
+		std::vector<RName> result;
+
+		result.reserve(m_mapIndex.size());
+
+		for (auto it : m_mapIndex)
+		{
+			auto index = it.second;
+
+#ifdef DCCLITE_DEBUG
+			result.push_back(RName{ index[0], this->GetName(index[0])});
+#else
+			result.push_back(RName{ index[0]});
+#endif			
+
+			if (index[1])
+			{
+#ifdef DCCLITE_DEBUG
+				result.push_back(RName{ index[1], this->GetName(index[1]) });
+#else
+				result.push_back(RName{ index[1] });
+#endif			
+			}
+		}
+
+		return result;
+	}
+
 	uint32_t RNameState::FindNameCluster(NameIndexType_t index)
 	{
 		auto name = m_vecNames[index];
@@ -272,6 +304,17 @@ namespace dcclite::detail
 		}
 
 		throw std::runtime_error(fmt::format("[RNameState::FindNameCluster] cluster for {} not found, where is it?", name));
+	}
+
+	std::pair<uint32_t, uint32_t> RNameState::FindClusterInfo(NameIndexType_t index)
+	{
+		auto name = m_vecNames[index];
+
+		auto cluster = this->FindNameCluster(index);
+
+		auto position = static_cast<uint32_t>(name.data() - &m_vecClusters[cluster]->m_arNames[0]);
+
+		return std::make_pair(cluster, position);
 	}
 
 	static RNameState &GetState()
@@ -316,6 +359,11 @@ namespace dcclite
 	{
 		return detail::GetState().FindNameCluster(this->m_stIndex.m_uIndex);
 	}
+
+	std::pair<uint32_t, uint32_t> RName::FindClusterInfo() const
+	{
+		return detail::GetState().FindClusterInfo(this->m_stIndex.m_uIndex);
+	}
 }
 
 namespace dcclite::detail
@@ -332,6 +380,13 @@ namespace dcclite::detail
 		auto &state = GetState();
 
 		return state.GetClusterInfo(cluster);
+	}
+
+	std::vector<RName> RName_GetAll()
+	{
+		auto &state = GetState();
+
+		return state.GetAll();
 	}
 }
 

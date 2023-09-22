@@ -440,6 +440,10 @@ namespace SharpTerminal
                     obj = new Dispatcher.RemoteSection(name, className, path, id, parentInternalId, objectDef);
                     break;
 
+                case "InfoService":
+                    obj = new RemoveInfoService(name, className, path, id, parentInternalId);
+                    break;
+
                 default:
                     obj = objectDef["isFolder"] ? new RemoteFolder(name, className, path, id, parentInternalId) : new RemoteObject(name, className, path, id, parentInternalId);
                     break;

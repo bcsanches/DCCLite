@@ -44,6 +44,10 @@ add_executable(SharpTerminal
   RemoteDeviceUserControl.Designer.cs
   RemoteDeviceUserControl.resx
   RemoteDispatcher.cs
+  RemoteInfoService.cs
+  RemoteInfoServiceUserControl.cs
+  RemoteInfoServiceUserControl.Designer.cs
+  RemoteInfoServiceUserControl.resx
   RemoteLocationManager.cs
   RemoteLocationManagerUserControl.cs
   RemoteLocationManagerUserControl.Designer.cs
@@ -132,6 +136,10 @@ csharp_set_windows_forms_properties(
     RemoteDeviceUserControl.cs
     RemoteDeviceUserControl.Designer.cs
     RemoteDeviceUserControl.resx
+
+    RemoteInfoServiceUserControl.cs
+    RemoteInfoServiceUserControl.Designer.cs
+    RemoteInfoServiceUserControl.resx
 
     RemoteLocationManagerUserControl.cs
     RemoteLocationManagerUserControl.Designer.cs
