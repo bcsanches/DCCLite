@@ -28,7 +28,7 @@ namespace dcclite::broker
 	class Service;
 	class TerminalCmdHost;
 
-	class Broker
+	class Broker: public FolderObject
 	{
 		public:
 			explicit Broker(dcclite::fs::path projectPath);
@@ -47,10 +47,14 @@ namespace dcclite::broker
 				return m_pclTerminalCmdHost;
 			}
 
+			const char *GetTypeName() const noexcept override
+			{
+				return "dcclite::Broker";
+			}
+
 			Service &ResolveRequirement(const char *requirement);
 
-		private:	
-			dcclite::FolderObject	m_clRoot;
+		private:				
 			dcclite::FolderObject	*m_pServices;
 
 			TerminalCmdHost			*m_pclTerminalCmdHost = nullptr;

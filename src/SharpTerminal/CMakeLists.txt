@@ -44,10 +44,9 @@ add_executable(SharpTerminal
   RemoteDeviceUserControl.Designer.cs
   RemoteDeviceUserControl.resx
   RemoteDispatcher.cs
-  RemoteInfoService.cs
-  RemoteInfoServiceUserControl.cs
-  RemoteInfoServiceUserControl.Designer.cs
-  RemoteInfoServiceUserControl.resx
+  DashboardUserControl.cs
+  DashboardUserControl.Designer.cs
+  DashboardUserControl.resx
   RemoteLocationManager.cs
   RemoteLocationManagerUserControl.cs
   RemoteLocationManagerUserControl.Designer.cs
@@ -63,6 +62,7 @@ add_executable(SharpTerminal
   RemoteObjectUserControl.cs
   RemoteObjectUserControl.Designer.cs
   RemoteObjectUserControl.resx  
+  RemoteRoot.cs
   RemoteShortcutUserControl.cs
   RemoteShortcutUserControl.Designer.cs
   RemoteShortcutUserControl.resx
@@ -129,9 +129,9 @@ csharp_set_windows_forms_properties(
     ObjectsTreeViewUserControl.Designer.cs
     ObjectsTreeViewUserControl.resx    
     
-    RemoteObjectUserControl.cs
-    RemoteObjectUserControl.Designer.cs
-    RemoteObjectUserControl.resx
+    DashboardUserControl.cs
+    DashboardUserControl.Designer.cs
+    DashboardUserControl.resx
 
     RemoteDeviceUserControl.cs
     RemoteDeviceUserControl.Designer.cs

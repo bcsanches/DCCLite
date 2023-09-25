@@ -380,8 +380,13 @@ namespace SharpTerminal
             ulong parentInternalId = objectDef.ContainsKey("parentInternalId") ? (ulong)objectDef["parentInternalId"] : 0;
 
             RemoteObject obj;
+            
             switch (className)
             {
+                case "dcclite::Broker":
+                    obj = new RemoteRoot(name, className, path, id, parentInternalId);
+                    break;
+
                 case "dcclite::Shortcut":
                     obj = new RemoteShortcut(name, className, path, id, parentInternalId, objectDef["target"]);
                     break;
@@ -391,32 +396,13 @@ namespace SharpTerminal
                     obj = new RemoteDecoder(name, className, path, id, parentInternalId, objectDef);
                     break;
 
-                case "TurnoutDecoder":
-                case "VirtualTurnoutDecoder":
-                    obj = new RemoteTurnoutDecoder(name, className, path, id, parentInternalId, objectDef);
+                case "Dispatcher":
+                    obj = new Dispatcher.RemoteDispatcher(name, className, path, id, parentInternalId);
                     break;
 
-                case "ServoTurnoutDecoder":                
-                    obj = new RemoteServoTurnoutDecoder(name, className, path, id, parentInternalId, objectDef);
-                    break;
-
-                case "VirtualSensorDecoder":
-                case "SensorDecoder":
-                    obj = new RemoteSensorDecoder(name, className, path, id, parentInternalId, objectDef);
-                    break;
-
-                case "SignalDecoder":
-                    obj = new RemoteSignalDecoder(name, className, path, id, parentInternalId, objectDef);
-                    break;
-
-                case "SimpleOutputDecoder":
-                case "OutputDecoder":
-                case "QuadInverterDecoder":
-                    obj = new RemoteOutputDecoder(name, className, path, id, parentInternalId, objectDef);
-                    break;
-
-                case "NetworkDevice":                
-                    obj = new RemoteDevice(name, className, path, id, parentInternalId, objectDef);
+                case "Dispatcher::Section":
+                case "Dispatcher::TSection":
+                    obj = new Dispatcher.RemoteSection(name, className, path, id, parentInternalId, objectDef);
                     break;
 
                 case "Location":
@@ -431,21 +417,36 @@ namespace SharpTerminal
                     obj = new RemoteLoconetService(name, className, path, id, parentInternalId, objectDef);
                     break;
 
-                case "Dispatcher":
-                    obj = new Dispatcher.RemoteDispatcher(name, className, path, id, parentInternalId);
-                    break;
-                
-                case "Dispatcher::Section":
-                case "Dispatcher::TSection":
-                    obj = new Dispatcher.RemoteSection(name, className, path, id, parentInternalId, objectDef);
+                case "NetworkDevice":
+                    obj = new RemoteDevice(name, className, path, id, parentInternalId, objectDef);
                     break;
 
-                case "InfoService":
-                    obj = new RemoveInfoService(name, className, path, id, parentInternalId);
+                case "SensorDecoder":
+                case "VirtualSensorDecoder":
+                    obj = new RemoteSensorDecoder(name, className, path, id, parentInternalId, objectDef);
                     break;
+
+                case "ServoTurnoutDecoder":
+                    obj = new RemoteServoTurnoutDecoder(name, className, path, id, parentInternalId, objectDef);
+                    break;
+
+                case "SignalDecoder":
+                    obj = new RemoteSignalDecoder(name, className, path, id, parentInternalId, objectDef);
+                    break;
+
+                case "SimpleOutputDecoder":
+                case "OutputDecoder":
+                case "QuadInverterDecoder":
+                    obj = new RemoteOutputDecoder(name, className, path, id, parentInternalId, objectDef);
+                    break;                
+
+                case "TurnoutDecoder":
+                case "VirtualTurnoutDecoder":
+                    obj = new RemoteTurnoutDecoder(name, className, path, id, parentInternalId, objectDef);
+                    break;                                
 
                 default:
-                    obj = objectDef["isFolder"] ? new RemoteFolder(name, className, path, id, parentInternalId) : new RemoteObject(name, className, path, id, parentInternalId);
+                    obj = objectDef["isFolder"] ? new RemoteFolder(name, className, path, id, parentInternalId) : new RemoteObject(name, className, path, id, parentInternalId);                                   
                     break;
             }
 

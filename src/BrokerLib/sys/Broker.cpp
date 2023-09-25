@@ -38,7 +38,6 @@
 
 #include "BonjourService.h"
 
-#include "InfoService.h"
 #include "Thinker.h"
 #include "ScriptSystem.h"
 #include "SpecialFolders.h"
@@ -108,20 +107,20 @@ namespace dcclite::broker
 		}
 	}
 
-	Broker::Broker(dcclite::fs::path projectPath) :
-		m_clRoot(RName{ "root" }),
+	Broker::Broker(dcclite::fs::path projectPath):		
+		FolderObject{ RName{"root"} },
 		m_clProject(std::move(projectPath))
 	{		
 		{
 			auto cmdHost = std::make_unique<TerminalCmdHost>();
 			m_pclTerminalCmdHost = cmdHost.get();
 
-			m_clRoot.AddChild(std::move(cmdHost));
+			this->AddChild(std::move(cmdHost));
 		}
 
 		using namespace dcclite;
 
-		m_pServices = static_cast<FolderObject *>(m_clRoot.AddChild(
+		m_pServices = static_cast<FolderObject *>(this->AddChild(
 			std::make_unique<FolderObject>(SpecialFolders::GetName(SpecialFolders::Folders::ServicesId)))
 		);				
 
@@ -156,11 +155,6 @@ namespace dcclite::broker
 		if (!services.IsArray())
 		{
 			throw std::runtime_error("[Broker] [LoadConfig] error: invalid config, expected services array");
-		}
-
-		{
-			auto infoService = std::make_unique<InfoService>(RName{ "infoService" }, *this, this->m_clProject);
-			m_pServices->AddChild(std::move(infoService));
 		}
 
 		auto bonjourSetting = data.FindMember("bonjourService");

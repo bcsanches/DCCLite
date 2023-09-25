@@ -177,12 +177,11 @@ namespace SharpTerminal
                     break;
 
                 case "/help":
-                    Console_Println("/clear");
-                    Console_Println("/disconnect");
-                    Console_Println("/mac");
-                    Console_Println("/quit");
-                    Console_Println("/reconnect");
-                    Console_Println("/udping");
+                    foreach(var cmd in mKnownCmds)
+                    {
+                        if (cmd.StartsWith("/"))
+                            Console_Println(cmd);
+                    }                    
                     break;
 
                 default:
@@ -346,9 +345,10 @@ namespace SharpTerminal
         {
             mKnownCmds.Add("/clear");
             mKnownCmds.Add("/disconnect");
+            mKnownCmds.Add("/mac");
             mKnownCmds.Add("/quit");
             mKnownCmds.Add("/reconnect");
-            mKnownCmds.Add("/udpping");
+            mKnownCmds.Add("/udpping");            
         }
 
         void KnownCmds_RetrieveRemoteCmds()

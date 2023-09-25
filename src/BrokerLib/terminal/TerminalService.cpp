@@ -1041,6 +1041,7 @@ namespace dcclite::broker
 
 				return MakeRpcResultMessage(id, [&names](Result_t &results)
 					{
+						results.AddStringValue("classname", "RNames");
 						auto dataArray = results.AddArray("rnames");
 						for (auto it : names)
 						{

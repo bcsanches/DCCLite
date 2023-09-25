@@ -1,6 +1,6 @@
 ﻿namespace SharpTerminal
 {
-    partial class RemoveInfoServiceUserControl
+    partial class DashboardUserControl
     {
         /// <summary> 
         /// Required designer variable.
@@ -28,13 +28,15 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.m_gridMain = new System.Windows.Forms.DataGridView();
-            this.m_lbTitle = new System.Windows.Forms.Label();
             this.Index = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.m_lbTitle = new System.Windows.Forms.Label();
+            this.mLoadTimer = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.m_gridMain)).BeginInit();
             this.SuspendLayout();
             // 
@@ -50,23 +52,13 @@
             this.Column2,
             this.Column5,
             this.Column4});
-            this.m_gridMain.Location = new System.Drawing.Point(0, 38);
+            this.m_gridMain.Location = new System.Drawing.Point(3, 38);
             this.m_gridMain.MultiSelect = false;
             this.m_gridMain.Name = "m_gridMain";
             this.m_gridMain.ReadOnly = true;
             this.m_gridMain.RowHeadersVisible = false;
-            this.m_gridMain.Size = new System.Drawing.Size(333, 204);
+            this.m_gridMain.Size = new System.Drawing.Size(327, 201);
             this.m_gridMain.TabIndex = 0;
-            // 
-            // m_lbTitle
-            // 
-            this.m_lbTitle.AutoSize = true;
-            this.m_lbTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.m_lbTitle.Location = new System.Drawing.Point(3, 9);
-            this.m_lbTitle.Name = "m_lbTitle";
-            this.m_lbTitle.Size = new System.Drawing.Size(114, 24);
-            this.m_lbTitle.TabIndex = 1;
-            this.m_lbTitle.Text = "InfoService";
             // 
             // Index
             // 
@@ -112,13 +104,28 @@
             this.Column4.Name = "Column4";
             this.Column4.ReadOnly = true;
             // 
-            // RemoveInfoServiceUserControl
+            // m_lbTitle
+            // 
+            this.m_lbTitle.AutoSize = true;
+            this.m_lbTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.m_lbTitle.Location = new System.Drawing.Point(3, 9);
+            this.m_lbTitle.Name = "m_lbTitle";
+            this.m_lbTitle.Size = new System.Drawing.Size(111, 24);
+            this.m_lbTitle.TabIndex = 1;
+            this.m_lbTitle.Text = "Dashboard";
+            // 
+            // mLoadTimer
+            // 
+            this.mLoadTimer.Interval = 50;
+            this.mLoadTimer.Tick += new System.EventHandler(this.mLoadTimer_Tick);
+            // 
+            // DashboardUserControl
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.m_lbTitle);
             this.Controls.Add(this.m_gridMain);
-            this.Name = "RemoveInfoServiceUserControl";
+            this.Name = "DashboardUserControl";
             this.Size = new System.Drawing.Size(333, 242);
             ((System.ComponentModel.ISupportInitialize)(this.m_gridMain)).EndInit();
             this.ResumeLayout(false);
@@ -135,5 +142,6 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column5;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column4;
+        private System.Windows.Forms.Timer mLoadTimer;
     }
 }

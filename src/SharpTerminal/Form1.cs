@@ -9,7 +9,6 @@
 // defined by the Mozilla Public License, v. 2.0.
 
 using System;
-using System.Json;
 using System.Windows.Forms;
 
 namespace SharpTerminal
