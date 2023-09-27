@@ -50,9 +50,17 @@ namespace SharpTerminal
                 var dataTable = new DataTable();                
 
                 dataTable.Columns.Add("Index");
+                dataTable.Columns["Index"].DataType = typeof(int);
+
                 dataTable.Columns.Add("Pos");
+                dataTable.Columns["Pos"].DataType = typeof(int);
+
                 dataTable.Columns.Add("Cluster");
+                dataTable.Columns["Cluster"].DataType = typeof(int);
+
                 dataTable.Columns.Add("Length");
+                dataTable.Columns["Length"].DataType = typeof(int);
+
                 dataTable.Columns.Add("Name");                
 
                 for (int i = 0;i < namesData.Count; ++i)
