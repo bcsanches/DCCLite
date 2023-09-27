@@ -6,7 +6,7 @@
 #include "../sys/BonjourService.h"
 #include "../sys/Broker.h"
 #include "../sys/EventHub.h"
-#include "../sys/ZeroconfSystem.h"
+#include "../sys/ZeroConfSystem.h"
 
 #include "Decoder.h"
 #include "DccLiteService.h"

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Drawing;
-using System.Net.Http.Headers;
 using System.Windows.Forms;
 
 namespace SharpTerminal
@@ -32,15 +30,13 @@ namespace SharpTerminal
             if (mConsole == null)
                 return;
 
-            var result = await mConsole.RequestAsync("Get-RNames");
-            mLoadTimer.Stop();
+            var result = await mConsole.RequestAsync("Get-RNames");            
 
             if (result["classname"] != "RNames")
             {
                 m_lbTitle.Text = "Error loading data";
 
-                MessageBox.Show("Error: classname is " + result["classname"]);
-                
+                MessageBox.Show("Error: classname is " + result["classname"]);                
             }
             else
             {
@@ -86,7 +82,8 @@ namespace SharpTerminal
                 m_gridMain.Columns[4].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
 
                 m_gridMain.ResumeLayout();
-            }            
+            }
+            mLoadTimer.Stop();
         }
 
         private IConsole    mConsole;
