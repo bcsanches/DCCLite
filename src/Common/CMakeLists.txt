@@ -18,8 +18,8 @@ add_library(
         NmraUtil.h
         Object.cpp
         Object.h
-	RName.cpp
-	RName.h
+	    RName.cpp
+	    RName.h
         Sha1.cpp
         PathUtils.cpp
         PathUtils.h	
@@ -56,6 +56,8 @@ else(WIN32)
 endif(WIN32)
 		
 target_compile_features(Common PUBLIC cxx_std_17)     
+
+target_link_libraries(Common PUBLIC CityHash fmt SharedLib)
 
 target_include_directories(Common
   PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/cityhash/
