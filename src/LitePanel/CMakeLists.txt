@@ -41,12 +41,12 @@ if(WIN32)
     wx::gl
 	)
 
-	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-  add_compile_definitions(WXUSINGDLL)
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+    add_compile_definitions(WXUSINGDLL)
     
-  set_property(TARGET LitePanel PROPERTY VS_DEBUGGER_ENVIRONMENT "PATH=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/vc_dll")
-  set_property(TARGET LitePanel PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
-  set_property(TARGET LitePanel PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "..\\data\\EFMR")
+    set_property(TARGET LitePanel PROPERTY VS_DEBUGGER_ENVIRONMENT "PATH=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/vc_dll;${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/vc_x64_dll")
+    set_property(TARGET LitePanel PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
+    set_property(TARGET LitePanel PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "..\\data\\EFMR")
       
 else(WIN32)
 

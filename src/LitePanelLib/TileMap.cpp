@@ -20,7 +20,7 @@
 namespace LitePanel
 {
 	TileLayer::TileLayer(const TileCoord_t size):
-		m_vecMap{size.m_tX * size.m_tY},
+		m_vecMap{static_cast<size_t>(size.m_tX * size.m_tY)},
 		m_tSize{size}
 	{
 		assert(size.m_tX > 0);

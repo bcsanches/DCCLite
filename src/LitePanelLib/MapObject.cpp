@@ -21,7 +21,7 @@ namespace LitePanel
 	}	
 
 	MapObject::MapObject(const rapidjson::Value &params):
-		m_tPosition{params["x"].GetInt(), params["y"].GetInt() }
+		m_tPosition{static_cast<uint8_t>(params["x"].GetInt()), static_cast<uint8_t>(params["y"].GetInt())}
 	{
 		//empty
 	}
