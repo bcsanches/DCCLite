@@ -100,6 +100,7 @@ if (${DCCLITE_SHARP_TOOLS})
 endif()
 
 if(${DCCLITE_IMGUI_TOOLS})
+    set_property(TARGET IMGUI PROPERTY FOLDER "contrib")
     set_property(TARGET SDL3-shared PROPERTY FOLDER "contrib/SDL")
     set_property(TARGET uninstall PROPERTY FOLDER "contrib/SDL")
     set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)

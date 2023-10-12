@@ -4,6 +4,7 @@ target_compile_features(LitePanelSDL PUBLIC cxx_std_17)
 
 target_include_directories(LitePanelSDL 
 	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/fmt/include
+	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/imgui/
 	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/SDL/include
 	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/spdlog/include
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/Common
@@ -13,6 +14,7 @@ if(WIN32)
     target_link_libraries(LitePanelSDL 
 		PRIVATE Common	
 		PRIVATE SDL3-shared
+		PRIVATE IMGUI
     )
 
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
