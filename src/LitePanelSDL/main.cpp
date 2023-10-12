@@ -79,8 +79,8 @@ int main(int argc, char **argv)
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
 		// Setup Dear ImGui style
-		ImGui::StyleColorsDark();
-		//ImGui::StyleColorsLight();
+		//ImGui::StyleColorsDark();
+		ImGui::StyleColorsClassic();
 
 		// Setup Platform/Renderer backends
 		ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
@@ -108,7 +108,7 @@ int main(int argc, char **argv)
 				if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(window))
 					fExitRequested = true;
 
-#if 0
+#if 1
 				if (event.type == SDL_EVENT_KEY_DOWN)
 				{
 					if(event.key.keysym.sym == SDLK_ESCAPE)
