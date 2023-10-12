@@ -12,6 +12,7 @@ add_compile_definitions(DCCLITE_VERSION=\"${DCCLITE_VERSION}\")
 
 option(DCCLITE_GUI_TOOLS "Build GUI tools (LitePanel and LiteWiring)")
 option(DCCLITE_GUI_SHARP_TOOLS "Build C# GUI tools - SharpTerminal")
+option(DCCLITE_IMGUI_TOOLS "Build IMGUI tools")
 
 
 set( CMAKE_EXPORT_COMPILE_COMMANDS on)
@@ -96,6 +97,12 @@ if (${DCCLITE_SHARP_TOOLS})
     set_property(TARGET SharpDude PROPERTY FOLDER "Tools")
     set_property(TARGET SharpTerminal PROPERTY FOLDER "Tools")
     set_property(TARGET SharpEEpromViewer PROPERTY FOLDER "Tools")
+endif()
+
+if(${DCCLITE_IMGUI_TOOLS})
+    set_property(TARGET SDL3-shared PROPERTY FOLDER "contrib/SDL")
+    set_property(TARGET uninstall PROPERTY FOLDER "contrib/SDL")
+    set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
 endif()
 
 include(InstallRequiredSystemLibraries)

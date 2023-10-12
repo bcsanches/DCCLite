@@ -24,6 +24,10 @@ if (${DCCLITE_GUI_TOOLS})
   add_subdirectory(LiteWiring)
 endif()
 
+if(${DCCLITE_IMGUI_TOOLS})
+	add_subdirectory(LitePanelSDL)
+endif()
+
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	if(${DCCLITE_GUI_SHARP_TOOLS})
         add_subdirectory(SharpCommon)        

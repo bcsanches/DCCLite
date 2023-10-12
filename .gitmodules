@@ -31,3 +31,6 @@
 [submodule "contrib/ldmonitor"]
 	path = contrib/ldmonitor
 	url = https://github.com/bcsanches/ldmonitor.git
+[submodule "contrib/SDL"]
+	path = contrib/SDL
+	url = https://github.com/libsdl-org/SDL.git
