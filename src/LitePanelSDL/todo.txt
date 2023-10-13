@@ -1,0 +1,30 @@
+LitePanelSDL
+
+- Main application, split between Editor and Runner
+
+- When loading:
+	- if no file provided or no previous working project:
+		- prompt with new project dialog
+
+	- if previous project on working mode, load editor
+	- if preivous project on runner mode, load runner
+
+- Main App:
+	- Will switch between Editor and Runner
+	- class Editor: LitePanelApp
+
++---------------------------------------------------+
+| File | Edit | Help                                |
++------+--------------------------------------------+
+|      |
+|      |      working area
+|      |
+
+- Main design
+	- multiple panels (each a tab on Tool)
+	- save all data on a single file
+
+
+- Requirements:
+	- every save, put a copy of previous file on temp with a timestamp
+	- allow recovery of previous version from the temp (if exists)
