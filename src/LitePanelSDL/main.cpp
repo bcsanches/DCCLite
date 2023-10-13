@@ -16,9 +16,11 @@
 
 #include <spdlog/logger.h>
 
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
 #include "backends/imgui_impl_sdl3.h"
 #include "backends/imgui_impl_sdlrenderer3.h"
+#include "imgui_internal.h"
 
 constexpr auto BUILD_NUM = DCCLITE_VERSION;
 
@@ -86,22 +88,22 @@ static void ShowAboutWindow(bool *p_open)
 	ImGui::End();	
 }
 
-static void RenderMainWindow()
+static void DisplayMainWindow()
 {	
-	static bool show_about = false;
+	static bool show_about = false;	
+	const ImGuiWindowFlags flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 
-	static bool use_work_area = true;
-	static ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_MenuBar;
+	if (ImGui::Begin("main area", nullptr, flags))
+	{	
+		const ImGuiViewport *viewport = ImGui::GetMainViewport();
+		auto drawList = ImGui::GetWindowDrawList();
 
-	// We demonstrate using the full viewport area or the work area (without menu-bars, task-bars etc.)
-	// Based on your use case you may want one or the other.
-	const ImGuiViewport *viewport = ImGui::GetMainViewport();
-	ImGui::SetNextWindowPos(use_work_area ? viewport->WorkPos : viewport->Pos);
-	ImGui::SetNextWindowSize(use_work_area ? viewport->WorkSize : viewport->Size);
+		//status bar
+		{
+			
+		}
 
-	if (ImGui::Begin("Main Window", nullptr, flags))
-	{
-		if (ImGui::BeginMenuBar())
+		if (ImGui::BeginMainMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))
 			{
@@ -122,24 +124,16 @@ static void RenderMainWindow()
 				ImGui::EndMenu();
 			}
 
-			ImGui::EndMenuBar();
+			ImGui::EndMainMenuBar();
 		}
+			
+		ImGui::SetNextWindowPos(viewport->WorkPos);
+		ImGui::SetNextWindowSize(viewport->WorkSize);	
 
-		ImGui::Checkbox("Use work area instead of main area", &use_work_area);
-		ImGui::SameLine();
-		//HelpMarker("Main Area = entire viewport,\nWork Area = entire viewport minus sections used by the main menu bars, task bars etc.\n\nEnable the main-menu bar in Examples menu to see the difference.");
-
-		ImGui::CheckboxFlags("ImGuiWindowFlags_NoBackground", &flags, ImGuiWindowFlags_NoBackground);
-		ImGui::CheckboxFlags("ImGuiWindowFlags_NoDecoration", &flags, ImGuiWindowFlags_NoDecoration);
-		ImGui::Indent();
-		ImGui::CheckboxFlags("ImGuiWindowFlags_NoTitleBar", &flags, ImGuiWindowFlags_NoTitleBar);
-		ImGui::CheckboxFlags("ImGuiWindowFlags_NoCollapse", &flags, ImGuiWindowFlags_NoCollapse);
-		ImGui::CheckboxFlags("ImGuiWindowFlags_NoScrollbar", &flags, ImGuiWindowFlags_NoScrollbar);
-		ImGui::Unindent();		
+		ImGui::Text("Hello world");		
 	}
-
 	ImGui::End();
-
+		
 	if (show_about)
 		ShowAboutWindow(&show_about);
 }
@@ -196,6 +190,7 @@ int main(int argc, char **argv)
 		ImGuiIO &io = ImGui::GetIO(); (void)io;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
 		// Setup Dear ImGui style
 		//ImGui::StyleColorsDark();
@@ -236,7 +231,7 @@ int main(int argc, char **argv)
 			ImGui_ImplSDL3_NewFrame();
 			ImGui::NewFrame();
 
-			RenderMainWindow();
+			DisplayMainWindow();
 
 			ImGuiDemoFunc();			
 
