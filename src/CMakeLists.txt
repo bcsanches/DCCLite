@@ -18,14 +18,10 @@ add_subdirectory(Emulator)
 add_subdirectory(Launcher)
 add_subdirectory(Terminal)
 
-if (${DCCLITE_GUI_TOOLS})
-  add_subdirectory(LitePanel)
-  add_subdirectory(LitePanelLib)
-  add_subdirectory(LiteWiring)
-endif()
+add_subdirectory(LitePanel)
 
-if(${DCCLITE_IMGUI_TOOLS})
-	add_subdirectory(LitePanelSDL)
+if (${DCCLITE_GUI_TOOLS})
+  add_subdirectory(LiteWiring)
 endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
