@@ -77,7 +77,7 @@ static void ImGuiDemoFunc()
 
 static void ShowAboutWindow(bool *p_open)
 {	
-	if (ImGui::Begin("About Lite Panel", p_open, ImGuiWindowFlags_AlwaysAutoResize))
+	if (ImGui::Begin("About Lite Panel", p_open, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse))
 	{
 		ImGui::Text("Lite Panel %s", DCCLITE_VERSION);
 		ImGui::Separator();
@@ -89,53 +89,208 @@ static void ShowAboutWindow(bool *p_open)
 }
 
 static void DisplayMainWindow()
-{	
-	static bool show_about = false;	
-	const ImGuiWindowFlags flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+{				
+	// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
+	// because it would be confusing to have two docking targets within each others.
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+	
+	const ImGuiViewport *viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(viewport->WorkPos);
+	ImGui::SetNextWindowSize(viewport->WorkSize);
+	ImGui::SetNextWindowViewport(viewport->ID);	
+	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;	
 
-	if (ImGui::Begin("main area", nullptr, flags))
-	{	
-		const ImGuiViewport *viewport = ImGui::GetMainViewport();
-		auto drawList = ImGui::GetWindowDrawList();
+	// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
+	// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
+	// all active windows docked into it will lose their parent and become undocked.
+	// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
+	// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
 
-		//status bar
+	//disable padding, rouding and border
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
+	ImGui::Begin("MainWindow", nullptr, window_flags);
+
+	//restore padding, rouding and border
+	ImGui::PopStyleVar(3);	
+
+	// Submit the DockSpace
+	ImGuiIO &io = ImGui::GetIO();
+	
+	ImGuiID dockspaceID = ImGui::GetID("MainDockSpace");	
+
+	ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_None;	
+	if (!ImGui::DockBuilderGetNode(dockspaceID)) 
+	{
+		ImGui::DockBuilderRemoveNode(dockspaceID);
+		ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_None);
+		ImGui::DockBuilderSetNodeSize(dockspaceID, viewport->WorkSize);
+
+		ImGuiID dock_main_id = dockspaceID;
+		//ImGuiID dock_up_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.05f, nullptr, &dock_main_id);
+		//ImGuiID dock_right_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.2f, nullptr, &dock_main_id);
+		ImGuiID dock_down_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.045f, nullptr, &dock_main_id);		
+		ImGuiID dock_left_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.045f, nullptr, &dock_main_id);		
+
+		ImGuiID work_area_bottom = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.2f, nullptr, &dock_main_id);
+		//ImGuiID dock_down_right_id = ImGui::DockBuilderSplitNode(dock_down_id, ImGuiDir_Right, 0.6f, nullptr, &dock_down_id);
+
+		//ImGui::DockBuilderDockWindow("Actions", dock_up_id);
+		//ImGui::DockBuilderDockWindow("Hierarchy", dock_right_id);
 		{
-			
+			ImGui::DockBuilderDockWindow("LToolBar", dock_left_id);
+			auto leftNode = ImGui::DockBuilderGetNode(dock_left_id);
+
+			leftNode->LocalFlags |= ImGuiDockNodeFlags_HiddenTabBar | ImGuiDockNodeFlags_NoUndocking;
 		}
 
-		if (ImGui::BeginMainMenuBar())
+		ImGui::DockBuilderDockWindow("StatusBar", dock_down_id);
+		//ImGui::DockBuilderSetNodeSize(dock_down_id, ImVec2{ viewport->WorkSize.x, 32 });
+
+#if 1
 		{
-			if (ImGui::BeginMenu("File"))
-			{
-				ImGui::MenuItem("Exit", "Ctrl+F4");
-
-				ImGui::EndMenu();
-			}
-
-			if (ImGui::BeginMenu("Edit"))
-			{				
-				ImGui::EndMenu();
-			}
-
-			if (ImGui::BeginMenu("Help"))
-			{
-				ImGui::MenuItem("About", nullptr, &show_about);
-
-				ImGui::EndMenu();
-			}
-
-			ImGui::EndMainMenuBar();
+			auto downNode = ImGui::DockBuilderGetNode(dock_down_id);
+			downNode->LocalFlags |= ImGuiDockNodeFlags_HiddenTabBar | ImGuiDockNodeFlags_NoUndocking;
 		}
-			
-		ImGui::SetNextWindowPos(viewport->WorkPos);
-		ImGui::SetNextWindowSize(viewport->WorkSize);	
+#endif
 
-		ImGui::Text("Hello world");		
+		ImGui::DockBuilderDockWindow("Console", work_area_bottom);
+
+		{
+			ImGui::DockBuilderDockWindow("WorkArea", dock_main_id);
+			auto mainNode = ImGui::DockBuilderGetNode(dock_main_id);
+			mainNode->LocalFlags |= ImGuiDockNodeFlags_HiddenTabBar | ImGuiDockNodeFlags_NoUndocking;
+		}
+
+		// Disable tab bar for custom toolbar
+		//ImGuiDockNode *node = ImGui::DockBuilderGetNode(dock_up_id);
+		//node->LocalFlags |= ImGuiDockNodeFlags_NoTabBar;
+
+		ImGui::DockBuilderFinish(dock_main_id);
+	}	
+	
+	ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+
+	static bool show_about = false;
+	static bool show_demo = false;
+	
+	if (ImGui::BeginMenuBar())
+	{
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::MenuItem("Exit", "Alt+F4"))
+				fExitRequested = true;
+
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("Edit"))
+		{
+			ImGui::EndMenu();
+		}		
+
+		if (ImGui::BeginMenu("Options"))
+		{									
+			ImGui::MenuItem("Show Demo Window", "", &show_demo);
+			
+			ImGui::EndMenu();
+		}		
+
+		if (ImGui::BeginMenu("Help"))
+		{
+			ImGui::MenuItem("About", nullptr, &show_about);
+
+			ImGui::EndMenu();
+		}
+
+		ImGui::EndMenuBar();
+	}
+
+	ImGui::End();
+
+	//https://github.com/ocornut/imgui/issues/2583
+	
+	//ImGui::SetNextWindowSize(ImVec2{ viewport->WorkSize.x, ImGui::GetTextLineHeightWithSpacing() });
+	if (ImGui::Begin("StatusBar", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+	{
+		ImGui::Text("Status Bar");
+		ImGui::SameLine();
+		ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+		ImGui::SameLine();
+
+		ImGui::Text("Status 2");
+	}
+	ImGui::End();		
+
+	//ImGui::SetNextWindowDockID(dock_left_id, ImGuiCond_Always);
+	if (ImGui::Begin("LToolBar", nullptr, ImGuiWindowFlags_NoCollapse))
+	{
+		ImGui::SmallButton("X");
+		ImGui::SameLine();
+		ImGui::SmallButton("Y");
+
+		ImGui::SmallButton("Z");
+		ImGui::SameLine();
+		ImGui::SmallButton("W");
 	}
 	ImGui::End();
-		
+
+	if (ImGui::Begin("WorkArea", nullptr, ImGuiWindowFlags_NoCollapse))
+	{
+		if (ImGui::BeginTabBar("MainTabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_AutoSelectNewTabs | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton))
+		{
+			static bool open = true;
+			if (ImGui::BeginTabItem("Untitled Panel", &open, 0))
+			{
+				ImVec2 canvas_p0 = ImGui::GetCursorScreenPos();      // ImDrawList API uses screen coordinates!
+				ImVec2 canvas_sz = ImGui::GetContentRegionAvail();   // Resize canvas to what's available
+
+				ImGui::Text("Cool! work area");
+
+				auto drawList = ImGui::GetWindowDrawList();
+
+				ImU32 col_b = ImGui::GetColorU32(IM_COL32(255, 0, 255, 255));				
+
+				drawList->AddLine(canvas_p0, canvas_p0 + canvas_sz, col_b);
+
+				ImGui::EndTabItem();
+			}
+
+			if (ImGui::BeginTabItem("Untitled Panel 2", nullptr, 0))
+			{
+				auto drawList = ImGui::GetWindowDrawList();
+
+				ImGui::Text("Gradients");
+				ImVec2 gradient_size = ImVec2(ImGui::CalcItemWidth(), ImGui::GetFrameHeight());
+				{
+					ImVec2 p0 = ImGui::GetCursorScreenPos();
+					ImVec2 p1 = ImVec2(p0.x + gradient_size.x, p0.y + gradient_size.y);
+					ImU32 col_a = ImGui::GetColorU32(IM_COL32(0, 0, 0, 255));
+					ImU32 col_b = ImGui::GetColorU32(IM_COL32(255, 255, 255, 255));
+					drawList->AddRectFilledMultiColor(p0, p1, col_a, col_b, col_b, col_a);
+					ImGui::InvisibleButton("##gradient1", gradient_size);
+				}
+
+				ImGui::EndTabItem();
+			}
+
+			ImGui::EndTabBar();
+		}		
+	}
+	ImGui::End();
+
+	ImGui::Begin("Console", nullptr, 0);
+	ImGui::Text("Cool! A console");
+	ImGui::End();
+
 	if (show_about)
 		ShowAboutWindow(&show_about);
+
+	if (show_demo)
+		ImGui::ShowDemoWindow(&show_demo);
 }
 
 int main(int argc, char **argv)
@@ -190,7 +345,8 @@ int main(int argc, char **argv)
 		ImGuiIO &io = ImGui::GetIO(); (void)io;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;		
+		io.IniFilename = nullptr;
 
 		// Setup Dear ImGui style
 		//ImGui::StyleColorsDark();
@@ -231,9 +387,7 @@ int main(int argc, char **argv)
 			ImGui_ImplSDL3_NewFrame();
 			ImGui::NewFrame();
 
-			DisplayMainWindow();
-
-			ImGuiDemoFunc();			
+			DisplayMainWindow();			
 
 			// Rendering
 			ImGui::Render();
