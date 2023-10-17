@@ -176,6 +176,9 @@ static void DisplayMainWindow()
 
 	static bool show_about = false;
 	static bool show_demo = false;
+	static bool show_metrics = false;
+	static bool show_debug_log = false;
+	static bool show_id_stack_tool = false;	
 	
 	if (ImGui::BeginMenuBar())
 	{
@@ -193,11 +196,19 @@ static void DisplayMainWindow()
 		}		
 
 		if (ImGui::BeginMenu("Options"))
-		{									
-			ImGui::MenuItem("Show Demo Window", "", &show_demo);
-			
+		{										
 			ImGui::EndMenu();
 		}		
+
+		if (ImGui::BeginMenu("Debug"))
+		{
+			ImGui::MenuItem("Show Demo Window", "", &show_demo);
+			ImGui::MenuItem("Show Metrics Window", "", &show_metrics);
+			ImGui::MenuItem("Show Debug Log Window", "", &show_debug_log);
+			ImGui::MenuItem("Show Id Stack Tool Window", "", &show_id_stack_tool);
+
+			ImGui::EndMenu();
+		}
 
 		if (ImGui::BeginMenu("Help"))
 		{
@@ -291,6 +302,15 @@ static void DisplayMainWindow()
 
 	if (show_demo)
 		ImGui::ShowDemoWindow(&show_demo);
+
+	if (show_metrics)
+		ImGui::ShowMetricsWindow(&show_metrics);
+
+	if (show_debug_log)
+		ImGui::ShowDebugLogWindow(&show_debug_log);
+
+	if (show_id_stack_tool)
+		ImGui::ShowIDStackToolWindow(&show_id_stack_tool);
 }
 
 int main(int argc, char **argv)
