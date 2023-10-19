@@ -121,56 +121,54 @@ static void DisplayMainWindow()
 	ImGuiIO &io = ImGui::GetIO();
 	
 	ImGuiID dockspaceID = ImGui::GetID("MainDockSpace");	
+	
+	static ImVec2	viewportSize;
+
+	ImVec2 currentViewPortSize = viewport->WorkSize;	
 
 	ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_None;	
-	if (!ImGui::DockBuilderGetNode(dockspaceID)) 
+	if (!ImGui::DockBuilderGetNode(dockspaceID) || ((currentViewPortSize.x != viewportSize.x) || (currentViewPortSize.y != viewportSize.y)))
 	{
+		viewportSize = currentViewPortSize;
+
 		ImGui::DockBuilderRemoveNode(dockspaceID);
 		ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_None);
-		ImGui::DockBuilderSetNodeSize(dockspaceID, viewport->WorkSize);
+		ImGui::DockBuilderSetNodeSize(dockspaceID, viewport->WorkSize);		
 
-		ImGuiID dock_main_id = dockspaceID;
-		//ImGuiID dock_up_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.05f, nullptr, &dock_main_id);
-		//ImGuiID dock_right_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.2f, nullptr, &dock_main_id);
-		ImGuiID dock_down_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.045f, nullptr, &dock_main_id);		
-		ImGuiID dock_left_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.045f, nullptr, &dock_main_id);		
+		auto dock_down_height = (32.0f / currentViewPortSize.y) + 0.001f;
+		auto leftToolBarWidth = (64.0f / currentViewPortSize.x) + 0.001f;
 
-		ImGuiID work_area_bottom = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.2f, nullptr, &dock_main_id);
-		//ImGuiID dock_down_right_id = ImGui::DockBuilderSplitNode(dock_down_id, ImGuiDir_Right, 0.6f, nullptr, &dock_down_id);
+		ImGuiID dock_main_id = dockspaceID;		
+		auto bottomNodeId = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, dock_down_height, nullptr, &dock_main_id);
+		auto leftToolBarNodeId = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, leftToolBarWidth, nullptr, &dock_main_id);
 
-		//ImGui::DockBuilderDockWindow("Actions", dock_up_id);
-		//ImGui::DockBuilderDockWindow("Hierarchy", dock_right_id);
+		auto workAreaNodeId = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.2f, nullptr, &dock_main_id);
+		
 		{
-			ImGui::DockBuilderDockWindow("LToolBar", dock_left_id);
-			auto leftNode = ImGui::DockBuilderGetNode(dock_left_id);
+			ImGui::DockBuilderDockWindow("LToolBar", leftToolBarNodeId);
+			auto leftNode = ImGui::DockBuilderGetNode(leftToolBarNodeId);
 
 			leftNode->LocalFlags |= ImGuiDockNodeFlags_HiddenTabBar | ImGuiDockNodeFlags_NoUndocking;
 		}
 
-		ImGui::DockBuilderDockWindow("StatusBar", dock_down_id);
-		//ImGui::DockBuilderSetNodeSize(dock_down_id, ImVec2{ viewport->WorkSize.x, 32 });
-
+		ImGui::DockBuilderDockWindow("StatusBar", bottomNodeId);		
 #if 1
 		{
-			auto downNode = ImGui::DockBuilderGetNode(dock_down_id);
-			downNode->LocalFlags |= ImGuiDockNodeFlags_HiddenTabBar | ImGuiDockNodeFlags_NoUndocking;
+			auto downNode = ImGui::DockBuilderGetNode(bottomNodeId);
+			downNode->LocalFlags |= ImGuiDockNodeFlags_HiddenTabBar | ImGuiDockNodeFlags_NoUndocking | ImGuiDockNodeFlags_NoResize;
 		}
 #endif
 
-		ImGui::DockBuilderDockWindow("Console", work_area_bottom);
+		ImGui::DockBuilderDockWindow("Console", workAreaNodeId);
 
 		{
 			ImGui::DockBuilderDockWindow("WorkArea", dock_main_id);
 			auto mainNode = ImGui::DockBuilderGetNode(dock_main_id);
 			mainNode->LocalFlags |= ImGuiDockNodeFlags_HiddenTabBar | ImGuiDockNodeFlags_NoUndocking;
-		}
-
-		// Disable tab bar for custom toolbar
-		//ImGuiDockNode *node = ImGui::DockBuilderGetNode(dock_up_id);
-		//node->LocalFlags |= ImGuiDockNodeFlags_NoTabBar;
+		}		
 
 		ImGui::DockBuilderFinish(dock_main_id);
-	}	
+	}		
 	
 	ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
 
