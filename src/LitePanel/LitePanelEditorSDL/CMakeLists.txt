@@ -1,5 +1,12 @@
 
-add_executable(LitePanelEditorSDL main.cpp)
+add_executable(LitePanelEditorSDL 
+	EditorWidget.cpp
+	EditorWidget.h
+	main.cpp
+	ToolBarWidget.cpp
+	ToolBarWidget.h
+)
+
 target_compile_features(LitePanelEditorSDL PUBLIC cxx_std_17)    
 
 target_include_directories(LitePanelEditorSDL
