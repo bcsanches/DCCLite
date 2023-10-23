@@ -31,6 +31,7 @@ function on_section01_state_change(section)
         log_trace("[SoledadeBarraMonitor] train aproaching soledade - block complete")    
     end
     
+    -- align it with Soledade phase
     main_line_quad_inverter:set_state(false);
     
 end
@@ -113,7 +114,23 @@ function on_hlx_quad_inverter_state_change(quad_inverter)
     end
     
     log_trace("[SoledadeBarraMonitor] section is clear, updating")
-    main_line_quad_inverter:set_state(hlx_quad_inverter.active);
+
+    local state = hlx_quad_inverter.active;
+    
+    -- if turnout is on the way up the helix, align the phases
+    if sl_bp_triangle_turnout.thrown then 
+        state = not state    
+    end
+
+    main_line_quad_inverter:set_state(state);
+end
+
+function on_sl_bp_triangle_turnout_state_change(turnout)
+    log_trace("[SoledadeBarraMonitor] on_sl_bp_triangle_turnout_state_change")
+
+    -- just force a refresh
+    on_hlx_quad_inverter_state_change(hlx_quad_inverter)
+
 end
 
 function on_sl_bp_d01_reset_button_state_change(turnout)
@@ -128,6 +145,7 @@ configure_sections()
 
 log_trace("SL - BP - config sections OK");
 
+sl_bp_triangle_turnout:on_state_change(on_sl_bp_triangle_turnout_state_change)
 hlx_quad_inverter:on_state_change(on_hlx_quad_inverter_state_change)
 dcclite.dcc0.SL_BP_ResetButton:on_state_change(on_sl_bp_d01_reset_button_state_change)
 

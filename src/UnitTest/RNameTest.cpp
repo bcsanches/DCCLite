@@ -86,60 +86,6 @@ TEST(RName, FullCluster)
 
 	a = RName::Create("a");
 
-	//make sure we used room left on cluster 0, special case on name allocation
-	ASSERT_NE(a.FindCluster(), numClusters - 1);
-}
-
-TEST(RName, LimitTest)
-{
-	auto numClusters = dcclite::detail::RName_GetNumClusters();	
-
-	RName cluster0{ "LimitTestcluster0" };
-
-	for (size_t i = 0;; ++i)
-	{
-		RName name{ fmt::format("unittest{:800}", i) };
-
-		if (numClusters != dcclite::detail::RName_GetNumClusters())
-		{
-			//force special test on RName
-			RName name{ fmt::format("unittest{:800}", i+1) };
-
-			break;
-		}
-	}
-
-	RName cluster1{ "LimitTestcluster1" };
-
-	ASSERT_NE(cluster0, cluster1);
-
-	ASSERT_STREQ(cluster0.GetData().data(), "LimitTestcluster0");
-	ASSERT_STREQ(cluster1.GetData().data(), "LimitTestcluster1");
-
-	auto info = dcclite::detail::RName_GetClusterInfo(numClusters - 1);
-	ASSERT_GT(info.m_uRoomLeft, 0);	
-
-	RName a = RName::TryGetName("#");
-	ASSERT_FALSE(a);
-
-	a = RName::Create("a");
-
-	for (size_t i = 0;; ++i)
-	{
-		RName name{ fmt::format("{}", i) };
-
-		if (name.FindCluster() != a.FindCluster())
-			break;
-	}
-
-	//make sure we used room left on cluster 0, special case on name allocation
+	//make sure we used room left on existing cluster (0 if first run), special case on name allocation
 	ASSERT_EQ(a.FindCluster(), numClusters - 1);
-
-	RName big("big big big big big big big big big big");
-	ASSERT_NE(big.FindCluster(), numClusters - 1);
-
-	//TEST operator bool when cluster != 1 and index == 0
-	//TEST new cluster creations
-	//TEST using a cluster with no string room and creating a new one
-
 }

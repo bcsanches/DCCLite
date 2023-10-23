@@ -396,7 +396,7 @@ namespace dcclite::broker
 	void DccppClient::ParseStatusCommand(dcclite::Parser &parser, const std::string &msg)
 	{
 		std::stringstream response;
-		response << "<p0><iDCC-EX V-3.1.1 / DccLite / PC G-BCS><N1: Ethernet>";
+		response << "<p0><iDCC-EX V-5.0.0 / DccLite / PC G-BCS><N1: Ethernet>";
 
 		this->CreateTurnoutsStateResponse(response);
 			

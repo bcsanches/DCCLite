@@ -76,11 +76,23 @@
     "name": "HLX_T07",
     "class": "ServoTurnout",
     "address": "1857",  
-    "pin": 14,
+    "pin": 15,    
+    "powerPin": 38,
     "inverted": false,    
     "invertedFrog": true,
     "operationTime": 3000,
     "comment": "AMV 07 - superior - saída do helix para Soledade"
+  }, 
+  {
+    "name": "HLX_T08",
+    "class": "ServoTurnout",
+    "address": "1858",  
+    "pin": 14,     
+    "powerPin": 39,   
+    "inverted": true,    
+    "invertedFrog": true,
+    "operationTime": 3000,
+    "comment": "AMV 08 - inferior - bifurcação sentido subindo - após Soledade"
   },   
   {
     "name":"HLX_DMT03", 
