@@ -51,6 +51,8 @@ namespace dcclite::panel_editor
 
 			void ExecuteCommand(const char *cmd);
 
+			friend class LogSink;
+
 		private:
 			char m_arInputBuffer[256];
 
@@ -59,7 +61,9 @@ namespace dcclite::panel_editor
 
 			long long                   m_iHistoryPos = -1;    // -1: new line, 0..History.Size-1 browsing history.
 
-			ImGuiTextFilter       m_clFilter;
+			ImGuiTextFilter				m_clFilter;
+
+			std::shared_ptr<LogSink>	m_spLogSink;
 
 			bool                  m_fAutoScroll = true;
 			bool                  m_fScrollToBottom = false;

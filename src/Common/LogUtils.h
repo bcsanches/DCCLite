@@ -28,6 +28,5 @@ namespace dcclite
 	extern void LogReplace(Logger_t log);
 
 	extern Logger_t LogGetDefault();
-
 } //end of namespace dcclite
 

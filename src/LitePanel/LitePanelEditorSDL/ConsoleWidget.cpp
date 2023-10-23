@@ -10,20 +10,74 @@
 
 #include "ConsoleWidget.h"
 
+#include <mutex>
+
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/base_sink.h>
+
 #include "imgui_internal.h"
 
+#include "Log.h"
+#include "LogUtils.h"
 #include "Parser.h"
 
 namespace dcclite::panel_editor
 {
+    class LogSink : public spdlog::sinks::base_sink<std::mutex>
+    {
+        public:
+            LogSink(ConsoleWidget &owner) :
+                m_rclConsole{owner}
+            {
+                //empty
+            }
+
+            void sink_it_(const spdlog::details::log_msg &msg) override
+            {
+                // log_msg is a struct containing the log entry info like level, timestamp, thread id etc.
+                // msg.raw contains pre formatted log
+
+                // If needed (very likely but not mandatory), the sink formats the message before sending it to its final destination:
+                spdlog::memory_buf_t formatted;
+                spdlog::sinks::base_sink<std::mutex>::formatter_->format(msg, formatted);
+
+                m_rclConsole.AddLog(fmt::to_string(formatted));                
+            }
+
+            void flush_() override
+            {
+                
+                //std::cout << std::flush;
+            }
+
+        private:
+            ConsoleWidget &m_rclConsole;
+    };
+
     ConsoleWidget::ConsoleWidget()
     {
-        m_arInputBuffer[0] = '\0';
+        m_arInputBuffer[0] = '\0';        
+        
+        m_spLogSink = std::make_shared<LogSink>(*this);
+        m_spLogSink->set_pattern("[%T] [%^-%L-%$] [T %t] %v");
+
+        auto &sinks = dcclite::LogGetDefault()->sinks();
+        sinks.push_back(m_spLogSink);
+
+        dcclite::Log::Info("[ConsoleWidget::ConsoleWidget] Created and sink registered");
     }
 
 	ConsoleWidget::~ConsoleWidget()
 	{
-        //empty
+        auto &sinks = dcclite::LogGetDefault()->sinks();
+
+        auto it = std::find_if(sinks.begin(), sinks.end(), [this](spdlog::sink_ptr &ptr)
+            {
+                return ptr == m_spLogSink;
+            }
+        );
+     
+        sinks.erase(it);
 	}
 
     void ConsoleWidget::AddLogImpl(std::string log)
