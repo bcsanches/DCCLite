@@ -81,6 +81,8 @@ namespace dcclite::detail
 			std::pair<uint32_t, uint32_t> FindClusterInfo(NameIndexType_t index);
 
 			std::vector<RName> GetAll();
+
+			void ForceNewCluster();
 			
 
 		private:
@@ -264,6 +266,11 @@ namespace dcclite::detail
 		}
 	}
 
+	void RNameState::ForceNewCluster()
+	{
+		m_uFirstNonFullCluster = m_vecClusters.size();
+	}
+
 	std::vector<RName> RNameState::GetAll()
 	{
 		std::vector<RName> result;
@@ -299,7 +306,13 @@ namespace dcclite::detail
 
 		for (size_t i = 0, len = m_vecClusters.size(); i < len; ++i)
 		{
-			if((name.data() >= &m_vecClusters[i]->m_arNames[0]) && ((name.data() + len) < (&m_vecClusters[i]->m_arNames[0] + m_vecClusters[i]->m_arNames.size())))
+			if (name.data() < &m_vecClusters[i]->m_arNames[0])
+				continue;
+
+			if (name.data() >= &m_vecClusters[i]->m_arNames[0] + m_vecClusters[i]->m_arNames.size())
+				continue;
+
+			//if(((name.data() + len) < (&m_vecClusters[i]->m_arNames[0] + m_vecClusters[i]->m_arNames.size())))
 				return static_cast<uint32_t>(i);
 		}
 
@@ -387,6 +400,13 @@ namespace dcclite::detail
 		auto &state = GetState();
 
 		return state.GetAll();
+	}
+
+	void RName_ForceNewCluster()
+	{
+		auto &state = GetState();
+
+		state.ForceNewCluster();
 	}
 }
 

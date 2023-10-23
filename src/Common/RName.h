@@ -74,6 +74,8 @@ namespace dcclite
 		RNameClusterInfo RName_GetClusterInfo(uint16_t cluster);
 
 		std::vector<RName> RName_GetAll();
+
+		void RName_ForceNewCluster();
 	}
 
 	class RName
