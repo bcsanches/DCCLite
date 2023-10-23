@@ -31,6 +31,8 @@ namespace dcclite
 
 		VARIABLE_NAME,
 
+		SLASH,
+
 		SYNTAX_ERROR
 	};
 

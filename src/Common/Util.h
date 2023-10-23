@@ -13,6 +13,12 @@
 #include <string_view>
 #include <thread>
 
+#define DCCLITE_DISABLE_CLASS_COPY_AND_MOVE(X)	\
+	X(const X &) = delete;						\
+	X(X &&) = delete;							\
+	X operator=(const X &) = delete;			\
+	X &&operator=(X &&) = delete;
+
 namespace dcclite
 {
 	bool TryHexStrToBinary(std::uint8_t dest[], size_t destSize, std::string_view str) noexcept;

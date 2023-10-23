@@ -8,34 +8,34 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "ToolBarWidget.h"
+#include "StatusBarWidget.h"
 
 #include "imgui.h"
+#include "imgui_internal.h"
 
 namespace dcclite::panel_editor
 {
-	ToolBarWidget::~ToolBarWidget()
+	StatusBarWidget::~StatusBarWidget()
 	{
 
 	}
 
-	void ToolBarWidget::Display()
+	void StatusBarWidget::Display()
 	{
-		if (ImGui::Begin("LToolBar", nullptr, ImGuiWindowFlags_NoCollapse))
+		if (ImGui::Begin("StatusBar", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
 		{
-			ImGui::SmallButton("X");
+			ImGui::Text("Status Bar");
 			ImGui::SameLine();
-			ImGui::SmallButton("Y");
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+			ImGui::SameLine();
 
-			ImGui::SmallButton("Z");
-			ImGui::SameLine();
-			ImGui::SmallButton("W");
+			ImGui::Text("Status 2");
 		}
 		ImGui::End();
 	}
 
 
-	void ToolBarWidget::Update()
+	void StatusBarWidget::Update()
 	{
 
 	}

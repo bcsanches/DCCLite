@@ -123,3 +123,20 @@ TEST(Parser, GetId)
 
 	ASSERT_STREQ(dest, "_kij1a");
 }
+
+TEST(Parser, GetSlash)
+{
+	char cmd[] = "   /abc / ";
+	Parser parser(cmd);
+
+	char dest[32];
+	ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::SLASH);	
+
+	ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::ID);
+
+	ASSERT_STREQ(dest, "abc");
+
+	ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::SLASH);	
+
+	ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::END_OF_BUFFER);
+}

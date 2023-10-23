@@ -14,13 +14,13 @@
 
 namespace dcclite::panel_editor
 {
-	class ToolBarWidget: public EditorWidget
+	class StatusBarWidget: public EditorWidget
 	{
 		public:
 			void Display() override;
 			void Update() override;
 
-			virtual ~ToolBarWidget();
+			virtual ~StatusBarWidget();
 
 		private:
 	};

@@ -1,8 +1,15 @@
+add_compile_definitions(IMGUI_DEFINE_MATH_OPERATORS)
 
 add_executable(LitePanelEditorSDL 
+	ConsoleWidget.cpp
+	ConsoleWidget.h
 	EditorWidget.cpp
 	EditorWidget.h
 	main.cpp
+	PanelEditorApp.cpp
+	PanelEditorApp.h
+	StatusBarWidget.cpp
+	StatusBarWidget.h
 	ToolBarWidget.cpp
 	ToolBarWidget.h
 )

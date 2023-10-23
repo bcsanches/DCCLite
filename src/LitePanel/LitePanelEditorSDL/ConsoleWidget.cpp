@@ -1,0 +1,344 @@
+// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
+// file at the top-level directory of this distribution.
+// 
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// 
+// This Source Code Form is "Incompatible With Secondary Licenses", as
+// defined by the Mozilla Public License, v. 2.0.
+
+#include "ConsoleWidget.h"
+
+#include "imgui_internal.h"
+
+#include "Parser.h"
+
+namespace dcclite::panel_editor
+{
+    ConsoleWidget::ConsoleWidget()
+    {
+        m_arInputBuffer[0] = '\0';
+    }
+
+	ConsoleWidget::~ConsoleWidget()
+	{
+        //empty
+	}
+
+    void ConsoleWidget::AddLogImpl(std::string log)
+    {
+        m_vecEntries.push_back(std::move(log));
+    }
+
+    void ConsoleWidget::ClearLog()
+    {
+        m_vecEntries.clear();
+    }
+
+    void ConsoleWidget::ClearHistory()
+    {
+        m_vecHistory.clear();
+    }
+
+    static int TextEditCallbackStub(ImGuiInputTextCallbackData *data)
+    {
+        ConsoleWidget *console = (ConsoleWidget *)data->UserData;
+        return console->OnTextEdit(data);
+    }
+
+    int ConsoleWidget::OnTextEdit(ImGuiInputTextCallbackData *data)
+    {
+        switch (data->EventFlag)
+        {
+            case ImGuiInputTextFlags_CallbackCompletion:
+            {
+                // Example of TEXT COMPLETION
+
+                // Locate beginning of current word
+                const char *word_end = data->Buf + data->CursorPos;
+                const char *word_start = word_end;
+                while (word_start > data->Buf)
+                {
+                    const char c = word_start[-1];
+                    if (c == ' ' || c == '\t' || c == ',' || c == ';')
+                        break;
+                    word_start--;
+                }
+
+                // Build a list of candidates
+                ImVector<const char *> candidates;
+#if 0
+                for (int i = 0; i < Commands.Size; i++)
+                    if (Strnicmp(Commands[i], word_start, (int)(word_end - word_start)) == 0)
+                        candidates.push_back(Commands[i]);
+#endif
+
+                if (candidates.Size == 0)
+                {
+                    // No match
+                    AddLog("No match for \"%.*s\"!\n", (int)(word_end - word_start), word_start);
+                }
+                else if (candidates.Size == 1)
+                {
+                    // Single match. Delete the beginning of the word and replace it entirely so we've got nice casing.
+                    data->DeleteChars((int)(word_start - data->Buf), (int)(word_end - word_start));
+                    data->InsertChars(data->CursorPos, candidates[0]);
+                    data->InsertChars(data->CursorPos, " ");
+                }
+                else
+                {
+                    // Multiple matches. Complete as much as we can..
+                    // So inputing "C"+Tab will complete to "CL" then display "CLEAR" and "CLASSIFY" as matches.
+                    int match_len = (int)(word_end - word_start);
+                    for (;;)
+                    {
+                        int c = 0;
+                        bool all_candidates_matches = true;
+                        for (int i = 0; i < candidates.Size && all_candidates_matches; i++)
+                            if (i == 0)
+                                c = toupper(candidates[i][match_len]);
+                            else if (c == 0 || c != toupper(candidates[i][match_len]))
+                                all_candidates_matches = false;
+                        if (!all_candidates_matches)
+                            break;
+                        match_len++;
+                    }
+
+                    if (match_len > 0)
+                    {
+                        data->DeleteChars((int)(word_start - data->Buf), (int)(word_end - word_start));
+                        data->InsertChars(data->CursorPos, candidates[0], candidates[0] + match_len);
+                    }
+
+                    // List matches
+                    AddLog("Possible matches:\n");
+                    for (int i = 0; i < candidates.Size; i++)
+                        AddLog("- %s\n", candidates[i]);
+                }
+
+                break;
+            }
+
+            case ImGuiInputTextFlags_CallbackHistory:
+            {
+                // Example of HISTORY
+                const auto prev_history_pos = m_iHistoryPos;
+                if (data->EventKey == ImGuiKey_UpArrow)
+                {
+                    if (m_iHistoryPos == -1)
+                        m_iHistoryPos = m_vecHistory.size() - 1;
+                    else if (m_iHistoryPos > 0)
+                        m_iHistoryPos--;
+                }
+                else if (data->EventKey == ImGuiKey_DownArrow)
+                {
+                    if (m_iHistoryPos != -1)
+                        if (++m_iHistoryPos >= (long long)m_vecHistory.size())
+                            m_iHistoryPos = -1;
+                }
+
+                // A better implementation would preserve the data on the current input line along with cursor position.
+                if (prev_history_pos != m_iHistoryPos)
+                {
+                    const char *history_str = (m_iHistoryPos >= 0) ? m_vecHistory[m_iHistoryPos].c_str() : "";
+                    data->DeleteChars(0, data->BufTextLen);
+                    data->InsertChars(0, history_str);
+                }
+            }
+        }
+        return 0;
+    }
+
+    void ConsoleWidget::ExecuteCommand(const char *command)
+    {
+        this->AddLog("> {}", command);        
+
+        m_vecHistory.push_back(command);
+
+        dcclite::Parser parser(command);
+
+        char cmd[256];
+        auto token = parser.GetToken(cmd, sizeof(cmd));
+
+        if (token == Tokens::SLASH)
+        {
+            //
+            //Local cmd
+            if (parser.GetToken(cmd, sizeof(cmd)) != Tokens::ID)
+            {
+                this->AddLog("[error] Syntax error, expected </localcmd>");
+
+                return;
+            }
+
+            if (strcmp(cmd, "clear") == 0)
+            {
+                this->ClearLog();
+            }
+            else if (strcmp(cmd, "clear_history") == 0)
+            {
+                const auto size = m_vecHistory.size();
+
+                this->ClearHistory();
+
+                this->AddLog("Cleaned {} entries", size);
+            }
+            else
+            {
+                this->AddLog("[error] Unknown command: {}", command);
+            }
+        }
+        else if (token == Tokens::ID)
+        {
+            this->AddLog("[error] remote cmds?");
+        }
+        else
+        {
+            this->AddLog("[error] Syntax error, expected <cmd> or </localcmd>");
+        }
+    }
+
+	void ConsoleWidget::Display()
+	{
+        //ImGui::SetNextWindowSize(ImVec2(520, 600), ImGuiCond_FirstUseEver);
+        if (!ImGui::Begin("Console", nullptr, 0))
+        {
+            ImGui::End();
+            return;
+        }        
+
+        if (ImGui::Button("Clear"))
+        {
+            this->ClearLog();
+        }
+
+        ImGui::SameLine();
+
+        bool copy_to_clipboard = ImGui::Button("Copy");
+
+        ImGui::SameLine();
+
+        // Options menu
+        if (ImGui::BeginPopup("Options"))
+        {
+            ImGui::Checkbox("Auto-scroll", &m_fAutoScroll);
+            ImGui::EndPopup();
+        }
+
+        // Options, Filter
+        if (ImGui::Button("Options"))
+            ImGui::OpenPopup("Options");
+        ImGui::SameLine();
+        m_clFilter.Draw("Filter (\"incl,-excl\") (\"error\")", 180);
+        ImGui::Separator();
+
+        // Reserve enough left-over height for 1 separator + 1 input text
+        const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+        if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_HorizontalScrollbar))
+        {
+            if (ImGui::BeginPopupContextWindow())
+            {
+                if (ImGui::Selectable("Clear"))
+                    this->ClearLog();
+
+                ImGui::EndPopup();
+            }
+
+            // Display every line as a separate entry so we can change their color or add custom widgets.
+            // If you only want raw text you can use ImGui::TextUnformatted(log.begin(), log.end());
+            // NB- if you have thousands of entries this approach may be too inefficient and may require user-side clipping
+            // to only process visible items. The clipper will automatically measure the height of your first item and then
+            // "seek" to display only items in the visible area.
+            // To use the clipper we can replace your standard loop:
+            //      for (int i = 0; i < Items.Size; i++)
+            //   With:
+            //      ImGuiListClipper clipper;
+            //      clipper.Begin(Items.Size);
+            //      while (clipper.Step())
+            //         for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
+            // - That your items are evenly spaced (same height)
+            // - That you have cheap random access to your elements (you can access them given their index,
+            //   without processing all the ones before)
+            // You cannot this code as-is if a filter is active because it breaks the 'cheap random-access' property.
+            // We would need random-access on the post-filtered list.
+            // A typical application wanting coarse clipping and filtering may want to pre-compute an array of indices
+            // or offsets of items that passed the filtering test, recomputing this array when user changes the filter,
+            // and appending newly elements as they are inserted. This is left as a task to the user until we can manage
+            // to improve this example code!
+            // If your items are of variable height:
+            // - Split them into same height items would be simpler and facilitate random-seeking into your list.
+            // - Consider using manual call to IsRectVisible() and skipping extraneous decoration from your items.
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
+            if (copy_to_clipboard)
+                ImGui::LogToClipboard();
+            for (auto const &item : m_vecEntries)
+            {
+                if (!m_clFilter.PassFilter(item.c_str()))
+                    continue;
+
+                // Normally you would store more information in your item than just a string.
+                // (e.g. make Items[] an array of structure, store color/type etc.)
+                ImVec4 color;
+                bool has_color = false;
+                if (item.find("[error]") != std::string::npos) 
+                { 
+                    color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f); 
+                    has_color = true; 
+                }
+                else if (item.compare(0, 2, "# ") == 0) 
+                { 
+                    color = ImVec4(1.0f, 0.8f, 0.6f, 1.0f); 
+                    has_color = true; 
+                }
+
+                if (has_color)
+                    ImGui::PushStyleColor(ImGuiCol_Text, color);
+
+                ImGui::TextUnformatted(item.c_str());
+
+                if (has_color)
+                    ImGui::PopStyleColor();
+            }
+            if (copy_to_clipboard)
+                ImGui::LogFinish();
+
+            // Keep up at the bottom of the scroll region if we were already at the bottom at the beginning of the frame.
+            // Using a scrollbar or mouse-wheel will take away from the bottom edge.
+            if (m_fScrollToBottom || (m_fAutoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()))
+                ImGui::SetScrollHereY(1.0f);
+
+            m_fScrollToBottom = false;
+
+            ImGui::PopStyleVar();
+        }
+        ImGui::EndChild();
+        ImGui::Separator();
+
+#if 1
+        // Command-line
+        bool reclaim_focus = false;
+        ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory;
+        if (ImGui::InputText("Input", m_arInputBuffer, IM_ARRAYSIZE(m_arInputBuffer), input_text_flags, &TextEditCallbackStub, (void *)this))
+        {
+            this->ExecuteCommand(m_arInputBuffer);
+            m_arInputBuffer[0] = '\0';
+            
+            reclaim_focus = true;
+        }
+
+        // Auto-focus on window apparition
+        ImGui::SetItemDefaultFocus();
+        if (reclaim_focus)
+            ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
+#endif
+
+        ImGui::End();
+	}
+
+
+	void ConsoleWidget::Update()
+	{
+
+	}
+}

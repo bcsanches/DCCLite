@@ -15,6 +15,8 @@ endif()
 
 if(${DCCLITE_IMGUI_TOOLS})
 
+  add_compile_definitions(IMGUI_DEFINE_MATH_OPERATORS)
+
   add_library(IMGUI 
     imgui/imconfig.h
     imgui/imgui.cpp

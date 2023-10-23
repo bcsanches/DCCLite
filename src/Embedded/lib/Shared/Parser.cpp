@@ -126,6 +126,9 @@ namespace dcclite
 				case '#':
 					return Tokens::HASH;
 
+				case '/':
+					return Tokens::SLASH;
+
 				case '$':
 					ch = m_pszCmd[m_iPos];
 					if (!IS_ID_START(ch))
