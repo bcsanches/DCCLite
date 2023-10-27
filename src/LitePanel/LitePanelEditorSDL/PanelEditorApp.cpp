@@ -12,6 +12,7 @@
 
 #include "imgui_internal.h"
 
+#include "Settings.h"
 #include "SystemTools.h"
 
 static void ImGuiDemoFunc()
@@ -77,7 +78,7 @@ namespace dcclite::panel_editor
 {
 	PanelEditorApp::PanelEditorApp()
 	{
-		//empty
+		auto recentFile = Settings::GetLastProjectPath();
 	}
 
 

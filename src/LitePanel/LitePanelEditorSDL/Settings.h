@@ -10,18 +10,11 @@
 
 #pragma once
 
-#include "EditorWidget.h"
+#include <optional>
 
-namespace dcclite::panel_editor
+#include "FileSystem.h"
+
+namespace dcclite::panel_editor::Settings
 {
-	class StatusBarWidget: public EditorWidget
-	{
-		public:
-			void Display() override;
-			void Update() override;
-
-			virtual ~StatusBarWidget();
-
-		private:
-	};
+	std::optional<dcclite::fs::path> GetLastProjectPath();
 }
