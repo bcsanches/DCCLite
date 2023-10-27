@@ -20,11 +20,12 @@ set(LitePanelWx_HDRS
   TileMapCanvas.h
 )
 
-add_executable(LitePanelWx WIN32 ${LitePanel_SRCS} ${LitePanel_HDRS})
+add_executable(LitePanelWx WIN32 ${LitePanelWx_SRCS} ${LitePanelWx_HDRS})
 target_compile_features(LitePanelWx PUBLIC cxx_std_17)    
 
 target_include_directories(LitePanelWx 
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/Common  
+  PRIVATE ${DCCLite_SOURCE_DIR}/src/LitePanel/LitePanelLib
 )
 
 #set_target_properties( Broker PROPERTIES RUNTIME_OUTPUT_DIRECTORY bin/ )
@@ -34,7 +35,7 @@ if(WIN32)
 		PRIVATE Common 		
 		PRIVATE bcrypt.lib 
 		PRIVATE fmt      
-        PRIVATE LitePanelLib
+    PRIVATE LitePanelLib
     wx::net
     wx::core
     wx::base
@@ -56,7 +57,7 @@ else(WIN32)
 		RIVATE Common 		
 		PRIVATE bcrypt.lib 
 		PRIVATE fmt
-        PRIVATE LitePanelLib
+    PRIVATE LitePanelLib
     wx::net
     wx::core
     wx::base

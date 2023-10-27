@@ -84,8 +84,8 @@ if (${DCCLITE_GUI_TOOLS})
     set_property(TARGET wxtiff PROPERTY FOLDER "contrib/wxWidgets/Third Party Libraries")
     set_property(TARGET wxzlib PROPERTY FOLDER "contrib/wxWidgets/Third Party Libraries")           
     
-    set_property(TARGET LitePanel PROPERTY FOLDER "CTC")
-    set_property(TARGET LitePanelLib PROPERTY FOLDER "CTC")
+    set_property(TARGET LitePanelWx PROPERTY FOLDER "CTC")
+    set_property(TARGET LitePanelLib PROPERTY FOLDER "CTC")    
     
     #force shared build for wxWidgets
     set(wxBUILD_SHARED ON CACHE BOOL "" FORCE)
@@ -103,6 +103,9 @@ if(${DCCLITE_IMGUI_TOOLS})
     set_property(TARGET IMGUI PROPERTY FOLDER "contrib")
     set_property(TARGET SDL3-shared PROPERTY FOLDER "contrib/SDL")
     set_property(TARGET uninstall PROPERTY FOLDER "contrib/SDL")
+
+    set_property(TARGET LitePanelEditorSDL PROPERTY FOLDER "CTC")
+
     set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
 endif()
 

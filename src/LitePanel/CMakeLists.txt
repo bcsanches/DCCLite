@@ -3,7 +3,7 @@ if (${DCCLITE_GUI_TOOLS} OR ${DCCLITE_IMGUI_TOOLS})
 endif()
 
 if (${DCCLITE_GUI_TOOLS})
-  add_subdirectory(LitePanelWx)
+  add_subdirectory(LitePanelEditorWx)
 endif()
 
 if(${DCCLITE_IMGUI_TOOLS})

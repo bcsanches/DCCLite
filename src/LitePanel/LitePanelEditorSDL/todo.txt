@@ -3,11 +3,14 @@ LitePanelSDL
 - Main application, split between Editor and Runner
 
 - When loading:
+	- document infra structure?
+	- Settings from last run infrastructure?
+
 	- if no file provided or no previous working project:
 		- prompt with new project dialog
 
 	- if previous project on working mode, load editor
-	- if preivous project on runner mode, load runner
+	- if previous project on runner mode, load runner
 
 - Main App:
 	- Will switch between Editor and Runner

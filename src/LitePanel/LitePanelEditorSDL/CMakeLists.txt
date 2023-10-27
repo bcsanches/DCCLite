@@ -8,8 +8,11 @@ add_executable(LitePanelEditorSDL
 	main.cpp
 	PanelEditorApp.cpp
 	PanelEditorApp.h
+	Settings.cpp
+	Settings.h
 	StatusBarWidget.cpp
 	StatusBarWidget.h
+	SystemTools.h
 	ToolBarWidget.cpp
 	ToolBarWidget.h
 )
@@ -25,6 +28,9 @@ target_include_directories(LitePanelEditorSDL
 )
 
 if(WIN32)
+
+	target_sources(LitePanelEditorSDL PRIVATE SystemTools_win.cpp SystemTools_win.h)
+
     target_link_libraries(LitePanelEditorSDL
 		PRIVATE Common	
 		PRIVATE SDL3-shared

@@ -12,6 +12,8 @@
 
 #include "imgui_internal.h"
 
+#include "SystemTools.h"
+
 static void ImGuiDemoFunc()
 {
 	// Our state
@@ -167,6 +169,18 @@ namespace dcclite::panel_editor
 		{
 			if (ImGui::BeginMenu("File"))
 			{
+				if (ImGui::MenuItem("Open", "Ctrl+O"))
+				{
+					OpenFileDialog();
+				}
+
+				ImGui::Separator();
+
+				ImGui::MenuItem("Save", "Ctrl+S");
+				ImGui::MenuItem("Save As", "Ctrl+Alt+S");
+
+				ImGui::Separator();
+
 				if (ImGui::MenuItem("Exit", "Alt+F4"))
 					keepRunning = false;
 

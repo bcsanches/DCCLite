@@ -1,4 +1,4 @@
-
+ 
 set(LitePanelLib_SRCS
     EditCmds.cpp
 	MapObject.cpp
