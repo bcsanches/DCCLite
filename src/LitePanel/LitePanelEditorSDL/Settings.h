@@ -11,10 +11,17 @@
 #pragma once
 
 #include <optional>
+#include <vector>
 
 #include "FileSystem.h"
 
 namespace dcclite::panel_editor::Settings
 {
-	std::optional<dcclite::fs::path> GetLastProjectPath();
+	[[nodiscard]] std::optional<dcclite::fs::path> GetLastProjectPath();
+
+	void AddRecentProject(dcclite::fs::path path);
+
+	//
+	//This remains valid until you call any settings function
+	[[nodiscard]] const std::vector< dcclite::fs::path> &GetRecentFiles();
 }

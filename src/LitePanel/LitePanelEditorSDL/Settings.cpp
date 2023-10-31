@@ -35,7 +35,6 @@ namespace dcclite::panel_editor::Settings
 
 		std::vector<fs::path>	m_vecRecentFiles;
 
-
 		bool					m_fLoaded;
 	};
 
@@ -61,10 +60,21 @@ namespace dcclite::panel_editor::Settings
 
 	static bool TryLoadSettings()
 	{
+		//already loaded, ignore it...
+		if (g_stSettings.m_fLoaded)
+			return true;
+
+		//try once to load... it it fails... keep a blank settings...
+		g_stSettings.m_fLoaded = true;
+
 		auto settingsFilePath = GetSettingFilePath();
 
 		if (!fs::exists(settingsFilePath))
+		{
+			dcclite::Log::Warn("[Settings::TryLoadSettings] Settings path not found.");
+
 			return false;
+		}			
 
 		std::ifstream settingsFile(settingsFilePath);
 
@@ -93,19 +103,46 @@ namespace dcclite::panel_editor::Settings
 		for (auto &it : recentFilesDataArray)
 		{
 			g_stSettings.m_vecRecentFiles.push_back(it.GetString());
-		}
-
-		g_stSettings.m_fLoaded = true;
+		}		
 
 		return true;
 	}
 
 	std::optional<dcclite::fs::path> GetLastProjectPath()
 	{
-		if ((!g_stSettings.m_fLoaded) && !TryLoadSettings() && g_stSettings.m_vecRecentFiles.empty())
+		if (!TryLoadSettings() && g_stSettings.m_vecRecentFiles.empty())
 			return {};
 
 		
 		return g_stSettings.m_vecRecentFiles.back();
+	}
+
+	void AddRecentProject(dcclite::fs::path path)
+	{
+		TryLoadSettings();
+
+		auto it = std::find(g_stSettings.m_vecRecentFiles.begin(), g_stSettings.m_vecRecentFiles.end(), path);
+
+		if (it != g_stSettings.m_vecRecentFiles.end())
+		{			
+			//if already in the last post, just ignore it, already in the correct spot
+			if (it == g_stSettings.m_vecRecentFiles.end() - 1)
+			{
+				return;
+			}
+
+			//not fast, but this is not expected to be called often... so code in the easy way
+			g_stSettings.m_vecRecentFiles.erase(it);
+		}
+		
+		//add it 
+		g_stSettings.m_vecRecentFiles.push_back(path);
+	}
+
+	const std::vector<dcclite::fs::path> &GetRecentFiles()
+	{
+		TryLoadSettings();
+
+		return g_stSettings.m_vecRecentFiles;
 	}
 }

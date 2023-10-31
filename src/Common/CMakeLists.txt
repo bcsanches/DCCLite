@@ -40,17 +40,17 @@ if(WIN32)
         GuidUtils_win.cpp
         SerialPort_win.cpp
         SerialPort_win.h
-		Sha1_win.cpp
+		    Sha1_win.cpp
     )
 
 else(WIN32)
 
     target_sources(Common PRIVATE
-		ConsoleUtils_linux.cpp
-		GuidUtils_linux.cpp
-		Sha1_linux.cpp
-		SerialPort_linux.cpp
-        SerialPort_linux.h
+      ConsoleUtils_linux.cpp
+      GuidUtils_linux.cpp
+      Sha1_linux.cpp
+      SerialPort_linux.cpp
+      SerialPort_linux.h
 	)   
      
 endif(WIN32)

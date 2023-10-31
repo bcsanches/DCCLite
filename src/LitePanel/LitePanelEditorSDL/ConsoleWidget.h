@@ -19,9 +19,30 @@
 #include "Util.h"
 
 #include "EditorWidget.h"
+#include "Object.h"
 
 namespace dcclite::panel_editor
 {
+	class ConsoleWidget;	
+
+	class ConsoleCmd: public dcclite::IObject
+	{
+		protected:
+			ConsoleCmd(RName name);
+
+		public:			
+			virtual void Execute(ConsoleWidget &owner, unsigned argc, const std::string_view *argv) = 0;
+
+			DCCLITE_DISABLE_CLASS_COPY_AND_MOVE(ConsoleCmd);
+
+			const char *GetTypeName() const noexcept override
+			{
+				return "ConsoleCmd";
+			}
+
+		private:			
+	};
+
 	class ConsoleWidget: public EditorWidget
 	{
 		public:
@@ -31,15 +52,20 @@ namespace dcclite::panel_editor
 			DCCLITE_DISABLE_CLASS_COPY_AND_MOVE(ConsoleWidget);
 
 			void Display() override;
-			void Update() override;			
+			void Update() override;						
 
+			inline void RegisterCommand(std::unique_ptr<ConsoleCmd> cmd)
+			{
+				m_clCommands.AddChild(std::move(cmd));
+			}
+
+		private:
 			template <typename... Args>
 			inline void AddLog(fmt::format_string<Args...> s, Args&&... args)
 			{
 				this->AddLogImpl(fmt::format(s, std::forward<Args>(args)...));
 			}
 
-		private:
 			void AddLogImpl(std::string log);
 
 			void ClearLog();
@@ -52,12 +78,17 @@ namespace dcclite::panel_editor
 			void ExecuteCommand(const char *cmd);
 
 			friend class LogSink;
+			friend class HelpCommand;
+			friend class ClearCommand;
+			friend class ClearHistoryCommand;
 
 		private:
 			char m_arInputBuffer[256];
 
 			std::vector<std::string>	m_vecEntries;
 			std::vector<std::string>	m_vecHistory;
+
+			dcclite::FolderObject		m_clCommands;
 
 			long long                   m_iHistoryPos = -1;    // -1: new line, 0..History.Size-1 browsing history.
 

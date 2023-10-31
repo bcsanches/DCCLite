@@ -19,7 +19,6 @@
 
 #include "Log.h"
 #include "LogUtils.h"
-#include "Parser.h"
 
 namespace dcclite::panel_editor
 {
@@ -54,7 +53,87 @@ namespace dcclite::panel_editor
             ConsoleWidget &m_rclConsole;
     };
 
-    ConsoleWidget::ConsoleWidget()
+    ConsoleCmd::ConsoleCmd(RName name) :
+        IObject{ name }
+    {
+        //empty
+    }
+
+    class HelpCommand : public ConsoleCmd
+    {
+        public:
+            HelpCommand() :
+                ConsoleCmd(dcclite::RName::Create("help"))
+            {
+                //empty
+            }
+
+            void Execute(ConsoleWidget &owner, unsigned argc, const std::string_view *argv) override
+            {
+                if (argc > 1)
+                {
+                    dcclite::Log::Error("[HelpCommand] No arguments expected.");
+
+                    return;
+                }
+
+                auto enumerator = owner.m_clCommands.GetEnumerator();
+
+                while (enumerator.MoveNext())
+                {
+                    auto cmd = enumerator.GetCurrent();
+
+                    owner.AddLog("\t{}", cmd->GetName().GetData());
+                }
+            }
+    };
+
+    class ClearCommand : public ConsoleCmd
+    {
+        public:
+            ClearCommand() :
+                ConsoleCmd(dcclite::RName::Create("clear"))
+            {
+                //empty
+            }
+
+            void Execute(ConsoleWidget &owner, unsigned argc, const std::string_view *argv) override
+            {
+                if (argc > 1)
+                {
+                    dcclite::Log::Error("[ClearCommand] No arguments expected.");
+
+                    return;
+                }
+
+                owner.ClearLog();
+            }
+    };
+
+    class ClearHistoryCommand : public ConsoleCmd
+    {
+        public:
+            ClearHistoryCommand() :
+                ConsoleCmd(dcclite::RName::Create("clear_history"))
+            {
+                //empty
+            }
+
+            void Execute(ConsoleWidget &owner, unsigned argc, const std::string_view *argv) override
+            {
+                if (argc > 1)
+                {
+                    dcclite::Log::Error("[ClearHistoryCommand] No arguments expected.");
+
+                    return;
+                }
+
+                owner.ClearHistory();
+            }
+    };
+
+    ConsoleWidget::ConsoleWidget():
+        m_clCommands{RName::Create("ConsoleCommands")}
     {
         m_arInputBuffer[0] = '\0';        
         
@@ -63,6 +142,10 @@ namespace dcclite::panel_editor
 
         auto &sinks = dcclite::LogGetDefault()->sinks();
         sinks.push_back(m_spLogSink);
+
+        this->RegisterCommand(std::make_unique<HelpCommand>());
+        this->RegisterCommand(std::make_unique<ClearCommand>());
+        this->RegisterCommand(std::make_unique<ClearHistoryCommand>());
 
         dcclite::Log::Info("[ConsoleWidget::ConsoleWidget] Created and sink registered");
     }
@@ -122,6 +205,18 @@ namespace dcclite::panel_editor
 
                 // Build a list of candidates
                 ImVector<const char *> candidates;
+
+                auto enumerator = m_clCommands.GetEnumerator();
+
+                while (enumerator.MoveNext())
+                {
+                    auto cmd = enumerator.GetCurrent();
+
+                    auto cmdName = cmd->GetNameData();
+                    if(cmdName.compare(0, (word_end - word_start), word_start) == 0)
+                        candidates.push_back(cmdName.data());
+                }
+
 #if 0
                 for (int i = 0; i < Commands.Size; i++)
                     if (Strnicmp(Commands[i], word_start, (int)(word_end - word_start)) == 0)
@@ -168,7 +263,7 @@ namespace dcclite::panel_editor
                     // List matches
                     AddLog("Possible matches:\n");
                     for (int i = 0; i < candidates.Size; i++)
-                        AddLog("- %s\n", candidates[i]);
+                        AddLog("- {}\n", candidates[i]);
                 }
 
                 break;
@@ -204,53 +299,73 @@ namespace dcclite::panel_editor
         return 0;
     }
 
+    constexpr auto MAX_CONSOLE_ARGS = 16;
+
+    static inline bool IsConsoleToken(char ch) noexcept
+    {
+        return (((ch >= 'a') && (ch <= 'z')) || ((ch >= 'A') && (ch <= 'Z')) || ((ch >= '0') && (ch <= '9')));
+    }
+
+    static int BuildConsoleArgv(const char *command, std::string_view *args)
+    {
+        int argc = 0;
+
+        while(*command)
+        {
+            switch (*command)
+            {
+                case ' ':
+                case '\t':
+                    ++command;
+                    continue;                
+
+                default:
+                    if (!IsConsoleToken(*command))
+                        throw std::invalid_argument(fmt::format("[BuildConsoleArgv] Invalid char: {}", *command));
+
+                    const char *start = command;
+                    
+                    while (*command && IsConsoleToken(*command))
+                        ++command;
+
+                    args[argc++] = std::string_view{ start, static_cast<size_t>(command - start)};
+                    break;
+            }
+        }
+
+        return argc;
+    }
+
     void ConsoleWidget::ExecuteCommand(const char *command)
     {
-        this->AddLog("> {}", command);        
+        this->AddLog("> {}", command);    
 
-        m_vecHistory.push_back(command);
+        std::string_view args[MAX_CONSOLE_ARGS];
 
-        dcclite::Parser parser(command);
+        int argc = BuildConsoleArgv(command, args);
 
-        char cmd[256];
-        auto token = parser.GetToken(cmd, sizeof(cmd));
+        //empty command?
+        if (argc <= 0)
+            return;
 
-        if (token == Tokens::SLASH)
+        m_vecHistory.push_back(command);        
+
+        RName cmdName = RName::TryGetName(args[0]);
+        if (!cmdName)
         {
-            //
-            //Local cmd
-            if (parser.GetToken(cmd, sizeof(cmd)) != Tokens::ID)
-            {
-                this->AddLog("[error] Syntax error, expected </localcmd>");
+CMD_NOT_FOUND:
+            dcclite::Log::Error("[ConsoleWidget::ExecuteCommand] Command {} is not registered", args[0]);
 
-                return;
-            }
-
-            if (strcmp(cmd, "clear") == 0)
-            {
-                this->ClearLog();
-            }
-            else if (strcmp(cmd, "clear_history") == 0)
-            {
-                const auto size = m_vecHistory.size();
-
-                this->ClearHistory();
-
-                this->AddLog("Cleaned {} entries", size);
-            }
-            else
-            {
-                this->AddLog("[error] Unknown command: {}", command);
-            }
+            return;
         }
-        else if (token == Tokens::ID)
+
+        auto cmdHandler = static_cast<ConsoleCmd *>(m_clCommands.TryGetChild(cmdName));
+        if (!cmdHandler) 
         {
-            this->AddLog("[error] remote cmds?");
+            goto CMD_NOT_FOUND;
         }
-        else
-        {
-            this->AddLog("[error] Syntax error, expected <cmd> or </localcmd>");
-        }
+
+        cmdHandler->Execute(*this, argc, args);        
     }
 
 	void ConsoleWidget::Display()
@@ -388,7 +503,7 @@ namespace dcclite::panel_editor
 #endif
 
         ImGui::End();
-	}
+	}    
 
 
 	void ConsoleWidget::Update()

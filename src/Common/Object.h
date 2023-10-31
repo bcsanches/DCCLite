@@ -167,7 +167,10 @@ namespace dcclite
 				m_rnName{ name },
 				m_pParent(nullptr)
 			{
-				//empty
+				if (!name)
+				{
+					throw std::invalid_argument("RName cannot be null");
+				}
 			}
 
 			virtual ~IObject() = default;
