@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <functional>
 #include <vector>
 
 #include <fmt/format.h>
@@ -43,6 +44,30 @@ namespace dcclite::panel_editor
 		private:			
 	};
 
+	typedef std::function<void (ConsoleWidget &owner, unsigned argc, const std::string_view *argv)> ConsoleCmdFunc_t;
+
+	class SimpleConsoleCmd : public ConsoleCmd
+	{
+		public:
+			SimpleConsoleCmd(RName name, ConsoleCmdFunc_t func) :
+				ConsoleCmd{ name },
+				m_pfnFunc{ func }
+			{
+				if (!func)
+				{
+					throw std::invalid_argument("[SimpleConsoleCmd] func cannot be null");
+				}
+			}
+
+			void Execute(ConsoleWidget &owner, unsigned argc, const std::string_view *argv) override
+			{
+				m_pfnFunc(owner, argc, argv);
+			}
+
+		private:
+			ConsoleCmdFunc_t m_pfnFunc;
+	};
+
 	class ConsoleWidget: public EditorWidget
 	{
 		public:
@@ -57,6 +82,11 @@ namespace dcclite::panel_editor
 			inline void RegisterCommand(std::unique_ptr<ConsoleCmd> cmd)
 			{
 				m_clCommands.AddChild(std::move(cmd));
+			}
+
+			inline void RegisterCommand(RName name, ConsoleCmdFunc_t func)
+			{
+				m_clCommands.AddChild(std::make_unique<SimpleConsoleCmd>(name, func));
 			}
 
 		private:

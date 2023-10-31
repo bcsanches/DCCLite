@@ -92,7 +92,7 @@ namespace dcclite::panel_editor
     {
         public:
             ClearCommand() :
-                ConsoleCmd(dcclite::RName::Create("clear"))
+                ConsoleCmd(dcclite::RName::Create("Console.Clear"))
             {
                 //empty
             }
@@ -114,7 +114,7 @@ namespace dcclite::panel_editor
     {
         public:
             ClearHistoryCommand() :
-                ConsoleCmd(dcclite::RName::Create("clear_history"))
+                ConsoleCmd(dcclite::RName::Create("Console.ClearHistory"))
             {
                 //empty
             }
@@ -303,7 +303,7 @@ namespace dcclite::panel_editor
 
     static inline bool IsConsoleToken(char ch) noexcept
     {
-        return (((ch >= 'a') && (ch <= 'z')) || ((ch >= 'A') && (ch <= 'Z')) || ((ch >= '0') && (ch <= '9')));
+        return ((ch == '.') || ((ch >= 'a') && (ch <= 'z')) || ((ch >= 'A') && (ch <= 'Z')) || ((ch >= '0') && (ch <= '9')));
     }
 
     static int BuildConsoleArgv(const char *command, std::string_view *args)

@@ -47,5 +47,7 @@ namespace dcclite::panel_editor
 			bool	m_fShowMetrics = false;
 			bool	m_fShowDebugLog = false;
 			bool	m_fShowIdStackTool = false;
+
+			bool	m_fKeepRunning = true;
 	};
 }

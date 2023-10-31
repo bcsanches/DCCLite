@@ -75,10 +75,16 @@ static void ShowAboutWindow(bool *p_open)
 
 
 namespace dcclite::panel_editor
-{
+{	
 	PanelEditorApp::PanelEditorApp()
 	{
 		auto recentFile = Settings::GetLastProjectPath();
+
+		m_wConsole.RegisterCommand(RName{ "App.Quit" }, [this](ConsoleWidget &owner, unsigned argc, const std::string_view *argv)
+			{
+				m_fKeepRunning = false;
+			}
+		);
 	}
 
 
@@ -164,8 +170,6 @@ namespace dcclite::panel_editor
 
 		ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);		
 
-		bool keepRunning = true;
-
 		if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))
@@ -183,7 +187,7 @@ namespace dcclite::panel_editor
 				ImGui::Separator();
 
 				if (ImGui::MenuItem("Exit", "Alt+F4"))
-					keepRunning = false;
+					m_fKeepRunning = false;
 
 				ImGui::EndMenu();
 			}
@@ -286,7 +290,7 @@ namespace dcclite::panel_editor
 		if (m_fShowIdStackTool)
 			ImGui::ShowIDStackToolWindow(&m_fShowIdStackTool);
 
-		return keepRunning;
+		return m_fKeepRunning;
 	}
 
 	void PanelEditorApp::Run()
