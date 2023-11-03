@@ -19,7 +19,28 @@
 #include "ToolBarWidget.h"
 
 namespace dcclite::panel_editor
-{
+{	
+	class AppTask
+	{
+		public:
+			DCCLITE_DISABLE_CLASS_COPY_AND_MOVE(AppTask);
+
+			virtual ~AppTask()
+			{
+
+			}
+
+			virtual bool Display() = 0;
+
+		protected:
+			AppTask()
+			{
+				//empty
+			}
+	};
+
+	class AppTask;
+
 	class PanelEditorApp
 	{
 		public:
@@ -29,12 +50,19 @@ namespace dcclite::panel_editor
 
 			bool Display();
 			
-			void Run();
+			void Run();			
+	
+		private:
+			void NewFile();
+
+			void PushTask(std::unique_ptr<AppTask> task);
 
 		private:
 			dcclite::panel_editor::ConsoleWidget	m_wConsole;
 			dcclite::panel_editor::StatusBarWidget	m_wStatusBar;
 			dcclite::panel_editor::ToolBarWidget	m_wToolBar;
+
+			std::unique_ptr<AppTask>				m_upTask;
 
 			//
 			//

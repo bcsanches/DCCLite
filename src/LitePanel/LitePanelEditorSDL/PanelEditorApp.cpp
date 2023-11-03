@@ -15,6 +15,117 @@
 #include "Settings.h"
 #include "SystemTools.h"
 
+enum class MessageBoxButtons
+{
+	OK,
+	OK_CANCEL,
+	YES_NO,	
+	YES_NO_CANCEL
+};
+
+enum class MessageBoxResult
+{
+	NONE,
+	OK,
+	CANCEL,
+	YES,
+	NO
+};
+
+class MessageBox
+{
+	public:
+		MessageBox(const char *msg, const char *caption, MessageBoxButtons buttons) :
+			m_pszMsg{ msg },
+			m_pszCaption{ caption },
+			m_kButtons{buttons}
+		{
+			if (!m_pszMsg)
+				throw std::invalid_argument("[MessageBox] msg cannot be null");
+
+			if (!m_pszCaption)
+				throw std::invalid_argument("[MessageBox] caption cannot be null");
+		}
+
+		MessageBoxResult Display()
+		{
+			ImGui::OpenPopup(m_pszCaption);
+
+			if (!ImGui::BeginPopupModal(m_pszCaption, nullptr, ImGuiWindowFlags_NoResize))
+				return m_kResult;			
+
+			ImGui::Text(m_pszMsg);
+
+			switch (m_kButtons)
+			{
+				case MessageBoxButtons::OK:
+					this->DisplayOkButton();
+					break;
+
+				case MessageBoxButtons::OK_CANCEL:
+					this->DisplayOkButton();
+					this->DisplayCancelButton();
+					break;
+
+				case MessageBoxButtons::YES_NO:				
+					this->DisplayYesButton();
+					this->DisplayNoButton();
+					break;
+
+				case MessageBoxButtons::YES_NO_CANCEL:
+					this->DisplayYesButton();
+					this->DisplayNoButton();
+					this->DisplayCancelButton();
+					break;
+			}
+
+			ImGui::EndPopup();
+
+			return m_kResult;
+		}
+
+	private:
+		void DisplayButton(const char *label, MessageBoxResult result, ImGuiKey key)
+		{
+			if ((ImGui::Button(label)) || 
+				((ImGui::IsKeyDown(ImGuiKey_LeftAlt) || ImGui::IsKeyDown(ImGuiKey_RightAlt)) && ImGui::IsKeyPressed(key)))
+			{
+				m_kResult = result;
+
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();			
+		}
+
+		void DisplayOkButton()
+		{
+			this->DisplayButton("OK", MessageBoxResult::OK, ImGuiKey_O);			
+		}
+
+		void DisplayCancelButton()
+		{
+			this->DisplayButton("Cancel", MessageBoxResult::CANCEL, ImGuiKey_C);
+		}
+
+		void DisplayYesButton()
+		{
+			this->DisplayButton("Yes", MessageBoxResult::YES, ImGuiKey_Y);
+		}
+
+		void DisplayNoButton()
+		{
+			this->DisplayButton("No", MessageBoxResult::NO, ImGuiKey_N);
+		}
+
+	private:
+		const char *m_pszMsg;
+		const char *m_pszCaption;
+
+		MessageBoxButtons	m_kButtons;
+
+		MessageBoxResult	m_kResult = MessageBoxResult::NONE;
+};
+
 static void ImGuiDemoFunc()
 {
 	// Our state
@@ -75,18 +186,68 @@ static void ShowAboutWindow(bool *p_open)
 
 
 namespace dcclite::panel_editor
-{	
+{		
+	class NewFileTask: public AppTask
+	{
+		public:
+			NewFileTask():
+				m_clSaveDocMsgBox{"Save changes to current project?", "Save Changes?", MessageBoxButtons::YES_NO_CANCEL}
+			{
+				//empty
+			}
+
+			bool Display() override
+			{
+				bool keepRunning = true;
+
+				auto r = m_clSaveDocMsgBox.Display();
+
+				switch(r)
+				{
+					case MessageBoxResult::YES:
+						//save doc
+						//make new file
+						keepRunning = false;
+						break;
+
+					case MessageBoxResult::NO:
+						//make new file
+						keepRunning = false;
+						break;
+
+					case MessageBoxResult::CANCEL:
+						keepRunning = false;
+						break;						
+				}
+
+				return keepRunning;				
+			}		
+
+		private:
+			MessageBox m_clSaveDocMsgBox;
+	};
+
 	PanelEditorApp::PanelEditorApp()
 	{
 		auto recentFile = Settings::GetLastProjectPath();
 
-		m_wConsole.RegisterCommand(RName{ "App.Quit" }, [this](ConsoleWidget &owner, unsigned argc, const std::string_view *argv)
+		m_wConsole.RegisterCommand(RName{ "App.Quit" }, [this](ConsoleCmdParams &params)
 			{
 				m_fKeepRunning = false;
 			}
 		);
+
+		m_wConsole.RegisterCommand(RName{ "Editor.New" }, [this](ConsoleCmdParams &params)
+			{
+				this->NewFile();
+			}
+		);
 	}
 
+	void PanelEditorApp::NewFile()
+	{
+		this->PushTask(std::make_unique<NewFileTask>());
+	}
 
 	bool PanelEditorApp::Display()
 	{
@@ -110,7 +271,7 @@ namespace dcclite::panel_editor
 		//disable padding, rouding and border
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);		
 
 		ImGui::Begin("MainWindow", nullptr, window_flags);
 
@@ -174,6 +335,11 @@ namespace dcclite::panel_editor
 		{
 			if (ImGui::BeginMenu("File"))
 			{
+				if (ImGui::MenuItem("New", "Ctrl+N"))
+				{
+					this->NewFile();
+				}
+
 				if (ImGui::MenuItem("Open", "Ctrl+O"))
 				{
 					OpenFileDialog();
@@ -290,11 +456,21 @@ namespace dcclite::panel_editor
 		if (m_fShowIdStackTool)
 			ImGui::ShowIDStackToolWindow(&m_fShowIdStackTool);
 
+		if ((m_upTask) && (!m_upTask->Display()))
+		{
+			m_upTask.reset();
+		}
+
 		return m_fKeepRunning;
 	}
 
 	void PanelEditorApp::Run()
 	{
 
+	}	
+
+	void PanelEditorApp::PushTask(std::unique_ptr<AppTask> task)
+	{
+		m_upTask = std::move(task);
 	}
 }

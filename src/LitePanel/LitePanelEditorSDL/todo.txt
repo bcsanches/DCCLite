@@ -1,5 +1,9 @@
 LitePanelSDL
 
+- document handling
+- keyboard shortcuts handling, need to make a key focus, PanelEditorApp should handle?
+
+
 - Main application, split between Editor and Runner
 
 - When loading:

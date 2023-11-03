@@ -26,13 +26,20 @@ namespace dcclite::panel_editor
 {
 	class ConsoleWidget;	
 
+	struct ConsoleCmdParams
+	{
+		ConsoleWidget			&m_rclConsole;
+		const unsigned			m_uArgc;
+		const std::string_view	*m_pclArgv;
+	};
+
 	class ConsoleCmd: public dcclite::IObject
 	{
 		protected:
 			ConsoleCmd(RName name);
 
 		public:			
-			virtual void Execute(ConsoleWidget &owner, unsigned argc, const std::string_view *argv) = 0;
+			virtual void Execute(ConsoleCmdParams &params) = 0;
 
 			DCCLITE_DISABLE_CLASS_COPY_AND_MOVE(ConsoleCmd);
 
@@ -44,7 +51,7 @@ namespace dcclite::panel_editor
 		private:			
 	};
 
-	typedef std::function<void (ConsoleWidget &owner, unsigned argc, const std::string_view *argv)> ConsoleCmdFunc_t;
+	typedef std::function<void (ConsoleCmdParams &params)> ConsoleCmdFunc_t;
 
 	class SimpleConsoleCmd : public ConsoleCmd
 	{
@@ -59,9 +66,9 @@ namespace dcclite::panel_editor
 				}
 			}
 
-			void Execute(ConsoleWidget &owner, unsigned argc, const std::string_view *argv) override
+			void Execute(ConsoleCmdParams &params) override
 			{
-				m_pfnFunc(owner, argc, argv);
+				m_pfnFunc(params);
 			}
 
 		private:

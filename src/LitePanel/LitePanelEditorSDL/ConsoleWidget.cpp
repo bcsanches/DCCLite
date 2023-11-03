@@ -59,79 +59,6 @@ namespace dcclite::panel_editor
         //empty
     }
 
-    class HelpCommand : public ConsoleCmd
-    {
-        public:
-            HelpCommand() :
-                ConsoleCmd(dcclite::RName::Create("help"))
-            {
-                //empty
-            }
-
-            void Execute(ConsoleWidget &owner, unsigned argc, const std::string_view *argv) override
-            {
-                if (argc > 1)
-                {
-                    dcclite::Log::Error("[HelpCommand] No arguments expected.");
-
-                    return;
-                }
-
-                auto enumerator = owner.m_clCommands.GetEnumerator();
-
-                while (enumerator.MoveNext())
-                {
-                    auto cmd = enumerator.GetCurrent();
-
-                    owner.AddLog("\t{}", cmd->GetName().GetData());
-                }
-            }
-    };
-
-    class ClearCommand : public ConsoleCmd
-    {
-        public:
-            ClearCommand() :
-                ConsoleCmd(dcclite::RName::Create("Console.Clear"))
-            {
-                //empty
-            }
-
-            void Execute(ConsoleWidget &owner, unsigned argc, const std::string_view *argv) override
-            {
-                if (argc > 1)
-                {
-                    dcclite::Log::Error("[ClearCommand] No arguments expected.");
-
-                    return;
-                }
-
-                owner.ClearLog();
-            }
-    };
-
-    class ClearHistoryCommand : public ConsoleCmd
-    {
-        public:
-            ClearHistoryCommand() :
-                ConsoleCmd(dcclite::RName::Create("Console.ClearHistory"))
-            {
-                //empty
-            }
-
-            void Execute(ConsoleWidget &owner, unsigned argc, const std::string_view *argv) override
-            {
-                if (argc > 1)
-                {
-                    dcclite::Log::Error("[ClearHistoryCommand] No arguments expected.");
-
-                    return;
-                }
-
-                owner.ClearHistory();
-            }
-    };
-
     ConsoleWidget::ConsoleWidget():
         m_clCommands{RName::Create("ConsoleCommands")}
     {
@@ -143,9 +70,51 @@ namespace dcclite::panel_editor
         auto &sinks = dcclite::LogGetDefault()->sinks();
         sinks.push_back(m_spLogSink);
 
-        this->RegisterCommand(std::make_unique<HelpCommand>());
-        this->RegisterCommand(std::make_unique<ClearCommand>());
-        this->RegisterCommand(std::make_unique<ClearHistoryCommand>());
+        this->RegisterCommand(RName{ "help" }, [](ConsoleCmdParams &params)
+            {
+                if (params.m_uArgc > 1)
+                {
+                    dcclite::Log::Error("[HelpCommand] No arguments expected.");
+
+                    return;
+                }
+
+                auto enumerator = params.m_rclConsole.m_clCommands.GetEnumerator();
+
+                while (enumerator.MoveNext())
+                {
+                    auto cmd = enumerator.GetCurrent();
+
+                    params.m_rclConsole.AddLog("\t{}", cmd->GetName().GetData());
+                }
+            }
+        );
+
+        this->RegisterCommand(RName{ "Console.Clear" }, [](ConsoleCmdParams &params)
+            {
+                if (params.m_uArgc > 1)
+                {
+                    dcclite::Log::Error("[ClearCommand] No arguments expected.");
+
+                    return;
+                }
+
+                params.m_rclConsole.ClearLog();
+            }
+        );
+
+        this->RegisterCommand(RName{ "Console.ClearHistory"}, [](ConsoleCmdParams &params)
+            {
+                if (params.m_uArgc > 1)
+                {
+                    dcclite::Log::Error("[ClearHistoryCommand] No arguments expected.");
+
+                    return;
+                }
+
+                params.m_rclConsole.ClearHistory();
+            }
+        );        
 
         dcclite::Log::Info("[ConsoleWidget::ConsoleWidget] Created and sink registered");
     }
@@ -363,9 +332,9 @@ CMD_NOT_FOUND:
         if (!cmdHandler) 
         {
             goto CMD_NOT_FOUND;
-        }
+        }        
 
-        cmdHandler->Execute(*this, argc, args);        
+        cmdHandler->Execute(ConsoleCmdParams{ *this, static_cast<unsigned>(argc), args });
     }
 
 	void ConsoleWidget::Display()
