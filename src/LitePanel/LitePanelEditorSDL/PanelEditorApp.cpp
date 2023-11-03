@@ -51,8 +51,12 @@ class MessageBox
 		{
 			ImGui::OpenPopup(m_pszCaption);
 
-			if (!ImGui::BeginPopupModal(m_pszCaption, nullptr, ImGuiWindowFlags_NoResize))
-				return m_kResult;			
+			if (!ImGui::BeginPopupModal(m_pszCaption, &m_fDisplay, ImGuiWindowFlags_NoResize))
+			{
+				this->SetDefaultResult();
+
+				return m_kResult;
+			}
 
 			ImGui::Text(m_pszMsg);
 
@@ -77,6 +81,13 @@ class MessageBox
 					this->DisplayNoButton();
 					this->DisplayCancelButton();
 					break;
+			}
+
+			if (ImGui::IsKeyDown(ImGuiKey_Escape))
+			{
+				this->SetDefaultResult();
+
+				ImGui::CloseCurrentPopup();
 			}
 
 			ImGui::EndPopup();
@@ -117,9 +128,33 @@ class MessageBox
 			this->DisplayButton("No", MessageBoxResult::NO, ImGuiKey_N);
 		}
 
+		void SetDefaultResult()
+		{
+			switch (m_kButtons)
+			{
+				case MessageBoxButtons::OK:
+					m_kResult = MessageBoxResult::OK;
+					break;
+
+				case MessageBoxButtons::OK_CANCEL:
+					m_kResult = MessageBoxResult::CANCEL;
+					break;
+
+				case MessageBoxButtons::YES_NO:
+					m_kResult = MessageBoxResult::NO;
+					break;
+
+				case MessageBoxButtons::YES_NO_CANCEL:
+					m_kResult = MessageBoxResult::CANCEL;
+					break;
+			}
+		}
+
 	private:
 		const char *m_pszMsg;
 		const char *m_pszCaption;
+
+		bool				m_fDisplay = true;
 
 		MessageBoxButtons	m_kButtons;
 

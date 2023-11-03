@@ -112,7 +112,7 @@ int main(int argc, char **argv)
 				if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(window))
 					fExitRequested = true;
 
-#if 1
+#if 0
 				if (event.type == SDL_EVENT_KEY_DOWN)
 				{
 					if(event.key.keysym.sym == SDLK_ESCAPE)
