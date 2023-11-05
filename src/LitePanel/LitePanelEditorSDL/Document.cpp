@@ -8,14 +8,34 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#pragma once
+#include "Document.h"
 
-#include <optional>
+#include <stdexcept>
 
-#include "FileSystem.h"
+#include <fmt/format.h>
 
 namespace dcclite::panel_editor
 {
-	std::optional<dcclite::fs::path> OpenFileDialog();
-	std::optional<dcclite::fs::path> SaveFileDialog(const dcclite::fs::path &filePath, const std::string &extension, const std::string &filter);
+	Document::Document()
+	{
+		//empty
+	}
+
+	void Document::Save()
+	{
+		if (!m_fExistingDoc)
+		{
+			throw std::logic_error(fmt::format("[Document::Save] Cannot save a document without a name, did you call SetFileName?"));
+		}
+		
+		m_fDirty = false;
+	}
+
+	void Document::SaveAs(dcclite::fs::path &path)
+	{
+		m_pthFileName = path;
+		m_fExistingDoc = true;
+
+		this->Save();
+	}
 }

@@ -12,154 +12,9 @@
 
 #include "imgui_internal.h"
 
+#include "MessageBox.h"
 #include "Settings.h"
 #include "SystemTools.h"
-
-enum class MessageBoxButtons
-{
-	OK,
-	OK_CANCEL,
-	YES_NO,	
-	YES_NO_CANCEL
-};
-
-enum class MessageBoxResult
-{
-	NONE,
-	OK,
-	CANCEL,
-	YES,
-	NO
-};
-
-class MessageBox
-{
-	public:
-		MessageBox(const char *msg, const char *caption, MessageBoxButtons buttons) :
-			m_pszMsg{ msg },
-			m_pszCaption{ caption },
-			m_kButtons{buttons}
-		{
-			if (!m_pszMsg)
-				throw std::invalid_argument("[MessageBox] msg cannot be null");
-
-			if (!m_pszCaption)
-				throw std::invalid_argument("[MessageBox] caption cannot be null");
-		}
-
-		MessageBoxResult Display()
-		{
-			ImGui::OpenPopup(m_pszCaption);
-
-			if (!ImGui::BeginPopupModal(m_pszCaption, &m_fDisplay, ImGuiWindowFlags_NoResize))
-			{
-				this->SetDefaultResult();
-
-				return m_kResult;
-			}
-
-			ImGui::Text(m_pszMsg);
-
-			switch (m_kButtons)
-			{
-				case MessageBoxButtons::OK:
-					this->DisplayOkButton();
-					break;
-
-				case MessageBoxButtons::OK_CANCEL:
-					this->DisplayOkButton();
-					this->DisplayCancelButton();
-					break;
-
-				case MessageBoxButtons::YES_NO:				
-					this->DisplayYesButton();
-					this->DisplayNoButton();
-					break;
-
-				case MessageBoxButtons::YES_NO_CANCEL:
-					this->DisplayYesButton();
-					this->DisplayNoButton();
-					this->DisplayCancelButton();
-					break;
-			}
-
-			if (ImGui::IsKeyDown(ImGuiKey_Escape))
-			{
-				this->SetDefaultResult();
-
-				ImGui::CloseCurrentPopup();
-			}
-
-			ImGui::EndPopup();
-
-			return m_kResult;
-		}
-
-	private:
-		void DisplayButton(const char *label, MessageBoxResult result, ImGuiKey key)
-		{
-			if ((ImGui::Button(label)) || 
-				((ImGui::IsKeyDown(ImGuiKey_LeftAlt) || ImGui::IsKeyDown(ImGuiKey_RightAlt)) && ImGui::IsKeyPressed(key)))
-			{
-				m_kResult = result;
-
-				ImGui::CloseCurrentPopup();
-			}
-			ImGui::SameLine();			
-		}
-
-		void DisplayOkButton()
-		{
-			this->DisplayButton("OK", MessageBoxResult::OK, ImGuiKey_O);			
-		}
-
-		void DisplayCancelButton()
-		{
-			this->DisplayButton("Cancel", MessageBoxResult::CANCEL, ImGuiKey_C);
-		}
-
-		void DisplayYesButton()
-		{
-			this->DisplayButton("Yes", MessageBoxResult::YES, ImGuiKey_Y);
-		}
-
-		void DisplayNoButton()
-		{
-			this->DisplayButton("No", MessageBoxResult::NO, ImGuiKey_N);
-		}
-
-		void SetDefaultResult()
-		{
-			switch (m_kButtons)
-			{
-				case MessageBoxButtons::OK:
-					m_kResult = MessageBoxResult::OK;
-					break;
-
-				case MessageBoxButtons::OK_CANCEL:
-					m_kResult = MessageBoxResult::CANCEL;
-					break;
-
-				case MessageBoxButtons::YES_NO:
-					m_kResult = MessageBoxResult::NO;
-					break;
-
-				case MessageBoxButtons::YES_NO_CANCEL:
-					m_kResult = MessageBoxResult::CANCEL;
-					break;
-			}
-		}
-
-	private:
-		const char *m_pszMsg;
-		const char *m_pszCaption;
-
-		bool				m_fDisplay = true;
-
-		MessageBoxButtons	m_kButtons;
-
-		MessageBoxResult	m_kResult = MessageBoxResult::NONE;
-};
 
 static void ImGuiDemoFunc()
 {
@@ -219,14 +74,14 @@ static void ShowAboutWindow(bool *p_open)
 	ImGui::End();
 }
 
-
 namespace dcclite::panel_editor
-{		
+{			
 	class NewFileTask: public AppTask
 	{
 		public:
-			NewFileTask():
-				m_clSaveDocMsgBox{"Save changes to current project?", "Save Changes?", MessageBoxButtons::YES_NO_CANCEL}
+			NewFileTask(Document &doc):
+				m_clSaveDocMsgBox{"Save changes to current project?", "Save Changes?", MessageBoxButtons::YES_NO_CANCEL},
+				m_clDocument{doc}
 			{
 				//empty
 			}
@@ -235,32 +90,50 @@ namespace dcclite::panel_editor
 			{
 				bool keepRunning = true;
 
-				auto r = m_clSaveDocMsgBox.Display();
-
-				switch(r)
+				if (m_clDocument.IsDirty())
 				{
-					case MessageBoxResult::YES:
-						//save doc
-						//make new file
-						keepRunning = false;
-						break;
+					auto r = m_clSaveDocMsgBox.Display();
 
-					case MessageBoxResult::NO:
-						//make new file
-						keepRunning = false;
-						break;
+					switch (r)
+					{
+						case MessageBoxResult::YES:
+							if (!m_clDocument.IsExistingDoc())
+							{
+								auto path = SaveFileDialog("Untitled.pnl", "pnl", "Panel files");
+								if (path)
+								{
+									m_clDocument.SaveAs(path.value());
+								}
+							}						
+							else
+							{
+								m_clDocument.Save();
+							}
+							
+							keepRunning = false;
+							break;
 
-					case MessageBoxResult::CANCEL:
-						keepRunning = false;
-						break;						
+						case MessageBoxResult::NO:
+							//make new file
+							keepRunning = false;
+							break;
+
+						case MessageBoxResult::CANCEL:
+							keepRunning = false;
+							break;
+					}
 				}
+					
 
 				return keepRunning;				
 			}		
 
 		private:
-			MessageBox m_clSaveDocMsgBox;
+			MessageBox	m_clSaveDocMsgBox;
+
+			Document	m_clDocument;
 	};
+
 
 	PanelEditorApp::PanelEditorApp()
 	{
@@ -277,11 +150,18 @@ namespace dcclite::panel_editor
 				this->NewFile();
 			}
 		);
+
+		m_clBindings.Bind("Editor.New", SDL_SCANCODE_N, KEY_MODIFIER_CTRL);
+		m_clBindings.Bind("Editor.Open", SDL_SCANCODE_O, KEY_MODIFIER_CTRL);
+		m_clBindings.Bind("Editor.Save", SDL_SCANCODE_S, KEY_MODIFIER_CTRL);
+		m_clBindings.Bind("Editor.SaveAs", SDL_SCANCODE_S, KEY_MODIFIER_CTRL | KEY_MODIFIER_SHIFT);
 	}
 
 	void PanelEditorApp::NewFile()
 	{
-		this->PushTask(std::make_unique<NewFileTask>());
+		m_clDocument.MarkDirty();
+
+		this->PushTask(std::make_unique<NewFileTask>(m_clDocument));
 	}
 
 	bool PanelEditorApp::Display()
@@ -382,8 +262,8 @@ namespace dcclite::panel_editor
 
 				ImGui::Separator();
 
-				ImGui::MenuItem("Save", "Ctrl+S");
-				ImGui::MenuItem("Save As", "Ctrl+Alt+S");
+				ImGui::MenuItem("Save", "Ctrl+S", nullptr, m_clDocument.IsDirty());
+				ImGui::MenuItem("Save As", "Ctrl+Shift+S");
 
 				ImGui::Separator();
 
@@ -507,5 +387,14 @@ namespace dcclite::panel_editor
 	void PanelEditorApp::PushTask(std::unique_ptr<AppTask> task)
 	{
 		m_upTask = std::move(task);
+	}
+
+	void PanelEditorApp::HandleEvent(const SDL_KeyboardEvent &key)
+	{
+		//if task running, ignore it...
+		if (m_upTask)
+			return;
+
+		m_clBindings.HandleEvent(key, m_wConsole);
 	}
 }

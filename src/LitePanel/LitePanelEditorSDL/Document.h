@@ -10,12 +10,38 @@
 
 #pragma once
 
-#include <optional>
-
 #include "FileSystem.h"
 
 namespace dcclite::panel_editor
-{
-	std::optional<dcclite::fs::path> OpenFileDialog();
-	std::optional<dcclite::fs::path> SaveFileDialog(const dcclite::fs::path &filePath, const std::string &extension, const std::string &filter);
+{	
+	class Document
+	{
+		public:
+			Document();
+
+			void Save();
+			void SaveAs(dcclite::fs::path &path);
+
+			inline void MarkDirty() noexcept
+			{
+				m_fDirty = true;
+			}
+
+			[[nodiscard]] bool IsDirty() const noexcept
+			{
+				return m_fDirty;
+			}
+
+			[[nodiscard]] bool IsExistingDoc() const noexcept
+			{
+				return m_fExistingDoc;
+			}
+			
+
+		private:			
+			dcclite::fs::path	m_pthFileName;
+
+			bool m_fDirty = false;
+			bool m_fExistingDoc = false;
+	};
 }

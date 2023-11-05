@@ -96,6 +96,8 @@ namespace dcclite::panel_editor
 				m_clCommands.AddChild(std::make_unique<SimpleConsoleCmd>(name, func));
 			}
 
+			void ExecuteCommand(const char *cmd);
+
 		private:
 			template <typename... Args>
 			inline void AddLog(fmt::format_string<Args...> s, Args&&... args)
@@ -110,9 +112,7 @@ namespace dcclite::panel_editor
 
 			int OnTextEdit(ImGuiInputTextCallbackData *data);
 
-			friend int TextEditCallbackStub(ImGuiInputTextCallbackData *data);
-
-			void ExecuteCommand(const char *cmd);
+			friend int TextEditCallbackStub(ImGuiInputTextCallbackData *data);			
 
 			friend class LogSink;
 			friend class HelpCommand;

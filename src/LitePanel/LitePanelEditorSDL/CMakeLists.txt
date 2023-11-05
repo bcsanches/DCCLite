@@ -3,9 +3,15 @@ add_compile_definitions(IMGUI_DEFINE_MATH_OPERATORS)
 add_executable(LitePanelEditorSDL 
 	ConsoleWidget.cpp
 	ConsoleWidget.h
+	Document.cpp
+	Document.h
 	EditorWidget.cpp
 	EditorWidget.h
+	KeyBindingManager.cpp
+	KeyBindingManager.h
 	main.cpp
+	MessageBox.cpp
+	MessageBox.h
 	PanelEditorApp.cpp
 	PanelEditorApp.h
 	Settings.cpp
@@ -22,6 +28,7 @@ target_compile_features(LitePanelEditorSDL PUBLIC cxx_std_17)
 target_include_directories(LitePanelEditorSDL
 	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/fmt/include
 	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/imgui/
+	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/magic_enum/include
 	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/SDL/include
 	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/spdlog/include
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/Common

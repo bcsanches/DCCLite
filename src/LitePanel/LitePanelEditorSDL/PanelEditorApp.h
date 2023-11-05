@@ -15,6 +15,8 @@
 #include <Util.h>
 
 #include "ConsoleWidget.h"
+#include "Document.h"
+#include "KeyBindingManager.h"
 #include "StatusBarWidget.h"
 #include "ToolBarWidget.h"
 
@@ -51,6 +53,13 @@ namespace dcclite::panel_editor
 			bool Display();
 			
 			void Run();			
+
+			inline void Bind(const char *cmd, SDL_Scancode key, uint32_t keyMod = 0)
+			{
+				m_clBindings.Bind(cmd, key, keyMod);
+			}
+
+			void HandleEvent(const SDL_KeyboardEvent &key);
 	
 		private:
 			void NewFile();
@@ -63,6 +72,10 @@ namespace dcclite::panel_editor
 			dcclite::panel_editor::ToolBarWidget	m_wToolBar;
 
 			std::unique_ptr<AppTask>				m_upTask;
+
+			KeyBindingManager						m_clBindings;
+
+			Document								m_clDocument;
 
 			//
 			//
