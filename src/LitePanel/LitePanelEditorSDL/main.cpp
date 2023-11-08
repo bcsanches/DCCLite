@@ -10,6 +10,7 @@
 
 #include <SDL3/SDL.h>
 
+#include <Clock.h>
 #include <ConsoleUtils.h>
 #include <Log.h>
 #include <LogUtils.h>
@@ -95,8 +96,31 @@ int main(int argc, char **argv)
 
 		dcclite::panel_editor::PanelEditorApp app;
 
+		using namespace std::chrono_literals;
+		unsigned frameCount = 0;
+		auto startTime = dcclite::Clock::DefaultClock_t::now();
+
 		while (!fExitRequested)
 		{
+#if 1
+			auto now = dcclite::Clock::DefaultClock_t::now();
+			auto delta = now - startTime;
+			if (delta < 20ms)
+			{
+				std::this_thread::sleep_for(delta - 20ms);
+				continue;
+			}
+
+			++frameCount;
+			if (delta >= std::chrono::seconds{ 1 })
+			{
+				startTime += std::chrono::seconds{ 1 };
+
+				//dcclite::Log::Debug("[{}]", frameCount);
+				frameCount = 0;
+			}
+#endif
+
 			// Poll and handle events (inputs, window resize, etc.)
 			// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
 			// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
