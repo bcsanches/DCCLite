@@ -38,4 +38,15 @@ namespace dcclite::panel_editor
 
 		this->Save();
 	}
+
+	void Document::New()
+	{
+		m_pthFileName.clear();
+		m_fExistingDoc = false;
+		m_fDirty = false;
+
+		m_vecPanels.clear();
+
+		m_vecPanels.emplace_back(LitePanel::TileCoord_t{ 64, 64 }, "Untitled Panel");
+	}
 }

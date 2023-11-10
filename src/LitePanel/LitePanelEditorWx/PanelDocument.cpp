@@ -98,7 +98,7 @@ namespace LitePanel::Gui
 
 	bool PanelDocument::OnCreate(const wxString &path, long flags)
 	{
-		m_upPanel = std::make_unique<LitePanel::Panel>(LitePanel::TileCoord_t{ 32, 32 });
+		m_upPanel = std::make_unique<LitePanel::Panel>(LitePanel::TileCoord_t{ 32, 32 }, "Untitled");
 
 		return wxDocument::OnCreate(path, flags);
 	}

@@ -81,7 +81,7 @@ namespace dcclite::panel_editor
 		public:
 			NewFileTask(Document &doc):
 				m_clSaveDocMsgBox{"Save changes to current project?", "Save Changes?", MessageBoxButtons::YES_NO_CANCEL},
-				m_clDocument{doc}
+				m_rclDocument{doc}
 			{
 				//empty
 			}
@@ -90,31 +90,34 @@ namespace dcclite::panel_editor
 			{
 				bool keepRunning = true;
 
-				if (m_clDocument.IsDirty())
+				if (m_rclDocument.IsDirty())
 				{
 					auto r = m_clSaveDocMsgBox.Display();
 
 					switch (r)
 					{
 						case MessageBoxResult::YES:
-							if (!m_clDocument.IsExistingDoc())
+							if (!m_rclDocument.IsExistingDoc())
 							{
 								auto path = SaveFileDialog("Untitled.pnl", "pnl", "Panel files");
 								if (path)
 								{
-									m_clDocument.SaveAs(path.value());
+									m_rclDocument.SaveAs(path.value());
 								}
 							}						
 							else
 							{
-								m_clDocument.Save();
+								m_rclDocument.Save();
 							}
 							
+							m_rclDocument.New();
+
 							keepRunning = false;
 							break;
 
-						case MessageBoxResult::NO:
-							//make new file
+						case MessageBoxResult::NO:							
+							m_rclDocument.New();
+
 							keepRunning = false;
 							break;
 
@@ -122,8 +125,7 @@ namespace dcclite::panel_editor
 							keepRunning = false;
 							break;
 					}
-				}
-					
+				}					
 
 				return keepRunning;				
 			}		
@@ -131,7 +133,7 @@ namespace dcclite::panel_editor
 		private:
 			MessageBox	m_clSaveDocMsgBox;
 
-			Document	m_clDocument;
+			Document	&m_rclDocument;
 	};
 
 
@@ -155,12 +157,12 @@ namespace dcclite::panel_editor
 		m_clBindings.Bind("Editor.Open", SDL_SCANCODE_O, KEY_MODIFIER_CTRL);
 		m_clBindings.Bind("Editor.Save", SDL_SCANCODE_S, KEY_MODIFIER_CTRL);
 		m_clBindings.Bind("Editor.SaveAs", SDL_SCANCODE_S, KEY_MODIFIER_CTRL | KEY_MODIFIER_SHIFT);
+
+		m_clDocument.New();
 	}
 
 	void PanelEditorApp::NewFile()
-	{
-		m_clDocument.MarkDirty();
-
+	{		
 		this->PushTask(std::make_unique<NewFileTask>(m_clDocument));
 	}
 
@@ -314,41 +316,28 @@ namespace dcclite::panel_editor
 		{
 			if (ImGui::BeginTabBar("MainTabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_AutoSelectNewTabs | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton))
 			{
-				static bool open = true;
-				if (ImGui::BeginTabItem("Untitled Panel", &open, 0))
+				auto panels = m_clDocument.GetPanels();
+				auto numPanels = m_clDocument.GetNumPanels();
+
+				for (int i = 0; i < numPanels; ++i)
 				{
-					ImVec2 canvas_p0 = ImGui::GetCursorScreenPos();      // ImDrawList API uses screen coordinates!
-					ImVec2 canvas_sz = ImGui::GetContentRegionAvail();   // Resize canvas to what's available
-
-					ImGui::Text("Cool! work area");
-
-					auto drawList = ImGui::GetWindowDrawList();
-
-					ImU32 col_b = ImGui::GetColorU32(IM_COL32(255, 0, 255, 255));
-
-					drawList->AddLine(canvas_p0, canvas_p0 + canvas_sz, col_b);
-
-					ImGui::EndTabItem();
-				}
-
-				if (ImGui::BeginTabItem("Untitled Panel 2", nullptr, 0))
-				{
-					auto drawList = ImGui::GetWindowDrawList();
-
-					ImGui::Text("Gradients");
-					ImVec2 gradient_size = ImVec2(ImGui::CalcItemWidth(), ImGui::GetFrameHeight());
+					if (ImGui::BeginTabItem(panels[i].GetName().c_str(), nullptr, 0))
 					{
-						ImVec2 p0 = ImGui::GetCursorScreenPos();
-						ImVec2 p1 = ImVec2(p0.x + gradient_size.x, p0.y + gradient_size.y);
-						ImU32 col_a = ImGui::GetColorU32(IM_COL32(0, 0, 0, 255));
-						ImU32 col_b = ImGui::GetColorU32(IM_COL32(255, 255, 255, 255));
-						drawList->AddRectFilledMultiColor(p0, p1, col_a, col_b, col_b, col_a);
-						ImGui::InvisibleButton("##gradient1", gradient_size);
+						ImVec2 canvas_p0 = ImGui::GetCursorScreenPos();      // ImDrawList API uses screen coordinates!
+						ImVec2 canvas_sz = ImGui::GetContentRegionAvail();   // Resize canvas to what's available
+
+						ImGui::Text("Cool! work area");
+
+						auto drawList = ImGui::GetWindowDrawList();
+
+						ImU32 col_b = ImGui::GetColorU32(IM_COL32(255, 0, 255, 255));
+
+						drawList->AddLine(canvas_p0, canvas_p0 + canvas_sz, col_b);
+
+						ImGui::EndTabItem();
 					}
-
-					ImGui::EndTabItem();
 				}
-
+							
 				ImGui::EndTabBar();
 			}
 		}

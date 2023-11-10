@@ -19,8 +19,10 @@ namespace LitePanel
 	class Panel
 	{
 		public:
-			Panel(const TileCoord_t size);
+			Panel(const TileCoord_t size, const char *name);
 			Panel(const rapidjson::Value& data);
+
+			Panel(Panel &&) = default;
 
 			void RegisterRail(std::unique_ptr<RailObject> object);
 			std::unique_ptr<RailObject> TryUnregisterRail(const TileCoord_t &position);
@@ -40,8 +42,14 @@ namespace LitePanel
 			void Save(JsonOutputStream_t &stream) const;
 			void Load(const rapidjson::Value &data);
 
+			const std::string &GetName() const noexcept
+			{
+				return m_strName;
+			}
+
 		private:
-			TileMap m_mapTileMap;
-			
+			std::string m_strName;
+
+			TileMap m_mapTileMap;			
 	};
 }

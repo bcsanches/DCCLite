@@ -10,9 +10,9 @@
 
 #pragma once
 
-#include "TileMap.h"
-
 #include <rapidjson/document.h>
+
+#include "LitePanelLibDefs.h"
 
 namespace LitePanel
 {	

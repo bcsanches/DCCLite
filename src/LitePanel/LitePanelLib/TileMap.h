@@ -17,10 +17,10 @@
 
 #include "LitePanelLibDefs.h"
 
-namespace LitePanel
-{
-	class MapObject;
+#include "MapObject.h"
 
+namespace LitePanel
+{	
 	class TileLayer
 	{
 		public:
@@ -62,6 +62,8 @@ namespace LitePanel
 			TileMap(const TileCoord_t size, const unsigned numLayers = 1);
 			TileMap(const rapidjson::Value& data);
 
+			TileMap(TileMap &&) = default;
+
 			const TileCoord_t &GetSize() const noexcept { return m_vecLayers[0].GetSize(); }
 
 			void RegisterObject(std::unique_ptr<MapObject> object, const uint8_t layer);	
@@ -92,6 +94,6 @@ namespace LitePanel
 		private:			
 			std::vector<TileLayer> m_vecLayers;
 
-			std::vector< ITileMapListener *> m_vecListeners;
+			std::vector<ITileMapListener *> m_vecListeners;
 	};
 }

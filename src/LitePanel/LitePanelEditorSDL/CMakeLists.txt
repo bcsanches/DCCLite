@@ -32,6 +32,7 @@ target_include_directories(LitePanelEditorSDL
 	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/SDL/include
 	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/spdlog/include
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/Common
+        PRIVATE ${DCCLite_SOURCE_DIR}/src/LitePanel/LitePanelLib
 )
 
 if(WIN32)
@@ -40,6 +41,7 @@ if(WIN32)
 
     target_link_libraries(LitePanelEditorSDL
 		PRIVATE Common	
+		PRIVATE LitePanelLib
 		PRIVATE SDL3-shared
 		PRIVATE IMGUI
     )
@@ -55,6 +57,7 @@ else(WIN32)
 
 	target_link_libraries(LitePanelEditorSDL
 		PRIVATE Common	
+		PRIVATE LitePanelLib
 		PRIVATE SDL3-shared
 		PRIVATE IMGUI
 	)

@@ -12,12 +12,19 @@
 
 #include "FileSystem.h"
 
+#include "Panel.h"
+#include "Util.h"
+
 namespace dcclite::panel_editor
 {	
 	class Document
 	{
 		public:
 			Document();
+
+			DCCLITE_DISABLE_CLASS_COPY_AND_MOVE(Document);
+
+			void New();
 
 			void Save();
 			void SaveAs(dcclite::fs::path &path);
@@ -36,10 +43,21 @@ namespace dcclite::panel_editor
 			{
 				return m_fExistingDoc;
 			}
-			
+
+			const LitePanel::Panel *GetPanels() const noexcept
+			{
+				return &m_vecPanels[0];
+			}
+
+			size_t GetNumPanels() const noexcept
+			{
+				return m_vecPanels.size();
+			}			
 
 		private:			
 			dcclite::fs::path	m_pthFileName;
+
+			std::vector<LitePanel::Panel> m_vecPanels;
 
 			bool m_fDirty = false;
 			bool m_fExistingDoc = false;
