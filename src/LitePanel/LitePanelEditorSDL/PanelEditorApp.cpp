@@ -324,7 +324,9 @@ namespace dcclite::panel_editor
 				for (int i = 0; i < numPanels; ++i)
 				{
 					if (ImGui::BeginTabItem(panels[i].GetName().c_str(), nullptr, 0))
-					{						
+					{				
+						ImGui::Text("Scroll %f %f", scrolling.x, scrolling.y);
+
 						// Using InvisibleButton() as a convenience 1) it will advance the layout cursor and 2) allows us to use IsItemHovered()/IsItemActive()
 						ImVec2 canvas_p0 = ImGui::GetCursorScreenPos();      // ImDrawList API uses screen coordinates!
 						ImVec2 canvas_sz = ImGui::GetContentRegionAvail();   // Resize canvas to what's available
@@ -357,7 +359,7 @@ namespace dcclite::panel_editor
 
 							if (scrolling.y < 0)
 								scrolling.y = 0;
-						}
+						}						
 						
 						// Draw grid + all lines in the canvas
 						draw_list->PushClipRect(canvas_p0, canvas_p1, true);						
@@ -367,7 +369,7 @@ namespace dcclite::panel_editor
 							draw_list->AddLine(ImVec2(canvas_p0.x + x, canvas_p0.y), ImVec2(canvas_p0.x + x, canvas_p1.y), IM_COL32(200, 200, 200, 40));
 
 						for (float y = fmodf(scrolling.y, GRID_STEP); y < canvas_sz.y; y += GRID_STEP)
-							draw_list->AddLine(ImVec2(canvas_p0.x, canvas_p0.y + y), ImVec2(canvas_p1.x, canvas_p0.y + y), IM_COL32(200, 200, 200, 40));												
+							draw_list->AddLine(ImVec2(canvas_p0.x, canvas_p0.y + y), ImVec2(canvas_p1.x, canvas_p0.y + y), IM_COL32(200, 200, 200, 40));																		
 
 						ImGui::EndTabItem();
 					}
