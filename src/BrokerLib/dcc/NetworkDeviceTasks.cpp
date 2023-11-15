@@ -93,7 +93,7 @@ namespace dcclite::broker::detail
 		private:
 			void ReadSlice(dcclite::Packet &packet, const uint8_t sliceSize, const uint8_t sequence);
 
-			void RequestSlice(INetworkDevice_TaskServices &owner, const dcclite::Clock::TimePoint_t time, const uint8_t sliceNum);
+			void RequestSlice(INetworkDevice_TaskServices &owner, const uint8_t sliceNum);
 
 			void OnThink(const dcclite::Clock::TimePoint_t time);
 
@@ -200,7 +200,7 @@ namespace dcclite::broker::detail
 		}
 	}
 
-	void DownloadEEPromTask::RequestSlice(INetworkDevice_TaskServices &owner, const dcclite::Clock::TimePoint_t time, const uint8_t sliceNum)
+	void DownloadEEPromTask::RequestSlice(INetworkDevice_TaskServices &owner, const uint8_t sliceNum)
 	{
 		Log::Trace("[DownloadEEPromTask::Update]: requesting slice {}", (int)sliceNum);
 
@@ -211,9 +211,7 @@ namespace dcclite::broker::detail
 		//slice number
 		packet.Write8(static_cast<uint8_t>(sliceNum));
 
-		owner.TaskServices_SendPacket(packet);		
-
-		m_clThinker.Schedule(time + DOWNLOAD_RETRY_TIMEOUT);		
+		owner.TaskServices_SendPacket(packet);				
 	}
 
 	void DownloadEEPromTask::OnThink(const dcclite::Clock::TimePoint_t time)
@@ -238,7 +236,9 @@ namespace dcclite::broker::detail
 				[[fallthrough]];
 			case States::START_DOWNLOAD:								
 				//slice number, request 0... always valid
-				this->RequestSlice(m_rclOwner, time, 0);
+				this->RequestSlice(m_rclOwner, 0);
+
+				m_clThinker.Schedule(time + DOWNLOAD_RETRY_TIMEOUT);
 				break;
 
 			case States::DOWNLOADING:
@@ -255,12 +255,16 @@ namespace dcclite::broker::detail
 							continue;
 
 						++packetCount;
-						this->RequestSlice(m_rclOwner, time, static_cast<uint8_t>(i));
+						this->RequestSlice(m_rclOwner, static_cast<uint8_t>(i));
 					}
 
 					//Do we still have work to do?
 					if (packetCount)
-						return ;
+					{
+						m_clThinker.Schedule(time + DOWNLOAD_RETRY_TIMEOUT);
+
+						return;
+					}						
 				}
 
 				Log::Info("[DownloadEEPromTask::Update]: finished download of {} bytes", m_vecResults.size());
