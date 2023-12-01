@@ -1,23 +1,32 @@
+file(GLOB_RECURSE SRC_RENDER
+    "render/*.cpp"
+    "render/*.h"
+)
+
  
 set(LitePanelLib_SRCS
-    EditCmds.cpp
+    	EditCmds.cpp
 	MapObject.cpp
-    MapObjectFactory.cpp
+    	MapObjectFactory.cpp
 	Panel.cpp
 	RailObject.cpp
 	TileMap.cpp	
+	render/IRenderer.cpp
 )
 
 set(LitePanelLib_HDRS
-    EditCmds.h
-    LitePanelLibDefs.h
+	EditCmds.h
+	LitePanelLibDefs.h
 	MapObject.h
-    MapObjectFactory.h
+    	MapObjectFactory.h
 	Panel.h
 	Point.h
 	RailObject.h
 	TileMap.h
+	render/IRenderer.h
 )
+
+source_group("render"          FILES ${SRC_RENDER})
 
 if(WIN32)
 
