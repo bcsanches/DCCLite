@@ -12,6 +12,7 @@ set(LitePanelLib_SRCS
 	RailObject.cpp
 	TileMap.cpp	
 	render/IRenderer.cpp
+	render/TileMapView.cpp
 )
 
 set(LitePanelLib_HDRS
@@ -24,6 +25,7 @@ set(LitePanelLib_HDRS
 	RailObject.h
 	TileMap.h
 	render/IRenderer.h
+	render/TileMapView.h
 )
 
 source_group("render"          FILES ${SRC_RENDER})
