@@ -27,7 +27,7 @@ namespace LitePanel::Render
 	class IRenderer
 	{
 		public:
-			virtual void DrawLine(IntPoint_t p1, IntPoint_t p2, Color_t color, float thickness = 1.0f) = 0;
+			virtual void DrawLine(FloatPoint_t p1, FloatPoint_t p2, Color_t color, float thickness = 1.0f) = 0;
 
 	};
 }

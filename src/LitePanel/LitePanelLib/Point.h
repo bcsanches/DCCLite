@@ -74,4 +74,5 @@ namespace LitePanel
 	};
 
 	typedef Point<int_fast32_t> IntPoint_t;
+	typedef Point<float> FloatPoint_t;
 }
