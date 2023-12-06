@@ -73,7 +73,7 @@ This code needs the following libraries to be built:
 - [Lua][16]
 - [magicenum][10]
 - [RapidJson][1]
-- [SDL] [19] - Optional, only for building IM GUI apps (still in development)
+- [SDL][19] - Optional, only for building IM GUI apps (still in development)
 - [Sol][17]
 - [spdlog][4]
 - [sigslot][15]
