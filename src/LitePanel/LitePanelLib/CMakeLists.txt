@@ -4,13 +4,15 @@ file(GLOB_RECURSE SRC_RENDER
 )
 
  
-set(LitePanelLib_SRCS
+set(LitePanelLib_SRCS	
     	EditCmds.cpp
 	MapObject.cpp
     	MapObjectFactory.cpp
 	Panel.cpp
 	RailObject.cpp
 	TileMap.cpp	
+	render/Color.cpp
+	render/ColorStyle.cpp
 	render/IRenderer.cpp
 	render/TileMapView.cpp
 )
@@ -24,6 +26,8 @@ set(LitePanelLib_HDRS
 	Point.h
 	RailObject.h
 	TileMap.h
+	render/Color.h
+	render/ColorStyle.h
 	render/IRenderer.h
 	render/TileMapView.h
 )

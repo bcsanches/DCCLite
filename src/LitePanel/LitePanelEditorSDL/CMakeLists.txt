@@ -5,6 +5,8 @@ add_executable(LitePanelEditorSDL
 	ConsoleWidget.h
 	Document.cpp
 	Document.h
+	DocumentWidget.cpp
+	DocumentWidget.h
 	EditorWidget.cpp
 	EditorWidget.h
 	KeyBindingManager.cpp
@@ -32,7 +34,7 @@ target_include_directories(LitePanelEditorSDL
 	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/SDL/include
 	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/spdlog/include
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/Common
-        PRIVATE ${DCCLite_SOURCE_DIR}/src/LitePanel/LitePanelLib
+        PRIVATE ${DCCLite_SOURCE_DIR}/src/LitePanel/
 )
 
 if(WIN32)

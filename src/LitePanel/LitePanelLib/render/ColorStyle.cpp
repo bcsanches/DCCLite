@@ -8,18 +8,19 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#pragma once
+#include "ColorStyle.h"
 
-namespace dcclite::panel_editor
+namespace LitePanel::Render
 {
-	class EditorWidget
+	const ColorStyle g_tDarkStyle =
 	{
-		public:
-			virtual void Display() {};
-			virtual void Update() {};
-
-			virtual ~EditorWidget() = default;
-
-		private:
+		LP_COL32(200, 200, 200, 40),	//GridLine
+		LP_COL32(0, 0, 0, 255),			//Background
+		LP_COL32(255, 255, 255, 255)	//Rail
 	};
+
+	namespace detail
+	{
+		const ColorStyle *g_ptCurrentColorStyle = &g_tDarkStyle;
+	}
 }

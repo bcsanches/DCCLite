@@ -9,3 +9,9 @@
 // defined by the Mozilla Public License, v. 2.0.
 
 #include "EditorWidget.h"
+
+namespace dcclite::panel_editor
+{
+	
+	
+}

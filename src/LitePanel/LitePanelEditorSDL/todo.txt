@@ -1,5 +1,9 @@
 LitePanelSDL
 
+- add freetype fonts
+- add imgui open file windows (remove windows dependencies)
+- fix grid rouding not showing bottom row
+
 - document handling
 - keyboard shortcuts handling, need to make a key focus, PanelEditorApp should handle?
 

@@ -82,6 +82,32 @@ namespace LitePanel
 				return &m_vecLayers[0];
 			}
 
+			[[nodiscard]] bool IsInside(const TileCoord_t &position) const noexcept
+			{
+				auto &size = this->GetSize();
+
+				if (position.m_tX >= size.m_tX)
+					return false;
+
+				if (position.m_tY >= size.m_tY)
+					return false;
+
+				return true;
+			}
+
+			[[nodiscard]] bool IsInside(const IntPoint_t &position) const noexcept
+			{
+				auto &size = this->GetSize();
+
+				if (position.m_tX >= size.m_tX)
+					return false;
+
+				if (position.m_tY >= size.m_tY)
+					return false;
+
+				return true;
+			}
+
 			void AddListener(ITileMapListener *listener);
 			void RemoveListener(ITileMapListener *listener);
 

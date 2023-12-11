@@ -8,18 +8,4 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#pragma once
-
-namespace dcclite::panel_editor
-{
-	class EditorWidget
-	{
-		public:
-			virtual void Display() {};
-			virtual void Update() {};
-
-			virtual ~EditorWidget() = default;
-
-		private:
-	};
-}
+#include "ColorStyle.h"

@@ -10,16 +10,30 @@
 
 #pragma once
 
-namespace dcclite::panel_editor
-{
-	class EditorWidget
+#include "Color.h"
+
+namespace LitePanel::Render
+{	
+	struct ColorStyle
 	{
-		public:
-			virtual void Display() {};
-			virtual void Update() {};
+		Color_t m_tGridLine;
+		Color_t m_tBackground;
 
-			virtual ~EditorWidget() = default;
-
-		private:
+		Color_t m_tRail;
 	};
+
+	enum class ColorStyles
+	{
+		DARK
+	};
+
+	namespace detail
+	{
+		extern const ColorStyle *g_ptCurrentColorStyle;
+	}
+
+	inline const ColorStyle &GetCurrentColorStyle() noexcept
+	{
+		return *detail::g_ptCurrentColorStyle;
+	}
 }

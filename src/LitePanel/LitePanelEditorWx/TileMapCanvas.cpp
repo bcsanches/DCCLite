@@ -168,12 +168,7 @@ namespace LitePanel::Gui
 
 		glColor4f(0.85f, 0.85f, 0.85f, 1.0f);
 
-		glBegin(GL_LINES);
-
-		//glPushMatrix();	
-		//glTranslatef(-rargs.m_tViewOrigin.m_tX, -rargs.m_tViewOrigin.m_tY, 0);
-
-		auto lastVisibleTileCorner = IntPoint_t{rargs.m_tNumVisibleTiles} * m_tViewInfo.m_uTileScale;
+		glBegin(GL_LINES);		
 	
 		for (int i = 0; i <= rargs.m_tNumVisibleTiles.m_tX; ++i)
 		{

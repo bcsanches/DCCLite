@@ -12,7 +12,7 @@
 
 #include "FileSystem.h"
 
-#include "Panel.h"
+#include "LitePanelLib/Panel.h"
 #include "Util.h"
 
 namespace dcclite::panel_editor
