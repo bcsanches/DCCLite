@@ -46,19 +46,19 @@ namespace LitePanel::Render
 
 	#define CURRENT_TILE_SIZE (g_tScales[m_uZoomLevel].m_uTileSize)
 
-	TileCoord_t ViewInfo::WorldToTile(const FloatPoint_t &worldPoint) const
+	inline TileCoord_t ViewInfo::WorldToTile(const FloatPoint_t &worldPoint) const
 	{
 		auto localCoord = worldPoint / CURRENT_TILE_SIZE;
 
 		return TileCoord_t{ FloatToInt<TileCoord_t::Type_t>(localCoord.m_tX), FloatToInt<TileCoord_t::Type_t>(localCoord.m_tY) };
 	}
 
-	static FloatPoint_t TilePointToFloat(const TileCoord_t &tile) noexcept
+	inline FloatPoint_t TilePointToFloat(const TileCoord_t &tile) noexcept
 	{
 		return FloatPoint_t{ static_cast<float>(tile.m_tX), static_cast<float>(tile.m_tY) };
 	}
 
-	static FloatPoint_t IntPointToFloat(const IntPoint_t &tile) noexcept
+	inline FloatPoint_t IntPointToFloat(const IntPoint_t &tile) noexcept
 	{
 		return FloatPoint_t{ static_cast<float>(tile.m_tX), static_cast<float>(tile.m_tY) };
 	}
@@ -93,24 +93,56 @@ namespace LitePanel::Render
 	void TileMapView::SetupFrame(IRenderer &renderer, const FloatPoint_t &clientSize)
 	{
 		m_ptClientSize = clientSize;
+
+		this->ClipOrigin();
+	}
+
+	void TileMapView::ClipOrigin()
+	{
+		m_ptOrigin.m_tX = std::max(0.0f, m_ptOrigin.m_tX);
+		m_ptOrigin.m_tY = std::max(0.0f, m_ptOrigin.m_tY);
+
+		const auto &tileMapSize = m_rclTileMap.GetSize();
+		FloatPoint_t mapSizeInPixels = TilePointToFloat(tileMapSize) * static_cast<float>(m_tViewInfo.m_uTileSize);
+		
+		if (m_ptClientSize.m_tX > mapSizeInPixels.m_tX)
+		{
+			// do not move if map is smaller than client size
+			m_ptOrigin.m_tX = 0.0f;
+		}
+		else if ((m_ptOrigin.m_tX + m_ptClientSize.m_tX) > mapSizeInPixels.m_tX)
+		{
+			//map is bigger than client size, but origin is going beyond, so clip it...
+			m_ptOrigin.m_tX = mapSizeInPixels.m_tX - m_ptClientSize.m_tX;
+		}
+
+		if (m_ptClientSize.m_tY > mapSizeInPixels.m_tY)
+		{
+			m_ptOrigin.m_tY = 0.0f;
+		}
+		else if ((m_ptOrigin.m_tY + m_ptClientSize.m_tY) > mapSizeInPixels.m_tY)
+		{
+			//map is bigger than client size, but origin is going beyond, so clip it...
+			m_ptOrigin.m_tY = mapSizeInPixels.m_tY - m_ptClientSize.m_tY;
+		}
+
 	}
 
 	TileMapView::RenderArgs TileMapView::MakeRenderArgs() const
 	{		
-		RenderArgs rargs;
+		RenderArgs rargs;		
 
 		rargs.m_tViewClientSize = m_ptClientSize;
 		rargs.m_tViewOrigin = m_ptOrigin;
 
-		//Not possible, due to bugs...
-		if ((m_ptOrigin.m_tX < 0) || (m_ptOrigin.m_tY < 0))
-		{
-			return rargs;
-		}
-
 		const auto &tileMapSize = m_rclTileMap.GetSize();
 
 		rargs.m_tTilePos_ViewOrigin = m_tViewInfo.WorldToTile(m_ptOrigin);
+		rargs.m_tNumVisibleTiles = tileMapSize;
+		rargs.m_tTilePos_LastVisible = tileMapSize - TileCoord_t{ 1, 1 };		
+
+#if 0
+		
 		if ((rargs.m_tTilePos_ViewOrigin.m_tX >= tileMapSize.m_tX) || (rargs.m_tTilePos_ViewOrigin.m_tY >= tileMapSize.m_tY))
 			return rargs;
 
@@ -124,9 +156,19 @@ namespace LitePanel::Render
 		worldBounds.m_tX = std::min(viewLimit.m_tX, worldBounds.m_tX);
 		worldBounds.m_tY = std::min(viewLimit.m_tY, worldBounds.m_tY);
 
-		rargs.m_tTilePos_LastVisible = m_tViewInfo.WorldToTile(worldBounds) + TileCoord_t{ 1, 1 };
+		rargs.m_tTilePos_LastVisible = m_tViewInfo.WorldToTile(worldBounds) + TileCoord_t{ 2, 2 };
+
+		//clamp it to map limit
+		rargs.m_tTilePos_LastVisible.m_tX = std::min(rargs.m_tTilePos_LastVisible.m_tX, tileMapSize.m_tX);
+		rargs.m_tTilePos_LastVisible.m_tY = std::min(rargs.m_tTilePos_LastVisible.m_tY, tileMapSize.m_tY);
 
 		rargs.m_tNumVisibleTiles = rargs.m_tTilePos_LastVisible - rargs.m_tTilePos_ViewOrigin;
+
+		//clamp it too
+		rargs.m_tNumVisibleTiles.m_tX = std::min(rargs.m_tNumVisibleTiles.m_tX, tileMapSize.m_tX);
+		rargs.m_tNumVisibleTiles.m_tY = std::min(rargs.m_tNumVisibleTiles.m_tY, tileMapSize.m_tY);
+
+#endif
 
 		return rargs;
 	}
@@ -135,35 +177,37 @@ namespace LitePanel::Render
 	{		
 		auto &colorStyle = GetCurrentColorStyle();
 
-		auto rargs = this->MakeRenderArgs();
+		auto rargs = this->MakeRenderArgs();		
 
-		for (int i = 0; i < rargs.m_tNumVisibleTiles.m_tX; ++i)
+		for (int i = 0; i <= rargs.m_tNumVisibleTiles.m_tX; ++i)
 		{
-			LitePanel::IntPoint_t tilePos{ rargs.m_tTilePos_ViewOrigin.m_tX + i, rargs.m_tTilePos_ViewOrigin.m_tY };			
+			//LitePanel::IntPoint_t tilePos{ rargs.m_tTilePos_ViewOrigin.m_tX + i, rargs.m_tTilePos_ViewOrigin.m_tY };			
+			LitePanel::IntPoint_t tilePos{ i, 0 };
 
 			auto tileWorldPos = IntPointToFloat(tilePos * m_tViewInfo.m_uTileSize);
 
 			renderer.DrawLine(
-				tileWorldPos, 
-				FloatPoint_t{ tileWorldPos.m_tX, static_cast<float>((rargs.m_tTilePos_LastVisible.m_tY - 1) * m_tViewInfo.m_uTileSize) },
+				tileWorldPos - rargs.m_tViewOrigin,
+				FloatPoint_t{ tileWorldPos.m_tX, static_cast<float>((rargs.m_tNumVisibleTiles.m_tY) * m_tViewInfo.m_uTileSize) } - rargs.m_tViewOrigin,
 				colorStyle.m_tGridLine
 			);
 		}		
 
-		for (int i = 0; i < rargs.m_tNumVisibleTiles.m_tY; ++i)
+		for (int i = 0; i <= rargs.m_tNumVisibleTiles.m_tY; ++i)
 		{
-			LitePanel::IntPoint_t tilePos{ rargs.m_tTilePos_ViewOrigin.m_tX, rargs.m_tTilePos_ViewOrigin.m_tY + i};			
+			//LitePanel::IntPoint_t tilePos{ rargs.m_tTilePos_ViewOrigin.m_tX, rargs.m_tTilePos_ViewOrigin.m_tY + i};			
+			LitePanel::IntPoint_t tilePos{ 0, i };
 
 			auto tileWorldPos = IntPointToFloat(tilePos * m_tViewInfo.m_uTileSize);
 
 			renderer.DrawLine(
-				tileWorldPos, 
-				FloatPoint_t{ static_cast<float>((rargs.m_tTilePos_LastVisible.m_tX - 1) * m_tViewInfo.m_uTileSize), tileWorldPos.m_tY}, 
+				tileWorldPos - rargs.m_tViewOrigin,
+				FloatPoint_t{ static_cast<float>((rargs.m_tNumVisibleTiles.m_tX) * m_tViewInfo.m_uTileSize), tileWorldPos.m_tY} - rargs.m_tViewOrigin,
 				colorStyle.m_tGridLine
 			);
 		}	
 
-#if 1
+#if 0
 		for (int i = 0; i <= rargs.m_tNumVisibleTiles.m_tX; ++i)
 		{
 			for (int j = 0; j <= rargs.m_tNumVisibleTiles.m_tY; ++j)

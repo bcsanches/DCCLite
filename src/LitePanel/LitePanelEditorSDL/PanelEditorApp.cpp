@@ -294,6 +294,13 @@ namespace dcclite::panel_editor
 				ImGui::MenuItem("Show Debug Log Window", "", &m_fShowDebugLog);
 				ImGui::MenuItem("Show Id Stack Tool Window", "", &m_fShowIdStackTool);
 
+				ImGui::Separator();
+
+				bool tileClipping = m_wDocumentWidget.IsTileClipppingDebugEnabled();
+				ImGui::MenuItem("Tile Clipping", "", &tileClipping);	
+
+				m_wDocumentWidget.EnableTileClippingDebug(tileClipping);
+
 				ImGui::EndMenu();
 			}
 

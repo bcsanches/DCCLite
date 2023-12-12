@@ -26,7 +26,7 @@ namespace dcclite::panel_editor
 		public:
 			void SetDocument(Document *doc);			
 
-			void Display();
+			void Display(const bool debugTileClipping);
 
 		private:
 			Document *m_pclDocument = nullptr;
@@ -47,7 +47,19 @@ namespace dcclite::panel_editor
 
 			virtual ~DocumentWidget() = default;		
 
+			[[nodiscard]] bool IsTileClipppingDebugEnabled() const noexcept
+			{
+				return m_fTileClippingDebug;
+			}
+
+			void EnableTileClippingDebug(bool state) noexcept
+			{
+				m_fTileClippingDebug = state;
+			}
+
 		private:			
 			DocumentView m_clView;
+
+			bool m_fTileClippingDebug = false;
 	};
 }

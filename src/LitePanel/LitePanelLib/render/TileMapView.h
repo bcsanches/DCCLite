@@ -48,6 +48,11 @@ namespace LitePanel::Render
 
 			void Draw(IRenderer &renderer);
 
+			inline void Move(FloatPoint_t delta) noexcept
+			{
+				m_ptOrigin += delta;				
+			}
+
 		private:
 			struct RenderArgs
 			{
@@ -71,6 +76,8 @@ namespace LitePanel::Render
 			RenderArgs MakeRenderArgs() const;
 
 			void UpdateViewInfo();
+
+			void ClipOrigin();
 
 		private:			
 			const TileMap	&m_rclTileMap;
