@@ -64,8 +64,9 @@ I do not claim that this way of doing things is better or worse for any solution
 This code needs the following libraries to be built:
 
 - [cityhash][18]
-- [Dear ImGui][20] - Optional, only for building IM GUI apps (still in development)
+- [Dear ImGui][20] - Optional, only for building IMGUI apps (still in development)
 - [Ethercard][8]
+- [Freetype][21] - Optional, only for building IMGUI apps (also optional even with those tools)
 - [Fmt][3]
 - [GoogleTest][9]
 - [JsonCreator][2]
@@ -73,7 +74,7 @@ This code needs the following libraries to be built:
 - [Lua][16]
 - [magicenum][10]
 - [RapidJson][1]
-- [SDL][19] - Optional, only for building IM GUI apps (still in development)
+- [SDL][19] - Optional, only for building IMGUI apps (still in development)
 - [Sol][17]
 - [spdlog][4]
 - [sigslot][15]
@@ -103,3 +104,4 @@ All code is licensed under the [MPLv2 License][5].
 [18]: https://github.com/google/cityhash
 [19]: https://github.com/libsdl-org/SDL
 [20]: https://github.com/ocornut/imgui
+[21]: https://freetype.org/

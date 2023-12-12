@@ -37,6 +37,12 @@ target_include_directories(LitePanelEditorSDL
         PRIVATE ${DCCLite_SOURCE_DIR}/src/LitePanel/
 )
 
+if(${DCCLITE_IMGUI_TOOLS_FREETYPE})
+	target_link_libraries(LitePanelEditorSDL
+		PRIVATE freetype
+	)
+endif()
+
 if(WIN32)
 
 	target_sources(LitePanelEditorSDL PRIVATE SystemTools_win.cpp SystemTools_win.h)
@@ -62,6 +68,7 @@ else(WIN32)
 		PRIVATE LitePanelLib
 		PRIVATE SDL3-shared
 		PRIVATE IMGUI
+		PRIVATE freetype
 	)
 
 endif(WIN32)

@@ -163,7 +163,7 @@ namespace LitePanel::Render
 			);
 		}	
 
-#if 0
+#if 1
 		for (int i = 0; i <= rargs.m_tNumVisibleTiles.m_tX; ++i)
 		{
 			for (int j = 0; j <= rargs.m_tNumVisibleTiles.m_tY; ++j)
@@ -177,7 +177,7 @@ namespace LitePanel::Render
 
 				auto tileWorldPos = IntPointToFloat(tilePos * m_tViewInfo.m_uTileSize) + FloatPoint_t{ static_cast<float>(m_tViewInfo.m_uHalfTileSize), static_cast<float>(m_tViewInfo.m_uHalfTileSize) };
 
-				renderer.DrawText(14.0f, tileWorldPos, LP_COL32(255, 255, 255, 255), &str[0], &str[str.size()]);
+				renderer.DrawText(8.0f, tileWorldPos, LP_COL32(255, 255, 255, 255), &str[0], &str[str.size()]);
 			}
 		}
 #endif

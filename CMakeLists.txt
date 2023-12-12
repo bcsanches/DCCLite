@@ -14,6 +14,9 @@ option(DCCLITE_GUI_TOOLS "Build GUI tools (LitePanel and LiteWiring)")
 option(DCCLITE_GUI_SHARP_TOOLS "Build C# GUI tools - SharpTerminal")
 option(DCCLITE_IMGUI_TOOLS "Build IMGUI tools")
 
+if(${DCCLITE_IMGUI_TOOLS})
+	option(DCCLITE_IMGUI_TOOLS_FREETYPE "Build IMGUI tools with Freetype fonts support")
+endif()
 
 set( CMAKE_EXPORT_COMPILE_COMMANDS on)
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin )
@@ -25,7 +28,6 @@ set_property( GLOBAL PROPERTY USE_FOLDERS ON)
 
 add_subdirectory(contrib)
 add_subdirectory(src)
-
 
 set_property(TARGET CityHash PROPERTY FOLDER "contrib") 
 set_property(TARGET fmt PROPERTY FOLDER "contrib")
@@ -107,6 +109,13 @@ if(${DCCLITE_IMGUI_TOOLS})
     set_property(TARGET LitePanelEditorSDL PROPERTY FOLDER "CTC")
 
     set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
+
+    if(${DCCLITE_IMGUI_TOOLS_FREETYPE})
+	set_property(TARGET freetype PROPERTY FOLDER "contrib/freetype")
+	set_property(TARGET dist PROPERTY FOLDER "contrib/freetype")
+    endif()
+
+
 endif()
 
 include(InstallRequiredSystemLibraries)
