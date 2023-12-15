@@ -26,7 +26,7 @@ namespace LitePanel
 
 	constexpr auto DEFAULT_TILE_SIZE = 32;
 
-	typedef Point<uint8_t> TileCoord_t;
+	typedef Point<uint16_t> TileCoord_t;
 
 	typedef JsonCreator::Object<JsonCreator::StringWriter> JsonOutputStream_t;
 }

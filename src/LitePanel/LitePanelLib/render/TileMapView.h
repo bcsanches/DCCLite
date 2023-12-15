@@ -22,18 +22,9 @@ namespace LitePanel::Render
 {	
 	class IRenderer;
 
-	constexpr auto DEFAULT_ZOOM_LEVEL = 1;
+	constexpr auto DEFAULT_ZOOM_LEVEL = 1;	
 
-	struct ViewInfo
-	{
-		uint8_t m_uZoomLevel = DEFAULT_ZOOM_LEVEL;
-		unsigned m_uTileSize;
-		unsigned m_uHalfTileSize;
-		unsigned m_uLineWidth;
-		unsigned m_uDiagonalLineWidth;
-
-		LitePanel::TileCoord_t WorldToTile(const FloatPoint_t &worldPoint) const;
-	};
+	struct RenderArgs;
 
 	class TileMapView
 	{
@@ -53,26 +44,7 @@ namespace LitePanel::Render
 				m_ptOrigin += delta;				
 			}
 
-		private:
-			struct RenderArgs
-			{
-				//Visible screen rect size in pixels (how many pixels we will draw or client rect on GUI)
-				FloatPoint_t m_tViewClientSize;
-
-				//View position in world space - upper left corner
-				FloatPoint_t m_tViewOrigin;
-
-				//First visible tile on view (upper left corner) - can be out of bounds
-				TileCoord_t m_tTilePos_ViewOrigin;
-
-				//The last visible tile on view (right bottom corner) - can be out of bounds
-				TileCoord_t m_tTilePos_LastVisible;
-
-				//Number of visible tiles that can fit on screen, including partially visible tiles on screen borders
-				//if any of this one is zero, no visible tiles
-				TileCoord_t m_tNumVisibleTiles;
-			};
-
+		private:			
 			RenderArgs MakeRenderArgs() const;
 
 			void UpdateViewInfo();
@@ -80,6 +52,19 @@ namespace LitePanel::Render
 			void ClipOrigin();
 
 		private:			
+			struct ViewInfo
+			{
+				uint8_t m_uZoomLevel = 1;
+				unsigned m_uTileSize;
+				unsigned m_uHalfTileSize;
+				unsigned m_uLineWidth;
+				unsigned m_uDiagonalLineWidth;
+
+				LitePanel::TileCoord_t WorldToTile(const FloatPoint_t &worldPoint) const;
+				LitePanel::TileCoord_t WorldToTileCeil(const FloatPoint_t &worldPoint) const;
+				LitePanel::TileCoord_t WorldToTileFloor(const FloatPoint_t &worldPoint) const;
+			};
+
 			const TileMap	&m_rclTileMap;
 
 			FloatPoint_t	m_ptClientSize;

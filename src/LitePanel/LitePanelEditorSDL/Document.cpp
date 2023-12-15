@@ -47,6 +47,6 @@ namespace dcclite::panel_editor
 
 		m_vecPanels.clear();
 
-		m_vecPanels.emplace_back(LitePanel::TileCoord_t{ 32, 32}, "Untitled Panel");
+		m_vecPanels.emplace_back(LitePanel::TileCoord_t{ 16, 16}, "Untitled Panel");
 	}
 }
