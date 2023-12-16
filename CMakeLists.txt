@@ -105,6 +105,7 @@ if(${DCCLITE_IMGUI_TOOLS})
     set_property(TARGET IMGUI PROPERTY FOLDER "contrib")
     set_property(TARGET SDL3-shared PROPERTY FOLDER "contrib/SDL")
     set_property(TARGET uninstall PROPERTY FOLDER "contrib/SDL")
+    set_property(TARGET LitePanelLib PROPERTY FOLDER "CTC")  
 
     set_property(TARGET LitePanelEditorSDL PROPERTY FOLDER "CTC")
 
