@@ -85,6 +85,11 @@ int main(int argc, char **argv)
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;		
 		io.IniFilename = nullptr;
+		
+		//io.Fonts->AddFontFromFileTTF("DroidSans.ttf", 6.0f);
+		//io.Fonts->AddFontFromFileTTF("DroidSans.ttf", 16.0f);
+		//io.Fonts->AddFontDefault();
+	
 
 		// Setup Dear ImGui style
 		//ImGui::StyleColorsDark();

@@ -58,6 +58,12 @@ if(WIN32)
         
     set_property(TARGET LitePanelEditorSDL PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/bin")
     set_property(TARGET LitePanelEditorSDL PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "..\\data\\EFMR")
+
+    add_custom_command(
+        TARGET LitePanelEditorSDL POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/contrib/imgui/misc/fonts/DroidSans.ttf
+                ${CMAKE_SOURCE_DIR}/bin/DroidSans.ttf)
       
 else(WIN32)
 

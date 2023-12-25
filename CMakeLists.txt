@@ -115,6 +115,7 @@ if(${DCCLITE_IMGUI_TOOLS})
 	set_property(TARGET dist PROPERTY FOLDER "contrib/freetype")
     endif()
 
+    INSTALL(FILES contrib/imgui/misc/fonts/DroidSans.ttf DESTINATION bin/ )
 
 endif()
 

@@ -237,30 +237,24 @@ namespace LitePanel::Render
 			);
 		}	
 
-#if 0
-		for (int i = 0; i <= rargs.m_tNumVisibleTiles.m_tX; ++i)
+#if 1
+		for (int i = rargs.m_tTilePos_FirstOrigin.m_tX; i <= rargs.m_tTilePos_LastVisible.m_tX + 1; ++i)
 		{
-			for (int j = 0; j <= rargs.m_tNumVisibleTiles.m_tY; ++j)
+			for (int j = rargs.m_tTilePos_FirstOrigin.m_tY; j <= rargs.m_tTilePos_LastVisible.m_tY + 1; ++j)
 			{				
-				LitePanel::IntPoint_t tilePos{ rargs.m_tTilePos_ViewOrigin.m_tX + i, rargs.m_tTilePos_ViewOrigin.m_tY + j };
+				LitePanel::IntPoint_t tilePos{ i, j };
 
 				if (!m_rclTileMap.IsInside(tilePos))
 					break;				
-
+				
 				auto str = fmt::format("{},{}", tilePos.m_tX, tilePos.m_tY);
 
 				auto tileWorldPos = IntPointToFloat(tilePos * m_tViewInfo.m_uTileSize) + FloatPoint_t{ static_cast<float>(m_tViewInfo.m_uHalfTileSize), static_cast<float>(m_tViewInfo.m_uHalfTileSize) };
 
-				renderer.DrawText(8.0f, tileWorldPos, LP_COL32(255, 255, 255, 255), &str[0], &str[str.size()]);
+				renderer.DrawText(6.0f, tileWorldPos, LP_COL32(255, 255, 255, 255), &str[0], &str[str.size()]);
 			}
 		}
 #endif
-
-		renderer.DrawLine(
-			FloatPoint_t{ 0.0f, 0.0f }, 
-			m_ptClientSize, 
-			LP_COL32(255, 0, 255, 255)
-		);
 	}
 }
 
