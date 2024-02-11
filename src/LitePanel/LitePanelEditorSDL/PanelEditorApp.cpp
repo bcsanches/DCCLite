@@ -226,7 +226,7 @@ namespace dcclite::panel_editor
 				ImGui::DockBuilderDockWindow("LToolBar", leftToolBarNodeId);
 				auto leftNode = ImGui::DockBuilderGetNode(leftToolBarNodeId);
 
-				leftNode->LocalFlags |= ImGuiDockNodeFlags_HiddenTabBar | ImGuiDockNodeFlags_NoUndocking;
+				leftNode->LocalFlags |= ImGuiDockNodeFlags_HiddenTabBar | ImGuiDockNodeFlags_NoUndocking | ImGuiDockNodeFlags_NoResize;
 			}
 
 			ImGui::DockBuilderDockWindow("StatusBar", bottomNodeId);

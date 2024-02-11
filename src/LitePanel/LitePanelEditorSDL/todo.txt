@@ -1,8 +1,11 @@
 LitePanelSDL
 
-- add freetype fonts
 - add imgui open file windows (remove windows dependencies)
-- fix grid rouding not showing bottom row
+- add toolbar icons
+	- How to load textures, TexManager?
+	- LoadTexture
+	- display texture button
+	- associate selected tool with button
 
 - document handling
 - keyboard shortcuts handling, need to make a key focus, PanelEditorApp should handle?

@@ -240,7 +240,10 @@ namespace LitePanel
 	{
 		std::vector<TileLayer> newLayers;		
 
-		auto size = TileCoord_t{ static_cast<uint8_t>(data["width"].GetInt()), static_cast<uint8_t>(data["height"].GetInt()) };
+		auto size = TileCoord_t{ 
+			static_cast<uint8_t>(data["width"].GetInt()), 
+			static_cast<uint8_t>(data["height"].GetInt()) 
+		};
 
 		CheckSize(size);
 

@@ -20,9 +20,18 @@ namespace dcclite::panel_editor
 	}
 
 	void ToolBarWidget::Display()
-	{
-		if (ImGui::Begin("LToolBar", nullptr, ImGuiWindowFlags_NoCollapse))
-		{
+	{		
+		if (ImGui::Begin("LToolBar", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
+		{			
+			ImVec2 canvas_p0 = ImGui::GetCursorScreenPos();      // ImDrawList API uses screen coordinates!
+			ImVec2 canvas_sz = ImGui::GetContentRegionAvail();   // Resize canvas to what's available
+
+			ImDrawList *draw_list = ImGui::GetWindowDrawList();
+
+			draw_list->AddRectFilled(canvas_p0 + ImVec2{ 5, 5 }, canvas_p0 + ImVec2{21, 21}, IM_COL32(50, 50, 50, 255));
+
+#if 0
+
 			ImGui::SmallButton("X");
 			ImGui::SameLine();
 			ImGui::SmallButton("Y");
@@ -30,8 +39,9 @@ namespace dcclite::panel_editor
 			ImGui::SmallButton("Z");
 			ImGui::SameLine();
 			ImGui::SmallButton("W");
-		}
-		ImGui::End();
+#endif
+		}				
+		ImGui::End();				
 	}
 
 

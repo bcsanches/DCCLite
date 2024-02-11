@@ -16,6 +16,18 @@ namespace dcclite::broker
 {
 	constexpr auto VIRTUAL_SENSOR_DECODER_CLASSNAME = "VirtualSensorDecoder";
 
+	/**
+	* 
+	* Virtual Sensor Decoder
+	* 
+	* A decoder that only exists on the Broker side (not implemented on external devices or arduinos)
+	* 
+	* It is simple used to create a software managed decoder and expose it to JMRI and other systems.
+	* 
+	* So far used by the Dispatcher to represent a sensor for a track Section or TSection, it is automatically 
+	* instatiated by the Dispatcher when track Sections are created and managed by it
+	* 
+	*/
 	class VirtualSensorDecoder : public StateDecoder
 	{
 		public:

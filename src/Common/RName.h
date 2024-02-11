@@ -92,6 +92,7 @@ namespace dcclite
 				return RName{ name };
 			}
 
+			//registers or retrieves the existing name
 			explicit RName(std::string_view name);
 
 			inline RName()				

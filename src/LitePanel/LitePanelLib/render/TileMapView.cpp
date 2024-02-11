@@ -237,7 +237,7 @@ namespace LitePanel::Render
 			);
 		}	
 
-#if 1
+#if 0
 		for (int i = rargs.m_tTilePos_FirstOrigin.m_tX; i <= rargs.m_tTilePos_LastVisible.m_tX + 1; ++i)
 		{
 			for (int j = rargs.m_tTilePos_FirstOrigin.m_tY; j <= rargs.m_tTilePos_LastVisible.m_tY + 1; ++j)

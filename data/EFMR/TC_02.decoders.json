@@ -164,7 +164,7 @@
         "inverted": false,
         "powerPin": 69,
         "frogPin": 68,
-        "range":25,
+        "range":30,
         "invertedFrog": false,
         "invertedPower": true,
         "operationTime": 3000
@@ -208,5 +208,31 @@
         "invertedFrog": true,
         "invertedPower": true,
         "operationTime": 300
+    },
+    {
+        "name": "TC_T38",
+        "class": "ServoTurnout",
+        "address": "1438",
+        "pin": 39,
+        "inverted": false,
+        "powerPin": 61,
+        "frogPin": 62 ,
+        "range":25,
+        "invertedFrog": true,
+        "invertedPower": true,
+        "operationTime": 3000
+    },
+    {
+        "name": "TC_T40",
+        "class": "ServoTurnout",
+        "address": "1440",
+        "pin": 41,
+        "inverted": true,
+        "powerPin": 59,
+        "frogPin": 60 ,
+        "range":25,
+        "invertedFrog": false,
+        "invertedPower": true,
+        "operationTime": 3000
     }
 ]
