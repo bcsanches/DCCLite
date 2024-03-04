@@ -9,6 +9,8 @@ add_executable(LitePanelEditorSDL
 	DocumentWidget.h
 	EditorWidget.cpp
 	EditorWidget.h
+	ImGuiTileMapRenderer.cpp
+	ImGuiTileMapRenderer.h
 	KeyBindingManager.cpp
 	KeyBindingManager.h
 	main.cpp

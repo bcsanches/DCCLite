@@ -12,16 +12,24 @@
 
 #include "EditorWidget.h"
 
+#include "LitePanelLib/render/TileMapView.h"
+#include "LitePanelLib/TileMap.h"
+
 namespace dcclite::panel_editor
 {
 	class ToolBarWidget: public EditorWidget
 	{
 		public:
+			ToolBarWidget();
+
 			void Display() override;
 			void Update() override;
 
 			virtual ~ToolBarWidget();
 
 		private:
+			LitePanel::Render::TileMapView m_clView;
+
+			LitePanel::TileMap m_clToolsMap;
 	};
 }

@@ -28,9 +28,9 @@ namespace LitePanel::Render
 
 	class TileMapView
 	{
-		public:
-			TileMapView(const TileMap &map) :
-				m_rclTileMap{ map }
+		public:			
+			TileMapView(const TileMap *map = nullptr):
+				m_pclTileMap{ map }
 			{
 				this->UpdateViewInfo();
 			}
@@ -42,6 +42,14 @@ namespace LitePanel::Render
 			inline void Move(FloatPoint_t delta) noexcept
 			{
 				m_ptOrigin += delta;				
+			}
+
+			inline void SetTileMap(const TileMap *map)
+			{
+				m_pclTileMap = map;
+
+				m_ptOrigin = {};
+				m_tViewInfo.m_uZoomLevel = 1;
 			}
 
 		private:			
@@ -65,7 +73,7 @@ namespace LitePanel::Render
 				LitePanel::TileCoord_t WorldToTileFloor(const FloatPoint_t &worldPoint) const;
 			};
 
-			const TileMap	&m_rclTileMap;
+			const TileMap	*m_pclTileMap = nullptr;
 
 			FloatPoint_t	m_ptClientSize;
 			FloatPoint_t	m_ptOrigin;

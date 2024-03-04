@@ -110,15 +110,20 @@ namespace LitePanel::Render
 	{
 		m_ptClientSize = clientSize;
 
+		if (!m_pclTileMap)
+			return;
+
 		this->ClipOrigin();
 	}
 
 	void TileMapView::ClipOrigin()
 	{
+		assert(m_pclTileMap);
+
 		m_ptOrigin.m_tX = std::max(0.0f, m_ptOrigin.m_tX);
 		m_ptOrigin.m_tY = std::max(0.0f, m_ptOrigin.m_tY);
 
-		const auto &tileMapSize = m_rclTileMap.GetSize();
+		const auto &tileMapSize = m_pclTileMap->GetSize();
 		FloatPoint_t mapSizeInPixels = TilePointToFloat(tileMapSize) * static_cast<float>(m_tViewInfo.m_uTileSize);
 		
 		if (m_ptClientSize.m_tX > mapSizeInPixels.m_tX)
@@ -146,12 +151,14 @@ namespace LitePanel::Render
 
 	RenderArgs TileMapView::MakeRenderArgs() const
 	{		
+		assert(m_pclTileMap);
+
 		RenderArgs rargs;		
 
 		rargs.m_tViewClientSize = m_ptClientSize;
 		rargs.m_tViewOrigin = m_ptOrigin;
 
-		const auto &tileMapSize = m_rclTileMap.GetSize();
+		const auto &tileMapSize = m_pclTileMap->GetSize();
 
 		rargs.m_tTilePos_FirstOrigin = m_tViewInfo.WorldToTileFloor(m_ptOrigin);				
 
@@ -205,6 +212,9 @@ namespace LitePanel::Render
 
 	void TileMapView::Draw(IRenderer &renderer)
 	{		
+		if (!m_pclTileMap)
+			return;
+
 		auto &colorStyle = GetCurrentColorStyle();
 
 		auto rargs = this->MakeRenderArgs();		

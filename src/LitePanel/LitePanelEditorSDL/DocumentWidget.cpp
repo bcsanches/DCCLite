@@ -13,50 +13,15 @@
 #include "imgui.h"
 
 #include "Document.h"
+#include "ImGuiTileMapRenderer.h"
 
 #include "LitePanelLib/Point.h"
 
-#include "LitePanelLib/render/IRenderer.h"
+
 #include "LitePanelLib/render/TileMapView.h"
 
 namespace dcclite::panel_editor
-{
-	inline ImVec2 PointToImGuiVec(LitePanel::FloatPoint_t p)
-	{
-		return ImVec2{ p.m_tX, p.m_tY };
-	}	
-
-	inline LitePanel::FloatPoint_t ImGuiVecToPoint(ImVec2 vec)
-	{
-		return LitePanel::FloatPoint_t{ vec.x, vec.y };
-	}
-
-	class ImGuiRenderer : public LitePanel::Render::IRenderer
-	{
-		public:
-			ImGuiRenderer(ImDrawList &drawList, ImVec2 clientOrigin) :
-				m_clDrawList{ drawList },
-				m_ptClientOrigin{clientOrigin}
-			{
-				//empty
-			}
-
-			void DrawLine(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2, LitePanel::Render::Color_t color, float thickness = 1.0f) override
-			{
-				m_clDrawList.AddLine(m_ptClientOrigin + PointToImGuiVec(p1), m_ptClientOrigin + PointToImGuiVec(p2), color, thickness);				
-			}
-
-			void DrawText(float fontSize, LitePanel::FloatPoint_t pos, LitePanel::Render::Color_t color, const char *textBegin, const char *textEnd) override
-			{
-				m_clDrawList.AddText(nullptr, fontSize, m_ptClientOrigin + PointToImGuiVec(pos), color, textBegin, textEnd);
-			}
-
-		private:		
-			ImDrawList	&m_clDrawList;
-
-			ImVec2		m_ptClientOrigin;
-	};
-
+{	
 	void DocumentView::SetDocument(Document *doc)
 	{
 		if (doc == m_pclDocument)
@@ -72,7 +37,7 @@ namespace dcclite::panel_editor
 		auto panels = m_pclDocument->GetPanels();
 		for (int i = 0; i < numPanels; ++i)
 		{
-			m_vecViews.push_back(LitePanel::Render::TileMapView{ panels[i].GetTileMap() });
+			m_vecViews.push_back(LitePanel::Render::TileMapView{ &panels[i].GetTileMap() });
 		}
 	}
 
@@ -134,7 +99,7 @@ namespace dcclite::panel_editor
 					m_vecViews[i].Move(ImGuiVecToPoint(io.MouseDelta));
 				}							
 
-				ImGuiRenderer renderer(*draw_list, canvas_p0);
+				ImGuiTileMapRenderer renderer(*draw_list, canvas_p0);
 
 				m_vecViews[i].SetupFrame(renderer, ImGuiVecToPoint(canvas_sz));
 				m_vecViews[i].Draw(renderer);

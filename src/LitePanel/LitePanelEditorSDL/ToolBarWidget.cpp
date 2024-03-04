@@ -12,8 +12,16 @@
 
 #include "imgui.h"
 
+#include "ImGuiTileMapRenderer.h"
+
 namespace dcclite::panel_editor
 {
+	ToolBarWidget::ToolBarWidget() :
+		m_clToolsMap{ {2, 4}, 1 }
+	{
+		m_clView.SetTileMap(&m_clToolsMap);
+	}
+
 	ToolBarWidget::~ToolBarWidget()
 	{
 
@@ -26,9 +34,17 @@ namespace dcclite::panel_editor
 			ImVec2 canvas_p0 = ImGui::GetCursorScreenPos();      // ImDrawList API uses screen coordinates!
 			ImVec2 canvas_sz = ImGui::GetContentRegionAvail();   // Resize canvas to what's available
 
-			ImDrawList *draw_list = ImGui::GetWindowDrawList();
+			ImDrawList *draw_list = ImGui::GetWindowDrawList();			
+
+			ImGuiTileMapRenderer renderer(*draw_list, canvas_p0);
+
+			m_clView.SetupFrame(renderer, ImGuiVecToPoint(canvas_sz));
+			m_clView.Draw(renderer);
+
+#if 0
 
 			draw_list->AddRectFilled(canvas_p0 + ImVec2{ 5, 5 }, canvas_p0 + ImVec2{21, 21}, IM_COL32(50, 50, 50, 255));
+#endif
 
 #if 0
 

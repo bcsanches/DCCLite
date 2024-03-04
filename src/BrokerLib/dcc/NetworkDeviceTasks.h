@@ -139,18 +139,18 @@ namespace dcclite::broker
 
 
 		protected:
-			const uint32_t						m_u32TaskId;
-
 			detail::INetworkDevice_TaskServices	&m_rclOwner;
 
 		private:
+			std::string		m_strMessage;
 			IObserver		*m_pclObserver;
 
+		protected:
+			const uint32_t						m_u32TaskId;
+
+		private:
 			bool m_fFinished = false;
-			bool m_fFailed = false;
-
-			std::string m_strMessage;
-
+			bool m_fFailed = false;			
 	};	
 
 	class IServoProgrammerTask
