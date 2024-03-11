@@ -29,10 +29,7 @@ namespace dcclite::broker
 		public:
 			BonjourService(RName name, Broker &broker, const Project& project);
 		
-			~BonjourService() override
-			{
-				//empty
-			}			
+			~BonjourService() override = default;
 
 			virtual void Register(std::string_view instanceName, std::string_view serviceName, const NetworkProtocol protocol, const uint16_t port, const uint32_t ttl) = 0;
 

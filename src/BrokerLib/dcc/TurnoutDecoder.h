@@ -27,8 +27,8 @@ namespace dcclite::broker
 				IDccLite_DecoderServices &owner,
 				IDevice_DecoderServices &dev,
 				const rapidjson::Value& params
-			):
-				OutputDecoder(address, name, owner, dev, params)
+			):			
+				OutputDecoder{ address, name, owner, dev, params }
 			{
 				//empty
 			}

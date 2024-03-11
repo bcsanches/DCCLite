@@ -71,10 +71,7 @@ namespace dcclite::broker
 		public:
 			virtual void OnObjectManagerEvent(const ObjectManagerEvent &event) = 0;
 
-			virtual ~IObjectManagerListener()
-			{
-				//empty
-			}
+			virtual ~IObjectManagerListener() = default;
 	};
 
 	class IResettableService
@@ -86,7 +83,7 @@ namespace dcclite::broker
 	class Service: public dcclite::FolderObject
 	{
 		public:
-			virtual ~Service() {}						
+			virtual ~Service() = default;
 
 			mutable sigslot::signal< const ObjectManagerEvent &> m_sigEvent;
 	

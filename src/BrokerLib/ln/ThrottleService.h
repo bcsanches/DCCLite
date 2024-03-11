@@ -22,11 +22,8 @@ namespace dcclite::broker
 	class IThrottle
 	{
 		public:
-			virtual ~IThrottle()
-			{
-				//emtpy
-			}
-
+			virtual ~IThrottle() = default;
+			
 			virtual void OnSpeedChange() = 0;
 			virtual void OnForwardChange() = 0;
 
@@ -46,10 +43,7 @@ namespace dcclite::broker
 		public:
 			ThrottleService(RName name, Broker &broker, const rapidjson::Value& params, const Project& project);
 		
-			~ThrottleService() override
-			{
-				//empty
-			}
+			~ThrottleService() override = default;
 
 			//
 			// Main interface

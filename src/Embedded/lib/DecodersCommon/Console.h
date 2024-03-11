@@ -26,10 +26,7 @@ namespace Console
 	class OutputStream
 	{
 		public:
-			OutputStream()
-			{
-				//empty
-			}
+			OutputStream() = default;
 
 			OutputStream &operator<<(const char *str)
 			{

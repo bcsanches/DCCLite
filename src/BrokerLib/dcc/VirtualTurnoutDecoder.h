@@ -25,7 +25,7 @@ namespace dcclite::broker
 				IDevice_DecoderServices &dev,
 				const rapidjson::Value& params
 			):
-				TurnoutDecoder(address, name, owner, dev, params)
+				TurnoutDecoder{ address, name, owner, dev, params }
 			{
 				//empty
 			}	

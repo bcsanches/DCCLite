@@ -21,11 +21,7 @@ namespace dcclite::broker
 		public:
 			DccppService(RName name, Broker &broker, const rapidjson::Value& params, const Project& project);
 		
-			~DccppService() override 
-			{
-				//empty
-			}
-		
+			~DccppService() override = default;		
 
 			static std::unique_ptr<Service> Create(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);
 	};

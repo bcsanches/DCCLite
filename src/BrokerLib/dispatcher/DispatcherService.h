@@ -22,10 +22,7 @@ namespace dcclite::broker
 		public:
 			DispatcherService(RName name, Broker &broker, const rapidjson::Value& params, const Project& project);
 		
-			~DispatcherService() override
-			{
-				//empty
-			}			
+			~DispatcherService() override = default;
 
 			//
 			// Main interface

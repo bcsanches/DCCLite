@@ -28,18 +28,12 @@ namespace dcclite::panel_editor
 		public:
 			DCCLITE_DISABLE_CLASS_COPY_AND_MOVE(AppTask);
 
-			virtual ~AppTask()
-			{
-
-			}
+			virtual ~AppTask() = default;
 
 			virtual bool Display() = 0;
 
 		protected:
-			AppTask()
-			{
-				//empty
-			}
+			AppTask() = default;			
 	};
 
 	class AppTask;

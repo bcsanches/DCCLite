@@ -95,10 +95,7 @@ namespace dcclite
 			//registers or retrieves the existing name
 			explicit RName(std::string_view name);
 
-			inline RName()				
-			{
-				//empty	
-			}			
+			inline RName() = default;
 
 			RName(const RName &) = default;
 			RName(RName &&) = default;

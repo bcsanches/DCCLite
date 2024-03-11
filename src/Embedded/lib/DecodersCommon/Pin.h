@@ -31,10 +31,7 @@ class Pin : public dcclite::BasicPin
 		};
 
 	public:
-		Pin()
-		{
-			//empty
-		}
+		Pin() = default;
 
 		Pin(const dcclite::PinType_t pin, const Modes mode) :
 			BasicPin(pin)

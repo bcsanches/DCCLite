@@ -33,10 +33,7 @@ namespace dcclite::broker
 	{	
 		public:
 			LocationManager(RName name, const rapidjson::Value& params);
-			~LocationManager() override
-			{
-				//empty
-			}
+			~LocationManager() override = default;
 
 			void RegisterDecoder(const Decoder &decoder);
 			void UnregisterDecoder(const Decoder &decoder);

@@ -206,7 +206,7 @@ namespace dcclite::broker
 				//empty
 			}		
 
-			virtual ~TerminalCmdFiber() {};
+			virtual ~TerminalCmdFiber() = default;
 
 		protected:
 			const CmdId_t m_tCmdId;

@@ -26,10 +26,10 @@ namespace dcclite::broker
 		class IEventTarget
 		{
 			public:
-				virtual ~IEventTarget() { ; }
+				virtual ~IEventTarget() = default;
 
 			protected:
-				IEventTarget() { ; }
+				IEventTarget() = default;
 				IEventTarget(const IEventTarget &rhs) = delete;
 				IEventTarget(IEventTarget &&other) = delete;
 		};
@@ -43,10 +43,7 @@ namespace dcclite::broker
 					//empty
 				}
 
-				virtual ~IEvent()
-				{
-					//empty
-				}
+				virtual ~IEvent() = default;
 
 				virtual void Fire() = 0;
 

@@ -59,7 +59,7 @@ namespace dcclite::broker
 			}
 
 		protected:
-			ILoconetSlot() { ; }
+			ILoconetSlot() = default;
 
 		protected:
 			LoconetSlotFunctions_t m_arFunctions;
