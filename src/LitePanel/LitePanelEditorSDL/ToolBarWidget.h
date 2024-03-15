@@ -23,9 +23,7 @@ namespace dcclite::panel_editor
 			ToolBarWidget();
 
 			void Display() override;
-			void Update() override;
-
-			virtual ~ToolBarWidget();
+			void Update() override;			
 
 		private:
 			LitePanel::Render::TileMapView m_clView;

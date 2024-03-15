@@ -13,6 +13,7 @@
 #include "imgui.h"
 
 #include "ImGuiTileMapRenderer.h"
+#include "LitePanelLib/RailObject.h"
 
 namespace dcclite::panel_editor
 {
@@ -20,11 +21,42 @@ namespace dcclite::panel_editor
 		m_clToolsMap{ {2, 4}, 1 }
 	{
 		m_clView.SetTileMap(&m_clToolsMap);
-	}
 
-	ToolBarWidget::~ToolBarWidget()
-	{
+		m_clToolsMap.RegisterObject(
+			std::make_unique<LitePanel::SimpleRailObject>(
+				LitePanel::TileCoord_t{ 0, 0 },
+				LitePanel::ObjectAngles::EAST,
+				LitePanel::SimpleRailTypes::STRAIGHT
+			),
+			0
+		);
 
+		m_clToolsMap.RegisterObject(
+			std::make_unique<LitePanel::SimpleRailObject>(
+				LitePanel::TileCoord_t{ 1, 0 },
+				LitePanel::ObjectAngles::WEST,
+				LitePanel::SimpleRailTypes::STRAIGHT
+			),
+			0
+		);
+
+		m_clToolsMap.RegisterObject(
+			std::make_unique<LitePanel::SimpleRailObject>(
+				LitePanel::TileCoord_t{ 0, 1 },
+				LitePanel::ObjectAngles::NORTH,
+				LitePanel::SimpleRailTypes::STRAIGHT
+			),
+			0
+		);
+
+		m_clToolsMap.RegisterObject(
+			std::make_unique<LitePanel::SimpleRailObject>(
+				LitePanel::TileCoord_t{ 1, 1 },
+				LitePanel::ObjectAngles::SOUTH,
+				LitePanel::SimpleRailTypes::STRAIGHT
+			),
+			0
+		);
 	}
 
 	void ToolBarWidget::Display()
