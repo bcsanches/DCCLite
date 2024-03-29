@@ -32,7 +32,7 @@ Another design goal is to allow the installation of the Arduino boards as close 
 
 ### Scripting
 
-[Lua][16] scripting support was added. This allow you to add custom behavior to your layout when something happens, like changing a signal aspect when throwing a turnout. 
+[Lua][16] scripting support was added. This allow you to add custom behavior to your layout when something happens, like executing a custom action when a signal aspects changes or when a turnout is throw. 
 
 ### JMRI
 
@@ -42,14 +42,14 @@ This tool can be integrated with [JMRI][12] for easily controlling your devices.
 
 Why not use DCC++?
 
-Until the current date (February 2022) [DCC++][14] does not have an easy or standard way to serve multiples Arduinos for a large model railroad. Right now, only for controlling my model railroad staging yard I need four Arduinos just for turnouts.
+Until the current date (March 2024) [DCC++][14] does not have an easy or standard way to serve multiples Arduinos for a large model railroad. Right now, only for controlling my model railroad staging yard I need four Arduinos just for turnouts.
 
 So, DCC++ does not allow me:
 - Have multiple Arduinos working together on the same layout / network
-- Allow simple configuration throught config files and without needing to use serial port commands
+- Allow simple configuration throught config files and without needing to use serial port commands and plugging arduino to PC everytime I need to adjust a setting
 - Configure and use Servos on Turnouts
 
-On the other side, this project is not aimed as a replacement for DCC++, but also as a independent system for controlling model railroad devices. It does not include code or support for controlling trains, like DCC++.
+On the other side, this project is not aimed as a replacement for DCC++, but also as a independent system for controlling model railroad devices. It does not include code or support for controlling mobile decoders (locomotives), like DCC++.
 
 ### DCC++EX
 
