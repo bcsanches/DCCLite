@@ -18,7 +18,7 @@
 namespace dcclite::panel_editor
 {
 	ToolBarWidget::ToolBarWidget() :
-		m_clToolsMap{ {2, 4}, 1 }
+		m_clToolsMap{ {2, 6}, 2 }
 	{
 		m_clView.SetTileMap(&m_clToolsMap);
 
@@ -28,7 +28,7 @@ namespace dcclite::panel_editor
 				LitePanel::ObjectAngles::EAST,
 				LitePanel::SimpleRailTypes::STRAIGHT
 			),
-			0
+			1
 		);
 
 		m_clToolsMap.RegisterObject(
@@ -37,7 +37,7 @@ namespace dcclite::panel_editor
 				LitePanel::ObjectAngles::NORTH,
 				LitePanel::SimpleRailTypes::STRAIGHT
 			),
-			0
+			1
 		);
 
 		m_clToolsMap.RegisterObject(
@@ -46,7 +46,7 @@ namespace dcclite::panel_editor
 				LitePanel::ObjectAngles::SOUTHEAST,
 				LitePanel::SimpleRailTypes::STRAIGHT
 			),
-			0
+			1
 		);
 
 		m_clToolsMap.RegisterObject(
@@ -55,7 +55,7 @@ namespace dcclite::panel_editor
 				LitePanel::ObjectAngles::NORTHEAST,
 				LitePanel::SimpleRailTypes::STRAIGHT
 			),
-			0
+			1
 		);
 
 		m_clToolsMap.RegisterObject(
@@ -64,7 +64,7 @@ namespace dcclite::panel_editor
 				LitePanel::ObjectAngles::WEST,
 				LitePanel::SimpleRailTypes::CURVE_RIGHT
 			),
-			0
+			1
 		);
 
 		m_clToolsMap.RegisterObject(
@@ -73,7 +73,7 @@ namespace dcclite::panel_editor
 				LitePanel::ObjectAngles::EAST,
 				LitePanel::SimpleRailTypes::CURVE_LEFT
 			),
-			0
+			1
 		);
 
 		m_clToolsMap.RegisterObject(
@@ -82,7 +82,7 @@ namespace dcclite::panel_editor
 				LitePanel::ObjectAngles::WEST,
 				LitePanel::SimpleRailTypes::CURVE_LEFT
 			),
-			0
+			1
 		);
 
 		m_clToolsMap.RegisterObject(
@@ -91,10 +91,44 @@ namespace dcclite::panel_editor
 				LitePanel::ObjectAngles::EAST,
 				LitePanel::SimpleRailTypes::CURVE_RIGHT
 			),
-			0
+			1
 		);
 
-		
+		m_clToolsMap.RegisterObject(
+			std::make_unique<LitePanel::JunctionRailObject>(
+				LitePanel::TileCoord_t{ 0, 4 },
+				LitePanel::ObjectAngles::WEST,
+				LitePanel::JunctionTypes::LEFT_TURNOUT
+			),
+			1
+		);
+
+		m_clToolsMap.RegisterObject(
+			std::make_unique<LitePanel::JunctionRailObject>(
+				LitePanel::TileCoord_t{ 1, 4 },
+				LitePanel::ObjectAngles::EAST,
+				LitePanel::JunctionTypes::RIGHT_TURNOUT
+			),
+			1
+		);		
+
+		m_clToolsMap.RegisterObject(
+			std::make_unique<LitePanel::JunctionRailObject>(
+				LitePanel::TileCoord_t{ 0, 5 },
+				LitePanel::ObjectAngles::EAST,
+				LitePanel::JunctionTypes::LEFT_TURNOUT
+			),
+			1
+		);
+
+		m_clToolsMap.RegisterObject(
+			std::make_unique<LitePanel::JunctionRailObject>(
+				LitePanel::TileCoord_t{ 1, 5 },
+				LitePanel::ObjectAngles::WEST,
+				LitePanel::JunctionTypes::RIGHT_TURNOUT
+			),
+			1
+		);
 
 	}
 
@@ -105,7 +139,7 @@ namespace dcclite::panel_editor
 			ImVec2 canvas_p0 = ImGui::GetCursorScreenPos();      // ImDrawList API uses screen coordinates!
 			ImVec2 canvas_sz = ImGui::GetContentRegionAvail();   // Resize canvas to what's available
 
-			ImDrawList *draw_list = ImGui::GetWindowDrawList();			
+			ImDrawList *draw_list = ImGui::GetWindowDrawList();					
 
 			ImGuiTileMapRenderer renderer(*draw_list, canvas_p0);
 

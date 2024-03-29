@@ -121,6 +121,8 @@ namespace LitePanel
 
 			static constexpr char *TYPE_NAME = "JunctionRailObject";
 
+			void Draw(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const override;
+
 		private:
 			const JunctionTypes m_tType;
 	};

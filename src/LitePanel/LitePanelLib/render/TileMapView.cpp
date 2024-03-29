@@ -217,7 +217,35 @@ namespace LitePanel::Render
 
 		auto &colorStyle = GetCurrentColorStyle();
 
-		auto rargs = this->MakeRenderArgs();		
+		auto rargs = this->MakeRenderArgs();	
+
+		const FloatPoint_t tileSize{ static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize), static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize) };
+
+		for (int layerIndex = 0, numLayers = m_pclTileMap->GetNumLayers(); layerIndex < numLayers; ++layerIndex)
+		{
+			const auto &layer = m_pclTileMap->GetLayers()[layerIndex];
+
+			for (int x = rargs.m_tTilePos_FirstOrigin.m_tX; x <= rargs.m_tTilePos_LastVisible.m_tX; ++x)
+			{
+				for (int y = rargs.m_tTilePos_FirstOrigin.m_tY; y <= rargs.m_tTilePos_LastVisible.m_tY; ++y)
+				{
+					TileCoord_t tilePos{ static_cast<uint16_t>(x), static_cast<uint16_t>(y) };
+					auto *obj = layer.TryGetMapObject(tilePos);
+
+					if (!obj)
+						continue;
+
+					auto tileWorldOrigin = TilePointToFloat(tilePos) * static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize);
+
+					renderer.PushClipRect(tileWorldOrigin, tileWorldOrigin + tileSize);
+
+					obj->Draw(renderer, m_tViewHelper.m_stInfo, tileWorldOrigin);
+
+					renderer.PopClipRect();
+				}
+			}
+		}
+
 
 		for (int i = rargs.m_tTilePos_FirstOrigin.m_tX; i <= rargs.m_tTilePos_LastVisible.m_tX + 1; ++i)
 		{
@@ -247,26 +275,7 @@ namespace LitePanel::Render
 			);
 		}
 
-		for (int layerIndex = 0, numLayers = m_pclTileMap->GetNumLayers(); layerIndex < numLayers; ++layerIndex)
-		{
-			const auto &layer = m_pclTileMap->GetLayers()[layerIndex];
-
-			for (int x = rargs.m_tTilePos_FirstOrigin.m_tX; x <= rargs.m_tTilePos_LastVisible.m_tX; ++x)
-			{
-				for (int y = rargs.m_tTilePos_FirstOrigin.m_tY; y <= rargs.m_tTilePos_LastVisible.m_tY; ++y)
-				{
-					TileCoord_t tilePos{ static_cast<uint16_t>(x), static_cast<uint16_t>(y) };
-					auto *obj = layer.TryGetMapObject(tilePos);
-
-					if (!obj)
-						continue;
-
-					auto tileWorldOrigin = TilePointToFloat(tilePos) * static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize);
-
-					obj->Draw(renderer, m_tViewHelper.m_stInfo, tileWorldOrigin);
-				}
-			}
-		}
+		
 
 #if 0
 		for (int i = rargs.m_tTilePos_FirstOrigin.m_tX; i <= rargs.m_tTilePos_LastVisible.m_tX + 1; ++i)

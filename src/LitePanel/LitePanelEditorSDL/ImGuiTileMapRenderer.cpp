@@ -33,5 +33,16 @@ namespace dcclite::panel_editor
 	{
 		m_clDrawList.AddText(nullptr, fontSize, m_ptClientOrigin + PointToImGuiVec(pos), color, textBegin, textEnd);
 	}
+
+	void ImGuiTileMapRenderer::PushClipRect(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2)
+	{
+		m_clDrawList.PushClipRect(m_ptClientOrigin + PointToImGuiVec(p1), m_ptClientOrigin + PointToImGuiVec(p2));
+	}
+
+	void ImGuiTileMapRenderer::PopClipRect()
+	{
+		m_clDrawList.PopClipRect();
+	}
+
 }
 

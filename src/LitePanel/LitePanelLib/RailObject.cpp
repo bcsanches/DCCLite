@@ -10,6 +10,9 @@
 
 #include "RailObject.h"
 
+#include <fmt/format.h>
+#include <magic_enum.hpp>
+
 #include "render/ColorStyle.h"
 #include "render/IRenderer.h"
 #include "render/TileMapView.h"
@@ -219,6 +222,37 @@ namespace LitePanel
 		RailObject(position, angle),
 		m_tType(type)
 	{
-		//empty
+		switch (angle)
+		{
+			case ObjectAngles::EAST:
+			case ObjectAngles::WEST:
+				break;
+
+			default:
+				throw std::invalid_argument(fmt::format("[JunctionRailObject] Invalid angle: {}", magic_enum::enum_name(angle)));
+		}
 	}	
+
+	void JunctionRailObject::Draw(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const
+	{
+		auto angle = this->GetAngle();
+		DrawLine(renderer, viewInfo, tileOrigin, angle);
+
+		switch(angle)
+		{			
+			case ObjectAngles::EAST:			
+				if (m_tType == JunctionTypes::LEFT_TURNOUT)					
+					DrawHalfLine(renderer, viewInfo, tileOrigin, ObjectAngles::NORTHEAST);
+				else
+					DrawHalfLine(renderer, viewInfo, tileOrigin, ObjectAngles::SOUTHEAST);
+				break;
+
+			case ObjectAngles::WEST:
+				if (m_tType == JunctionTypes::LEFT_TURNOUT)
+					DrawHalfLine(renderer, viewInfo, tileOrigin, ObjectAngles::SOUTHWEST);
+				else
+					DrawHalfLine(renderer, viewInfo, tileOrigin, ObjectAngles::NORTHWEST);
+				break;
+		}
+	}
 }

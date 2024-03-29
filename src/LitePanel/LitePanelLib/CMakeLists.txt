@@ -48,5 +48,6 @@ target_include_directories(LitePanelLib
   PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/fmt/include
   PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/JsonCreator/include
           ${DCCLite_SOURCE_DIR}/contrib/rapidjson/include
-          ${DCCLite_SOURCE_DIR}/contrib/spdlog/include          
+          ${DCCLite_SOURCE_DIR}/contrib/spdlog/include       
+  PRIVATE ${DCCLite_SOURCE_DIR}/contrib/magic_enum/include   
 )

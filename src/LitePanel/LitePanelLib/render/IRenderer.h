@@ -23,5 +23,7 @@ namespace LitePanel::Render
 
 			virtual void DrawText(float fontSize, LitePanel::FloatPoint_t pos, LitePanel::Render::Color_t color, const char *textBegin, const char *textEnd) = 0;
 
+			virtual void PushClipRect(FloatPoint_t p1, FloatPoint_t p2) = 0;
+			virtual void PopClipRect() = 0;
 	};
 }
