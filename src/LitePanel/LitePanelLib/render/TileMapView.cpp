@@ -31,7 +31,7 @@ namespace LitePanel::Render
 	struct ScaleInfo
 	{
 		uint8_t m_uTileSize;
-		uint8_t m_uLineWidth;
+		float	m_fpLineWidth;
 		uint8_t m_uDiagonalLineWidth;
 	};
 
@@ -39,11 +39,11 @@ namespace LitePanel::Render
 
 	constexpr ScaleInfo g_tScales[MAX_ZOOM_LEVELS] =
 	{
-		{8, 2, 3},
-		{16, 4, 5},
-		{32, 8, 16},
-		{64, 16, 32},
-		{128, 32, 44}
+		{10, 2, 3},
+		{20, 4, 5},
+		{40, 8, 16},
+		{80, 16, 32},
+		{160, 32, 44}
 	};
 
 	struct RenderArgs
@@ -65,23 +65,23 @@ namespace LitePanel::Render
 		TileCoord_t m_tNumVisibleTiles;
 	};
 
-	#define CURRENT_TILE_SIZE (g_tScales[m_uZoomLevel].m_uTileSize)
+	#define CURRENT_TILE_SIZE (g_tScales[m_stInfo.m_uZoomLevel].m_uTileSize)
 
-	inline TileCoord_t TileMapView::ViewInfo::WorldToTile(const FloatPoint_t &worldPoint) const
+	inline TileCoord_t TileMapView::ViewHelper::WorldToTile(const FloatPoint_t &worldPoint) const
 	{
 		auto localCoord = worldPoint / CURRENT_TILE_SIZE;
 
 		return TileCoord_t{ Round<TileCoord_t::Type_t>(localCoord.m_tX), Round<TileCoord_t::Type_t>(localCoord.m_tY) };
 	}
 
-	inline TileCoord_t TileMapView::ViewInfo::WorldToTileCeil(const FloatPoint_t &worldPoint) const
+	inline TileCoord_t TileMapView::ViewHelper::WorldToTileCeil(const FloatPoint_t &worldPoint) const
 	{
 		auto localCoord = worldPoint / CURRENT_TILE_SIZE;
 
 		return TileCoord_t{ static_cast<TileCoord_t::Type_t>(std::ceilf(localCoord.m_tX)), static_cast<TileCoord_t::Type_t>(std::ceilf(localCoord.m_tY)) };
 	}
 
-	inline TileCoord_t TileMapView::ViewInfo::WorldToTileFloor(const FloatPoint_t &worldPoint) const
+	inline TileCoord_t TileMapView::ViewHelper::WorldToTileFloor(const FloatPoint_t &worldPoint) const
 	{
 		auto localCoord = worldPoint / CURRENT_TILE_SIZE;
 
@@ -100,10 +100,10 @@ namespace LitePanel::Render
 
 	void TileMapView::UpdateViewInfo()
 	{
-		m_tViewInfo.m_uTileSize = g_tScales[m_tViewInfo.m_uZoomLevel].m_uTileSize;
-		m_tViewInfo.m_uHalfTileSize = g_tScales[m_tViewInfo.m_uZoomLevel].m_uTileSize / 2;
-		m_tViewInfo.m_uLineWidth = g_tScales[m_tViewInfo.m_uZoomLevel].m_uLineWidth;
-		m_tViewInfo.m_uDiagonalLineWidth = g_tScales[m_tViewInfo.m_uZoomLevel].m_uDiagonalLineWidth;
+		m_tViewHelper.m_stInfo.m_uTileSize = g_tScales[m_tViewHelper.m_stInfo.m_uZoomLevel].m_uTileSize;
+		m_tViewHelper.m_stInfo.m_uHalfTileSize = g_tScales[m_tViewHelper.m_stInfo.m_uZoomLevel].m_uTileSize / 2;
+		m_tViewHelper.m_stInfo.m_fpLineWidth = g_tScales[m_tViewHelper.m_stInfo.m_uZoomLevel].m_fpLineWidth;
+		m_tViewHelper.m_stInfo.m_uDiagonalLineWidth = g_tScales[m_tViewHelper.m_stInfo.m_uZoomLevel].m_uDiagonalLineWidth;
 	}
 
 	void TileMapView::SetupFrame(IRenderer &renderer, const FloatPoint_t &clientSize)
@@ -124,7 +124,7 @@ namespace LitePanel::Render
 		m_ptOrigin.m_tY = std::max(0.0f, m_ptOrigin.m_tY);
 
 		const auto &tileMapSize = m_pclTileMap->GetSize();
-		FloatPoint_t mapSizeInPixels = TilePointToFloat(tileMapSize) * static_cast<float>(m_tViewInfo.m_uTileSize);
+		FloatPoint_t mapSizeInPixels = TilePointToFloat(tileMapSize) * static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize);
 		
 		if (m_ptClientSize.m_tX > mapSizeInPixels.m_tX)
 		{
@@ -160,9 +160,9 @@ namespace LitePanel::Render
 
 		const auto &tileMapSize = m_pclTileMap->GetSize();
 
-		rargs.m_tTilePos_FirstOrigin = m_tViewInfo.WorldToTileFloor(m_ptOrigin);				
+		rargs.m_tTilePos_FirstOrigin = m_tViewHelper.WorldToTileFloor(m_ptOrigin);				
 
-		FloatPoint_t fvisibleTiles = m_ptClientSize / static_cast<float>(m_tViewInfo.m_uTileSize);		
+		FloatPoint_t fvisibleTiles = m_ptClientSize / static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize);
 
 		rargs.m_tNumVisibleTiles.m_tX = static_cast<TileCoord_t::Type_t>(roundf(fvisibleTiles.m_tX));
 		rargs.m_tNumVisibleTiles.m_tY = static_cast<TileCoord_t::Type_t>(roundf(fvisibleTiles.m_tY));
@@ -224,11 +224,11 @@ namespace LitePanel::Render
 			//LitePanel::IntPoint_t tilePos{ rargs.m_tTilePos_ViewOrigin.m_tX + i, rargs.m_tTilePos_ViewOrigin.m_tY };			
 			LitePanel::IntPoint_t tilePos{ i, rargs.m_tTilePos_FirstOrigin.m_tY };
 
-			auto tileWorldPos = IntPointToFloat(tilePos * m_tViewInfo.m_uTileSize);
+			auto tileWorldPos = IntPointToFloat(tilePos * m_tViewHelper.m_stInfo.m_uTileSize);
 
 			renderer.DrawLine(
 				tileWorldPos - rargs.m_tViewOrigin,
-				FloatPoint_t{ tileWorldPos.m_tX - rargs.m_tViewOrigin.m_tX, static_cast<float>((rargs.m_tNumVisibleTiles.m_tY) * m_tViewInfo.m_uTileSize) },
+				FloatPoint_t{ tileWorldPos.m_tX - rargs.m_tViewOrigin.m_tX, static_cast<float>((rargs.m_tNumVisibleTiles.m_tY) * m_tViewHelper.m_stInfo.m_uTileSize) },
 				colorStyle.m_tGridLine
 			);
 		}		
@@ -238,14 +238,35 @@ namespace LitePanel::Render
 			//LitePanel::IntPoint_t tilePos{ rargs.m_tTilePos_ViewOrigin.m_tX, rargs.m_tTilePos_ViewOrigin.m_tY + i};			
 			LitePanel::IntPoint_t tilePos{ rargs.m_tTilePos_FirstOrigin.m_tX, i };
 
-			auto tileWorldPos = IntPointToFloat(tilePos * m_tViewInfo.m_uTileSize);
+			auto tileWorldPos = IntPointToFloat(tilePos * m_tViewHelper.m_stInfo.m_uTileSize);
 
 			renderer.DrawLine(
 				tileWorldPos - rargs.m_tViewOrigin,				
-				FloatPoint_t{ static_cast<float>((rargs.m_tNumVisibleTiles.m_tX) * m_tViewInfo.m_uTileSize), tileWorldPos.m_tY - rargs.m_tViewOrigin.m_tY },
+				FloatPoint_t{ static_cast<float>((rargs.m_tNumVisibleTiles.m_tX) * m_tViewHelper.m_stInfo.m_uTileSize), tileWorldPos.m_tY - rargs.m_tViewOrigin.m_tY },
 				colorStyle.m_tGridLine
 			);
-		}	
+		}
+
+		for (int layerIndex = 0, numLayers = m_pclTileMap->GetNumLayers(); layerIndex < numLayers; ++layerIndex)
+		{
+			const auto &layer = m_pclTileMap->GetLayers()[layerIndex];
+
+			for (int x = rargs.m_tTilePos_FirstOrigin.m_tX; x <= rargs.m_tTilePos_LastVisible.m_tX; ++x)
+			{
+				for (int y = rargs.m_tTilePos_FirstOrigin.m_tY; y <= rargs.m_tTilePos_LastVisible.m_tY; ++y)
+				{
+					TileCoord_t tilePos{ static_cast<uint16_t>(x), static_cast<uint16_t>(y) };
+					auto *obj = layer.TryGetMapObject(tilePos);
+
+					if (!obj)
+						continue;
+
+					auto tileWorldOrigin = TilePointToFloat(tilePos) * static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize);
+
+					obj->Draw(renderer, m_tViewHelper.m_stInfo, tileWorldOrigin);
+				}
+			}
+		}
 
 #if 0
 		for (int i = rargs.m_tTilePos_FirstOrigin.m_tX; i <= rargs.m_tTilePos_LastVisible.m_tX + 1; ++i)

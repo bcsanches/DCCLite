@@ -32,7 +32,7 @@ namespace LitePanel
 			const char* GetTypeName() const noexcept override
 			{
 				return TYPE_NAME;
-			}
+			}			
 
 			static constexpr char* TYPE_NAME = "RailObject";
 
@@ -86,10 +86,17 @@ namespace LitePanel
 				return m_fBlockSplit;
 			}
 
+			void Draw(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const override;
+
 			static constexpr char* TYPE_NAME = "SimpleRailObject";
 
 		protected:
 			void OnSave(JsonOutputStream_t& stream) const noexcept override;
+
+		private:
+			void DrawStraightRail(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const;
+			void DrawCurveLeftRail(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const;
+			void DrawCurveRightRail(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const;
 
 		private:
 			const SimpleRailTypes	m_tType;			

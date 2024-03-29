@@ -34,15 +34,6 @@ namespace dcclite::panel_editor
 		m_clToolsMap.RegisterObject(
 			std::make_unique<LitePanel::SimpleRailObject>(
 				LitePanel::TileCoord_t{ 1, 0 },
-				LitePanel::ObjectAngles::WEST,
-				LitePanel::SimpleRailTypes::STRAIGHT
-			),
-			0
-		);
-
-		m_clToolsMap.RegisterObject(
-			std::make_unique<LitePanel::SimpleRailObject>(
-				LitePanel::TileCoord_t{ 0, 1 },
 				LitePanel::ObjectAngles::NORTH,
 				LitePanel::SimpleRailTypes::STRAIGHT
 			),
@@ -51,12 +42,60 @@ namespace dcclite::panel_editor
 
 		m_clToolsMap.RegisterObject(
 			std::make_unique<LitePanel::SimpleRailObject>(
-				LitePanel::TileCoord_t{ 1, 1 },
-				LitePanel::ObjectAngles::SOUTH,
+				LitePanel::TileCoord_t{ 0, 1 },
+				LitePanel::ObjectAngles::SOUTHEAST,
 				LitePanel::SimpleRailTypes::STRAIGHT
 			),
 			0
 		);
+
+		m_clToolsMap.RegisterObject(
+			std::make_unique<LitePanel::SimpleRailObject>(
+				LitePanel::TileCoord_t{ 1, 1 },
+				LitePanel::ObjectAngles::NORTHEAST,
+				LitePanel::SimpleRailTypes::STRAIGHT
+			),
+			0
+		);
+
+		m_clToolsMap.RegisterObject(
+			std::make_unique<LitePanel::SimpleRailObject>(
+				LitePanel::TileCoord_t{ 0, 2 },
+				LitePanel::ObjectAngles::WEST,
+				LitePanel::SimpleRailTypes::CURVE_RIGHT
+			),
+			0
+		);
+
+		m_clToolsMap.RegisterObject(
+			std::make_unique<LitePanel::SimpleRailObject>(
+				LitePanel::TileCoord_t{ 1, 2 },
+				LitePanel::ObjectAngles::EAST,
+				LitePanel::SimpleRailTypes::CURVE_LEFT
+			),
+			0
+		);
+
+		m_clToolsMap.RegisterObject(
+			std::make_unique<LitePanel::SimpleRailObject>(
+				LitePanel::TileCoord_t{ 0, 3 },
+				LitePanel::ObjectAngles::WEST,
+				LitePanel::SimpleRailTypes::CURVE_LEFT
+			),
+			0
+		);
+
+		m_clToolsMap.RegisterObject(
+			std::make_unique<LitePanel::SimpleRailObject>(
+				LitePanel::TileCoord_t{ 1, 3 },
+				LitePanel::ObjectAngles::EAST,
+				LitePanel::SimpleRailTypes::CURVE_RIGHT
+			),
+			0
+		);
+
+		
+
 	}
 
 	void ToolBarWidget::Display()

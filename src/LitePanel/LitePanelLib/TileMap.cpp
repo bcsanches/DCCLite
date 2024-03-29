@@ -37,14 +37,14 @@ namespace LitePanel
 	size_t TileLayer::GetIndex(const TileCoord_t &position) const
 	{
 		if ((position.m_tX >= m_tSize.m_tX) || (position.m_tY >= m_tSize.m_tY))
-			throw std::out_of_range(fmt::format("[TileMap::CheckCoordinate] Coordinate {} - {} is out of bounds for size {} - {]",
+			throw std::out_of_range(fmt::format("[TileMap::CheckCoordinate] Coordinate {} - {} is out of bounds for size {} - {}",
 				position.m_tX,
 				position.m_tY,
 				m_tSize.m_tX,
 				m_tSize.m_tY
 			));
 
-		return (position.m_tY * m_tSize.m_tY) + position.m_tX;
+		return (position.m_tY * m_tSize.m_tX) + position.m_tX;
 	}
 
 	const MapObject *TileLayer::TryGetMapObject(const TileCoord_t position) const

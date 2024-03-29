@@ -49,6 +49,11 @@ namespace LitePanel
 			return Point{ m_tX * num, m_tY * num };
 		}
 
+		inline const Point operator*(const Point &rhs) const noexcept
+		{
+			return Point{ m_tX * rhs.m_tX, m_tY * rhs.m_tY };
+		}
+
 		inline const Point operator+(const Point &rhs) const noexcept
 		{
 			return Point(m_tX + rhs.m_tX, m_tY + rhs.m_tY);

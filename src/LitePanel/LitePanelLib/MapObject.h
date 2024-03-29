@@ -16,16 +16,22 @@
 
 namespace LitePanel
 {	
+	namespace Render
+	{
+		class IRenderer;
+		struct ViewInfo;
+	}
+
 	enum class ObjectAngles
 	{
 		EAST = 0,
-		NORTHEAST = 45,
-		NORTH = 90,
-		NORTHWEST = 135,
-		WEST = 180,
-		SOUTHWEST = 225,
-		SOUTH = 270,
-		SOUTHEAST = 315
+		NORTHEAST = 1,
+		NORTH = 2,
+		NORTHWEST = 3,
+		WEST = 4,
+		SOUTHWEST = 5,
+		SOUTH = 6,
+		SOUTHEAST = 7
 	};
 
 	class MapObject
@@ -52,6 +58,8 @@ namespace LitePanel
 			{
 				return TYPE_NAME;
 			}
+
+			virtual void Draw(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const;
 
 			static constexpr char* TYPE_NAME = "MapObject";
 

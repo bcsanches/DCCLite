@@ -26,6 +26,15 @@ namespace LitePanel::Render
 
 	struct RenderArgs;
 
+	struct ViewInfo
+	{
+		uint8_t		m_uZoomLevel = 1;
+		unsigned	m_uTileSize;
+		unsigned	m_uHalfTileSize;
+		float		m_fpLineWidth;
+		unsigned	m_uDiagonalLineWidth;
+	};
+
 	class TileMapView
 	{
 		public:			
@@ -49,7 +58,7 @@ namespace LitePanel::Render
 				m_pclTileMap = map;
 
 				m_ptOrigin = {};
-				m_tViewInfo.m_uZoomLevel = 1;
+				m_tViewHelper.m_stInfo.m_uZoomLevel = 1;
 			}
 
 		private:			
@@ -60,13 +69,9 @@ namespace LitePanel::Render
 			void ClipOrigin();
 
 		private:			
-			struct ViewInfo
+			struct ViewHelper
 			{
-				uint8_t m_uZoomLevel = 1;
-				unsigned m_uTileSize;
-				unsigned m_uHalfTileSize;
-				unsigned m_uLineWidth;
-				unsigned m_uDiagonalLineWidth;
+				ViewInfo m_stInfo;
 
 				LitePanel::TileCoord_t WorldToTile(const FloatPoint_t &worldPoint) const;
 				LitePanel::TileCoord_t WorldToTileCeil(const FloatPoint_t &worldPoint) const;
@@ -78,6 +83,6 @@ namespace LitePanel::Render
 			FloatPoint_t	m_ptClientSize;
 			FloatPoint_t	m_ptOrigin;
 
-			ViewInfo		m_tViewInfo;
+			ViewHelper		m_tViewHelper;
 	};
 }

@@ -10,6 +10,10 @@
 
 #include "RailObject.h"
 
+#include "render/ColorStyle.h"
+#include "render/IRenderer.h"
+#include "render/TileMapView.h"
+
 namespace LitePanel
 {	
 	RailObject::RailObject(const TileCoord_t &position, ObjectAngles angle):
@@ -55,6 +59,160 @@ namespace LitePanel
 		
 		stream.AddIntValue("type", static_cast<int>(m_tType));
 		stream.AddIntValue("blockSplit", m_fBlockSplit);
+	}	
+
+	static void DrawHalfLine(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin, const ObjectAngles angle)
+	{
+		const auto index = static_cast<unsigned>(angle);
+
+		static const FloatPoint_t startPoints[8] =
+		{
+			FloatPoint_t{0,		0.5},	//EAST
+			FloatPoint_t{0.5f,	0.5f},	//NORTHEAST
+			FloatPoint_t{0.5,	0},		//NORTH
+			FloatPoint_t{0.5f,	0.5f},	//NORTHWEST
+			FloatPoint_t{1,		0.5},	//WEST
+			FloatPoint_t{0.5f,	0.5f},	//SOUTHWEST
+			FloatPoint_t{0.5,	0},		//SOUTH
+			FloatPoint_t{0.5f,	0.5f},	//SOUTHEAST
+		};
+
+		static const FloatPoint_t endPoints[8] =
+		{
+			FloatPoint_t{0.5f,	0.5f},	//EAST
+			FloatPoint_t{1,		0},		//NORTHEAST
+			FloatPoint_t{0.5f,	0.5f},	//NORTH
+			FloatPoint_t{0.0f,	0.0f},	//NORTHWEST
+			FloatPoint_t{0.5f,	0.5},	//WEST
+			FloatPoint_t{0,		1},		//SOUTHWEST
+			FloatPoint_t{0.5,	0.5},	//SOUTH
+			FloatPoint_t{1,		1},		//SOUTHEAST
+		};
+
+		auto &colorStyle = LitePanel::Render::GetCurrentColorStyle();
+
+		FloatPoint_t tileSize{ static_cast<float>(viewInfo.m_uTileSize), static_cast<float>(viewInfo.m_uTileSize)};
+
+		renderer.DrawLine(
+			tileOrigin + (startPoints[index] * tileSize),
+			tileOrigin + (endPoints[index] * tileSize),
+			colorStyle.m_tRail,
+			viewInfo.m_fpLineWidth
+		);
+	}
+
+	static void DrawLine(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin, const ObjectAngles angle)
+	{
+		const auto index = static_cast<unsigned>(angle);
+
+		static const FloatPoint_t startPoints[8] =
+		{
+			FloatPoint_t{0,		0.5},	//EAST
+			FloatPoint_t{0,		1},		//NORTHEAST
+			FloatPoint_t{0.5,	0},		//NORTH
+			FloatPoint_t{0,		0},		//NORTHWEST
+			FloatPoint_t{0,		0.5},	//WEST
+			FloatPoint_t{0,		1},		//SOUTHWEST
+			FloatPoint_t{0.5,	0},		//SOUTH
+			FloatPoint_t{0,		0},		//SOUTHEAST
+		};
+
+		static const FloatPoint_t endPoints[8] =
+		{
+			FloatPoint_t{1,		0.5},	//EAST
+			FloatPoint_t{1,		0},		//NORTHEAST
+			FloatPoint_t{0.5,	1},		//NORTH
+			FloatPoint_t{1,		1},		//NORTHWEST
+			FloatPoint_t{1,		0.5},	//WEST
+			FloatPoint_t{1,		0},		//SOUTHWEST
+			FloatPoint_t{0.5,	1},		//SOUTH
+			FloatPoint_t{1,		1},		//SOUTHEAST
+		};
+
+		auto &colorStyle = LitePanel::Render::GetCurrentColorStyle();
+
+		FloatPoint_t tileSize{ static_cast<float>(viewInfo.m_uTileSize), static_cast<float>(viewInfo.m_uTileSize) };
+
+		renderer.DrawLine(
+			tileOrigin + (startPoints[index] * tileSize),
+			tileOrigin + (endPoints[index] * tileSize),
+			colorStyle.m_tRail,
+			viewInfo.m_fpLineWidth
+		);
+	}
+
+	void SimpleRailObject::DrawStraightRail(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const
+	{
+		DrawLine(renderer, viewInfo, tileOrigin, this->GetAngle());
+	}
+
+	void SimpleRailObject::DrawCurveLeftRail(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const
+	{
+		auto angle = this->GetAngle();
+		DrawHalfLine(renderer, viewInfo, tileOrigin, angle);
+
+		switch (angle)
+		{
+			case ObjectAngles::EAST:
+				DrawHalfLine(renderer, viewInfo, tileOrigin, ObjectAngles::NORTHEAST);
+				break;
+
+			case ObjectAngles::WEST:
+				DrawHalfLine(renderer, viewInfo, tileOrigin, ObjectAngles::SOUTHWEST);
+				break;
+
+			case ObjectAngles::NORTH:
+				DrawHalfLine(renderer, viewInfo, tileOrigin, ObjectAngles::NORTHWEST);
+				break;
+
+			case ObjectAngles::SOUTH:
+				DrawHalfLine(renderer, viewInfo, tileOrigin, ObjectAngles::SOUTHEAST);
+				break;
+		}
+	}
+
+	void SimpleRailObject::DrawCurveRightRail(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const
+	{
+		auto angle = this->GetAngle();
+		DrawHalfLine(renderer, viewInfo, tileOrigin, angle);
+
+		switch (angle)
+		{
+			case ObjectAngles::EAST:
+				DrawHalfLine(renderer, viewInfo, tileOrigin, ObjectAngles::SOUTHEAST);
+				break;
+
+			case ObjectAngles::WEST:
+				DrawHalfLine(renderer, viewInfo, tileOrigin, ObjectAngles::NORTHWEST);
+				break;
+
+			case ObjectAngles::NORTH:
+				DrawHalfLine(renderer, viewInfo, tileOrigin, ObjectAngles::NORTHEAST);
+				break;
+
+			case ObjectAngles::SOUTH:
+				DrawHalfLine(renderer, viewInfo, tileOrigin, ObjectAngles::SOUTHWEST);
+				break;
+		}
+	}
+
+	void SimpleRailObject::Draw(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const
+	{		
+		switch (m_tType)
+		{
+			case SimpleRailTypes::STRAIGHT:
+				this->DrawStraightRail(renderer, viewInfo, tileOrigin);
+				break;
+
+			case SimpleRailTypes::CURVE_LEFT:
+				this->DrawCurveLeftRail(renderer, viewInfo, tileOrigin);
+				break;
+
+			case SimpleRailTypes::CURVE_RIGHT:
+				this->DrawCurveRightRail(renderer, viewInfo, tileOrigin);
+				break;
+
+		}		
 	}
 
 	JunctionRailObject::JunctionRailObject(const TileCoord_t &position, ObjectAngles angle, const JunctionTypes type):

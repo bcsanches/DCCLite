@@ -44,4 +44,9 @@ namespace LitePanel
 	{				
 		return MapObjectFactory::Create(params["classname"].GetString(), params);
 	}
+
+	void MapObject::Draw(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const
+	{
+		//empty
+	}
 }
