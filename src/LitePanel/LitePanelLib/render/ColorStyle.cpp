@@ -16,6 +16,7 @@ namespace LitePanel::Render
 	{
 		LP_COL32(200, 200, 200, 40),	//GridLine
 		LP_COL32(0, 0, 0, 255),			//Background
+		LP_COL32(139, 111, 46, 255),	//TileHighLight
 		LP_COL32(255, 255, 255, 255)	//Rail
 	};
 

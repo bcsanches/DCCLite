@@ -15,7 +15,7 @@
 
 #include "render/ColorStyle.h"
 #include "render/IRenderer.h"
-#include "render/TileMapView.h"
+#include "render/TileMapRenderer.h"
 
 namespace LitePanel
 {	

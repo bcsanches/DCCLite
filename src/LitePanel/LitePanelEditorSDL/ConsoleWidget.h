@@ -22,7 +22,7 @@
 #include "EditorWidget.h"
 #include "Object.h"
 
-namespace dcclite::panel_editor
+namespace dcclite::PanelEditor
 {
 	class ConsoleWidget;	
 

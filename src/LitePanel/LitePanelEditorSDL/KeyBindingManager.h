@@ -17,7 +17,7 @@
 
 #include <SDL3/SDL.h>
 
-namespace dcclite::panel_editor
+namespace dcclite::PanelEditor
 {    
 	class ConsoleWidget;
 

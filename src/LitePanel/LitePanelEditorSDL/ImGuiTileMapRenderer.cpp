@@ -10,7 +10,7 @@
 
 #include "ImGuiTileMapRenderer.h"
 
-namespace dcclite::panel_editor
+namespace dcclite::PanelEditor
 {
 	inline ImVec2 PointToImGuiVec(LitePanel::FloatPoint_t p)
 	{
@@ -26,7 +26,12 @@ namespace dcclite::panel_editor
 
 	void ImGuiTileMapRenderer::DrawLine(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2, LitePanel::Render::Color_t color, float thickness)
 	{
-		m_clDrawList.AddLine(m_ptClientOrigin + PointToImGuiVec(p1), m_ptClientOrigin + PointToImGuiVec(p2), color, thickness);
+		m_clDrawList.AddLine(m_ptClientOrigin + PointToImGuiVec(p1), m_ptClientOrigin + PointToImGuiVec(p2), color, thickness);		
+	}
+
+	void ImGuiTileMapRenderer::DrawRect(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2, LitePanel::Render::Color_t color)
+	{
+		m_clDrawList.AddRectFilled(m_ptClientOrigin + PointToImGuiVec(p1), m_ptClientOrigin + PointToImGuiVec(p2), color);		
 	}
 
 	void ImGuiTileMapRenderer::DrawText(float fontSize, LitePanel::FloatPoint_t pos, LitePanel::Render::Color_t color, const char *textBegin, const char *textEnd)

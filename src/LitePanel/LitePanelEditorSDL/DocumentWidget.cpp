@@ -18,16 +18,16 @@
 #include "LitePanelLib/Point.h"
 
 
-#include "LitePanelLib/render/TileMapView.h"
+#include "LitePanelLib/render/TileMapRenderer.h"
 
-namespace dcclite::panel_editor
+namespace dcclite::PanelEditor
 {	
 	void DocumentView::SetDocument(Document *doc)
 	{
 		if (doc == m_pclDocument)
 			return;
 
-		m_vecViews.clear();
+		m_vecRenderers.clear();
 
 		m_pclDocument = doc;
 		if (!m_pclDocument)
@@ -35,9 +35,12 @@ namespace dcclite::panel_editor
 
 		auto numPanels = m_pclDocument->GetNumPanels();
 		auto panels = m_pclDocument->GetPanels();
+
+		m_vecRenderers.reserve(numPanels);
+
 		for (int i = 0; i < numPanels; ++i)
 		{
-			m_vecViews.push_back(LitePanel::Render::TileMapView{ &panels[i].GetTileMap() });
+			m_vecRenderers.push_back(LitePanel::Render::TileMapRenderer{ &panels[i].GetTileMap() });
 		}
 	}
 
@@ -96,13 +99,13 @@ namespace dcclite::panel_editor
 				// You may decide to make that threshold dynamic based on whether the mouse is hovering something etc.						
 				if (is_active && ImGui::IsMouseDragging(ImGuiButtonFlags_MouseButtonRight))
 				{					
-					m_vecViews[i].Move(ImGuiVecToPoint(io.MouseDelta));
+					m_vecRenderers[i].Move(ImGuiVecToPoint(io.MouseDelta));
 				}							
 
 				ImGuiTileMapRenderer renderer(*draw_list, canvas_p0);
 
-				m_vecViews[i].SetupFrame(renderer, ImGuiVecToPoint(canvas_sz));
-				m_vecViews[i].Draw(renderer);
+				m_vecRenderers[i].SetupFrame(renderer, ImGuiVecToPoint(canvas_sz));
+				m_vecRenderers[i].Draw(renderer);
 
 				ImGui::EndTabItem();
 			}

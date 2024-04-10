@@ -8,7 +8,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "TileMapView.h"
+#include "TileMapRenderer.h"
 
 #include <cmath>
 
@@ -67,21 +67,21 @@ namespace LitePanel::Render
 
 	#define CURRENT_TILE_SIZE (g_tScales[m_stInfo.m_uZoomLevel].m_uTileSize)
 
-	inline TileCoord_t TileMapView::ViewHelper::WorldToTile(const FloatPoint_t &worldPoint) const
+	TileCoord_t TileMapRenderer::ViewHelper::WorldToTile(const FloatPoint_t &worldPoint) const
 	{
 		auto localCoord = worldPoint / CURRENT_TILE_SIZE;
 
 		return TileCoord_t{ Round<TileCoord_t::Type_t>(localCoord.m_tX), Round<TileCoord_t::Type_t>(localCoord.m_tY) };
 	}
 
-	inline TileCoord_t TileMapView::ViewHelper::WorldToTileCeil(const FloatPoint_t &worldPoint) const
+	TileCoord_t TileMapRenderer::ViewHelper::WorldToTileCeil(const FloatPoint_t &worldPoint) const
 	{
 		auto localCoord = worldPoint / CURRENT_TILE_SIZE;
 
 		return TileCoord_t{ static_cast<TileCoord_t::Type_t>(std::ceilf(localCoord.m_tX)), static_cast<TileCoord_t::Type_t>(std::ceilf(localCoord.m_tY)) };
 	}
 
-	inline TileCoord_t TileMapView::ViewHelper::WorldToTileFloor(const FloatPoint_t &worldPoint) const
+	TileCoord_t TileMapRenderer::ViewHelper::WorldToTileFloor(const FloatPoint_t &worldPoint) const
 	{
 		auto localCoord = worldPoint / CURRENT_TILE_SIZE;
 
@@ -98,7 +98,7 @@ namespace LitePanel::Render
 		return FloatPoint_t{ static_cast<float>(tile.m_tX), static_cast<float>(tile.m_tY) };
 	}
 
-	void TileMapView::UpdateViewInfo()
+	void TileMapRenderer::UpdateViewInfo()
 	{
 		m_tViewHelper.m_stInfo.m_uTileSize = g_tScales[m_tViewHelper.m_stInfo.m_uZoomLevel].m_uTileSize;
 		m_tViewHelper.m_stInfo.m_uHalfTileSize = g_tScales[m_tViewHelper.m_stInfo.m_uZoomLevel].m_uTileSize / 2;
@@ -106,7 +106,7 @@ namespace LitePanel::Render
 		m_tViewHelper.m_stInfo.m_uDiagonalLineWidth = g_tScales[m_tViewHelper.m_stInfo.m_uZoomLevel].m_uDiagonalLineWidth;
 	}
 
-	void TileMapView::SetupFrame(IRenderer &renderer, const FloatPoint_t &clientSize)
+	void TileMapRenderer::SetupFrame(IRenderer &renderer, const FloatPoint_t &clientSize)
 	{
 		m_ptClientSize = clientSize;
 
@@ -116,7 +116,7 @@ namespace LitePanel::Render
 		this->ClipOrigin();
 	}
 
-	void TileMapView::ClipOrigin()
+	void TileMapRenderer::ClipOrigin()
 	{
 		assert(m_pclTileMap);
 
@@ -149,7 +149,7 @@ namespace LitePanel::Render
 
 	}
 
-	RenderArgs TileMapView::MakeRenderArgs() const
+	RenderArgs TileMapRenderer::MakeRenderArgs() const
 	{		
 		assert(m_pclTileMap);
 
@@ -210,7 +210,7 @@ namespace LitePanel::Render
 		return rargs;
 	}
 
-	void TileMapView::Draw(IRenderer &renderer)
+	void TileMapRenderer::Draw(IRenderer &renderer)
 	{		
 		if (!m_pclTileMap)
 			return;

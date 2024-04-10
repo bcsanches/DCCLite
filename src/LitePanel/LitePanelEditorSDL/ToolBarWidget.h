@@ -10,13 +10,30 @@
 
 #pragma once
 
+#include <memory>
+
 #include "EditorWidget.h"
 
-#include "LitePanelLib/render/TileMapView.h"
+#include "LitePanelLib/render/TileMapRenderer.h"
 #include "LitePanelLib/TileMap.h"
+#include "LitePanelLib/render/IRenderer.h"
 
-namespace dcclite::panel_editor
+namespace dcclite::PanelEditor
 {
+	class ToolButton : public LitePanel::MapObject
+	{
+		public:
+			ToolButton(const LitePanel::TileCoord_t &position) :
+				MapObject{ position }
+			{
+				//empty
+			}
+
+			void Draw(LitePanel::Render::IRenderer &renderer, const LitePanel::Render::ViewInfo &viewInfo, const LitePanel::FloatPoint_t &tileOrigin) const override;
+
+		private:			
+	};
+
 	class ToolBarWidget: public EditorWidget
 	{
 		public:
@@ -26,8 +43,13 @@ namespace dcclite::panel_editor
 			void Update() override;			
 
 		private:
-			LitePanel::Render::TileMapView m_clView;
+			LitePanel::Render::TileMapRenderer m_clTileMapRenderer;
 
 			LitePanel::TileMap m_clToolsMap;
+
+			std::unique_ptr<ToolButton> m_upButton;
+
+			//just to keep a reference while the button is active and registered on the tilemap
+			ToolButton					*m_pclButton;
 	};
 }

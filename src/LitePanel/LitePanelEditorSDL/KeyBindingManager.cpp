@@ -17,7 +17,7 @@
 
 #include "ConsoleWidget.h"
 
-namespace dcclite::panel_editor
+namespace dcclite::PanelEditor
 {
     KeyBindingManager::KeyBindingManager()
     {

@@ -15,7 +15,7 @@
 #include "LitePanelLib/Panel.h"
 #include "Util.h"
 
-namespace dcclite::panel_editor
+namespace dcclite::PanelEditor
 {	
 	class Document
 	{

@@ -14,7 +14,7 @@
 
 #include "imgui.h"
 
-namespace dcclite::panel_editor
+namespace dcclite::PanelEditor
 {
 	static void DisplayButton(const char *label, MessageBoxResult &resultOutput, MessageBoxResult buttonResult, ImGuiKey key)
 	{

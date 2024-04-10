@@ -35,10 +35,10 @@ namespace LitePanel::Render
 		unsigned	m_uDiagonalLineWidth;
 	};
 
-	class TileMapView
+	class TileMapRenderer
 	{
 		public:			
-			TileMapView(const TileMap *map = nullptr):
+			TileMapRenderer(const TileMap *map = nullptr):
 				m_pclTileMap{ map }
 			{
 				this->UpdateViewInfo();
@@ -59,6 +59,11 @@ namespace LitePanel::Render
 
 				m_ptOrigin = {};
 				m_tViewHelper.m_stInfo.m_uZoomLevel = 1;
+			}
+
+			inline LitePanel::TileCoord_t WorldToTileFloor(const FloatPoint_t &worldPoint) const noexcept
+			{
+				return m_tViewHelper.WorldToTileFloor(worldPoint);
 			}
 
 		private:			

@@ -14,7 +14,7 @@
 
 #include "LitePanelLib/render/IRenderer.h"
 
-namespace dcclite::panel_editor
+namespace dcclite::PanelEditor
 {
 	inline LitePanel::FloatPoint_t ImGuiVecToPoint(ImVec2 vec)
 	{
@@ -28,6 +28,8 @@ namespace dcclite::panel_editor
 
 			void DrawLine(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2, LitePanel::Render::Color_t color, float thickness = 1.0f) override;
 			void DrawText(float fontSize, LitePanel::FloatPoint_t pos, LitePanel::Render::Color_t color, const char *textBegin, const char *textEnd) override;			
+
+			void DrawRect(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2, LitePanel::Render::Color_t color) override;
 
 			void PushClipRect(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2) override;
 			void PopClipRect() override;

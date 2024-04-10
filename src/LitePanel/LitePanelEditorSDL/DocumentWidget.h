@@ -15,9 +15,9 @@
 #include "EditorWidget.h"
 
 #include "LitePanelLib/TileMap.h"
-#include "LitePanelLib/render/TileMapView.h"
+#include "LitePanelLib/render/TileMapRenderer.h"
 
-namespace dcclite::panel_editor
+namespace dcclite::PanelEditor
 {
 	class Document;
 
@@ -31,7 +31,7 @@ namespace dcclite::panel_editor
 		private:
 			Document *m_pclDocument = nullptr;
 
-			std::vector<LitePanel::Render::TileMapView> m_vecViews;
+			std::vector<LitePanel::Render::TileMapRenderer> m_vecRenderers;
 	};
 
 	class DocumentWidget

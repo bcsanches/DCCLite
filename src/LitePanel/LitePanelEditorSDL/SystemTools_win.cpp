@@ -23,7 +23,7 @@
 
 #include <algorithm>
 
-namespace dcclite::panel_editor
+namespace dcclite::PanelEditor
 {
 
 //https://stackoverflow.com/questions/2573834/c-convert-string-or-char-to-wstring-or-wchar-t/18597384#18597384

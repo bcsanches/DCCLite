@@ -47,6 +47,8 @@ namespace LitePanel
 				return m_tPosition;
 			}
 
+			void SetPosition(const TileCoord_t &position);
+
 			void Save(JsonOutputStream_t& stream) const noexcept;
 
 			virtual bool IsPersistent() const noexcept
@@ -66,17 +68,19 @@ namespace LitePanel
 			static std::unique_ptr<MapObject> Create(const rapidjson::Value& defs);
 
 		protected:
-			virtual void OnSave(JsonOutputStream_t& stream) const noexcept;
+			virtual void OnSave(JsonOutputStream_t& stream) const noexcept;			
 
 		private:
-			friend class Panel;			
+			friend class TileLayer;
 
-			void SetPosition(const TileCoord_t& position)
+			inline void SetLayer(TileLayer *layer) noexcept
 			{
-				m_tPosition = position;
+				m_pclLayer = layer;
 			}
 
 		private:
 			TileCoord_t m_tPosition;
+
+			TileLayer *m_pclLayer = nullptr;
 	};
 }

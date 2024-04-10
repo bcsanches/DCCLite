@@ -42,7 +42,7 @@ namespace LitePanel
 				position.m_tY,
 				m_tSize.m_tX,
 				m_tSize.m_tY
-			));
+		));
 
 		return (position.m_tY * m_tSize.m_tX) + position.m_tX;
 	}
@@ -192,6 +192,14 @@ namespace LitePanel
 			throw std::runtime_error(fmt::format("[TileMap::IsTileOccupied] layer {} is invalid", layer));
 
 		return m_vecLayers[layer].TryGetMapObject(position) != nullptr;
+	}
+
+	const MapObject *TileMap::TryGetMapObject(const TileCoord_t pos, const uint8_t layer) const
+	{
+		if (layer >= m_vecLayers.size())
+			throw std::runtime_error(fmt::format("[TileMap::IsTileOccupied] layer {} is invalid", layer));
+
+		return m_vecLayers[layer].TryGetMapObject(pos);
 	}
 
 	void TileMap::AddListener(ITileMapListener* listener)

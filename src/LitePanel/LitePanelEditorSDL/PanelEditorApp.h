@@ -21,7 +21,7 @@
 #include "StatusBarWidget.h"
 #include "ToolBarWidget.h"
 
-namespace dcclite::panel_editor
+namespace dcclite::PanelEditor
 {	
 	class AppTask
 	{
@@ -62,10 +62,10 @@ namespace dcclite::panel_editor
 			void PushTask(std::unique_ptr<AppTask> task);
 
 		private:
-			dcclite::panel_editor::ConsoleWidget	m_wConsole;
-			dcclite::panel_editor::StatusBarWidget	m_wStatusBar;
-			dcclite::panel_editor::ToolBarWidget	m_wToolBar;
-			dcclite::panel_editor::DocumentWidget	m_wDocumentWidget;
+			dcclite::PanelEditor::ConsoleWidget	m_wConsole;
+			dcclite::PanelEditor::StatusBarWidget	m_wStatusBar;
+			dcclite::PanelEditor::ToolBarWidget	m_wToolBar;
+			dcclite::PanelEditor::DocumentWidget	m_wDocumentWidget;
 
 			std::unique_ptr<AppTask>				m_upTask;
 

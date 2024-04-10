@@ -19,7 +19,7 @@
 #include "Log.h"
 #include "PathUtils.h"
 
-namespace dcclite::panel_editor::Settings
+namespace dcclite::PanelEditor::Settings
 {	
 	static auto constexpr SETTINGS_FILE_NAME = "LitePanelEditorSDL.settings.json";
 	static auto constexpr APP_PATH = "LitePanelEditorSDL";

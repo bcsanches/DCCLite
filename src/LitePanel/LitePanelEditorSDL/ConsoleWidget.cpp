@@ -20,7 +20,7 @@
 #include "Log.h"
 #include "LogUtils.h"
 
-namespace dcclite::panel_editor
+namespace dcclite::PanelEditor
 {
     class LogSink : public spdlog::sinks::base_sink<std::mutex>
     {

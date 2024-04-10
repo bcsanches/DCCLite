@@ -40,6 +40,14 @@ namespace LitePanel
 		//empty
 	}
 
+	void MapObject::SetPosition(const TileCoord_t &position)
+	{
+		if (m_pclLayer)
+			throw std::logic_error("[MapObject::SetPosition] Cannot update position of a registered object");
+
+		m_tPosition = position;
+	}
+
 	std::unique_ptr<MapObject> MapObject::Create(const rapidjson::Value &params)
 	{				
 		return MapObjectFactory::Create(params["classname"].GetString(), params);

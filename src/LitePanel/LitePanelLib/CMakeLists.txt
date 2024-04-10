@@ -14,7 +14,7 @@ set(LitePanelLib_SRCS
 	render/Color.cpp
 	render/ColorStyle.cpp
 	render/IRenderer.cpp
-	render/TileMapView.cpp
+	render/TileMapRenderer.cpp
 )
 
 set(LitePanelLib_HDRS
@@ -29,7 +29,7 @@ set(LitePanelLib_HDRS
 	render/Color.h
 	render/ColorStyle.h
 	render/IRenderer.h
-	render/TileMapView.h
+	render/TileMapRenderer.h
 )
 
 source_group("render"          FILES ${SRC_RENDER})

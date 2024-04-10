@@ -15,7 +15,7 @@
 
 #include "FileSystem.h"
 
-namespace dcclite::panel_editor::Settings
+namespace dcclite::PanelEditor::Settings
 {
 	[[nodiscard]] std::optional<dcclite::fs::path> GetLastProjectPath();
 

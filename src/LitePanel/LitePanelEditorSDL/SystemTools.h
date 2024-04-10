@@ -14,7 +14,7 @@
 
 #include "FileSystem.h"
 
-namespace dcclite::panel_editor
+namespace dcclite::PanelEditor
 {
 	std::optional<dcclite::fs::path> OpenFileDialog();
 	std::optional<dcclite::fs::path> SaveFileDialog(const dcclite::fs::path &filePath, const std::string &extension, const std::string &filter);

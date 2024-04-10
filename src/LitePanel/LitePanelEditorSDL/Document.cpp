@@ -14,7 +14,7 @@
 
 #include <fmt/format.h>
 
-namespace dcclite::panel_editor
+namespace dcclite::PanelEditor
 {
 	Document::Document()
 	{

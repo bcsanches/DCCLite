@@ -14,13 +14,33 @@
 
 #include "ImGuiTileMapRenderer.h"
 #include "LitePanelLib/RailObject.h"
+#include "LitePanelLib/render/ColorStyle.h"
 
-namespace dcclite::panel_editor
+enum ToolsLayers
 {
-	ToolBarWidget::ToolBarWidget() :
-		m_clToolsMap{ {2, 6}, 2 }
+	kLAYER_BUTTON = 0,
+	kLAYER_OBJECTS = 1
+};
+
+namespace dcclite::PanelEditor
+{
+
+	void ToolButton::Draw(LitePanel::Render::IRenderer &renderer, const LitePanel::Render::ViewInfo &viewInfo, const LitePanel::FloatPoint_t &tileOrigin) const
 	{
-		m_clView.SetTileMap(&m_clToolsMap);
+		renderer.DrawRect(
+			tileOrigin,
+			tileOrigin + LitePanel::FloatPoint_t{ static_cast<float>(viewInfo.m_uTileSize), static_cast<float>(viewInfo.m_uTileSize)},
+			LitePanel::Render::GetCurrentColorStyle().m_tTileHighLight
+		);
+	}
+
+	ToolBarWidget::ToolBarWidget() :
+		m_clToolsMap{ {2, 6}, 2 },
+		m_upButton{std::make_unique<ToolButton>(LitePanel::TileCoord_t{ 0, 0 })}
+	{
+		m_pclButton = m_upButton.get();
+
+		m_clTileMapRenderer.SetTileMap(&m_clToolsMap);
 
 		m_clToolsMap.RegisterObject(
 			std::make_unique<LitePanel::SimpleRailObject>(
@@ -28,7 +48,7 @@ namespace dcclite::panel_editor
 				LitePanel::ObjectAngles::EAST,
 				LitePanel::SimpleRailTypes::STRAIGHT
 			),
-			1
+			kLAYER_OBJECTS
 		);
 
 		m_clToolsMap.RegisterObject(
@@ -37,7 +57,7 @@ namespace dcclite::panel_editor
 				LitePanel::ObjectAngles::NORTH,
 				LitePanel::SimpleRailTypes::STRAIGHT
 			),
-			1
+			kLAYER_OBJECTS
 		);
 
 		m_clToolsMap.RegisterObject(
@@ -46,7 +66,7 @@ namespace dcclite::panel_editor
 				LitePanel::ObjectAngles::SOUTHEAST,
 				LitePanel::SimpleRailTypes::STRAIGHT
 			),
-			1
+			kLAYER_OBJECTS
 		);
 
 		m_clToolsMap.RegisterObject(
@@ -64,7 +84,7 @@ namespace dcclite::panel_editor
 				LitePanel::ObjectAngles::WEST,
 				LitePanel::SimpleRailTypes::CURVE_RIGHT
 			),
-			1
+			kLAYER_OBJECTS
 		);
 
 		m_clToolsMap.RegisterObject(
@@ -73,7 +93,7 @@ namespace dcclite::panel_editor
 				LitePanel::ObjectAngles::EAST,
 				LitePanel::SimpleRailTypes::CURVE_LEFT
 			),
-			1
+			kLAYER_OBJECTS
 		);
 
 		m_clToolsMap.RegisterObject(
@@ -82,7 +102,7 @@ namespace dcclite::panel_editor
 				LitePanel::ObjectAngles::WEST,
 				LitePanel::SimpleRailTypes::CURVE_LEFT
 			),
-			1
+			kLAYER_OBJECTS
 		);
 
 		m_clToolsMap.RegisterObject(
@@ -91,7 +111,7 @@ namespace dcclite::panel_editor
 				LitePanel::ObjectAngles::EAST,
 				LitePanel::SimpleRailTypes::CURVE_RIGHT
 			),
-			1
+			kLAYER_OBJECTS
 		);
 
 		m_clToolsMap.RegisterObject(
@@ -100,7 +120,7 @@ namespace dcclite::panel_editor
 				LitePanel::ObjectAngles::WEST,
 				LitePanel::JunctionTypes::LEFT_TURNOUT
 			),
-			1
+			kLAYER_OBJECTS
 		);
 
 		m_clToolsMap.RegisterObject(
@@ -109,7 +129,7 @@ namespace dcclite::panel_editor
 				LitePanel::ObjectAngles::EAST,
 				LitePanel::JunctionTypes::RIGHT_TURNOUT
 			),
-			1
+			kLAYER_OBJECTS
 		);		
 
 		m_clToolsMap.RegisterObject(
@@ -118,7 +138,7 @@ namespace dcclite::panel_editor
 				LitePanel::ObjectAngles::EAST,
 				LitePanel::JunctionTypes::LEFT_TURNOUT
 			),
-			1
+			kLAYER_OBJECTS
 		);
 
 		m_clToolsMap.RegisterObject(
@@ -127,7 +147,7 @@ namespace dcclite::panel_editor
 				LitePanel::ObjectAngles::WEST,
 				LitePanel::JunctionTypes::RIGHT_TURNOUT
 			),
-			1
+			kLAYER_OBJECTS
 		);
 
 	}
@@ -143,11 +163,37 @@ namespace dcclite::panel_editor
 
 			ImGuiTileMapRenderer renderer(*draw_list, canvas_p0);
 
-			m_clView.SetupFrame(renderer, ImGuiVecToPoint(canvas_sz));
-			m_clView.Draw(renderer);
+			m_clTileMapRenderer.SetupFrame(renderer, ImGuiVecToPoint(canvas_sz));
+			m_clTileMapRenderer.Draw(renderer);
 
+			ImGui::InvisibleButton("toolbar_invisible_button", canvas_sz, ImGuiButtonFlags_MouseButtonLeft);			
+			const bool is_active = ImGui::IsItemActive();   // Held
+
+			if (is_active && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+			{
+				auto pos = ImGui::GetMousePos() - canvas_p0;
+
+				auto tilePos = m_clTileMapRenderer.WorldToTileFloor(ImGuiVecToPoint(pos));
+
+				if (m_clToolsMap.IsInside(tilePos))
+				{
+					if (m_upButton)
+					{
+						m_clToolsMap.RegisterObject(std::move(m_upButton), kLAYER_BUTTON);
+					}
+					else if (tilePos == m_pclButton->GetPosition())
+					{
+						m_upButton.reset(static_cast<ToolButton *>(m_clToolsMap.UnregisterObject(*m_pclButton, kLAYER_BUTTON).release()));
+					}
+					else
+					{
+						auto button = m_clToolsMap.UnregisterObject(*m_pclButton, kLAYER_BUTTON);
+						button->SetPosition(tilePos);
+						m_clToolsMap.RegisterObject(std::move(button), kLAYER_BUTTON);
+					}
+				}
+			}
 #if 0
-
 			draw_list->AddRectFilled(canvas_p0 + ImVec2{ 5, 5 }, canvas_p0 + ImVec2{21, 21}, IM_COL32(50, 50, 50, 255));
 #endif
 

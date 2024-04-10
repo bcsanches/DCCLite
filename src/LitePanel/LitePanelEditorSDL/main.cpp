@@ -99,7 +99,7 @@ int main(int argc, char **argv)
 		ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
 		ImGui_ImplSDLRenderer3_Init(renderer);		
 
-		dcclite::panel_editor::PanelEditorApp app;
+		dcclite::PanelEditor::PanelEditorApp app;
 
 		using namespace std::chrono_literals;
 		unsigned frameCount = 0;

@@ -10,7 +10,7 @@
 
 #pragma once
 
-namespace dcclite::panel_editor
+namespace dcclite::PanelEditor
 {
 	class EditorWidget
 	{

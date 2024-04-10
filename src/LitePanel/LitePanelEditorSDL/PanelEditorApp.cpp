@@ -74,7 +74,7 @@ static void ShowAboutWindow(bool *p_open)
 	ImGui::End();
 }
 
-namespace dcclite::panel_editor
+namespace dcclite::PanelEditor
 {			
 	class NewFileTask: public AppTask
 	{

@@ -12,7 +12,7 @@
 
 #include "EditorWidget.h"
 
-namespace dcclite::panel_editor
+namespace dcclite::PanelEditor
 {
 	class StatusBarWidget: public EditorWidget
 	{

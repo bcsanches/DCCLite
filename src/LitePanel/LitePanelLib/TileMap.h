@@ -108,6 +108,8 @@ namespace LitePanel
 				return true;
 			}
 
+			const MapObject *TryGetMapObject(const TileCoord_t pos, const uint8_t layer) const;
+
 			void AddListener(ITileMapListener *listener);
 			void RemoveListener(ITileMapListener *listener);
 
