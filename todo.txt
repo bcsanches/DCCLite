@@ -1,0 +1,69 @@
+DCCLite
+-------
+- test new dccex commands, check if turnout description helps anyway
+
+LitePanelSDL
+------------
+
+- Create new button class for toolbar:
+class ToolButton
+{
+	MakeInsertCmd(TilePos &pos, TileMap &pos)
+	{
+		if tile ocupied
+			create delete cmd
+
+		create insert cmd
+
+		return cmd sequence
+	}
+
+	MakePlaceHolderObject
+	{
+		reutrn a temp object to be use as cursor
+	}
+}
+
+- Replace tile map on toolbar with imgui buttons
+- include scroll bars on tile map view
+- Create a generic editor, that can be used by SDL and wxWidgets?
+	- supports the tiles edits (receive mouse clicks with toolbar info)
+	- handles scrolling and rendering
+	- toolbar buttons can be generic too
+
+- add imgui open file windows (remove windows dependencies)
+- Main application, split between Editor and Runner
+
+
+- When loading:
+	- document infra structure?
+	- Settings from last run infrastructure?
+
+	- if no file provided or no previous working project:
+		- prompt with new project dialog
+
+	- if previous project on working mode, load editor
+	- if previous project on runner mode, load runner
+
+
+- Requirements:
+	- every save, put a copy of previous file on temp with a timestamp
+	- allow recovery of previous version from the temp (if exists)
+
+
+LitePanelWx
+-----------
+
+- fix rendering errors
+
+To Explore
+----------
+- EngineDriver layer
+	- connects directly to DCCex
+	- avoids JMRI for running trains
+	- reads DEcoderPro custom names for commands and provides it to EngineDriver
+	- supports DccLite own routes
+	- emulate fuel consumption:
+		- config per locomotive
+		- handle throttle settings and simulates cosumption
+		- refueliing system
