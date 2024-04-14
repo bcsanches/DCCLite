@@ -62,9 +62,9 @@ namespace dcclite::PanelEditor
 			void PushTask(std::unique_ptr<AppTask> task);
 
 		private:
-			dcclite::PanelEditor::ConsoleWidget	m_wConsole;
+			dcclite::PanelEditor::ConsoleWidget		m_wConsole;
 			dcclite::PanelEditor::StatusBarWidget	m_wStatusBar;
-			dcclite::PanelEditor::ToolBarWidget	m_wToolBar;
+			dcclite::PanelEditor::ToolBarWidget		m_wToolBar;
 			dcclite::PanelEditor::DocumentWidget	m_wDocumentWidget;
 
 			std::unique_ptr<AppTask>				m_upTask;

@@ -204,9 +204,7 @@ namespace LitePanel::Gui
 	static GLfloat g_arfpAngleTable[] = { 0.0f, 45.0f, 90.0f, 135.0f, 180.0f, 225.0f, 270.0f, 315.0f };
 
 	void TileMapCanvas::DrawStraightRail(const LitePanel::SimpleRailObject &rail) const
-	{
-		
-
+	{	
 		glColor4f(0.0f, 0.0f, 0.0f, 1.0f);		
 
 		switch(rail.GetAngle())

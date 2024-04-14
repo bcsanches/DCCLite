@@ -13,6 +13,10 @@
 #include "imgui.h"
 
 #include "ImGuiTileMapRenderer.h"
+
+#include "ConsoleWidget.h"
+#include "KeyBindingManager.h"
+
 #include "LitePanelLib/RailObject.h"
 #include "LitePanelLib/render/ColorStyle.h"
 
@@ -24,6 +28,24 @@ enum ToolsLayers
 
 namespace dcclite::PanelEditor
 {
+	class IEditCmd
+	{
+		public:
+			IEditCmd() = default;
+			virtual ~IEditCmd() = 0;
+
+			virtual void Do() = 0;
+			virtual void Undo() = 0;
+	};
+
+	class InsertSimpleRailCmd: public IEditCmd
+	{
+		public:
+
+		private:
+
+	};
+
 	class SimpleRailObjectToolButton : public ToolButton
 	{
 		public:
@@ -219,6 +241,28 @@ namespace dcclite::PanelEditor
 		}
 	}
 
+	void ToolBarWidget::RegisterCmds(dcclite::PanelEditor::ConsoleWidget &console, KeyBindingManager &bindings)
+	{
+		RName clearCurrentToolCmdName{ "ToolBar.ClearCurrentTool" };
+	
+		console.RegisterCommand(clearCurrentToolCmdName, [this](ConsoleCmdParams &params)
+			{
+				this->ClearCurrentTool();
+			}
+		);
+
+		bindings.Bind(clearCurrentToolCmdName.GetData().data(), SDL_SCANCODE_ESCAPE, 0);		
+	}
+
+	void ToolBarWidget::ClearCurrentTool() noexcept
+	{
+		if (!m_pclCurrentButton)
+			return;
+
+		m_pclCurrentButton->SetSelected(false);
+		m_pclCurrentButton = false;
+	}
+
 	void ToolBarWidget::Display()
 	{		
 		if (ImGui::Begin("LToolBar", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
@@ -261,9 +305,6 @@ namespace dcclite::PanelEditor
 				}
 #endif
 			}
-#if 0
-			draw_list->AddRectFilled(canvas_p0 + ImVec2{ 5, 5 }, canvas_p0 + ImVec2{21, 21}, IM_COL32(50, 50, 50, 255));
-#endif
 
 #if 0
 

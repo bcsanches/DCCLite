@@ -158,6 +158,8 @@ namespace dcclite::PanelEditor
 		m_clBindings.Bind("Editor.Save", SDL_SCANCODE_S, KEY_MODIFIER_CTRL);
 		m_clBindings.Bind("Editor.SaveAs", SDL_SCANCODE_S, KEY_MODIFIER_CTRL | KEY_MODIFIER_SHIFT);
 
+		m_wToolBar.RegisterCmds(m_wConsole, m_clBindings);
+
 		m_clDocument.New();
 
 		m_wDocumentWidget.SetDocument(&m_clDocument);

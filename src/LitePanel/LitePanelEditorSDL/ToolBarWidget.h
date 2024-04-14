@@ -20,6 +20,9 @@
 
 namespace dcclite::PanelEditor
 {
+	class ConsoleWidget;
+	class KeyBindingManager;
+
 	class ToolButton : public LitePanel::MapObject
 	{
 		public:
@@ -49,6 +52,10 @@ namespace dcclite::PanelEditor
 
 			void Display() override;
 			void Update() override;			
+
+			void RegisterCmds(dcclite::PanelEditor::ConsoleWidget &console, KeyBindingManager &bindings);
+
+			void ClearCurrentTool() noexcept;
 
 			inline const ToolButton *TryGetCurrentTool() noexcept
 			{
