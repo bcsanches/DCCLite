@@ -30,6 +30,7 @@ namespace dcclite::PanelEditor
 			void DrawText(float fontSize, LitePanel::FloatPoint_t pos, LitePanel::Render::Color_t color, const char *textBegin, const char *textEnd) override;			
 
 			void DrawRect(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2, LitePanel::Render::Color_t color) override;
+			void DrawFilledRect(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2, LitePanel::Render::Color_t color) override;
 
 			void PushClipRect(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2) override;
 			void PopClipRect() override;

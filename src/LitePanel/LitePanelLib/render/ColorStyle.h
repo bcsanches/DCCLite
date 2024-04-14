@@ -19,6 +19,7 @@ namespace LitePanel::Render
 		Color_t m_tGridLine;
 		Color_t m_tBackground;
 		Color_t m_tTileHighLight;
+		Color_t m_tTileMapBorder;
 
 		Color_t m_tRail;
 	};

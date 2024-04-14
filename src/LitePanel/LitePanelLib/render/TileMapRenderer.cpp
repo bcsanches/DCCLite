@@ -63,6 +63,14 @@ namespace LitePanel::Render
 		//Number of visible tiles that can fit on screen, including partially visible tiles on screen borders
 		//if any of this one is zero, no visible tiles
 		TileCoord_t m_tNumVisibleTiles;
+
+		//
+		//The size in pixels of the tile map (may be bigger than ViewClientSize
+		FloatPoint_t m_tTileMapScreenSize;
+
+		//
+		//The tile map origin, may be negative due to scroll
+		//FloatPoint_t m_tTileMapScreenOrigin;
 	};
 
 	#define CURRENT_TILE_SIZE (g_tScales[m_stInfo.m_uZoomLevel].m_uTileSize)
@@ -160,6 +168,8 @@ namespace LitePanel::Render
 
 		const auto &tileMapSize = m_pclTileMap->GetSize();
 
+		rargs.m_tTileMapScreenSize = TilePointToFloat(tileMapSize) * static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize);
+
 		rargs.m_tTilePos_FirstOrigin = m_tViewHelper.WorldToTileFloor(m_ptOrigin);				
 
 		FloatPoint_t fvisibleTiles = m_ptClientSize / static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize);
@@ -178,34 +188,6 @@ namespace LitePanel::Render
 		);
 
 		rargs.m_tNumVisibleTiles = (rargs.m_tTilePos_LastVisible - rargs.m_tTilePos_FirstOrigin) + TileCoord_t{ 1, 1 };
-#if 0
-		
-		if ((rargs.m_tTilePos_ViewOrigin.m_tX >= tileMapSize.m_tX) || (rargs.m_tTilePos_ViewOrigin.m_tY >= tileMapSize.m_tY))
-			return rargs;
-
-		//Get the client area last pixel (right bottom corner) position
-		auto viewLimit = m_ptOrigin + rargs.m_tViewClientSize - FloatPoint_t{ 1, 1 };				
-
-		//get the world size in pixels right bottom corner (less one pixel)
-		auto worldBounds = (TilePointToFloat(tileMapSize) * static_cast<float>(m_tViewInfo.m_uTileSize)) - FloatPoint_t{ 1.0f, 1.0f };
-
-		//Now if the viewLimit is outside the tile Map, clamp it to inside the tileMap
-		worldBounds.m_tX = std::min(viewLimit.m_tX, worldBounds.m_tX);
-		worldBounds.m_tY = std::min(viewLimit.m_tY, worldBounds.m_tY);
-
-		rargs.m_tTilePos_LastVisible = m_tViewInfo.WorldToTile(worldBounds) + TileCoord_t{ 2, 2 };
-
-		//clamp it to map limit
-		rargs.m_tTilePos_LastVisible.m_tX = std::min(rargs.m_tTilePos_LastVisible.m_tX, tileMapSize.m_tX);
-		rargs.m_tTilePos_LastVisible.m_tY = std::min(rargs.m_tTilePos_LastVisible.m_tY, tileMapSize.m_tY);
-
-		rargs.m_tNumVisibleTiles = rargs.m_tTilePos_LastVisible - rargs.m_tTilePos_ViewOrigin;
-
-		//clamp it too
-		rargs.m_tNumVisibleTiles.m_tX = std::min(rargs.m_tNumVisibleTiles.m_tX, tileMapSize.m_tX);
-		rargs.m_tNumVisibleTiles.m_tY = std::min(rargs.m_tNumVisibleTiles.m_tY, tileMapSize.m_tY);
-
-#endif
 
 		return rargs;
 	}
@@ -214,10 +196,20 @@ namespace LitePanel::Render
 	{		
 		if (!m_pclTileMap)
 			return;
+			
+		auto &colorStyle = GetCurrentColorStyle();		
 
-		auto &colorStyle = GetCurrentColorStyle();
+		auto rargs = this->MakeRenderArgs();
 
-		auto rargs = this->MakeRenderArgs();	
+		FloatPoint_t borderSize = m_ptClientSize;
+
+		if (m_u32Flags & TileMapRendererFlags_DrawBorderTileMapRect)
+		{
+			borderSize.m_tX = std::min(borderSize.m_tX, rargs.m_tTileMapScreenSize.m_tX);
+			borderSize.m_tY = std::min(borderSize.m_tY, rargs.m_tTileMapScreenSize.m_tY);
+		}
+
+		renderer.DrawFilledRect(FloatPoint_t{ 0, 0 }, borderSize, colorStyle.m_tBackground);
 
 		const FloatPoint_t tileSize{ static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize), static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize) };
 
@@ -275,7 +267,7 @@ namespace LitePanel::Render
 			);
 		}
 
-		
+		renderer.DrawRect(FloatPoint_t{ 0, 0 }, borderSize, colorStyle.m_tTileMapBorder);
 
 #if 0
 		for (int i = rargs.m_tTilePos_FirstOrigin.m_tX; i <= rargs.m_tTilePos_LastVisible.m_tX + 1; ++i)

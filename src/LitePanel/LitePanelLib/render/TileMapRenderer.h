@@ -35,6 +35,11 @@ namespace LitePanel::Render
 		unsigned	m_uDiagonalLineWidth;
 	};
 
+	enum TileMapRendererFlags
+	{
+		TileMapRendererFlags_DrawBorderTileMapRect = 0x01		
+	};
+
 	class TileMapRenderer
 	{
 		public:			
@@ -66,6 +71,16 @@ namespace LitePanel::Render
 				return m_tViewHelper.WorldToTileFloor(worldPoint);
 			}
 
+			inline void SetRenderFlags(uint32_t flags) noexcept
+			{
+				m_u32Flags = flags;
+			}
+
+			inline uint32_t GetRenderFlags() const noexcept
+			{
+				return m_u32Flags;
+			}
+
 		private:			
 			RenderArgs MakeRenderArgs() const;
 
@@ -89,5 +104,7 @@ namespace LitePanel::Render
 			FloatPoint_t	m_ptOrigin;
 
 			ViewHelper		m_tViewHelper;
+
+			uint32_t		m_u32Flags = 0;
 	};
 }

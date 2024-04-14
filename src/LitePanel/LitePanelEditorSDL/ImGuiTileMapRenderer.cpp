@@ -31,6 +31,11 @@ namespace dcclite::PanelEditor
 
 	void ImGuiTileMapRenderer::DrawRect(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2, LitePanel::Render::Color_t color)
 	{
+		m_clDrawList.AddRect(m_ptClientOrigin + PointToImGuiVec(p1), m_ptClientOrigin + PointToImGuiVec(p2), color);
+	}
+
+	void ImGuiTileMapRenderer::DrawFilledRect(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2, LitePanel::Render::Color_t color)
+	{
 		m_clDrawList.AddRectFilled(m_ptClientOrigin + PointToImGuiVec(p1), m_ptClientOrigin + PointToImGuiVec(p2), color);		
 	}
 

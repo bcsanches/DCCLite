@@ -32,6 +32,8 @@ namespace dcclite::PanelEditor
 			Document *m_pclDocument = nullptr;
 
 			std::vector<LitePanel::Render::TileMapRenderer> m_vecRenderers;
+
+			bool m_fMouseHovering = false;
 	};
 
 	class DocumentWidget
@@ -60,6 +62,6 @@ namespace dcclite::PanelEditor
 		private:			
 			DocumentView m_clView;
 
-			bool m_fTileClippingDebug = false;
+			bool m_fTileClippingDebug = false;			
 	};
 }

@@ -15,8 +15,9 @@ namespace LitePanel::Render
 	const ColorStyle g_tDarkStyle =
 	{
 		LP_COL32(200, 200, 200, 40),	//GridLine
-		LP_COL32(000, 000, 000, 255),	//Background
+		LP_COL32(050, 050, 050, 255),	//Background
 		LP_COL32(139, 111, 046, 255),	//TileHighLight
+		LP_COL32(255, 255, 255, 255),	//TileMapBorder
 		LP_COL32(200, 200, 200, 255)	//Rail
 	};
 

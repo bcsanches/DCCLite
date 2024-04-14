@@ -22,6 +22,7 @@ namespace LitePanel::Render
 			virtual void DrawLine(FloatPoint_t p1, FloatPoint_t p2, Color_t color, float thickness = 1.0f) = 0;
 
 			virtual void DrawRect(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2, LitePanel::Render::Color_t color) = 0;
+			virtual void DrawFilledRect(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2, LitePanel::Render::Color_t color) = 0;
 
 			virtual void DrawText(float fontSize, LitePanel::FloatPoint_t pos, LitePanel::Render::Color_t color, const char *textBegin, const char *textEnd) = 0;
 

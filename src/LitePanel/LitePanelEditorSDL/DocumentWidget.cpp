@@ -72,10 +72,7 @@ namespace dcclite::PanelEditor
 				{
 					canvas_p0 += ImVec2{ 100.0f, 100.0f };
 					canvas_p1 -= ImVec2{ 100.0f, 100.0f };
-				}				
-
-				draw_list->AddRectFilled(canvas_p0, canvas_p1, IM_COL32(50, 50, 50, 255));
-				draw_list->AddRect(canvas_p0, canvas_p1, IM_COL32(255, 255, 255, 255));				
+				}								
 			
 				// Using InvisibleButton() as a convenience 1) it will advance the layout cursor and 2) allows us to use IsItemHovered()/IsItemActive()
 				// This will catch our interactions
@@ -90,6 +87,21 @@ namespace dcclite::PanelEditor
 				else
 				{
 					draw_list->PushClipRect(canvas_p0, canvas_p1, true);
+				}
+
+				//Is mouse over tileMap?
+				if (ImGui::IsMouseHoveringRect(canvas_p0, canvas_sz))
+				{
+					if (!m_fMouseHovering)
+					{
+
+					}
+
+					m_fMouseHovering = true;
+				}
+				else if(m_fMouseHovering)
+				{
+					m_fMouseHovering = false;
 				}
 
 				//const ImVec2 origin(canvas_p0.x + scrolling.x, canvas_p0.y + scrolling.y); // Lock scrolled origin

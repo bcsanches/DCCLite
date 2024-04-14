@@ -211,7 +211,10 @@ namespace dcclite::PanelEditor
 
 			ImGui::DockBuilderRemoveNode(dockspaceID);
 			ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_None);
-			ImGui::DockBuilderSetNodeSize(dockspaceID, viewport->WorkSize);
+
+			//When window is minimized and in some situations, size goes to 0 and SetNodeSize blows up.... so avoid it
+			if ((viewport->WorkSize.x > 0.0f) && (viewport->WorkSize.y > 0.0f))
+				ImGui::DockBuilderSetNodeSize(dockspaceID, viewport->WorkSize);
 
 			auto dock_down_height = (32.0f / currentViewPortSize.y) + 0.001f;
 			auto leftToolBarWidth = (64.0f / currentViewPortSize.x) + 0.001f;

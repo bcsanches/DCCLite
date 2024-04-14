@@ -31,7 +31,15 @@ namespace dcclite::PanelEditor
 
 			void Draw(LitePanel::Render::IRenderer &renderer, const LitePanel::Render::ViewInfo &viewInfo, const LitePanel::FloatPoint_t &tileOrigin) const override;
 
+			virtual std::unique_ptr<LitePanel::MapObject> MakeTempObject() const = 0;
+
+			inline void SetSelected(bool selected) noexcept
+			{
+				m_fSelected = selected;
+			}
+
 		private:			
+			bool m_fSelected = false;
 	};
 
 	class ToolBarWidget: public EditorWidget
@@ -42,14 +50,16 @@ namespace dcclite::PanelEditor
 			void Display() override;
 			void Update() override;			
 
+			inline const ToolButton *TryGetCurrentTool() noexcept
+			{
+				return m_pclCurrentButton;
+			}
+
 		private:
-			LitePanel::Render::TileMapRenderer m_clTileMapRenderer;
+			LitePanel::Render::TileMapRenderer	m_clTileMapRenderer;
 
-			LitePanel::TileMap m_clToolsMap;
+			LitePanel::TileMap					m_clToolsMap;			
 
-			std::unique_ptr<ToolButton> m_upButton;
-
-			//just to keep a reference while the button is active and registered on the tilemap
-			ToolButton					*m_pclButton;
+			ToolButton							*m_pclCurrentButton = nullptr;
 	};
 }
