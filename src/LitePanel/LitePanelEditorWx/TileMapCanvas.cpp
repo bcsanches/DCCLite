@@ -201,8 +201,12 @@ namespace LitePanel::Gui
 		//glPopMatrix();
 	}
 
+	static GLfloat g_arfpAngleTable[] = { 0.0f, 45.0f, 90.0f, 135.0f, 180.0f, 225.0f, 270.0f, 315.0f };
+
 	void TileMapCanvas::DrawStraightRail(const LitePanel::SimpleRailObject &rail) const
 	{
+		
+
 		glColor4f(0.0f, 0.0f, 0.0f, 1.0f);		
 
 		switch(rail.GetAngle())
@@ -215,7 +219,7 @@ namespace LitePanel::Gui
 					//glEnable(GL_LINE_SMOOTH);
 					glLineWidth(m_tViewInfo.m_uLineWidth);					
 
-					glRotatef(static_cast<GLfloat>(rail.GetAngle()), 0, 0, 1);		
+					glRotatef(g_arfpAngleTable[static_cast<int>(rail.GetAngle())], 0, 0, 1);
 
 					const auto splitFlags = rail.GetBlockSplit();
 					if (splitFlags & kBLOCK_SPLIT_LEFT)
@@ -279,7 +283,7 @@ namespace LitePanel::Gui
 				{
 					//glEnable(GL_LINE_SMOOTH);
 
-					glRotatef(-static_cast<GLfloat>(rail.GetAngle()), 0, 0, 1);
+					glRotatef(-g_arfpAngleTable[static_cast<int>(rail.GetAngle())], 0, 0, 1);
 
 					if (rail.GetType() == SimpleRailTypes::CURVE_RIGHT)
 						glScalef(1, -1, 1);
