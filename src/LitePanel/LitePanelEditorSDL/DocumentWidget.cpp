@@ -104,12 +104,26 @@ namespace dcclite::PanelEditor
 					m_fMouseHovering = false;
 				}
 
+				if (ImGui::IsKeyDown(ImGuiKey_MouseWheelY))
+				{
+					auto &io = ImGui::GetIO();
+					if (io.MouseWheel < 0)
+					{
+						m_vecRenderers[i].ZoomOut();
+					}
+					else
+					{
+						m_vecRenderers[i].ZoomIn();
+					}
+				}
+
+
 				//const ImVec2 origin(canvas_p0.x + scrolling.x, canvas_p0.y + scrolling.y); // Lock scrolled origin
 				//const ImVec2 mouse_pos_in_canvas(io.MousePos.x - origin.x, io.MousePos.y - origin.y);				
 
 				// Pan (we use a zero mouse threshold when there's no context menu)
 				// You may decide to make that threshold dynamic based on whether the mouse is hovering something etc.						
-				if (is_active && ImGui::IsMouseDragging(ImGuiButtonFlags_MouseButtonRight))
+				if (is_active && ImGui::IsMouseDragging(ImGuiMouseButton_Middle))
 				{					
 					m_vecRenderers[i].Move(ImGuiVecToPoint(io.MouseDelta));
 				}							

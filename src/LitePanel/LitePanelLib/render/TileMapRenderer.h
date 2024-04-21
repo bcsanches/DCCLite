@@ -81,6 +81,9 @@ namespace LitePanel::Render
 				return m_u32Flags;
 			}
 
+			void ZoomIn() noexcept;
+			void ZoomOut() noexcept;
+
 		private:			
 			RenderArgs MakeRenderArgs() const;
 

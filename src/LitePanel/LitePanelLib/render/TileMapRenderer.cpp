@@ -114,6 +114,24 @@ namespace LitePanel::Render
 		m_tViewHelper.m_stInfo.m_uDiagonalLineWidth = g_tScales[m_tViewHelper.m_stInfo.m_uZoomLevel].m_uDiagonalLineWidth;
 	}
 
+	void TileMapRenderer::ZoomIn() noexcept
+	{
+		if (m_tViewHelper.m_stInfo.m_uZoomLevel == MAX_ZOOM_LEVELS - 1)
+			return;
+
+		m_tViewHelper.m_stInfo.m_uZoomLevel++;
+		this->UpdateViewInfo();
+	}
+
+	void TileMapRenderer::ZoomOut() noexcept
+	{
+		if (m_tViewHelper.m_stInfo.m_uZoomLevel == 0)
+			return;
+
+		m_tViewHelper.m_stInfo.m_uZoomLevel--;
+		this->UpdateViewInfo();
+	}
+
 	void TileMapRenderer::SetupFrame(IRenderer &renderer, const FloatPoint_t &clientSize)
 	{
 		m_ptClientSize = clientSize;
