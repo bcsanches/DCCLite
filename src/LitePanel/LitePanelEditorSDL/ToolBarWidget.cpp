@@ -17,6 +17,7 @@
 #include "ConsoleWidget.h"
 #include "KeyBindingManager.h"
 
+#include "LitePanelLib/Panel.h"
 #include "LitePanelLib/RailObject.h"
 #include "LitePanelLib/render/ColorStyle.h"
 
@@ -28,22 +29,115 @@ enum ToolsLayers
 
 namespace dcclite::PanelEditor
 {
+	class EditCommandManager;
+
 	class IEditCmd
 	{
 		public:
 			IEditCmd() = default;
 			virtual ~IEditCmd() = 0;
 
-			virtual void Do() = 0;
-			virtual void Undo() = 0;
+			virtual void Do(LitePanel::Panel &panel, EditCommandManager &cmdManager) = 0;
+			virtual void Undo(LitePanel::Panel &panel, EditCommandManager &cmdManager) = 0;
+	};
+
+	typedef std::unique_ptr<IEditCmd> IEditCmdPtr_t;
+
+	class EditCommandManager
+	{
+		public:			
+			EditCommandManager(LitePanel::Panel &panel):
+				m_rclPanel{panel}
+			{
+				//empty
+			}
+
+			void RunCmd(IEditCmdPtr_t cmd)
+			{
+				cmd->Do(m_rclPanel, *this);
+
+				m_vecUndoStack.push_back(cmd);
+			}
+
+		private:
+			void PushUndo(IEditCmdPtr_t cmd)
+			{
+				m_vecUndoStack.push_back(std::move(cmd));
+			}
+
+		private:
+			std::vector<IEditCmdPtr_t> m_vecUndoStack;
+
+			LitePanel::Panel &m_rclPanel;
+
+	};
+
+	class DeleteRailCmd : public IEditCmd
+	{
+		public:
+			DeleteRailCmd(const LitePanel::TileCoord_t &position):
+				m_tPosition{position}
+			{
+				//empty
+			}
+
+			void Do(LitePanel::Panel &panel, EditCommandManager &manager) override
+			{
+				if (!panel.IsRailTileOccupied(m_tPosition))
+				{
+					throw std::runtime_error(fmt::format("[DeleteRailCmd::Do] Rail tile is empty: {}-{}", m_tPosition.m_tX, m_tPosition.m_tY));
+				}
+
+				m_upDeletedObject = panel.TryUnregisterRail(m_tPosition);
+			}
+
+			void Undo(LitePanel::Panel &panel, EditCommandManager &manager) override
+			{
+				panel.RegisterRail(std::move(m_upDeletedObject));
+			}
+
+		private:
+			LitePanel::TileCoord_t m_tPosition;
+
+			std::unique_ptr<LitePanel::RailObject> m_upDeletedObject;
 	};
 
 	class InsertSimpleRailCmd: public IEditCmd
 	{
 		public:
+			InsertSimpleRailCmd(
+				const LitePanel::TileCoord_t &position,
+				LitePanel::ObjectAngles angle,
+				const LitePanel::SimpleRailTypes type,
+				const LitePanel::BlockSplitTypes splitTypes = LitePanel::kBLOCK_SPLIT_NONE):
+				m_tPosition{ position },
+				m_kAngle{angle},
+				m_kType{ type },
+				m_kSplit{ splitTypes }
+			{
+				//empty
+			}
+
+			void Do(LitePanel::Panel &panel, EditCommandManager &manager) override
+			{
+				if (panel.IsRailTileOccupied(m_tPosition))
+				{
+					manager.RunCmd(std::make_unique<DeleteRailCmd>(m_tPosition));
+				}
+
+				panel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(m_tPosition, m_kAngle, m_kType, m_kSplit));
+			}
+
+			void Undo(LitePanel::Panel &panel, EditCommandManager &manager) override
+			{
+				panel.TryUnregisterRail(m_tPosition);
+			}
 
 		private:
-
+			LitePanel::TileCoord_t m_tPosition;
+			LitePanel::ObjectAngles m_kAngle;
+			LitePanel::SimpleRailTypes m_kType;
+			LitePanel::BlockSplitTypes m_kSplit;
 	};
 
 	class SimpleRailObjectToolButton : public ToolButton
@@ -63,6 +157,16 @@ namespace dcclite::PanelEditor
 					LitePanel::TileCoord_t{ 0, 0 },
 					m_kAngle,
 					m_kType
+				);
+			}
+
+			IEditCmdPtr_t MakeCmd(const LitePanel::TileCoord_t &position) const
+			{
+				return std::make_unique<InsertSimpleRailCmd>(
+					position,
+					m_kAngle,
+					m_kType,
+					LitePanel::kBLOCK_SPLIT_NONE
 				);
 			}
 
