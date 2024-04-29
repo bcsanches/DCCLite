@@ -5,24 +5,11 @@ DCCLite
 LitePanelSDL
 ------------
 
-- Create new button class for toolbar:
-class ToolButton
-{
-	MakeInsertCmd(TilePos &pos, TileMap &pos)
-	{
-		if tile ocupied
-			create delete cmd
-
-		create insert cmd
-
-		return cmd sequence
-	}
-
-	MakePlaceHolderObject
-	{
-		reutrn a temp object to be use as cursor
-	}
-}
+- Move new item on tilemap when mouse moves
+- Draw tile items correctly when tile map scrolls
+- Handle mouse click and create object on map
+- Add scrollbars
+- Load / Save
 
 - Replace tile map on toolbar with imgui buttons
 - include scroll bars on tile map view
