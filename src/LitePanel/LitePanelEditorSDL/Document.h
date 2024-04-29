@@ -49,6 +49,11 @@ namespace dcclite::PanelEditor
 				return &m_vecPanels[0];
 			}
 
+			LitePanel::Panel *GetPanels() noexcept
+			{
+				return &m_vecPanels[0];
+			}
+
 			size_t GetNumPanels() const noexcept
 			{
 				return m_vecPanels.size();

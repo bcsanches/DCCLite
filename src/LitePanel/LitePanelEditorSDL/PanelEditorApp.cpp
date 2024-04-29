@@ -325,7 +325,7 @@ namespace dcclite::PanelEditor
 
 		m_wStatusBar.Display();
 		m_wToolBar.Display();
-		m_wDocumentWidget.Display();
+		m_wDocumentWidget.Display(*this);
 		m_wConsole.Display();
 
 		if (m_fShowAbout)

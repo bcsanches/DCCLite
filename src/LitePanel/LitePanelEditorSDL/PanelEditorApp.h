@@ -55,6 +55,11 @@ namespace dcclite::PanelEditor
 			}
 
 			void HandleEvent(const SDL_KeyboardEvent &key);
+
+			inline ToolBarWidget &GetToolBar() noexcept
+			{
+				return m_wToolBar;
+			}
 	
 		private:
 			void NewFile();

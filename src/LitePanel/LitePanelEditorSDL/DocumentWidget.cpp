@@ -9,14 +9,12 @@
 // defined by the Mozilla Public License, v. 2.0.
 
 #include "DocumentWidget.h"
+#include "PanelEditorApp.h"
 
 #include "imgui.h"
 
 #include "Document.h"
 #include "ImGuiTileMapRenderer.h"
-
-#include "LitePanelLib/Point.h"
-
 
 #include "LitePanelLib/render/TileMapRenderer.h"
 
@@ -44,7 +42,7 @@ namespace dcclite::PanelEditor
 		}
 	}
 
-	void DocumentView::Display(const bool debugTileClipping)
+	void DocumentView::Display(PanelEditorApp &app, const bool debugTileClipping)
 	{
 		if (!m_pclDocument)
 			return;
@@ -89,12 +87,47 @@ namespace dcclite::PanelEditor
 					draw_list->PushClipRect(canvas_p0, canvas_p1, true);
 				}
 
+				//Visible panel changed... do some cleanup
+				if (m_iVisiblePanel != i)
+				{
+					if (m_iVisiblePanel >= 0)
+					{
+						if (m_pclCursorObject)
+						{
+							panels[i].UnregisterTempObject(*m_pclCursorObject);
+							m_pclCursorObject = nullptr;
+						}
+
+						//force tool update, crate temp object, etc
+						m_pclCurrentTool = nullptr;
+					}
+
+					m_iVisiblePanel = i;					
+				}
+
 				//Is mouse over tileMap?
 				if (ImGui::IsMouseHoveringRect(canvas_p0, canvas_sz))
 				{
-					if (!m_fMouseHovering)
-					{
+					auto &toolBar = app.GetToolBar();
+					auto newTool = toolBar.TryGetCurrentTool();
 
+					if (m_pclCurrentTool != newTool)
+					{
+						if (m_pclCursorObject)
+						{
+							panels[i].UnregisterTempObject(*m_pclCursorObject);
+							m_pclCursorObject = nullptr;
+						}
+
+						m_pclCurrentTool = newTool;
+						if (m_pclCurrentTool)
+						{
+							auto tmpObj = m_pclCurrentTool->MakeTempObject();
+
+							m_pclCursorObject = tmpObj.get();
+
+							panels[i].RegisterTempObject(std::move(tmpObj));							
+						}
 					}
 
 					m_fMouseHovering = true;
@@ -102,6 +135,17 @@ namespace dcclite::PanelEditor
 				else if(m_fMouseHovering)
 				{
 					m_fMouseHovering = false;
+
+					if (m_pclCursorObject)
+					{
+						//we will generate a lot of garbage... but does it matter here?
+						//We could store the tmp object on a local variable for reuse, but does not seems to be worth it... 
+						//just force recreation if cursor comes back
+						panels[i].UnregisterTempObject(*m_pclCursorObject);
+						m_pclCursorObject = nullptr;
+
+						m_pclCurrentTool = nullptr;
+					}
 				}
 
 				if (ImGui::IsKeyDown(ImGuiKey_MouseWheelY))
@@ -140,13 +184,13 @@ namespace dcclite::PanelEditor
 
 	}
 	
-	void DocumentWidget::Display()
+	void DocumentWidget::Display(PanelEditorApp &app)
 	{
 		if (ImGui::Begin("WorkArea", nullptr, ImGuiWindowFlags_NoCollapse))
 		{
 			if (ImGui::BeginTabBar("MainTabBar", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_AutoSelectNewTabs | ImGuiTabBarFlags_NoCloseWithMiddleMouseButton))
 			{
-				m_clView.Display(m_fTileClippingDebug);
+				m_clView.Display(app, m_fTileClippingDebug);
 				
 				ImGui::EndTabBar();
 			}

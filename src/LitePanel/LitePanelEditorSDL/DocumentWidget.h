@@ -12,26 +12,29 @@
 
 #include <vector>
 
-#include "EditorWidget.h"
-
-#include "LitePanelLib/TileMap.h"
 #include "LitePanelLib/render/TileMapRenderer.h"
 
 namespace dcclite::PanelEditor
 {
 	class Document;
+	class PanelEditorApp;
+	class ToolButton;
 
 	class DocumentView
 	{
 		public:
 			void SetDocument(Document *doc);			
 
-			void Display(const bool debugTileClipping);
+			void Display(PanelEditorApp &app, const bool debugTileClipping);
 
 		private:
-			Document *m_pclDocument = nullptr;
+			Document				*m_pclDocument = nullptr;
+			const ToolButton		*m_pclCurrentTool = nullptr;
+			LitePanel::MapObject	*m_pclCursorObject = nullptr;
 
-			std::vector<LitePanel::Render::TileMapRenderer> m_vecRenderers;
+			std::vector<LitePanel::Render::TileMapRenderer> m_vecRenderers;			
+
+			int						m_iVisiblePanel = -1;
 
 			bool m_fMouseHovering = false;
 	};
@@ -39,7 +42,7 @@ namespace dcclite::PanelEditor
 	class DocumentWidget
 	{
 		public:
-			virtual void Display();
+			virtual void Display(PanelEditorApp &app);
 			virtual void Update() {};
 
 			void SetDocument(Document *doc) 

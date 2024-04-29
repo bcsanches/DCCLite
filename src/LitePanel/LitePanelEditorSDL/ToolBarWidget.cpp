@@ -56,7 +56,7 @@ namespace dcclite::PanelEditor
 			{
 				cmd->Do(m_rclPanel, *this);
 
-				m_vecUndoStack.push_back(cmd);
+				m_vecUndoStack.push_back(std::move(cmd));
 			}
 
 		private:
