@@ -422,8 +422,11 @@ namespace SharpTerminal
                     break;
 
                 case "SensorDecoder":
-                case "VirtualSensorDecoder":
                     obj = new RemoteSensorDecoder(name, className, path, id, parentInternalId, objectDef);
+                    break;
+
+                case "VirtualSensorDecoder":
+                    obj = new VirtualSensorDecoder(name, className, path, id, parentInternalId, objectDef);
                     break;
 
                 case "ServoTurnoutDecoder":

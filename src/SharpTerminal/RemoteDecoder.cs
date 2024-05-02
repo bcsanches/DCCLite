@@ -225,17 +225,62 @@ namespace SharpTerminal
         }
     }
 
-    public class RemoteSensorDecoder: RemoteDecoder
-    {
-        public RemoteSensorDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
+    public class VirtualSensorDecoder : RemoteDecoder
+    {       
+        public VirtualSensorDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
             base(name, className, path, internalId, parentInternalId, objectDef)
         {
-
+            //empty
         }
 
         public override string TryGetIconName()
         {
             return RemoteState ? DefaultIcons.SENSOR_ON_ICON : DefaultIcons.SENSOR_OFF_ICON;
+        }
+    }
+
+    public class RemoteSensorDecoder: RemoteDecoder
+    {
+        private uint mActivateDelay;
+        private uint mDeactivateDelay;
+
+        [Category("Sensor")]
+        public uint ActivateDelay
+        {
+            get { return mActivateDelay; }
+
+            set
+            {
+                this.UpdateProperty(ref mActivateDelay, value);
+            }
+        }
+
+        [Category("Sensor")]
+        public uint DeactivateDelay
+        {
+            get { return mDeactivateDelay; }
+
+            set
+            {
+                this.UpdateProperty(ref mDeactivateDelay, value);
+            }
+        }
+
+        public RemoteSensorDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
+            base(name, className, path, internalId, parentInternalId, objectDef)
+        {
+            this.ParseStateData(objectDef);
+        }
+
+        public override string TryGetIconName()
+        {
+            return RemoteState ? DefaultIcons.SENSOR_ON_ICON : DefaultIcons.SENSOR_OFF_ICON;
+        }
+
+        private void ParseStateData(JsonValue objectDef)
+        {
+            mActivateDelay = (uint)objectDef["activateDelay"];
+            mDeactivateDelay = (uint)objectDef["deactivateDelay"];
         }
     }
 
