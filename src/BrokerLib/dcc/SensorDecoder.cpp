@@ -65,7 +65,7 @@ namespace dcclite::broker
 		RemoteDecoder::Serialize(stream);
 
 		stream.AddIntValue("pin", m_clPin.Raw());
-		stream.AddBool("pullup", m_fPullUp);
+		stream.AddBool("pullUp", m_fPullUp);
 		stream.AddBool("inverted", m_fInverted);
 		stream.AddIntValue("activateDelay", m_uActivateDelay);
 		stream.AddIntValue("deactivateDelay", m_uDeactivateDelay);

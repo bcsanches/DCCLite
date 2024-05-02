@@ -241,29 +241,34 @@ namespace SharpTerminal
 
     public class RemoteSensorDecoder: RemoteDecoder
     {
+        private bool mfPullUp;
+        private bool mfInverted;
+
         private uint mActivateDelay;
         private uint mDeactivateDelay;
 
         [Category("Sensor")]
         public uint ActivateDelay
         {
-            get { return mActivateDelay; }
-
-            set
-            {
-                this.UpdateProperty(ref mActivateDelay, value);
-            }
+            get { return mActivateDelay; }            
         }
 
         [Category("Sensor")]
         public uint DeactivateDelay
         {
             get { return mDeactivateDelay; }
+        }
 
-            set
-            {
-                this.UpdateProperty(ref mDeactivateDelay, value);
-            }
+        [Category("Sensor")]
+        public bool PullUp
+        {
+            get { return mfPullUp; }
+        }
+
+        [Category("Sensor")]
+        public bool Inverted
+        {
+            get { return mfInverted; }
         }
 
         public RemoteSensorDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
@@ -281,6 +286,9 @@ namespace SharpTerminal
         {
             mActivateDelay = (uint)objectDef["activateDelay"];
             mDeactivateDelay = (uint)objectDef["deactivateDelay"];
+
+            mfPullUp = (bool)objectDef["pullUp"];
+            mfInverted = (bool)objectDef["inverted"];
         }
     }
 
