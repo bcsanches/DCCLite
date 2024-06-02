@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup />
+  <ItemGroup>
+    <Compile Update="ConsoleUserControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="DashboardUserControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Form1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="ObjectsTreeViewUserControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="RemoteDeviceUserControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="RemoteLocationManagerUserControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="RemoteLocationUserControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="RemoteLoconetServiceUserControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="RemoteObjectUserControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="RemoteShortcutUserControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="ServerSelectionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+</Project>

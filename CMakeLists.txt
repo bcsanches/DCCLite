@@ -11,7 +11,7 @@ set(DCCLITE_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 add_compile_definitions(DCCLITE_VERSION=\"${DCCLITE_VERSION}\")
 
 option(DCCLITE_GUI_TOOLS "Build GUI tools (LitePanel and LiteWiring)")
-option(DCCLITE_GUI_SHARP_TOOLS "Build C# GUI tools - SharpTerminal")
+#option(DCCLITE_GUI_SHARP_TOOLS "Build C# GUI tools - SharpTerminal")
 option(DCCLITE_IMGUI_TOOLS "Build IMGUI tools")
 
 if(${DCCLITE_IMGUI_TOOLS})

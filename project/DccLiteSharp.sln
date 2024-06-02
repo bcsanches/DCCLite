@@ -1,11 +1,15 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.34916.146
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpDude", "..\src\SharpTools\SharpDude\SharpDude.csproj", "{9A96C177-1C2E-476B-8956-06D308F49A34}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpEEPromViewer", "..\src\SharpTools\SharpEEpromViewer\SharpEEPromViewer.csproj", "{09B85249-E35B-42EC-A138-7EF46E6A4A08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpEEPromViewer", "..\src\SharpTools\SharpEEpromViewer\SharpEEPromViewer.csproj", "{09B85249-E35B-42EC-A138-7EF46E6A4A08}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpCommon", "..\src\SharpTools\SharpCommon\SharpCommon.csproj", "{F90D46DB-FADC-4FEA-B179-98D93A85EBED}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpTerminal", "..\src\SharpTools\SharpTerminal\SharpTerminal.csproj", "{169456CF-5FA9-420D-B014-6F72A05784E4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +55,38 @@ Global
 		{09B85249-E35B-42EC-A138-7EF46E6A4A08}.RelWithDebInfo|Any CPU.Build.0 = RelWithDebInfo|Any CPU
 		{09B85249-E35B-42EC-A138-7EF46E6A4A08}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|Any CPU
 		{09B85249-E35B-42EC-A138-7EF46E6A4A08}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|Any CPU
+		{F90D46DB-FADC-4FEA-B179-98D93A85EBED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F90D46DB-FADC-4FEA-B179-98D93A85EBED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F90D46DB-FADC-4FEA-B179-98D93A85EBED}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F90D46DB-FADC-4FEA-B179-98D93A85EBED}.Debug|x64.Build.0 = Debug|Any CPU
+		{F90D46DB-FADC-4FEA-B179-98D93A85EBED}.MinSizeRel|Any CPU.ActiveCfg = Debug|Any CPU
+		{F90D46DB-FADC-4FEA-B179-98D93A85EBED}.MinSizeRel|Any CPU.Build.0 = Debug|Any CPU
+		{F90D46DB-FADC-4FEA-B179-98D93A85EBED}.MinSizeRel|x64.ActiveCfg = Debug|Any CPU
+		{F90D46DB-FADC-4FEA-B179-98D93A85EBED}.MinSizeRel|x64.Build.0 = Debug|Any CPU
+		{F90D46DB-FADC-4FEA-B179-98D93A85EBED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F90D46DB-FADC-4FEA-B179-98D93A85EBED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F90D46DB-FADC-4FEA-B179-98D93A85EBED}.Release|x64.ActiveCfg = Release|Any CPU
+		{F90D46DB-FADC-4FEA-B179-98D93A85EBED}.Release|x64.Build.0 = Release|Any CPU
+		{F90D46DB-FADC-4FEA-B179-98D93A85EBED}.RelWithDebInfo|Any CPU.ActiveCfg = Release|Any CPU
+		{F90D46DB-FADC-4FEA-B179-98D93A85EBED}.RelWithDebInfo|Any CPU.Build.0 = Release|Any CPU
+		{F90D46DB-FADC-4FEA-B179-98D93A85EBED}.RelWithDebInfo|x64.ActiveCfg = Release|Any CPU
+		{F90D46DB-FADC-4FEA-B179-98D93A85EBED}.RelWithDebInfo|x64.Build.0 = Release|Any CPU
+		{169456CF-5FA9-420D-B014-6F72A05784E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{169456CF-5FA9-420D-B014-6F72A05784E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{169456CF-5FA9-420D-B014-6F72A05784E4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{169456CF-5FA9-420D-B014-6F72A05784E4}.Debug|x64.Build.0 = Debug|Any CPU
+		{169456CF-5FA9-420D-B014-6F72A05784E4}.MinSizeRel|Any CPU.ActiveCfg = Debug|Any CPU
+		{169456CF-5FA9-420D-B014-6F72A05784E4}.MinSizeRel|Any CPU.Build.0 = Debug|Any CPU
+		{169456CF-5FA9-420D-B014-6F72A05784E4}.MinSizeRel|x64.ActiveCfg = Debug|Any CPU
+		{169456CF-5FA9-420D-B014-6F72A05784E4}.MinSizeRel|x64.Build.0 = Debug|Any CPU
+		{169456CF-5FA9-420D-B014-6F72A05784E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{169456CF-5FA9-420D-B014-6F72A05784E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{169456CF-5FA9-420D-B014-6F72A05784E4}.Release|x64.ActiveCfg = Release|Any CPU
+		{169456CF-5FA9-420D-B014-6F72A05784E4}.Release|x64.Build.0 = Release|Any CPU
+		{169456CF-5FA9-420D-B014-6F72A05784E4}.RelWithDebInfo|Any CPU.ActiveCfg = Release|Any CPU
+		{169456CF-5FA9-420D-B014-6F72A05784E4}.RelWithDebInfo|Any CPU.Build.0 = Release|Any CPU
+		{169456CF-5FA9-420D-B014-6F72A05784E4}.RelWithDebInfo|x64.ActiveCfg = Release|Any CPU
+		{169456CF-5FA9-420D-B014-6F72A05784E4}.RelWithDebInfo|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
