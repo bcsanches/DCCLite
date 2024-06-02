@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
+﻿
 using System.IO.Ports;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+
 
 namespace SharpDude
 {
     public partial class MainForm : Form
     {
-        IAvrDude mAvrDude;
+        IAvrDude ?mAvrDude;
         System.Diagnostics.Process mAvrDudeProcess;
         string[] mComPorts;
 
@@ -100,18 +93,17 @@ namespace SharpDude
             this.UpdateBurnButtonState();
         }
 
-        private async Task TouchSerialPort(string portName)
+        private static async Task TouchSerialPort(string portName)
         {
             try
             {
-                using (SerialPort port = new SerialPort())
-                {
-                    port.PortName = portName;
-                    port.BaudRate = 1200;
-                    port.DtrEnable = false;
+                using SerialPort port = new();
+                
+                port.PortName = portName;
+                port.BaudRate = 1200;
+                port.DtrEnable = false;
 
-                    port.Open();
-                }
+                port.Open();                
             }    
             catch(Exception )
             {
@@ -178,9 +170,9 @@ namespace SharpDude
 
         private async void btnBurn_Click(object sender, EventArgs e)
         {
-            btnBurn.Enabled = false;            
+            btnBurn.Enabled = false;
 
-            var boardInfo = cbArduinoTypes.SelectedItem as IArduino;
+			var boardInfo = (IArduino)cbArduinoTypes.SelectedItem;
 
             //Allow user to type a port not detected...
             var port = cbComPorts.SelectedItem as string;
@@ -192,7 +184,7 @@ namespace SharpDude
                 if (boardInfo.RequiresReset)
                 {
                     this.AppendMessage("Touching com port " + port);
-                    await this.TouchSerialPort(port);
+                    await TouchSerialPort(port);
 
                     this.AppendMessage("Waiting for new COM port");
                     port = await this.WaitNewPort(port);

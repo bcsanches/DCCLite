@@ -1,10 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.Versioning;
 using System.Windows.Forms;
 
 namespace SharpEEPromViewer
 {
-    public partial class MainForm : Form
+	[SupportedOSPlatform("windows")]
+	public partial class MainForm : Form
     {        
         public MainForm(string param = null)
         {

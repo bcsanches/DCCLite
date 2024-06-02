@@ -1,9 +1,11 @@
 
+using System.Runtime.Versioning;
 using System.Windows.Forms;
 
 namespace SharpEEPromViewer
 {
-    static class DefaultIcons
+	[SupportedOSPlatform("windows")]
+	static class DefaultIcons
     {        
         public static string FILE_GEAR_ICON = "file_gear";
         public static string FOLDER_ICON = "folder";        

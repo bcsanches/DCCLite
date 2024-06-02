@@ -1,10 +1,12 @@
 ﻿
-using System.Drawing;
+
+using System.Runtime.Versioning;
 using System.Windows.Forms;
 
 namespace SharpEEPromViewer
 {
-    public partial class ObjectInspectorUserControl : UserControl
+	[SupportedOSPlatform("windows")]
+	public partial class ObjectInspectorUserControl : UserControl
     {        
         public ObjectInspectorUserControl()
         {

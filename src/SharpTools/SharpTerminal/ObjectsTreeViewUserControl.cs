@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design.Serialization;
-using System.Json;
 using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
+using System.Runtime.Versioning;
 using System.Windows.Forms;
 
 namespace SharpTerminal
 {
-    
-    public partial class ObjectsTreeViewUserControl : UserControl
+	[SupportedOSPlatform("windows")]
+	public partial class ObjectsTreeViewUserControl : UserControl
     {
         RequestManager mRequestManager;
         IConsole mConsole;

@@ -88,7 +88,7 @@ namespace SharpDude
 
     static class ArduinoService
     {
-        struct BoardInfo
+		readonly struct BoardInfo
         {
             public BoardInfo(string name, string avrDudeName, string programmer, int baudRate, ArduinoFlags flags, string devPath)
             {
@@ -111,9 +111,9 @@ namespace SharpDude
 
         private static BoardInfo[] gBoards = 
         {
-            new BoardInfo("mega2560", "atmega2560", "wiring", 115200, ArduinoFlags.None, @"megaatmega2560\firmware.hex"),
-            new BoardInfo("uno", "atmega328p", "arduino", 115200, ArduinoFlags.None, @"uno\firmware.hex"),
-            new BoardInfo("leonardo", "atmega32u4", "avr109", 57600, ArduinoFlags.RequiresReset, @"leonardo\firmware.hex")
+            new ("mega2560", "atmega2560", "wiring", 115200, ArduinoFlags.None, @"megaatmega2560\firmware.hex"),
+            new ("uno", "atmega328p", "arduino", 115200, ArduinoFlags.None, @"uno\firmware.hex"),
+            new ("leonardo", "atmega32u4", "avr109", 57600, ArduinoFlags.RequiresReset, @"leonardo\firmware.hex")
         };
 
         static private void DevelopmentFix()
