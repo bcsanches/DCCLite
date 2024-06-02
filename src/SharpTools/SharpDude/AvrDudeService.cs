@@ -8,12 +8,6 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-
 namespace SharpDude
 {
     //./avrdude -v -p atmega2560 -C "..\etc\avrdude.conf" -c wiring -b 115200 -D -P "COM4" -U flash:w:"F:\develop\bcs\DCCLite\src\LiteDecoder\.pio\build\megaatmega2560\firmware.hex":i
@@ -70,6 +64,30 @@ namespace SharpDude
         {
             var arduinoAvrRootPath = System.Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
             arduinoAvrRootPath = System.IO.Path.Combine(arduinoAvrRootPath, "Arduino\\hardware\\tools\\avr");
+
+            if(!Path.Exists(arduinoAvrRootPath))
+            {
+                arduinoAvrRootPath = System.Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                var dirEnum = Directory.EnumerateDirectories(arduinoAvrRootPath, "Arduino??").GetEnumerator();
+
+                while(dirEnum.MoveNext())
+                {					
+					arduinoAvrRootPath = System.IO.Path.Combine(dirEnum.Current.ToString(), "packages\\arduino\\tools\\avrdude");
+
+                    break;
+				}
+				
+                if(Path.Exists(arduinoAvrRootPath))
+                {
+					var dudeDirEnum = Directory.EnumerateDirectories(arduinoAvrRootPath, "*arduino*").GetEnumerator();
+
+                    while(dudeDirEnum.MoveNext())
+                    {
+						arduinoAvrRootPath = dudeDirEnum.Current.ToString();
+                        break;
+					}
+				}
+			}
 
             var arduinoAvrExePath = System.IO.Path.Combine(arduinoAvrRootPath, "bin\\avrdude.exe");
 
