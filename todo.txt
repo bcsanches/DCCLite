@@ -45,6 +45,8 @@ LitePanelWx
 
 To Explore
 ----------
+- mDNS: https://learn.microsoft.com/en-us/uwp/api/windows.networking.servicediscovery.dnssd?view=winrt-22621&redirectedfrom=MSDN
+- mDNS: https://fabiensanglard.net/mdns/
 - EngineDriver layer
 	- connects directly to DCCex
 	- avoids JMRI for running trains
