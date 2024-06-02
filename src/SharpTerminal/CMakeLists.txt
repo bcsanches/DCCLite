@@ -170,7 +170,6 @@ set_property(TARGET SharpTerminal PROPERTY VS_DOTNET_REFERENCES
     "System.Data.DataSetExtensions"
     "System.Deployment"
     "System.Drawing"
-    "System.Json"
     "System.Net.Http"    
     "System.Windows.Forms"    
     "System.Xml"
@@ -178,7 +177,5 @@ set_property(TARGET SharpTerminal PROPERTY VS_DOTNET_REFERENCES
 )
 
 target_link_libraries(SharpTerminal SharpCommon)
-
-set_property(TARGET SharpTerminal PROPERTY VS_PACKAGE_REFERENCES "System.Json")
 
 install(FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/System.Json.dll DESTINATION bin)
