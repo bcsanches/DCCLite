@@ -24,11 +24,12 @@ namespace SharpEEPromViewer
 
         private void LoadEEProm(string filePath)
         {
-            using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            {
+				this.LoadEEProm(fileStream);
+			}
 
-            this.LoadEEProm(fileStream);
-
-            this.Text = filePath;
+			this.Text = filePath;
         }
 
         private static void ConfigureNode(TreeNode node, Lump lump)
@@ -71,29 +72,30 @@ namespace SharpEEPromViewer
         {
             try
             {
-                using var reader = new System.IO.BinaryReader(stream, System.Text.Encoding.ASCII);
-
-                var lump = Lump.Create(reader);
-
-                if (lump is not RootLump)
+				using (var reader = new System.IO.BinaryReader(stream, System.Text.Encoding.ASCII))
                 {
-                    MessageBox.Show("Error: file does not contains a valid header", "Error reading", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					var lump = Lump.Create(reader);
 
-                    return;
-                }
+					if (lump is not RootLump)
+					{
+						MessageBox.Show("Error: file does not contains a valid header", "Error reading", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-                //so far it appears that the EEProm is fine, so clear and load
-                this.Clear();
+						return;
+					}
 
-                mTreeView.Nodes.Add(lump.Name);
+					//so far it appears that the EEProm is fine, so clear and load
+					this.Clear();
 
-                var node = mTreeView.Nodes[0];
+					mTreeView.Nodes.Add(lump.Name);
 
-                ConfigureNode(node, lump);
+					var node = mTreeView.Nodes[0];
 
-                FillTree_r(node, lump);
+					ConfigureNode(node, lump);
 
-                node.ExpandAll();
+					FillTree_r(node, lump);
+
+					node.ExpandAll();
+				}					
             }
             catch (Exception ex)
             {

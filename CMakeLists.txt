@@ -96,7 +96,7 @@ if (${DCCLITE_GUI_TOOLS})
 endif()
 
 if (${DCCLITE_GUI_SHARP_TOOLS})
-	INCLUDE_EXTERNAL_MSPROJECT(SharpDude ${CMAKE_SOURCE_DIR}/Project/SharpDude/SharpDude.csproj TYPE executable PLATFORM x64)
+	INCLUDE_EXTERNAL_MSPROJECT(SharpDude ${CMAKE_SOURCE_DIR}/src/SharpDude/SharpDude.csproj)
 
 	set_property(TARGET SharpCommon PROPERTY FOLDER "SharpTools")
 	set_property(TARGET SharpDude PROPERTY FOLDER "SharpTools")
