@@ -165,11 +165,6 @@ namespace SharpDude
             return newPort;
         }
 
-        private async Task JustWaitAsync()
-        {
-            await Task.Delay(5000);
-        }
-
         private async void btnBurn_Click(object sender, EventArgs e)
         {
             btnBurn.Enabled = false;
