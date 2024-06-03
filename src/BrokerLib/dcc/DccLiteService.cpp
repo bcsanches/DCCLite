@@ -10,8 +10,6 @@
 
 #include "DccLiteService.h"
 
-#include <spdlog/spdlog.h>
-
 #include <exception>
 #include <Log.h>
 
@@ -22,7 +20,6 @@
 
 #include "NetworkDevice.h"
 #include "LocationManager.h"
-#include "OutputDecoder.h"
 #include "QuadInverter.h"
 #include "SensorDecoder.h"
 #include "SignalDecoder.h"
@@ -74,7 +71,7 @@ namespace dcclite::broker
 	}
 
 
-	std::unique_ptr<Decoder> TryCreateDecoder(const std::string &className, DccAddress address, RName name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params)
+	static std::unique_ptr<Decoder> TryCreateDecoder(const std::string &className, DccAddress address, RName name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params)
 	{
 		//
 		//Check the most common first....
