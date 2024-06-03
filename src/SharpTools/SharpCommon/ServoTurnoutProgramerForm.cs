@@ -9,12 +9,14 @@
 // defined by the Mozilla Public License, v. 2.0.
 
 using System;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace SharpCommon
-{    
-    public partial class ServoTurnoutProgrammerForm: Form
+{
+	[SupportedOSPlatform("windows")]
+	public partial class ServoTurnoutProgrammerForm: Form
     {
         IServoProgrammer    m_clProgrammer;
         IServoTurnout       m_clTarget;

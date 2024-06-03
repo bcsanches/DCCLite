@@ -11,15 +11,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Windows.Forms;
 
 namespace SharpTerminal
 {
-    public partial class ServerSelectionForm : Form
+	[SupportedOSPlatform("windows")]
+	public partial class ServerSelectionForm : Form
     {
         private UdpClient           mClient = new();
 

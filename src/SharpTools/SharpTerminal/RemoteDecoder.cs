@@ -1,7 +1,17 @@
-﻿using System;
+﻿// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
+// file at the top-level directory of this distribution.
+// 
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// 
+// This Source Code Form is "Incompatible With Secondary Licenses", as
+// defined by the Mozilla Public License, v. 2.0.
+
+using System;
 using System.Json;
 using System.ComponentModel;
-using System.Windows.Forms;
+using System.Runtime.Versioning;
 
 namespace SharpTerminal
 {
@@ -29,7 +39,8 @@ namespace SharpTerminal
         }
     }
 
-    public class RemoteServiceObjectCmdAction : RemoteDecoderCmdBaseAction
+	[SupportedOSPlatform("windows")]
+	public class RemoteServiceObjectCmdAction : RemoteDecoderCmdBaseAction
     {        
         private readonly string mCmd;
         private readonly string[] mExtraParams;
@@ -58,7 +69,8 @@ namespace SharpTerminal
         }        
     }
 
-    public class RemoteServiceObject: RemoteObject
+	[SupportedOSPlatform("windows")]
+	public class RemoteServiceObject: RemoteObject
     {
         public string SystemName { get; }
 
@@ -67,9 +79,10 @@ namespace SharpTerminal
         {
             SystemName = objectDef["systemName"];
         }
-    }   
+    }
 
-    public class RemoteDecoder : RemoteServiceObject
+	[SupportedOSPlatform("windows")]
+	public class RemoteDecoder : RemoteServiceObject
     {
         protected static IRemoteObjectAction g_FlipAction = new RemoteServiceObjectCmdAction("Flip-Item", "Flip", "Activate / deactivate the item");
 
@@ -148,7 +161,8 @@ namespace SharpTerminal
         public string DeviceName { get; }
     }
 
-    public class RemoteSignalDecoder : RemoteDecoder
+	[SupportedOSPlatform("windows")]
+	public class RemoteSignalDecoder : RemoteDecoder
     {
         public String []m_Aspects;
         public string m_strCurrentAspect;
@@ -225,7 +239,8 @@ namespace SharpTerminal
         }
     }
 
-    public class VirtualSensorDecoder : RemoteDecoder
+	[SupportedOSPlatform("windows")]
+	public class VirtualSensorDecoder : RemoteDecoder
     {       
         public VirtualSensorDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
             base(name, className, path, internalId, parentInternalId, objectDef)
@@ -239,7 +254,8 @@ namespace SharpTerminal
         }
     }
 
-    public class RemoteSensorDecoder: RemoteDecoder
+	[SupportedOSPlatform("windows")]
+	public class RemoteSensorDecoder: RemoteDecoder
     {
         private bool mfPullUp;
         private bool mfInverted;
@@ -270,8 +286,8 @@ namespace SharpTerminal
         {
             get { return mfInverted; }
         }
-
-        public RemoteSensorDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
+		
+		public RemoteSensorDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
             base(name, className, path, internalId, parentInternalId, objectDef)
         {
             this.ParseStateData(objectDef);
@@ -292,7 +308,8 @@ namespace SharpTerminal
         }
     }
 
-    public class RemoteOutputDecoder : RemoteDecoder
+	[SupportedOSPlatform("windows")]
+	public class RemoteOutputDecoder : RemoteDecoder
     {        
         public RemoteOutputDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
             base(name, className, path, internalId, parentInternalId, objectDef)
@@ -309,9 +326,10 @@ namespace SharpTerminal
         {
             return new IRemoteObjectAction[1]{ g_FlipAction };
         }
-    }    
+    }
 
-    public class RemoteTurnoutDecoder: RemoteDecoder
+	[SupportedOSPlatform("windows")]
+	public class RemoteTurnoutDecoder: RemoteDecoder
     {                
         public RemoteTurnoutDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
             base(name, className, path, internalId, parentInternalId, objectDef)
@@ -330,7 +348,8 @@ namespace SharpTerminal
         }
     }
 
-    public class RemoteServoTurnoutDecoder: RemoteTurnoutDecoder
+	[SupportedOSPlatform("windows")]
+	public class RemoteServoTurnoutDecoder: RemoteTurnoutDecoder
     {
         protected static IRemoteObjectAction gProgrammerAction = new ServoProgrammerAction("Program", "Program the turnout servo");
 

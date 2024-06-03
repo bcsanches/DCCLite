@@ -9,11 +9,13 @@
 // defined by the Mozilla Public License, v. 2.0.
 
 using System;
+using System.Runtime.Versioning;
 using System.Windows.Forms;
 
 namespace SharpTerminal
 {
-    static class Program
+	[SupportedOSPlatform("windows")]
+	static class Program
     {
         /// <summary>
         /// The main entry point for the application.

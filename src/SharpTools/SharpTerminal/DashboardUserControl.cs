@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Data;
+using System.Runtime.Versioning;
 using System.Windows.Forms;
 
 namespace SharpTerminal
 {
-    public partial class DashboardUserControl : UserControl
+	[SupportedOSPlatform("windows")]
+	public partial class DashboardUserControl : UserControl
     {
         public DashboardUserControl()
         {

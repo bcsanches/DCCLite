@@ -11,12 +11,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace SharpTerminal
 {
-    class ServoTurnoutProxy : SharpCommon.IServoTurnout
+	[SupportedOSPlatform("windows")]
+	class ServoTurnoutProxy : SharpCommon.IServoTurnout
     {
         private readonly RemoteServoTurnoutDecoder m_clRemoteTurnout;
         private readonly IConsole m_clConsole;
@@ -53,7 +55,8 @@ namespace SharpTerminal
         }
     }
 
-    class ServoProgrammerProxy : SharpCommon.IServoProgrammer
+	[SupportedOSPlatform("windows")]
+	class ServoProgrammerProxy : SharpCommon.IServoProgrammer
     {
         private readonly IConsole m_clConsole;
 
@@ -124,7 +127,8 @@ namespace SharpTerminal
         }
     }
 
-    public class ServoProgrammerAction : RemoteDecoderCmdBaseAction
+	[SupportedOSPlatform("windows")]
+	public class ServoProgrammerAction : RemoteDecoderCmdBaseAction
     {
         private List<SharpCommon.ServoTurnoutProgrammerForm> m_lstOpenForms;
 

@@ -7,7 +7,7 @@ namespace SharpDude
     public partial class MainForm : Form
     {
         IAvrDude ?mAvrDude;
-        System.Diagnostics.Process mAvrDudeProcess;
+        System.Diagnostics.Process ?mAvrDudeProcess;
         string[] mComPorts;
 
         //https://saezndaree.wordpress.com/2009/03/29/how-to-redirect-the-consoles-output-to-a-textbox-in-c/
@@ -117,7 +117,7 @@ namespace SharpDude
 
         private async Task<string> WaitNewPort(string prevPort)
         {
-            string newPort = null;            
+            string ?newPort = null;            
 
             for(long timeout = 0; (timeout < 5000) && (newPort == null); timeout += 250)
             {            

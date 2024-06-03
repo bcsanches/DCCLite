@@ -1,10 +1,20 @@
-﻿using System;
+﻿// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
+// file at the top-level directory of this distribution.
+// 
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// 
+// This Source Code Form is "Incompatible With Secondary Licenses", as
+// defined by the Mozilla Public License, v. 2.0.
+
 using System.Json;
-using System.ComponentModel;
+using System.Runtime.Versioning;
 
 namespace SharpTerminal.Dispatcher
-{    
-    public class RemoteDispatcher : RemoteObject
+{
+	[SupportedOSPlatform("windows")]
+	public class RemoteDispatcher : RemoteObject
     {             
         public RemoteDispatcher(string name, string className, string path, ulong internalId, ulong parentInternalId) :
             base(name, className, path, internalId, parentInternalId)
@@ -27,7 +37,8 @@ namespace SharpTerminal.Dispatcher
         DOWN = 4
     }
 
-    public class RemoteSection : RemoteServiceObject
+	[SupportedOSPlatform("windows")]
+	public class RemoteSection : RemoteServiceObject
     {
         protected static IRemoteObjectAction g_ResetAction = new RemoteServiceObjectCmdAction("Reset", "Reset", "Reset the section");
 

@@ -1,8 +1,19 @@
-﻿using System;
+﻿// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
+// file at the top-level directory of this distribution.
+// 
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// 
+// This Source Code Form is "Incompatible With Secondary Licenses", as
+// defined by the Mozilla Public License, v. 2.0.
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Json;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -29,7 +40,8 @@ namespace SharpTerminal
         public void Execute(IConsole console, RemoteObject target);
     }
 
-    public class RemoteObject: NotifyPropertyBase
+	[SupportedOSPlatform("windows")]
+	public class RemoteObject: NotifyPropertyBase
     {
         [Category("Object")]
         public string Name { get; }
@@ -109,7 +121,8 @@ namespace SharpTerminal
         }
     }
 
-    public class RemoteFolder : RemoteObject
+	[SupportedOSPlatform("windows")]
+	public class RemoteFolder : RemoteObject
     {        
         private Dictionary<string, RemoteObject> mChildren;
 
@@ -179,7 +192,8 @@ namespace SharpTerminal
         }
     }
 
-    public class RemoteShortcut: RemoteObject
+	[SupportedOSPlatform("windows")]
+	public class RemoteShortcut: RemoteObject
     {
         public string TargetName { get; }
 
@@ -259,9 +273,10 @@ namespace SharpTerminal
                 return mTarget?.TryGetIconName();                
             }
         }
-    }    
+    }
 
-    static class RemoteObjectManager
+	[SupportedOSPlatform("windows")]
+	static class RemoteObjectManager
     {
         static Dictionary<ulong, RemoteObject> gObjects = new();
         static Dictionary<string, RemoteObject> gObjectsByPath = new();

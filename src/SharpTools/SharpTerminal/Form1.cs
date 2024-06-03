@@ -9,11 +9,13 @@
 // defined by the Mozilla Public License, v. 2.0.
 
 using System;
+using System.Runtime.Versioning;
 using System.Windows.Forms;
 
 namespace SharpTerminal
 {
-    public partial class Console : Form
+	[SupportedOSPlatform("windows")]
+	public partial class Console : Form
     {
         readonly IConsole mConsole;
 
