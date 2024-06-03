@@ -118,7 +118,13 @@ namespace SharpDude
 
         static private void DevelopmentFix()
         {
-            var myExeLocation = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
+            var entryAssembly = System.Reflection.Assembly.GetEntryAssembly();
+            if (entryAssembly == null)
+                return;
+
+			var myExeLocation = System.IO.Path.GetDirectoryName(entryAssembly.Location);
+            if(myExeLocation == null) 
+                return;
 
             var pioBase = System.IO.Path.Combine(myExeLocation, @"..\..\..\src\LiteDecoder\.pio\build");
 
@@ -148,9 +154,12 @@ namespace SharpDude
 
             DevelopmentFix();
 
-            string imageFilesMask = "dcclite.firmware.*.hex";            
+            string imageFilesMask = "dcclite.firmware.*.hex";
 
-            var myExeLocation = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
+			var entryAssembly = System.Reflection.Assembly.GetEntryAssembly();
+			var myExeLocation = entryAssembly == null ? "" : System.IO.Path.GetDirectoryName(entryAssembly.Location);
+            if (myExeLocation == null)
+                myExeLocation = "";
 
             var arduinoList = new List<IArduino>();
             foreach (var imgFileLocation in System.IO.Directory.EnumerateFiles(myExeLocation, imageFilesMask))

@@ -8,7 +8,7 @@ namespace SharpDude
     {
         IAvrDude ?mAvrDude;
         System.Diagnostics.Process ?mAvrDudeProcess;
-        string[] mComPorts;
+        string[] ?mComPorts;
 
         //https://saezndaree.wordpress.com/2009/03/29/how-to-redirect-the-consoles-output-to-a-textbox-in-c/
         public MainForm()
@@ -48,7 +48,7 @@ namespace SharpDude
         {
             cbComPorts.SuspendLayout();
 
-            var previousPort = (string)cbComPorts.SelectedItem;
+			var previousPort = cbComPorts.SelectedItem as string;
 
             mComPorts = SerialPort.GetPortNames();
 
@@ -117,7 +117,9 @@ namespace SharpDude
 
         private async Task<string> WaitNewPort(string prevPort)
         {
-            string ?newPort = null;            
+            string ?newPort = null;
+
+            System.Diagnostics.Debug.Assert(mComPorts != null);
 
             for(long timeout = 0; (timeout < 5000) && (newPort == null); timeout += 250)
             {            
@@ -172,14 +174,19 @@ namespace SharpDude
         {
             btnBurn.Enabled = false;
 
+			System.Diagnostics.Debug.Assert(cbArduinoTypes.SelectedItem != null);
 			var boardInfo = (IArduino)cbArduinoTypes.SelectedItem;
 
-            //Allow user to type a port not detected...
-            var port = cbComPorts.SelectedItem as string;
+			System.Diagnostics.Debug.Assert(cbComPorts.SelectedItem != null);
+
+			//Allow user to type a port not detected...
+			var port = (string)cbComPorts.SelectedItem;
 
             tbOutput.Text = string.Empty;
 
-            try
+            System.Diagnostics.Debug.Assert(mAvrDude != null);			
+
+			try
             {
                 if (boardInfo.RequiresReset)
                 {
@@ -256,7 +263,7 @@ namespace SharpDude
             }
         }
 
-        private void AvrDudeProcess_Exited(object sender, EventArgs e)
+        private void AvrDudeProcess_Exited(object ?sender, EventArgs e)
         {
             if (mAvrDudeProcess == null)
                 return;            
