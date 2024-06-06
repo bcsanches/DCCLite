@@ -22,8 +22,6 @@ DCCLite
 LitePanelSDL
 ------------
 
-- Move new item on tilemap when mouse moves
-- Draw tile items correctly when tile map scrolls
 - Handle mouse click and create object on map
 - Add scrollbars
 - Load / Save
