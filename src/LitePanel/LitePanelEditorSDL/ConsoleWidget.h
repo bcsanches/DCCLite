@@ -98,13 +98,13 @@ namespace dcclite::PanelEditor
 
 			void ExecuteCommand(const char *cmd);
 
-		private:
 			template <typename... Args>
 			inline void AddLog(fmt::format_string<Args...> s, Args&&... args)
 			{
 				this->AddLogImpl(fmt::format(s, std::forward<Args>(args)...));
 			}
 
+		private:			
 			void AddLogImpl(std::string log);
 
 			void ClearLog();

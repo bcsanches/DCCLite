@@ -210,6 +210,23 @@ namespace LitePanel::Render
 		return rargs;
 	}
 
+	std::optional<TileCoord_t> TileMapRenderer::GetTilePos(const FloatPoint_t &worldPoint) const noexcept
+	{
+		auto point = worldPoint + m_ptOrigin;
+
+		auto tilePos = m_tViewHelper.WorldToTileFloor(point);
+
+		auto &mapSize = m_pclTileMap->GetSize();
+
+		if (tilePos.m_tX >= mapSize.m_tX)
+			return {};
+
+		if (tilePos.m_tY >= mapSize.m_tY)
+			return {};
+
+		return tilePos;
+	}
+
 	void TileMapRenderer::Draw(IRenderer &renderer)
 	{		
 		if (!m_pclTileMap)
@@ -245,7 +262,7 @@ namespace LitePanel::Render
 					if (!obj)
 						continue;
 
-					auto tileWorldOrigin = TilePointToFloat(tilePos) * static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize);
+					auto tileWorldOrigin = TilePointToFloat(tilePos) * static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize) - m_ptOrigin;
 
 					renderer.PushClipRect(tileWorldOrigin, tileWorldOrigin + tileSize);
 

@@ -76,6 +76,11 @@ namespace LitePanel
 		{
 			return (m_tX == rhs.m_tX) && (m_tY == rhs.m_tY);
 		}
+
+		inline bool operator!=(const Point &rhs) const noexcept
+		{
+			return (m_tX != rhs.m_tX) || (m_tY != rhs.m_tY);
+		}
 	};
 
 	typedef Point<int_fast32_t> IntPoint_t;

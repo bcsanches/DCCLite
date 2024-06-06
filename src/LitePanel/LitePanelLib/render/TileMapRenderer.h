@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include <optional>
+
 #include "../LitePanelLibDefs.h"
 #include "../Point.h"
 
@@ -80,6 +82,8 @@ namespace LitePanel::Render
 			{
 				return m_u32Flags;
 			}
+
+			std::optional<TileCoord_t> GetTilePos(const FloatPoint_t &worldPoint) const noexcept;
 
 			void ZoomIn() noexcept;
 			void ZoomOut() noexcept;

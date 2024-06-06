@@ -46,7 +46,7 @@ namespace dcclite::PanelEditor
 
 	void ImGuiTileMapRenderer::PushClipRect(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2)
 	{
-		m_clDrawList.PushClipRect(m_ptClientOrigin + PointToImGuiVec(p1), m_ptClientOrigin + PointToImGuiVec(p2));
+		m_clDrawList.PushClipRect(m_ptClientOrigin + PointToImGuiVec(p1), m_ptClientOrigin + PointToImGuiVec(p2), true);
 	}
 
 	void ImGuiTileMapRenderer::PopClipRect()

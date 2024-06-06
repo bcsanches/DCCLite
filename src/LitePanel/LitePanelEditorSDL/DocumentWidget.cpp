@@ -105,14 +105,17 @@ namespace dcclite::PanelEditor
 					m_iVisiblePanel = i;					
 				}
 
-				//Is mouse over tileMap?
-				if (ImGui::IsMouseHoveringRect(canvas_p0, canvas_sz))
+				bool outOfBounds = false;
+
+				//Is mouse over tileMap?				
+				if(is_hovered)
 				{
 					auto &toolBar = app.GetToolBar();
 					auto newTool = toolBar.TryGetCurrentTool();
 
 					if (m_pclCurrentTool != newTool)
 					{
+						//do we have a "cursor" around? Clear it...
 						if (m_pclCursorObject)
 						{
 							panels[i].UnregisterTempObject(*m_pclCursorObject);
@@ -120,6 +123,8 @@ namespace dcclite::PanelEditor
 						}
 
 						m_pclCurrentTool = newTool;
+
+						//do we have a new tool selected? So make a temp object for showing it...
 						if (m_pclCurrentTool)
 						{
 							auto tmpObj = m_pclCurrentTool->MakeTempObject();
@@ -129,10 +134,57 @@ namespace dcclite::PanelEditor
 							panels[i].RegisterTempObject(std::move(tmpObj));							
 						}
 					}
+					
+					//set the cursor position
+					if(m_pclCursorObject)
+					{
+						auto tilePos = m_vecRenderers[i].GetTilePos(ImGuiVecToPoint(ImGui::GetMousePos() - canvas_p0));
+
+						if (tilePos)
+						{
+							auto &newPosition = tilePos.value();
+
+							if (newPosition != m_pclCursorObject->GetPosition())
+							{
+								panels[i].SetTempObjectPosition(*m_pclCursorObject, tilePos.value());
+							}
+
+							if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+							{
+								app.GetConsole().AddLog("Create object at {} - {}", newPosition.m_tX, newPosition.m_tY);
+							}
+						}	
+						else
+						{
+							//mouse is outside tilemap... so clear tool, cursor, etc
+							outOfBounds = true;
+						}
+					}
+
+					if (ImGui::IsKeyDown(ImGuiKey_MouseWheelY))
+					{
+						auto &io = ImGui::GetIO();
+						if (io.MouseWheel < 0)
+						{
+							m_vecRenderers[i].ZoomOut();
+						}
+						else
+						{
+							m_vecRenderers[i].ZoomIn();
+						}
+					}
 
 					m_fMouseHovering = true;
 				}
-				else if(m_fMouseHovering)
+				//mouse has left the tilemap?
+				else if (m_fMouseHovering)
+				{
+					//mouse left widget... clear everything
+					outOfBounds = true;
+				}
+
+				//if we have a current tool and mouse left the tilemap, clear temp object
+				if(outOfBounds)
 				{
 					m_fMouseHovering = false;
 
@@ -147,21 +199,7 @@ namespace dcclite::PanelEditor
 						m_pclCurrentTool = nullptr;
 					}
 				}
-
-				if (ImGui::IsKeyDown(ImGuiKey_MouseWheelY))
-				{
-					auto &io = ImGui::GetIO();
-					if (io.MouseWheel < 0)
-					{
-						m_vecRenderers[i].ZoomOut();
-					}
-					else
-					{
-						m_vecRenderers[i].ZoomIn();
-					}
-				}
-
-
+				
 				//const ImVec2 origin(canvas_p0.x + scrolling.x, canvas_p0.y + scrolling.y); // Lock scrolled origin
 				//const ImVec2 mouse_pos_in_canvas(io.MousePos.x - origin.x, io.MousePos.y - origin.y);				
 

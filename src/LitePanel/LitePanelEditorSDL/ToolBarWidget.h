@@ -34,7 +34,7 @@ namespace dcclite::PanelEditor
 
 			void Draw(LitePanel::Render::IRenderer &renderer, const LitePanel::Render::ViewInfo &viewInfo, const LitePanel::FloatPoint_t &tileOrigin) const override;
 
-			virtual std::unique_ptr<LitePanel::MapObject> MakeTempObject() const = 0;
+			virtual std::unique_ptr<LitePanel::MapObject> MakeTempObject() const = 0;			
 
 			inline void SetSelected(bool selected) noexcept
 			{

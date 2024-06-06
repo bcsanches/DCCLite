@@ -60,6 +60,11 @@ namespace dcclite::PanelEditor
 			{
 				return m_wToolBar;
 			}
+
+			inline ConsoleWidget &GetConsole() noexcept
+			{
+				return m_wConsole;
+			}
 	
 		private:
 			void NewFile();

@@ -68,28 +68,29 @@ namespace LitePanel
 	{
 		const auto index = static_cast<unsigned>(angle);
 
+		//do some padding to hide "holes"
 		static const FloatPoint_t startPoints[8] =
 		{
-			FloatPoint_t{0,		0.5},	//EAST
-			FloatPoint_t{0.5f,	0.5f},	//NORTHEAST
-			FloatPoint_t{0.5,	0},		//NORTH
-			FloatPoint_t{0.5f,	0.5f},	//NORTHWEST
-			FloatPoint_t{1,		0.5},	//WEST
-			FloatPoint_t{0.5f,	0.5f},	//SOUTHWEST
-			FloatPoint_t{0.5,	0},		//SOUTH
-			FloatPoint_t{0.5f,	0.5f},	//SOUTHEAST
+			FloatPoint_t{0,		0.5},		//EAST
+			FloatPoint_t{0.5f,	0.5f},		//NORTHEAST
+			FloatPoint_t{0.5,	0},			//NORTH
+			FloatPoint_t{0.53f,	0.530f},	//NORTHWEST
+			FloatPoint_t{1,		0.5},		//WEST
+			FloatPoint_t{0.53f,	0.47f},		//SOUTHWEST
+			FloatPoint_t{0.5,	0},			//SOUTH
+			FloatPoint_t{0.47f,	0.47f},		//SOUTHEAST
 		};
 
 		static const FloatPoint_t endPoints[8] =
 		{
-			FloatPoint_t{0.5f,	0.5f},	//EAST
-			FloatPoint_t{1,		0},		//NORTHEAST
-			FloatPoint_t{0.5f,	0.5f},	//NORTH
-			FloatPoint_t{0.0f,	0.0f},	//NORTHWEST
-			FloatPoint_t{0.5f,	0.5},	//WEST
-			FloatPoint_t{0,		1},		//SOUTHWEST
-			FloatPoint_t{0.5,	0.5},	//SOUTH
-			FloatPoint_t{1,		1},		//SOUTHEAST
+			FloatPoint_t{0.535f,	0.5f},	//EAST
+			FloatPoint_t{1,			0},		//NORTHEAST
+			FloatPoint_t{0.5f,		0.5f},	//NORTH
+			FloatPoint_t{0.0f,		0.0f},	//NORTHWEST
+			FloatPoint_t{0.465f,	0.5},	//WEST
+			FloatPoint_t{0,			1},		//SOUTHWEST
+			FloatPoint_t{0.5,		0.5},	//SOUTH
+			FloatPoint_t{1,			1},		//SOUTHEAST
 		};
 
 		auto &colorStyle = LitePanel::Render::GetCurrentColorStyle();
