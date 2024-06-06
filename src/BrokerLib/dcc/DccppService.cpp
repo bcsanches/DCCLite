@@ -59,6 +59,8 @@ namespace dcclite::broker
 
 			bool CreateTurnoutsStateResponse(std::stringstream &stream) const;
 
+			bool CreateTurnoutsIdListResponse(std::stringstream &stream) const;
+
 			bool CreateTurnoutsDefResponse(std::stringstream &stream) const;
 			bool CreateOutputsDefResponse(std::stringstream &stream) const;
 
@@ -343,6 +345,26 @@ namespace dcclite::broker
 		return true;
 	}
 
+	bool DccppClient::CreateTurnoutsIdListResponse(std::stringstream &response) const
+	{		
+		response << "<JT";
+
+		auto turnoutDecoders = m_rclSystem.FindAllTurnoutDecoders();
+		if (turnoutDecoders.empty())
+		{
+			response << ">";
+			return false;
+		}
+
+		for (auto turnout : turnoutDecoders)
+		{
+			response << ' ' << turnout->GetAddress().GetAddress();
+		}
+
+		response << ">";
+		return true;
+	}
+
 	bool DccppClient::CreateTurnoutsDefResponse(std::stringstream &response) const
 	{
 		auto turnoutDecoders = m_rclSystem.FindAllTurnoutDecoders();
@@ -514,6 +536,51 @@ namespace dcclite::broker
 				m_clMessenger.Send(m_clAddress, "<a 0>");
 				break;
 
+			//https://dcc-ex.com/reference/software/command-summary-consolidated.html#j-t-jt-request-the-list-of-defined-turnout-point-ids
+			//
+			// It seems that JMRI only send this when entering the "configure base station option"
+			//
+			case 'J':
+			{
+				if (cmd[1] != 'T')
+				{
+					char param[10];
+					const auto tokenType = parser.GetToken(param, sizeof(param));
+					if (tokenType != Tokens::ID)
+					{
+						Log::Error("[DccppClient::Update] Unknown parameter for {}, msg>: {}", cmd, msg);
+
+						goto ERROR_RESPONSE;
+					}
+
+					if (strcmp(param, "T"))
+					{
+						Log::Error("[DccppClient::Update] Unknown parameter {} for {}, msg>: {}", param, cmd, msg);
+
+						goto ERROR_RESPONSE;
+					}
+				}
+
+				int id;
+				const auto tokenType = parser.GetNumber(id);
+				if (tokenType == Tokens::NUMBER)
+				{
+					Log::Error("[DccppClient::Update] TODO HANDLE ID {} for {}, msg>: {}", id, cmd, msg);
+					goto ERROR_RESPONSE;
+				}
+				else if (tokenType != Tokens::END_OF_BUFFER)
+				{
+					Log::Error("[DccppClient::Update] Unknown parameter {}, msg>: {}", cmd, msg);
+
+					goto ERROR_RESPONSE;
+				}
+				
+				std::stringstream response;
+
+				this->CreateTurnoutsIdListResponse(response);
+				m_clMessenger.Send(m_clAddress, response.str());				
+				break;
+			}
 
 			case 'M':
 				Log::Debug("[DccppClient::OnMessage] Custom packet cmd {}, msg: {}", cmd, msg);
