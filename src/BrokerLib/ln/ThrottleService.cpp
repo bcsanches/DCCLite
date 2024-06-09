@@ -33,12 +33,12 @@ using namespace std::chrono_literals;
 ///////////////////////////////////////////////////////////////////////////////
 
 
-class Throttle: public dcclite::IObject, public dcclite::broker::IThrottle
+class Throttle: public dcclite::Object, public dcclite::broker::IThrottle
 {
 	public:
 #if 1
 		Throttle(const dcclite::NetworkAddress &serverAddress, const dcclite::broker::ILoconetSlot &owner) :
-			IObject(dcclite::RName{ fmt::format("slot[{}][{}]", owner.GetId(), owner.GetLocomotiveAddress().GetAddress()) }),
+			Object(dcclite::RName{ fmt::format("slot[{}][{}]", owner.GetId(), owner.GetLocomotiveAddress().GetAddress()) }),
 			m_clServerAddress{serverAddress},
 			m_vState{ ConnectState {serverAddress} },			
 			m_rclOwnerSlot{ owner }

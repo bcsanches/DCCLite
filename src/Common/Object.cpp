@@ -59,17 +59,21 @@ namespace dcclite
 	{
 		IObject *result = this;
 
-		while (result->m_pParent)
-			result = result->m_pParent;
+		for (;;)
+		{
+			auto parent = result->GetParent();
+			if (!parent)
+				return *result;
 
-		return *result;
+			result = parent;
+		}
 	}
 
 	void IObject::GetPath_r(Path_t &path) const
-	{
-		if (m_pParent)
+	{		
+		if (auto parent = this->GetParent())
 		{
-			m_pParent->GetPath_r(path);
+			parent->GetPath_r(path);
 
 			path.append(this->GetNameData());
 		}				
@@ -94,10 +98,10 @@ namespace dcclite
 		stream.AddBool("isShortcut", this->IsShortcut());
 		stream.AddBool("isFolder", this->IsFolder());				
 
-		if (m_pParent)
+		if(auto parent = this->GetParent())		
 		{
-			stream.AddStringValue("parentName", m_pParent->GetNameData());
-			stream.AddPointerValue("parentInternalId", m_pParent);
+			stream.AddStringValue("parentName", parent->GetNameData());
+			stream.AddPointerValue("parentInternalId", parent);
 		}			
 	}
 

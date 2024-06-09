@@ -13,15 +13,16 @@
 
 #include <vector>
 
-#include "FolderObject.h"
+#include "DccAddress.h"
+
+#include "IFolderObject.h"
 
 #include <rapidjson/document.h>
 
 namespace dcclite::broker
 {
-
-	class Decoder;
-	class Location;
+	class Decoder;	
+	class LocationManager;
 
 	enum class LocationMismatchReason
 	{
@@ -29,7 +30,85 @@ namespace dcclite::broker
 		OUTSIDE_RANGES
 	};
 
-	class LocationManager: public dcclite::FolderObject
+	namespace detail
+	{
+		class Location : public IObject
+		{
+			public:
+				Location(RName name, RName prefix, const DccAddress beginAddress, const DccAddress endAddress, LocationManager &owner);
+
+				Location(const Location &) = default;
+				Location(Location &&) = default;
+
+#if 1
+				Location &operator=(Location &&rhs) = default;
+#else
+				Location &operator=(Location &&rhs)
+				{
+					IObject::operator= (std::move(rhs));
+
+					m_rnPrefix = std::move(rhs.m_rnPrefix);
+					m_tBeginAddress = std::move(rhs.m_tBeginAddress);
+					m_tEndAddress = std::move(rhs.m_tEndAddress);
+					
+					m_vecDecoders = std::move(rhs.m_vecDecoders);
+
+					m_rclParent = rhs.m_rclParent;
+
+					return *this;	
+				}
+#endif
+
+				Location &operator=(const Location &) = default;
+
+				void RegisterDecoder(const Decoder &dec);
+
+				void UnregisterDecoder(const Decoder &dec);
+
+				inline bool IsDecoderRegistered(const Decoder &dec) const
+				{
+					return m_vecDecoders[GetDecoderIndex(dec)] == &dec;
+				}
+
+				const char *GetTypeName() const noexcept override
+				{
+					return "Location";
+				}
+
+				void Serialize(JsonOutputStream_t &stream) const override;
+
+				inline DccAddress GetBeginAddress() const
+				{
+					return m_tBeginAddress;
+				}
+
+				inline DccAddress GetEndAddress() const
+				{
+					return m_tEndAddress;
+				}
+
+				inline RName GetPrefix() const
+				{
+					return m_rnPrefix;
+				}
+
+				IFolderObject *GetParent() const noexcept override;				
+
+			private:
+				inline size_t GetDecoderIndex(const Decoder &dec) const;
+
+			private:
+				RName		m_rnPrefix;
+				DccAddress	m_tBeginAddress;
+				DccAddress	m_tEndAddress;
+
+				std::vector<const Decoder *> m_vecDecoders;
+
+				LocationManager *m_rclParent;
+		};
+	}
+
+	class LocationManager: public dcclite::IFolderObject
 	{	
 		public:
 			LocationManager(RName name, const rapidjson::Value& params);
@@ -40,14 +119,18 @@ namespace dcclite::broker
 
 			void Serialize(dcclite::JsonOutputStream_t &stream) const override;
 
+			IObject *TryGetChild(RName name) override;
+
+			void VisitChildren(Visitor_t visitor) override;
+
 			const char *GetTypeName() const noexcept override
 			{
 				return "LocationManager";
 			}
 
 		private:
-			std::vector<Location *> m_vecIndex;
+			std::vector<detail::Location> m_vecIndex;
 
-			std::vector<std::tuple<const Decoder *, LocationMismatchReason, const Location *>> m_vecMismatches;
+			std::vector<std::tuple<const Decoder *, LocationMismatchReason, const detail::Location *>> m_vecMismatches;
 	};
 }

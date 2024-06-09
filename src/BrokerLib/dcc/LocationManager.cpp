@@ -18,116 +18,106 @@
 
 namespace dcclite::broker
 {
-
-	class Location: public Object
+	namespace detail
 	{
-		public:
-			Location(RName name, RName prefix, const DccAddress beginAddress, const DccAddress endAddress):
-				Object{name},
-				m_rnPrefix(prefix),
-				m_tBeginAddress(beginAddress),
-				m_tEndAddress(endAddress)
+		Location::Location(RName name, RName prefix, const DccAddress beginAddress, const DccAddress endAddress, LocationManager &owner) :
+			IObject{ name },
+			m_rnPrefix(prefix),
+			m_tBeginAddress(beginAddress),
+			m_tEndAddress(endAddress),
+			m_rclParent{&owner}
+		{
+			if (m_tBeginAddress >= m_tEndAddress)
 			{
-				if(m_tBeginAddress >= m_tEndAddress)
+				throw std::runtime_error(
+					fmt::format("[{}] Sector::Sector begin adress ({}) is greater than end address ({})",
+						this->GetName(),
+						m_tBeginAddress,
+						m_tEndAddress
+					)
+				);
+			}
+
+			m_vecDecoders.resize(m_tEndAddress.GetAddress() - m_tBeginAddress.GetAddress());
+		}
+
+		void Location::RegisterDecoder(const Decoder &dec)
+		{
+			auto index = GetDecoderIndex(dec);
+
+			assert(m_vecDecoders[index] == nullptr);
+
+			m_vecDecoders[index] = &dec;
+		}
+
+		void Location::UnregisterDecoder(const Decoder &dec)
+		{
+			auto index = GetDecoderIndex(dec);
+
+			m_vecDecoders[index] = nullptr;
+		}
+
+		void Location::Serialize(JsonOutputStream_t &stream) const
+		{
+			IObject::Serialize(stream);
+
+			stream.AddStringValue("prefix", m_rnPrefix.GetData());
+			stream.AddIntValue("begin", m_tBeginAddress.GetAddress());
+			stream.AddIntValue("end", m_tEndAddress.GetAddress());
+
+			if (m_vecDecoders.empty())
+				return;
+
+			auto outputArray = stream.AddArray("decoders");
+
+			for (auto &dec : m_vecDecoders)
+			{
+				if (dec == nullptr)
 				{
-					throw std::runtime_error(
-						fmt::format("[{}] Sector::Sector begin adress ({}) is greater than end address ({})", 
-							this->GetName(),
-							m_tBeginAddress,
-							m_tEndAddress
-						)
-					);
+					outputArray.AddNull();
 				}
-
-				m_vecDecoders.resize(m_tEndAddress.GetAddress() - m_tBeginAddress.GetAddress());
-			}
-
-			void RegisterDecoder(const Decoder &dec)
-			{
-				auto index = GetDecoderIndex(dec);
-
-				assert(m_vecDecoders[index] == nullptr);
-
-				m_vecDecoders[index] = &dec;
-			}
-
-			void UnregisterDecoder(const Decoder &dec)
-			{
-				auto index = GetDecoderIndex(dec);
-
-				m_vecDecoders[index] = nullptr;
-			}
-
-			bool IsDecoderRegistered(const Decoder &dec) const
-			{
-				return m_vecDecoders[GetDecoderIndex(dec)] == &dec;
-			}
-
-			const char *GetTypeName() const noexcept override
-			{
-				return "Location";
-			}
-
-			void Serialize(JsonOutputStream_t &stream) const override
-			{
-				Object::Serialize(stream);
-
-				stream.AddStringValue("prefix", m_rnPrefix.GetData());
-				stream.AddIntValue("begin", m_tBeginAddress.GetAddress());
-				stream.AddIntValue("end", m_tEndAddress.GetAddress());
-
-				if(m_vecDecoders.empty())
-					return;
-
-				auto outputArray = stream.AddArray("decoders");
-
-				for (auto &dec : m_vecDecoders)
+				else
 				{
-					if (dec == nullptr)
-					{
-						outputArray.AddNull();
-					}
-					else
-					{
-						auto obj = outputArray.AddObject();
-						dec->Serialize(obj);
-					}				
+					auto obj = outputArray.AddObject();
+					dec->Serialize(obj);
 				}
 			}
+		}
 
-			inline DccAddress GetBeginAddress() const
-			{
-				return m_tBeginAddress;
-			}
+		inline size_t Location::GetDecoderIndex(const Decoder &dec) const
+		{
+			assert((dec.GetAddress() >= m_tBeginAddress) && (dec.GetAddress() < m_tEndAddress));
 
-			inline DccAddress GetEndAddress() const
-			{
-				return m_tEndAddress;
-			}
+			return dec.GetAddress().GetAddress() - m_tBeginAddress.GetAddress();
+		}
 
-			inline RName GetPrefix() const
-			{
-				return m_rnPrefix;
-			}
+		IFolderObject *Location::GetParent() const noexcept
+		{
+			return m_rclParent;
+		}
+	}
 
-		private:
-			inline size_t GetDecoderIndex(const Decoder &dec) const
-			{
-				assert((dec.GetAddress() >= m_tBeginAddress) && (dec.GetAddress() < m_tEndAddress));
+	IObject *LocationManager::TryGetChild(RName name)
+	{
+		for (auto &location : m_vecIndex)
+		{
+			if (location.GetName() == name)
+				return &location;
+		}
 
-				return dec.GetAddress().GetAddress() - m_tBeginAddress.GetAddress();
-			}
+		return nullptr;
+	}
 
-		private:	
-			RName m_rnPrefix;
-			DccAddress m_tBeginAddress;
-			DccAddress m_tEndAddress;
-
-			std::vector<const Decoder *> m_vecDecoders;
-	};
+	void LocationManager::VisitChildren(Visitor_t visitor)
+	{
+		for (auto &location : m_vecIndex)
+		{
+			visitor(location);
+		}
+	}
 
 	LocationManager::LocationManager(RName name, const rapidjson::Value& params):
-		FolderObject{name}
+		IFolderObject{name}
 	{
 		auto it = params.FindMember("locations");
 		if(it == params.MemberEnd())
@@ -145,28 +135,30 @@ namespace dcclite::broker
 			RName dname{ sectorData["name"].GetString()};
 			RName prefix{ sectorData["prefix"].GetString() };
 			auto beginAddress = DccAddress{static_cast<uint16_t>(sectorData["begin"].GetInt())};
-			auto endAddress = DccAddress{ static_cast<uint16_t>(sectorData["end"].GetInt())};
+			auto endAddress = DccAddress{ static_cast<uint16_t>(sectorData["end"].GetInt())};			
 
-			auto location = this->AddChild(std::make_unique<Location>(dname, prefix, beginAddress, endAddress));
+			m_vecIndex.emplace_back(dname, prefix, beginAddress, endAddress, *this);
 
-			m_vecIndex.push_back(static_cast<Location *>(location));
+			detail::Location a{ dname, prefix, beginAddress, endAddress, *this };
+			detail::Location b{ dname, prefix, beginAddress, endAddress, *this };
 		}
 
 		if(m_vecIndex.empty())
 			return;
 
-
+#if 1
 		//
 		//Validates the locations address for overlapping
-		std::sort(m_vecIndex.begin(), m_vecIndex.end(), [](Location *lhs, Location *rhs)
+		std::sort(m_vecIndex.begin(), m_vecIndex.end(), [](detail::Location &lhs, detail::Location &rhs)
 		{
-			return lhs->GetBeginAddress() < rhs->GetBeginAddress();
+			return lhs.GetBeginAddress() < rhs.GetBeginAddress();
 		});
+#endif
 
-		auto *first = m_vecIndex[0];
+		auto first = &m_vecIndex[0];
 		for (size_t i = 1, sz = m_vecIndex.size(); i < sz; ++i)
 		{
-			auto *current = m_vecIndex[i];
+			auto *current = &m_vecIndex[i];
 
 			if(first->GetEndAddress() > current->GetBeginAddress())
 				throw std::runtime_error(fmt::format("[LocationManager] Location {} overlaps with {}", first->GetName(), current->GetName()));
@@ -179,30 +171,30 @@ namespace dcclite::broker
 	{
 		auto address = decoder.GetAddress();
 
-		for (auto location : m_vecIndex)
+		for (auto &location : m_vecIndex)
 		{
 			//not mapped?
-			if(address < location->GetBeginAddress())
+			if(address < location.GetBeginAddress())
 				break;
 
-			if(address >= location->GetEndAddress())
+			if(address >= location.GetEndAddress())
 				continue;
 
 			//found it
 			auto locationHint = decoder.GetLocationHint();
-			if ((locationHint) && (locationHint != location->GetPrefix()) && (locationHint != location->GetName()))
+			if ((locationHint) && (locationHint != location.GetPrefix()) && (locationHint != location.GetName()))
 			{			
 				//loaction hint does not match
 				m_vecMismatches.emplace_back(				
 					&decoder, 
 					LocationMismatchReason::WRONG_LOCATION_HINT,
-					location				
+					&location				
 				);
 
 				return;
 			}
 
-			location->RegisterDecoder(decoder);
+			location.RegisterDecoder(decoder);
 			return;
 		}
 
@@ -217,18 +209,18 @@ namespace dcclite::broker
 	{
 		auto address = decoder.GetAddress();
 
-		for (auto location : m_vecIndex)
+		for (auto &location : m_vecIndex)
 		{
 			//not mapped
-			if (address < location->GetBeginAddress())
+			if (address < location.GetBeginAddress())
 				break;
 
-			if (address >= location->GetEndAddress())
+			if (address >= location.GetEndAddress())
 				continue;
 
-			if(location->IsDecoderRegistered(decoder))
+			if(location.IsDecoderRegistered(decoder))
 			{
-				location->UnregisterDecoder(decoder);
+				location.UnregisterDecoder(decoder);
 
 				return;
 			}
@@ -274,7 +266,7 @@ namespace dcclite::broker
 
 	void LocationManager::Serialize(dcclite::JsonOutputStream_t &stream) const
 	{
-		FolderObject::Serialize(stream);
+		IFolderObject::Serialize(stream);
 
 		if(m_vecMismatches.empty())
 			return;

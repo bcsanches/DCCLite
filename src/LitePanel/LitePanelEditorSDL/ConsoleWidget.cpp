@@ -54,7 +54,7 @@ namespace dcclite::PanelEditor
     };
 
     ConsoleCmd::ConsoleCmd(RName name) :
-        IObject{ name }
+        Object{ name }
     {
         //empty
     }

@@ -38,6 +38,8 @@ namespace dcclite::broker
 			DccAddress() = default;
 			DccAddress(const DccAddress &) = default;
 			DccAddress(DccAddress &&) = default;
+			
+			DccAddress &operator=(DccAddress &&) = default;
 
 			inline int GetAddress() const noexcept
 			{
@@ -69,7 +71,7 @@ namespace dcclite::broker
 				return m_iAddress != rhs.m_iAddress;
 			}
 
-			inline DccAddress &operator=(const DccAddress rhs) noexcept
+			inline DccAddress &operator=(const DccAddress &rhs) noexcept
 			{
 				m_iAddress = rhs.m_iAddress;
 

@@ -26,11 +26,11 @@
 
 namespace dcclite::broker
 {	
-	class BaseSectionWrapper: public IObject
+	class BaseSectionWrapper: public Object
 	{
 		public:
 			BaseSectionWrapper(RName name, sol::table obj, VirtualSensorDecoder &sensor) :
-				IObject(name),
+				Object(name),
 				m_clObject{ obj },
 				m_rclSensor{sensor}
 			{
@@ -39,7 +39,7 @@ namespace dcclite::broker
 			
 			void Serialize(JsonOutputStream_t &stream) const override
 			{
-				IObject::Serialize(stream);
+				Object::Serialize(stream);
 
 				stream.AddStringValue("systemName", this->GetParent()->GetParent()->GetNameData());
 				stream.AddIntValue("state", m_clObject["state"]);

@@ -12,13 +12,18 @@
 
 #include "Object.h"
 
+#include <functional>
+
 namespace dcclite
 {	
-	class IFolderObject : public IObject
+	class IFolderObject : public Object
 	{
 		public:
+			typedef std::function<void(IObject &child)> Visitor_t;
+
+		public:
 			explicit IFolderObject(RName name) :
-				IObject{ name }
+				Object{ name }
 			{
 				//empty
 			}
@@ -30,5 +35,7 @@ namespace dcclite
 			IObject *TryNavigate(const Path_t &path);
 
 			bool IsFolder() const noexcept override { return true; }
+
+			virtual void VisitChildren(Visitor_t visitor) = 0;
 	};	
 }

@@ -155,13 +155,10 @@ namespace dcclite
 	};
 
 	class IObject: public IItem
-	{
-		friend class FolderObject;
-
+	{		
 		public:
 			explicit IObject(RName name) :
-				m_rnName{ name },
-				m_pParent(nullptr)
+				m_rnName{ name }				
 			{
 				if (!name)
 				{
@@ -171,7 +168,11 @@ namespace dcclite
 
 			virtual ~IObject() = default;
 
-			IObject(const IObject &rhs) = delete;
+			IObject(const IObject &rhs) = default;
+			IObject(IObject &&rhs) = default;
+
+			inline IObject &operator=(IObject &&) = default;			
+			IObject &operator=(const IObject &) = default;
 
 			inline RName GetName() const noexcept { return m_rnName; }
 			inline std::string_view GetNameData() const noexcept { return m_rnName.GetData(); }
@@ -188,18 +189,12 @@ namespace dcclite
 
 			void Serialize(JsonOutputStream_t &stream) const override;
 
-			inline IFolderObject *GetParent() const noexcept
-			{
-				return m_pParent;
-			}
+			virtual IFolderObject *GetParent() const noexcept = 0;
 
 		private:
-			const RName m_rnName;
+			RName m_rnName;
 
-			void GetPath_r(Path_t &path) const;
-
-		protected:			
-			IFolderObject *m_pParent;
+			void GetPath_r(Path_t &path) const;		
 	};
 
 #if 0
@@ -263,15 +258,27 @@ namespace dcclite
 
 	class Object: public IObject
 	{
+		friend class FolderObject;
+
 		public:
-			explicit Object(RName name);			
+			explicit Object(RName name);	
+
+			Object(const Object &) = delete;
+
+			IFolderObject *GetParent() const noexcept override
+			{
+				return m_pParent;
+			}
+
+		private:
+			IFolderObject *m_pParent = nullptr;
 	};	
 
-	class Shortcut : public IObject
+	class Shortcut : public Object
 	{
 		public:
 			Shortcut(RName name, IObject &target) :
-				IObject(name),
+				Object(name),
 				m_rTarget(target)
 			{
 				//empty

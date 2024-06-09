@@ -19,7 +19,7 @@ namespace dcclite
 	class FolderObject : public IFolderObject
 	{
 		public:
-			typedef std::map<RName, std::unique_ptr<IObject>> Container_t;
+			typedef std::map<RName, std::unique_ptr<Object>> Container_t;
 			typedef Container_t::iterator Iterator_t;
 
 			class FolderEnumerator
@@ -45,12 +45,14 @@ namespace dcclite
 		public:
 			explicit FolderObject(RName name);
 
-			virtual IObject *AddChild(std::unique_ptr<IObject> obj);
+			virtual IObject *AddChild(std::unique_ptr<Object> obj);
 			
 			std::unique_ptr<IObject> RemoveChild(RName name);
 			void RemoveAllChildren();
 
-			IObject *TryGetChild(RName name) override;			
+			IObject *TryGetChild(RName name) override;		
+
+			void VisitChildren(Visitor_t visitor) override;
 
 			inline FolderEnumerator GetEnumerator() 
 			{

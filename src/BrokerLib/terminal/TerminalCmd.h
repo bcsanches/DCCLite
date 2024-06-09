@@ -219,7 +219,7 @@ namespace dcclite::broker
 	A cmd that can be invoked thought terminals
 
 	*/
-	class TerminalCmd: public dcclite::IObject
+	class TerminalCmd: public dcclite::Object
 	{
 		public:
 			typedef JsonCreator::Object<JsonCreator::StringWriter> Result_t;

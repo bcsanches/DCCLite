@@ -80,7 +80,7 @@ namespace dcclite::broker
 	}
 
 	TerminalCmd::TerminalCmd(RName name):
-		IObject(name)
+		Object(name)
 	{
 		//empty
 	}

@@ -21,9 +21,9 @@ namespace dcclite
 		//empty
 	}
 
-	IObject *FolderObject::AddChild(std::unique_ptr<IObject> obj)
+	IObject *FolderObject::AddChild(std::unique_ptr<Object> obj)
 	{
-		if (obj->m_pParent)
+		if (obj->GetParent())
 		{			
 			throw std::runtime_error(fmt::format("error: Object::AddChild(std::unique_ptr<Object> obj) object {} is a child of {}", obj->GetName(), obj->m_pParent->GetName()));
 		}
@@ -37,7 +37,7 @@ namespace dcclite
 
 		auto ptr = obj.get();
 
-		m_mapObjects.insert(it, std::pair<RName, std::unique_ptr<IObject>>(obj->GetName(), std::move(obj)));
+		m_mapObjects.insert(it, std::pair<RName, std::unique_ptr<Object>>(obj->GetName(), std::move(obj)));
 		ptr->m_pParent = this;
 
 		return ptr;
@@ -66,6 +66,16 @@ namespace dcclite
 		m_mapObjects.erase(it);
 
 		return ptr;
+	}
+
+	void FolderObject::VisitChildren(Visitor_t visitor)
+	{
+		auto enumerator{ this->GetEnumerator() };
+
+		while(enumerator.MoveNext())		
+		{
+			visitor(*enumerator.GetCurrent());
+		}
 	}
 
 	FolderObject::FolderEnumerator::FolderEnumerator(FolderObject::Iterator_t begin, FolderObject::Iterator_t end):

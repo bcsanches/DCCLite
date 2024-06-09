@@ -147,7 +147,7 @@ namespace dcclite::broker
 				{
 					throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
 				}
-				auto folder = static_cast<FolderObject *>(item);
+				auto folder = static_cast<IFolderObject *>(item);
 
 				auto paramsIt = request.FindMember("params");
 				if (paramsIt != request.MemberEnd())
@@ -164,7 +164,7 @@ namespace dcclite::broker
 						throw TerminalCmdException(fmt::format("Location is not a folder {}", locationParam), id);
 					}
 
-					folder = static_cast<FolderObject *>(item);
+					folder = static_cast<IFolderObject *>(item);
 				}		
 
 				return MakeRpcResultMessage(id, [folder](Result_t &results) 
@@ -174,15 +174,12 @@ namespace dcclite::broker
 
 					auto dataArray = results.AddArray("children");
 
-					auto enumerator = folder->GetEnumerator();
-
-					while (enumerator.MoveNext())
-					{
-						auto item = enumerator.GetCurrent();
-
-						auto itemObject = dataArray.AddObject();
-						item->Serialize(itemObject);
-					}
+					folder->VisitChildren([&dataArray](IObject &item)
+						{
+							auto itemObject = dataArray.AddObject();
+							item.Serialize(itemObject);
+						}
+					);					
 				});
 			}
 	};
@@ -203,7 +200,7 @@ namespace dcclite::broker
 				{
 					throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
 				}
-				auto folder = static_cast<FolderObject *>(item);
+				auto folder = static_cast<IFolderObject *>(item);
 
 				auto paramsIt = request.FindMember("params");
 				if (paramsIt == request.MemberEnd())
@@ -247,7 +244,7 @@ namespace dcclite::broker
 					throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
 				}
 
-				auto folder = static_cast<FolderObject *>(item);
+				auto folder = static_cast<IFolderObject *>(item);
 
 				auto paramsIt = request.FindMember("params");
 				if (paramsIt != request.MemberEnd())

@@ -33,7 +33,7 @@ namespace dcclite::PanelEditor
 		const std::string_view	*m_pclArgv;
 	};
 
-	class ConsoleCmd: public dcclite::IObject
+	class ConsoleCmd: public dcclite::Object
 	{
 		protected:
 			ConsoleCmd(RName name);
