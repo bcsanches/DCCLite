@@ -1208,8 +1208,7 @@ namespace dcclite::broker
 		servicesFolder->VisitChildren([this](auto &item)
 			{
 				auto *service = dynamic_cast<Service *>(&item);
-
-				[[likely]]
+				
 				if (service != nullptr)
 				{
 					service->m_sigEvent.connect(&TerminalClient::OnObjectManagerEvent, this);

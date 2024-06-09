@@ -1,9 +1,9 @@
 DCCLite
 -------
 - update route section to know next section and avoid re-ocupying the block
-- Eliminate Enumerator from FolderObject, use lambdas and provide custom parser method for each type, this way it is possible to specializa storage when necessary
-	- ThrottleServiceImpl another candidate
+- ThrottleServiceImpl another candidate for using custom folder
 
+- migrate to C++ 20
 - Auto generate MAC address
 
   void DCCTimer::getSimulatedMacAddress(byte mac[6]) {

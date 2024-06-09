@@ -301,13 +301,11 @@ namespace dcclite::broker
 		std::vector<SimpleOutputDecoder*> vecDecoders;
 
 		m_pDecoders->VisitChildren([&vecDecoders](auto &obj)
-			{
-				auto decoder = dynamic_cast<SimpleOutputDecoder *>(&obj);
+			{				
+				if (auto decoder = dynamic_cast<SimpleOutputDecoder *>(&obj))
+					vecDecoders.push_back(decoder);
 
-				if (!decoder)
-					return;
-
-				vecDecoders.push_back(decoder);
+				return true;
 			}
 		);		
 
@@ -322,12 +320,14 @@ namespace dcclite::broker
 			{
 				auto decoder = dynamic_cast<StateDecoder *>(&obj);
 				if (!decoder)
-					return;
+					return true;
 
 				if (!decoder->IsInputDecoder())
-					return;
+					return true;
 
 				vecDecoders.push_back(decoder);
+
+				return true;
 			}
 		);		
 
@@ -342,10 +342,10 @@ namespace dcclite::broker
 			{
 				auto decoder = dynamic_cast<TurnoutDecoder *>(&obj);
 
-				if (!decoder)
-					return;
+				if (decoder)
+					vecDecoders.push_back(decoder);
 
-				vecDecoders.push_back(decoder);
+				return true;
 			}
 		);
 

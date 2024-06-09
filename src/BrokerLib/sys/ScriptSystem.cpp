@@ -102,21 +102,19 @@ namespace dcclite::broker::ScriptSystem
 
 		//
 		//Export all services
-		auto servicesEnumerator = g_pclBroker->GetServicesEnumerator();
+		g_pclBroker->VisitServices([&dccLiteTable](auto &item)
+			{				
+				if (auto *scripter = dynamic_cast<IScriptSupport *>(&item))
+				{
+					dcclite::Log::Trace("[ScriptService::Start] Registering proxy for service {}", item.GetName());
 
-		while (servicesEnumerator.MoveNext())
-		{
-			auto service = servicesEnumerator.GetCurrent<Service>();
-						
-			auto *scripter = dynamic_cast<IScriptSupport *>(service);
-			if (!scripter)
-				continue;
+					scripter->IScriptSupport_RegisterProxy(dccLiteTable);
+					g_vecRegisteredServices.push_back(scripter);
+				}				
 
-			dcclite::Log::Trace("[ScriptService::Start] Registering proxy for service {}", service->GetName());
-				
-			scripter->IScriptSupport_RegisterProxy(dccLiteTable);				
-			g_vecRegisteredServices.push_back(scripter);			
-		}	
+				return true;
+			}
+		);
 
 		dcclite::Log::Trace("[ScriptService::Start] Services exported");
 

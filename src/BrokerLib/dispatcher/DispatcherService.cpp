@@ -188,6 +188,8 @@ namespace dcclite::broker
 		m_pSections->VisitChildren([this](auto &current)
 			{
 				this->NotifyItemDestroyed(current);
+
+				return true;
 			}
 		);
 		

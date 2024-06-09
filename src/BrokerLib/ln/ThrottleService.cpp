@@ -691,6 +691,8 @@ namespace dcclite::broker
 				auto throttle = static_cast<Throttle *>(&item);
 
 				throttle->Update(ticks);
+
+				return true;
 			}
 		);		
 	}
