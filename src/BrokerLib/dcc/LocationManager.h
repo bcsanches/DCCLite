@@ -13,7 +13,7 @@
 
 #include <vector>
 
-#include "Object.h"
+#include "FolderObject.h"
 
 #include <rapidjson/document.h>
 

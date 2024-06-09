@@ -1,7 +1,8 @@
 DCCLite
 -------
-- test new dccex commands, check if turnout description helps anyway
 - update route section to know next section and avoid re-ocupying the block
+- Eliminate Enumerator from FolderObject, use lambdas and provide custom parser method for each type, this way it is possible to specializa storage when necessary
+	- LocationManager is a good candidate for this change
 
 - Auto generate MAC address
 

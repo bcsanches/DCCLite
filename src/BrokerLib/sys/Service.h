@@ -11,10 +11,8 @@
 #pragma once
 
 #include <functional>
-#include <string>
-#include <vector>
 
-#include "Object.h"
+#include "FolderObject.h"
 
 #include <rapidjson/document.h>
 

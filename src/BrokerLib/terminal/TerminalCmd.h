@@ -12,11 +12,10 @@
 #pragma once
 
 #include <memory>
-#include <optional>
 #include <string_view>
 #include <variant>
 
-#include "Object.h"
+#include "FolderObject.h"
 
 #include <rapidjson/document.h>
 

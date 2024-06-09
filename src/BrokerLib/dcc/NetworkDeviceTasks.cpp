@@ -8,20 +8,16 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "NetworkDevice.h"
+#include "NetworkDeviceTasks.h"
+
+#include <variant>
 
 #include <magic_enum.hpp>
 
-#include "../sys/Project.h"
 #include "../sys/Thinker.h"
 
-#include "BitPack.h"
-#include "IDccLiteService.h"
-#include "FmtUtils.h"
-#include "GuidUtils.h"
 #include "Log.h"
-#include "OutputDecoder.h"
-#include "SensorDecoder.h"
+
 #include "TurnoutDecoder.h"
 
 namespace dcclite::broker

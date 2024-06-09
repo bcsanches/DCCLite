@@ -13,12 +13,11 @@
 #include <vector>
 #include <string>
 
-#include "Clock.h"
 #include "DccAddress.h"
 #include "IDevice.h"
 #include "Guid.h"
 #include "FileSystem.h"
-#include "Object.h"
+#include "FolderObject.h"
 
 #include <rapidjson/document.h>
 

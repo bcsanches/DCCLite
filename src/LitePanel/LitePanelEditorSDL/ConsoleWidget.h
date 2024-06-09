@@ -20,7 +20,7 @@
 #include "Util.h"
 
 #include "EditorWidget.h"
-#include "Object.h"
+#include "FolderObject.h"
 
 namespace dcclite::PanelEditor
 {

@@ -10,22 +10,20 @@
 
 #pragma once
 
-#include <functional>
+#include <memory>
 #include <string>
-#include <variant>
 
-#include "IDccLiteService.h"
-#include "Device.h"
-#include "IDevice.h"
+#include <stdint.h>
+#include <vector>
+
+
+#include "Clock.h"
 #include "Packet.h"
-#include "PinManager.h"
-#include "Socket.h"
-
-#include <rapidjson/document.h>
 
 namespace dcclite::broker
 { 
 	class NetworkTask;
+	class Decoder;
 
 	namespace detail
 	{

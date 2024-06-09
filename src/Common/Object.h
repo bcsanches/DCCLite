@@ -10,11 +10,7 @@
 
 #pragma once
 
-#include <algorithm>
-#include <cassert>
-#include <map>
 #include <string>
-#include <memory>
 
 #include <JsonCreator/Object.h>
 #include <JsonCreator/StringWriter.h>
@@ -23,7 +19,7 @@
 
 namespace dcclite
 {
-	class FolderObject;
+	class IFolderObject;
 
 	class ObjectPathConstIterator
 	{
@@ -192,7 +188,7 @@ namespace dcclite
 
 			void Serialize(JsonOutputStream_t &stream) const override;
 
-			inline FolderObject *GetParent() const noexcept
+			inline IFolderObject *GetParent() const noexcept
 			{
 				return m_pParent;
 			}
@@ -203,7 +199,7 @@ namespace dcclite
 			void GetPath_r(Path_t &path) const;
 
 		protected:			
-			FolderObject *m_pParent;
+			IFolderObject *m_pParent;
 	};
 
 #if 0
@@ -297,68 +293,5 @@ namespace dcclite
 
 		private:
 			IObject &m_rTarget;			
-	};
-
-	class FolderObject : public IObject
-	{
-		public:
-			typedef std::map<RName, std::unique_ptr<IObject>> Container_t;
-			typedef Container_t::iterator Iterator_t;
-
-			class FolderEnumerator
-			{
-				public:
-					FolderEnumerator(Iterator_t begin, Iterator_t end);
-
-					bool MoveNext();
-
-					IObject *GetCurrent();
-
-					template<typename T>
-					inline T *GetCurrent()
-					{
-						return static_cast<T*>(GetCurrent());
-					}
-
-				private:
-					FolderObject::Iterator_t m_itBegin, m_itEnd, m_itCurrent;
-					bool m_fFirst;
-			};
-
-		public:
-			explicit FolderObject(RName name);
-
-			virtual IObject *AddChild(std::unique_ptr<IObject> obj);
-			
-			std::unique_ptr<IObject> RemoveChild(RName name);
-			void RemoveAllChildren();
-
-			IObject *TryGetChild(RName name);
-
-			IObject *TryResolveChild(RName name);			
-
-			IObject *TryNavigate(const Path_t &path);
-
-			bool IsFolder() const noexcept override { return true; }
-
-			inline FolderEnumerator GetEnumerator() 
-			{
-				return FolderEnumerator(m_mapObjects.begin(), m_mapObjects.end());
-			}
-
-			const char *GetTypeName() const noexcept override
-			{
-				return "dcclite::FolderObject";
-			}
-
-			void Serialize(JsonOutputStream_t &stream) const override
-			{
-				IObject::Serialize(stream);
-
-				//nothing
-			}
-
-		private:
-			Container_t m_mapObjects;
 	};	
 }

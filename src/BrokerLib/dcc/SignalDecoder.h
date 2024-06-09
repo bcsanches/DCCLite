@@ -14,7 +14,7 @@
 
 #include <functional>
 #include <list>
-#include <set>
+#include <map>
 #include <variant>
 #include <vector>
 
@@ -23,7 +23,6 @@
 #include "sigslot/signal.hpp"
 
 #include "NmraUtil.h"
-#include "SharedLibDefs.h"
 
 #include "../sys/Thinker.h"
 

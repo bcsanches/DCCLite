@@ -9,12 +9,11 @@
 // defined by the Mozilla Public License, v. 2.0.
 
 #include "Object.h"
-#include <sstream>
 
-#include <fmt/format.h>
-
-#include "FmtUtils.h"
 #include "Util.h"
+
+#include "IFolderObject.h"
+
 
 namespace dcclite
 {
@@ -114,140 +113,5 @@ namespace dcclite
 
 		stream.AddStringValue("target", m_rTarget.GetPath().string());
 		stream.AddStringValue("targetClassName", m_rTarget.GetTypeName());
-	}
-
-	FolderObject::FolderObject(RName name):
-		IObject(name)
-	{
-		//empty
-	}
-
-	IObject *FolderObject::AddChild(std::unique_ptr<IObject> obj)
-	{
-		if (obj->m_pParent)
-		{			
-			throw std::runtime_error(fmt::format("error: Object::AddChild(std::unique_ptr<Object> obj) object {} is a child of {}", obj->GetName(), obj->m_pParent->GetName()));
-		}
-
-		auto it = m_mapObjects.lower_bound(obj->GetName());
-
-		if ((it != m_mapObjects.end()) && (!m_mapObjects.key_comp()(obj->GetName(), it->first)))
-		{
-			throw std::runtime_error(fmt::format("error: Object::AddChild(std::unique_ptr<Object> obj) object {} already exists in {}", obj->GetName(), this->GetName()));			
-		}
-
-		auto ptr = obj.get();
-
-		m_mapObjects.insert(it, std::pair<RName, std::unique_ptr<IObject>>(obj->GetName(), std::move(obj)));
-		ptr->m_pParent = this;
-
-		return ptr;
-	}
-
-	IObject *FolderObject::TryGetChild(RName name)
-	{
-		auto it = m_mapObjects.find(name);		
-
-		return it == m_mapObjects.end() ? nullptr : it->second.get();
-	}
-
-	IObject *FolderObject::TryResolveChild(RName name)
-	{
-		if (auto *obj = this->TryGetChild(name))
-			return (obj->IsShortcut()) ? static_cast<Shortcut*>(obj)->TryResolve() : obj;
-		else
-			return nullptr;		
-	}
-
-	IObject *FolderObject::TryNavigate(const Path_t &path)
-	{
-		IObject *currentNode = this;
-					
-		for (auto it = path.begin(); (it != path.end()) && (currentNode); ++it)
-		{
-			auto path = it.ToString();
-
-			if (path.compare("/") == 0)
-			{
-				currentNode = &this->GetRoot();
-				continue;
-			}
-			else if (path.compare(".") == 0)
-				continue;
-			else if (path.compare("..") == 0)
-			{
-				currentNode = this->GetParent();
-
-				continue;
-			}
-			else if (currentNode->IsFolder())
-			{
-				auto *folder = static_cast<FolderObject *>(currentNode);				
-
-				//FIXME: optmize
-				currentNode = folder->TryResolveChild(RName::Create(path));
-
-				if (!currentNode)
-					return nullptr;
-			}
-			else
-			{
-				return nullptr;
-			}
-		}
-
-		return currentNode;
-	}
-
-	void FolderObject::RemoveAllChildren()
-	{
-		m_mapObjects.clear();
-	}
-
-	std::unique_ptr<IObject> FolderObject::RemoveChild(RName name) 
-	{
-		auto it = m_mapObjects.find(name);
-		if (it == m_mapObjects.end())
-			return std::unique_ptr<IObject>{};
-
-		auto ptr = std::move(it->second);
-
-		m_mapObjects.erase(it);
-
-		return ptr;
-	}
-
-	FolderObject::FolderEnumerator::FolderEnumerator(FolderObject::Iterator_t begin, FolderObject::Iterator_t end):
-		m_itBegin(begin),
-		m_itEnd(end),
-		m_itCurrent(begin),
-		m_fFirst(true)
-	{
-		//empty
-	}
-
-	bool FolderObject::FolderEnumerator::MoveNext()
-	{
-		if (m_fFirst)
-		{
-			m_fFirst = false;			
-		}
-		else if(m_itCurrent != m_itEnd)
-		{		
-			++m_itCurrent;
-		}
-
-		return m_itCurrent != m_itEnd;
-	}
-
-	IObject *FolderObject::FolderEnumerator::GetCurrent()
-	{
-		assert(m_itCurrent != m_itEnd);
-
-		auto obj = m_itCurrent->second.get();
-
-		return obj;
-
-		//return (obj->IsShortcut()) ? static_cast<Shortcut *>(obj)->TryResolve() : obj;		
-	}
+	}	
 }
