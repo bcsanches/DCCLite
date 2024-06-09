@@ -213,18 +213,27 @@ namespace dcclite::broker
 		}
 		else if (token == Tokens::ID)
 		{
-			auto enumerator = m_pServices->GetEnumerator();
-			while (enumerator.MoveNext())
-			{
-				auto obj = enumerator.GetCurrent();
-				if (strcmp(reqName, obj->GetTypeName()) == 0)
-					return *static_cast<Service *>(obj);
-			}
+			Service *result = nullptr;
+			m_pServices->VisitChildren([reqName, &result](auto &obj)
+				{					
+					if (strcmp(reqName, obj.GetTypeName()) == 0)
+					{
+						result = static_cast<Service *>(&obj);
+
+						return false;
+					}
+
+					return true;
+				}
+			);
+
+			if (result)
+				return *result;			
 
 			throw std::invalid_argument(fmt::format("[Broker::ResolveRequirement] Requested service of type {} not found", requirement));
 		}
 		
-		throw std::invalid_argument(fmt::format("[Broker::ResolveRequirement] Sybtax error parsing requirement {} ", requirement));
+		throw std::invalid_argument(fmt::format("[Broker::ResolveRequirement] Syntax error parsing requirement {} ", requirement));
 	}
 
 	Service *Broker::TryFindService(RName name)

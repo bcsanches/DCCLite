@@ -2,7 +2,7 @@ DCCLite
 -------
 - update route section to know next section and avoid re-ocupying the block
 - Eliminate Enumerator from FolderObject, use lambdas and provide custom parser method for each type, this way it is possible to specializa storage when necessary
-	- LocationManager is a good candidate for this change
+	- ThrottleServiceImpl another candidate
 
 - Auto generate MAC address
 

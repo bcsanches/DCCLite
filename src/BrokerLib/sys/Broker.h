@@ -35,12 +35,7 @@ namespace dcclite::broker
 
 			Broker(const Broker &) = delete;
 
-			Service *TryFindService(RName name);			
-
-			inline FolderObject::FolderEnumerator GetServicesEnumerator() const 
-			{
-				return m_pServices->GetEnumerator();
-			}
+			Service *TryFindService(RName name);
 
 			TerminalCmdHost *GetTerminalCmdHost()
 			{

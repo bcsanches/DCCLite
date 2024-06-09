@@ -70,45 +70,10 @@ namespace dcclite
 
 	void FolderObject::VisitChildren(Visitor_t visitor)
 	{
-		auto enumerator{ this->GetEnumerator() };
-
-		while(enumerator.MoveNext())		
-		{
-			visitor(*enumerator.GetCurrent());
+		for (auto &pair : m_mapObjects)
+		{				
+			if (!visitor(*pair.second.get()))
+				break;
 		}
-	}
-
-	FolderObject::FolderEnumerator::FolderEnumerator(FolderObject::Iterator_t begin, FolderObject::Iterator_t end):
-		m_itBegin(begin),
-		m_itEnd(end),
-		m_itCurrent(begin),
-		m_fFirst(true)
-	{
-		//empty
-	}
-
-	bool FolderObject::FolderEnumerator::MoveNext()
-	{
-		if (m_fFirst)
-		{
-			m_fFirst = false;			
-		}
-		else if(m_itCurrent != m_itEnd)
-		{		
-			++m_itCurrent;
-		}
-
-		return m_itCurrent != m_itEnd;
-	}
-
-	IObject *FolderObject::FolderEnumerator::GetCurrent()
-	{
-		assert(m_itCurrent != m_itEnd);
-
-		auto obj = m_itCurrent->second.get();
-
-		return obj;
-
-		//return (obj->IsShortcut()) ? static_cast<Shortcut *>(obj)->TryResolve() : obj;		
 	}
 }

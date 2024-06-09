@@ -178,6 +178,8 @@ namespace dcclite::broker
 						{
 							auto itemObject = dataArray.AddObject();
 							item.Serialize(itemObject);
+
+							return true;
 						}
 					);					
 				});
@@ -303,15 +305,14 @@ namespace dcclite::broker
 
 						auto dataArray = results.AddArray("cmds");
 
-						auto enumerator = folder->GetEnumerator();
+						folder->VisitChildren([&dataArray](auto &cmd)
+							{
+								auto itemObject = dataArray.AddObject();
+								cmd.Serialize(itemObject);
 
-						while (enumerator.MoveNext())
-						{
-							auto cmd = enumerator.GetCurrent();
-
-							auto itemObject = dataArray.AddObject();
-							cmd->Serialize(itemObject);
-						}
+								return true;
+							}
+						);						
 					}
 				);				
 			}
@@ -1154,15 +1155,15 @@ namespace dcclite::broker
 		if (servicesFolder == nullptr)
 			return;
 
-		auto enumerator = servicesFolder->GetEnumerator();
-		while (enumerator.MoveNext())
-		{
-			auto *service = dynamic_cast<Service *>(enumerator.GetCurrent());
-			if (service == nullptr)
-				continue;
+		servicesFolder->VisitChildren([this](auto &item)
+			{
+				auto *service = dynamic_cast<Service *>(&item);
+				if (service != nullptr)
+					service->m_sigEvent.disconnect(this);
 
-			service->m_sigEvent.disconnect(this);
-		}
+				return true;
+			}
+		);		
 
 		EventHub::CancelEvents(*this);
 	}
@@ -1204,19 +1205,23 @@ namespace dcclite::broker
 		if(servicesFolder == nullptr)
 			return;
 
-		auto enumerator = servicesFolder->GetEnumerator();
-		while (enumerator.MoveNext())
-		{
-			auto *obj = enumerator.GetCurrent();
-			auto *service = dynamic_cast<Service *>(obj);
-			if (service == nullptr)
+		servicesFolder->VisitChildren([this](auto &item)
 			{
-				dcclite::Log::Warn("[TerminalClient::RegisterListeners] Object {} is not a service, it is {}", obj->GetName(), obj->GetTypeName());
-				continue;
-			}
+				auto *service = dynamic_cast<Service *>(&item);
 
-			service->m_sigEvent.connect(&TerminalClient::OnObjectManagerEvent, this);			
-		}
+				[[likely]]
+				if (service != nullptr)
+				{
+					service->m_sigEvent.connect(&TerminalClient::OnObjectManagerEvent, this);
+				}
+				else
+				{
+					dcclite::Log::Warn("[TerminalClient::RegisterListeners] Object {} is not a service, it is {}", item.GetName(), item.GetTypeName());
+				}
+
+				return true;
+			}
+		);		
 	}		
 
 	void TerminalClient::SendItemPropertyValueChangedNotification(const ObjectManagerEvent &event)

@@ -300,17 +300,16 @@ namespace dcclite::broker
 	{
 		std::vector<SimpleOutputDecoder*> vecDecoders;
 
-		auto enumerator = m_pDecoders->GetEnumerator();
+		m_pDecoders->VisitChildren([&vecDecoders](auto &obj)
+			{
+				auto decoder = dynamic_cast<SimpleOutputDecoder *>(&obj);
 
-		while (enumerator.MoveNext())
-		{
-			auto decoder = dynamic_cast<SimpleOutputDecoder *>(enumerator.GetCurrent());
+				if (!decoder)
+					return;
 
-			if (!decoder)
-				continue;
-		
-			vecDecoders.push_back(decoder);
-		}
+				vecDecoders.push_back(decoder);
+			}
+		);		
 
 		return vecDecoders;
 	}
@@ -319,19 +318,18 @@ namespace dcclite::broker
 	{
 		std::vector<StateDecoder *> vecDecoders;
 
-		auto enumerator = m_pDecoders->GetEnumerator();
+		m_pDecoders->VisitChildren([&vecDecoders](auto &obj)
+			{
+				auto decoder = dynamic_cast<StateDecoder *>(&obj);
+				if (!decoder)
+					return;
 
-		while (enumerator.MoveNext())
-		{
-			auto decoder = dynamic_cast<StateDecoder *>(enumerator.GetCurrent());
-			if (!decoder)
-				continue;
+				if (!decoder->IsInputDecoder())
+					return;
 
-			if (!decoder->IsInputDecoder())
-				continue;
-
-			vecDecoders.push_back(decoder);
-		}
+				vecDecoders.push_back(decoder);
+			}
+		);		
 
 		return vecDecoders;
 	}
@@ -340,17 +338,16 @@ namespace dcclite::broker
 	{
 		std::vector<TurnoutDecoder *> vecDecoders;
 
-		auto enumerator = m_pDecoders->GetEnumerator();
+		m_pDecoders->VisitChildren([&vecDecoders](auto &obj)
+			{
+				auto decoder = dynamic_cast<TurnoutDecoder *>(&obj);
 
-		while (enumerator.MoveNext())
-		{
-			auto decoder = dynamic_cast<TurnoutDecoder *>(enumerator.GetCurrent());
+				if (!decoder)
+					return;
 
-			if (!decoder)
-				continue;
-
-			vecDecoders.push_back(decoder);
-		}
+				vecDecoders.push_back(decoder);
+			}
+		);
 
 		return vecDecoders;
 	}

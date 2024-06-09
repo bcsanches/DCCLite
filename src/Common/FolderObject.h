@@ -20,28 +20,7 @@ namespace dcclite
 	{
 		public:
 			typedef std::map<RName, std::unique_ptr<Object>> Container_t;
-			typedef Container_t::iterator Iterator_t;
-
-			class FolderEnumerator
-			{
-				public:
-					FolderEnumerator(Iterator_t begin, Iterator_t end);
-
-					bool MoveNext();
-
-					IObject *GetCurrent();
-
-					template<typename T>
-					inline T *GetCurrent()
-					{
-						return static_cast<T*>(GetCurrent());
-					}
-
-				private:
-					FolderObject::Iterator_t m_itBegin, m_itEnd, m_itCurrent;
-					bool m_fFirst;
-			};
-
+			
 		public:
 			explicit FolderObject(RName name);
 
@@ -53,12 +32,7 @@ namespace dcclite
 			IObject *TryGetChild(RName name) override;		
 
 			void VisitChildren(Visitor_t visitor) override;
-
-			inline FolderEnumerator GetEnumerator() 
-			{
-				return FolderEnumerator(m_mapObjects.begin(), m_mapObjects.end());
-			}
-
+			
 			const char *GetTypeName() const noexcept override
 			{
 				return "dcclite::FolderObject";

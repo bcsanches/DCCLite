@@ -79,14 +79,12 @@ namespace dcclite::PanelEditor
                     return;
                 }
 
-                auto enumerator = params.m_rclConsole.m_clCommands.GetEnumerator();
-
-                while (enumerator.MoveNext())
+                params.m_rclConsole.m_clCommands.VisitChildren([&console = params.m_rclConsole](auto &cmd)
                 {
-                    auto cmd = enumerator.GetCurrent();
+                    console.AddLog("\t{}", cmd.GetName().GetData());
 
-                    params.m_rclConsole.AddLog("\t{}", cmd->GetName().GetData());
-                }
+                    return true;
+                });
             }
         );
 
@@ -175,17 +173,16 @@ namespace dcclite::PanelEditor
                 // Build a list of candidates
                 ImVector<const char *> candidates;
 
-                auto enumerator = m_clCommands.GetEnumerator();
+                m_clCommands.VisitChildren([word_end, word_start, &candidates](auto &cmd)
+                    {
+                        auto cmdName = cmd.GetNameData();
 
-                while (enumerator.MoveNext())
-                {
-                    auto cmd = enumerator.GetCurrent();
+                        if (cmdName.compare(0, (word_end - word_start), word_start) == 0)
+                            candidates.push_back(cmdName.data());
 
-                    auto cmdName = cmd->GetNameData();
-                    if(cmdName.compare(0, (word_end - word_start), word_start) == 0)
-                        candidates.push_back(cmdName.data());
-                }
-
+                        return true;
+                    }
+                );                
 #if 0
                 for (int i = 0; i < Commands.Size; i++)
                     if (Strnicmp(Commands[i], word_start, (int)(word_end - word_start)) == 0)

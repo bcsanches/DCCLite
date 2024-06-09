@@ -66,10 +66,10 @@ add_library(
         dcc/TurntableAutoInverterDecoder.h       
         dcc/VirtualDevice.cpp
         dcc/VirtualDevice.h
-	dcc/VirtualSensorDecoder.cpp
-	dcc/VirtualSensorDecoder.h
-	dcc/VirtualTurnoutDecoder.cpp
-	dcc/VirtualTurnoutDecoder.h        
+		dcc/VirtualSensorDecoder.cpp
+		dcc/VirtualSensorDecoder.h
+		dcc/VirtualTurnoutDecoder.cpp
+		dcc/VirtualTurnoutDecoder.h        
         dispatcher/DispatcherService.cpp
         dispatcher/DispatcherService.h
         ln/LoconetService.cpp

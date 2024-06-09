@@ -686,13 +686,13 @@ namespace dcclite::broker
 	{	
 		m_tThinker.Schedule(ticks + 20ms);
 
-		auto enumerator = this->GetEnumerator();
-		while (enumerator.MoveNext())
-		{
-			auto throttle = enumerator.GetCurrent<Throttle>();
+		this->VisitChildren([ticks](auto &item)
+			{
+				auto throttle = static_cast<Throttle *>(&item);
 
-			throttle->Update(ticks);
-		}
+				throttle->Update(ticks);
+			}
+		);		
 	}
 
 	void ThrottleServiceImpl::Serialize(JsonOutputStream_t &stream) const

@@ -19,7 +19,7 @@ namespace dcclite
 	class IFolderObject : public Object
 	{
 		public:
-			typedef std::function<void(IObject &child)> Visitor_t;
+			typedef std::function<bool(IObject &child)> Visitor_t;
 
 		public:
 			explicit IFolderObject(RName name) :
