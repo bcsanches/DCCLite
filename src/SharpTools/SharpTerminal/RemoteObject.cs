@@ -367,6 +367,12 @@ namespace SharpTerminal
         {
             var json = args.Notification;
 
+            if(json.ContainsKey("error"))
+            {
+                //something failed, ignore
+                return;
+            }
+
             var parameters = json["params"];            
 
             switch ((string)json["method"])

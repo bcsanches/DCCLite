@@ -1332,15 +1332,7 @@ namespace dcclite::broker
 			if ((jsonrpcKey == doc.MemberEnd()) || (!jsonrpcKey->value.IsString()) || (strcmp(jsonrpcKey->value.GetString(), JSONRPC_VERSION)))
 			{
 				throw TerminalCmdException(fmt::format("Invalid rpc version or was not set: {}", msg), -1);
-			}
-
-			auto methodKey = doc.FindMember("method");
-			if ((methodKey == doc.MemberEnd()) || (!methodKey->value.IsString()))
-			{
-				throw TerminalCmdException(fmt::format("Invalid method name in msg: {}", msg), -1);
-			}
-
-			const auto methodName = RName::Get(methodKey->value.GetString());
+			}			
 
 			auto idKey = doc.FindMember("id");
 			if ((idKey == doc.MemberEnd()) || (!idKey->value.IsInt()))
@@ -1350,11 +1342,24 @@ namespace dcclite::broker
 
 			cmdId = idKey->value.GetInt();
 
+			auto methodKey = doc.FindMember("method");
+			if ((methodKey == doc.MemberEnd()) || (!methodKey->value.IsString()))
+			{
+				throw TerminalCmdException(fmt::format("Invalid method name in msg: {}", msg), cmdId);
+			}
+
+			const auto methodName = RName::TryGetName(methodKey->value.GetString());
+			if (!methodName)
+			{
+				dcclite::Log::Error("Cmd {} is not registered in name system", methodKey->value.GetString());
+				throw TerminalCmdException(fmt::format("Cmd {} is not registered in name system", methodKey->value.GetString()), cmdId);
+			}
+
 			auto cmd = m_rclCmdHost.TryFindCmd(methodName);
 			if (cmd == nullptr)
 			{
 				dcclite::Log::Error("Invalid cmd: {}", methodName);
-				throw TerminalCmdException(fmt::format("Invalid cmd name: {}", methodName), cmdId);				
+				throw TerminalCmdException(fmt::format("Invalid cmd name: {}", methodName), cmdId);
 			}
 
 			//dcclite::Log::Trace("[TerminalClient::OnMsg] Running cmd {} - {}", cmd->GetName(), cmdId);
