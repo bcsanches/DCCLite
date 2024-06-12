@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <string>
 
 #include <JsonCreator/Object.h>
