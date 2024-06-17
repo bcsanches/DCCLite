@@ -11,7 +11,7 @@
 #include "RailObject.h"
 
 #include <fmt/format.h>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 #include "render/ColorStyle.h"
 #include "render/IRenderer.h"

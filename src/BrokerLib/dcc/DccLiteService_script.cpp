@@ -10,7 +10,7 @@
 
 #include "DccLiteService.h"
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 #include <FmtUtils.h>
 #include <Log.h>

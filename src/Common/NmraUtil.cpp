@@ -11,7 +11,7 @@
 #include "NmraUtil.h"
 
 #include "fmt/format.h"
-#include "magic_enum.hpp"
+#include "magic_enum/magic_enum.hpp"
 
 /*
 	Straight from JMRI source code (https://www.jmri.org/), only used for testing purposes

@@ -19,7 +19,7 @@
 #include <optional>
 #include <deque>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 #include "../sys/Broker.h"
 #include "../sys/Thinker.h"

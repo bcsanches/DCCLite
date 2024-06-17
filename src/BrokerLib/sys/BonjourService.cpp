@@ -25,7 +25,7 @@ https://datatracker.ietf.org/doc/html/rfc6335 -> Internet Assigned Numbers Autho
 
 #include "BonjourService.h"
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <mutex>
 
 #include <FmtUtils.h>
