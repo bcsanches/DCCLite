@@ -63,15 +63,23 @@ int main(int argc, char **argv)
 		if (window == nullptr)
 		{
 			dcclite::Log::Critical("[LitePanelSDL] Error: SDL_CreateWindow(): %s\n", SDL_GetError());
+
+			SDL_Quit();
 			return -1;
 		}
 
-		SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
+		SDL_Renderer *renderer = SDL_CreateRenderer(window, NULL);
 		if (renderer == nullptr)
 		{
-			dcclite::Log::Critical("[LitePanelSDL] Error: SDL_CreateRenderer(): %s\n", SDL_GetError());			
+			dcclite::Log::Critical("[LitePanelSDL] Error: SDL_CreateRenderer(): %s\n", SDL_GetError());		
+
+			SDL_DestroyWindow(window);
+			SDL_Quit(); 
+
 			return -1;
 		}
+
+		SDL_SetRenderVSync(renderer, 1);
 
 		SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 		SDL_ShowWindow(window);
@@ -160,7 +168,7 @@ int main(int argc, char **argv)
 
 			SDL_RenderClear(renderer);
 
-			ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData());
+			ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
 
 			SDL_RenderPresent(renderer);
 		}
