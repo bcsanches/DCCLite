@@ -18,6 +18,7 @@
 #include <Panel.h>
 
 #include "LitePanelLibDefs.h"
+#include "EditCmds.h"
 
 namespace LitePanel::Gui
 {

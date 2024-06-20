@@ -59,10 +59,10 @@ namespace fmt
 	struct formatter<dcclite::RName>
 	{
 		template <typename ParseContext>
-		constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
+		constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
 
 		template <typename FormatContext>
-		auto format(const dcclite::RName &n, FormatContext &ctx)
+		auto format(const dcclite::RName &n, FormatContext &ctx) const
 		{
 			return fmt::format_to(ctx.out(), "{}", n.GetData());			
 		}

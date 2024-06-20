@@ -103,7 +103,7 @@ class DecoderProxy
 			auto decoder = dynamic_cast<T *>(&this->GetDecoder());
 			if (!decoder)
 			{
-				throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::SetState] [{}]: Decoder is not a {output decoder{}!!!", this->GetName(), typeid(T).name()));
+				throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::SetState] [{}]: Decoder is not an output decoder {}!!!", this->GetName(), typeid(T).name()));
 			}
 
 			return decoder;
@@ -115,7 +115,7 @@ class DecoderProxy
 			auto decoder = dynamic_cast<const T *>(&this->GetDecoder());
 			if (!decoder)
 			{
-				throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::SetState] [{}]: Decoder is not a {output decoder{}!!!", this->GetName(), typeid(T).name()));
+				throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::SetState] [{}]: Decoder is not an output decoder {}!!!", this->GetName(), typeid(T).name()));
 			}
 
 			return decoder;

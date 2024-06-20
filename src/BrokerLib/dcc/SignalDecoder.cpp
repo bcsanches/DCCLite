@@ -310,7 +310,7 @@ namespace dcclite::broker
 	{
 		if (m_uWaitListSize == 0)
 		{
-			dcclite::Log::Error("[SignalDecoder::{}] [State_WaitTurnOff::OnDecoderStateSync] m_uWaitListSize == 0!! how? Decoder -> {}", decoder.GetName());
+			dcclite::Log::Error("[SignalDecoder::{}] [State_WaitTurnOff::OnDecoderStateSync] m_uWaitListSize == 0!! how?", decoder.GetName());
 
 			return;
 		}

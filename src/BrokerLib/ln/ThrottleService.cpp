@@ -199,7 +199,7 @@ class Throttle: public dcclite::Object, public dcclite::broker::IThrottle
 		{
 			explicit ErrorState(const std::string &reason)
 			{
-				dcclite::Log::Error(reason);
+				dcclite::Log::Error("{}", reason);
 			}
 
 			void Update(Throttle &self, const dcclite::Clock::TimePoint_t time) override

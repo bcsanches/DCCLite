@@ -109,7 +109,7 @@ namespace fmt
 		constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
 
 		template <typename FormatContext>
-		auto format(const dcclite::broker::DccAddress &a, FormatContext& ctx)
+		auto format(const dcclite::broker::DccAddress &a, FormatContext& ctx) const
 		{
 			return fmt::format_to(ctx.out(), "{}", a.GetAddress());
 		}

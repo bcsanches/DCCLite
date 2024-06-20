@@ -14,7 +14,6 @@
 #include "LitePanel.h"
 #include "Panel.h"
 #include "PanelDocument.h"
-#include "PanelEditorCanvas.h"
 
 #include <wx/rtti.h>
 

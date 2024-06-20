@@ -184,7 +184,7 @@ namespace dcclite::broker
 		auto decoder = TryCreateDecoder(className, address, name, *this, dev, params);	
 		if (!decoder)
 		{				
-			throw std::runtime_error(fmt::format("[DccLiteService::{}] [Device_CreateDecoder] Error: failed to instantiate decoder {} - {} [{}]", name, address, className));
+			throw std::runtime_error(fmt::format("[DccLiteService::{}] [Device_CreateDecoder] Error: failed to instantiate decoder {} - {}", name, address, className));
 		}
 
 		auto pDecoder = decoder.get();	
