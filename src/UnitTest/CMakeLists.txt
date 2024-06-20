@@ -53,8 +53,6 @@ package_add_test(UnitTest
   	UtilUnitTest.cpp
 )
 
-target_compile_features(UnitTest PUBLIC cxx_std_17)  
-
 target_include_directories(UnitTest PRIVATE
     ${DCCLite_SOURCE_DIR}/src/BrokerLib 
     ${DCCLite_SOURCE_DIR}/src/Common

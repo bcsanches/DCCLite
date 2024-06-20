@@ -77,7 +77,5 @@ else(WIN32)
 
 endif(WIN32)
 
-target_compile_features(LuaLib PUBLIC cxx_std_17)
-
 
 

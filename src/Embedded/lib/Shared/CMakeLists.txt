@@ -23,5 +23,4 @@ set(SharedLib_HDRS
 )
 
 add_library(SharedLib STATIC ${SharedLib_SRCS} ${SharedLib_HDRS})
-target_compile_features(SharedLib PUBLIC cxx_std_17)
 

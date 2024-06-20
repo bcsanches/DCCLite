@@ -4,7 +4,6 @@ set(Terminal_SRCS
 )
 
 add_executable(Terminal  ${Terminal_SRCS})
-target_compile_features(Terminal PUBLIC cxx_std_17)    
 
 target_include_directories(Terminal 
   PRIVATE 

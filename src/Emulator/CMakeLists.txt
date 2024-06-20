@@ -4,7 +4,6 @@ set(Emulator_SRCS
 )
 
 add_executable(Emulator  ${Emulator_SRCS})
-target_compile_features(Emulator PUBLIC cxx_std_17)    
 
 target_include_directories(Emulator 
   PRIVATE 

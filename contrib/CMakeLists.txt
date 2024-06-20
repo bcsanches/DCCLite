@@ -53,9 +53,7 @@ if(${DCCLITE_IMGUI_TOOLS})
 		PRIVATE ${DCCLite_SOURCE_DIR}/contrib/SDL/include
 	)
 
-	target_link_libraries(IMGUI)
-
-	target_compile_features(IMGUI PUBLIC cxx_std_17)
+	target_link_libraries(IMGUI)	
 
 	if(${DCCLITE_IMGUI_TOOLS_FREETYPE})
 		add_subdirectory(freetype-2.7)

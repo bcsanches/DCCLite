@@ -150,8 +150,6 @@ target_compile_definitions(BrokerLib
         DEBUG
 )
 
-target_compile_features(BrokerLib PUBLIC cxx_std_17)
-
 target_include_directories(BrokerLib 	
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/JsonCreator/include
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/lua-5.4.6/src

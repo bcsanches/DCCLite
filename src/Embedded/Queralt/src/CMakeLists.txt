@@ -11,7 +11,6 @@ add_compile_definitions(QUERALTLIB_EXPORTS DCCLITE_ARDUINO_EMULATOR)
 add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 
 add_library(QueraltLib SHARED ${QueraltLib_SRCS} ${QueraltLib_HDRS})
-target_compile_features(QueraltLib PUBLIC cxx_std_17)    
 
 target_include_directories(QueraltLib 
   PRIVATE 

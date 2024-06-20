@@ -4,7 +4,6 @@ set(Launcher_SRCS
 )
 
 add_executable(Launcher  ${Launcher_SRCS})
-target_compile_features(Launcher PUBLIC cxx_std_17)   
 
 add_dependencies(Launcher Broker)
 

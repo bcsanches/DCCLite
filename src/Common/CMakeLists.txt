@@ -58,8 +58,6 @@ else(WIN32)
 	)   
 		 
 endif(WIN32)
-		
-target_compile_features(Common PUBLIC cxx_std_17)     
 
 target_link_libraries(Common PUBLIC CityHash fmt SharedLib)
 

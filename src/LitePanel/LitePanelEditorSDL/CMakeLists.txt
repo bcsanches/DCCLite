@@ -27,8 +27,6 @@ add_executable(LitePanelEditorSDL
 	ToolBarWidget.h
 )
 
-target_compile_features(LitePanelEditorSDL PUBLIC cxx_std_17)    
-
 target_include_directories(LitePanelEditorSDL
 	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/fmt/include
 	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/imgui/

@@ -11,7 +11,6 @@ add_compile_definitions(STANDALONEDECODERLIB_EXPORTS DCCLITE_ARDUINO_EMULATOR)
 add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 
 add_library(StandAloneDecoderLib SHARED ${StandAloneDecoderLib_SRCS} ${StandAloneDecoderLib_HDRS})
-target_compile_features(StandAloneDecoderLib PUBLIC cxx_std_17)    
 
 target_include_directories(StandAloneDecoderLib 
   PRIVATE 

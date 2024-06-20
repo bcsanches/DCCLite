@@ -1,6 +1,5 @@
 
-add_executable(Broker  main.cpp )
-target_compile_features(Broker PUBLIC cxx_std_17)    
+add_executable(Broker main.cpp)
 
 target_include_directories(Broker 
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/BrokerLib

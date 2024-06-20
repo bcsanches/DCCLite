@@ -18,7 +18,6 @@ set(LiteWiring_HEADERS
 )
 
 add_executable(LiteWiring WIN32 ${LiteWiring_SRCS} ${LiteWiring_HEADERS})
-target_compile_features(LiteWiring PUBLIC cxx_std_17)    
 
 target_include_directories(LiteWiring 
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/Common	

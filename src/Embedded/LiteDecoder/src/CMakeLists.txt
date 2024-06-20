@@ -29,7 +29,6 @@ add_compile_definitions(LITEDECODERLIB_EXPORTS DCCLITE_ARDUINO_EMULATOR)
 add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 
 add_library(LiteDecoderLib SHARED ${LiteDecoderLib_SRCS} ${LiteDecoderLib_HDRS})
-target_compile_features(LiteDecoderLib PUBLIC cxx_std_17)    
 
 target_include_directories(LiteDecoderLib 
     PRIVATE 

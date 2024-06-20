@@ -21,7 +21,6 @@ set(LitePanelWx_HDRS
 )
 
 add_executable(LitePanelWx WIN32 ${LitePanelWx_SRCS} ${LitePanelWx_HDRS})
-target_compile_features(LitePanelWx PUBLIC cxx_std_17)    
 
 target_include_directories(LitePanelWx 
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/Common  

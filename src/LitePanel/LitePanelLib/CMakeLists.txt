@@ -41,7 +41,6 @@ if(WIN32)
 endif(WIN32)
 
 add_library(LitePanelLib  ${LitePanelLib_SRCS} ${LitePanelLib_HDRS})
-target_compile_features(LitePanelLib PUBLIC cxx_std_17)     
 
 target_include_directories(LitePanelLib
   PUBLIC  ${DCCLite_SOURCE_DIR}/src/LitePanelLib/
