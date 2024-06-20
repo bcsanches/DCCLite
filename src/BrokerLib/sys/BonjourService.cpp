@@ -246,7 +246,7 @@ namespace fmt
 		template <typename FormatContext>
 		auto format(const dcclite::broker::QSection &q, FormatContext &ctx)
 		{		
-			return format_to(ctx.out(), "{}", dcclite::broker::LabelsVector2String(q.m_vecLabels));
+			return fmt::format_to(ctx.out(), "{}", dcclite::broker::LabelsVector2String(q.m_vecLabels));
 		}
 	};
 
@@ -259,7 +259,7 @@ namespace fmt
 		template <typename FormatContext>
 		auto format(const dcclite::broker::ResourceRecord &rr, FormatContext &ctx)
 		{
-			return format_to(ctx.out(), "{}", dcclite::broker::LabelsVector2String(rr.m_vecLabels));
+			return fmt::format_to(ctx.out(), "{}", dcclite::broker::LabelsVector2String(rr.m_vecLabels));
 		}
 	};
 }

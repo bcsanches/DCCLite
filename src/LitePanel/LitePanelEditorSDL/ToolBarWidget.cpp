@@ -349,7 +349,7 @@ namespace dcclite::PanelEditor
 	{
 		RName clearCurrentToolCmdName{ "ToolBar.ClearCurrentTool" };
 	
-		console.RegisterCommand(clearCurrentToolCmdName, [this](ConsoleCmdParams &params)
+		console.RegisterCommand(clearCurrentToolCmdName, [this](const ConsoleCmdParams &params)
 			{
 				this->ClearCurrentTool();
 			}
@@ -364,7 +364,7 @@ namespace dcclite::PanelEditor
 			return;
 
 		m_pclCurrentButton->SetSelected(false);
-		m_pclCurrentButton = false;
+		m_pclCurrentButton = nullptr;
 	}
 
 	void ToolBarWidget::Display()

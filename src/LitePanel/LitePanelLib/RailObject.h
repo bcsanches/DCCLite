@@ -34,7 +34,7 @@ namespace LitePanel
 				return TYPE_NAME;
 			}			
 
-			static constexpr char* TYPE_NAME = "RailObject";
+			static constexpr auto TYPE_NAME = "RailObject";
 
 		protected:
 			void OnSave(JsonOutputStream_t& stream) const noexcept override;
@@ -88,7 +88,7 @@ namespace LitePanel
 
 			void Draw(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const override;
 
-			static constexpr char* TYPE_NAME = "SimpleRailObject";
+			static constexpr auto TYPE_NAME = "SimpleRailObject";
 
 		protected:
 			void OnSave(JsonOutputStream_t& stream) const noexcept override;
@@ -119,7 +119,7 @@ namespace LitePanel
 				return TYPE_NAME;
 			}
 
-			static constexpr char *TYPE_NAME = "JunctionRailObject";
+			static constexpr auto TYPE_NAME = "JunctionRailObject";
 
 			void Draw(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const override;
 

@@ -39,7 +39,7 @@ namespace dcclite::PanelEditor
 			ConsoleCmd(RName name);
 
 		public:			
-			virtual void Execute(ConsoleCmdParams &params) = 0;
+			virtual void Execute(const ConsoleCmdParams &params) = 0;
 
 			DCCLITE_DISABLE_CLASS_COPY_AND_MOVE(ConsoleCmd);
 
@@ -51,7 +51,7 @@ namespace dcclite::PanelEditor
 		private:			
 	};
 
-	typedef std::function<void (ConsoleCmdParams &params)> ConsoleCmdFunc_t;
+	typedef std::function<void (const ConsoleCmdParams &params)> ConsoleCmdFunc_t;
 
 	class SimpleConsoleCmd : public ConsoleCmd
 	{
@@ -66,7 +66,7 @@ namespace dcclite::PanelEditor
 				}
 			}
 
-			void Execute(ConsoleCmdParams &params) override
+			void Execute(const ConsoleCmdParams &params) override
 			{
 				m_pfnFunc(params);
 			}
@@ -99,9 +99,14 @@ namespace dcclite::PanelEditor
 			void ExecuteCommand(const char *cmd);
 
 			template <typename... Args>
-			inline void AddLog(fmt::format_string<Args...> s, Args&&... args)
+			inline void AddLog(const fmt::format_string<Args...> s, Args&&... args)
 			{
 				this->AddLogImpl(fmt::format(s, std::forward<Args>(args)...));
+			}
+
+			inline void AddLog(std::string log)
+			{
+				this->AddLogImpl(std::move(log));
 			}
 
 		private:			

@@ -73,7 +73,7 @@ void Project::Load(std::string fileName)
 					throw std::runtime_error(fmt::format("error: [Project::Load] Device type {} already exists", devName));
 				}
 				
-				auto &modelsIt = deviceTypeData.FindMember("models");
+				auto modelsIt = deviceTypeData.FindMember("models");
 				if (modelsIt == deviceTypeData.MemberEnd())
 				{
 					continue;
@@ -133,7 +133,7 @@ void Project::Save()
 
 		if(!m_mapNetworkTypes.empty())
 		{		
-			auto& networkArray = object.AddArray("networks");
+			auto networkArray = object.AddArray("networks");
 
 			for(const auto & networkIt : m_mapNetworkTypes)
 			{
@@ -143,11 +143,11 @@ void Project::Save()
 
 		if (!m_mapDeviceTypes.empty())
 		{
-			auto& deviceTypesArray = object.AddArray("deviceTypes");
+			auto deviceTypesArray = object.AddArray("deviceTypes");
 
 			for (const auto& devTypeIt : m_mapDeviceTypes)
 			{
-				auto& devTypeObj = deviceTypesArray.AddObject();
+				auto devTypeObj = deviceTypesArray.AddObject();
 
 				devTypeObj.AddStringValue("name", devTypeIt.second->GetName());
 

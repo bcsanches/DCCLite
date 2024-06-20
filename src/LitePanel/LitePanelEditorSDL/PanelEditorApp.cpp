@@ -141,13 +141,13 @@ namespace dcclite::PanelEditor
 	{
 		auto recentFile = Settings::GetLastProjectPath();
 
-		m_wConsole.RegisterCommand(RName{ "App.Quit" }, [this](ConsoleCmdParams &params)
+		m_wConsole.RegisterCommand(RName{ "App.Quit" }, [this](const ConsoleCmdParams &params)
 			{
 				m_fKeepRunning = false;
 			}
 		);
 
-		m_wConsole.RegisterCommand(RName{ "Editor.New" }, [this](ConsoleCmdParams &params)
+		m_wConsole.RegisterCommand(RName{ "Editor.New" }, [this](const ConsoleCmdParams &params)
 			{
 				this->NewFile();
 			}

@@ -17,45 +17,40 @@ namespace dcclite
 	namespace Log
 	{
 		template<typename... Args>
-		inline void Trace(const char *fmt, const Args &... args)
+		inline void Trace(spdlog::format_string_t<Args...> fmt, Args &&...args)
 		{
-			spdlog::trace(fmt, args...);
+			spdlog::trace(fmt, std::forward<Args>(args)...);
 		}
 
 		template<typename... Args>
-		inline void Debug(const char *fmt, const Args &... args)
+		inline void Debug(spdlog::format_string_t<Args...> fmt, Args &&...args)
 		{
-			spdlog::debug(fmt, args...);
+			spdlog::debug(fmt, std::forward<Args>(args)...);
 		}
 
 		template<typename... Args>
-		inline void Info(const char *fmt, const Args &... args)
+		inline void Info(spdlog::format_string_t<Args...> fmt, Args &&...args)
 		{
-			spdlog::info(fmt, args...);
+			spdlog::info(fmt, std::forward<Args>(args)...);
 		}
 
 		template<typename... Args>
-		inline void Warn(const char *fmt, const Args &... args)
+		inline void Warn(spdlog::format_string_t<Args...> fmt, Args &&...args)
 		{
-			spdlog::warn(fmt, args...);
+			spdlog::warn(fmt, std::forward<Args>(args)...);
 		}
 
 		template<typename... Args>
-		inline void Error(const char *fmt, const Args &... args)
+		inline void Error(spdlog::format_string_t<Args...> fmt, Args &&...args)
 		{
-			spdlog::error(fmt, args...);
+			spdlog::error(fmt, std::forward<Args>(args)...);
 		}
 
 		template<typename... Args>
-		inline void Error(const std::string &fmt, const Args &... args)
+		inline void Critical(spdlog::format_string_t<Args...> fmt, Args &&...args)
 		{
-			spdlog::error(fmt, args...);
+			spdlog::critical(fmt, std::forward<Args>(args)...);
 		}
 
-		template<typename... Args>
-		inline void Critical(const char *fmt, const Args &... args)
-		{
-			spdlog::critical(fmt, args...);
-		}
 	} //end of namespace Log
 } //end of namespace dcclite

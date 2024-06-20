@@ -111,7 +111,7 @@ namespace fmt
 		template <typename FormatContext>
 		auto format(const dcclite::broker::DccAddress &a, FormatContext& ctx)
 		{
-			return format_to(ctx.out(), "{}", a.GetAddress());
+			return fmt::format_to(ctx.out(), "{}", a.GetAddress());
 		}
 	};
 } //end of namespace fmt

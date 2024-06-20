@@ -40,7 +40,8 @@ namespace dcclite::PanelEditor
                 spdlog::memory_buf_t formatted;
                 spdlog::sinks::base_sink<std::mutex>::formatter_->format(msg, formatted);
 
-                m_rclConsole.AddLog(fmt::to_string(formatted));                
+                std::string result = fmt::to_string(formatted);
+                m_rclConsole.AddLog(result);
             }
 
             void flush_() override
@@ -70,7 +71,7 @@ namespace dcclite::PanelEditor
         auto &sinks = dcclite::LogGetDefault()->sinks();
         sinks.push_back(m_spLogSink);
 
-        this->RegisterCommand(RName{ "help" }, [](ConsoleCmdParams &params)
+        this->RegisterCommand(RName{ "help" }, [](const ConsoleCmdParams &params)
             {
                 if (params.m_uArgc > 1)
                 {
@@ -88,7 +89,7 @@ namespace dcclite::PanelEditor
             }
         );
 
-        this->RegisterCommand(RName{ "Console.Clear" }, [](ConsoleCmdParams &params)
+        this->RegisterCommand(RName{ "Console.Clear" }, [](const ConsoleCmdParams &params)
             {
                 if (params.m_uArgc > 1)
                 {
@@ -101,7 +102,7 @@ namespace dcclite::PanelEditor
             }
         );
 
-        this->RegisterCommand(RName{ "Console.ClearHistory"}, [](ConsoleCmdParams &params)
+        this->RegisterCommand(RName{ "Console.ClearHistory"}, [](const ConsoleCmdParams &params)
             {
                 if (params.m_uArgc > 1)
                 {

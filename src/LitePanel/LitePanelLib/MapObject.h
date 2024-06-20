@@ -63,7 +63,7 @@ namespace LitePanel
 
 			virtual void Draw(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const;
 
-			static constexpr char* TYPE_NAME = "MapObject";
+			static constexpr auto TYPE_NAME = "MapObject";
 
 			static std::unique_ptr<MapObject> Create(const rapidjson::Value& defs);
 
