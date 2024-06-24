@@ -6,7 +6,7 @@ branches:
      
 image:
   - Visual Studio 2019
-  - Ubuntu      
+  - Ubuntu2024      
   
 build_script:
   - cmd: Scripts\build_ci_win.cmd
