@@ -9,6 +9,7 @@ if(${DCCLITE_IMGUI_TOOLS})
 endif()
 
 if(${DCCLITE_GUI_TOOLS})
+	set(wxBUILD_CXX_STANDARD 20 CACHE STRING "" FORCE)
 	add_subdirectory(wxWidgets)
 endif()
 
