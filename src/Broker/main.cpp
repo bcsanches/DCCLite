@@ -10,11 +10,6 @@
 
 
 #include <chrono>
-#include <iostream>
-#include <signal.h>
-#include <stdexcept>
-
-#include <fmt/chrono.h>
 
 #include <Clock.h>
 #include <ConsoleUtils.h>
@@ -27,7 +22,6 @@
 #include "sys/EventHub.h"
 #include "sys/Thinker.h"
 
-#include "terminal/TerminalCmd.h"
 
 #include <spdlog/logger.h>
 

@@ -116,6 +116,7 @@ namespace dcclite::broker
 
 		auto port = params["port"].GetInt();
 	
+		[[unlikely]]
 		if (!m_clSocket.Open(port, dcclite::Socket::Type::DATAGRAM, dcclite::Socket::FLAG_BLOCKING_MODE))
 		{
 			throw std::runtime_error(fmt::format("[DccLiteService::{}] error: cannot open socket", name));
@@ -125,6 +126,7 @@ namespace dcclite::broker
 
 		const rapidjson::Value &devicesData = params["devices"];
 
+		[[unlikely]]
 		if (!devicesData.IsArray())
 			throw std::runtime_error(fmt::format("[DccLiteService::{}] error: invalid config, expected devices array inside DccLiteService", name));
 
@@ -182,6 +184,8 @@ namespace dcclite::broker
 	)
 	{
 		auto decoder = TryCreateDecoder(className, address, name, *this, dev, params);	
+
+		[[unlikely]]
 		if (!decoder)
 		{				
 			throw std::runtime_error(fmt::format("[DccLiteService::{}] [Device_CreateDecoder] Error: failed to instantiate decoder {} - {}", name, address, className));
@@ -247,6 +251,8 @@ namespace dcclite::broker
 		dcclite::Guid sessionToken = packet.ReadGuid();	
 
 		auto dev = this->TryFindDeviceSession(sessionToken);
+
+		[[unlikely]]
 		if (dev == nullptr)
 		{
 			dcclite::Log::Warn("[DccLiteService::{}] [TryFindPacketDestination] Received packet from unknown session", this->GetName());
@@ -259,6 +265,7 @@ namespace dcclite::broker
 
 	void DccLiteService::Device_SendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet &packet)
 	{
+		[[unlikely]]
 		if (!m_clSocket.Send(destination, packet.GetData(), packet.GetSize()))
 		{
 			dcclite::Log::Error("[DccLiteService::{}] [Device_SendPacket] Failed to send packet to {}", this->GetName(), destination);
@@ -413,6 +420,8 @@ namespace dcclite::broker
 		reader.ReadStr(name, sizeof(name));
 
 		const auto procotolVersion = packet.Read<std::uint16_t>();
+
+		[[unlikely]]
 		if (procotolVersion != dcclite::PROTOCOL_VERSION)
 		{
 			dcclite::Log::Error("[DccLiteService::{}] [OnNet_Hello] Hello from {} - {} with invalid protocol version {}, expected {}, ignoring",
@@ -513,13 +522,13 @@ namespace dcclite::broker
 		{
 			auto [status, size] = m_clSocket.Receive(sender, data, sizeof(data));
 
+			[[unlikely]]
 			if (status != dcclite::Socket::Status::OK)
 			{
 				break;
-			}
+			}			
 
-			//dcclite::Log::Info("[DccLiteService::Update] got data");
-
+			[[unlikely]]
 			if (size > dcclite::PACKET_MAX_SIZE)
 			{
 				dcclite::Log::Error("[DccLiteService] [NetworkThreadProc::Update] packet size too big, truncating");
@@ -527,10 +536,9 @@ namespace dcclite::broker
 				size = dcclite::PACKET_MAX_SIZE;
 			}
 
-			dcclite::Packet pkt{ data, static_cast<uint8_t>(size) };
+			dcclite::Packet pkt{ data, static_cast<uint8_t>(size) };			
 
-			//dcclite::PacketReader reader{ pkt };	
-
+			[[unlikely]]
 			if (pkt.Read<uint32_t>() != dcclite::PACKET_ID)
 			{
 				dcclite::Log::Warn("[DccLiteService] [NetworkThreadProc::Update] Invalid packet id");
