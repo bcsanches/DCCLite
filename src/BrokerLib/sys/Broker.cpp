@@ -132,6 +132,13 @@ namespace dcclite::broker
 		ZeroConfSystem::Start(m_clProject.GetName());
 	}
 
+	Broker::~Broker()
+	{
+		ScriptSystem::Stop();
+
+		ZeroConfSystem::Stop();
+	}
+
 	void Broker::LoadConfig()
 	{
 		const auto configFileName = m_clProject.GetFilePath("broker.config.json");

@@ -17,6 +17,8 @@
 namespace dcclite::broker::ZeroConfSystem
 { 		
 	extern void Start(std::string_view projectName);
+
+	extern void Stop();
 		
 	//
 	// Register a name to be published 

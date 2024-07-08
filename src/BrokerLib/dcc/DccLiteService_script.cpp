@@ -233,7 +233,7 @@ class DccLiteProxy
 
 		~DccLiteProxy()
 		{
-			dcclite::Log::Trace("[ScriptService] [DccLiteProxy] [{}]: Destroyed.", m_rclService.GetName());
+			dcclite::Log::Trace("[ScriptService] [DccLiteProxy] [{}] Destroyed.", this->m_rclService.GetName());			
 		}
 
 		DecoderProxy *OnIndexByName(std::string_view key, sol::this_state L);

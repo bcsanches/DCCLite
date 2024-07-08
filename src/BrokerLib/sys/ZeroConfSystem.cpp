@@ -133,6 +133,13 @@ namespace dcclite::broker::ZeroConfSystem
 					{
 						OpenSocket();
 					}
+					else if (status == Socket::Status::INTERRUPTED)
+					{
+						dcclite::Log::Trace("[ZeroConfSystem::WorkerThreadProc] Socket interrupted, stoping");
+
+						//socket closed? Game over...
+						return;
+					}
 
 					continue;
 				}
@@ -213,17 +220,45 @@ namespace dcclite::broker::ZeroConfSystem
 			throw std::runtime_error(fmt::format("[ZeroconfServiceImpl] [Register] Service {} already registered with port {}", serviceName, result.first->second));				
 	}
 
+	static std::thread g_thWorker;
+	static bool g_fStarted = false;
 	
 	void Start(std::string_view projectName)
 	{
-		if (g_clSocket.IsOpen())
+		dcclite::Log::Trace("[ZeroConfSystem::Start] initializing");
+
+		if(g_fStarted)
 			throw std::logic_error("[ZeroconfService] [Start] already called??");
+
+		g_fStarted = true;		
 
 		g_strProjectName = projectName;
 
-		std::thread worker{ WorkerThreadProc };
-		dcclite::SetThreadName(worker, "ZeroConfService::WorkerThread");
+		dcclite::Log::Trace("[ZeroConfSystem::Start] Starting worker thread");
 
-		worker.detach();
+		g_thWorker = std::thread{ WorkerThreadProc };
+		dcclite::SetThreadName(g_thWorker, "ZeroConfService::WorkerThread");
+
+		dcclite::Log::Trace("[ZeroConfSystem::Start] done");
+	}
+
+	void Stop()
+	{		
+		if (!g_fStarted)
+			return;
+
+		dcclite::Log::Trace("[ZeroConfSystem::Stop] Closing socket");
+
+		g_clSocket.Close();
+
+		dcclite::Log::Trace("[ZeroConfSystem::Stop] Joining worker thread");
+
+		g_thWorker.join();
+
+		g_mapServices.clear();		
+
+		g_fStarted = false;
+
+		dcclite::Log::Trace("[ZeroConfSystem::Stop] done");
 	}
 }

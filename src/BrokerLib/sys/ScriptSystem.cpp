@@ -172,4 +172,19 @@ namespace dcclite::broker::ScriptSystem
 					
 		RunScripts();		
 	}
+
+	void Stop()
+	{
+		dcclite::Log::Trace("[ScriptService::Stop] Notifying scripters");
+
+		for (auto it : g_vecRegisteredServices)
+			it->IScriptSupport_OnVMFinalize(g_clLua);
+
+		dcclite::Log::Trace("[ScriptService::Stop] Closing lua");
+
+		//force destruction
+		g_clLua = {};
+
+		dcclite::Log::Trace("[ScriptService::Stop] done");
+	}
 }

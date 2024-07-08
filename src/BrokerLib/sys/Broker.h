@@ -32,6 +32,7 @@ namespace dcclite::broker
 	{
 		public:
 			explicit Broker(dcclite::fs::path projectPath);
+			~Broker();
 
 			Broker(const Broker &) = delete;
 

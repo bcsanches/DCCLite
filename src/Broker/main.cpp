@@ -27,13 +27,39 @@
 
 constexpr auto BUILD_NUM = DCCLITE_VERSION;
 
-static bool fExitRequested = false;
+static bool g_fExitRequested = false;
 
-//static TerminalCmd g_ShutdownCmd{ "shutdown" };
+class NullEventTarget: public dcclite::broker::EventHub::IEventTarget
+{
+	public:
+		//empty
+};
+
+class QuitEvent: public dcclite::broker::EventHub::IEvent
+{
+	public:
+		QuitEvent(dcclite::broker::EventHub::IEventTarget &target) :
+			IEvent{ target }
+		{
+			//empty
+		}
+
+		void Fire() override
+		{
+			//nothing todo, this is used just to wake up the main thread
+		}
+};
 
 static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 {
-	fExitRequested = true;
+	g_fExitRequested = true;
+
+	static NullEventTarget g_NullTarget;
+
+	//wake up main thread if it is sitting waiting for events...
+	dcclite::broker::EventHub::PostEvent<QuitEvent>(std::ref(g_NullTarget));
+
+	dcclite::Log::Info("[Main] CTRL+C detected, exiting...");
 
 	return true;
 }
@@ -67,7 +93,7 @@ int main(int argc, char **argv)
 		unsigned frameCount = 0;
 		auto startTime = dcclite::Clock::DefaultClock_t::now();
 		
-		while (!fExitRequested)
+		while (!g_fExitRequested)
 		{			
 			auto now = dcclite::Clock::DefaultClock_t::now();
 
@@ -89,6 +115,8 @@ int main(int argc, char **argv)
 	{
 		dcclite::LogGetDefault()->critical("caught {}", ex.what());
 	}
+
+	dcclite::Log::Info("[Main] Bye");
 
 	return 0;
 }

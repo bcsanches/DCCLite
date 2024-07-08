@@ -104,11 +104,11 @@ TerminalService::TerminalService()
 	}
 }
 
-static bool fExitRequested = false;
+static bool g_fExitRequested = false;
 
 static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 {
-	fExitRequested = true;
+	g_fExitRequested = true;
 
 	return true;
 }
@@ -143,7 +143,7 @@ int main(int, char **)
 
 	dcclite::Clock clock;
 
-	while(!fExitRequested)
+	while(!g_fExitRequested)
 	{
 		if (!clock.Tick(std::chrono::milliseconds{ 10 }))
 		{

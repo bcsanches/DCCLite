@@ -18,6 +18,8 @@
 #include <Packet.h>
 #include <Util.h>
 
+#include "magic_enum/magic_enum.hpp"
+
 #include "NetworkDevice.h"
 #include "LocationManager.h"
 #include "QuadInverter.h"
@@ -157,8 +159,20 @@ namespace dcclite::broker
 
 	DccLiteService::~DccLiteService()
 	{
+		dcclite::Log::Info("[DccLiteService::{}] Closing socket", this->GetName());
+
+		m_clSocket.Close();
+
+		dcclite::Log::Info("[DccLiteService::{}] Joining network thread", this->GetName());
+
+		m_clNetworkThread.join();
+
+		dcclite::Log::Info("[DccLiteService::{}] cleanup", this->GetName());
+
 		//Destroy devices, so they clean everything
 		this->RemoveChild(m_pDevices->GetName());
+
+		dcclite::Log::Info("[DccLiteService::{}] destructor done", this->GetName());
 	}
 
 	void DccLiteService::Device_DestroyDecoder(Decoder &dec)
@@ -525,6 +539,8 @@ namespace dcclite::broker
 			[[unlikely]]
 			if (status != dcclite::Socket::Status::OK)
 			{
+				dcclite::Log::Warn("[DccLiteService] [NetworkThreadProc::Update] socket receive returned: {}", magic_enum::enum_name(status));
+
 				break;
 			}			
 

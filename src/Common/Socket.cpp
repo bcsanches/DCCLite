@@ -531,6 +531,9 @@ namespace dcclite
 			{
 				case WSAEWOULDBLOCK:
 					return std::make_tuple(Status::WOULD_BLOCK, 0);
+				
+				case WSAEINTR:
+					return std::make_tuple(Status::INTERRUPTED, 0);
 
 				case WSAEMSGSIZE:
 					if (truncate)

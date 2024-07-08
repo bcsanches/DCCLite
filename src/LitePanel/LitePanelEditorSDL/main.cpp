@@ -26,7 +26,7 @@
 
 constexpr auto BUILD_NUM = DCCLITE_VERSION;
 
-static bool fExitRequested = false;
+static bool g_fExitRequested = false;
 
 static ImVec4 g_clClearColor = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
 		unsigned frameCount = 0;
 		auto startTime = dcclite::Clock::DefaultClock_t::now();
 
-		while (!fExitRequested)
+		while (!g_fExitRequested)
 		{
 #if 1
 			auto now = dcclite::Clock::DefaultClock_t::now();
@@ -145,9 +145,9 @@ int main(int argc, char **argv)
 				ImGui_ImplSDL3_ProcessEvent(&event);
 
 				if (event.type == SDL_EVENT_QUIT)
-					fExitRequested = true;
+					g_fExitRequested = true;
 				if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(window))
-					fExitRequested = true;
+					g_fExitRequested = true;
 
 				if (event.type == SDL_EVENT_KEY_DOWN)
 					app.HandleEvent(event.key);
@@ -159,7 +159,7 @@ int main(int argc, char **argv)
 			ImGui::NewFrame();
 
 			if (!app.Display())
-				fExitRequested = true;
+				g_fExitRequested = true;
 
 			// Rendering
 			ImGui::Render();
