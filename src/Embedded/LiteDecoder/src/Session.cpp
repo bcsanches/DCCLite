@@ -274,7 +274,7 @@ static void SearchingServerTick(const unsigned long ticks)
 		return;
 
 	//
-	//If had a timeout, so we go to offline state and start again
+	//If had a timeout, send another broadcast and wait
 	OfflineTick(ticks);
 }
 
