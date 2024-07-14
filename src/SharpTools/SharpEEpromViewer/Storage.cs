@@ -17,14 +17,21 @@ namespace SharpEEPromViewer
 {
     class Item
     {
-        public byte Slot { get; }
-        public UInt16 Size { get; }
+		[Category("Information")]
+		public bool Deprecated { get; }
+
+		[Category("Information")]
+		public byte Slot { get; }
+
+		[Category("Information")]
+		public UInt16 Size { get; }
         
 
-        protected Item(byte slot, UInt16 size)            
+        protected Item(byte slot, UInt16 size, bool deprecated = false)            
         {
             Size = size;
             Slot = slot;
+            Deprecated = deprecated;
         }
     }
 
@@ -162,7 +169,43 @@ namespace SharpEEPromViewer
         }
     }
 
-    class TurntableAutoInverterDecoder: Item
+	class TurntableAutoInverterDecoderV016 : Item
+	{
+		[Flags]
+		enum Flags : byte
+		{
+			TRTD_REMOTE_ACTIVE = 0x40,
+			TRTD_ACTIVE = 0x80
+		}
+
+		public bool IsActive { get; }
+
+		public byte SensorAIndex { get; }
+		public byte SensorBIndex { get; }
+
+		public byte TrackAPin0 { get; }
+		public byte TrackAPin1 { get; }
+		public byte TrackBPin0 { get; }
+		public byte TrackBPin1 { get; }
+
+		public TurntableAutoInverterDecoderV016(byte slot, BinaryReader reader) :
+			base(slot, 7, true)
+		{
+			var flags = (Flags)reader.ReadByte();
+
+			IsActive = (flags & Flags.TRTD_ACTIVE) == Flags.TRTD_ACTIVE;
+
+			SensorAIndex = reader.ReadByte();
+			SensorBIndex = reader.ReadByte();
+
+			TrackAPin0 = reader.ReadByte();
+			TrackAPin1 = reader.ReadByte();
+			TrackBPin0 = reader.ReadByte();
+			TrackBPin1 = reader.ReadByte();
+		}
+	}
+
+	class TurntableAutoInverterDecoder: Item
     {
         [Flags]
         enum Flags : byte
@@ -173,6 +216,8 @@ namespace SharpEEPromViewer
 
         public bool IsActive { get; }
 
+        public byte FlipInterval { get; }
+
         public byte SensorAIndex { get; }
         public byte SensorBIndex { get; }
 
@@ -182,13 +227,15 @@ namespace SharpEEPromViewer
         public byte TrackBPin1 { get; }
 
         public TurntableAutoInverterDecoder(byte slot, BinaryReader reader):
-            base(slot, 7)
+            base(slot, 8)
         {
             var flags = (Flags)reader.ReadByte();
 
             IsActive = (flags & Flags.TRTD_ACTIVE) == Flags.TRTD_ACTIVE;
 
-            SensorAIndex = reader.ReadByte();
+            FlipInterval = reader.ReadByte();
+
+			SensorAIndex = reader.ReadByte();
             SensorBIndex = reader.ReadByte();
 
             TrackAPin0 = reader.ReadByte();
@@ -198,7 +245,7 @@ namespace SharpEEPromViewer
         }
     }
 
-    class QuadInverterDecoder : Item
+    class QuadInverterDecoderV016 : Item
     {
         [Flags]
         enum Flags : byte
@@ -219,8 +266,8 @@ namespace SharpEEPromViewer
         public byte TrackBPin0 { get; }
         public byte TrackBPin1 { get; }
 
-        public QuadInverterDecoder(byte slot, BinaryReader reader) :
-            base(slot, 7)
+        public QuadInverterDecoderV016(byte slot, BinaryReader reader) :
+            base(slot, 5, true)
         {
             var flags = (Flags)reader.ReadByte();
 
@@ -235,7 +282,48 @@ namespace SharpEEPromViewer
         }
     }
 
-    class Lump
+	class QuadInverterDecoder : Item
+	{
+		[Flags]
+		enum Flags : byte
+		{
+			QUAD_IGNORE_SAVED_STATE = 0x02,
+			QUAD_ACTIVATE_ON_POWER_UP = 0x04,
+			QUAD_ACTIVE = 0x80
+		}
+
+		public bool IsActive { get; }
+
+		public bool IgnoreSavedState { get; }
+
+		public bool ActivateOnPowerUp { get; }
+
+        public byte FlipInterval { get; }
+
+		public byte TrackAPin0 { get; }
+		public byte TrackAPin1 { get; }
+		public byte TrackBPin0 { get; }
+		public byte TrackBPin1 { get; }
+
+		public QuadInverterDecoder(byte slot, BinaryReader reader) :
+			base(slot, 6)
+		{
+			var flags = (Flags)reader.ReadByte();
+
+			IsActive = (flags & Flags.QUAD_ACTIVE) == Flags.QUAD_ACTIVE;
+			IgnoreSavedState = (flags & Flags.QUAD_IGNORE_SAVED_STATE) == Flags.QUAD_IGNORE_SAVED_STATE;
+			ActivateOnPowerUp = (flags & Flags.QUAD_ACTIVATE_ON_POWER_UP) == Flags.QUAD_ACTIVATE_ON_POWER_UP;
+
+            FlipInterval = reader.ReadByte();
+
+			TrackAPin0 = reader.ReadByte();
+			TrackAPin1 = reader.ReadByte();
+			TrackBPin0 = reader.ReadByte();
+			TrackBPin1 = reader.ReadByte();
+		}
+	}
+
+	class Lump
     {
         static Dictionary<string, Type> gKnownTypes = new()
         {
@@ -244,13 +332,20 @@ namespace SharpEEPromViewer
 			{ "NetU003\0", typeof(NetworkLump) },
 			{ "Sson001\0", typeof(SessionLumpV001) },
 			{ "Sson002\0", typeof(SessionLump) },
-			{ "DECS015\0", typeof(DecodersLump) },
-            { "DECS016\0", typeof(DecodersLump) }, //015 and 016 the same, but 016 has QuadInverterDecoder
+			{ "DECS015\0", typeof(DecodersLumpV016) },
+            { "DECS016\0", typeof(DecodersLumpV016) }, //015 and 016 the same, but 016 has QuadInverterDecoder
+            { "DECS017\0", typeof(DecodersLump) }, //017 Turntable auto inverter changed
             { "ENDEND1\0", typeof(MarkerLump) }
         };
 
-        public string Name { get; }
-        public UInt16 Size { get; }
+		[Category("Information")]
+		public bool Deprecated { get; }
+
+		[Category("Information")]
+		public string Name { get; }
+
+		[Category("Information")]
+		public UInt16 Size { get; }
 
         public List<Lump> mChildren;
 
@@ -262,10 +357,11 @@ namespace SharpEEPromViewer
 
         public const int LUMP_HEADER_SIZE = 10;
 
-        protected Lump(string name, UInt16 size)
+        protected Lump(string name, UInt16 size, bool deprecated = false)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             Size = size;
+            Deprecated = deprecated;
         }
 
         protected void AddChild(Lump lump)
@@ -294,6 +390,8 @@ namespace SharpEEPromViewer
                 //foundType = typeof(UnknownLump);
 
             var size = reader.ReadUInt16();
+
+            name = name.Replace('\0', ' ').Trim();
 
             return (Lump)System.Activator.CreateInstance(foundType, name, size, reader);
         }
@@ -334,7 +432,7 @@ namespace SharpEEPromViewer
 		public UInt16 SrcPort { get; }
 
 		public NetworkLumpV002(string name, UInt16 size, BinaryReader reader) :
-			base(name, size)
+			base(name, size, true)
 		{
 			if (size != 24)
 				throw new ArgumentOutOfRangeException("[NetworkLumpV002] Expected size to be 24 bytes, but got " + size);
@@ -371,7 +469,7 @@ namespace SharpEEPromViewer
 		public UInt16 ServerPort { get; }
 
 		public SessionLumpV001(string name, UInt16 size, BinaryReader reader) :
-			base(name, size)
+			base(name, size, true)
 		{
 			if (size != 6)
 				throw new ArgumentOutOfRangeException("[SessionLump] Expected size to be 6 bytes, but got " + size);
@@ -395,7 +493,7 @@ namespace SharpEEPromViewer
         }
     }
 
-    class DecodersLump : Lump
+    class DecodersLumpV016 : Lump
     {
         enum DecoderTypes : byte
         {
@@ -413,14 +511,14 @@ namespace SharpEEPromViewer
             { DecoderTypes.DEC_OUTPUT,                  typeof(OutputDecoder) },
             { DecoderTypes.DEC_SENSOR,                  typeof(SensorDecoder) },
             { DecoderTypes.DEC_SERVO_TURNOUT,           typeof(ServoTurnoutDecoder) },
-            { DecoderTypes.DEC_TURNTABLE_AUTO_INVERTER, typeof(TurntableAutoInverterDecoder) },
-            { DecoderTypes.DEC_QUAD_INVERTER,           typeof(QuadInverterDecoder) }
+            { DecoderTypes.DEC_TURNTABLE_AUTO_INVERTER, typeof(TurntableAutoInverterDecoderV016) },
+            { DecoderTypes.DEC_QUAD_INVERTER,           typeof(QuadInverterDecoderV016) }
         };        
 
         public Guid Guid { get; }
 
-        public DecodersLump(string name, UInt16 size, BinaryReader reader) :
-            base(name, size)
+        public DecodersLumpV016(string name, UInt16 size, BinaryReader reader) :
+            base(name, size, true)
         {
             if (size < 17)
                 throw new ArgumentOutOfRangeException("[DecodersLump] Must have at least 17 bytes, but got " + size);
@@ -467,7 +565,79 @@ namespace SharpEEPromViewer
         }
     }
 
-    class MarkerLump: Lump
+	class DecodersLump : Lump
+	{
+		enum DecoderTypes : byte
+		{
+			DEC_NULL = 0,
+			DEC_OUTPUT = 1,
+			DEC_SENSOR = 2,
+			DEC_SERVO_TURNOUT = 3,
+			DEC_SIGNAL = 4,         //Only virtual, not implemented on Arduino
+			DEC_TURNTABLE_AUTO_INVERTER = 5,
+			DEC_QUAD_INVERTER = 6
+		};
+
+		static Dictionary<DecoderTypes, Type> gKnownTypes = new()
+		{
+			{ DecoderTypes.DEC_OUTPUT,                  typeof(OutputDecoder) },
+			{ DecoderTypes.DEC_SENSOR,                  typeof(SensorDecoder) },
+			{ DecoderTypes.DEC_SERVO_TURNOUT,           typeof(ServoTurnoutDecoder) },
+			{ DecoderTypes.DEC_TURNTABLE_AUTO_INVERTER, typeof(TurntableAutoInverterDecoder) },
+			{ DecoderTypes.DEC_QUAD_INVERTER,           typeof(QuadInverterDecoder) }
+		};
+
+		public Guid Guid { get; }
+
+		public DecodersLump(string name, UInt16 size, BinaryReader reader) :
+			base(name, size)
+		{
+			if (size < 17)
+				throw new ArgumentOutOfRangeException("[DecodersLump] Must have at least 17 bytes, but got " + size);
+
+			Guid = new Guid(reader.ReadBytes(16));
+
+			var bytesLeft = size - 16;
+
+			for (; ; )
+			{
+				--bytesLeft;
+				var decType = (DecoderTypes)reader.ReadByte();
+				if (decType == DecoderTypes.DEC_NULL)
+					break;
+
+				Type decoderClassType;
+				if (!gKnownTypes.TryGetValue(decType, out decoderClassType))
+					throw new ArgumentOutOfRangeException("dectype not suppported: " + decType.ToString());
+
+				--bytesLeft;
+				var decQuantity = reader.ReadByte();
+
+				for (var i = 0; i < decQuantity; ++i)
+				{
+					--bytesLeft;
+					var slot = reader.ReadByte();
+
+					var decoder = (Item)System.Activator.CreateInstance(decoderClassType, slot, reader);
+
+					bytesLeft -= decoder.Size;
+
+					this.AddItem(decoder);
+				}
+
+			}
+
+			if (bytesLeft != 0)
+			{
+				throw new ArgumentOutOfRangeException("bytes left...");
+			}
+
+			//skip...
+			//reader.ReadBytes(size - 16);
+		}
+	}
+
+	class MarkerLump: Lump
     {
         public MarkerLump(string name, UInt16 size, BinaryReader reader):
             base(name, size)

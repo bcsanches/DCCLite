@@ -179,7 +179,7 @@ bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream
 	if (FStrNCmp(lump.m_archName, SESSION_OLD_STORAGE_ID, FStrLen(SESSION_STORAGE_ID)) == 0)
 	{
 		//Console::SendLogEx(MODULE_NAME, FSTR_SESSION, ' ', "cfg");
-		DCCLITE_LOG_MODULE_LN(FSTR_SESSION << F(" cfg"));
+		DCCLITE_LOG_MODULE_LN(FSTR_SESSION << F(" OLD OLD OLD cfg"));
 
 		Session::LoadConfig(stream, true);
 

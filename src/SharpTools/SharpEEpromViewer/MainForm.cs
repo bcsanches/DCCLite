@@ -32,7 +32,7 @@ namespace SharpEEPromViewer
 			}
 
 			this.Text = filePath;
-        }
+        }        
 
         private static void ConfigureNode(TreeNode node, Lump lump)
         {
@@ -47,7 +47,9 @@ namespace SharpEEPromViewer
 
             foreach(var item in items)
             {
-                var itemNode = node.Nodes.Add(item.GetType().Name);
+                var name = item.GetType().Name;
+
+				var itemNode = node.Nodes.Add(item.Deprecated ? name + " - DEPRECATED" : name);
                 itemNode.Tag = item;
 
                 itemNode.ImageKey = DefaultIcons.FILE_GEAR_ICON;
@@ -62,7 +64,7 @@ namespace SharpEEPromViewer
 
             foreach(var child in lump.Children)
             {
-                var node = parent.Nodes.Add(child.Name);
+                var node = parent.Nodes.Add(child.Deprecated ? child.Name + " - DEPRECATED" : child.Name);
 
                 ConfigureNode(node, child);
 
@@ -88,7 +90,7 @@ namespace SharpEEPromViewer
 					//so far it appears that the EEProm is fine, so clear and load
 					this.Clear();
 
-					mTreeView.Nodes.Add(lump.Name);
+					mTreeView.Nodes.Add(lump.Deprecated ? lump.Name + " - DEPRECATED" : lump.Name);
 
 					var node = mTreeView.Nodes[0];
 
