@@ -106,7 +106,7 @@ bool Storage::LoadConfig()
 			}			
 			
 			//Console::SendLogEx(MODULE_NAME, FSTR_UNKNOWN, ' ', FSTR_LUMP, ' ', lump.m_archName);
-			DCCLITE_LOG << MODULE_NAME << FSTR_UNKNOWN << ' ' << FSTR_LUMP << ' ' << lump.m_archName << DCCLITE_ENDL;
+			DCCLITE_LOG << MODULE_NAME << ' ' << FSTR_UNKNOWN << ' ' << FSTR_LUMP << ' ' << lump.m_archName << DCCLITE_ENDL;
 
 			stream.Skip(lump.m_uLength);
 

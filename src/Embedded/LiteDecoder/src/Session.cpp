@@ -43,7 +43,7 @@ static dcclite::Guid g_SessionToken;
 static dcclite::Guid g_ConfigToken;
 
 static uint8_t g_u8ServerIp[] = { 0x00, 0x00, 0x00, 0x00 };
-static uint16_t g_uSrvPort = 2424;
+static uint16_t g_uSrvPort = dcclite::DEFAULT_DCCLITE_SERVER_PORT;
 
 static unsigned long g_uNextStateThink = 0;
 
@@ -54,12 +54,10 @@ If my numbers are correct, we can send 1000 packets per second (each ms) and it 
 static uint64_t g_uLastReceivedDecodersStatePacket = 0;
 static uint64_t g_uDecodersStateSequence = 0;
 
-static ConnectionStates g_eConnectionState = ConnectionStates::OFFLINE;
 static bool g_fRefreshServerAboutOutputDecoders = false;
 
 static uint16_t g_uRemoteRamValue = UINT16_MAX;
 static uint16_t g_uFreeRam = UINT16_MAX;
-
 
 //
 //
@@ -67,10 +65,21 @@ static uint16_t g_uFreeRam = UINT16_MAX;
 //
 //
 
+#ifdef ARDUINO_AVR_MEGA2560
+void Session::LoadConfig(Storage::EpromStream &stream, bool oldConfig)
+#else
 void Session::LoadConfig(Storage::EpromStream &stream)
-{
-	for (int i = 0; i < 4; ++i)
-		stream.Get(g_u8ServerIp[i]);
+#endif
+{	
+
+#ifdef ARDUINO_AVR_MEGA2560
+	if(oldConfig)
+	{
+		uint8_t oldSrvIp;
+		for (int i = 0; i < 4; ++i)
+			stream.Get(oldSrvIp);
+	}
+#endif
 
 	stream.Get(g_uSrvPort);
 
@@ -78,19 +87,14 @@ void Session::LoadConfig(Storage::EpromStream &stream)
 }
 
 void Session::SaveConfig(Storage::EpromStream &stream)
-{
-	for (int i = 0; i < 4; ++i)
-		stream.Put(g_u8ServerIp[i]);
-
+{	
 	stream.Put(g_uSrvPort);
 }
 
-bool Session::Configure(const uint8_t *srvIp, uint16_t srvport)
+bool Session::Configure(uint16_t srvport)
 {
 	DecoderManager::DestroyAll();
-
-	memcpy(g_u8ServerIp, srvIp, sizeof(g_u8ServerIp));
-
+	
 	g_uSrvPort = srvport;
 
 	return true;
@@ -128,6 +132,57 @@ namespace PingManager
 	}
 }
 
+//
+//
+// ConnectionStateManager
+//
+//
+
+namespace ConnectionStateManager
+{	
+	namespace detail
+	{
+		inline const __FlashStringHelper *GetStateName(const ConnectionStates state) noexcept
+		{
+			switch(state)
+			{
+				case ConnectionStates::OFFLINE:
+					return F("OFFLINE");
+
+				case ConnectionStates::SEARCHING_SERVER:
+					return F("SEARCHING_SERVER");
+
+				case ConnectionStates::ARPDISCOVER:
+					return F("ARPDISCOVER");
+
+				case ConnectionStates::CONFIGURING:
+					return F("CONFIGURING");
+
+				case ConnectionStates::ONLINE:
+					return F("ONLINE");
+
+				default:
+					return FSTR_UNKNOWN;
+			}
+		}
+	}	
+
+	static ConnectionStates g_kState = ConnectionStates::OFFLINE;
+
+	void Set(const ConnectionStates newState) noexcept
+	{
+		if(newState == g_kState)
+			return;
+
+		g_kState = newState;
+		DCCLITE_LOG_MODULE_LN(F("state ") << detail::GetStateName(g_kState));
+	}
+
+	inline ConnectionStates Get() noexcept
+	{
+		return g_kState;
+	}	
+};
 
 //
 //
@@ -183,7 +238,7 @@ static void GotoOfflineState()
 {
 	ServoProgrammer::Stop();
 
-	g_eConnectionState = ConnectionStates::OFFLINE;
+	ConnectionStateManager::Set(ConnectionStates::OFFLINE);
 
 	Blinker::SetState(Blinker::State::FAST_FLASH);
 }
@@ -207,7 +262,7 @@ static void OfflineTick(const unsigned long ticks)
 	//reset PING 
 	PingManager::Reset(ticks);
 	
-	g_eConnectionState = ConnectionStates::SEARCHING_SERVER;
+	ConnectionStateManager::Set(ConnectionStates::SEARCHING_SERVER);
 }
 
 //
@@ -302,7 +357,7 @@ static bool ArpTick(const unsigned long ticks)
 		//IP is in cache, go back to SEARCHING SERVER STATE
 		//Console::SendLogEx(MODULE_NAME, FSTR_ARP,  FSTR_OK);
 		DCCLITE_LOG_MODULE_LN(FSTR_ARP << FSTR_OK);
-		g_eConnectionState = ConnectionStates::SEARCHING_SERVER;
+		ConnectionStateManager::Set(ConnectionStates::SEARCHING_SERVER);
 
 		//Send an Hello to server
 		SendHelloPacket();
@@ -325,7 +380,7 @@ static void GotoOnlineState(const unsigned long ticks, int callerLine)
 	//Console::SendLogEx(MODULE_NAME, OnOnlineStateNameStr, ' ', __LINE__, ' ', callerLine);
 	DCCLITE_LOG_MODULE_LN(OnOnlineStateNameStr << ' ' << __LINE__ << ' ' << callerLine);
 
-	g_eConnectionState = ConnectionStates::ONLINE;	
+	ConnectionStateManager::Set(ConnectionStates::ONLINE);
 	g_uLastReceivedDecodersStatePacket = 0;
 	g_uDecodersStateSequence = 0;	
 
@@ -359,7 +414,7 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 			//Console::SendLogEx(MODULE_NAME, FSTR_ARP, ' ', FSTR_INIT);
 			DCCLITE_LOG_MODULE_LN(FSTR_ARP << ' ' << FSTR_INIT);
 
-			g_eConnectionState = ConnectionStates::ARPDISCOVER;
+			ConnectionStateManager::Set(ConnectionStates::ARPDISCOVER);
 
 			NetUdp::ResolveIp(src_ip);
 		}
@@ -393,7 +448,7 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 		//Remove all decoders
 		DecoderManager::DestroyAll();
 
-		g_eConnectionState = ConnectionStates::CONFIGURING;		
+		ConnectionStateManager::Set(ConnectionStates::CONFIGURING);
 	}
 	else
 	{
@@ -696,7 +751,7 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 
 void Session::Update(const unsigned long ticks, const bool stateChangeDetectedHint)
 {
-	switch (g_eConnectionState)
+	switch (ConnectionStateManager::Get())
 	{
 		case ConnectionStates::OFFLINE:
 			OfflineTick(ticks);
@@ -727,7 +782,7 @@ static void ReceiveCallback(
 	const char *data,   ///< UDP payload data
 	unsigned int len)
 {
-	if(g_eConnectionState == ConnectionStates::ARPDISCOVER)
+	if(ConnectionStateManager::Get() == ConnectionStates::ARPDISCOVER)
 	{
 		//On this state, nothing todo, ignore all udp packets
 		return;
@@ -745,7 +800,7 @@ static void ReceiveCallback(
 	
 	dcclite::MsgTypes type = packet.Read<dcclite::MsgTypes>();	
 
-	if (g_eConnectionState == ConnectionStates::SEARCHING_SERVER)
+	if (ConnectionStateManager::Get() == ConnectionStates::SEARCHING_SERVER)
 	{
 		//this state is special, we skip several checks
 		OnSearchingServerPacket(src_ip, src_port, type, packet);
@@ -787,7 +842,7 @@ static void ReceiveCallback(
 	token = packet.ReadGuid();
 
 	//if we are on config state, config_token is not set yet, so we ignore it for now and handle config packets
-	if (g_eConnectionState == ConnectionStates::CONFIGURING)
+	if (ConnectionStateManager::Get() == ConnectionStates::CONFIGURING)
 	{		
 		if (type == dcclite::MsgTypes::CONFIG_FINISHED)
 		{			

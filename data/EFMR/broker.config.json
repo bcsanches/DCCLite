@@ -3,8 +3,7 @@
   "services": [
     {
       "class": "DccLiteService",
-      "name": "dcc0",
-      "port": 8989,
+      "name": "dcc0",      
       "devices": [
         {
             "name":"TestDevice",

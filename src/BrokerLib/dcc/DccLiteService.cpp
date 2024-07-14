@@ -116,7 +116,13 @@ namespace dcclite::broker
 
 		m_pLocations = static_cast<LocationManager *>(this->AddChild(std::make_unique<LocationManager>(RName{ "locations" }, params)));
 
-		auto port = params["port"].GetInt();
+		uint16_t port = dcclite::DEFAULT_DCCLITE_SERVER_PORT;
+
+		{
+			auto portData = params.FindMember("port");
+			if (portData != params.MemberEnd())
+				port = portData->value.GetInt();
+		}
 	
 		[[unlikely]]
 		if (!m_clSocket.Open(port, dcclite::Socket::Type::DATAGRAM, dcclite::Socket::FLAG_BLOCKING_MODE))

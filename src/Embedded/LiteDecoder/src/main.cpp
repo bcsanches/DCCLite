@@ -43,7 +43,7 @@ bool Console::Custom_ParseCommand(const char *command)
 {
 	if (FStrNCmp(command, CMD_CFG_NAME, 3) == 0)
 	{
-		//format: cfg <nodeName> <mac> <port> <srvport>	
+		//format: cfg <nodeName> <mac> <srvport>	
 
 		dcclite::Parser parser(command + 3);
 
@@ -55,10 +55,6 @@ bool Console::Custom_ParseCommand(const char *command)
 
 			return true;
 		}
-
-		//Serial.println(F("etst"));
-
-		//Console::SendLog("[CONSOLE]", "name: %s", nodeName);
 
 		uint8_t mac[6];
 		for (int i = 0; i < 6; ++i)
@@ -87,17 +83,7 @@ bool Console::Custom_ParseCommand(const char *command)
 				return true;
 			}
 		}
-
-		int port;
-		if (parser.GetNumber(port) != dcclite::Tokens::NUMBER)
-		{
-			//Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_PORT);
-			DCCLITE_LOG << MODULE_NAME << FSTR_NOK << ' ' << FSTR_PORT << DCCLITE_ENDL;
-
-			return true;
-		}
-
-		uint8_t ip[4] = { 0 };
+	
 		int srvport;
 		if (parser.GetNumber(srvport) != dcclite::Tokens::NUMBER)
 		{
@@ -107,8 +93,8 @@ bool Console::Custom_ParseCommand(const char *command)
 			return true;
 		}
 
-		NetUdp::Configure(nodeName, port, mac);
-		Session::Configure(ip, srvport);
+		NetUdp::Configure(nodeName, mac);
+		Session::Configure(srvport);
 
 		//Console::SendLogEx(MODULE_NAME, FSTR_OK);
 		DCCLITE_LOG_MODULE_LN(FSTR_OK);
@@ -144,8 +130,13 @@ bool Console::Custom_ParseCommand(const char *command)
 }
 
 #define DECODERS_STORAGE_ID F("DECS017")
-#define NET_UDP_STORAGE_ID	F("NetU002")
-#define SESSION_STORAGE_ID  F("Sson001")
+#define NET_UDP_STORAGE_ID	F("NetU003")
+#define SESSION_STORAGE_ID  F("Sson002")
+
+#ifdef ARDUINO_AVR_MEGA2560
+#define NET_UDP_OLD_STORAGE_ID	F("NetU002")
+#define SESSION_OLD_STORAGE_ID  F("Sson001")
+#endif
 
 bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream &stream)
 {
@@ -163,6 +154,17 @@ bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream
 		return true;
 	}
 
+#ifdef ARDUINO_AVR_MEGA2560
+	if (FStrNCmp(lump.m_archName, NET_UDP_OLD_STORAGE_ID, FStrLen(NET_UDP_OLD_STORAGE_ID)) == 0)
+	{		
+		DCCLITE_LOG_MODULE_LN(MODULE_NAME << F(" net udp OLD OLD OLD cfg"));
+
+		NetUdp::LoadConfig(stream, true);
+
+		return true;
+	}
+#endif	
+
 	if (FStrNCmp(lump.m_archName, NET_UDP_STORAGE_ID, FStrLen(NET_UDP_STORAGE_ID)) == 0)
 	{
 		//Console::SendLogEx(MODULE_NAME, "net", "udp", ' ', "cfg");
@@ -172,6 +174,18 @@ bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream
 
 		return true;
 	}
+
+#ifdef ARDUINO_AVR_MEGA2560
+	if (FStrNCmp(lump.m_archName, SESSION_OLD_STORAGE_ID, FStrLen(SESSION_STORAGE_ID)) == 0)
+	{
+		//Console::SendLogEx(MODULE_NAME, FSTR_SESSION, ' ', "cfg");
+		DCCLITE_LOG_MODULE_LN(FSTR_SESSION << F(" cfg"));
+
+		Session::LoadConfig(stream, true);
+
+		return true;
+	}
+#endif
 
 	if (FStrNCmp(lump.m_archName, SESSION_STORAGE_ID, FStrLen(SESSION_STORAGE_ID)) == 0)
 	{

@@ -26,6 +26,8 @@ namespace dcclite
 {		
 	constexpr unsigned char SERVO_DEFAULT_RANGE = 15;
 
+	constexpr uint16_t DEFAULT_DCCLITE_SERVER_PORT = 8989;
+
 	enum class DecoderTypes : uint8_t
 	{
 		DEC_NULL = 0,

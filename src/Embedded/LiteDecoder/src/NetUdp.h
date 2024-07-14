@@ -28,10 +28,15 @@ namespace NetUdp
 		const char *data,   ///< UDP payload data
 		unsigned int len);
 
+#ifdef ARDUINO_AVR_MEGA2560
+	extern void LoadConfig(Storage::EpromStream &stream, bool oldConfig = false);
+#else	
 	extern void LoadConfig(Storage::EpromStream &stream);
+#endif
+
 	extern void SaveConfig(Storage::EpromStream &stream);
 
-	extern bool Configure(const char *nodeName, uint16_t port, const uint8_t *mac);
+	extern bool Configure(const char *nodeName, const uint8_t *mac);
 
 	extern bool Init(ReceiveCallback_t callback);
 

@@ -27,10 +27,15 @@ namespace dcclite
 
 namespace Session
 {
+#ifdef ARDUINO_AVR_MEGA2560
+	extern void LoadConfig(Storage::EpromStream &stream, bool oldConfig = false);
+#else
 	extern void LoadConfig(Storage::EpromStream &stream);
+#endif
+
 	extern void SaveConfig(Storage::EpromStream &stream);	
 
-	extern bool Configure(const uint8_t *srvIp, uint16_t srvport);
+	extern bool Configure(uint16_t srvport);
 
 	extern void Update(const unsigned long ticks, const bool stateChangeDetectedHint);
 

@@ -30,10 +30,10 @@ static uint8_t g_u8Mac[] = { 0x00,0x00,0x00,0x00,0x00,0x00 };
 uint8_t Ethernet::buffer[BUFFER_SIZE];
 #endif
 
-static uint16_t g_iSrcPort = 4551;
+constexpr uint16_t SRC_PORT = 7203;
 
 #define MAX_NODE_NAME 16
-static char g_szNodeName[MAX_NODE_NAME + 1];
+static char g_szNodeName[MAX_NODE_NAME + 1] = { 0 };
 
 enum States
 {
@@ -44,7 +44,11 @@ enum States
 
 //<nodeName> <mac> <port>
 
+#ifdef ARDUINO_AVR_MEGA2560
+void NetUdp::LoadConfig(Storage::EpromStream &stream, bool oldConfig)
+#else
 void NetUdp::LoadConfig(Storage::EpromStream &stream)
+#endif
 {
 	for(int i = 0;i < MAX_NODE_NAME; ++i)
 		stream.Get(g_szNodeName[i]);
@@ -56,7 +60,13 @@ void NetUdp::LoadConfig(Storage::EpromStream &stream)
 		stream.Get(g_u8Mac[i]);
 	}
 
-	stream.Get(g_iSrcPort);
+#ifdef ARDUINO_AVR_MEGA2560
+	if(oldConfig)
+	{
+		uint16_t unusedSrcPort;
+		stream.Get(unusedSrcPort);
+	}	
+#endif
 
 	NetUdp::LogStatus();
 }
@@ -68,16 +78,12 @@ void NetUdp::SaveConfig(Storage::EpromStream &stream)
 
 	for(int i = 0;i < 6; ++i)
 		stream.Put(g_u8Mac[i]);
-
-	stream.Put(g_iSrcPort);
 }
 
-bool NetUdp::Configure(const char *nodeName, uint16_t port, const uint8_t *mac)
+bool NetUdp::Configure(const char *nodeName, const uint8_t *mac)
 {
 	strncpy(g_szNodeName, nodeName, sizeof(g_szNodeName));
 	g_szNodeName[MAX_NODE_NAME] = 0;
-
-	g_iSrcPort = port;
 
 	memcpy(g_u8Mac, mac, sizeof(g_u8Mac));	
 
@@ -141,7 +147,7 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 	DCCLITE_LOG_MODULE_LN(F("ether begin ") << FSTR_OK);
 
 #if 1
-	for(int i = 0; !ether.dhcpSetup(g_szNodeName, true); ++i )
+	for(int i = 0; !ether.dhcpSetup(g_szNodeName[0] ? g_szNodeName : nullptr, true); ++i)
 	{
 		//Console::SendLogEx(MODULE_NAME, F("dhcp"), ' ', FSTR_NOK," ", g_szNodeName);
 		DCCLITE_LOG << MODULE_NAME << F("dhcp ") << FSTR_NOK << g_szNodeName << DCCLITE_ENDL;
@@ -171,8 +177,9 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 	ether.printIp("GW IP: ", ether.gwip);
  	ether.printIp("DNS IP: ", ether.dnsip);
 	ether.printIp("IP:  ", ether.myip);	
+
 	//Console::SendLogEx(MODULE_NAME, FSTR_PORT, ':', ' ', g_iSrcPort);
-	DCCLITE_LOG_MODULE_LN(FSTR_PORT << F(": ") << g_iSrcPort);
+	DCCLITE_LOG_MODULE_LN(FSTR_PORT << F(": ") << SRC_PORT);
 	//ether.printIp("DNS: ", ether.dnsip);    
 
 	//ether.parseIp(destip, "192.168.1.101");	
@@ -180,7 +187,7 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 	//Console::SendLogEx(MODULE_NAME, FSTR_SETUP, ' ', FSTR_OK);
 	DCCLITE_LOG_MODULE_LN(FSTR_OK);	
 
-	ether.udpServerListenOnPort(callback, g_iSrcPort);
+	ether.udpServerListenOnPort(callback, SRC_PORT);
 
 	return true;
 }
@@ -213,7 +220,7 @@ void NetUdp::SendPacket(const uint8_t *data, uint8_t length, const uint8_t *dest
 		//DCCLITE_LOG << MODULE_NAME << FSTR_ARP << ' ' << FSTR_NOK << ' ' << Console::IpPrinter(destIp) << FSTR_INVALID << DCCLITE_ENDL;
 	}
 
-	ether.sendUdp(reinterpret_cast<const char *>(data), length, g_iSrcPort, destIp, destPort );   
+	ether.sendUdp(reinterpret_cast<const char *>(data), length, SRC_PORT, destIp, destPort );   
 }
 
 void NetUdp::Update()
@@ -239,7 +246,7 @@ void NetUdp::LogStatus()
 	for(int i = 0;i < 6; ++i)
 		output.HexNumber(g_u8Mac[i]);
 
-	output << ' ' << FSTR_PORT << F(": ") << g_iSrcPort << DCCLITE_ENDL;
+	output << ' ' << FSTR_PORT << F(": ") << SRC_PORT << DCCLITE_ENDL;
 #endif
 }
 

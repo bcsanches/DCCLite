@@ -240,9 +240,11 @@ namespace SharpEEPromViewer
         static Dictionary<string, Type> gKnownTypes = new()
         {
             { "Bcs0008\0", typeof(RootLump) },
-            { "NetU002\0", typeof(NetworkLump) },
-            { "Sson001\0", typeof(SessionLump) },            
-            { "DECS015\0", typeof(DecodersLump) },
+            { "NetU002\0", typeof(NetworkLumpV002) },
+			{ "NetU003\0", typeof(NetworkLump) },
+			{ "Sson001\0", typeof(SessionLumpV001) },
+			{ "Sson002\0", typeof(SessionLump) },
+			{ "DECS015\0", typeof(DecodersLump) },
             { "DECS016\0", typeof(DecodersLump) }, //015 and 016 the same, but 016 has QuadInverterDecoder
             { "ENDEND1\0", typeof(MarkerLump) }
         };
@@ -325,38 +327,70 @@ namespace SharpEEPromViewer
 
     }
 
-    class NetworkLump : Lump
+	class NetworkLumpV002 : Lump
+	{
+		public string NodeName { get; }
+		public System.Net.NetworkInformation.PhysicalAddress Mac { get; }
+		public UInt16 SrcPort { get; }
+
+		public NetworkLumpV002(string name, UInt16 size, BinaryReader reader) :
+			base(name, size)
+		{
+			if (size != 24)
+				throw new ArgumentOutOfRangeException("[NetworkLumpV002] Expected size to be 24 bytes, but got " + size);
+
+			const int MAX_NODE_NAME = 16;
+
+			NodeName = Lump.ConvertBytesToString(reader.ReadBytes(MAX_NODE_NAME));
+			Mac = new(reader.ReadBytes(6));
+			SrcPort = reader.ReadUInt16();
+		}
+	}
+
+	class NetworkLump : Lump
     {
         public string NodeName { get; }
-        public System.Net.NetworkInformation.PhysicalAddress Mac { get; }
-        public UInt16 SrcPort { get; }
+        public System.Net.NetworkInformation.PhysicalAddress Mac { get; }        
 
         public NetworkLump(string name, UInt16 size, BinaryReader reader) :
             base(name, size)
         {
-            if (size != 24)
-                throw new ArgumentOutOfRangeException("[NetworkLump] Expected size to be 24 bytes, but got " + size);
+            if (size != 22)
+                throw new ArgumentOutOfRangeException("[NetworkLump] Expected size to be 22 bytes, but got " + size);
 
             const int MAX_NODE_NAME = 16;
 
             NodeName = Lump.ConvertBytesToString(reader.ReadBytes(MAX_NODE_NAME));
-            Mac = new(reader.ReadBytes(6));
-            SrcPort = reader.ReadUInt16();
+            Mac = new(reader.ReadBytes(6));            
         }
     }
 
-    class SessionLump : Lump
-    {
-        public System.Net.IPAddress IP { get; }
+	class SessionLumpV001 : Lump
+	{
+		public System.Net.IPAddress IP { get; }
+		public UInt16 ServerPort { get; }
+
+		public SessionLumpV001(string name, UInt16 size, BinaryReader reader) :
+			base(name, size)
+		{
+			if (size != 6)
+				throw new ArgumentOutOfRangeException("[SessionLump] Expected size to be 6 bytes, but got " + size);
+
+			IP = new(reader.ReadBytes(4));
+			ServerPort = reader.ReadUInt16();
+		}
+	}
+
+	class SessionLump : Lump
+    {        
         public UInt16 ServerPort { get; }
 
         public SessionLump(string name, UInt16 size, BinaryReader reader) :
             base(name, size)
         {
-            if (size != 6)
-                throw new ArgumentOutOfRangeException("[SessionLump] Expected size to be 6 bytes, but got " + size);
-
-            IP = new(reader.ReadBytes(4));
+            if (size != 2)
+                throw new ArgumentOutOfRangeException("[SessionLump] Expected size to be 2 bytes, but got " + size);
+            
             ServerPort = reader.ReadUInt16();
         }
     }
