@@ -455,6 +455,17 @@ namespace dcclite::broker
 			return;
 		}
 
+		if (!name[0])
+		{
+			dcclite::Log::Warn("[DccLiteService::{}] [OnNet_Hello] Hello from {} with blank name.",
+				this->GetName(),				
+				senderAddress
+			);
+
+			auto newName = fmt::format("IP_{}_{}", senderAddress, senderAddress.GetPort());
+			strcpy(name, newName.c_str());
+		}
+
 		dcclite::Log::Info("[DccLiteService::{}] [OnNet_Hello] received hello from {}, starting handshake", this->GetName(), name);
 
 		EventHub::PostEvent<NetworkHelloEvent>(std::ref(*this), senderAddress, RName{ name }, remoteSessionToken, remoteConfigToken);

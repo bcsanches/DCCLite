@@ -5,9 +5,22 @@
 - Added support to config flip interval on quad inverter
 - Lua sections now publish state to JMRI thought VirtualSensors
 
+## Broker
+
+- Support to unnamed devices (auto generate a name with IP)
+
 ## SharpTerminal
 
 - Server selection screen accepts ENTER as a shortcut
+- Now uses NetCore
+- Added csproj file (removed from CMAKE)
+
+## SharpEEPromViewer
+
+- Support to legacy (deprecated) lumps
+- Support to new lumps
+- Now uses NetCore
+- Added csproj file (removed from CMAKE)
 
 ## Scripts
 
@@ -15,6 +28,10 @@
 
 ## Embedded
 
+- Auto generate mac address
+- Updated Session and NetUdp lumps
+- cfg command now only requires name, server port is optional (use default port if not provided)
+- added clr command to erase EEPROM
 - arduino will blink according to state: 
     - slow flash: network init
     - fast flag: trying to connect

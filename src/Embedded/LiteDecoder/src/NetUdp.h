@@ -18,9 +18,10 @@ namespace Storage
 	class EpromStream;
 }
 
-
 namespace NetUdp
 {
+	constexpr uint8_t MAX_NODE_NAME = 16;
+
 	typedef void(*ReceiveCallback_t)(
 		uint16_t dest_port,    ///< Port the packet was sent to
 		uint8_t src_ip[4],    ///< IP address of the sender
@@ -36,7 +37,7 @@ namespace NetUdp
 
 	extern void SaveConfig(Storage::EpromStream &stream);
 
-	extern bool Configure(const char *nodeName, const uint8_t *mac);
+	extern void Configure(const char *nodeName);
 
 	extern bool Init(ReceiveCallback_t callback);
 

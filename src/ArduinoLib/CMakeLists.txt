@@ -1,26 +1,27 @@
 
 set(ArduinoLib_SRCS
 	Arduino.cpp
-  DynamicLibrary.cpp
-  EEPROM.cpp
-  Ethercard.cpp
-  Serial.cpp
-  Servo.cpp
+	DynamicLibrary.cpp
+	EEPROM.cpp
+	Ethercard.cpp
+	Serial.cpp
+	Servo.cpp
 )
 
 set(ArduinoLib_HDRS
 	Arduino.h
-  ArduinoDefs.h
-  ArduinoLib.h
-  ArduinoLibDefs.h
-  DynamicLibrary.h
-  EEPROM.h
-  EEPROMLib.h
-  Ethercard.h
-  Serial.h
-  Servo.h
-  avr/pgmspace.h
-  WString.h
+	ArduinoDefs.h
+	ArduinoLib.h
+	ArduinoLibDefs.h
+	DynamicLibrary.h
+	EEPROM.h
+	EEPROMLib.h
+	Ethercard.h
+	Serial.h
+	Servo.h
+	avr/boot.h
+	avr/pgmspace.h
+	WString.h
 )
 
 add_compile_definitions(ARDUINOLIB_EXPORTS)

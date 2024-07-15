@@ -97,6 +97,9 @@ namespace Storage
 
 	extern void SaveConfig();
 
+	//Write blanks at stream header to invalidate it
+	extern void Clear();
+
 	extern void Dump();
 	extern void DumpHex();
 

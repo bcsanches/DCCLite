@@ -53,6 +53,15 @@ void Storage::DumpHex()
 	DCCLITE_LOG << DCCLITE_ENDL << DCCLITE_ENDL;		
 }
 
+void Storage::Clear()
+{
+	EpromStream stream(0);
+
+	//just invalidate the header...
+	for(int i = 0;i < 8; ++i)
+		stream.Put(' ');	
+}
+
 extern size_t Storage::Length() noexcept
 {
 	return EEPROM.length();
@@ -79,9 +88,8 @@ bool Storage::LoadConfig()
 		char name[LUMP_NAME_SIZE+1] = {0};
 		memcpy(name, header.m_archName, LUMP_NAME_SIZE);
 
-		//dump rom first 8 bytes to check what is in
-        //Console::SendLogEx(MODULE_NAME, FSTR_NO, ' ', FSTR_ROM, ' ', name);
-		DCCLITE_LOG << MODULE_NAME << FSTR_NO << ' ' << FSTR_ROM << ' ' << name << DCCLITE_ENDL;
+		//dump rom first 8 bytes to check what is in        
+		DCCLITE_LOG_MODULE_LN(FSTR_NO << ' ' << FSTR_ROM << ' ' << name);
 
         return false;
     }
@@ -141,7 +149,7 @@ void Storage::SaveConfig()
 	}
 
     //Console::SendLogEx(MODULE_NAME, "sv", ' ', FSTR_OK);
-	DCCLITE_LOG << MODULE_NAME << F("sv") << ' ' << FSTR_OK << DCCLITE_ENDL;
+	DCCLITE_LOG_MODULE_LN(F("sv") << ' ' << FSTR_OK);	
 }
 
 void Storage::UpdateField(unsigned int index, unsigned char byte)
@@ -350,8 +358,7 @@ namespace Storage
 		else
 #endif
 			FStrCpy(header.m_archName, m_pfszName, sizeof(header.m_archName));
-
-		//strncpy(header.m_archName, name, sizeof(header.m_archName));
+		
 
 		header.m_uLength = currentPos - m_uStartIndex - static_cast<uint16_t>(sizeof(Storage::Lump));
 

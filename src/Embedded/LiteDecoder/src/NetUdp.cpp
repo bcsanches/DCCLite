@@ -16,13 +16,11 @@
 #include "Storage.h"
 #include "Strings.h"
 
-//#include <avr/pgmspace.h>
+#include <avr/boot.h>
 
 #define ARP_PATCH 1
 
 #define MODULE_NAME F("NetUdp")
-
-static uint8_t g_u8Mac[] = { 0x00,0x00,0x00,0x00,0x00,0x00 };
 
 #define BUFFER_SIZE (256+96)
 
@@ -32,8 +30,7 @@ uint8_t Ethernet::buffer[BUFFER_SIZE];
 
 constexpr uint16_t SRC_PORT = 7203;
 
-#define MAX_NODE_NAME 16
-static char g_szNodeName[MAX_NODE_NAME + 1] = { 0 };
+static char g_szNodeName[NetUdp::MAX_NODE_NAME + 1] = { 0 };
 
 enum States
 {
@@ -55,14 +52,15 @@ void NetUdp::LoadConfig(Storage::EpromStream &stream)
 
 	g_szNodeName[MAX_NODE_NAME] = 0;
 
-	for(int i = 0;i < 6; ++i)
-	{
-		stream.Get(g_u8Mac[i]);
-	}
-
 #ifdef ARDUINO_AVR_MEGA2560
 	if(oldConfig)
 	{
+		uint8_t mac;
+		for(int i = 0;i < 6; ++i)
+		{
+			stream.Get(mac);
+		}
+
 		uint16_t unusedSrcPort;
 		stream.Get(unusedSrcPort);
 	}	
@@ -75,48 +73,38 @@ void NetUdp::SaveConfig(Storage::EpromStream &stream)
 {
 	for(int i = 0;i < MAX_NODE_NAME; ++i)
 		stream.Put(g_szNodeName[i]);
-
-	for(int i = 0;i < 6; ++i)
-		stream.Put(g_u8Mac[i]);
 }
 
-bool NetUdp::Configure(const char *nodeName, const uint8_t *mac)
+void NetUdp::Configure(const char *nodeName)
 {
 	strncpy(g_szNodeName, nodeName, sizeof(g_szNodeName));
 	g_szNodeName[MAX_NODE_NAME] = 0;
-
-	memcpy(g_u8Mac, mac, sizeof(g_u8Mac));	
-
-	return true;
 }
 
-bool NetUdp::Init(ReceiveCallback_t callback)
+static void GenerateMac(uint8_t mac[6])
 {
-	{	
-		bool validMac = false;
-		for(int i = 0;i < 6; ++i)
-		{
-			if(g_u8Mac[i])
-			{
-				validMac = true;
-				break;
-			}						
-		}
+	for(int i = 0;i < 6; ++i)
+	{
+		// take the fist 3 and last 3 of the serial.
+		// the first 5 of 8 are at 0x0E to 0x013
+		// the last  3 of 8 are at 0x15 to 0x017
+		mac[i] = boot_signature_byte_get(0x0E + i + (i>2? 4 : 0));
+    }
 
-		if(!validMac)
-		{
-			//Console::SendLogEx(MODULE_NAME, F("no"), ' ', F("mac"));			
-			DCCLITE_LOG_MODULE_LN(F("no ") << F("mac ") << FSTR_OK);
+    mac[0] &= 0xFE;
+    mac[0] |= 0x02;
+  }
 
-			return false;			
-		}
-	}
+bool NetUdp::Init(ReceiveCallback_t callback)
+{	
+	uint8_t mac[6];
 
+	GenerateMac(mac);
 	{
 		auto stream = DCCLITE_LOG_MODULE_EX(Console::OutputStream{}) << F("mac ");
 
 		for(int i = 0;i < 6; ++i)
-			stream.HexNumber(g_u8Mac[i]) << ':';
+			stream.HexNumber(mac[i]) << ':';
 
 		stream << DCCLITE_ENDL;
 	}	
@@ -126,9 +114,9 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 		DCCLITE_LOG_MODULE_LN(F("ether begin try ") << i);
 
 #ifdef ARDUINO_AVR_MEGA2560	
-		if (ether.begin(BUFFER_SIZE, g_u8Mac, 53) == 0)
+		if (ether.begin(BUFFER_SIZE, mac, 53) == 0)
 #else
-		if (ether.begin(BUFFER_SIZE, g_u8Mac, 10) == 0)
+		if (ether.begin(BUFFER_SIZE, mac, 10) == 0)
 #endif	
 		{
 			//Console::SendLogEx(MODULE_NAME, F("ether"), '.', F("begin"), ' ', FSTR_NOK);
@@ -242,9 +230,17 @@ void NetUdp::LogStatus()
 #else
 	Console::OutputStream output;
 
-	output << MODULE_NAME << FSTR_NAME << ": " << g_szNodeName << ' ';
+	DCCLITE_LOG_MODULE_EX(output) << FSTR_NAME << ": " << g_szNodeName << ' ';
+
+	uint8_t mac[6];
+
+	GenerateMac(mac);
+
 	for(int i = 0;i < 6; ++i)
-		output.HexNumber(g_u8Mac[i]);
+	{
+		output.HexNumber(mac[i]);
+		output << ' ';
+	}
 
 	output << ' ' << FSTR_PORT << F(": ") << SRC_PORT << DCCLITE_ENDL;
 #endif

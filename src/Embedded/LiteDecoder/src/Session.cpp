@@ -92,12 +92,8 @@ void Session::SaveConfig(Storage::EpromStream &stream)
 }
 
 bool Session::Configure(uint16_t srvport)
-{
-	DecoderManager::DestroyAll();
-	
-	g_uSrvPort = srvport;
-
-	return true;
+{		
+	g_uSrvPort = srvport == 0 ? dcclite::DEFAULT_DCCLITE_SERVER_PORT : srvport;
 }
 
 //

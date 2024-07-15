@@ -36,6 +36,7 @@ bool g_fNetReady = false;
 #define CMD_CFG_NAME F("cfg")
 #define CMD_DUMP_NAME F("dump")
 #define CMD_HDUMP_NAME F("hdump")
+#define CMD_CLR_NAME F("clr")
 
 #define MODULE_NAME F("MAIN")
 
@@ -43,11 +44,11 @@ bool Console::Custom_ParseCommand(const char *command)
 {
 	if (FStrNCmp(command, CMD_CFG_NAME, 3) == 0)
 	{
-		//format: cfg <nodeName> <mac> <srvport>	
+		//format: cfg <nodeName> [srvport]
 
 		dcclite::Parser parser(command + 3);
 
-		char nodeName[17];
+		char nodeName[NetUdp::MAX_NODE_NAME + 1];
 		if (parser.GetToken(nodeName, sizeof(nodeName)) != dcclite::Tokens::ID)
 		{
 			//Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_NODE, " ", FSTR_NAME);
@@ -55,37 +56,10 @@ bool Console::Custom_ParseCommand(const char *command)
 
 			return true;
 		}
-
-		uint8_t mac[6];
-		for (int i = 0; i < 6; ++i)
-		{
-			int number;
-			if (parser.GetNumber(number) != dcclite::Tokens::NUMBER)
-			{
-				//Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", "mac");
-				DCCLITE_LOG << MODULE_NAME << FSTR_NOK << F(" mac") << DCCLITE_ENDL;
-
-				return true;
-			}
-
-			//Console::SendLog("[CONSOLE]", "mac: %d", number);
-
-			mac[i] = number;
-
-			if (i == 5)
-				break;
-
-			if (parser.GetToken(nullptr, 0) != dcclite::Tokens::DOT)
-			{
-				//Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", "mac", " ", "sep");
-				DCCLITE_LOG << MODULE_NAME << FSTR_NOK << F(" mac sep") << DCCLITE_ENDL;
-
-				return true;
-			}
-		}
-	
-		int srvport;
-		if (parser.GetNumber(srvport) != dcclite::Tokens::NUMBER)
+			
+		int srvport = 0;
+		auto token = parser.GetNumber(srvport);
+		if((token != dcclite::Tokens::END_OF_BUFFER) && (token != dcclite::Tokens::NUMBER))
 		{
 			//Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_SRVPORT);
 			DCCLITE_LOG << MODULE_NAME << FSTR_NOK << ' ' << FSTR_SRVPORT << DCCLITE_ENDL;
@@ -93,15 +67,13 @@ bool Console::Custom_ParseCommand(const char *command)
 			return true;
 		}
 
-		NetUdp::Configure(nodeName, mac);
+		NetUdp::Configure(nodeName);
 		Session::Configure(srvport);
-
-		//Console::SendLogEx(MODULE_NAME, FSTR_OK);
+		
 		DCCLITE_LOG_MODULE_LN(FSTR_OK);
 
 		Storage::SaveConfig();
-
-		//Console::SendLogEx(MODULE_NAME, FSTR_OK);
+		
 		DCCLITE_LOG_MODULE_LN(FSTR_OK);
 
 		return true;
@@ -120,6 +92,14 @@ bool Console::Custom_ParseCommand(const char *command)
 		Storage::DumpHex();
 
 		//Console::SendLogEx(MODULE_NAME, FSTR_OK);
+		DCCLITE_LOG_MODULE_LN(FSTR_OK);
+
+		return true;
+	}
+	else if(FStrNCmp(command, CMD_CLR_NAME, 3) == 0)
+	{
+		Storage::Clear();
+
 		DCCLITE_LOG_MODULE_LN(FSTR_OK);
 
 		return true;

@@ -35,7 +35,8 @@ namespace Session
 
 	extern void SaveConfig(Storage::EpromStream &stream);	
 
-	extern bool Configure(uint16_t srvport);
+	//Set port to use to connect to server, pass 0 to use default port
+	extern bool Configure(uint16_t srvport = 0);
 
 	extern void Update(const unsigned long ticks, const bool stateChangeDetectedHint);
 

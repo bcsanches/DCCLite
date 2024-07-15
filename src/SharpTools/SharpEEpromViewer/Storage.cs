@@ -447,19 +447,17 @@ namespace SharpEEPromViewer
 
 	class NetworkLump : Lump
     {
-        public string NodeName { get; }
-        public System.Net.NetworkInformation.PhysicalAddress Mac { get; }        
+        public string NodeName { get; }          
 
         public NetworkLump(string name, UInt16 size, BinaryReader reader) :
             base(name, size)
         {
-            if (size != 22)
-                throw new ArgumentOutOfRangeException("[NetworkLump] Expected size to be 22 bytes, but got " + size);
+            if (size != 16)
+                throw new ArgumentOutOfRangeException("[NetworkLump] Expected size to be 16 bytes, but got " + size);
 
             const int MAX_NODE_NAME = 16;
 
             NodeName = Lump.ConvertBytesToString(reader.ReadBytes(MAX_NODE_NAME));
-            Mac = new(reader.ReadBytes(6));            
         }
     }
 
