@@ -1,5 +1,6 @@
 ﻿
 using System.IO.Ports;
+using System.Management;
 
 
 namespace SharpDude
@@ -8,10 +9,13 @@ namespace SharpDude
     {
         IAvrDude ?mAvrDude;
         System.Diagnostics.Process ?mAvrDudeProcess;
-        string[] ?mComPorts;
+        string[] mComPorts = [];
 
-        //https://saezndaree.wordpress.com/2009/03/29/how-to-redirect-the-consoles-output-to-a-textbox-in-c/
-        public MainForm()
+		private ManagementEventWatcher? mArrivalWatcher;
+		private ManagementEventWatcher? mRemovalWatcher;
+
+		//https://saezndaree.wordpress.com/2009/03/29/how-to-redirect-the-consoles-output-to-a-textbox-in-c/
+		public MainForm()
         {
             InitializeComponent();
 
@@ -42,33 +46,106 @@ namespace SharpDude
             }
 
             UpdateBurnButtonState();
+
+            MonitorDeviceChanges();
+
+            this.SetStatus(string.Empty);
+		}
+
+		public enum EventType
+		{
+			Insertion,
+			Removal,
+		}
+
+        private void SetStatus(string text)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() => { this.SetStatus(text); }));
+
+                return;
+            }
+
+            m_lblStatus.Text = text;
         }
 
-        private void LoadPorts()
+		//Thanks: https://stackoverflow.com/a/4269883/440867
+		private void MonitorDeviceChanges()
+		{
+			try
+			{
+				var deviceArrivalQuery = new WqlEventQuery("SELECT * FROM Win32_DeviceChangeEvent WHERE EventType = 2");
+				var deviceRemovalQuery = new WqlEventQuery("SELECT * FROM Win32_DeviceChangeEvent WHERE EventType = 3");
+
+				mArrivalWatcher = new ManagementEventWatcher(deviceArrivalQuery);
+				mRemovalWatcher = new ManagementEventWatcher(deviceRemovalQuery);
+
+				mArrivalWatcher.EventArrived += (o, args) => RaisePortsChangedIfNecessary(EventType.Insertion);
+				mRemovalWatcher.EventArrived += (sender, eventArgs) => RaisePortsChangedIfNecessary(EventType.Removal);
+
+				// Start listening for events
+				mArrivalWatcher.Start();
+				mRemovalWatcher.Start();
+			}
+			catch (ManagementException ex)
+			{
+                MessageBox.Show("Failed to install com port watcher: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		private void RaisePortsChangedIfNecessary(EventType eventType)
+		{
+			lock (mComPorts)
+			{
+				var availableSerialPorts = SerialPort.GetPortNames();
+				if (!mComPorts.SequenceEqual(availableSerialPorts))
+				{
+                    this.SetStatus(eventType == EventType.Insertion ? "New com port detected" : "Com port removed");
+
+					mComPorts = availableSerialPorts;
+                    this.RefreshPorts();
+				}
+			}
+		}
+
+        private void RefreshPorts()
         {
-            cbComPorts.SuspendLayout();
+            if(cbComPorts.InvokeRequired)
+            {
+                cbComPorts.Invoke(new MethodInvoker(() => { this.RefreshPorts(); }));
+
+                return;
+            }
 
 			var previousPort = cbComPorts.SelectedItem as string;
 
-            mComPorts = SerialPort.GetPortNames();
+			cbComPorts.SuspendLayout();
 
-            cbComPorts.Items.Clear();
-            cbComPorts.Items.AddRange(mComPorts);
+			cbComPorts.Items.Clear();
+			cbComPorts.Items.AddRange(mComPorts);
 
-            cbComPorts.SelectedIndex = 0;
-            if (previousPort != null)
-            {
-                foreach(var port in mComPorts)
-                {
-                    if (port == previousPort)
-                    {
-                        cbComPorts.SelectedItem = port;
-                        break;
-                    }                        
-                }
-            }
+			cbComPorts.SelectedIndex = 0;
+			if (previousPort != null)
+			{
+				foreach (var port in mComPorts)
+				{
+					if (port == previousPort)
+					{
+						cbComPorts.SelectedItem = port;
+						break;
+					}
+				}
+			}
 
-            cbComPorts.ResumeLayout();
+			cbComPorts.ResumeLayout();
+		}
+
+		private void LoadPorts()
+        {            			
+			mComPorts = SerialPort.GetPortNames();
+
+            this.RefreshPorts();
         }
 
         private void btnExit_Click(object sender, EventArgs e)

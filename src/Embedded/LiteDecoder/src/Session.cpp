@@ -91,7 +91,7 @@ void Session::SaveConfig(Storage::EpromStream &stream)
 	stream.Put(g_uSrvPort);
 }
 
-bool Session::Configure(uint16_t srvport)
+void Session::Configure(uint16_t srvport)
 {		
 	g_uSrvPort = srvport == 0 ? dcclite::DEFAULT_DCCLITE_SERVER_PORT : srvport;
 }

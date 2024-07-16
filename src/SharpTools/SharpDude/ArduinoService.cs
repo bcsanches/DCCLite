@@ -120,7 +120,7 @@ namespace SharpDude
             if(myExeLocation == null) 
                 return;
 
-            var pioBase = System.IO.Path.Combine(myExeLocation, @"..\..\..\src\LiteDecoder\.pio\build");
+            var pioBase = System.IO.Path.Combine(myExeLocation, @"..\..\..\..\..\Embedded\LiteDecoder\.pio\build");
 
             foreach (var board in gBoards)
             {
