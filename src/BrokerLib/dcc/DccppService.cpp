@@ -10,6 +10,7 @@
 
 #include "Decoder.h"
 #include "DccLiteService.h"
+#include "JsonUtils.h"
 #include "NetMessenger.h"
 #include "NmraUtil.h"
 #include "SignalDecoder.h"
@@ -718,16 +719,10 @@ ERROR_RESPONSE:
 
 	DccppServiceImpl::DccppServiceImpl(RName name, Broker &broker, const rapidjson::Value& params, const Project& project):
 		DccppService(name, broker, params, project),		
-		m_rclDccService{ static_cast<DccLiteService &>(m_rclBroker.ResolveRequirement(params["requires"].GetString())) }
-	{
-		
-
+		m_rclDccService{ static_cast<DccLiteService &>(m_rclBroker.ResolveRequirement(dcclite::json::GetString(params, "requires", name.GetData().data()))) }
+	{		
 		//standard port used by DCC++
-		int port = 2560;
-
-		auto it = params.FindMember("port");
-		if (it != params.MemberEnd())
-			port = it->value.GetInt();
+		const auto port = dcclite::json::TryGetDefaultInt(params, "port", 2560);		
 
 		if (!m_clSocket.Open(port, dcclite::Socket::Type::STREAM, dcclite::Socket::Flags::FLAG_BLOCKING_MODE))
 		{

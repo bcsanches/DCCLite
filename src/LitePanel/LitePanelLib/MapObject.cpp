@@ -10,6 +10,8 @@
 
 #include "MapObject.h"
 
+#include <stdexcept>
+
 #include "MapObjectFactory.h"
 
 namespace LitePanel

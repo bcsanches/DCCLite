@@ -11,6 +11,8 @@
 #pragma once
 
 #include <algorithm>
+#include <stdexcept>
+
 #include <string>
 
 #include <JsonCreator/Object.h>

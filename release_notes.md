@@ -8,6 +8,8 @@
 ## Broker
 
 - Support to unnamed devices (auto generate a name with IP)
+- Better validation of json data
+- fixed sample "MyRailroad"
 
 ## SharpTerminal
 

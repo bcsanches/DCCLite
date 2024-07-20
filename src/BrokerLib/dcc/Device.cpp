@@ -20,6 +20,7 @@
 #include "Decoder.h"
 #include "FmtUtils.h"
 #include "IDccLiteService.h"
+#include "JsonUtils.h"
 #include "Log.h"
 
 namespace dcclite::broker
@@ -171,14 +172,14 @@ namespace dcclite::broker
 		{
 			for (auto &element : decodersData.GetArray())
 			{
-				auto className = element["class"].GetString();
+				auto className = json::GetString(element, "class", "Device");
 
 				//Just used for annotations on JSON file...as the parser does not support comments
 				if (strcmp(className, "IgnoreMe") == 0)
 					continue;
 
-				auto decoderName = RName{ element["name"].GetString() };
-				DccAddress address{ element["address"] };
+				auto decoderName = RName{ json::GetString(element, "name", "Device") };
+				DccAddress address{ json::GetValue(element, "address", "Device") };
 
 				auto &decoder = m_clDccService.Device_CreateDecoder(*this, className, address, decoderName, element);
 

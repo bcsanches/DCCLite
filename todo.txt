@@ -3,6 +3,7 @@ DCCLite
 - update route section to know next section and avoid re-ocupying the block
 - ThrottleServiceImpl another candidate for using custom folder
 
+- Do auto requires on Broker that return the "className" if no requires field is specified, document this
 - SharpTerminal: tree view should reflect update when a new device is added (test with unnamed device)
 - SharpDude: add support to configure device name
 - Auto config device name

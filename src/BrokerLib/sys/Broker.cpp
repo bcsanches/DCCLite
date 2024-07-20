@@ -16,8 +16,11 @@
 #include <string>
 
 #include <fmt/format.h>
+
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
+#include <rapidjson/schema.h>
+
 #include <spdlog/logger.h>
 
 #include <Log.h>
@@ -38,6 +41,7 @@
 
 #include "BonjourService.h"
 
+#include "JsonUtils.h"
 #include "Thinker.h"
 #include "ScriptSystem.h"
 #include "SpecialFolders.h"
@@ -48,16 +52,15 @@
 
 namespace dcclite::broker
 {
-	static bool CheckIfServiceIsIgnorable(const rapidjson::Value &data)
+	static inline bool CheckIfServiceIsIgnorable(const rapidjson::Value &data) noexcept
 	{
-		auto ignoreServiceFlag = data.FindMember("ignoreOnLoadFailure");
-		return ((ignoreServiceFlag != data.MemberEnd()) && (ignoreServiceFlag->value.GetBool()));		
+		return dcclite::json::TryGetDefaultBool(data, "ignoreOnLoadFailure", false);
 	}
 
 	static std::unique_ptr<Service> CreateBrokerService(Broker &broker, const rapidjson::Value &data, const Project &project)
 	{
-		const char *className = data["class"].GetString();
-		RName name{ data["name"].GetString() };
+		const char *className = dcclite::json::GetString(data, "class", "service block");
+		RName name{ dcclite::json::GetString(data, "name", "service block") };
 
 		dcclite::Log::Info("[Broker] [CreateBrokerService] Creating DccLite Service: {}", name);
 
@@ -137,44 +140,45 @@ namespace dcclite::broker
 		ScriptSystem::Stop();
 
 		ZeroConfSystem::Stop();
-	}
+	}	
 
 	void Broker::LoadConfig()
-	{
+	{		
 		const auto configFileName = m_clProject.GetFilePath("broker.config.json");
+		const auto configFileNameStr = configFileName.string();
+
+		dcclite::Log::Info("[Broker] [LoadConfig] Trying to open {}", configFileNameStr);
+
 		std::ifstream configFile(configFileName);
 
 		if (!configFile)
 		{
-			throw std::runtime_error(fmt::format("[Broker] [LoadConfig] error: cannot open config file {}", configFileName.string()));
+			throw std::runtime_error(fmt::format("[Broker] [LoadConfig] error: cannot open config file {}", configFileNameStr));
 		}
 
-		dcclite::Log::Debug("[Broker] [LoadConfig] Loaded config {}", configFileName.string());
+		dcclite::Log::Info("[Broker] [LoadConfig] Opened {}, starting parser", configFileNameStr);
 
 		rapidjson::IStreamWrapper isw(configFile);
 		rapidjson::Document data;
-		data.ParseStream(isw);
-		
-		m_clProject.SetName(data["name"].GetString());
-
-		const auto &services = data["services"];
-
-		if (!services.IsArray())
+		if (data.ParseStream(isw).HasParseError())
 		{
-			throw std::runtime_error("[Broker] [LoadConfig] error: invalid config, expected services array");
-		}
+			throw std::runtime_error(fmt::format("[Broker] [LoadConfig] {} is not a valid json", configFileNameStr));
+		}		
+		
+		m_clProject.SetName(dcclite::json::GetString(data, "name", "broker"));
 
-		auto bonjourSetting = data.FindMember("bonjourService");
-		if ((bonjourSetting != data.MemberEnd()) && (bonjourSetting->value.GetBool()))
+		const auto &services = dcclite::json::GetArray(data, "services", "broker");		
+
+		dcclite::Log::Info("[Broker] [LoadConfig] Loaded config {}", configFileNameStr);
+
+		if(dcclite::json::TryGetDefaultBool(data, "bonjourService", false))
 			m_pServices->AddChild(BonjourService::Create(RName{ BONJOUR_SERVICE_NAME }, *this, m_clProject));
 
-		dcclite::Log::Debug("[Broker] [LoadConfig] Processing config services array entries: {}", services.Size());
-
-		auto servicesDataArray = services.GetArray();
+		dcclite::Log::Debug("[Broker] [LoadConfig] Processing config services array entries: {}", services.Size());		
 
 		std::vector<const rapidjson::Value *> pendingServices;		
 
-		for (auto &serviceData : servicesDataArray)
+		for (auto &serviceData : services)
 		{
 			auto requiresData = serviceData.FindMember("requires");
 			if (requiresData == serviceData.MemberEnd())

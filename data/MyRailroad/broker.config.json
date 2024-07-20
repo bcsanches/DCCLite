@@ -1,26 +1,25 @@
 {
-  "name": "MyRailroad",
-  "services": [
-    {
-      "class": "DccLite",
-      "name": "Dcc0",
-      "port": 8989,
-      "devices": [
-        {
-          "name": "TestDevice",
-          "class": "ArduinoMega"
-        }
-      ]
-    },
-    {
-      "class": "Terminal",
-      "name": "terminal",
-      "port": 4190
-    },
-    {
-      "class": "DccppService",
-      "name": "dccpp",
-      "system":"Dcc0"
-    }
-  ]
+	"name": "MyRailroad",	
+	"services": [
+		{
+			"class": "DccLiteService",
+			"name": "dcc0",      
+			"devices": [
+				{
+					"name": "TestDevice",
+					"class": "ArduinoMega"
+				}
+			]
+		},
+		{
+			"class": "Terminal",
+			"name": "terminal",
+			"port": 4190
+		},
+		{
+			"class": "DccppService",
+			"name": "dccpp",
+			"requires":"DccLiteService"
+		}
+	]
 }

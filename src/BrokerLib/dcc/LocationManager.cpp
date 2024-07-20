@@ -12,6 +12,8 @@
 #include "LocationManager.h"
 
 #include <FmtUtils.h>
+
+#include <JsonUtil.h>
 #include <Log.h>
 
 #include "Decoder.h"
@@ -126,16 +128,16 @@ namespace dcclite::broker
 		const rapidjson::Value &sectorsData = it->value;
 
 		if(!sectorsData.IsArray())
-			throw new std::runtime_error(fmt::format("[{}] LocationManagerService no sectors data array", this->GetName()));
+			throw new std::runtime_error(fmt::format("[{}] LocationManagerService sectors data must be an array", this->GetName()));
 	
 		m_vecIndex.reserve(sectorsData.GetArray().Size());
 
 		for(auto &sectorData : sectorsData.GetArray())
 		{
-			RName dname{ sectorData["name"].GetString()};
-			RName prefix{ sectorData["prefix"].GetString() };
-			auto beginAddress = DccAddress{static_cast<uint16_t>(sectorData["begin"].GetInt())};
-			auto endAddress = DccAddress{ static_cast<uint16_t>(sectorData["end"].GetInt())};			
+			RName dname{ json::GetString(sectorData, "name", "LocationManager::Sector")};
+			RName prefix{ json::GetString(sectorData, "prefix", "LocationManager::Sector") };
+			auto beginAddress = DccAddress{static_cast<uint16_t>(json::GetInt(sectorData, "begin", "LocationManager::Sector"))};
+			auto endAddress = DccAddress{ static_cast<uint16_t>(json::GetInt(sectorData, "end", "LocationManager::Sector"))};
 
 			m_vecIndex.emplace_back(dname, prefix, beginAddress, endAddress, *this);
 

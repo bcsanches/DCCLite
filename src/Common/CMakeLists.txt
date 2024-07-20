@@ -13,6 +13,8 @@ add_library(
 	GuidUtils.h
 	IFolderObject.cpp
 	IFolderObject.h
+	JsonUtils.cpp
+	JsonUtils.h
 	Log.h
 	LogUtils.cpp
 	LogUtils.h

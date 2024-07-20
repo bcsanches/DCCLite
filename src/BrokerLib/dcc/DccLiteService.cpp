@@ -13,6 +13,7 @@
 #include <exception>
 #include <Log.h>
 
+#include <JsonUtils.h>
 #include <FmtUtils.h>
 #include <GuidUtils.h>
 #include <Packet.h>
@@ -116,14 +117,8 @@ namespace dcclite::broker
 
 		m_pLocations = static_cast<LocationManager *>(this->AddChild(std::make_unique<LocationManager>(RName{ "locations" }, params)));
 
-		uint16_t port = dcclite::DEFAULT_DCCLITE_SERVER_PORT;
+		uint16_t port = json::TryGetDefaultInt(params, "port", dcclite::DEFAULT_DCCLITE_SERVER_PORT);
 
-		{
-			auto portData = params.FindMember("port");
-			if (portData != params.MemberEnd())
-				port = portData->value.GetInt();
-		}
-	
 		[[unlikely]]
 		if (!m_clSocket.Open(port, dcclite::Socket::Type::DATAGRAM, dcclite::Socket::FLAG_BLOCKING_MODE))
 		{
@@ -132,18 +127,14 @@ namespace dcclite::broker
 
 		dcclite::Log::Info("[DccLiteService::{}] Listening on port {}", this->GetName(), port);
 
-		const rapidjson::Value &devicesData = params["devices"];
-
-		[[unlikely]]
-		if (!devicesData.IsArray())
-			throw std::runtime_error(fmt::format("[DccLiteService::{}] error: invalid config, expected devices array inside DccLiteService", name));
-
+		const auto devicesArray = json::GetArray(params, "devices", "DccLiteService");
+		
 		try
 		{
-			for (auto &device : devicesData.GetArray())
+			for (auto &device : devicesArray)
 			{
-				RName nodeName{ device["name"].GetString() };
-				auto className = device["class"].GetString();
+				RName nodeName{ json::GetString(device, "name", "device data for DccLiteService")};
+				auto className = json::GetString(device, "class", "device data for DccLiteService");
 
 				if (strcmp(className, "Virtual"))
 					m_pDevices->AddChild(std::make_unique<NetworkDevice>(nodeName, *static_cast<IDccLite_DeviceServices *>(this), device, project));

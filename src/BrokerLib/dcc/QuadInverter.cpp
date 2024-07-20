@@ -10,6 +10,7 @@
 
 #include "QuadInverter.h"
 
+#include <JsonUtils.h>
 #include <Packet.h>
 
 #include "IDevice.h"
@@ -26,8 +27,8 @@ namespace dcclite::broker
 	) :
 		OutputDecoder(address, name, owner, dev, params)		
 	{						
-		const auto &trackAPins = params["trackPowerAPins"].GetArray();
-		const auto &trackBPins = params["trackPowerBPins"].GetArray();
+		const auto trackAPins = json::GetArray(params, "trackPowerAPins", "QuadInverter");
+		const auto trackBPins = json::GetArray(params, "trackPowerBPins", "QuadInverter");
 
 		m_arTrackAPins[0] = dcclite::BasicPin{ static_cast<PinType_t>(trackAPins[0].GetInt()) };
 		m_arTrackAPins[1] = dcclite::BasicPin{ static_cast<PinType_t>(trackAPins[1].GetInt()) };
@@ -42,15 +43,11 @@ namespace dcclite::broker
 
 		networkDevice->Decoder_RegisterPin(*this, m_arTrackBPins[0], "trackB0");
 		networkDevice->Decoder_RegisterPin(*this, m_arTrackBPins[1], "trackB1");
+		
+		m_fIgnoreSavedState = json::TryGetDefaultBool(params, "ignoreSavedState", false);
+		m_fActivateOnPowerUp = json::TryGetDefaultBool(params, "activateOnPowerUp", false);
 
-		auto ignoreSavedState = params.FindMember("ignoreSavedState");
-		m_fIgnoreSavedState = ignoreSavedState != params.MemberEnd() ? ignoreSavedState->value.GetBool() : false;
-
-		auto activateOnPowerUp = params.FindMember("activateOnPowerUp");
-		m_fActivateOnPowerUp = activateOnPowerUp != params.MemberEnd() ? activateOnPowerUp->value.GetBool() : false;
-
-		auto flipIntervalData = params.FindMember("flipInterval");
-		m_u8FlipInterval = flipIntervalData != params.MemberEnd() ? flipIntervalData->value.GetInt() : m_u8FlipInterval;
+		m_u8FlipInterval = json::TryGetDefaultInt(params, "flipInterval", m_u8FlipInterval);		
 
 		this->SyncRemoteState(m_fIgnoreSavedState && m_fActivateOnPowerUp ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
 	}
