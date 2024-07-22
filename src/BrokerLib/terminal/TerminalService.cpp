@@ -351,10 +351,10 @@ namespace dcclite::broker
 			}
 	};
 
-	class ResetCmd : public ServiceCmdBase
+	class ResetItemCmd : public ServiceCmdBase
 	{
 		public:
-			explicit ResetCmd(RName name = RName{ "Reset" }) :
+			explicit ResetItemCmd(RName name = RName{ "Reset-Item" }) :
 				ServiceCmdBase(name)
 			{
 				//empty
@@ -1519,7 +1519,7 @@ namespace dcclite::broker
 		}
 
 		{
-			cmdHost->AddCmd(std::make_unique<ResetCmd>());
+			cmdHost->AddCmd(std::make_unique<ResetItemCmd>());
 		}
 
 		{

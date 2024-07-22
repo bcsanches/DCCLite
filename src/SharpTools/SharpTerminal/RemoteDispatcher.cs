@@ -40,7 +40,7 @@ namespace SharpTerminal.Dispatcher
 	[SupportedOSPlatform("windows")]
 	public class RemoteSection : RemoteServiceObject
     {
-        protected static IRemoteObjectAction g_ResetAction = new RemoteServiceObjectCmdAction("Reset", "Reset", "Reset the section");
+        protected static IRemoteObjectAction g_ResetAction = new RemoteServiceObjectCmdAction("Reset-Item", "Reset", "Reset the section");
 
         public SectionStates m_kState;                
 

@@ -239,8 +239,12 @@ namespace dcclite::broker
 
 	void DispatcherServiceImpl::IResettableService_ResetItem(RName name)
 	{
-		if(auto section = static_cast<BaseSectionWrapper *>(m_pSections->TryGetChild(name)))
+		if (auto section = static_cast<BaseSectionWrapper *>(m_pSections->TryGetChild(name)))
+		{
 			section->Reset();
+
+			return;
+		}
 		
 		throw std::runtime_error(fmt::format("[DispatcherServiceImpl::IResettableService_ResetItem] Section {} not registered", name));		
 	}
