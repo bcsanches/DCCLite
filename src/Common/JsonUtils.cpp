@@ -45,6 +45,13 @@ namespace dcclite::json
 		return field->value;
 	}
 
+	const char *TryGetDefaultString(const rapidjson::Value &data, const char *fieldName, const char *defaultValue)
+	{
+		const auto &field = data.FindMember(fieldName);
+
+		return ((field == data.MemberEnd()) ? defaultValue : field->value.GetString());
+	}
+
 	const char *GetString(const rapidjson::Value &data, const char *fieldName, const char *context)
 	{
 		const auto &field = GetValue(data, fieldName, context);

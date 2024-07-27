@@ -16,6 +16,7 @@
 #include <fmt/chrono.h>
 #include <variant>
 
+#include "../sys/ServiceFactory.h"
 #include "../sys/Thinker.h"
 
 #include "Clock.h"
@@ -682,6 +683,11 @@ namespace dcclite::broker
 		//empty
 	}
 
+	void ThrottleServiceImpl::Serialize(JsonOutputStream_t &stream) const
+	{
+		ThrottleService::Serialize(stream);
+	}
+
 	void ThrottleServiceImpl::Think(const dcclite::Clock::TimePoint_t ticks)
 	{	
 		m_tThinker.Schedule(ticks + 20ms);
@@ -695,24 +701,12 @@ namespace dcclite::broker
 				return true;
 			}
 		);		
-	}
-
-	void ThrottleServiceImpl::Serialize(JsonOutputStream_t &stream) const
-	{
-		ThrottleService::Serialize(stream);		
 	}	
 
-	ThrottleService::ThrottleService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project) :
-		Service(name, broker, params, project)
-	{
-		//empty
-	}
-
-	std::unique_ptr<Service> ThrottleService::Create(RName name, Broker &broker, const rapidjson::Value &params, const Project &project)
-	{
-		return std::make_unique<ThrottleServiceImpl>(name, broker, params, project);
-	}
-
+	DCC_LITE_SERVICE_FACTORY(g_clThrottleServiceFactory, RName{ ThrottleService::TYPE_NAME },
+		{
+			return std::make_unique<ThrottleServiceImpl>(name, broker, data, project);
+		});
 
 	IThrottle &ThrottleServiceImpl::CreateThrottle(const ILoconetSlot &owner)
 	{
@@ -737,5 +731,24 @@ namespace dcclite::broker
 			//nothing else to do... so go to sleep
 			m_tThinker.Cancel();
 		}
+	}
+
+	//
+	//
+	//
+	//
+	//
+
+	const char *ThrottleService::TYPE_NAME = "ThrottleService";
+
+	void ThrottleService::RegisterFactory()
+	{
+		//empty
+	}
+
+	ThrottleService::ThrottleService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project):
+		Service(name, broker, params, project)
+	{
+		//empty
 	}
 }

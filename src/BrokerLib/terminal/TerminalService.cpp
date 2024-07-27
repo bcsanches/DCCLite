@@ -38,13 +38,12 @@
 
 #include "../sys/BonjourService.h"
 #include "../sys/Broker.h"
-#include "../sys/ZeroConfSystem.h"
+#include "../sys/ServiceFactory.h"
 #include "../sys/SpecialFolders.h"
+#include "../sys/ZeroConfSystem.h"
 
 #include "TerminalCmd.h"
 #include "Util.h"
-
-
 
 #include <thread>
 
@@ -52,6 +51,11 @@ using namespace std::chrono_literals;
 
 namespace dcclite::broker
 {
+	DCC_LITE_SERVICE_FACTORY(g_clTerminalServiceFactory, RName{ "Terminal" },
+		{
+			return std::make_unique<TerminalService>(name, broker, data, project);
+		});
+
 	constexpr auto JSONRPC_KEY = "jsonrpc";
 	constexpr auto JSONRPC_VERSION = "2.0";
 
@@ -1463,6 +1467,11 @@ namespace dcclite::broker
 	// TerminalService
 	//
 	//
+
+	void TerminalService::RegisterFactory()
+	{
+		//empty
+	}
 
 	TerminalService::TerminalService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project) :
 		Service(name, broker, params, project)		

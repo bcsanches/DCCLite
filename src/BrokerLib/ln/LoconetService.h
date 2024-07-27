@@ -77,15 +77,14 @@ namespace dcclite::broker
 	class LoconetService: public Service
 	{	
 		public:
+			static void RegisterFactory();
+
 			LoconetService(RName name, Broker &broker, const rapidjson::Value& params, const Project& project);
 		
 			~LoconetService() override
 			{
 				//empty
 			}
-		
-
-			static std::unique_ptr<Service> Create(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
 			const char *GetTypeName() const noexcept override
 			{

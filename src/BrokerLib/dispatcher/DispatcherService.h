@@ -20,21 +20,15 @@ namespace dcclite::broker
 	class DispatcherService: public Service
 	{	
 		public:
+			static void RegisterFactory();
+
 			DispatcherService(RName name, Broker &broker, const rapidjson::Value& params, const Project& project);
 		
 			~DispatcherService() override = default;
 
 			//
 			// Main interface
-			//
-
-			
-
-			//
-			//
-			//
-		
-			static std::unique_ptr<Service> Create(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);
+			//			
 
 			const char *GetTypeName() const noexcept override
 			{

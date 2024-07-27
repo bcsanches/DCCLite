@@ -24,7 +24,7 @@ file(GLOB_RECURSE SRC_DISPATCHER
 )
 
 add_library(
-    BrokerLib          	   	     
+    BrokerLib	     	   	     
         dcc/DccAddress.cpp
         dcc/DccAddress.h
         dcc/DccLiteService.cpp
@@ -90,6 +90,8 @@ add_library(
 	    sys/ScriptSystem.h
         sys/Service.cpp
         sys/Service.h
+		sys/ServiceFactory.cpp
+        sys/ServiceFactory.h
         sys/SpecialFolders.cpp
         sys/SpecialFolders.h
         sys/Thinker.cpp
@@ -108,7 +110,7 @@ source_group("ln"           FILES ${SRC_LN})
 source_group("sys"          FILES ${SRC_SYS})
 source_group("terminal"     FILES ${SRC_TERMINAL})
 
-if(WIN32)
+if(WIN32)	
     target_link_libraries(BrokerLib         
         PRIVATE bcrypt.lib
         PRIVATE CityHash

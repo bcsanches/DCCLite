@@ -21,6 +21,9 @@ namespace dcclite::json
 	const rapidjson::Value &GetValue(const rapidjson::Value &data, const char *fieldName, const char *context);
 
 	const char *GetString(const rapidjson::Value &data, const char *fieldName, const char *context = nullptr);
+	const char *TryGetDefaultString(const rapidjson::Value &data, const char *fieldName, const char *defaultValue);
+
+
 	int GetInt(const rapidjson::Value &data, const char *fieldName, const char *context = nullptr);
 
 	const rapidjson::Value::ConstArray GetArray(const rapidjson::Value &data, const char *fieldName, const char *context = nullptr);

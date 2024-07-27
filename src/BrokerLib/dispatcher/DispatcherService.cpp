@@ -16,13 +16,17 @@
 
 #include <Log.h>
 
+#include <JsonUtils.h>
+
 #include "FmtUtils.h"
 
-#include "../sys/Broker.h"
 #include "../dcc/DccLiteService.h"
-#include "../sys/ScriptSystem.h"
 #include "../dcc/Device.h"
 #include "../dcc/VirtualSensorDecoder.h"
+
+#include "../sys/Broker.h"
+#include "../sys/ServiceFactory.h"
+#include "../sys/ScriptSystem.h"
 
 namespace dcclite::broker
 {	
@@ -108,7 +112,7 @@ namespace dcclite::broker
 	class DispatcherServiceImpl : public DispatcherService, public ScriptSystem::IScriptSupport, public IResettableService
 	{
 		public:
-			DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);
+			DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, const Project &project, DccLiteService &dep);
 			~DispatcherServiceImpl() override;
 
 			void Serialize(JsonOutputStream_t &stream) const override;		
@@ -140,9 +144,9 @@ namespace dcclite::broker
 			Device *m_pclDevice = nullptr;
 	};	
 
-	DispatcherServiceImpl::DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value& params, const Project& project):
+	DispatcherServiceImpl::DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value& params, const Project& project, DccLiteService &dep):
 		DispatcherService(name, broker, params, project),
-		m_rclDccLite{ static_cast<DccLiteService &>(broker.ResolveRequirement(params["requires"].GetString())) },
+		m_rclDccLite{ dep },
 		m_pSections{ static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{"sections"}))) }
 	{				
 		dcclite::Log::Info("[DispatcherServiceImpl] Init");		
@@ -280,14 +284,19 @@ namespace dcclite::broker
 	//
 	//
 
+	void DispatcherService::RegisterFactory()
+	{
+		//empty
+	}
+
 	DispatcherService::DispatcherService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project) :
 		Service(name, broker, params, project)
 	{
 		//empty
 	}
 
-	std::unique_ptr<Service> DispatcherService::Create(RName name, Broker &broker, const rapidjson::Value &params, const Project &project)
-	{
-		return std::make_unique<DispatcherServiceImpl>(name, broker, params, project);
-	}
+	DCC_LITE_SERVICE_FACTORY_REQ(g_clDispatcherServiceFactory, RName{ "DispatcherService" }, DccLiteService::TYPE_NAME,
+		{
+			return std::make_unique<DispatcherServiceImpl>(name, broker, data, project, dynamic_cast<DccLiteService &>(dep));
+		});	
 }

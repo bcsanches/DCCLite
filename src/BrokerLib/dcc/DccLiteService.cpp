@@ -34,11 +34,12 @@
 #include "VirtualSensorDecoder.h"
 
 #include "../sys/EventHub.h"
+#include "../sys/ServiceFactory.h"
 
 using namespace std::chrono_literals;
 
 namespace dcclite::broker
-{
+{	
 	DecoderWeakPointer::DecoderWeakPointer(dcclite::broker::Decoder &decoder, dcclite::broker::Service &dccLiteService) :
 		m_pclDecoder{ &decoder },
 		m_clAddress{ decoder.GetAddress() }
@@ -104,6 +105,19 @@ namespace dcclite::broker
 			return std::make_unique<VirtualSensorDecoder>(address, name, owner, dev, params);
 					
 		return nullptr;
+	}
+
+	//
+	//
+	//
+	//
+	//
+
+	const char *DccLiteService::TYPE_NAME = "DccLiteService";	
+
+	void DccLiteService::RegisterFactory()
+	{
+		static GenericServiceFactory<DccLiteService> g_DccLiteServiceFactory;
 	}
 
 

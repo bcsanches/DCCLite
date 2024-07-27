@@ -6,6 +6,7 @@
 #include "../sys/BonjourService.h"
 #include "../sys/Broker.h"
 #include "../sys/EventHub.h"
+#include "../sys/ServiceFactory.h"
 #include "../sys/ZeroConfSystem.h"
 
 #include "Decoder.h"
@@ -103,7 +104,7 @@ namespace dcclite::broker
 	class DccppServiceImpl: public DccppService, public EventHub::IEventTarget, DccppServiceImplClientProxy
 	{
 		public:
-			DccppServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);
+			DccppServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, const Project &project, DccLiteService &dependency);
 			~DccppServiceImpl() override;				
 
 		private:			
@@ -717,9 +718,9 @@ ERROR_RESPONSE:
 	//
 
 
-	DccppServiceImpl::DccppServiceImpl(RName name, Broker &broker, const rapidjson::Value& params, const Project& project):
+	DccppServiceImpl::DccppServiceImpl(RName name, Broker &broker, const rapidjson::Value& params, const Project& project, DccLiteService &dependency):
 		DccppService(name, broker, params, project),		
-		m_rclDccService{ static_cast<DccLiteService &>(m_rclBroker.ResolveRequirement(dcclite::json::GetString(params, "requires", name.GetData().data()))) }
+		m_rclDccService{ dependency }
 	{		
 		//standard port used by DCC++
 		const auto port = dcclite::json::TryGetDefaultInt(params, "port", 2560);		
@@ -812,20 +813,19 @@ ERROR_RESPONSE:
 		}
 	}
 
+	void DccppService::RegisterFactory()
+	{
+		//empty
+	}
+
 	DccppService::DccppService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project) :
 		Service{ name, broker, params, project }
 	{
 		//empty
 	}
 
-	std::unique_ptr<Service> DccppService::Create(RName name, Broker &broker, const rapidjson::Value &params, const Project &project)
-	{
-		return std::make_unique<DccppServiceImpl>(name, broker, params, project);
-	}
-
-#if 1
-	
-
-#endif
-
+	DCC_LITE_SERVICE_FACTORY_REQ(g_clDccppServiceFactory, RName{ "DccppService" }, DccLiteService::TYPE_NAME,
+		{
+			return std::make_unique<DccppServiceImpl>(name, broker, data, project, dynamic_cast<DccLiteService &>(dep));
+		});
 }

@@ -75,9 +75,13 @@ namespace dcclite::broker
 	class DccLiteService : public Service, private IDccLite_DeviceServices, private IDccLite_DecoderServices, public EventHub::IEventTarget, public ScriptSystem::IScriptSupport
 	{
 		public:
+			static const char *TYPE_NAME;
+
 			DccLiteService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);
 
-			~DccLiteService() override;				
+			~DccLiteService() override;			
+
+			static void RegisterFactory();
 
 			//
 			//IObject
@@ -86,7 +90,7 @@ namespace dcclite::broker
 
 			const char *GetTypeName() const noexcept override
 			{
-				return "DccLiteService";
+				return TYPE_NAME;
 			}
 
 			void Serialize(dcclite::JsonOutputStream_t &stream) const override

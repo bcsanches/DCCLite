@@ -28,24 +28,15 @@
 
 #include <FmtUtils.h>
 
-#include "../dcc/DccLiteService.h"
-#include "../dcc/DccppService.h"
-
-#include "../dispatcher/DispatcherService.h"
-
-#include "../ln/LoconetService.h"
-#include "../ln/ThrottleService.h"
-
-#include "../terminal/TerminalCmd.h"
-#include "../terminal/TerminalService.h"
-
 #include "BonjourService.h"
-
 #include "JsonUtils.h"
+#include "ServiceFactory.h"
 #include "Thinker.h"
 #include "ScriptSystem.h"
 #include "SpecialFolders.h"
 #include "ZeroConfSystem.h"
+
+#include "../terminal/TerminalCmd.h"
 
 //win32 header leak
 #undef GetObject
@@ -57,45 +48,39 @@ namespace dcclite::broker
 		return dcclite::json::TryGetDefaultBool(data, "ignoreOnLoadFailure", false);
 	}
 
-	static std::unique_ptr<Service> CreateBrokerService(Broker &broker, const rapidjson::Value &data, const Project &project)
+	static RName GetServiceClassName(const rapidjson::Value &data)
 	{
 		const char *className = dcclite::json::GetString(data, "class", "service block");
+		auto rclassName = RName::TryGetName(className);
+		if (!rclassName)
+		{
+			throw std::runtime_error(fmt::format("[Broker] [CreateBrokerService] error: service type {} not registered", className));
+		}
+
+		return rclassName;
+	}
+
+	static ServiceFactory &FindServiceFactory(const rapidjson::Value &data)
+	{
+		auto className = GetServiceClassName(data);
+		auto factory = ServiceFactory::TryFindFactory(className);
+		if (!factory)
+		{
+			throw std::runtime_error(fmt::format("[Broker] [CreateBrokerService] error: unknown service type {}", className));
+		}
+
+		return *factory;
+	}
+
+	static std::unique_ptr<Service> CreateBrokerService(const ServiceFactory &factory, Broker &broker, const rapidjson::Value &data, const Project &project)
+	{		
 		RName name{ dcclite::json::GetString(data, "name", "service block") };
 
 		dcclite::Log::Info("[Broker] [CreateBrokerService] Creating DccLite Service: {}", name);
 
 		try
-		{
-			if (strcmp(className, "Bonjour") == 0)
-			{
-				return BonjourService::Create(name, broker, project);
-			}
-			if (strcmp(className, "DccLiteService") == 0)
-			{
-				return std::make_unique<DccLiteService>(name, broker, data, project);
-			}
-			else if (strcmp(className, "DccppService") == 0)
-			{
-				return DccppService::Create(name, broker, data, project);
-			}
-			else if (strcmp(className, "DispatcherService") == 0)
-			{
-				return DispatcherService::Create(name, broker, data, project);
-			}
-			else if (strcmp(className, "LoconetService") == 0)
-			{
-				return LoconetService::Create(name, broker, data, project);
-			}
-			else if (strcmp(className, "Terminal") == 0)
-			{
-				return std::make_unique<TerminalService>(name, broker, data, project);
-			}
-			else if (strcmp(className, "ThrottleService") == 0)
-			{
-				return ThrottleService::Create(name, broker, data, project);
-			}
-
-			throw std::runtime_error(fmt::format("[Broker] [CreateBrokerService] error: unknown service type {}", className));
+		{							
+			return factory.Create(name, broker, data, project);			
 		}
 		catch (std::exception &ex)
 		{
@@ -120,6 +105,8 @@ namespace dcclite::broker
 
 			this->AddChild(std::move(cmdHost));
 		}
+
+		DefaultServiceFactory::RegisterAll();
 
 		using namespace dcclite;
 
@@ -174,34 +161,35 @@ namespace dcclite::broker
 		if(dcclite::json::TryGetDefaultBool(data, "bonjourService", false))
 			m_pServices->AddChild(BonjourService::Create(RName{ BONJOUR_SERVICE_NAME }, *this, m_clProject));
 
-		dcclite::Log::Debug("[Broker] [LoadConfig] Processing config services array entries: {}", services.Size());		
+		dcclite::Log::Debug("[Broker] [LoadConfig] Processing config services array entries: {}", services.Size());				
 
-		std::vector<const rapidjson::Value *> pendingServices;		
+		std::vector<std::pair<const rapidjson::Value *, const ServiceFactory *>> pendingServices;		
 
 		for (auto &serviceData : services)
 		{
-			auto requiresData = serviceData.FindMember("requires");
-			if (requiresData == serviceData.MemberEnd())
+			auto &factory = FindServiceFactory(serviceData);
+
+			if (factory.HasDependencies())
 			{
-				std::unique_ptr<Service> service{ CreateBrokerService(*this, serviceData, m_clProject)};
+				pendingServices.push_back(std::make_pair(&serviceData, &factory));
+			}
+			else
+			{
+				auto service{ CreateBrokerService(factory, *this, serviceData, m_clProject) };
 
 				if (!service)
 					continue;
 
 				m_pServices->AddChild(std::move(service));
 			}
-			else
-			{								
-				pendingServices.push_back(&serviceData);
-			}
-		}
+		}				
 
 		for (auto &serviceData : pendingServices)
 		{
-			std::unique_ptr<Service> service{ CreateBrokerService(*this, *serviceData, m_clProject)};
+			std::unique_ptr<Service> service{ CreateBrokerService(*serviceData.second, *this, *serviceData.first, m_clProject)};
 			
 			if (!service)
-				continue;			
+				continue;
 
 			m_pServices->AddChild(std::move(service));
 		}		
