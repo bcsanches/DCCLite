@@ -24,7 +24,7 @@ namespace dcclite::broker
 
 	class ILoconetSlot
 	{
-		public:
+		public:			
 			virtual ~ILoconetSlot() = default;
 
 			ILoconetSlot(const ILoconetSlot &rhs) = delete;
@@ -77,6 +77,8 @@ namespace dcclite::broker
 	class LoconetService: public Service
 	{	
 		public:
+			static const char *TYPE_NAME;
+
 			static void RegisterFactory();
 
 			LoconetService(RName name, Broker &broker, const rapidjson::Value& params, const Project& project);

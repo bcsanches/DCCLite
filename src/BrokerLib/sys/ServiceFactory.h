@@ -15,20 +15,14 @@
 
 #include <rapidjson/document.h>
 
+#include <JsonUtils.h>
 #include <RName.h>
 
-#define DCC_LITE_SERVICE_FACTORY_REQ(NAME, CLASS_NAME, REQUIREMENTS, CODE)			 \
-		static std::unique_ptr<dcclite::broker::Service> PROC_##NAME(dcclite::RName name, dcclite::broker::Broker &broker, const rapidjson::Value &data, const dcclite::broker::Project &project, Service &dep) { CODE }	\
-		static dcclite::broker::ServiceWithDependenciesFactory NAME{CLASS_NAME, REQUIREMENTS, PROC_##NAME};
-
-#define DCC_LITE_SERVICE_FACTORY(NAME, CLASS_NAME, CODE)  \
-		static std::unique_ptr<dcclite::broker::Service> PROC_##NAME(dcclite::RName name, dcclite::broker::Broker &broker, const rapidjson::Value &data, const dcclite::broker::Project &project) { CODE }	\
-		static dcclite::broker::DefaultServiceFactory NAME{CLASS_NAME, PROC_##NAME};
+#include "Broker.h"
 
 namespace dcclite::broker
 {
-	class Service;
-	class Broker;
+	class Service;	
 	class Project;
 
 	class ServiceFactory
@@ -74,40 +68,31 @@ namespace dcclite::broker
 			}
 	};
 
-	class DefaultServiceFactory: public ServiceFactory
+	template <typename T>
+	class GenericServiceWithDependenciesFactory: public ServiceFactory
 	{
 		public:
-			typedef std::unique_ptr<Service>(*FactoryProc_t)(RName name, Broker &broker, const rapidjson::Value &data, const Project &project);
-			
-			DefaultServiceFactory(RName className, FactoryProc_t proc);
+			GenericServiceWithDependenciesFactory(): ServiceFactory(RName{ T::TYPE_NAME })
+			{
+				this->Register();
+			}
 
 			inline std::unique_ptr<Service> Create(RName name, Broker &broker, const rapidjson::Value &data, const Project &project) const override
-			{				
-				return m_pfnProc(name, broker, data, project);
-			}	
-
-		private:
-			FactoryProc_t m_pfnProc;			
-	};
-
-	class ServiceWithDependenciesFactory: public ServiceFactory
-	{
-		public:
-			typedef std::unique_ptr<Service>(*FactoryProc_t)(RName name, Broker &broker, const rapidjson::Value &data, const Project &project, Service &dependency);
-
-			ServiceWithDependenciesFactory(RName className, const char *defaultRequirement, FactoryProc_t proc);
-
-			std::unique_ptr<Service> Create(RName name, Broker &broker, const rapidjson::Value &data, const Project &project) const override;
-
-			virtual bool HasDependencies() const noexcept
 			{
-				return true;
+				return std::make_unique<T>(name, broker, data, project, this->ResolveRequirement(broker, data));
 			}
 
 		private:
-			FactoryProc_t m_pfnProc;
+			T::Requirement_t &ResolveRequirement(const Broker &broker, const rapidjson::Value &data) const
+			{
+				auto requirementId = dcclite::json::TryGetDefaultString(
+					data,
+					"requires",
+					T::Requirement_t::TYPE_NAME
+				);
 
-			const char *m_pszDefaultRequirement = nullptr;
+				return dynamic_cast<T::Requirement_t &>(broker.ResolveRequirement(requirementId));
+			}
 	};
 }
 

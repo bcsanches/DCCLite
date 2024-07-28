@@ -106,7 +106,7 @@ namespace dcclite::broker
 			this->AddChild(std::move(cmdHost));
 		}
 
-		DefaultServiceFactory::RegisterAll();
+		ServiceFactory::RegisterAll();
 
 		using namespace dcclite;
 
@@ -195,7 +195,7 @@ namespace dcclite::broker
 		}		
 	}
 
-	Service &Broker::ResolveRequirement(const char *requirement)
+	Service &Broker::ResolveRequirement(const char *requirement) const
 	{
 		Parser parser{ requirement };
 
@@ -235,7 +235,7 @@ namespace dcclite::broker
 		throw std::invalid_argument(fmt::format("[Broker::ResolveRequirement] Syntax error parsing requirement {} ", requirement));
 	}
 
-	Service *Broker::TryFindService(RName name)
+	Service *Broker::TryFindService(RName name) const
 	{
 		return static_cast<Service *>(m_pServices->TryGetChild(name));
 	}

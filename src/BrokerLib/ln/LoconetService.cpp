@@ -971,6 +971,8 @@ namespace dcclite::broker
 	class LoconetServiceImpl : public LoconetService
 	{
 		public:
+			typedef ThrottleService Requirement_t;
+
 			LoconetServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, const Project &project, ThrottleService &requirement);
 			~LoconetServiceImpl() override;			
 
@@ -1457,16 +1459,15 @@ namespace dcclite::broker
 		);
 	}
 
-	DCC_LITE_SERVICE_FACTORY_REQ(g_clLoconetServiceFactory, RName{ "LoconetService" }, ThrottleService::TYPE_NAME,
-		{
-			return std::make_unique<LoconetServiceImpl>(name, broker, data, project, dynamic_cast<ThrottleService &>(dep));
-		});
+	static GenericServiceWithDependenciesFactory<LoconetServiceImpl> g_clLoconetServiceFactory;
 
 	//
 	//
 	//
 	//
 	//
+
+	const char *LoconetService::TYPE_NAME = "LoconetService";
 
 	void LoconetService::RegisterFactory()
 	{

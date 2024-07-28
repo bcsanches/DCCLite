@@ -12,10 +12,6 @@
 
 #include <stdexcept>
 
-#include <JsonUtils.h>
-
-#include "Broker.h"
-
 #include "../dcc/DccLiteService.h"
 #include "../dcc/DccppService.h"
 
@@ -72,56 +68,7 @@ namespace dcclite::broker
 		LoconetService::RegisterFactory();		
 		TerminalService::RegisterFactory();
 		ThrottleService::RegisterFactory();
-	}
-
-	//
-	//
-	//
-	//
-	//
-	
-	DefaultServiceFactory::DefaultServiceFactory(RName className, FactoryProc_t proc):
-		ServiceFactory{ className },
-		m_pfnProc{ proc }		
-	{		
-		if (!proc)
-			throw std::invalid_argument("[ServiceFactory::ServiceFactory] proc required");
-
-		this->Register();
-	}
-
-	//
-	//
-	//
-	//
-	//
-
-	ServiceWithDependenciesFactory::ServiceWithDependenciesFactory(RName className, const char *defaultRequirement, FactoryProc_t proc):
-		ServiceFactory{ className },
-		m_pfnProc{ proc },
-		m_pszDefaultRequirement{ defaultRequirement }
-	{
-		if (!proc)
-			throw std::invalid_argument("[ServiceFactory::ServiceFactory] proc required");
-
-		if(!defaultRequirement)
-			throw std::invalid_argument("[ServiceFactory::ServiceFactory] defaultRequirement required");
-
-		this->Register();
-	}
-
-	std::unique_ptr<Service> ServiceWithDependenciesFactory::Create(RName name, Broker &broker, const rapidjson::Value &data, const Project &project) const
-	{
-		auto requirementId = dcclite::json::TryGetDefaultString(
-			data,
-			"requires",
-			m_pszDefaultRequirement
-		);
-
-		auto &requirement = broker.ResolveRequirement(requirementId);
-
-		return m_pfnProc(name, broker, data, project, requirement);
-	}
+	}		
 }
 
 

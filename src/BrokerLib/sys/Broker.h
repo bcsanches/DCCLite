@@ -36,7 +36,7 @@ namespace dcclite::broker
 
 			Broker(const Broker &) = delete;
 
-			Service *TryFindService(RName name);
+			Service *TryFindService(RName name) const;
 
 			inline void VisitServices(Visitor_t visitor)
 			{
@@ -53,7 +53,7 @@ namespace dcclite::broker
 				return "dcclite::Broker";
 			}
 
-			Service &ResolveRequirement(const char *requirement);
+			Service &ResolveRequirement(const char *requirement) const;
 
 		private:				
 			dcclite::FolderObject	*m_pServices;

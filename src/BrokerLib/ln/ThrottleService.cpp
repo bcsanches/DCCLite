@@ -703,11 +703,8 @@ namespace dcclite::broker
 		);		
 	}	
 
-	DCC_LITE_SERVICE_FACTORY(g_clThrottleServiceFactory, RName{ ThrottleService::TYPE_NAME },
-		{
-			return std::make_unique<ThrottleServiceImpl>(name, broker, data, project);
-		});
-
+	static GenericServiceFactory<ThrottleServiceImpl> g_clThrottleServiceFactory;
+	
 	IThrottle &ThrottleServiceImpl::CreateThrottle(const ILoconetSlot &owner)
 	{
 		auto throttle = dynamic_cast<IThrottle *>(this->AddChild(std::make_unique<Throttle>(this->m_clServerAddress, owner )));

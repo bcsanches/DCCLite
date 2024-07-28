@@ -114,10 +114,11 @@ namespace dcclite::broker
 	//
 
 	const char *DccLiteService::TYPE_NAME = "DccLiteService";	
+	static GenericServiceFactory<DccLiteService> g_DccLiteServiceFactory;
 
 	void DccLiteService::RegisterFactory()
 	{
-		static GenericServiceFactory<DccLiteService> g_DccLiteServiceFactory;
+		//empty
 	}
 
 

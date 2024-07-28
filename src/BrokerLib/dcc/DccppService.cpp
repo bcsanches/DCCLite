@@ -104,6 +104,8 @@ namespace dcclite::broker
 	class DccppServiceImpl: public DccppService, public EventHub::IEventTarget, DccppServiceImplClientProxy
 	{
 		public:
+			typedef DccLiteService Requirement_t;
+
 			DccppServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, const Project &project, DccLiteService &dependency);
 			~DccppServiceImpl() override;				
 
@@ -824,8 +826,7 @@ ERROR_RESPONSE:
 		//empty
 	}
 
-	DCC_LITE_SERVICE_FACTORY_REQ(g_clDccppServiceFactory, RName{ "DccppService" }, DccLiteService::TYPE_NAME,
-		{
-			return std::make_unique<DccppServiceImpl>(name, broker, data, project, dynamic_cast<DccLiteService &>(dep));
-		});
+	const char *DccppService::TYPE_NAME = "DccppService";
+
+	static GenericServiceWithDependenciesFactory< DccppServiceImpl> g_ServiceFactory;	
 }

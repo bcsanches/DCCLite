@@ -51,10 +51,9 @@ using namespace std::chrono_literals;
 
 namespace dcclite::broker
 {
-	DCC_LITE_SERVICE_FACTORY(g_clTerminalServiceFactory, RName{ "Terminal" },
-		{
-			return std::make_unique<TerminalService>(name, broker, data, project);
-		});
+	const char *TerminalService::TYPE_NAME = "Terminal";
+
+	static GenericServiceFactory<TerminalService> g_clTerminalServiceFactory;
 
 	constexpr auto JSONRPC_KEY = "jsonrpc";
 	constexpr auto JSONRPC_VERSION = "2.0";

@@ -21,6 +21,8 @@ namespace dcclite::broker
 		public:
 			static void RegisterFactory();
 
+			static const char *TYPE_NAME;
+
 			DccppService(RName name, Broker &broker, const rapidjson::Value& params, const Project& project);
 		
 			~DccppService() override = default;

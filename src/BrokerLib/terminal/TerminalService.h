@@ -52,6 +52,8 @@ namespace dcclite::broker
 			friend class TerminalServiceAcceptConnectionEvent;
 
 		public:
+			static const char *TYPE_NAME;
+
 			static void RegisterFactory();
 
 			TerminalService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);
