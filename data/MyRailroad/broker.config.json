@@ -14,12 +14,13 @@
 		{
 			"class": "Terminal",
 			"name": "terminal",
-			"port": 4190
+			"port": 4190,
+			"comment":"Allows SharpTerminal to connect to this Broker instance"
 		},
 		{
 			"class": "DccppService",
 			"name": "dccpp",
-			"requires":"DccLiteService"
+			"comment":"Allows JMRI to connect to this Broker instance"
 		}
 	]
 }
