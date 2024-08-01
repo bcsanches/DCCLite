@@ -1,9 +1,7 @@
 DCCLite
 -------
 - update route section to know next section and avoid re-ocupying the block
-- ThrottleServiceImpl another candidate for using custom folder
 
-- SharpTerminal: tree view should reflect update when a new device is added (test with unnamed device)
 - SharpDude: add support to configure device name
 - Auto config device name
 	- SharpTerminal will show unconfigured devices and allow to configure its name

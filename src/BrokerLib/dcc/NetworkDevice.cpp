@@ -132,7 +132,16 @@ namespace dcclite::broker
 		//During unload we go to a inconsistent state, so we force a disconnect so we ignore all remote device data
 		//We will need to go throught all the reconnect process
 
-		this->Disconnect();
+		if (m_kStatus == Status::OFFLINE)
+			return;
+
+		DevicePacket pkt{ dcclite::MsgTypes::DISCONNECT, m_SessionToken, m_ConfigToken };
+
+		m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
+
+		dcclite::Log::Warn("[Device::{}] [Disconnect] Sent disconnect packet", this->GetName());
+
+		this->GoOffline();
 	}
 
 	//
@@ -710,21 +719,7 @@ namespace dcclite::broker
 		m_clPinManager.Serialize(stream);
 	}
 
-	void NetworkDevice::Disconnect()
-	{
-		if (m_kStatus == Status::OFFLINE)
-			return;
-
-		DevicePacket pkt{ dcclite::MsgTypes::DISCONNECT, m_SessionToken, m_ConfigToken };
-
-		m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
-
-		dcclite::Log::Warn("[Device::{}] [Disconnect] Sent disconnect packet", this->GetName());
-
-		this->GoOffline();
-	}
-
-	void NetworkDevice::GoOffline()
+	bool NetworkDevice::GoOffline()
 	{
 		m_kStatus = Status::OFFLINE;
 
@@ -738,6 +733,14 @@ namespace dcclite::broker
 
 		dcclite::Log::Warn("[Device::{}] [GoOffline] Is OFFLINE", this->GetName());
 		m_clDccService.Device_NotifyStateChange(*this);
+
+		if (m_fRegistered)
+			return true;
+		
+		//kill ourselves...
+		m_clDccService.Device_DestroyUnregistered(*this);
+
+		return false;
 	}
 
 

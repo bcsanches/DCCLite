@@ -77,9 +77,10 @@ namespace SharpTerminal
                 DeleteTreeNodes_r(subNode);
             }
 
-            var remoteObject = (RemoteObject)node.Tag;
+			if (node.Tag is not RemoteObject remoteObject)
+				return;
 
-            var nodes = mObjectsNodes[remoteObject.InternalId];
+			var nodes = mObjectsNodes[remoteObject.InternalId];
 
             nodes.Remove(node);
 

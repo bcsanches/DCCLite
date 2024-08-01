@@ -312,6 +312,15 @@ namespace dcclite::broker
 		this->NotifyItemDestroyed(*session);
 	}
 
+	void DccLiteService::Device_DestroyUnregistered(NetworkDevice &dev)
+	{
+		if (dev.IsConnectionStable())
+			throw std::runtime_error(fmt::format("[DccLiteService::Device_DestroyUnregistered] Cannot destroy connected device {}", dev.GetName()));
+
+		auto item = this->m_pDevices->RemoveChild(dev.GetName());
+		this->NotifyItemDestroyed(*item.get());
+	}
+
 	Decoder* DccLiteService::TryFindDecoder(const DccAddress address) const
 	{
 		//Name is registered?
@@ -494,6 +503,8 @@ namespace dcclite::broker
 					m_rclProject
 				)
 			));
+
+			this->NotifyItemCreated(*netDevice);
 		}
 		else
 		{

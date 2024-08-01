@@ -109,7 +109,8 @@ namespace dcclite::broker
 			virtual void Device_SendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet& packet) = 0;
 
 			virtual void Device_RegisterSession(NetworkDevice &dev, const dcclite::Guid &configToken) = 0;
-			virtual void Device_UnregisterSession(NetworkDevice &dev, const dcclite::Guid &sessionToken) = 0;				
+			virtual void Device_UnregisterSession(NetworkDevice &dev, const dcclite::Guid &sessionToken) = 0;
+			virtual void Device_DestroyUnregistered(NetworkDevice &dev) = 0;
 
 			virtual void Device_NotifyInternalItemCreated(dcclite::IObject &item) const = 0;
 			virtual void Device_NotifyInternalItemDestroyed(dcclite::IObject &item) const = 0;

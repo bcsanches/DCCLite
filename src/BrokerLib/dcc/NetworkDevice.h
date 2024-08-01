@@ -116,17 +116,15 @@ namespace dcclite::broker
 			
 			[[nodiscard]] bool CheckSession(const dcclite::NetworkAddress remoteAddress);
 
-			/*
+			/**
 			* This methods sets the state as offline, such as in cases when a connection is dropped
+			* 
+			* Also, if device is unregistered, the method maybe suicidal, device will be destroyed after going offline
+			* 
+			* Returns true if still alive
 			*
 			*/
-			void GoOffline();
-
-			/*
-			* Disconnect does a graceful disconnect telling the device that we are disconnecting, after that, it goes to OFFLINE state
-			* 
-			*/
-			void Disconnect();
+			bool GoOffline();			
 
 			template <typename T, class... Args>
 			void SetState(Args&&...args);
@@ -331,7 +329,7 @@ namespace dcclite::broker
 			Devices that contact the Broker, but are not in the config files, are marked as unregistered
 
 			*/				
-			bool					m_fRegistered;		
+			bool					m_fRegistered;
 	};
 
 }
