@@ -98,10 +98,18 @@ add_library(
         sys/Thinker.h
         sys/ZeroConfSystem.cpp
         sys/ZeroConfSystem.h
+		terminal/ServiceCmdBase.cpp
+		terminal/ServiceCmdBase.h
+		terminal/ServoProgrammerCmds.cpp
+		terminal/ServoProgrammerCmds.h
+		terminal/TerminalClient.cpp
+        terminal/TerminalClient.h
         terminal/TerminalCmd.cpp
         terminal/TerminalCmd.h
         terminal/TerminalService.cpp
         terminal/TerminalService.h
+		terminal/TerminalUtils.cpp
+        terminal/TerminalUtils.h
 )
 
 source_group("dcc"          FILES ${SRC_DCC})

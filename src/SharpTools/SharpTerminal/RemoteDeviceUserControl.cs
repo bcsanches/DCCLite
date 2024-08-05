@@ -17,55 +17,63 @@ namespace SharpTerminal
 {
 	[SupportedOSPlatform("windows")]
 	public partial class RemoteDeviceUserControl : UserControl
-    {
-        private readonly RemoteDevice mRemoteDevice;
+	{
+		private readonly RemoteDevice mRemoteDevice;
 
-        public RemoteDeviceUserControl()
-        {
-            InitializeComponent();
-        }
+		public RemoteDeviceUserControl()
+		{
+			InitializeComponent();
+		}
 
-        public RemoteDeviceUserControl(RemoteDevice remoteDevice, RemotePin[] pins) :
-            this()
-        {            
-            mRemoteDevice = remoteDevice ?? throw new ArgumentNullException(nameof(remoteDevice));
+		public RemoteDeviceUserControl(RemoteDevice remoteDevice, RemotePin[] pins) :
+			this()
+		{
+			mRemoteDevice = remoteDevice ?? throw new ArgumentNullException(nameof(remoteDevice));
 
-            this.UpdateLabel();
+			m_btnRename.Enabled = !mRemoteDevice.Registered;
 
-            if (pins == null)
-                return;
+			this.UpdateLabel();
 
-            m_gridMain.Rows.Add(pins.Length);
+			if (pins == null)
+				return;
 
-            for(int i = 0; i < pins.Length; ++i)            
-            {
-                var row = m_gridMain.Rows[i];
-                var pin = pins[i];                
+			m_gridMain.Rows.Add(pins.Length);
 
-                row.Cells[0].Value = i;
-                row.Cells[1].Value = pin.SpecialName;
-                row.Cells[2].Value = pin.Decoder;
-                row.Cells[3].Value = pin.DecoderAddress;
-                row.Cells[4].Value = pin.Usage;
-                
-                if((pin.DecoderBroken != null) && ((bool)pin.DecoderBroken))
-                {
-                    row.DefaultCellStyle.BackColor = Color.Red;
-                }
-            }
+			for (int i = 0; i < pins.Length; ++i)
+			{
+				var row = m_gridMain.Rows[i];
+				var pin = pins[i];
 
-            remoteDevice.PropertyChanged += RemoteDevice_PropertyChanged;
-        }
+				row.Cells[0].Value = i;
+				row.Cells[1].Value = pin.SpecialName;
+				row.Cells[2].Value = pin.Decoder;
+				row.Cells[3].Value = pin.DecoderAddress;
+				row.Cells[4].Value = pin.Usage;
 
-        private void UpdateLabel()
-        {
-            m_lbTitle.Text = "RemoteDevice: " + mRemoteDevice.Name + " - mem: " + mRemoteDevice.FreeRam.ToString() + " bytes";
-        }
+				if ((pin.DecoderBroken != null) && ((bool)pin.DecoderBroken))
+				{
+					row.DefaultCellStyle.BackColor = Color.Red;
+				}
+			}
 
-        private void RemoteDevice_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            //We only expect free ram to change...
-            UpdateLabel();
-        }        
-    }
+			remoteDevice.PropertyChanged += RemoteDevice_PropertyChanged;
+		}
+
+		private void UpdateLabel()
+		{
+			var name = "RemoteDevice: " + mRemoteDevice.Name + " - mem: " + mRemoteDevice.FreeRam.ToString() + " bytes";
+			m_lbTitle.Text = mRemoteDevice.Registered ? name : name + " - Unregistered";
+		}
+
+		private void RemoteDevice_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			//We only expect free ram to change...
+			UpdateLabel();
+		}
+
+		private void m_btnRename_Click(object sender, EventArgs e)
+		{
+
+		}
+	}
 }

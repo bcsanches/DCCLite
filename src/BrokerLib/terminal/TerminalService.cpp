@@ -11,23 +11,12 @@
 
 #include "TerminalService.h"
 
-#include <chrono>
-#include <list>
 #include <future>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
 
 #include <Log.h>
-
-#include <JsonCreator/StringWriter.h>
-#include <JsonCreator/Object.h>
-
-#include <rapidjson/document.h>
-
-#include <magic_enum/magic_enum.hpp>
-
-#include <NetMessenger.h>
 
 #include "FmtUtils.h"
 
@@ -39,10 +28,13 @@
 #include "../sys/BonjourService.h"
 #include "../sys/Broker.h"
 #include "../sys/ServiceFactory.h"
-#include "../sys/SpecialFolders.h"
 #include "../sys/ZeroConfSystem.h"
 
+#include "ServiceCmdBase.h"
+#include "ServoProgrammerCmds.h"
+#include "TerminalClient.h"
 #include "TerminalCmd.h"
+#include "TerminalUtils.h"
 #include "Util.h"
 
 #include <thread>
@@ -53,86 +45,9 @@ namespace dcclite::broker
 {
 	const char *TerminalService::TYPE_NAME = "Terminal";
 
-	static GenericServiceFactory<TerminalService> g_clTerminalServiceFactory;
-
-	constexpr auto JSONRPC_KEY = "jsonrpc";
-	constexpr auto JSONRPC_VERSION = "2.0";
+	static GenericServiceFactory<TerminalService> g_clTerminalServiceFactory;	
 
 	using namespace dcclite;
-
-	static std::string MakeRpcMessage(CmdId_t id, std::string_view *methodName, std::string_view nestedObjName, std::function<void(JsonOutputStream_t &object)> filler)
-	{
-		JsonCreator::StringWriter messageWriter;
-
-		{
-			auto messageObj = JsonCreator::MakeObject(messageWriter);
-
-			messageObj.AddStringValue(JSONRPC_KEY, JSONRPC_VERSION);
-
-			if (id >= 0)
-			{
-				messageObj.AddIntValue("id", id);
-			}
-
-			if (methodName)
-				messageObj.AddStringValue("method", *methodName);
-
-			if (filler)
-			{
-				auto params = messageObj.AddObject(nestedObjName);
-
-				filler(params);
-			}
-		}
-
-		return messageWriter.GetString();
-	}
-
-	std::string MakeRpcNotificationMessage(CmdId_t id, std::string_view methodName, std::function<void(JsonOutputStream_t &object)> filler)
-	{
-		return MakeRpcMessage(id, &methodName, "params", filler);
-	}
-
-	static std::string MakeRpcErrorResponse(const CmdId_t id, const std::string &msg)
-	{
-		return MakeRpcMessage(id, nullptr, "error", [&, msg](JsonOutputStream_t &params) { params.AddStringValue("message", msg); });
-	}
-
-	static std::string MakeRpcResultMessage(const CmdId_t id, std::function<void(JsonOutputStream_t &object)> filler)
-	{
-		return MakeRpcMessage(id, nullptr, "result", filler);
-	}
-
-	class TaskManager
-	{
-		public:
-			TaskManager() = default;
-			TaskManager(TaskManager &&other) = default;
-			TaskManager(const TaskManager &manager) = delete;
-
-			TaskManager &operator=(TaskManager &&other) = default;
-
-			void AddTask(std::shared_ptr<NetworkTask> task)
-			{
-				m_mapNetworkTasks.insert(std::make_pair(task->GetTaskId(), task));
-			}
-
-			NetworkTask *TryFindTask(uint32_t taskId) const noexcept
-			{
-				auto it = m_mapNetworkTasks.find(taskId);
-
-				return it == m_mapNetworkTasks.end() ? nullptr : it->second.get();
-			}
-
-			inline void RemoveTask(uint32_t taskId) noexcept
-			{
-				m_mapNetworkTasks.erase(taskId);
-			}
-
-		private:
-			std::map<uint32_t, std::shared_ptr<NetworkTask>>	m_mapNetworkTasks;
-	};
-
 
 	class GetChildItemCmd : public TerminalCmd
 	{
@@ -170,7 +85,7 @@ namespace dcclite::broker
 					folder = static_cast<IFolderObject *>(item);
 				}		
 
-				return MakeRpcResultMessage(id, [folder](Result_t &results) 
+				return detail::MakeRpcResultMessage(id, [folder](Result_t &results) 
 				{
 					results.AddStringValue("classname", "ChildItem");
 					results.AddStringValue("location", folder->GetPath().string());
@@ -220,7 +135,7 @@ namespace dcclite::broker
 					throw TerminalCmdException(fmt::format("Invalid location {}", locationParam), id);
 				}	
 
-				return MakeRpcResultMessage(id, [item](Result_t &results)
+				return detail::MakeRpcResultMessage(id, [item](Result_t &results)
 					{
 						results.AddStringValue("classname", "Item");
 						results.AddStringValue("location", item->GetPath().string());
@@ -276,7 +191,7 @@ namespace dcclite::broker
 					item = destinationObj;
 				}
 
-				return MakeRpcResultMessage(id, [item](Result_t &results)
+				return detail::MakeRpcResultMessage(id, [item](Result_t &results)
 					{
 						results.AddStringValue("classname", "Location");
 						results.AddStringValue("location", item->GetPath().string());
@@ -302,7 +217,7 @@ namespace dcclite::broker
 
 				auto folder = static_cast<FolderObject*>(item);
 
-				return MakeRpcResultMessage(id, [folder](Result_t &results)
+				return detail::MakeRpcResultMessage(id, [folder](Result_t &results)
 					{
 						results.AddStringValue("classname", "CmdList");
 
@@ -319,40 +234,7 @@ namespace dcclite::broker
 					}
 				);				
 			}
-	};	
-
-	class ServiceCmdBase : public TerminalCmd
-	{
-		protected:
-			explicit ServiceCmdBase(RName name) :
-				TerminalCmd(name)
-			{
-				//empty
-			}
-
-			template <typename T>
-			T &GetService(const TerminalContext &context, const CmdId_t id, std::string_view serviceName)
-			{
-				auto &root = static_cast<FolderObject &>(context.GetItem()->GetRoot());
-
-				ObjectPath path{ SpecialFolders::GetPath(SpecialFolders::Folders::ServicesId) };
-				path.append(serviceName);
-
-				auto obj = root.TryNavigate(path);
-				if (obj == nullptr)
-				{
-					throw TerminalCmdException(fmt::format("Service {} not found", serviceName), id);
-				}
-
-				auto *service = dynamic_cast<T *>(obj);
-				if (service == nullptr)
-				{
-					throw TerminalCmdException(fmt::format("Service {} does not has requested type", serviceName, typeid(T).name()), id);
-				}
-
-				return *service;
-			}
-	};
+	};		
 
 	class ResetItemCmd : public ServiceCmdBase
 	{
@@ -379,30 +261,14 @@ namespace dcclite::broker
 				dcclite::Log::Info("[ResetCmd] Resetting {} at {}.", itemName, serviceName);
 				ireset.IResettableService_ResetItem(itemName);
 
-				return MakeRpcResultMessage(id, [](Result_t &results)
+				return detail::MakeRpcResultMessage(id, [](Result_t &results)
 					{
 						results.AddStringValue("classname", "string");
 						results.AddStringValue("msg", "OK");
 					}
 				);
 			}
-	};
-
-	class DccLiteCmdBase : public ServiceCmdBase
-	{
-		protected:
-			explicit DccLiteCmdBase(RName name) :
-				ServiceCmdBase(name)
-			{
-				//empty
-			}
-
-			inline DccLiteService &GetDccLiteService(const TerminalContext& context, const CmdId_t id, std::string_view dccSystemName)
-			{		
-				return this->GetService<DccLiteService>(context, id, dccSystemName);
-			}
-
-	};
+	};	
 
 	class DecoderCmdBase : public DccLiteCmdBase
 	{
@@ -464,7 +330,7 @@ namespace dcclite::broker
 
 				outputDecoder->Activate("ActivateItemCmd");
 
-				return MakeRpcResultMessage(id, [](Result_t &results)
+				return detail::MakeRpcResultMessage(id, [](Result_t &results)
 					{
 						results.AddStringValue("classname", "string");
 						results.AddStringValue("msg", "OK");
@@ -488,7 +354,7 @@ namespace dcclite::broker
 
 				outputDecoder->Deactivate("DeactivateItemCmd");
 
-				return MakeRpcResultMessage(id, [](Result_t &results)
+				return detail::MakeRpcResultMessage(id, [](Result_t &results)
 					{
 						results.AddStringValue("classname", "string");
 						results.AddStringValue("msg", "OK");
@@ -512,7 +378,7 @@ namespace dcclite::broker
 
 				outputDecoder->ToggleState("FlipItemCmd");
 
-				return MakeRpcResultMessage(id, [outputDecoder](Result_t &results)
+				return detail::MakeRpcResultMessage(id, [outputDecoder](Result_t &results)
 					{
 						results.AddStringValue("classname", "string");
 						results.AddStringValue("msg", fmt::format("OK: {}", dcclite::DecoderStateName(outputDecoder->GetRequestedState())));
@@ -555,7 +421,7 @@ namespace dcclite::broker
 
 				signalDecoder->SetAspect(aspect.value(), this->GetName().GetData().data());
 
-				return MakeRpcResultMessage(id, [aspectName](Result_t &results)
+				return detail::MakeRpcResultMessage(id, [aspectName](Result_t &results)
 					{
 						results.AddStringValue("classname", "string");
 						results.AddStringValue("msg", fmt::format("OK: {}", aspectName));
@@ -605,7 +471,7 @@ namespace dcclite::broker
 
 				if (m_spTask->HasFailed())
 				{
-					m_rclContext.SendClientNotification(MakeRpcErrorResponse(m_tCmdId, fmt::format("Download task failed: {}", m_spTask->GetMessage())));
+					m_rclContext.SendClientNotification(detail::MakeRpcErrorResponse(m_tCmdId, fmt::format("Download task failed: {}", m_spTask->GetMessage())));
 
 					//suicide, we are useless now
 					m_rclContext.DestroyFiber(*this);
@@ -640,7 +506,7 @@ namespace dcclite::broker
 
 			void OnSaveEEPromFinished()
 			{
-				auto msg = MakeRpcResultMessage(m_tCmdId, [this](Result_t &results)
+				auto msg = detail::MakeRpcResultMessage(m_tCmdId, [this](Result_t &results)
 					{
 						results.AddStringValue("classname", "ReadEEPromResult");
 						results.AddStringValue("filepath", m_pathRomFileName.string());
@@ -723,306 +589,6 @@ namespace dcclite::broker
 
 	//
 	//
-	// ServoProgrammer
-	//
-	//
-
-	class StartServoProgrammerCmd: public DccLiteCmdBase
-	{
-		public:
-			explicit StartServoProgrammerCmd(RName name = RName{ "Start-ServoProgrammer" }) :
-				DccLiteCmdBase(name)
-			{
-				//empty
-			}
-
-			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
-			{
-				auto paramsIt = request.FindMember("params");
-				if (paramsIt->value.Size() < 3)
-				{
-					throw TerminalCmdException(fmt::format("Usage: {} <dccSystem> <device> <decoder>", this->GetName()), id);
-				}
-
-				auto systemName = paramsIt->value[0].GetString();
-				auto deviceName{ RName::Get(paramsIt->value[1].GetString()) };
-				auto decoderName{ RName::Get(paramsIt->value[2].GetString()) };
-
-				auto &service = this->GetDccLiteService(context, id, systemName);
-
-				auto device = service.TryFindDeviceByName(deviceName);
-				if (device == nullptr)
-				{
-					throw TerminalCmdException(fmt::format("Device {} not found on {} system", deviceName, systemName), id);
-				}
-
-				auto networkDevice = dynamic_cast<NetworkDevice *>(device);
-				if (networkDevice == nullptr)
-				{
-					throw TerminalCmdException(fmt::format("Device {} on {} system is NOT a network device", deviceName, systemName), id);
-				}
-
-				auto task = networkDevice->StartServoTurnoutProgrammerTask(nullptr, decoderName);
-
-				//
-				//store the task, so future cmds can reference it
-				context.GetTaskManager().AddTask(task);
-
-				const auto taskId = task->GetTaskId();
-
-				return MakeRpcResultMessage(id, [taskId](Result_t &results)
-					{
-						results.AddStringValue("classname", "TaskId"); //useless, but makes life easier to debug, we can call from the console
-						results.AddIntValue("taskId", taskId);						
-					}
-				);
-			}
-	};
-
-	class ServoProgrammerBaseCmd: public DccLiteCmdBase
-	{
-		protected:
-			explicit ServoProgrammerBaseCmd(RName name):
-				DccLiteCmdBase(name)
-			{
-				//empty
-			}
-
-			NetworkTask *GetTask(TerminalContext &context, const CmdId_t id, const rapidjson::Value &taskIdData)
-			{
-				auto taskId = taskIdData.IsString() ? dcclite::ParseNumber(taskIdData.GetString()) : taskIdData.GetInt();
-
-				auto &taskManager = context.GetTaskManager();
-
-				auto task = taskManager.TryFindTask(taskId);
-				if (!task)
-				{
-					throw TerminalCmdException(fmt::format("{}: task {} not found", this->GetName(), taskId), id);
-				}
-
-				if (task->HasFailed())
-				{
-					//
-					//forget about it
-					taskManager.RemoveTask(task->GetTaskId());
-
-					throw TerminalCmdException(fmt::format("{}: task {} failed", this->GetName(), taskId), id);
-				}
-
-				if (task->HasFinished())
-				{
-					//
-					//forget about it
-					taskManager.RemoveTask(task->GetTaskId());
-
-					throw TerminalCmdException(fmt::format("{}: task {} finished", this->GetName(), taskId), id);
-
-				}
-
-				return task;
-			}
-			
-			static inline int ParseNumParam(const rapidjson::Value &p)
-			{
-				return p.IsString() ? dcclite::ParseNumber(p.GetString()) : p.GetInt();
-			}
-	};
-
-	class StopServoProgrammerCmd: public ServoProgrammerBaseCmd
-	{
-		public:
-			explicit StopServoProgrammerCmd(RName name = RName{ "Stop-ServoProgrammer" }) :
-				ServoProgrammerBaseCmd(name)
-			{
-				//empty
-			}			
-
-			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
-			{
-				auto paramsIt = request.FindMember("params");
-				if (paramsIt->value.Size() < 1)
-				{
-					throw TerminalCmdException(fmt::format("Usage: {} <taskId>", this->GetName()), id);
-				}
-								
-				auto task = this->GetTask(context, id, paramsIt->value[0]);
-
-				//
-				//tell the task to stop
-				task->Stop();
-				
-				//
-				//forget about it
-				context.GetTaskManager().RemoveTask(task->GetTaskId());
-				
-				//notify client
-				return MakeRpcResultMessage(id, [](Result_t &results)
-					{
-						results.AddStringValue("classname", "string");
-						results.AddStringValue("msg", "OK");
-					}
-				);
-			}
-	};
-
-	class EditServoProgrammerCmd: public ServoProgrammerBaseCmd
-	{
-		private:
-			typedef void (*EditProc_t)(dcclite::broker::IServoProgrammerTask &task, const rapidjson::Value &params);
-
-			struct Action
-			{
-				const char *m_szName;
-				EditProc_t m_pfnProc;
-			};
-
-			static void HandleMoveAction(dcclite::broker::IServoProgrammerTask &task, const rapidjson::Value &params)
-			{				
-				task.SetPosition(static_cast<uint8_t>(ServoProgrammerBaseCmd::ParseNumParam(params[2])));
-			}
-
-			const static Action g_Actions[];
-
-		public:
-			explicit EditServoProgrammerCmd(RName name = RName{ "Edit-ServoProgrammer" }) :
-				ServoProgrammerBaseCmd(name)
-			{
-				//empty
-			}
-
-			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
-			{
-				auto paramsIt = request.FindMember("params");
-				if (paramsIt->value.Size() < 3)
-				{
-					throw TerminalCmdException(fmt::format("Usage: {} <taskId> <cmdType> <params>", this->GetName()), id);
-				}				
-
-				auto task = this->GetTask(context, id, paramsIt->value[0]);
-
-				auto programmerTask = dynamic_cast<dcclite::broker::IServoProgrammerTask *>(task);
-				if (!programmerTask)
-				{
-					throw TerminalCmdException(fmt::format("{}: task {} is not a programmer task", this->GetName(), task->GetTaskId()), id);
-				}		
-
-				auto actionName = paramsIt->value[1].GetString();
-
-				bool found = false;
-				for (int i = 0; g_Actions[i].m_szName; ++i)
-				{
-					if (strcmp(g_Actions[i].m_szName, actionName) == 0)
-					{
-						g_Actions[i].m_pfnProc(*programmerTask, paramsIt->value);
-						found = true;
-					}
-				}
-
-				if (!found)
-				{
-					throw TerminalCmdException(fmt::format("{}:cmdType {} not found", this->GetName(), actionName), id);
-				}
-
-				return MakeRpcResultMessage(id, [](Result_t &results)
-					{
-						results.AddStringValue("classname", "string");
-						results.AddStringValue("msg", "OK");
-					}
-				);
-			}			
-	};
-
-	const EditServoProgrammerCmd::Action EditServoProgrammerCmd::g_Actions[] =
-	{
-		{"position", EditServoProgrammerCmd::HandleMoveAction},
-		nullptr, nullptr
-	};
-
-	/**
-	* 
-	* This fiber is only used to monitor the ServoProgrammer task and notify the client when its finishes
-	*
-	*
-	*/
-	class ServoProgrammerDeployMonitorFiber: public TerminalCmdFiber, private NetworkTask::IObserver
-	{
-		public:
-			ServoProgrammerDeployMonitorFiber(const CmdId_t id, TerminalContext &context, NetworkTask &task):
-				TerminalCmdFiber(id, context)				
-			{
-				task.SetObserver(this);
-			}			
-
-		private:
-			void OnNetworkTaskStateChanged(NetworkTask &task) override
-			{
-				//Ignore us from now...
-				task.SetObserver(nullptr);
-
-				//Notify SharpTerminal if failed or succeed
-				if (task.HasFailed())
-				{
-					m_rclContext.SendClientNotification(MakeRpcErrorResponse(m_tCmdId, task.GetMessage()));
-				}
-				else if (task.HasFinished())
-				{
-					auto msg = MakeRpcResultMessage(m_tCmdId, [this](Result_t &results)
-						{
-							results.AddStringValue("classname", "string");
-							results.AddStringValue("msg", "OK");
-						}
-					);
-
-					m_rclContext.SendClientNotification(msg);
-				}				
-
-				//suicide, we are useless now
-				m_rclContext.DestroyFiber(*this);			
-			}		
-	};
-
-	class DeployServoProgrammerCmd: public ServoProgrammerBaseCmd
-	{
-		public:
-			explicit DeployServoProgrammerCmd(RName name = RName{ "Deploy-ServoProgrammer" }) :
-				ServoProgrammerBaseCmd(name)
-			{
-				//empty
-			}
-
-			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
-			{
-				auto paramsIt = request.FindMember("params");
-				if (paramsIt->value.Size() < 5)
-				{
-					throw TerminalCmdException(fmt::format("Usage: {} <taskId> <flags> <startPos> <endPos> <operationTimeMs>", this->GetName()), id);
-				}
-
-				auto task = this->GetTask(context, id, paramsIt->value[0]);
-
-				auto programmerTask = dynamic_cast<dcclite::broker::IServoProgrammerTask *>(task);
-				if (!programmerTask)
-				{
-					throw TerminalCmdException(fmt::format("{}: task {} is not a programmer task", this->GetName(), task->GetTaskId()), id);
-				}
-
-				programmerTask->DeployChanges(
-					static_cast<uint8_t>(ServoProgrammerBaseCmd::ParseNumParam(paramsIt->value[1])),		//flags
-					static_cast<uint8_t>(ServoProgrammerBaseCmd::ParseNumParam(paramsIt->value[2])),		//startPos
-					static_cast<uint8_t>(ServoProgrammerBaseCmd::ParseNumParam(paramsIt->value[3])),		//endPos
-					std::chrono::milliseconds{ ServoProgrammerBaseCmd::ParseNumParam(paramsIt->value[4]) }	//operationTime
-				);
-
-				//
-				//we do not need to track it anymore...
-				context.GetTaskManager().RemoveTask(task->GetTaskId());
-
-				return std::make_unique<ServoProgrammerDeployMonitorFiber>(id, context, *task);				
-			}
-	};
-
-	//
-	//
 	// RName
 	//
 	//
@@ -1040,11 +606,11 @@ namespace dcclite::broker
 			{
 				auto names = dcclite::detail::RName_GetAll();				
 
-				return MakeRpcResultMessage(id, [&names](Result_t &results)
+				return detail::MakeRpcResultMessage(id, [&names](Result_t &results)
 					{
 						results.AddStringValue("classname", "RNames");
 						auto dataArray = results.AddArray("rnames");
-						for (auto it : names)
+						for (const auto &it : names)
 						{
 							auto obj = dataArray.AddObject();
 
@@ -1059,360 +625,6 @@ namespace dcclite::broker
 				);
 			}
 	};
-	
-
-	//
-	//
-	// TerminalClient
-	//
-	//
-
-	class TerminalClient: private IObjectManagerListener, ITerminalClient_ContextServices, EventHub::IEventTarget
-	{
-		public:
-			TerminalClient(ITerminalServiceClientProxy &owner, TerminalCmdHost &cmdHost, dcclite::IObject &root, const dcclite::Path_t &ownerPath, const NetworkAddress address, Socket &&socket);
-			TerminalClient(const TerminalClient &client) = delete;
-			TerminalClient(TerminalClient &&other) = delete;
-
-			virtual ~TerminalClient();			
-
-		private:
-			void OnObjectManagerEvent(const ObjectManagerEvent &event) override;
-
-			void RegisterListeners();
-
-			void SendItemPropertyValueChangedNotification(const ObjectManagerEvent &event);
-
-			FolderObject *TryGetServicesFolder() const;	
-
-			void ReceiveDataThreadProc();
-
-			void OnMsg(const std::string &msg);
-
-			//
-			//
-			// ITerminalClient_ContextServices 
-			//
-			//
-			void DestroyFiber(TerminalCmdFiber &fiber) override;
-			TaskManager &GetTaskManager() override;
-			void SendClientNotification(const std::string_view msg) override;
-
-			class MsgArrivedEvent: public EventHub::IEvent
-			{
-				public:
-					MsgArrivedEvent(TerminalClient &target, std::string &&msg):
-						IEvent(target),
-						m_strMessage(msg)
-					{
-						//empty
-					}
-
-					void Fire() override
-					{
-						static_cast<TerminalClient &>(this->GetTarget()).OnMsg(m_strMessage);
-					}
-
-				private:
-					std::string m_strMessage;
-			};
-
-		private:
-			NetMessenger	m_clMessenger;			
-			TerminalContext m_clContext;
-
-			ITerminalServiceClientProxy &m_rclOwner;
-			TerminalCmdHost				&m_rclCmdHost;
-
-			std::list<std::unique_ptr<TerminalCmdFiber>>	m_lstFibers;	
-
-			TaskManager										m_clTaskManager;
-
-			std::thread										m_thReceiveThread;
-
-			const NetworkAddress	m_clAddress;
-	};
-
-	TerminalClient::TerminalClient(ITerminalServiceClientProxy &owner, TerminalCmdHost &cmdHost, dcclite::IObject &root, const dcclite::Path_t &ownerPath, const NetworkAddress address, Socket &&socket) :
-		m_clMessenger(std::move(socket)),
-		m_rclOwner(owner),	
-		m_rclCmdHost(cmdHost),
-		m_clContext(static_cast<dcclite::FolderObject &>(root), *this),
-		m_clAddress(address)
-	{
-		m_clContext.SetLocation(ownerPath);
-
-		this->RegisterListeners();
-
-		m_thReceiveThread = std::thread{ [this] {this->ReceiveDataThreadProc(); } };
-		dcclite::SetThreadName(m_thReceiveThread, "TerminalClient::ReceiveThread");
-	}
-
-	TerminalClient::~TerminalClient()
-	{
-		m_clMessenger.Close();
-
-		m_thReceiveThread.join();
-
-		auto *servicesFolder = this->TryGetServicesFolder();
-		if (servicesFolder == nullptr)
-			return;
-
-		servicesFolder->VisitChildren([this](auto &item)
-			{
-				auto *service = dynamic_cast<Service *>(&item);
-				if (service != nullptr)
-					service->m_sigEvent.disconnect(this);
-
-				return true;
-			}
-		);		
-
-		EventHub::CancelEvents(*this);
-	}
-
-	FolderObject *TerminalClient::TryGetServicesFolder() const
-	{
-		auto item = m_clContext.GetItem();
-		if (!item->IsFolder())
-		{
-			dcclite::Log::Error("[TerminalClient::RegisterListeners] Current location {} is invalid", m_clContext.GetLocation().string());
-
-			return nullptr;
-		}
-		auto folder = static_cast<FolderObject *>(item);
-
-		ObjectPath servicesPath{ SpecialFolders::GetPath(SpecialFolders::Folders::ServicesId) };
-		auto *servicesObj = folder->TryNavigate(servicesPath);
-
-		if (servicesObj == nullptr)
-		{
-			dcclite::Log::Error("[TerminalClient::RegisterListeners] Cannot find services folder at {}", servicesPath.string());
-
-			return nullptr;
-		}
-
-		if (!servicesObj->IsFolder())
-		{
-			dcclite::Log::Error("[TerminalClient::RegisterListeners] Services object is not a folder: {}", servicesPath.string());
-
-			return nullptr;
-		}
-
-		return static_cast<FolderObject *>(servicesObj);
-	}
-
-	void TerminalClient::RegisterListeners()
-	{	
-		auto *servicesFolder = this->TryGetServicesFolder();
-		if(servicesFolder == nullptr)
-			return;
-
-		servicesFolder->VisitChildren([this](auto &item)
-			{
-				auto *service = dynamic_cast<Service *>(&item);
-				
-				if (service != nullptr)
-				{
-					service->m_sigEvent.connect(&TerminalClient::OnObjectManagerEvent, this);
-				}
-				else
-				{
-					dcclite::Log::Warn("[TerminalClient::RegisterListeners] Object {} is not a service, it is {}", item.GetName(), item.GetTypeName());
-				}
-
-				return true;
-			}
-		);		
-	}		
-
-	void TerminalClient::SendItemPropertyValueChangedNotification(const ObjectManagerEvent &event)
-	{	
-		m_clMessenger.Send(
-			m_clAddress, 
-			MakeRpcNotificationMessage(
-				-1,
-				"On-ItemPropertyValueChanged",
-				[&event](JsonOutputStream_t &params)
-				{
-					event.m_pfnSerializeDeltaProc ? event.m_pfnSerializeDeltaProc(params) : event.m_pclItem->Serialize(params);					
-				}
-			)
-		);
-	}
-
-	void TerminalClient::OnObjectManagerEvent(const ObjectManagerEvent &event)
-	{
-		switch (event.m_kType)
-		{
-			case ObjectManagerEvent::ITEM_CHANGED:				
-				SendItemPropertyValueChangedNotification(event);
-				break;				
-
-			case ObjectManagerEvent::ITEM_CREATED:
-				m_clMessenger.Send(
-					m_clAddress,
-					MakeRpcNotificationMessage(
-						-1,
-						"On-ItemCreated",
-						[&event](JsonOutputStream_t &params)
-						{
-							event.m_pclItem->Serialize(params);
-						}
-					)
-				);
-				break;
-
-			case ObjectManagerEvent::ITEM_DESTROYED:
-				m_clMessenger.Send(
-					m_clAddress,
-					MakeRpcNotificationMessage(
-						-1,
-						"On-ItemDestroyed",
-						[&event](JsonOutputStream_t &params)
-						{
-							event.m_pclItem->Serialize(params);
-						}
-					)
-				);
-				break;
-		}
-	}
-
-	TaskManager &TerminalClient::GetTaskManager()
-	{
-		return m_clTaskManager;
-	}
-
-	void TerminalClient::SendClientNotification(const std::string_view msg)
-	{
-		if (!m_clMessenger.Send(m_clAddress, msg))
-		{
-			dcclite::Log::Error("[TerminalClient::Update] fiber result for {} not sent, contents: {}", m_clAddress.GetIpString(), msg);
-		}
-	}
-
-	void TerminalClient::DestroyFiber(TerminalCmdFiber &fiber)
-	{
-#if 1
-		auto it = std::find_if(
-			m_lstFibers.begin(), 
-			m_lstFibers.end(), 
-			[&fiber](const std::unique_ptr<TerminalCmdFiber> &item)
-			{
-				return item.get() == &fiber;
-			}
-		);
-#endif
-
-#if 0
-		m_lstFibers.clear();
-#endif
-		
-#if 1
-		if (it != m_lstFibers.end())
-			m_lstFibers.erase(it);
-#endif
-	}
-
-	void TerminalClient::OnMsg(const std::string &msg)
-	{
-		TerminalCmd::CmdResult_t result;
-
-		int cmdId = -1;
-		try
-		{
-			//dcclite::Log::Trace("[TerminalClient::OnMsg] Got msg");
-
-			rapidjson::Document doc;
-			doc.Parse(msg.c_str());
-
-			if (doc.HasParseError())
-			{
-				throw TerminalCmdException(fmt::format("Invalid json: {}", msg), -1);
-			}
-
-			auto jsonrpcKey = doc.FindMember(JSONRPC_KEY);
-			if ((jsonrpcKey == doc.MemberEnd()) || (!jsonrpcKey->value.IsString()) || (strcmp(jsonrpcKey->value.GetString(), JSONRPC_VERSION)))
-			{
-				throw TerminalCmdException(fmt::format("Invalid rpc version or was not set: {}", msg), -1);
-			}			
-
-			auto idKey = doc.FindMember("id");
-			if ((idKey == doc.MemberEnd()) || (!idKey->value.IsInt()))
-			{
-				throw TerminalCmdException(fmt::format("No method id in: {}", msg), -1);
-			}
-
-			cmdId = idKey->value.GetInt();
-
-			auto methodKey = doc.FindMember("method");
-			if ((methodKey == doc.MemberEnd()) || (!methodKey->value.IsString()))
-			{
-				throw TerminalCmdException(fmt::format("Invalid method name in msg: {}", msg), cmdId);
-			}
-
-			const auto methodName = RName::TryGetName(methodKey->value.GetString());
-			if (!methodName)
-			{
-				dcclite::Log::Error("Cmd {} is not registered in name system", methodKey->value.GetString());
-				throw TerminalCmdException(fmt::format("Cmd {} is not registered in name system", methodKey->value.GetString()), cmdId);
-			}
-
-			auto cmd = m_rclCmdHost.TryFindCmd(methodName);
-			if (cmd == nullptr)
-			{
-				dcclite::Log::Error("Invalid cmd: {}", methodName);
-				throw TerminalCmdException(fmt::format("Invalid cmd name: {}", methodName), cmdId);
-			}
-
-			//dcclite::Log::Trace("[TerminalClient::OnMsg] Running cmd {} - {}", cmd->GetName(), cmdId);
-			result = cmd->Run(m_clContext, cmdId, doc);
-		}
-		catch (TerminalCmdException &ex)
-		{
-			result = MakeRpcErrorResponse(ex.GetId(), ex.what());
-		}
-		catch (std::exception &ex)
-		{
-			result = MakeRpcErrorResponse(cmdId, ex.what());
-		}
-
-		if (std::holds_alternative<std::string>(result))
-		{
-			auto const &response = std::get<std::string>(result);
-			if (!m_clMessenger.Send(m_clAddress, response))
-			{
-				dcclite::Log::Error("[TerminalClient::Update] message for {} not sent, contents: {}", m_clAddress.GetIpString(), response);
-			}
-		}
-		else
-		{
-			m_lstFibers.push_back(std::get<std::unique_ptr<TerminalCmdFiber>>(std::move(result)));
-		}
-	}
-
-	void TerminalClient::ReceiveDataThreadProc()
-	{		
-		for (;;)
-		{
-			auto[status, msg] = m_clMessenger.Poll();
-
-			if (status == Socket::Status::DISCONNECTED)
-				break;
-
-			if (status == Socket::Status::WOULD_BLOCK)
-				continue;
-
-			if (status != Socket::Status::OK)
-				throw std::logic_error(fmt::format("[TerminalClient::ReceiveDataThreadProc] Unexpected socket error: {}", magic_enum::enum_name(status)));
-			
-			//dcclite::Log::Trace("[TerminalClient::ReceiveDataThreadProc] Got data");
-			EventHub::PostEvent<TerminalClient::MsgArrivedEvent>(std::ref(*this), std::move(msg));
-		}
-
-		m_rclOwner.Async_DisconnectClient(*this);
-	}
 
 	//
 	//
