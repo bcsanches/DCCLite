@@ -19,7 +19,7 @@ namespace SharpTerminal
     {
         readonly IConsole mConsole;
 
-        private readonly RequestManager mRequestManager;
+        private RequestManager mRequestManager;
 
         String  m_strParamServer;
         ushort  m_uParamPort; 
@@ -34,17 +34,59 @@ namespace SharpTerminal
                 m_uParamPort = ushort.Parse(args[1]);
             }
 
-            //Creates here, so it has a SyncContext
-            mRequestManager = new();
+			mConsole = ucConsole;
 
-            mConsole = ucConsole;
-            ucConsole.RequestManager = mRequestManager;
-
-            ucTreeView.RequestManager = mRequestManager;
-            ucTreeView.Console = mConsole;
-
-            RemoteObjectManager.SetRequestManager(mRequestManager);
+			this.ConfigureRequestManager();
         }
+
+        private void ConfigureRequestManager()
+        {
+            if (mRequestManager != null)
+            {
+                mRequestManager.ConnectionStateChanged -= mRequestManager_ConnectionStateChanged;
+            }
+
+			//Creates here, so it has a SyncContext
+			mRequestManager = new();
+			
+			ucConsole.RequestManager = mRequestManager;
+
+			ucTreeView.RequestManager = mRequestManager;
+			ucTreeView.Console = mConsole;
+
+			mRequestManager.ConnectionStateChanged += mRequestManager_ConnectionStateChanged;
+
+			RemoteObjectManager.SetRequestManager(mRequestManager);
+		}
+
+        private bool DisplayServerSelectionForm()
+        {
+			using var dialog = new ServerSelectionForm(m_strParamServer, m_uParamPort);
+
+			if (dialog.ShowDialog() == DialogResult.Cancel)
+			{
+				this.Close();
+				return false;
+			}
+
+			m_strParamServer = dialog.mSelectedService.mAddress.ToString();
+			m_uParamPort = dialog.mSelectedService.mPort;
+
+            return true;
+		}
+
+        private void DoAutoReconnect()
+        {
+            if (!DisplayServerSelectionForm())
+                return;
+
+            mRequestManager.Dispose();
+
+            this.ConfigureRequestManager();
+
+			SetStatus("Connecting");
+			mRequestManager.BeginConnect(m_strParamServer, m_uParamPort);
+		}
 
         protected override void OnLoad(EventArgs e)
         {
@@ -52,19 +94,9 @@ namespace SharpTerminal
 
             if(m_strParamServer == null)
             {
-                using var dialog = new ServerSelectionForm();
-                
-                if (dialog.ShowDialog() == DialogResult.Cancel)
-                {
-                    this.Close();
-                    return;
-                }
-
-                m_strParamServer = dialog.mSelectedService.mAddress.ToString();
-                m_uParamPort = dialog.mSelectedService.mPort;                
+                this.DisplayServerSelectionForm();
             }            
-
-            mRequestManager.ConnectionStateChanged += mRequestManager_ConnectionStateChanged;
+            
             mRequestManager.BeginConnect(m_strParamServer, m_uParamPort);
 
             SetStatus("Connecting");
@@ -109,12 +141,21 @@ namespace SharpTerminal
                     case ConnectionState.DISCONNECTED:
                         mConsole.Println("Disconnected " + (ex != null ? ex.Message : " by unknown reason"));
                         this.SetStatus("Disconnected");
-                        break;
+
+						this.DoAutoReconnect();
+						break;
+
+                    case ConnectionState.ERROR:
+						mConsole.Println("Connection error " + (ex != null ? ex.Message : " by unknown reason"));
+						this.SetStatus("Connection error");
+
+                        this.DoAutoReconnect();
+						break;
 
                     default:
                         mConsole.Println("Connection state changed to " + state + " " + (ex != null ? ex.Message : " by unknown reason"));
-                        this.SetStatus(state.ToString());
-                        break;
+                        this.SetStatus(state.ToString());						
+						break;
                 }                
             }
         }

@@ -178,11 +178,7 @@ namespace SharpTerminal
 
                 case "/quit":
                     this.ParentForm.Close();
-                    break;
-
-                case "/reconnect":
-                    mRequestManager.Reconnect();
-                    break;
+                    break;                
 
                 case "/udpping":
                     UdpPing(vargs);

@@ -51,7 +51,7 @@ namespace SharpTerminal
 			// 
 			// groupBox1
 			// 
-			groupBox1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+			groupBox1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
 			groupBox1.Controls.Add(m_gridMain);
 			groupBox1.Location = new System.Drawing.Point(4, 42);
 			groupBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);

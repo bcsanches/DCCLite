@@ -124,7 +124,7 @@ namespace SharpTerminal
 
         public override Control CreateControl(IConsole console)
         {
-            return new RemoteDeviceUserControl(this, Pins);
+            return new RemoteDeviceUserControl(console, this, Pins);
         }
 
         public override string GetNameSuffix()

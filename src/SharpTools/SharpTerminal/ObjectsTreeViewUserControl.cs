@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace SharpTerminal
@@ -12,6 +13,8 @@ namespace SharpTerminal
         RequestManager mRequestManager;
         IConsole mConsole;
         readonly Dictionary<ulong, List<TreeNode>> mObjectsNodes = new Dictionary<ulong, List<TreeNode>>();
+
+        RemoteObject mPreviousSelectedObject;
 
         public Panel MainDisplayPanel
         {
@@ -178,8 +181,9 @@ namespace SharpTerminal
             if (args.State == ConnectionState.OK)
             {
                 mTreeView.Nodes.Clear();
+                RemoteObjectManager.Clear();
 
-                var rootFolder = (RemoteFolder) await RemoteObjectManager.GetRemoteObjectAsync("/");
+				var rootFolder = (RemoteFolder) await RemoteObjectManager.GetRemoteObjectAsync("/");
 
                 var brokerNode = mTreeView.Nodes.Add("Broker");
                 brokerNode.Name = "Broker";
@@ -203,11 +207,42 @@ namespace SharpTerminal
 
                 var emulatorNode = mTreeView.Nodes.Add("Emulator");
                 emulatorNode.Name = "Emulator";
-            }
-            else if (args.State == ConnectionState.DISCONNECTED)
-            {
 
-            }                        
+                if(mPreviousSelectedObject != null)
+                {
+                    //try to reload previous object
+                    var path = mPreviousSelectedObject.Path;
+                    var pathNodes = path.Split("/");
+                    
+                    TreeNode node = brokerNode;
+
+                    //index 0 is a empty string (root)
+                    for(int i = 1; i < pathNodes.Length; i++)
+                    {
+                        await TryToLoadNodeChildrenAsync(node);                        
+
+						var result = node.Nodes.Find(pathNodes[i], false);
+                        if ((result == null) || (result.Length == 0))
+                            break;
+
+						node = result[0];                        
+					}
+
+                    mTreeView.SelectedNode = node;
+                }
+            }
+            else if ((args.State == ConnectionState.DISCONNECTED) || (args.State == ConnectionState.ERROR))
+            {
+                var node = mTreeView.SelectedNode;
+                if (node == null)
+                    return;
+
+                var remoteObj = (RemoteObject)node.Tag;
+                if (remoteObj == null)                
+                    return;
+
+                mPreviousSelectedObject = remoteObj;
+			}                        
         }        
 
         private void AddNewNode(RemoteObject remoteObject, TreeNode parent)
@@ -265,20 +300,27 @@ namespace SharpTerminal
             mTreeView.ImageList = mImageList;            
         }
 
+        private async Task<bool> TryToLoadNodeChildrenAsync(TreeNode node)
+        {
+			if ((node.Nodes.Count > 0) && (node.Nodes[0].Tag == this))
+			{
+				var remoteFolder = (RemoteFolder)node.Tag;
+
+				node.Nodes.Clear();
+
+				var children = await remoteFolder.LoadChildrenAsync(mRequestManager);
+				if (children != null)
+					FillTree(node, children);
+
+                return true;
+			}
+
+            return false;
+		}
+
         private async void mTreeView_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
-            if((e.Node.Nodes.Count > 0) && (e.Node.Nodes[0].Tag == this))
-            {
-                var remoteFolder = (RemoteFolder)e.Node.Tag;                
-
-                e.Node.Nodes.Clear();
-
-                var children = await remoteFolder.LoadChildrenAsync(mRequestManager);
-                if(children != null)
-                    FillTree(e.Node, children);
-                
-                e.Cancel = true;
-            }            
+            e.Cancel = await TryToLoadNodeChildrenAsync(e.Node);			
         }
 
         private void mTreeView_AfterSelect(object sender, TreeViewEventArgs e)

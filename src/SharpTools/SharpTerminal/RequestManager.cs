@@ -142,12 +142,7 @@ namespace SharpTerminal
         public void Disconnect()
         {
             mClient.Disconnect();
-        }
-
-        public void Reconnect()
-        {
-            mClient.Reconnect();
-        }             
+        }     
 
         public int DispatchRequest(object[] vargs, IResponseHandler handler)
         {

@@ -15,288 +15,278 @@ using System.Threading;
 
 namespace SharpTerminal
 {
-    public enum ConnectionState
-    {
-        OK,
-        CONNECTING,
-        DISCONNECTED,
-        WOULD_BLOCK,
-        ERROR
-    }
+	public enum ConnectionState
+	{
+		OK,
+		CONNECTING,
+		DISCONNECTED,
+		WOULD_BLOCK,
+		ERROR
+	}
 
-    class TerminalClient: IDisposable
-    {
-        private TcpClient mClient;
+	class TerminalClient: IDisposable
+	{
+		private TcpClient mClient;
 
-        public ITerminalClientListener Listener { get; set; }
+		public ITerminalClientListener Listener { get; set; }
 
-        private Thread mReceiverThread;
-        private Thread mSenderThread;
+		private Thread mReceiverThread;
+		private Thread mSenderThread;
 
-        private string mHost;
-        private int mHostPort;
+		private string mHost;
+		private int mHostPort;
 
-        private CancellationTokenSource mCancellationTokenSource = new();
+		private CancellationTokenSource mCancellationTokenSource = new();
 
-        private readonly BlockingCollection<string> mSendQueue = new();        
+		private readonly BlockingCollection<string> mSendQueue = new();        		
 
-        public TerminalClient()
-        {
-            mClient = new ();
-            mClient.NoDelay = true;            
-        }        
+		public TerminalClient()
+		{
+			mClient = new();
+			mClient.NoDelay = true;
+		}        
 
-        public void BeginConnect(string host, int port)
-        {
-            if(string.IsNullOrWhiteSpace(host))
-            {
-                throw new ArgumentNullException(nameof(host));
-            }
+		public void BeginConnect(string host, int port)
+		{
+			if(string.IsNullOrWhiteSpace(host))
+			{
+				throw new ArgumentNullException(nameof(host));
+			}
 
-            mHost = host;
-            mHostPort = port;
+			mHost = host;
+			mHostPort = port;
 
-            Connect();
-        }
+			Connect();
+		}		
 
-        public void Reconnect()
-        {
-            if (string.IsNullOrWhiteSpace(mHost))
-                throw new InvalidOperationException("Cannot recoonect, did you call BegingConnect?");
+		private void Connect()
+		{
+			if (mSenderThread != null)
+			{
+				throw new InvalidOperationException("Sender thread running? WTF");
+			}
 
-            Disconnect();
+			if (mReceiverThread != null)
+			{
+				throw new InvalidOperationException("mReceiverThread running? WTF");
+			}
+			
+			mSenderThread = new(SenderWorker);
+			mSenderThread.Start();
 
-            mClient = new();
-            mClient.NoDelay = true;
+			SetState(ConnectionState.CONNECTING, null);
+		}
 
-            Connect();
-        }
+		public void SendMessage(string msg)
+		{
+			mSendQueue.Add(msg);
+		}
 
-        private void Connect()
-        {
-            if (mSenderThread != null)
-            {
-                throw new InvalidOperationException("Sender thread running? WTF");
-            }
+		private void IOThreadFailure(object param)
+		{            
+			SetState(ConnectionState.ERROR, param);
+		}
 
-            if (mReceiverThread != null)
-            {
-                throw new InvalidOperationException("mReceiverThread running? WTF");
-            }
-            
-            mSenderThread = new(SenderWorker);
-            mSenderThread.Start();
+		private void ReceiverWorker(Object param)
+		{
+			var token = mCancellationTokenSource.Token;
 
-            SetState(ConnectionState.CONNECTING, null);
-        }
+			var stream = mClient.GetStream();
+			var bytes = new byte[1];
+			var stringBuilder = new System.Text.StringBuilder(128);
 
-        public void SendMessage(string msg)
-        {
-            mSendQueue.Add(msg);
-        }
+			bool lastCharWasCarriageReturn = false;
 
-        private void IOThreadFailure(object param)
-        {            
-            SetState(ConnectionState.ERROR, param);
-        }
+			while (!token.IsCancellationRequested)
+			{
+				int data;
+				try
+				{
+					data = stream.ReadByte();
+				}
+				catch(System.IO.IOException ex)
+				{
+					if(!token.IsCancellationRequested)
+					{
+						IOThreadFailure(ex);
+						break;
+					}
 
-        private void ReceiverWorker(Object param)
-        {
-            var token = mCancellationTokenSource.Token;
+					continue;
+				}
 
-            var stream = mClient.GetStream();
-            var bytes = new byte[1];
-            var stringBuilder = new System.Text.StringBuilder(128);
+				if (data < 0)
+				{
+					IOThreadFailure(null);
+					break;
+				}
 
-            bool lastCharWasCarriageReturn = false;
+				bytes[0] = (byte)data;
+				var ch = System.Text.Encoding.ASCII.GetChars(bytes);
+				stringBuilder.Append(ch);
 
-            while (!token.IsCancellationRequested)
-            {
-                int data;
-                try
-                {
-                    data = stream.ReadByte();
-                }
-                catch(System.IO.IOException ex)
-                {
-                    if(!token.IsCancellationRequested)
-                    {
-                        IOThreadFailure(ex);
-                        break;
-                    }
+				if (ch[0] == '\r')
+					lastCharWasCarriageReturn = true;
+				else if ((ch[0] == '\n') && (lastCharWasCarriageReturn))
+				{
+					lastCharWasCarriageReturn = false;
 
-                    continue;
-                }
+					var msg = stringBuilder.ToString();
+					stringBuilder.Clear();
 
-                if (data < 0)
-                {
-                    IOThreadFailure(null);
-                    break;
-                }
+					//empty msg?
+					if (msg == "\r\n")
+						continue;
 
-                bytes[0] = (byte)data;
-                var ch = System.Text.Encoding.ASCII.GetChars(bytes);
-                stringBuilder.Append(ch);
+					Listener?.OnMessageReceived(msg);                    
+				}
+				else
+				{
+					//always clear 
+					lastCharWasCarriageReturn = false;
+				}                    
+			}
 
-                if (ch[0] == '\r')
-                    lastCharWasCarriageReturn = true;
-                else if ((ch[0] == '\n') && (lastCharWasCarriageReturn))
-                {
-                    lastCharWasCarriageReturn = false;
+			mReceiverThread = null;
+		}
 
-                    var msg = stringBuilder.ToString();
-                    stringBuilder.Clear();
+		private void SenderWorker(Object param)
+		{
+			if (mCancellationTokenSource.IsCancellationRequested)
+				return;
 
-                    //empty msg?
-                    if (msg == "\r\n")
-                        continue;
+			var cancellationToken = mCancellationTokenSource.Token;
+			try
+			{
+				mClient.Connect(mHost, mHostPort);
+			}            
+			catch(Exception ex)
+			{
+				SetState(ConnectionState.ERROR, ex);
+				mSenderThread = null;
 
-                    Listener?.OnMessageReceived(msg);                    
-                }
-                else
-                {
-                    //always clear 
-                    lastCharWasCarriageReturn = false;
-                }                    
-            }
+				return;
+			}
 
-            mReceiverThread = null;
-        }
+			SetState(ConnectionState.OK, null);                        
 
-        private void SenderWorker(Object param)
-        {
-            if (mCancellationTokenSource.IsCancellationRequested)
-                return;
+			mReceiverThread = new(ReceiverWorker);
+			mReceiverThread.Start();
 
-            var cancellationToken = mCancellationTokenSource.Token;
-            try
-            {
-                mClient.Connect(mHost, mHostPort);
-            }            
-            catch(Exception ex)
-            {
-                SetState(ConnectionState.ERROR, ex);
-                mSenderThread = null;
+			var stream = mClient.GetStream();
 
-                return;
-            }
+			try
+			{
+				for (; ; )
+				{
+					var str = mSendQueue.Take(cancellationToken);
 
-            SetState(ConnectionState.OK, null);                        
+					//maybe this is just our little hack for stopping the thread
+					if (string.IsNullOrWhiteSpace(str))
+						continue;
 
-            mReceiverThread = new(ReceiverWorker);
-            mReceiverThread.Start();
+					if (!str.EndsWith("\r\n"))
+						str += "\r\n";
 
-            var stream = mClient.GetStream();
+					var data = System.Text.Encoding.ASCII.GetBytes(str);
+					stream.Write(data, 0, data.Length);
+				}
+			}
+			catch(System.IO.IOException ex)
+			{
+				IOThreadFailure(ex);
+			}
+			catch (OperationCanceledException)
+			{
+				//ignore
+			}
 
-            try
-            {
-                for (; ; )
-                {
-                    var str = mSendQueue.Take(cancellationToken);
+			mSenderThread = null;
+		}
 
-                    //maybe this is just our little hack for stopping the thread
-                    if (string.IsNullOrWhiteSpace(str))
-                        continue;
+		private void JoinWorkerThread(Thread t)
+		{
+			if ((t != null) && (Thread.CurrentThread != t) && (t.ThreadState == ThreadState.Running))
+			{
+				t.Join();
+			}
+		}        
 
-                    if (!str.EndsWith("\r\n"))
-                        str += "\r\n";
+		public void Disconnect()
+		{
+			mCancellationTokenSource.Cancel();
 
-                    var data = System.Text.Encoding.ASCII.GetBytes(str);
-                    stream.Write(data, 0, data.Length);
-                }
-            }
-            catch(System.IO.IOException ex)
-            {
-                IOThreadFailure(ex);
-            }
-            catch (OperationCanceledException)
-            {
-                //ignore
-            }
+			mClient.Close();
 
-            mSenderThread = null;
-        }
+			JoinWorkerThread(mSenderThread);
+			JoinWorkerThread(mReceiverThread);
 
-        private void JoinWorkerThread(Thread t)
-        {
-            if ((t != null) && (Thread.CurrentThread != t) && (t.ThreadState == ThreadState.Running))
-            {
-                t.Join();
-            }
-        }        
+			mCancellationTokenSource = new();
 
-        public void Disconnect()
-        {
-            mCancellationTokenSource.Cancel();
+			SetState(ConnectionState.DISCONNECTED, null);
 
-            mClient.Close();
+			mClient.Dispose();
+			mClient = null;
+		}
 
-            JoinWorkerThread(mSenderThread);
-            JoinWorkerThread(mReceiverThread);
+		#region ConnectionState
 
-            mCancellationTokenSource = new();
+		private ConnectionState mState;
 
-            SetState(ConnectionState.DISCONNECTED, null);
-        }
+		public ConnectionState State
+		{
+			get { return mState; }
+		}
 
-        #region ConnectionState
+		private void SetState(ConnectionState newState, object param)
+		{
+			lock(this)
+			{
+				if (newState == mState)
+					return;                
 
-        private ConnectionState mState;
+				mState = newState;
 
-        public ConnectionState State
-        {
-            get { return mState; }
-        }
+				Listener?.OnStatusChanged(mState, param);
+			}
+		}
 
-        private void SetState(ConnectionState newState, object param)
-        {
-            lock(this)
-            {
-                if (newState == mState)
-                    return;                
+		#endregion
 
-                mState = newState;
+		#region IDisposable Support
+		private bool disposedValue = false; // To detect redundant calls
 
-                Listener?.OnStatusChanged(mState, param);
-            }
-        }
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposedValue)
+			{
+				if (disposing)
+				{
+					mCancellationTokenSource.Cancel();
+					mCancellationTokenSource.Dispose();
+					mClient.Dispose();
+				}
 
-        #endregion
+				// TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+				// TODO: set large fields to null.
+				disposedValue = true;
+			}
+		}
 
-        #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
+		// TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+		// ~TerminalClient() {
+		//   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+		//   Dispose(false);
+		// }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    mCancellationTokenSource.Cancel();
-                    mCancellationTokenSource.Dispose();
-                    mClient.Dispose();
-                }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-                disposedValue = true;
-            }
-        }
-
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~TerminalClient() {
-        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        //   Dispose(false);
-        // }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            // GC.SuppressFinalize(this);
-        }
-        #endregion
-    }
+		// This code added to correctly implement the disposable pattern.
+		public void Dispose()
+		{
+			// Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+			Dispose(true);
+			// TODO: uncomment the following line if the finalizer is overridden above.
+			// GC.SuppressFinalize(this);
+		}
+		#endregion
+	}
 }

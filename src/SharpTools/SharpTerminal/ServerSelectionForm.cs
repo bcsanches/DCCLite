@@ -47,6 +47,9 @@ namespace SharpTerminal
 
         public ServiceInfo          mSelectedService;
 
+        string mFastService;
+        ushort mFastPort;
+
         public class ServiceInfo
         {
             public string      mServerName;
@@ -56,10 +59,19 @@ namespace SharpTerminal
             public int          mTTL;
         };
 
-        public ServerSelectionForm()
+		public ServerSelectionForm()
+		{
+			InitializeComponent();
+		}
+
+		public ServerSelectionForm(string previousHost, ushort previousPort)
         {
-            InitializeComponent();                       
-        }
+            InitializeComponent();
+
+			mFastService = previousHost;
+            mFastPort = previousPort;
+
+		}
 
         protected override void OnLoad(EventArgs e)
         {
@@ -242,6 +254,16 @@ namespace SharpTerminal
             //Always update selected service because when the  service expires and it is removed list can get empty
             // and refill again, so we always update it, not only for mFirstService
             UpdateSelectedService();
+
+            //This happens when reconnecting, so if the old server comes up, directly connect to it...
+            if((mFastService != null) && (newService.mAddress.ToString() == mFastService) && (newService.mPort == mFastPort))
+			{
+				mSelectedService = newService;
+				this.DialogResult = DialogResult.OK;
+				this.Close();
+
+                return;
+			}
 
             if (mFirstService)
             {

@@ -19,16 +19,18 @@ namespace SharpTerminal
 	public partial class RemoteDeviceUserControl : UserControl
 	{
 		private readonly RemoteDevice mRemoteDevice;
+		private readonly IConsole mConsole;
 
 		public RemoteDeviceUserControl()
 		{
 			InitializeComponent();
 		}
 
-		public RemoteDeviceUserControl(RemoteDevice remoteDevice, RemotePin[] pins) :
+		public RemoteDeviceUserControl(IConsole console, RemoteDevice remoteDevice, RemotePin[] pins) :
 			this()
 		{
 			mRemoteDevice = remoteDevice ?? throw new ArgumentNullException(nameof(remoteDevice));
+			mConsole = console ?? throw new ArgumentNullException(nameof(console));
 
 			m_btnRename.Enabled = !mRemoteDevice.Registered;
 
@@ -73,7 +75,7 @@ namespace SharpTerminal
 
 		private void m_btnRename_Click(object sender, EventArgs e)
 		{
-
+			mConsole.ProcessCmd(["Rename-Item", mRemoteDevice.Path, "newName"]);
 		}
 	}
 }

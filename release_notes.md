@@ -13,6 +13,7 @@
 
 ## SharpTerminal
 
+- Auto reconnect when Broker is closed
 - Server selection screen accepts ENTER as a shortcut
 - Now uses NetCore
 - Added csproj file (removed from CMAKE)
