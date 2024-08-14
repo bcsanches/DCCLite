@@ -91,7 +91,9 @@ namespace dcclite::broker
 
 			void TaskServices_FillPacketHeader(dcclite::Packet &packet, const uint32_t taskId, const NetworkTaskTypes taskType) const noexcept override;
 
-			void TaskServices_SendPacket(dcclite::Packet &packet) override;			
+			void TaskServices_SendPacket(dcclite::Packet &packet) override;
+
+			void TaskServices_Disconnect() override;
 
 			bool IsConnectionStable() const noexcept override;
 
@@ -104,6 +106,7 @@ namespace dcclite::broker
 			//			
 			[[nodiscard]] std::shared_ptr<NetworkTask> StartDownloadEEPromTask(NetworkTask::IObserver *observer, DownloadEEPromTaskResult_t &resultsStorage);
 			[[nodiscard]] std::shared_ptr<NetworkTask> StartServoTurnoutProgrammerTask(NetworkTask::IObserver *observer, RName servoDecoderName);
+			[[nodiscard]] std::shared_ptr<NetworkTask> StartDeviceRenameTask(NetworkTask::IObserver *observer, RName newName);
 
 		protected:
 			void OnUnload() override;
@@ -120,11 +123,10 @@ namespace dcclite::broker
 			* This methods sets the state as offline, such as in cases when a connection is dropped
 			* 
 			* Also, if device is unregistered, the method maybe suicidal, device will be destroyed after going offline
-			* 
-			* Returns true if still alive
+			* 			
 			*
 			*/
-			bool GoOffline();			
+			void GoOffline();			
 
 			template <typename T, class... Args>
 			void SetState(Args&&...args);
@@ -135,6 +137,8 @@ namespace dcclite::broker
 			void GotoConfigState(const dcclite::Clock::TimePoint_t time);		
 
 			void AbortPendingTasks();
+
+			void DisconnectDevice();
 
 			//
 			//INetworkDevice_DecoderServices

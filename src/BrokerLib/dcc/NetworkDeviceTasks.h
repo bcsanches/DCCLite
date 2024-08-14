@@ -16,9 +16,9 @@
 #include <stdint.h>
 #include <vector>
 
-
 #include "Clock.h"
 #include "Packet.h"
+#include "RName.h"
 
 namespace dcclite::broker
 { 
@@ -39,6 +39,8 @@ namespace dcclite::broker
 				virtual void TaskServices_ForgetTask(NetworkTask &task) = 0;
 
 				[[nodiscard]] virtual uint8_t FindDecoderIndex(const Decoder &decoder) const = 0;
+
+				virtual void TaskServices_Disconnect() = 0;
 		};
 	}
 
@@ -220,6 +222,13 @@ namespace dcclite::broker
 			const uint32_t				taskId, 
 			NetworkTask::IObserver		*observer,
 			ServoTurnoutDecoder			&decoder
+		);
+
+		extern std::shared_ptr<NetworkTaskImpl> StartDeviceRenameTask(
+			INetworkDevice_TaskServices &owner,
+			const uint32_t taskId,
+			NetworkTask::IObserver *observer,
+			RName newName
 		);
 	}	
 }

@@ -65,21 +65,14 @@ static uint16_t g_uFreeRam = UINT16_MAX;
 //
 //
 
-#ifdef ARDUINO_AVR_MEGA2560
 void Session::LoadConfig(Storage::EpromStream &stream, bool oldConfig)
-#else
-void Session::LoadConfig(Storage::EpromStream &stream)
-#endif
 {	
-
-#ifdef ARDUINO_AVR_MEGA2560
 	if(oldConfig)
 	{
 		uint8_t oldSrvIp;
 		for (int i = 0; i < 4; ++i)
 			stream.Get(oldSrvIp);
 	}
-#endif
 
 	stream.Get(g_uSrvPort);
 
@@ -659,6 +652,49 @@ static void DownloadEpromTaskHandler(dcclite::Packet &packet)
 	NetUdp::SendPacket(packet.GetData(), packet.GetSize(), g_u8ServerIp, g_uSrvPort);
 }
 
+static void RenameTaskHandler(dcclite::Packet &packet)
+{
+	const uint32_t taskId = packet.Read<uint32_t>();
+
+	const auto msg = static_cast<dcclite::TaskRenameMsgTypes>(packet.Read<uint8_t>());
+	switch (msg)
+	{
+		case dcclite::TaskRenameMsgTypes::RENAME:
+			{
+				char name[dcclite::MAX_NODE_NAME + 1];
+
+				for (int i = 0; i < dcclite::MAX_NODE_NAME; ++i)
+				{
+					char ch = packet.Read<char>();
+
+					name[i] = ch;
+					if (ch == '\0')
+					{
+						break;
+					}
+				}
+				name[dcclite::MAX_NODE_NAME] = '\0';
+
+				//has name changed?
+				if (strcmp(NetUdp::GetNodeName(), name))
+				{					
+					NetUdp::Configure(name);
+					Storage::SaveConfig();
+				}				
+
+				//always send ACK
+				Session::detail::InitTaskPacket(packet, taskId);
+				packet.Write8(static_cast<uint8_t>(dcclite::TaskRenameMsgTypes::ACK));
+
+				NetUdp::SendPacket(packet.GetData(), packet.GetSize(), g_u8ServerIp, g_uSrvPort);
+			}
+			break;
+	
+		default:
+			DCCLITE_LOG_MODULE_LN(FSTR_INVALID << F(" task ") << F("msg") << ' ' << static_cast<int>(msg));
+	}
+}
+
 static void OnTaskRequestPacket(dcclite::Packet &packet)
 {
 	using namespace dcclite;
@@ -673,6 +709,10 @@ static void OnTaskRequestPacket(dcclite::Packet &packet)
 
 		case NetworkTaskTypes::TASK_SERVO_PROGRAMMER:
 			ServoProgrammer::ParsePacket(packet);
+			break;
+
+		case NetworkTaskTypes::TASK_RENAME_DEVICE:
+			RenameTaskHandler(packet);
 			break;
 
 		default:

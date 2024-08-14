@@ -73,9 +73,20 @@ namespace SharpTerminal
 			UpdateLabel();
 		}
 
-		private void m_btnRename_Click(object sender, EventArgs e)
+		private async void m_btnRename_Click(object sender, EventArgs e)
 		{
-			mConsole.ProcessCmd(["Rename-Item", mRemoteDevice.Path, "newName"]);
+			m_btnRename.Enabled = false;
+
+			try
+			{
+				await mConsole.RequestAsync(["Rename-Item", mRemoteDevice.Path, "newName"]);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show("Error: " + ex.Message, "Error during operation", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+
+			m_btnRename.Enabled = true;			
 		}
 	}
 }

@@ -98,6 +98,8 @@ add_library(
         sys/Thinker.h
         sys/ZeroConfSystem.cpp
         sys/ZeroConfSystem.h
+        terminal/DeviceRenameCmd.cpp
+        terminal/DeviceRenameCmd.h
 		terminal/ServiceCmdBase.cpp
 		terminal/ServiceCmdBase.h
 		terminal/ServoProgrammerCmds.cpp

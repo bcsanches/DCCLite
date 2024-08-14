@@ -168,6 +168,8 @@ namespace dcclite::broker
 
 			void Device_DestroyUnregistered(NetworkDevice &dev);
 
+			friend class DestroyUnregisteredDeviceEvent;
+
 			Decoder& Device_CreateDecoder(
 				IDevice_DecoderServices &dev,
 				const std::string &className,

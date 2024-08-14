@@ -92,9 +92,11 @@ namespace SharpTerminal
         {
             base.OnLoad(e);
 
-            if(m_strParamServer == null)
-            {
-                this.DisplayServerSelectionForm();
+            if((m_strParamServer == null) && !this.DisplayServerSelectionForm())
+			{                
+                this.Close();
+
+                return;
             }            
             
             mRequestManager.BeginConnect(m_strParamServer, m_uParamPort);

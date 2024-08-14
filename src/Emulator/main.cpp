@@ -127,19 +127,7 @@ int main(int, char **)
 
 	TerminalService terminalService;		
 
-#if 0
-	//format: cfg <nodeName> <mac> <port> <srvipv4>	<srvport>	
-	//ArduinoLib::SetSerialInput("/cfg RelayStagingA 206.174.184.251.21.20 7202 192.168.0.20 8989;");
-	//ArduinoLib::SetSerialInput("/cfg Emulator 206.174.184.251.21.20 7202 192.168.0.20 8989;");
-	ArduinoLib::SetSerialInput("/cfg TestDevice 242.69.116.44.41.93 7202 8989;");
-
-	ArduinoLib::Tick();
-
-	//ArduinoLib::SetSerialInput("/sv;");
-#endif
-
-	ArduinoLib::SetSerialInput("/cfg TestDevice 242.69.116.44.41.93 7202 8989;sv;");
-	//ArduinoLib::SetSerialInput("/cfg HadesExtA 242.69.116.44.41.93 7202 8989;sv;");
+	ArduinoLib::SetSerialInput("/cfg NoName;sv;");	
 
 	dcclite::Clock clock;
 

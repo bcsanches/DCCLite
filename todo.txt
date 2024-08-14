@@ -10,7 +10,6 @@ DCCLite
 - remove deprecate SHA1 usage on Linux
 
 - Thinker: use RName instead of stringview
-- SharpTerminal: better handling of disconnect and reconnect
 
 LitePanelSDL
 ------------

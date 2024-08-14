@@ -77,7 +77,7 @@ namespace dcclite::broker
 		dcclite::Log::Warn("[Device::{}] [TimeoutController::OnThink] timeout", m_rclOwner.GetName());
 
 		//
-		//connection lost...
+		//connection lost... 
 		m_rclOwner.GoOffline();
 	}
 
@@ -124,6 +124,17 @@ namespace dcclite::broker
 		return false;
 	}
 
+	void NetworkDevice::DisconnectDevice()
+	{
+		DevicePacket pkt{ dcclite::MsgTypes::DISCONNECT, m_SessionToken, m_ConfigToken };
+
+		m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
+
+		dcclite::Log::Warn("[Device::{}] [Disconnect] Sent disconnect packet", this->GetName());
+
+		this->GoOffline();
+	}
+
 	void NetworkDevice::OnUnload()
 	{
 		Device::OnUnload();
@@ -135,13 +146,7 @@ namespace dcclite::broker
 		if (m_kStatus == Status::OFFLINE)
 			return;
 
-		DevicePacket pkt{ dcclite::MsgTypes::DISCONNECT, m_SessionToken, m_ConfigToken };
-
-		m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
-
-		dcclite::Log::Warn("[Device::{}] [Disconnect] Sent disconnect packet", this->GetName());
-
-		this->GoOffline();
+		this->DisconnectDevice();		
 	}
 
 	//
@@ -719,8 +724,11 @@ namespace dcclite::broker
 		m_clPinManager.Serialize(stream);
 	}
 
-	bool NetworkDevice::GoOffline()
+	void NetworkDevice::GoOffline()
 	{
+		if (m_kStatus == Status::OFFLINE)
+			return;
+
 		m_kStatus = Status::OFFLINE;
 
 		m_clDccService.Device_UnregisterSession(*this, m_SessionToken);
@@ -735,12 +743,10 @@ namespace dcclite::broker
 		m_clDccService.Device_NotifyStateChange(*this);
 
 		if (m_fRegistered)
-			return true;
+			return;
 		
 		//kill ourselves...
 		m_clDccService.Device_DestroyUnregistered(*this);
-
-		return false;
 	}
 
 
@@ -930,6 +936,11 @@ namespace dcclite::broker
 		m_lstTasks.erase(it);
 	}	
 
+	void NetworkDevice::TaskServices_Disconnect()
+	{
+		this->DisconnectDevice();
+	}
+
 	void NetworkDevice::AbortPendingTasks()
 	{
 		while (!m_lstTasks.empty())
@@ -970,6 +981,15 @@ namespace dcclite::broker
 		auto task = detail::StartServoTurnoutProgrammerTask(*this, ++g_u32TaskId, observer, *servoTurnout);
 		
 		m_lstTasks.push_back(task);		
+
+		return task;
+	}
+
+	std::shared_ptr<NetworkTask> NetworkDevice::StartDeviceRenameTask(NetworkTask::IObserver *observer, RName newName)
+	{		
+		auto task = detail::StartDeviceRenameTask(*this, ++g_u32TaskId, observer, newName);
+
+		m_lstTasks.push_back(task);
 
 		return task;
 	}

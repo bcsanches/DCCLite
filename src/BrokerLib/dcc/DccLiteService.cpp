@@ -312,13 +312,62 @@ namespace dcclite::broker
 		this->NotifyItemDestroyed(*session);
 	}
 
+	class DestroyUnregisteredDeviceEvent: public dcclite::broker::EventHub::IEvent
+	{
+		public:
+			DestroyUnregisteredDeviceEvent(DccLiteService &target, RName deviceName):
+				IEvent(target),
+				m_rnDeviceName{ deviceName }
+			{
+				//empty
+			}
+
+			void Fire() override
+			{
+				auto &service = static_cast<DccLiteService &>(this->GetTarget());
+
+				dcclite::Log::Info("[DccLiteService::DestroyUnregisteredDeviceEvent] Destroying {} device", m_rnDeviceName);
+
+				NetworkDevice *device = static_cast<NetworkDevice *>(service.m_pDevices->TryGetChild(m_rnDeviceName));
+				if (!device)
+				{
+					dcclite::Log::Info("[DccLiteService::DestroyUnregisteredDeviceEvent] Device {} not found!", m_rnDeviceName);
+
+					return;
+				}
+
+				if (device->IsConnectionStable())
+				{
+					dcclite::Log::Info("[DccLiteService::DestroyUnregisteredDeviceEvent] Device {} is connected, aborting!", m_rnDeviceName);
+
+					return;
+				}
+
+				auto item = service.m_pDevices->RemoveChild(m_rnDeviceName);
+				if (!item)
+				{
+					dcclite::Log::Warn("[DccLiteService::DestroyUnregisteredDeviceEvent] Device {} not found", m_rnDeviceName);
+
+					return;
+				}
+
+				service.NotifyItemDestroyed(*item.get());
+			}
+
+		private:			
+			RName m_rnDeviceName;
+	};
+
 	void DccLiteService::Device_DestroyUnregistered(NetworkDevice &dev)
 	{
-		if (dev.IsConnectionStable())
-			throw std::runtime_error(fmt::format("[DccLiteService::Device_DestroyUnregistered] Cannot destroy connected device {}", dev.GetName()));
+		const auto name = dev.GetName();
 
-		auto item = this->m_pDevices->RemoveChild(dev.GetName());
-		this->NotifyItemDestroyed(*item.get());
+		if (dev.IsConnectionStable())
+			throw std::runtime_error(fmt::format("[DccLiteService::Device_DestroyUnregistered] Cannot destroy connected device {}", name));
+
+		dcclite::Log::Info("[DccLiteService::Device_DestroyUnregistered] Requested to destroy {} device", name);
+		//fire a event to later destroy the device... to avoid functions touching a dead device under the callstack
+		EventHub::PostEvent<DestroyUnregisteredDeviceEvent>(std::ref(*this), name);
 	}
 
 	Decoder* DccLiteService::TryFindDecoder(const DccAddress address) const

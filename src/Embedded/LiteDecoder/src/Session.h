@@ -27,12 +27,8 @@ namespace dcclite
 
 namespace Session
 {
-#ifdef ARDUINO_AVR_MEGA2560
 	extern void LoadConfig(Storage::EpromStream &stream, bool oldConfig = false);
-#else
-	extern void LoadConfig(Storage::EpromStream &stream);
-#endif
-
+#
 	extern void SaveConfig(Storage::EpromStream &stream);	
 
 	//Set port to use to connect to server, pass 0 to use default port

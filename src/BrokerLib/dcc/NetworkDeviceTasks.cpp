@@ -19,6 +19,7 @@
 #include "Log.h"
 
 #include "TurnoutDecoder.h"
+#include "FmtUtils.h"
 
 namespace dcclite::broker
 {
@@ -38,12 +39,11 @@ namespace dcclite::broker
 namespace dcclite::broker::detail
 {		
 	
+	/////////////////////////////////////////////////////////////////////////////
 	//
+	// DownloadEEPromTask
 	//
-	// TASKS
-	//
-	//
-	//	
+	/////////////////////////////////////////////////////////////////////////////
 
 	/**
 	* DownloadEEPromTask Packet format
@@ -279,11 +279,156 @@ namespace dcclite::broker::detail
 		}		
 	}
 
+
+	/////////////////////////////////////////////////////////////////////////////
 	//
+	// DeviceRenameTask
 	//
-	// Servo Programmer Task
+	/////////////////////////////////////////////////////////////////////////////
+
+	/**
+	* DeviceRenameTask Packet format
+
+
+	  0  1  2  3  4  5  6  7
+	+--+--+--+--+--+--+--+--+
+	|          MSG          |	
+	+--+--+--+--+--+--+--+--+
+	|                       |
+	//         NAME         //
+	|                       |
+	+--+--+--+--+--+--+--+--+
+
+	Timesequence:
+	1 - Send packet with new name
+	2 - Awaits confirmation packet
+	3 - Sends a disconnect packet, finishes task and force network device disconnection
+	*/
+
+	class DeviceRenameTask: public NetworkTaskImpl
+	{
+		public:
+			DeviceRenameTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, IObserver *observer, RName newName):
+				NetworkTaskImpl{ owner, taskId, observer },				
+				m_clThinker{ "DeviceRenameTask::Thinker", THINKER_MF_LAMBDA(OnThink) },
+				m_rnNewName{ newName }
+			{
+				if (!m_rclOwner.IsConnectionStable())
+					throw std::runtime_error(fmt::format("[DeviceRenameTask] Cannot start a rename task without a valid connection (new name is {})", newName));
+
+				if (newName.GetData().size() > MAX_NODE_NAME)
+					throw std::runtime_error(fmt::format("[DeviceRenameTask] Name {} is too big", newName));
+
+				//start running
+				m_clThinker.Schedule({});
+			}
+
+			void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) override;
+
+			void Abort() noexcept override;
+			void Stop() noexcept override;
+
+		private:
+			void OnThink(const dcclite::Clock::TimePoint_t time);
+
+		private:			
+			Thinker	m_clThinker;
+			RName   m_rnNewName;
+
+			bool m_fWaitingNameAck = true;
+
+			int		m_iCount = 0;
+	};
+
+	void DeviceRenameTask::Abort() noexcept
+	{
+		this->MarkAbort();
+	}
+
+	void DeviceRenameTask::Stop() noexcept
+	{
+		if (!this->HasFinished())
+			this->Abort();
+	}
+
+	void DeviceRenameTask::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time)
+	{
+		if (!m_fWaitingNameAck)
+		{
+			//ignore... late packet...
+		}
+		
+		const auto msgType = static_cast<TaskRenameMsgTypes>(packet.ReadByte());
+		if (msgType == TaskRenameMsgTypes::ACK)
+		{
+			m_fWaitingNameAck = false;
+
+			auto &owner = m_rclOwner;			
+
+			this->MarkFinished();	
+
+			//Task may be destroyed, so use owner ref copy...
+			//Do a disconnect to force device reconnection and configuration (also the owner will be destroyed on this process, as the device is not registered)
+			owner.TaskServices_Disconnect();
+		}
+		else
+		{
+			this->MarkFailed(fmt::format("[DeviceRenameTask::OnPacket] Got invalid packet {}", (uint8_t) msgType));
+		}
+	}
+
+	void DeviceRenameTask::OnThink(const dcclite::Clock::TimePoint_t time)
+	{
+		assert(!this->HasFailed());
+		assert(!this->HasFinished());
+
+		if (!m_fWaitingNameAck)
+		{
+			//ignore... should not be here...
+			return;
+		}
+
+		if (m_iCount == 10)		
+		{
+			Log::Error("[DeviceRenameTask::OnThink]: Too many retries, node does not ACK to new name {}",m_rnNewName);
+
+			//too much retries... abort
+			this->MarkFailed("[DeviceRenameTask::OnThink] Too many retries, node does not ACK");
+
+			//Jim seems to be dead...
+			return;
+		}
+
+		Log::Trace("[DeviceRenameTask::OnThink]: requesting rename to {}", m_rnNewName);
+
+		dcclite::Packet packet;
+
+		m_rclOwner.TaskServices_FillPacketHeader(packet, m_u32TaskId, NetworkTaskTypes::TASK_RENAME_DEVICE);
+		
+		packet.Write8(static_cast<uint8_t>(TaskRenameMsgTypes::RENAME));
+
+		auto sv = m_rnNewName.GetData();
+
+		//it is validated on the constuctor.. but make sure we do not forget on the future to check this... so double check
+		assert(sv.size() <= dcclite::MAX_NODE_NAME);
+		auto size = std::min(sv.size(), (size_t)dcclite::MAX_NODE_NAME);
+
+		for (auto i = 0; i < size; ++i)
+			packet.Write8(sv[i]);
+
+		packet.Write8('\0');
+
+		m_rclOwner.TaskServices_SendPacket(packet);
+		m_clThinker.Schedule(time + 50ms);
+
+		++m_iCount;
+	}
+
+	/////////////////////////////////////////////////////////////////////////////
 	//
-	//	
+	// ServoTurnoutProgrammerTask
+	//
+	/////////////////////////////////////////////////////////////////////////////
 
 	/**
 	* ServoTurnoutProgrammerTask Packet format
@@ -942,5 +1087,10 @@ namespace dcclite::broker::detail
 	std::shared_ptr<NetworkTaskImpl> StartServoTurnoutProgrammerTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, NetworkTask::IObserver *observer, ServoTurnoutDecoder &decoder)
 	{
 		return std::make_shared<ServoTurnoutProgrammerTask>(owner, taskId, observer, decoder);
+	}
+
+	std::shared_ptr<NetworkTaskImpl> StartDeviceRenameTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, NetworkTask::IObserver *observer, RName newName)
+	{
+		return std::make_shared<DeviceRenameTask>(owner, taskId, observer, newName);
 	}
 }

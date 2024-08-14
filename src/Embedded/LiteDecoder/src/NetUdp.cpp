@@ -13,6 +13,7 @@
 #include "Ethercard.h"
 
 #include "Console.h"
+#include "Packet.h"
 #include "Storage.h"
 #include "Strings.h"
 
@@ -30,7 +31,7 @@ uint8_t Ethernet::buffer[BUFFER_SIZE];
 
 constexpr uint16_t SRC_PORT = 7203;
 
-static char g_szNodeName[NetUdp::MAX_NODE_NAME + 1] = { 0 };
+static char g_szNodeName[dcclite::MAX_NODE_NAME + 1] = { 0 };
 
 enum States
 {
@@ -41,18 +42,13 @@ enum States
 
 //<nodeName> <mac> <port>
 
-#ifdef ARDUINO_AVR_MEGA2560
 void NetUdp::LoadConfig(Storage::EpromStream &stream, bool oldConfig)
-#else
-void NetUdp::LoadConfig(Storage::EpromStream &stream)
-#endif
 {
-	for(int i = 0;i < MAX_NODE_NAME; ++i)
+	for(int i = 0;i < dcclite::MAX_NODE_NAME; ++i)
 		stream.Get(g_szNodeName[i]);
 
-	g_szNodeName[MAX_NODE_NAME] = 0;
+	g_szNodeName[dcclite::MAX_NODE_NAME] = 0;
 
-#ifdef ARDUINO_AVR_MEGA2560
 	if(oldConfig)
 	{
 		uint8_t mac;
@@ -64,21 +60,20 @@ void NetUdp::LoadConfig(Storage::EpromStream &stream)
 		uint16_t unusedSrcPort;
 		stream.Get(unusedSrcPort);
 	}	
-#endif
 
 	NetUdp::LogStatus();
 }
 
 void NetUdp::SaveConfig(Storage::EpromStream &stream)
 {
-	for(int i = 0;i < MAX_NODE_NAME; ++i)
+	for(int i = 0;i < dcclite::MAX_NODE_NAME; ++i)
 		stream.Put(g_szNodeName[i]);
 }
 
 void NetUdp::Configure(const char *nodeName)
 {
 	strncpy(g_szNodeName, nodeName, sizeof(g_szNodeName));
-	g_szNodeName[MAX_NODE_NAME] = 0;
+	g_szNodeName[dcclite::MAX_NODE_NAME] = 0;
 }
 
 static void GenerateMac(uint8_t mac[6])

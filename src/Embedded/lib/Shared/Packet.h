@@ -45,7 +45,16 @@ namespace dcclite
 		RESERVED0,
 
 		TASK_DOWNLOAD_EEPROM,
-		TASK_SERVO_PROGRAMMER
+		TASK_SERVO_PROGRAMMER,
+		TASK_RENAME_DEVICE
+	};
+
+	enum class TaskRenameMsgTypes: uint8_t
+	{
+		RESERVED0,
+
+		RENAME,		
+		ACK
 	};
 
 	enum class ServoProgrammerServerMsgTypes: uint8_t
@@ -85,6 +94,8 @@ namespace dcclite
 	constexpr uint8_t MAX_DECODERS_STATES_PER_PACKET = 64;
 
 	constexpr uint16_t PROTOCOL_VERSION = 9;
+
+	constexpr uint8_t MAX_NODE_NAME = 16;
 
 	typedef BitPack<MAX_DECODERS_STATES_PER_PACKET> StatesBitPack_t;
 

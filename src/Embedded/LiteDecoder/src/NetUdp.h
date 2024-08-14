@@ -19,9 +19,7 @@ namespace Storage
 }
 
 namespace NetUdp
-{
-	constexpr uint8_t MAX_NODE_NAME = 16;
-
+{	
 	typedef void(*ReceiveCallback_t)(
 		uint16_t dest_port,    ///< Port the packet was sent to
 		uint8_t src_ip[4],    ///< IP address of the sender
@@ -29,11 +27,7 @@ namespace NetUdp
 		const char *data,   ///< UDP payload data
 		unsigned int len);
 
-#ifdef ARDUINO_AVR_MEGA2560
 	extern void LoadConfig(Storage::EpromStream &stream, bool oldConfig = false);
-#else	
-	extern void LoadConfig(Storage::EpromStream &stream);
-#endif
 
 	extern void SaveConfig(Storage::EpromStream &stream);
 
