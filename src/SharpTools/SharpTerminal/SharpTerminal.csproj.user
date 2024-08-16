@@ -8,31 +8,31 @@
     <Compile Update="DashboardUserControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Form1.cs">
+    <Compile Update="Forms\Form1.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="ObjectsTreeViewUserControl.cs">
+    <Compile Update="Forms\ObjectsTreeViewUserControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="RemoteDeviceUserControl.cs">
+    <Compile Update="Forms\RemoteDeviceUserControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="RemoteLocationManagerUserControl.cs">
+    <Compile Update="Forms\RemoteLocationManagerUserControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="RemoteLocationUserControl.cs">
+    <Compile Update="Forms\RemoteLocationUserControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="RemoteLoconetServiceUserControl.cs">
+    <Compile Update="Forms\RemoteLoconetServiceUserControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="RemoteObjectUserControl.cs">
+    <Compile Update="Forms\RemoteObjectUserControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="RemoteShortcutUserControl.cs">
+    <Compile Update="Forms\RemoteShortcutUserControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="ServerSelectionForm.cs">
+    <Compile Update="Forms\ServerSelectionForm.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
