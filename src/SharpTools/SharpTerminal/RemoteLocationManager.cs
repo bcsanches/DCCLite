@@ -11,25 +11,37 @@
 using System;
 using System.Json;
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace SharpTerminal
 {
-    public readonly struct LocationMismatch
+    public class LocationMismatch
     {
-        public RemoteDecoder Decoder { get; }
+        private RemoteDecoder mDecoder;
         public String Reason { get; }
         public String MappedLocation { get; }
 
-        public LocationMismatch(RemoteDecoder decoder, String reason, String mappedLocation)
+        private readonly String mRemoteDecoderPath;
+
+        public LocationMismatch(String remoteDecoderPath, String reason, String mappedLocation)
         {
             if (string.IsNullOrWhiteSpace(reason))
                 throw new ArgumentNullException(nameof(reason));
 
-            Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
-            Reason = reason;
+            //Decoder = decoder ?? throw new ArgumentNullException(nameof(decoder));
+            mRemoteDecoderPath = remoteDecoderPath;
+			Reason = reason;
             MappedLocation = mappedLocation;
         }
+
+		[SupportedOSPlatform("windows")]
+		public async Task<RemoteDecoder> LoadDecoderAsync()
+        {
+			mDecoder ??= (RemoteDecoder) await RemoteObjectManager.GetRemoteObjectAsync(mRemoteDecoderPath);
+
+            return mDecoder;
+		}
     }
 
 	[SupportedOSPlatform("windows")]
@@ -37,8 +49,8 @@ namespace SharpTerminal
     {
         readonly LocationMismatch[] mMismatches;
 
-        public RemoteLocationManager(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef):
-            base(name, className, path, internalId, parentInternalId)
+        public RemoteLocationManager(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent):
+            base(name, className, path, internalId, parent)
         {
             if (!objectDef.ContainsKey("mismatches"))
                 return;
@@ -49,13 +61,12 @@ namespace SharpTerminal
 
             int index = 0;
             foreach (JsonValue item in mismatches)
-            {
-                var remoteDecoder = (RemoteDecoder)RemoteObjectManager.LoadObject(item["decoder"]);
+            {                
                 var reason = item["reason"];
 
                 String mappedLocation = item.ContainsKey("location") ? item["location"] : null;                
 
-                var mismatch = new LocationMismatch(remoteDecoder, reason, mappedLocation);
+                var mismatch = new LocationMismatch(item["decoderPath"], reason, mappedLocation);
                 mMismatches[index++] = mismatch;
             }
         }
@@ -71,37 +82,36 @@ namespace SharpTerminal
     {
         readonly int mBeginAddress;
         readonly int mEndAddress;
-        readonly RemoteDecoder[] mRemoteDecoders;
+        readonly private string[] mDecodersPath;
 
-        public RemoteLocation(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue data) :
-            base(name, className, path, internalId, parentInternalId)
+        public RemoteLocation(string name, string className, string path, ulong internalId, JsonValue data, RemoteFolder parent) :
+            base(name, className, path, internalId, parent)
         {
             mBeginAddress = data["begin"];
             mEndAddress = data["end"];
 
-            if (!data.ContainsKey("decoders"))
+            if (!data.ContainsKey("decodersPath"))
                 return;
 
-            var decoders = data["decoders"];
-            var count = decoders.Count;
+            var decodersPath = data["decodersPath"];
+			var count = decodersPath.Count;
 
-            mRemoteDecoders = new RemoteDecoder[count];
+			if (count == 0)
+                return;            
+
+			mDecodersPath = new string[mEndAddress - mBeginAddress];
 
             for (int i = 0 ;i < count; ++i)
             {
-                var decInfo = decoders[i];
-                if (decInfo == null)
-                    continue;
+                var decInfo = decodersPath[i];
 
-                var remoteObject = RemoteObjectManager.LoadObject(decInfo);                
-
-                mRemoteDecoders[i] = remoteObject as RemoteDecoder;
+                mDecodersPath[decInfo["index"]] = decInfo["path"];
             }
         }
 
         public override Control CreateControl(IConsole console)
         {
-            return new RemoteLocationUserControl(this.Name, mBeginAddress, mEndAddress, mRemoteDecoders);
+            return new RemoteLocationUserControl(this.Name, mBeginAddress, mEndAddress, mDecodersPath);
         }
     }
 }

@@ -15,8 +15,8 @@ namespace SharpTerminal
 
 		IRemoteObjectAction[] m_arActions;
 
-		public RemoteSignalDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
-			base(name, className, path, internalId, parentInternalId, objectDef)
+		public RemoteSignalDecoder(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) :
+			base(name, className, path, internalId, objectDef, parent)
 		{
 			this.ParseStateData(objectDef);
 

@@ -60,7 +60,7 @@ namespace dcclite::broker
 				return "Decoder";
 			}
 
-			void Serialize(dcclite::JsonOutputStream_t &stream) const override;				
+			void Serialize(dcclite::JsonOutputStream_t &stream) const override;
 
 		private:
 			DccAddress m_iAddress;				

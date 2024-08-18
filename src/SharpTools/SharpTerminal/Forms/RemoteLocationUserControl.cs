@@ -18,38 +18,53 @@ namespace SharpTerminal
 	[SupportedOSPlatform("windows")]
 	public partial class RemoteLocationUserControl : UserControl
     {
+        private int mBeginAddress;
+        private int mEndAddress;
+        private string[] mDecodersPath;
+
         public RemoteLocationUserControl()
         {
             InitializeComponent();
         }
 
-        public RemoteLocationUserControl(String name, int beginAddress, int endAddress, RemoteDecoder[] decoders) :
+        public RemoteLocationUserControl(String name, int beginAddress, int endAddress, string[] decodersPath) :
             this()
         {
-            int num = endAddress - beginAddress;
+            mBeginAddress = beginAddress;
+            mEndAddress = endAddress;
+            mDecodersPath = decodersPath;
+
+			m_lbTitle.Text += " " + name;
+		}
+
+		protected async override void OnLoad(EventArgs e)
+		{
+			base.OnLoad(e);		
+
+		    int num = mEndAddress - mBeginAddress;
             if (num == 0)
                 return;
 
             m_gridMain.Rows.Add(num);
 
-            for(int i = beginAddress, pos = 0;i < endAddress; ++i, ++pos)
+            for(int i = mBeginAddress, pos = 0;i < mEndAddress; ++i, ++pos)
             {
                 var row = m_gridMain.Rows[pos];
 
                 row.Cells[0].Value = i;
 
-                if (decoders[pos] == null)
+                if ((mDecodersPath == null) || (mDecodersPath[pos] == null))
                     continue;
 
-                row.Cells[1].Value = decoders[pos].ClassName;
-                row.Cells[2].Value = decoders[pos].Name;
-                row.Cells[3].Value = decoders[pos].DeviceName;
+                var decoder = (RemoteDecoder) await RemoteObjectManager.GetRemoteObjectAsync(mDecodersPath[pos]);
 
-                if (decoders[pos].Broken)
+                row.Cells[1].Value = decoder.ClassName;
+                row.Cells[2].Value = decoder.Name;
+                row.Cells[3].Value = decoder.DeviceName;
+
+                if (decoder.Broken)
                     row.DefaultCellStyle.BackColor = Color.Red;
-            }
-
-            m_lbTitle.Text += " " + name;
+            }            
         }
     }
 }

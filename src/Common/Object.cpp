@@ -102,7 +102,11 @@ namespace dcclite
 		{
 			stream.AddStringValue("parentName", parent->GetNameData());
 			stream.AddPointerValue("parentInternalId", parent);
-		}			
+		}
+		else
+		{
+			stream.AddPointerValue("parentInternalId", nullptr);
+		}
 	}
 
 	Object::Object(RName name) :

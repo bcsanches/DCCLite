@@ -61,8 +61,8 @@ namespace SharpTerminal
 
         public RemotePin[] Pins;
 
-        public RemoteDevice(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef):
-            base(name, className, path, internalId, parentInternalId)
+        public RemoteDevice(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent):
+            base(name, className, path, internalId, parent)
         {
             this.UpdateState(objectDef);
         }

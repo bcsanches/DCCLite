@@ -16,8 +16,8 @@ namespace SharpTerminal.Dispatcher
 	[SupportedOSPlatform("windows")]
 	public class RemoteDispatcher : RemoteObject
     {             
-        public RemoteDispatcher(string name, string className, string path, ulong internalId, ulong parentInternalId) :
-            base(name, className, path, internalId, parentInternalId)
+        public RemoteDispatcher(string name, string className, string path, ulong internalId, RemoteFolder parent) :
+            base(name, className, path, internalId, parent)
         {            
             //empty
         }
@@ -44,8 +44,8 @@ namespace SharpTerminal.Dispatcher
 
         public SectionStates m_kState;                
 
-        public RemoteSection(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
-            base(name, className, path, internalId, parentInternalId, objectDef)
+        public RemoteSection(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) :
+            base(name, className, path, internalId, objectDef, parent)
         {
             this.ParseStateData(objectDef);           
         }

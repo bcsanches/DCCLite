@@ -70,19 +70,17 @@ namespace dcclite::broker
 			if (m_vecDecoders.empty())
 				return;
 
-			auto outputArray = stream.AddArray("decoders");
+			auto outputArray = stream.AddArray("decodersPath");
 
-			for (auto &dec : m_vecDecoders)
+			for(size_t i = 0, sz = m_vecDecoders.size(); i < sz; ++i)
 			{
-				if (dec == nullptr)
-				{
-					outputArray.AddNull();
-				}
-				else
-				{
-					auto obj = outputArray.AddObject();
-					dec->Serialize(obj);
-				}
+				auto dec = m_vecDecoders[i];
+				if (!dec)
+					continue;
+
+				auto obj = outputArray.AddObject();
+				obj.AddIntValue("index", i);
+				obj.AddStringValue("path", dec->GetPath().string());
 			}
 		}
 
@@ -278,10 +276,8 @@ namespace dcclite::broker
 		{
 			auto obj = mismatchesArray.AddObject();
 			obj.AddStringValue("reason", LocationMismatchReason2String(std::get<1>(tuple)));
-		
-			auto decoderObj = obj.AddObject("decoder");
-			std::get<0>(tuple)->Serialize(decoderObj);
-
+			obj.AddStringValue("decoderPath", std::get<0>(tuple)->GetPath().string());
+					
 			auto location = std::get<2>(tuple);
 			if(location != nullptr)
 				obj.AddStringValue("location", location->GetName().GetData());

@@ -8,6 +8,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
+using SharpTerminal.Forms;
 using System;
 using System.Drawing;
 using System.Runtime.Versioning;
@@ -74,9 +75,14 @@ namespace SharpTerminal
 		}
 
 		private async void m_btnRename_Click(object sender, EventArgs e)
-		{
-			m_btnRename.Enabled = false;
+		{			
+			using var form = new RemoteDeviceRenameForm();
+			form.ShowDialog();
 
+			if (form.DialogResult == DialogResult.Cancel)
+				return;
+
+			m_btnRename.Enabled = false;
 			try
 			{
 				await mConsole.RequestAsync(["Rename-Item", mRemoteDevice.Path, "newName"]);

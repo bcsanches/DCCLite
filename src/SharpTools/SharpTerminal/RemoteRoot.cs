@@ -17,8 +17,8 @@ namespace SharpTerminal
 	[SupportedOSPlatform("windows")]
 	public class RemoteRoot : RemoteFolder
     {             
-        public RemoteRoot(string name, string className, string path, ulong internalId, ulong parentInternalId) :
-            base(name, className, path, internalId, parentInternalId)
+        public RemoteRoot(string name, string className, string path, ulong internalId) :
+            base(name, className, path, internalId)
         {            
             //empty
         }

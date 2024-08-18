@@ -183,7 +183,7 @@ namespace SharpTerminal
                 mTreeView.Nodes.Clear();
                 RemoteObjectManager.Clear();
 
-				var rootFolder = (RemoteFolder) await RemoteObjectManager.GetRemoteObjectAsync("/");
+				var rootFolder = await RemoteObjectManager.LoadRoot();
 
                 var brokerNode = mTreeView.Nodes.Add("Broker");
                 brokerNode.Name = "Broker";
@@ -193,7 +193,7 @@ namespace SharpTerminal
                 if (children != null)
                     FillTree(brokerNode, children);
 
-                var servicesFolder = (RemoteFolder)await RemoteObjectManager.GetRemoteObjectAsync("/services");
+                var servicesFolder = (RemoteFolder) rootFolder.TryFindChildByName("services");
                 var services = await servicesFolder.LoadChildrenAsync(mRequestManager);
 
                 var locationService = services.Where(x => x.Name == "locationManager").FirstOrDefault();

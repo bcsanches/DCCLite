@@ -74,8 +74,8 @@ namespace SharpTerminal
     {
         public string SystemName { get; }
 
-        public RemoteServiceObject(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
-          base(name, className, path, internalId, parentInternalId)
+        public RemoteServiceObject(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) :
+          base(name, className, path, internalId, parent)
         {
             SystemName = objectDef["systemName"];
         }
@@ -125,8 +125,8 @@ namespace SharpTerminal
             }
         }  
 
-        public RemoteDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
-            base(name, className, path, internalId, parentInternalId, objectDef)
+        public RemoteDecoder(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) :
+            base(name, className, path, internalId, objectDef, parent)
         {
             DeviceName = objectDef["deviceName"];
 
@@ -164,8 +164,8 @@ namespace SharpTerminal
 	[SupportedOSPlatform("windows")]
 	public class VirtualSensorDecoder : RemoteDecoder
     {       
-        public VirtualSensorDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
-            base(name, className, path, internalId, parentInternalId, objectDef)
+        public VirtualSensorDecoder(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) :
+            base(name, className, path, internalId, objectDef, parent)
         {
             //empty
         }
@@ -209,8 +209,8 @@ namespace SharpTerminal
             get { return mfInverted; }
         }
 		
-		public RemoteSensorDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
-            base(name, className, path, internalId, parentInternalId, objectDef)
+		public RemoteSensorDecoder(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) :
+            base(name, className, path, internalId, objectDef, parent)
         {
             this.ParseStateData(objectDef);
         }
@@ -233,8 +233,8 @@ namespace SharpTerminal
 	[SupportedOSPlatform("windows")]
 	public class RemoteOutputDecoder : RemoteDecoder
     {        
-        public RemoteOutputDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
-            base(name, className, path, internalId, parentInternalId, objectDef)
+        public RemoteOutputDecoder(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) :
+            base(name, className, path, internalId, objectDef, parent)
         {
 
         }
@@ -253,8 +253,8 @@ namespace SharpTerminal
 	[SupportedOSPlatform("windows")]
 	public class RemoteTurnoutDecoder: RemoteDecoder
     {                
-        public RemoteTurnoutDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
-            base(name, className, path, internalId, parentInternalId, objectDef)
+        public RemoteTurnoutDecoder(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) :
+            base(name, className, path, internalId, objectDef, parent)
         {
             //empty
         }
@@ -390,8 +390,8 @@ namespace SharpTerminal
         }
 
 
-        public RemoteServoTurnoutDecoder(string name, string className, string path, ulong internalId, ulong parentInternalId, JsonValue objectDef) :
-            base(name, className, path, internalId, parentInternalId, objectDef)
+        public RemoteServoTurnoutDecoder(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) :
+            base(name, className, path, internalId, objectDef, parent)
         {
             this.ParseState(objectDef);
         }

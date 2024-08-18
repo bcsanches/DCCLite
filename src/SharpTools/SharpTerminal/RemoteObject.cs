@@ -11,6 +11,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Json;
 using System.Linq;
 using System.Runtime.Versioning;
@@ -60,7 +61,9 @@ namespace SharpTerminal
 
 		public event RemoteObjectStateChanged StateChanged;
 
-		public RemoteObject(string name, string className, string path, ulong internalId, ulong parentInternalId)
+		public RemoteFolder Parent { get; }
+
+		private RemoteObject(string name, string className, string path, ulong internalId, RemoteFolder parent, bool allowNullParent)
 		{
 			if (string.IsNullOrWhiteSpace(name))
 				throw new ArgumentNullException(nameof(name));
@@ -76,7 +79,27 @@ namespace SharpTerminal
 			Path = path;
 
 			InternalId = internalId;
-			ParentInternalId = parentInternalId;
+			ParentInternalId = allowNullParent ? 0 : parent.InternalId;
+			Parent = parent;
+		}
+
+		public RemoteObject(string name, string className, string path, ulong internalId, RemoteFolder parent):
+			this(name, className, path, internalId, parent, false)
+		{
+			//empty
+		}
+
+		/// <summary>
+		/// To be used only by roots... HACK
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="className"></param>
+		/// <param name="path"></param>
+		/// <param name="internalId"></param>
+		protected RemoteObject(string name, string className, string path, ulong internalId):
+			this(name, className, path, internalId, null, true)
+		{
+			//empty
 		}
 
 		protected void FireStateChangedEvent()
@@ -129,10 +152,38 @@ namespace SharpTerminal
 		public event RemoteFolderChildEvent ChildAdded;
 		public event RemoteFolderChildEvent ChildRemoved;
 
-		public RemoteFolder(string name, string className, string path, ulong internalId, ulong parentInternalId) :
-			base(name, className, path, internalId, parentInternalId)
+		public RemoteFolder(string name, string className, string path, ulong internalId, RemoteFolder parent) :
+			base(name, className, path, internalId, parent)
 		{
 			//empty
+		}
+
+		/// <summary>
+		/// To be used only by roots... HACK
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="className"></param>
+		/// <param name="path"></param>
+		/// <param name="internalId"></param>
+		protected RemoteFolder(string name, string className, string path, ulong internalId) :
+			base(name, className, path, internalId)
+		{
+			//empty
+		}
+
+		protected RemoteObject LoadChild(JsonValue def)
+		{
+			var obj = RemoteObjectManager.LoadObject(def, this);
+			mChildren.Add(obj.Name, obj);
+
+			return obj;
+		}
+
+		public RemoteObject TryFindChildByName(string name)
+		{			
+			mChildren.TryGetValue(name, out RemoteObject remoteObject);
+
+			return remoteObject;
 		}
 
 		public async Task<IEnumerable<RemoteObject>> LoadChildrenAsync(RequestManager requestManager)
@@ -145,12 +196,11 @@ namespace SharpTerminal
 				if (children.Count == 0)
 					return null;
 
-				mChildren = new Dictionary<string, RemoteObject>();
+				mChildren = new();
 
 				foreach (var item in children)
-				{                    
-					var obj = RemoteObjectManager.LoadObject(item);
-					mChildren.Add(obj.Name, obj);
+				{
+					this.LoadChild(item);
 				}
 			}
 
@@ -181,7 +231,7 @@ namespace SharpTerminal
 				return;
 			}
 
-			var obj = RemoteObjectManager.LoadObject(data);
+			var obj = RemoteObjectManager.LoadObject(data, this);
 			mChildren.Add(obj.Name, obj);
 
 			if (ChildAdded != null)
@@ -201,8 +251,8 @@ namespace SharpTerminal
 		private Task<RemoteObject> mTargetLoaderTask;
 		private RemoteObject mTarget;
 
-		public RemoteShortcut(string name, string className, string path, ulong internalId, ulong parentInternalId, string target):
-			base(name, className, path, internalId, parentInternalId)
+		public RemoteShortcut(string name, string className, string path, ulong internalId, string target, RemoteFolder parent):
+			base(name, className, path, internalId, parent)
 		{
 			if (string.IsNullOrWhiteSpace(target))
 				throw new ArgumentNullException(nameof(target));
@@ -398,85 +448,93 @@ namespace SharpTerminal
 			}                       
 		}
 
-		private static RemoteObject RegisterObject(JsonValue objectDef)
+		private static ulong GetParentInternalId(JsonValue objectDef)
+		{
+			return objectDef.ContainsKey("parentInternalId") ? (ulong)objectDef["parentInternalId"] : 0;
+		}
+
+		private static RemoteObject CreateObject(JsonValue objectDef, RemoteFolder parent)
 		{
 			ulong id = objectDef["internalId"];
 			string className = objectDef["className"];
 			string name = objectDef["name"];
 			string path = objectDef["path"];
-			ulong parentInternalId = objectDef.ContainsKey("parentInternalId") ? (ulong)objectDef["parentInternalId"] : 0;
+			ulong parentInternalId = GetParentInternalId(objectDef);
+
+			if ((className != "dcclite::Broker") && (parentInternalId != parent.InternalId))
+				throw new ArgumentException("Invalid parent id for " + name + ", provided parent: " + parent.Name);
 
 			RemoteObject obj;
 			
 			switch (className)
 			{
 				case "dcclite::Broker":
-					obj = new RemoteRoot(name, className, path, id, parentInternalId);
+					obj = new RemoteRoot(name, className, path, id);
 					break;
 
 				case "dcclite::Shortcut":
-					obj = new RemoteShortcut(name, className, path, id, parentInternalId, objectDef["target"]);
+					obj = new RemoteShortcut(name, className, path, id, objectDef["target"], parent);
 					break;
 
 				case "Decoder":
 				case "TurntableAutoInverterDecoder":
-					obj = new RemoteDecoder(name, className, path, id, parentInternalId, objectDef);
+					obj = new RemoteDecoder(name, className, path, id, objectDef, parent);
 					break;
 
 				case "Dispatcher":
-					obj = new Dispatcher.RemoteDispatcher(name, className, path, id, parentInternalId);
+					obj = new Dispatcher.RemoteDispatcher(name, className, path, id, parent);
 					break;
 
 				case "Dispatcher::Section":
 				case "Dispatcher::TSection":
-					obj = new Dispatcher.RemoteSection(name, className, path, id, parentInternalId, objectDef);
+					obj = new Dispatcher.RemoteSection(name, className, path, id, objectDef, parent);
 					break;
 
 				case "Location":
-					obj = new RemoteLocation(name, className, path, id, parentInternalId, objectDef);
+					obj = new RemoteLocation(name, className, path, id, objectDef, parent);
 					break;
 
 				case "LocationManager":
-					obj = new RemoteLocationManager(name, className, path, id, parentInternalId, objectDef);
+					obj = new RemoteLocationManager(name, className, path, id, objectDef, parent);
 					break;
 
 				case "LoconetService":
-					obj = new RemoteLoconetService(name, className, path, id, parentInternalId, objectDef);
+					obj = new RemoteLoconetService(name, className, path, id, objectDef, parent);
 					break;
 
 				case "NetworkDevice":
-					obj = new RemoteDevice(name, className, path, id, parentInternalId, objectDef);
+					obj = new RemoteDevice(name, className, path, id, objectDef, parent);
 					break;
 
 				case "SensorDecoder":
-					obj = new RemoteSensorDecoder(name, className, path, id, parentInternalId, objectDef);
+					obj = new RemoteSensorDecoder(name, className, path, id, objectDef, parent);
 					break;
 
 				case "VirtualSensorDecoder":
-					obj = new VirtualSensorDecoder(name, className, path, id, parentInternalId, objectDef);
+					obj = new VirtualSensorDecoder(name, className, path, id, objectDef, parent);
 					break;
 
 				case "ServoTurnoutDecoder":
-					obj = new RemoteServoTurnoutDecoder(name, className, path, id, parentInternalId, objectDef);
+					obj = new RemoteServoTurnoutDecoder(name, className, path, id, objectDef, parent);
 					break;
 
 				case "SignalDecoder":
-					obj = new RemoteSignalDecoder(name, className, path, id, parentInternalId, objectDef);
+					obj = new RemoteSignalDecoder(name, className, path, id, objectDef, parent);
 					break;
 
 				case "SimpleOutputDecoder":
 				case "OutputDecoder":
 				case "QuadInverterDecoder":
-					obj = new RemoteOutputDecoder(name, className, path, id, parentInternalId, objectDef);
+					obj = new RemoteOutputDecoder(name, className, path, id, objectDef, parent);
 					break;                
 
 				case "TurnoutDecoder":
 				case "VirtualTurnoutDecoder":
-					obj = new RemoteTurnoutDecoder(name, className, path, id, parentInternalId, objectDef);
+					obj = new RemoteTurnoutDecoder(name, className, path, id, objectDef, parent);
 					break;                                
 
 				default:
-					obj = objectDef["isFolder"] ? new RemoteFolder(name, className, path, id, parentInternalId) : new RemoteObject(name, className, path, id, parentInternalId);                                   
+					obj = objectDef["isFolder"] ? new RemoteFolder(name, className, path, id, parent) : new RemoteObject(name, className, path, id, parent);
 					break;
 			}
 
@@ -486,9 +544,29 @@ namespace SharpTerminal
 			return obj;
 		}
 
+		public static async Task<RemoteRoot> LoadRoot()
+		{
+			lock (gObjects)
+			{
+				if (gObjects.Count > 0)
+					throw new InvalidOperationException("[RemoteObjectManager::LoadRoot] Root already loaded");
+			}
+
+			var currentTask = mRequestManager.RequestAsync(new string[] { "Get-Item", "/" });
+			var response = await currentTask;
+			var responseObj = response["item"];
+
+			lock (gObjects)
+			{
+				var root = (RemoteRoot)CreateObject(responseObj, null);
+
+				return root;
+			}
+		}
+
 		internal static async Task<RemoteObject> GetRemoteObjectAsync(string path)
 		{
-			Task<JsonValue> currentTask;
+			Task<JsonValue> currentTask;			
 
 			lock (gObjects)
 			{
@@ -509,8 +587,34 @@ namespace SharpTerminal
 
 			var responseObj = response["item"];
 
+			var parentId = GetParentInternalId(responseObj);
+			RemoteFolder parentFolder = null;
 			lock(gObjects)
 			{
+				if (gObjects.TryGetValue(parentId, out RemoteObject parent))
+					parentFolder = (RemoteFolder)parent;
+			}
+
+			//recursive... weeeeee
+			if(parentFolder ==  null)
+			{
+				path = path.Trim();
+
+				//got load parent
+				var index = path.LastIndexOf("/");
+				if (index < 0)
+					throw new ArgumentException("[GetRemoteObjectAsync] Cannot find parent on suplied path: " + path + "\nAre you trying to load root using this???");
+
+				//remove current object name
+				var parentPath = path.Substring(0, index);
+				if (parentPath == "/")
+					throw new ArgumentException("[GetRemoteObjectAsync] Parent load resulted on root, did you forget to call LoadRoot? Path: " + path);
+
+				parentFolder = (RemoteFolder)await GetRemoteObjectAsync(parentPath);
+			}
+			
+			lock (gObjects)
+			{				
 				gActiveTasks.Remove(path);
 
 				//Perhaps other thread registered it?
@@ -521,11 +625,11 @@ namespace SharpTerminal
 					return obj;
 				}                
 
-				return RegisterObject(responseObj);
+				return CreateObject(responseObj, parentFolder);
 			}            
 		}
 
-		internal static RemoteObject LoadObject(JsonValue objectDef)
+		internal static RemoteObject LoadObject(JsonValue objectDef, RemoteFolder parent)
 		{
 			ulong id = objectDef["internalId"];
 
@@ -539,7 +643,7 @@ namespace SharpTerminal
 				{
 					//we may have a Task in progress loading the same object, but we ignore this case
 					//The task data will be handled later or discarded
-					obj = RegisterObject(objectDef);
+					obj = CreateObject(objectDef, parent);
 				}
 
 				return obj;
