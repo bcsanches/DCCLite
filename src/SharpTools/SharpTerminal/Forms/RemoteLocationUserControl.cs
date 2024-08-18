@@ -10,6 +10,7 @@
 
 using System;
 using System.Drawing;
+using System.Linq;
 using System.Runtime.Versioning;
 using System.Windows.Forms;
 
@@ -17,54 +18,69 @@ namespace SharpTerminal
 {
 	[SupportedOSPlatform("windows")]
 	public partial class RemoteLocationUserControl : UserControl
-    {
-        private int mBeginAddress;
-        private int mEndAddress;
-        private string[] mDecodersPath;
+	{
+		private int mBeginAddress;
+		private int mEndAddress;
+		private string[] mDecodersPath;
 
-        public RemoteLocationUserControl()
-        {
-            InitializeComponent();
-        }
+		public RemoteLocationUserControl()
+		{
+			InitializeComponent();
+		}
 
-        public RemoteLocationUserControl(String name, int beginAddress, int endAddress, string[] decodersPath) :
-            this()
-        {
-            mBeginAddress = beginAddress;
-            mEndAddress = endAddress;
-            mDecodersPath = decodersPath;
+		public RemoteLocationUserControl(String name, int beginAddress, int endAddress, string[] decodersPath) :
+			this()
+		{
+			mBeginAddress = beginAddress;
+			mEndAddress = endAddress;
+			mDecodersPath = decodersPath;
 
-			m_lbTitle.Text += " " + name;
+			m_lbTitle.Text += " " + name;			
 		}
 
 		protected async override void OnLoad(EventArgs e)
 		{
 			base.OnLoad(e);		
 
-		    int num = mEndAddress - mBeginAddress;
-            if (num == 0)
-                return;
+			int num = (mEndAddress - mBeginAddress) - 1;
+			if (num <= 0)
+				return;			
 
-            m_gridMain.Rows.Add(num);
+			this.DoubleBuffered = true;			
+			m_gridMain.SuspendLayout();
+			m_gridMain.Rows.Add(num);
 
-            for(int i = mBeginAddress, pos = 0;i < mEndAddress; ++i, ++pos)
-            {
-                var row = m_gridMain.Rows[pos];
+			for (int i = mBeginAddress, pos = 0; i < mEndAddress; ++i, ++pos)
+			{
+				var row = m_gridMain.Rows[pos];
 
-                row.Cells[0].Value = i;
+				row.Cells[0].Value = i;
 
-                if ((mDecodersPath == null) || (mDecodersPath[pos] == null))
-                    continue;
+				if ((mDecodersPath == null) || (mDecodersPath[pos] == null))
+					continue;
 
-                var decoder = (RemoteDecoder) await RemoteObjectManager.GetRemoteObjectAsync(mDecodersPath[pos]);
+				row.Tag = RemoteObjectManager.GetRemoteObjectAsync(mDecodersPath[pos]);
+			}
 
-                row.Cells[1].Value = decoder.ClassName;
-                row.Cells[2].Value = decoder.Name;
-                row.Cells[3].Value = decoder.DeviceName;
+			for (int i = mBeginAddress, pos = 0; i < mEndAddress; ++i, ++pos)
+			{
+				var row = m_gridMain.Rows[pos];
 
-                if (decoder.Broken)
-                    row.DefaultCellStyle.BackColor = Color.Red;
-            }            
-        }
-    }
+				var task = (System.Threading.Tasks.Task<RemoteObject>)row.Tag;
+				if (task == null)
+					continue;
+
+				var decoder = (RemoteDecoder) await task;
+
+				row.Cells[1].Value = decoder.ClassName;
+				row.Cells[2].Value = decoder.Name;
+				row.Cells[3].Value = decoder.DeviceName;
+
+				if (decoder.Broken)
+					row.DefaultCellStyle.BackColor = Color.Red;
+			}
+			
+			m_gridMain.ResumeLayout();			
+		}
+	}
 }
