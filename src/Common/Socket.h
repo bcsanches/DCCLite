@@ -146,7 +146,15 @@ namespace dcclite
 				WOULD_BLOCK,
 				DISCONNECTED,
 				CONNRESET,
-				INTERRUPTED		//Should only happens when the socket is closed during a blocking call
+				INTERRUPTED,		//Should only happens when the socket is closed during a blocking call				
+
+				/**
+				* Happens when a socket is closed and a socket function is called, for example:
+				*	- A thread listenning a socket and the main thread closes the socket while the thread is doing something else
+				*		when the thread reachs a socket function, like calling recv with a invalid socket handle, the function returns a 
+				*		no socket error.
+				*/
+				NO_SOCKET			
 			};
 
 			enum class Type

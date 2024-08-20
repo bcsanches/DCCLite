@@ -25,8 +25,8 @@ namespace dcclite::broker
 	{
 		public:
 			explicit ObjectPool(uint32_t size):
-				m_u32Size{size},
-				m_upPool{new std::byte[size]}
+				m_u32Size{ size },
+				m_upPool{ new std::byte[size] }
 			{
 				this->Reset();
 			}
@@ -42,7 +42,7 @@ namespace dcclite::broker
 				}
 
 #ifdef DEBUG
-				++m_uAllocCount;				
+				++m_uAllocCount;
 #endif
 
 				auto *p = m_pBase;
@@ -57,7 +57,7 @@ namespace dcclite::broker
 				m_pBase = m_upPool.get();
 
 #ifdef DEBUG
-				m_uAllocCount = 0;				
+				m_uAllocCount = 0;
 #endif
 			}
 
@@ -77,7 +77,7 @@ namespace dcclite::broker
 			uint32_t	m_uUsedMem = 0;
 #endif
 
-	};	
+	};
 
 	namespace EventHub
 	{		
@@ -179,6 +179,8 @@ namespace dcclite::broker
 
 				~EventQueue()
 				{
+					//dcclite::Log::Debug("[EventQueue::~EventQueue] Goodbye");
+
 					this->Clear();
 				}
 
@@ -212,20 +214,32 @@ namespace dcclite::broker
 		};
 
 
-		//typedef std::list<std::unique_ptr<IEvent>> EventQueue_t;
+		/// <summary>
+		/// The only purpose of this structure is to make sure we a have a chance to clear the queue before the pools are destroyed 
+		/// </summary>
+		struct EventHubData
+		{
+			EventQueue				m_lstEventQueue;
+			std::mutex				m_mtxEventQueueLock;
+			std::condition_variable	m_clQueueMonitor;
 
-		static EventQueue				g_lstEventQueue;
-		static std::mutex				g_mtxEventQueueLock;
-		static std::condition_variable	g_clQueueMonitor;
+			ObjectPool				m_arPools[2]{ ObjectPool{4096 * 8}, ObjectPool{4096 * 8} };
 
-		static ObjectPool				g_arPools[2]{ ObjectPool{4096 * 8}, ObjectPool{4096 * 8} };		
+			int						m_iActivePool = 0;
 
-		static int						g_iActivePool = 0;
+			~EventHubData()
+			{
+				//clear the queue before the pools are destroyed
+				m_lstEventQueue = EventQueue{};
+			}
+		};	
+
+		static EventHubData g_sData;
 
 #ifdef DCCLITE_EVENT_HUB_INTERNAL_POOL
 		void *IEvent::operator new(size_t size)
 		{			
-			return g_arPools[g_iActivePool].Alloc(size);
+			return g_sData.m_arPools[g_sData.m_iActivePool].Alloc(size);
 		}
 
 		void IEvent::operator delete(void *p)
@@ -239,21 +253,21 @@ namespace dcclite::broker
 #ifdef DCCLITE_EVENT_HUB_INTERNAL_POOL
 			void Lock()
 			{
-				g_mtxEventQueueLock.lock();
+				g_sData.m_mtxEventQueueLock.lock();
 			}
 
 			void Unlock()
 			{
-				g_mtxEventQueueLock.unlock();
+				g_sData.m_mtxEventQueueLock.unlock();
 			}
 
 			void DoPostEvent(std::unique_ptr<IEvent> event)
 			{				
-				g_lstEventQueue.PushBack(std::move(event));
+				g_sData.m_lstEventQueue.PushBack(std::move(event));
 
-				g_mtxEventQueueLock.unlock();
+				g_sData.m_mtxEventQueueLock.unlock();
 
-				g_clQueueMonitor.notify_one();
+				g_sData.m_clQueueMonitor.notify_one();
 			}
 #else
 
@@ -277,23 +291,23 @@ namespace dcclite::broker
 			EventQueue eventQueue;			
 
 			{
-				std::unique_lock<std::mutex> guard{ g_mtxEventQueueLock };
+				std::unique_lock<std::mutex> guard{ g_sData.m_mtxEventQueueLock };
 
-				auto listLambda = [] { return !g_lstEventQueue.IsEmpty(); };
+				auto listLambda = [] { return !g_sData.m_lstEventQueue.IsEmpty(); };
 				if (timeoutTime)
 				{
-					g_clQueueMonitor.wait_until<dcclite::Clock::DefaultClock_t>(guard, timeoutTime.value(), listLambda);
+					g_sData.m_clQueueMonitor.wait_until<dcclite::Clock::DefaultClock_t>(guard, timeoutTime.value(), listLambda);
 				}
 				else
 				{
-					g_clQueueMonitor.wait(guard, listLambda);
+					g_sData.m_clQueueMonitor.wait(guard, listLambda);
 				}									
 								
-				eventQueue = std::move(g_lstEventQueue);				
+				eventQueue = std::move(g_sData.m_lstEventQueue);
 				
 #ifdef DCCLITE_EVENT_HUB_INTERNAL_POOL
-				g_iActivePool = g_iActivePool ? 0 : 1;
-				g_arPools[g_iActivePool].Reset();
+				g_sData.m_iActivePool = g_sData.m_iActivePool ? 0 : 1;
+				g_sData.m_arPools[g_sData.m_iActivePool].Reset();
 #endif
 			}
 
@@ -304,9 +318,9 @@ namespace dcclite::broker
 
 		void CancelEvents(const IEventTarget &target)
 		{
-			std::unique_lock<std::mutex> guard{ g_mtxEventQueueLock };
+			std::unique_lock<std::mutex> guard{ g_sData.m_mtxEventQueueLock };
 
-			g_lstEventQueue.RemoveTarget(target);			
+			g_sData.m_lstEventQueue.RemoveTarget(target);
 		}
-	}
+	}	
 }

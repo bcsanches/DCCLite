@@ -70,6 +70,7 @@ namespace SharpTerminal
 				if (task == null)
 					continue;
 
+				row.Tag = null;
 				var decoder = (RemoteDecoder) await task;
 
 				row.Cells[1].Value = decoder.ClassName;

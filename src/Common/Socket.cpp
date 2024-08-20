@@ -505,9 +505,7 @@ namespace dcclite
 
 
 	std::tuple<Socket::Status, int> Socket::Receive(NetworkAddress &sender, void *data, const int size, const bool truncate)
-	{	
-		assert(m_hHandle != NULL_SOCKET);
-
+	{
 		sockaddr_in from;
 		socklen_t fromLength = sizeof(from);
 
@@ -546,6 +544,9 @@ namespace dcclite
 
 				case WSAECONNRESET:
 					return std::make_tuple(Status::CONNRESET, 0);
+
+				case WSAENOTSOCK:
+					return std::make_tuple(Status::NO_SOCKET, 0);
 				
 				default:
 					throw std::runtime_error(fmt::format("[Socket::Receive] Failed to receive: {}", dcclite::GetSystemErrorMessage(result)));

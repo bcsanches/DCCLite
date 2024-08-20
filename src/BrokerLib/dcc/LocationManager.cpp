@@ -79,7 +79,7 @@ namespace dcclite::broker
 					continue;
 
 				auto obj = outputArray.AddObject();
-				obj.AddIntValue("index", i);
+				obj.AddIntValue("index", (int)i);
 				obj.AddStringValue("path", dec->GetPath().string());
 			}
 		}
