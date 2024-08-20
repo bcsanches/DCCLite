@@ -13,6 +13,7 @@
 //may god forgive us for putting this on a header...
 #include <windows.h>
 
+#include <string>
 #include <string_view>
 
 namespace dcclite
