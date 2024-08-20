@@ -9,6 +9,7 @@
 // defined by the Mozilla Public License, v. 2.0.
 
 
+#include <atomic>
 #include <chrono>
 
 #include <Clock.h>
@@ -27,7 +28,7 @@
 
 constexpr auto BUILD_NUM = DCCLITE_VERSION;
 
-static bool g_fExitRequested = false;
+static std::atomic_flag g_fExitRequested;
 
 class NullEventTarget: public dcclite::broker::EventHub::IEventTarget
 {
@@ -52,7 +53,7 @@ class QuitEvent: public dcclite::broker::EventHub::IEvent
 
 static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 {
-	g_fExitRequested = true;
+	g_fExitRequested.test_and_set(std::memory_order_relaxed);	
 
 	static NullEventTarget g_NullTarget;
 
@@ -93,7 +94,7 @@ int main(int argc, char **argv)
 		unsigned frameCount = 0;
 		auto startTime = dcclite::Clock::DefaultClock_t::now();
 		
-		while (!g_fExitRequested)
+		while (!g_fExitRequested.test(std::memory_order_relaxed))
 		{			
 			auto now = dcclite::Clock::DefaultClock_t::now();
 
