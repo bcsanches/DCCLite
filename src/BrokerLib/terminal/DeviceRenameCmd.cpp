@@ -102,10 +102,25 @@ namespace dcclite::broker
 		auto networkDevice = dynamic_cast<NetworkDevice *>(item);
 		if (!networkDevice)
 		{
-			throw TerminalCmdException(fmt::format("Rename operation only supported by NetworkDevice", this->GetName()), id);
+			throw TerminalCmdException(fmt::format("Rename operation only supported by NetworkDevice, {} is not a network device", networkDevice->GetName()), id);
 		}	
 
-		return std::make_unique<DeviceRenameFiber>(id, context, *networkDevice, RName{paramsIt->value[1].GetString()});
+		const RName newName{ paramsIt->value[1].GetString() };
+		const auto otherItem = networkDevice->GetParent()->TryGetChild(newName);
+		if (otherItem)
+		{
+			const auto otherDevice = dynamic_cast<NetworkDevice *>(otherItem);
+			if (otherDevice && otherDevice->IsConnectionStable())
+			{
+				throw TerminalCmdException(fmt::format("Cannot set name to a connected device: {}", newName), id);
+			}
+			else if (!otherDevice)
+			{
+				throw TerminalCmdException(fmt::format("Cannot set name to a existing object: {}", newName), id);
+			}
+		}
+
+		return std::make_unique<DeviceRenameFiber>(id, context, *networkDevice, newName);
 	}	
 }
 

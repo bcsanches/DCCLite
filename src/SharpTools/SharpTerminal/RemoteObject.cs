@@ -152,6 +152,8 @@ namespace SharpTerminal
 		public event RemoteFolderChildEvent ChildAdded;
 		public event RemoteFolderChildEvent ChildRemoved;
 
+		private bool mChildLoaded = false;
+
 		public RemoteFolder(string name, string className, string path, ulong internalId, RemoteFolder parent) :
 			base(name, className, path, internalId, parent)
 		{
@@ -188,10 +190,12 @@ namespace SharpTerminal
 
 		public async Task<IEnumerable<RemoteObject>> LoadChildrenAsync(RequestManager requestManager)
 		{            
-			if (mChildren == null)
+			if (!mChildLoaded)
 			{
 				var response = await requestManager.RequestAsync(new string[] { "Get-ChildItem", this.Path });
 				var children = (JsonArray)response["children"];
+
+				mChildLoaded = true;
 
 				if (children.Count == 0)
 					return null;
@@ -205,6 +209,14 @@ namespace SharpTerminal
 			}
 
 			return mChildren.Select(x => x.Value);
+		}
+
+		public RemoteObject[] GetChildren()
+		{
+			if (!mChildLoaded)
+				throw new InvalidOperationException("Load children first");
+
+			return mChildren != null ? mChildren.Values.ToArray() : null;
 		}
 		
 		internal void OnChildDestroyed(RemoteObject child)

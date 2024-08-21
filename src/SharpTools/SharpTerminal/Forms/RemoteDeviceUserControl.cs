@@ -11,6 +11,7 @@
 using SharpTerminal.Forms;
 using System;
 using System.Drawing;
+using System.Linq;
 using System.Runtime.Versioning;
 using System.Windows.Forms;
 
@@ -75,8 +76,12 @@ namespace SharpTerminal
 		}
 
 		private async void m_btnRename_Click(object sender, EventArgs e)
-		{			
-			using var form = new RemoteDeviceRenameForm();
+		{
+			var parent = mRemoteDevice.Parent;
+
+			var possibleNames = parent.GetChildren().Where(x => (x != mRemoteDevice) && ((x is RemoteDevice device) && (device.ConnectionStatus == RemoteDevice.Status.OFFLINE) && device.Registered)).Select(x => x.Name);
+
+			using var form = new RemoteDeviceRenameForm(possibleNames);
 			form.ShowDialog();
 
 			if (form.DialogResult == DialogResult.Cancel)
@@ -85,7 +90,7 @@ namespace SharpTerminal
 			m_btnRename.Enabled = false;
 			try
 			{
-				await mConsole.RequestAsync(["Rename-Item", mRemoteDevice.Path, "newName"]);
+				await mConsole.RequestAsync(["Rename-Item", mRemoteDevice.Path, form.SelectedName]);
 			}
 			catch (Exception ex)
 			{
