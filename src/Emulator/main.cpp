@@ -127,7 +127,7 @@ int main(int, char **)
 
 	TerminalService terminalService;		
 
-	ArduinoLib::SetSerialInput("/cfg NoName;sv;");	
+	//ArduinoLib::SetSerialInput("/cfg NoName;sv;");	
 
 	dcclite::Clock clock;
 

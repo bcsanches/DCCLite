@@ -30,6 +30,7 @@
 #include "../sys/ServiceFactory.h"
 #include "../sys/ZeroConfSystem.h"
 
+#include "DeviceClearEEPromCmd.h"
 #include "DeviceRenameCmd.h"
 #include "ServiceCmdBase.h"
 #include "ServoProgrammerCmds.h"
@@ -790,6 +791,10 @@ namespace dcclite::broker
 
 		{
 			cmdHost->AddCmd(std::make_unique<ResetItemCmd>());
+		}
+
+		{
+			cmdHost->AddCmd(std::make_unique<ClearEEPromCmd>());
 		}
 
 		{

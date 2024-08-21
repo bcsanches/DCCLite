@@ -426,6 +426,124 @@ namespace dcclite::broker::detail
 
 	/////////////////////////////////////////////////////////////////////////////
 	//
+	// ClearEEPromTask
+	//
+	/////////////////////////////////////////////////////////////////////////////
+
+	/**
+	* ClearEEPromTask Packet format
+
+
+	  0  1  2  3  4  5  6  7
+	+--+--+--+--+--+--+--+--+
+	|        NOTHING        |
+	+--+--+--+--+--+--+--+--+	
+
+
+	Timesequence:
+		1 - Send packet with task id
+		2 - Awaits confirmation packet		
+		*/
+
+	class ClearEEPromTask: public NetworkTaskImpl
+	{
+		public:
+			ClearEEPromTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, IObserver *observer):
+				NetworkTaskImpl{ owner, taskId, observer },
+				m_clThinker{ "ClearEEPromTask::Thinker", THINKER_MF_LAMBDA(OnThink) }			
+			{
+				if (!m_rclOwner.IsConnectionStable())
+					throw std::runtime_error(fmt::format("[DeviceRenameTask] Cannot start a clear EEPROM task without a valid connection"));
+					
+				//start running
+				m_clThinker.Schedule({});
+			}
+
+			void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) override;
+
+			void Abort() noexcept override;
+			void Stop() noexcept override;
+
+		private:
+			void OnThink(const dcclite::Clock::TimePoint_t time);
+
+		private:
+			Thinker	m_clThinker;			
+
+			bool m_fWaitingAck = true;
+
+			int	m_iCount = 0;
+	};
+
+	void ClearEEPromTask::Abort() noexcept
+	{
+		this->MarkAbort();
+	}
+
+	void ClearEEPromTask::Stop() noexcept
+	{
+		if (!this->HasFinished())
+			this->Abort();
+	}
+
+	void ClearEEPromTask::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time)
+	{
+		if (!m_fWaitingAck)
+		{
+			//ignore... late packet...
+		}
+
+		const auto ack = packet.ReadByte();
+		if (ack == 1)
+		{
+			m_fWaitingAck = false;
+
+			auto &owner = m_rclOwner;
+
+			this->MarkFinished();				
+		}
+		else
+		{
+			this->MarkFailed(fmt::format("[ClearEEPromTask::OnPacket] Got invalid packet {}", ack));
+		}
+	}
+
+	void ClearEEPromTask::OnThink(const dcclite::Clock::TimePoint_t time)
+	{
+		assert(!this->HasFailed());
+		assert(!this->HasFinished());
+
+		if (!m_fWaitingAck)
+		{
+			//ignore... should not be here...
+			return;
+		}
+
+		if (m_iCount == 10)
+		{
+			Log::Error("[ClearEEPromTask::OnThink]: Too many retries, node does not ACK to clear EEPROM");
+
+			//too much retries... abort
+			this->MarkFailed("[ClearEEPromTask::OnThink] Too many retries, node does not ACK");
+
+			//Jim seems to be dead...
+			return;
+		}
+
+		Log::Trace("[ClearEEPromTask::OnThink]: requesting clear EEPROM");
+
+		dcclite::Packet packet;
+
+		m_rclOwner.TaskServices_FillPacketHeader(packet, m_u32TaskId, NetworkTaskTypes::TASK_CLEAR_EEPROM);
+
+		m_rclOwner.TaskServices_SendPacket(packet);
+		m_clThinker.Schedule(time + 50ms);
+
+		++m_iCount;
+	}
+
+	/////////////////////////////////////////////////////////////////////////////
+	//
 	// ServoTurnoutProgrammerTask
 	//
 	/////////////////////////////////////////////////////////////////////////////
@@ -1092,5 +1210,10 @@ namespace dcclite::broker::detail
 	std::shared_ptr<NetworkTaskImpl> StartDeviceRenameTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, NetworkTask::IObserver *observer, RName newName)
 	{
 		return std::make_shared<DeviceRenameTask>(owner, taskId, observer, newName);
+	}
+
+	std::shared_ptr<NetworkTaskImpl> StartDeviceClearEEPromTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, NetworkTask::IObserver *observer)
+	{
+		return std::make_shared<ClearEEPromTask>(owner, taskId, observer);
 	}
 }

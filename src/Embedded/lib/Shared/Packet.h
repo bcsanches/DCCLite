@@ -46,7 +46,8 @@ namespace dcclite
 
 		TASK_DOWNLOAD_EEPROM,
 		TASK_SERVO_PROGRAMMER,
-		TASK_RENAME_DEVICE
+		TASK_RENAME_DEVICE,
+		TASK_CLEAR_EEPROM
 	};
 
 	enum class TaskRenameMsgTypes: uint8_t

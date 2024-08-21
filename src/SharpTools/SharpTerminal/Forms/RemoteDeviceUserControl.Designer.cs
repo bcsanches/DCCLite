@@ -44,6 +44,7 @@ namespace SharpTerminal
 			Column5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			m_lbTitle = new System.Windows.Forms.Label();
 			m_btnRename = new System.Windows.Forms.Button();
+			m_btnClear = new System.Windows.Forms.Button();
 			groupBox1 = new System.Windows.Forms.GroupBox();
 			groupBox1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)m_gridMain).BeginInit();
@@ -133,14 +134,26 @@ namespace SharpTerminal
 			m_btnRename.Name = "m_btnRename";
 			m_btnRename.Size = new System.Drawing.Size(75, 23);
 			m_btnRename.TabIndex = 3;
-			m_btnRename.Text = "Rename";
+			m_btnRename.Text = "Rename...";
 			m_btnRename.UseVisualStyleBackColor = true;
 			m_btnRename.Click += m_btnRename_Click;
+			// 
+			// m_btnClear
+			// 
+			m_btnClear.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+			m_btnClear.Location = new System.Drawing.Point(89, 323);
+			m_btnClear.Name = "m_btnClear";
+			m_btnClear.Size = new System.Drawing.Size(97, 23);
+			m_btnClear.TabIndex = 4;
+			m_btnClear.Text = "Clear EEPROM";
+			m_btnClear.UseVisualStyleBackColor = true;
+			m_btnClear.Click += m_btnClear_Click;
 			// 
 			// RemoteDeviceUserControl
 			// 
 			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			Controls.Add(m_btnClear);
 			Controls.Add(m_btnRename);
 			Controls.Add(groupBox1);
 			Controls.Add(m_lbTitle);
@@ -163,5 +176,6 @@ namespace SharpTerminal
         private System.Windows.Forms.DataGridViewTextBoxColumn Column3;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column5;
 		private System.Windows.Forms.Button m_btnRename;
+		private System.Windows.Forms.Button m_btnClear;
 	}
 }

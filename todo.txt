@@ -2,11 +2,6 @@ DCCLite
 -------
 - update route section to know next section and avoid re-ocupying the block
 
-- SharpDude: add support to configure device name
-- SharpDude: add support to reset a device
-- Auto config device name
-	- SharpTerminal will show unconfigured devices and allow to configure its name
-
 - remove deprecate SHA1 usage on Linux
 
 - Thinker: use RName instead of stringview

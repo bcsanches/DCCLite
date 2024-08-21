@@ -695,6 +695,18 @@ static void RenameTaskHandler(dcclite::Packet &packet)
 	}
 }
 
+static void ClearEEPromTaskHandler(dcclite::Packet &packet)
+{
+	const uint32_t taskId = packet.Read<uint32_t>();
+
+	Storage::Clear();
+
+	//always send ACK
+	Session::detail::InitTaskPacket(packet, taskId);
+	packet.Write8(1);
+	NetUdp::SendPacket(packet.GetData(), packet.GetSize(), g_u8ServerIp, g_uSrvPort);
+}
+
 static void OnTaskRequestPacket(dcclite::Packet &packet)
 {
 	using namespace dcclite;
@@ -713,6 +725,10 @@ static void OnTaskRequestPacket(dcclite::Packet &packet)
 
 		case NetworkTaskTypes::TASK_RENAME_DEVICE:
 			RenameTaskHandler(packet);
+			break;
+
+		case NetworkTaskTypes::TASK_CLEAR_EEPROM:
+			ClearEEPromTaskHandler(packet);
 			break;
 
 		default:

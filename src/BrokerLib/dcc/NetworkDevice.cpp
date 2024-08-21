@@ -993,4 +993,13 @@ namespace dcclite::broker
 
 		return task;
 	}
+
+	std::shared_ptr<NetworkTask> NetworkDevice::StartDeviceClearEEPromTask(NetworkTask::IObserver *observer)
+	{
+		auto task = detail::StartDeviceClearEEPromTask(*this, ++g_u32TaskId, observer);
+
+		m_lstTasks.push_back(task);
+
+		return task;
+	}
 }

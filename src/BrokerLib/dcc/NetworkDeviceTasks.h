@@ -230,5 +230,11 @@ namespace dcclite::broker
 			NetworkTask::IObserver *observer,
 			RName newName
 		);
+
+		extern std::shared_ptr<NetworkTaskImpl> StartDeviceClearEEPromTask(
+			INetworkDevice_TaskServices &owner, 
+			const uint32_t taskId, 
+			NetworkTask::IObserver *observer
+		);
 	}	
 }

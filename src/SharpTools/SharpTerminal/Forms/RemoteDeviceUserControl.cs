@@ -97,7 +97,24 @@ namespace SharpTerminal
 				MessageBox.Show("Error: " + ex.Message, "Error during operation", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 
-			m_btnRename.Enabled = true;			
+			m_btnRename.Enabled = true;
+		}
+
+		private async void m_btnClear_Click(object sender, EventArgs e)
+		{
+			if(MessageBox.Show("Are you sure? This cannot be undone!!", "Are you sure?", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
+				return;
+
+			try
+			{
+				await mConsole.RequestAsync(["Clear-EEProm", mRemoteDevice.Path]);
+
+				MessageBox.Show("Manually reset the device for changes to take effect", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show("Error: " + ex.Message, "Error during operation", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
 		}
 	}
 }
