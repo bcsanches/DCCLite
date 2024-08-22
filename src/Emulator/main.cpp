@@ -75,8 +75,6 @@ bool TerminalClient::Update()
 		//json data;
 
 		//stream >> data;
-
-
 	}
 
 	return true;

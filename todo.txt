@@ -58,3 +58,5 @@ To Explore
 		- config per locomotive
 		- handle throttle settings and simulates cosumption
 		- refueliing system
+- JMRI JSON server
+	- can be use to monitor wiThrottle commands

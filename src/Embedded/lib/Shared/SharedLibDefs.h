@@ -19,7 +19,7 @@
 #endif
 
 #ifndef DCCLITE_VERSION
-#define DCCLITE_VERSION "0.8.1"
+#define DCCLITE_VERSION "0.9.0"
 #endif
 
 namespace dcclite

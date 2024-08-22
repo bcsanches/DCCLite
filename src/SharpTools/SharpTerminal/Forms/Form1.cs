@@ -8,6 +8,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
+using SharpTerminal.Forms;
 using System;
 using System.Runtime.Versioning;
 using System.Windows.Forms;
@@ -16,39 +17,39 @@ namespace SharpTerminal
 {
 	[SupportedOSPlatform("windows")]
 	public partial class Console : Form
-    {
-        readonly IConsole mConsole;
+	{
+		readonly IConsole mConsole;
 
-        private RequestManager mRequestManager;
+		private RequestManager mRequestManager;
 
-        String  m_strParamServer;
-        ushort  m_uParamPort; 
+		String m_strParamServer;
+		ushort m_uParamPort;
 
-        public Console(String[] args = null)
-        {
-            InitializeComponent();
+		public Console(String[] args = null)
+		{
+			InitializeComponent();
 
-            if((args != null) && (args.Length== 2))
-            {
-                m_strParamServer = args[0];
-                m_uParamPort = ushort.Parse(args[1]);
-            }
+			if ((args != null) && (args.Length == 2))
+			{
+				m_strParamServer = args[0];
+				m_uParamPort = ushort.Parse(args[1]);
+			}
 
 			mConsole = ucConsole;
 
 			this.ConfigureRequestManager();
-        }
+		}
 
-        private void ConfigureRequestManager()
-        {
-            if (mRequestManager != null)
-            {
-                mRequestManager.ConnectionStateChanged -= mRequestManager_ConnectionStateChanged;
-            }
+		private void ConfigureRequestManager()
+		{
+			if (mRequestManager != null)
+			{
+				mRequestManager.ConnectionStateChanged -= mRequestManager_ConnectionStateChanged;
+			}
 
 			//Creates here, so it has a SyncContext
 			mRequestManager = new();
-			
+
 			ucConsole.RequestManager = mRequestManager;
 
 			ucTreeView.RequestManager = mRequestManager;
@@ -59,8 +60,8 @@ namespace SharpTerminal
 			RemoteObjectManager.SetRequestManager(mRequestManager);
 		}
 
-        private bool DisplayServerSelectionForm()
-        {
+		private bool DisplayServerSelectionForm()
+		{
 			using var dialog = new ServerSelectionForm(m_strParamServer, m_uParamPort);
 
 			if (dialog.ShowDialog() == DialogResult.Cancel)
@@ -72,101 +73,112 @@ namespace SharpTerminal
 			m_strParamServer = dialog.mSelectedService.mAddress.ToString();
 			m_uParamPort = dialog.mSelectedService.mPort;
 
-            return true;
+			return true;
 		}
 
-        private void DoAutoReconnect()
-        {
-            if (!DisplayServerSelectionForm())
-                return;
+		private void DoAutoReconnect()
+		{
+			if (!DisplayServerSelectionForm())
+				return;
 
-            mRequestManager.Dispose();
+			mRequestManager.Dispose();
 
-            this.ConfigureRequestManager();
+			this.ConfigureRequestManager();
 
 			SetStatus("Connecting");
 			mRequestManager.BeginConnect(m_strParamServer, m_uParamPort);
 		}
 
-        protected override void OnLoad(EventArgs e)
-        {
-            base.OnLoad(e);
+		protected override void OnLoad(EventArgs e)
+		{
+			base.OnLoad(e);
 
-            if((m_strParamServer == null) && !this.DisplayServerSelectionForm())
-			{                
-                this.Close();
+			if ((m_strParamServer == null) && !this.DisplayServerSelectionForm())
+			{
+				this.Close();
 
-                return;
-            }            
-            
-            mRequestManager.BeginConnect(m_strParamServer, m_uParamPort);
+				return;
+			}
 
-            SetStatus("Connecting");
-        }        
+			mRequestManager.BeginConnect(m_strParamServer, m_uParamPort);
 
-        protected override void OnFormClosed(FormClosedEventArgs e)
-        {
-            base.OnFormClosed(e);
+			SetStatus("Connecting");
+		}
 
-            //avoid deadlock on invoke, so we disable the listenning
-            mRequestManager.ConnectionStateChanged -= mRequestManager_ConnectionStateChanged;
-            ucConsole.RequestManager = null;
-            ucTreeView.RequestManager = null;
+		protected override void OnFormClosed(FormClosedEventArgs e)
+		{
+			base.OnFormClosed(e);
 
-            //close connections            
-            //mRequestManager.Stop();
-            //mRequestManager.Dispose();            
-        }        
+			//avoid deadlock on invoke, so we disable the listenning
+			mRequestManager.ConnectionStateChanged -= mRequestManager_ConnectionStateChanged;
+			ucConsole.RequestManager = null;
+			ucTreeView.RequestManager = null;
 
-        private void mRequestManager_ConnectionStateChanged(RequestManager sender, ConnectionStateEventArgs args)
-        {
-            this.OnConnectionStatusChanged(args.State, args.Exception);
-        }
+			//close connections            
+			//mRequestManager.Stop();
+			//mRequestManager.Dispose();            
+		}
 
-        private void OnConnectionStatusChanged(ConnectionState state, Exception ex)
-        {
-            if(this.InvokeRequired)
-            {
-                this.Invoke(new MethodInvoker(delegate { this.OnConnectionStatusChanged(state, ex); }));
-            }
-            else
-            {
-                switch(state)
-                {
-                    case ConnectionState.OK:
-                        var label = "Connected";
+		private void mRequestManager_ConnectionStateChanged(RequestManager sender, ConnectionStateEventArgs args)
+		{
+			this.OnConnectionStatusChanged(args.State, args.Exception);
+		}
 
-                        mConsole.Println(label);                        
-                        this.SetStatus(label);
-                        break;
+		private void OnConnectionStatusChanged(ConnectionState state, Exception ex)
+		{
+			if (this.InvokeRequired)
+			{
+				this.Invoke(new MethodInvoker(delegate { this.OnConnectionStatusChanged(state, ex); }));
+			}
+			else
+			{
+				switch (state)
+				{
+					case ConnectionState.OK:
+						var label = "Connected";
 
-                    case ConnectionState.DISCONNECTED:
-                        mConsole.Println("Disconnected " + (ex != null ? ex.Message : " by unknown reason"));
-                        this.SetStatus("Disconnected");
+						mConsole.Println(label);
+						this.SetStatus(label);
+						break;
+
+					case ConnectionState.DISCONNECTED:
+						mConsole.Println("Disconnected " + (ex != null ? ex.Message : " by unknown reason"));
+						this.SetStatus("Disconnected");
 
 						this.DoAutoReconnect();
 						break;
 
-                    case ConnectionState.ERROR:
+					case ConnectionState.ERROR:
 						mConsole.Println("Connection error " + (ex != null ? ex.Message : " by unknown reason"));
 						this.SetStatus("Connection error");
 
-                        this.DoAutoReconnect();
+						this.DoAutoReconnect();
 						break;
 
-                    default:
-                        mConsole.Println("Connection state changed to " + state + " " + (ex != null ? ex.Message : " by unknown reason"));
-                        this.SetStatus(state.ToString());						
+					default:
+						mConsole.Println("Connection state changed to " + state + " " + (ex != null ? ex.Message : " by unknown reason"));
+						this.SetStatus(state.ToString());
 						break;
-                }                
-            }
-        }
+				}
+			}
+		}
 
-        #region StatusBar
-        private void SetStatus(string text)
-        {
-            m_lbStatus.Text = text;
-        }
-        #endregion
-    }
+		#region StatusBar
+		private void SetStatus(string text)
+		{
+			m_lbStatus.Text = text;
+		}
+		#endregion
+
+		private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			this.Close();
+		}
+
+		private void AboutToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			using var form = new AboutBox1();
+			form.ShowDialog();
+		}
+	}
 }
