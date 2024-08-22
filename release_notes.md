@@ -1,9 +1,12 @@
-# Version ?????
+# Version ???
+
+# Version 0.9.0
 
 ## General Features
 
 - Added support to config flip interval on quad inverter
 - Lua sections now publish state to JMRI thought VirtualSensors
+- Added support to rename devices and better connection support for unconfigured devices
 
 ## Broker
 
