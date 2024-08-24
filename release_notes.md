@@ -1,5 +1,28 @@
 # Version ???
 
+## General Features
+
+- Sensor decoder activate delay and deactivate delay now support milliseconds
+
+## Broker
+
+- Sensor decoder added attribute activateDelayMs and deactivateDelayMs for configuring delays in milliseconds
+- Protocol version bumped to 9 (sensor delay changes)
+- Added code to keep sensor compatible with old decoders
+- NetworkDevices not store protocol version
+
+## LiteDecoder
+
+- Decoders storage version bumped to 18
+
+## SharpTerminal
+
+- Support to new sensor with milliseconds delay
+
+## SharpEEPromViewer
+
+- Support to new sensor with milliseconds delay and legacy sensors
+
 # Version 0.9.0
 
 ## General Features

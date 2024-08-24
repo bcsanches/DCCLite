@@ -50,7 +50,13 @@ namespace dcclite::broker
 
 			~NetworkDevice();			
 
-			void AcceptConnection(dcclite::Clock::TimePoint_t time, dcclite::NetworkAddress remoteAddress, dcclite::Guid remoteSessionToken, dcclite::Guid remoteConfigToken);
+			void AcceptConnection(
+				dcclite::Clock::TimePoint_t	time, 
+				dcclite::NetworkAddress		remoteAddress, 
+				dcclite::Guid				remoteSessionToken, 
+				dcclite::Guid				remoteConfigToken, 
+				const std::uint16_t			protocolVersion
+			);
 
 			void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteConfigToken);		
 					
@@ -81,7 +87,12 @@ namespace dcclite::broker
 			[[nodiscard]] INetworkDevice_DecoderServices *TryGetINetworkDevice() noexcept override
 			{
 				return this;
-			}						
+			}
+
+			[[nodiscard]] virtual std::uint16_t GetProtocolVersion() const noexcept
+			{
+				return m_uProtocolVersion;
+			}
 
 			//
 			//
@@ -166,7 +177,7 @@ namespace dcclite::broker
 			//Remote Device Info				
 			dcclite::Guid		m_SessionToken;
 
-			dcclite::NetworkAddress	m_RemoteAddress;
+			dcclite::NetworkAddress	m_RemoteAddress;			
 
 			//
 			//
@@ -320,6 +331,7 @@ namespace dcclite::broker
 			TimeoutController	m_clTimeoutController;
 
 			std::uint16_t		m_uRemoteFreeRam = UINT16_MAX;
+			std::uint16_t		m_uProtocolVersion = 0;
 
 			//
 			//

@@ -140,7 +140,13 @@ namespace dcclite::broker
 			void IScriptSupport_OnVMFinalize(sol::state &state) override;
 
 		private:			
-			void OnNetEvent_Hello(const dcclite::NetworkAddress &senderAddress, RName name, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken);
+			void OnNetEvent_Hello(
+				const dcclite::NetworkAddress	&senderAddress, 
+				RName							name, 
+				const dcclite::Guid				remoteSessionToken, 
+				const dcclite::Guid				remoteConfigToken,
+				const std::uint16_t				protocolVersion
+			);
 
 			void OnNetEvent_Packet(const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType);
 

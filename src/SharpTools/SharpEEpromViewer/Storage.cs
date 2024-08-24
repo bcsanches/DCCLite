@@ -72,17 +72,49 @@ namespace SharpEEPromViewer
         }
     }
 
-    class SensorDecoder: Decoder
+	class SensorDecoderV017 : Decoder
+	{
+
+		public bool HasPullUp { get; }
+		public bool IsInverted { get; }
+
+		[Description("Delay to send activate event in seconds")]
+		public byte ActivateDelay { get; }
+
+		[Description("Delay to send deactivate event in seconds")]
+		public byte DeactivateDelay { get; }
+
+		[Flags]
+		enum Flags : byte
+		{
+			SNRD_PULL_UP = 0x01,
+			SNRD_INVERTED = 0x02
+		}
+
+		public SensorDecoderV017(byte slot, BinaryReader reader) :
+			base(slot, 4, reader.ReadByte())
+		{
+			Flags flags = (Flags)reader.ReadByte();
+
+			HasPullUp = (flags & Flags.SNRD_PULL_UP) == Flags.SNRD_PULL_UP;
+			IsInverted = (flags & Flags.SNRD_INVERTED) == Flags.SNRD_INVERTED;
+
+			ActivateDelay = reader.ReadByte();
+			DeactivateDelay = reader.ReadByte();
+		}
+	}
+
+	class SensorDecoder: Decoder
     {
 
         public bool HasPullUp { get; }
         public bool IsInverted { get; }
 
-        [Description("Delay to send activate event in seconds")]
-        public byte ActivateDelay { get; }
+        [Description("Delay to send activate event in milliseconds")]
+        public ushort ActivateDelayMs { get; }
 
-        [Description("Delay to send deactivate event in seconds")]
-        public byte DeactivateDelay { get; }
+        [Description("Delay to send deactivate event in milliseconds")]
+        public ushort DeactivateDelayMs { get; }
 
         [Flags]
         enum Flags: byte
@@ -92,15 +124,15 @@ namespace SharpEEPromViewer
         }
 
         public SensorDecoder(byte slot, BinaryReader reader):
-            base(slot, 4, reader.ReadByte())
+            base(slot, 6, reader.ReadByte())
         {
             Flags flags = (Flags)reader.ReadByte();
 
             HasPullUp = (flags & Flags.SNRD_PULL_UP) == Flags.SNRD_PULL_UP;
             IsInverted = (flags & Flags.SNRD_INVERTED) == Flags.SNRD_INVERTED;
 
-            ActivateDelay = reader.ReadByte();
-            DeactivateDelay = reader.ReadByte();
+			ActivateDelayMs = reader.ReadUInt16();
+			DeactivateDelayMs = reader.ReadUInt16();
         }
     }
 
@@ -334,7 +366,8 @@ namespace SharpEEPromViewer
 			{ "Sson002\0", typeof(SessionLump) },
 			{ "DECS015\0", typeof(DecodersLumpV016) },
             { "DECS016\0", typeof(DecodersLumpV016) }, //015 and 016 the same, but 016 has QuadInverterDecoder
-            { "DECS017\0", typeof(DecodersLump) }, //017 Turntable auto inverter changed
+            { "DECS017\0", typeof(DecodersLumpV017) }, //017 Turntable auto inverter changed
+            { "DECS018\0", typeof(DecodersLump) }, //018 Sensor using word instead of byte for delays
             { "ENDEND1\0", typeof(MarkerLump) }
         };
 
@@ -562,6 +595,78 @@ namespace SharpEEPromViewer
             //reader.ReadBytes(size - 16);
         }
     }
+
+	class DecodersLumpV017 : Lump
+	{
+		enum DecoderTypes : byte
+		{
+			DEC_NULL = 0,
+			DEC_OUTPUT = 1,
+			DEC_SENSOR = 2,
+			DEC_SERVO_TURNOUT = 3,
+			DEC_SIGNAL = 4,         //Only virtual, not implemented on Arduino
+			DEC_TURNTABLE_AUTO_INVERTER = 5,
+			DEC_QUAD_INVERTER = 6
+		};
+
+		static Dictionary<DecoderTypes, Type> gKnownTypes = new()
+		{
+			{ DecoderTypes.DEC_OUTPUT,                  typeof(OutputDecoder) },
+			{ DecoderTypes.DEC_SENSOR,                  typeof(SensorDecoderV017) },
+			{ DecoderTypes.DEC_SERVO_TURNOUT,           typeof(ServoTurnoutDecoder) },
+			{ DecoderTypes.DEC_TURNTABLE_AUTO_INVERTER, typeof(TurntableAutoInverterDecoder) },
+			{ DecoderTypes.DEC_QUAD_INVERTER,           typeof(QuadInverterDecoder) }
+		};
+
+		public Guid Guid { get; }
+
+		public DecodersLumpV017(string name, UInt16 size, BinaryReader reader) :
+			base(name, size)
+		{
+			if (size < 17)
+				throw new ArgumentOutOfRangeException("[DecodersLump] Must have at least 17 bytes, but got " + size);
+
+			Guid = new Guid(reader.ReadBytes(16));
+
+			var bytesLeft = size - 16;
+
+			for (; ; )
+			{
+				--bytesLeft;
+				var decType = (DecoderTypes)reader.ReadByte();
+				if (decType == DecoderTypes.DEC_NULL)
+					break;
+
+				Type decoderClassType;
+				if (!gKnownTypes.TryGetValue(decType, out decoderClassType))
+					throw new ArgumentOutOfRangeException("dectype not suppported: " + decType.ToString());
+
+				--bytesLeft;
+				var decQuantity = reader.ReadByte();
+
+				for (var i = 0; i < decQuantity; ++i)
+				{
+					--bytesLeft;
+					var slot = reader.ReadByte();
+
+					var decoder = (Item)System.Activator.CreateInstance(decoderClassType, slot, reader);
+
+					bytesLeft -= decoder.Size;
+
+					this.AddItem(decoder);
+				}
+
+			}
+
+			if (bytesLeft != 0)
+			{
+				throw new ArgumentOutOfRangeException("bytes left...");
+			}
+
+			//skip...
+			//reader.ReadBytes(size - 16);
+		}
+	}
 
 	class DecodersLump : Lump
 	{

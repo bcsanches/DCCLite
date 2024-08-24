@@ -43,6 +43,11 @@ class NetworkDeviceDecoderServicesMockup: public dcclite::broker::INetworkDevice
 		{
 			throw std::exception("Not implemented: FindDecoderIndex");
 		}
+
+		[[nodiscard]] uint16_t GetProtocolVersion() const noexcept override
+		{
+			return 0;
+		}
 };
 
 namespace dcclite::broker

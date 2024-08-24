@@ -469,11 +469,12 @@ namespace dcclite::broker
 	class NetworkHelloEvent: public dcclite::broker::EventHub::IEvent
 	{
 		public:
-			NetworkHelloEvent(DccLiteService &target, dcclite::NetworkAddress address, RName deviceName, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken):
+			NetworkHelloEvent(DccLiteService &target, dcclite::NetworkAddress address, RName deviceName, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken, uint16_t protocolVersion):
 				IEvent(target),
 				m_clAddress(address),
 				m_clRemoteSessionToken{ remoteSessionToken },
 				m_clRemoteConfigToken{ remoteConfigToken },
+				m_uProtocolVersion{ protocolVersion },
 				m_rnDeviceName{ deviceName }
 			{
 				//empty
@@ -481,7 +482,7 @@ namespace dcclite::broker
 
 			void Fire() override
 			{
-				static_cast<DccLiteService &>(this->GetTarget()).OnNetEvent_Hello(m_clAddress, m_rnDeviceName, m_clRemoteSessionToken, m_clRemoteConfigToken);
+				static_cast<DccLiteService &>(this->GetTarget()).OnNetEvent_Hello(m_clAddress, m_rnDeviceName, m_clRemoteSessionToken, m_clRemoteConfigToken, m_uProtocolVersion);
 			}
 
 		private:
@@ -489,6 +490,8 @@ namespace dcclite::broker
 
 			const dcclite::Guid m_clRemoteSessionToken;
 			const dcclite::Guid m_clRemoteConfigToken;
+
+			const uint16_t		m_uProtocolVersion;
 
 			RName m_rnDeviceName;
 	};
@@ -506,7 +509,7 @@ namespace dcclite::broker
 		const auto procotolVersion = packet.Read<std::uint16_t>();
 
 		[[unlikely]]
-		if (procotolVersion != dcclite::PROTOCOL_VERSION)
+		if ((procotolVersion != dcclite::PROTOCOL_VERSION) && (procotolVersion != dcclite::PROTOCOL_VERSION9))
 		{
 			dcclite::Log::Error("[DccLiteService::{}] [OnNet_Hello] Hello from {} - {} with invalid protocol version {}, expected {}, ignoring",
 				this->GetName(),
@@ -532,10 +535,16 @@ namespace dcclite::broker
 
 		dcclite::Log::Info("[DccLiteService::{}] [OnNet_Hello] received hello from {}, starting handshake", this->GetName(), name);
 
-		EventHub::PostEvent<NetworkHelloEvent>(std::ref(*this), senderAddress, RName{ name }, remoteSessionToken, remoteConfigToken);
+		EventHub::PostEvent<NetworkHelloEvent>(std::ref(*this), senderAddress, RName{ name }, remoteSessionToken, remoteConfigToken, procotolVersion);
 	}
 
-	void DccLiteService::OnNetEvent_Hello(const dcclite::NetworkAddress &senderAddress, RName deviceName, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken)
+	void DccLiteService::OnNetEvent_Hello(
+		const dcclite::NetworkAddress &senderAddress, 
+		RName deviceName, 
+		const dcclite::Guid remoteSessionToken, 
+		const dcclite::Guid remoteConfigToken,
+		const std::uint16_t protocolVersion
+	)
 	{		
 		//lookup device
 		auto dev = this->TryFindDeviceByName(deviceName);
@@ -566,7 +575,7 @@ namespace dcclite::broker
 			}
 		}
 
-		netDevice->AcceptConnection(dcclite::Clock::DefaultClock_t::now(), senderAddress, remoteSessionToken, remoteConfigToken);
+		netDevice->AcceptConnection(dcclite::Clock::DefaultClock_t::now(), senderAddress, remoteSessionToken, remoteConfigToken, protocolVersion);
 	}
 
 	class GenericNetworkEvent: public dcclite::broker::EventHub::IEvent

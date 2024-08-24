@@ -31,7 +31,7 @@ namespace dcclite::broker
 				return nullptr;
 			}			
 
-			virtual void Decoder_OnChangeStateRequest(const Decoder &decoder) noexcept = 0;
+			virtual void Decoder_OnChangeStateRequest(const Decoder &decoder) noexcept = 0;			
 	};
 
 	class INetworkDevice_DecoderServices
@@ -42,5 +42,7 @@ namespace dcclite::broker
 
 			[[nodiscard]] virtual Decoder &FindDecoder(RName name) const = 0;
 			[[nodiscard]] virtual uint8_t FindDecoderIndex(const Decoder &decoder) const = 0;
+
+			[[nodiscard]] virtual std::uint16_t GetProtocolVersion() const noexcept = 0;
 	};
 }

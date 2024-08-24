@@ -1,0 +1,57 @@
+[
+    {
+        "name":"ST_PNL_EXTC_PAS_01",
+        "class":"Sensor",
+        "pin":21,
+        "address":"4401",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":20,
+        "deactivateDelayMs":100,
+        "comment":"Botao PAS 01"
+      },
+      {
+        "name":"ST_PNL_EXTC_PAS_09",
+        "class":"Sensor",
+        "pin":24,
+        "address":"4409",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":20,
+        "deactivateDelayMs":100,
+        "comment":"Botao PAS 09"
+      },
+      {
+        "name":"ST_PNL_EXTC_PAS_10",
+        "class":"Sensor",
+        "pin":25,
+        "address":"4410",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":20,
+        "deactivateDelayMs":100,
+        "comment":"Botao PAS 10"
+      },
+      {
+        "name":"ST_PNL_EXTC_PAS_11",
+        "class":"Sensor",
+        "pin":22,
+        "address":"4411",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":20,
+        "deactivateDelayMs":100,
+        "comment":"Botao PAS 11"
+      },
+      {
+        "name":"ST_PNL_EXTC_PAS_12",
+        "class":"Sensor",
+        "pin":23,
+        "address":"4412",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":20,
+        "deactivateDelayMs":100,
+        "comment":"Botao PAS 12"
+      }
+]

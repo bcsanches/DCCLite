@@ -22,11 +22,10 @@ const char SensorModuleName[] PROGMEM = {"SensorDecoder"} ;
 
 //#define DCCLITE_DBG
 
-SensorDecoder::SensorDecoder(uint8_t flags, dcclite::PinType_t pin, uint8_t activateDelay, uint8_t deactivateDelay) noexcept:
+SensorDecoder::SensorDecoder(uint8_t flags, dcclite::PinType_t pin, uint16_t activateDelay, uint16_t deactivateDelay) noexcept:
 	m_fFlags{flags},
 	m_uActivateDelay{ activateDelay },
 	m_uDeactivateDelay{deactivateDelay}
-
 {
 #ifdef DCCLITE_DBG
 	Console::SendLogEx("[SENSOR_DECODER]", "constructor");
@@ -35,22 +34,22 @@ SensorDecoder::SensorDecoder(uint8_t flags, dcclite::PinType_t pin, uint8_t acti
 	this->Init(pin);
 }
 
-SensorDecoder::SensorDecoder(dcclite::Packet& packet) noexcept:
+SensorDecoder::SensorDecoder(dcclite::Packet &packet) noexcept:
 	Decoder::Decoder(packet)
 {
 	const auto pin = packet.Read<dcclite::PinType_t>();
 	
 	//only read pull up and inverted flag, the others are internal
 	m_fFlags = packet.Read<uint8_t>() & (dcclite::SNRD_PULL_UP | dcclite::SNRD_INVERTED);
-	m_uActivateDelay = packet.Read<uint8_t>();
-	m_uDeactivateDelay = packet.Read<uint8_t>();
+	m_uActivateDelay = packet.Read<uint16_t>();
+	m_uDeactivateDelay = packet.Read<uint16_t>();
 
 	using namespace dcclite;
 
 	this->Init(pin);
 }
 
-SensorDecoder::SensorDecoder(Storage::EpromStream& stream) noexcept:
+SensorDecoder::SensorDecoder(Storage::EpromStream &stream) noexcept:
 	Decoder::Decoder(stream)
 {
 	dcclite::PinType_t pin;
@@ -152,7 +151,7 @@ bool SensorDecoder::Update(const unsigned long ticks) noexcept
 	if (coolDown)
 	{	
 		//do we have to wait for a state change?
-		const long delayTicks = ((m_fFlags & dcclite::SNRD_ACTIVE) ? m_uDeactivateDelay : m_uActivateDelay) * 1000;
+		const long delayTicks = ((m_fFlags & dcclite::SNRD_ACTIVE) ? m_uDeactivateDelay : m_uActivateDelay);
 		if(delayTicks)
 		{
 			//ok, prepare for wait and get out

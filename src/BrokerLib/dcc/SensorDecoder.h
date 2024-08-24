@@ -72,8 +72,8 @@ namespace dcclite::broker
 		private:
 			dcclite::BasicPin m_clPin;
 
-			uint8_t m_uActivateDelay;
-			uint8_t m_uDeactivateDelay;
+			uint16_t m_uActivateDelay;
+			uint16_t m_uDeactivateDelay;
 
 			bool m_fPullUp = false;		
 			bool m_fInverted = false;		

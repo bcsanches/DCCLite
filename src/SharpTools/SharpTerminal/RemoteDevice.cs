@@ -57,6 +57,8 @@ namespace SharpTerminal
             }
         }
 
+        public uint ProtocolVersion { get; set; }
+
         public bool Registered { get; set; }
 
         public RemotePin[] Pins;
@@ -74,6 +76,7 @@ namespace SharpTerminal
             ConnectionStatus = (Status)(int)objectDef["connectionStatus"];
             FreeRam = (int)objectDef["freeRam"];
             Registered = (bool)objectDef["registered"];
+            ProtocolVersion = (uint)objectDef["protocolVersion"];
 
             if (!objectDef.ContainsKey("pins"))
                 return;

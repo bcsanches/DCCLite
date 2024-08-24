@@ -719,6 +719,7 @@ namespace dcclite::broker
 		stream.AddStringValue("sessionToken", dcclite::GuidToString(m_SessionToken));
 		stream.AddStringValue("remoteAddress", m_RemoteAddress.GetIpString());
 		stream.AddIntValue("connectionStatus", static_cast<int>(m_kStatus));
+		stream.AddIntValue("protocolVersion", m_uProtocolVersion);
 		stream.AddIntValue("freeRam", m_uRemoteFreeRam);
 
 		m_clPinManager.Serialize(stream);
@@ -750,7 +751,13 @@ namespace dcclite::broker
 	}
 
 
-	void NetworkDevice::AcceptConnection(const dcclite::Clock::TimePoint_t time, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken)
+	void NetworkDevice::AcceptConnection(
+		const dcclite::Clock::TimePoint_t	time, 
+		const dcclite::NetworkAddress		remoteAddress, 
+		const dcclite::Guid					remoteSessionToken, 
+		const dcclite::Guid					remoteConfigToken, 
+		const std::uint16_t					protocolVersion
+	)
 	{
 		if (m_kStatus != Status::OFFLINE)
 		{
@@ -759,6 +766,7 @@ namespace dcclite::broker
 			return;
 		}
 
+		m_uProtocolVersion = protocolVersion;
 		m_RemoteAddress = remoteAddress;
 		m_SessionToken = dcclite::GuidCreate();
 
