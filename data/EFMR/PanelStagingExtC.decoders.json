@@ -1,57 +1,362 @@
 [
     {
-        "name":"ST_PNL_EXTC_PAS_01",
+        "name":"ST_PNL_EXTC_BTN_PAS_01",
         "class":"Sensor",
-        "pin":21,
+        "pin":32,
         "address":"4401",
         "pullup":true,
         "inverted":false,
-        "activateDelayMs":20,
+        "activateDelayMs":120,
         "deactivateDelayMs":100,
         "comment":"Botao PAS 01"
       },
+	  {
+        "name":"ST_PNL_EXTC_BTN_PAS_02",
+        "class":"Sensor",
+        "pin":33,
+        "address":"4402",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":120,
+        "deactivateDelayMs":100,
+        "comment":"Botao PAS 02"
+      },
+	  {
+        "name":"ST_PNL_EXTC_BTN_PAS_03",
+        "class":"Sensor",
+        "pin":30,
+        "address":"4403",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":120,
+        "deactivateDelayMs":100,
+        "comment":"Botao PAS 03"
+      },
       {
-        "name":"ST_PNL_EXTC_PAS_09",
+        "name":"ST_PNL_EXTC_BTN_PAS_04",
+        "class":"Sensor",
+        "pin":31,
+        "address":"4404",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":120,
+        "deactivateDelayMs":100,
+        "comment":"Botao PAS 04"
+      },
+      {
+        "name":"ST_PNL_EXTC_BTN_PAS_05",
+        "class":"Sensor",
+        "pin":28,
+        "address":"4405",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":120,
+        "deactivateDelayMs":100,
+        "comment":"Botao PAS 05"
+      },
+      {
+        "name":"ST_PNL_EXTC_BTN_PAS_06",
+        "class":"Sensor",
+        "pin":29,
+        "address":"4406",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":120,
+        "deactivateDelayMs":100,
+        "comment":"Botao PAS 06"
+      },
+      {
+        "name":"ST_PNL_EXTC_BTN_PAS_07",
+        "class":"Sensor",
+        "pin":26,
+        "address":"4407",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":120,
+        "deactivateDelayMs":100,
+        "comment":"Botao PAS 07"
+      },
+      {
+        "name":"ST_PNL_EXTC_BTN_PAS_08",
+        "class":"Sensor",
+        "pin":27,
+        "address":"4408",
+        "pullup":true,
+        "inverted":true,
+        "activateDelayMs":120,
+        "deactivateDelayMs":100,
+        "comment":"Botao PAS 08"
+      },
+      {
+        "name":"ST_PNL_EXTC_BTN_PAS_09",
         "class":"Sensor",
         "pin":24,
         "address":"4409",
         "pullup":true,
         "inverted":false,
-        "activateDelayMs":20,
+        "activateDelayMs":120,
         "deactivateDelayMs":100,
         "comment":"Botao PAS 09"
       },
       {
-        "name":"ST_PNL_EXTC_PAS_10",
+        "name":"ST_PNL_EXTC_BTN_PAS_10",
         "class":"Sensor",
         "pin":25,
         "address":"4410",
         "pullup":true,
         "inverted":false,
-        "activateDelayMs":20,
+        "activateDelayMs":120,
         "deactivateDelayMs":100,
         "comment":"Botao PAS 10"
       },
       {
-        "name":"ST_PNL_EXTC_PAS_11",
+        "name":"ST_PNL_EXTC_BTN_PAS_11",
         "class":"Sensor",
         "pin":22,
         "address":"4411",
         "pullup":true,
         "inverted":false,
-        "activateDelayMs":20,
+        "activateDelayMs":120,
         "deactivateDelayMs":100,
         "comment":"Botao PAS 11"
       },
       {
-        "name":"ST_PNL_EXTC_PAS_12",
+        "name":"ST_PNL_EXTC_BTN_PAS_12",
         "class":"Sensor",
         "pin":23,
         "address":"4412",
         "pullup":true,
         "inverted":false,
-        "activateDelayMs":20,
+        "activateDelayMs":120,
         "deactivateDelayMs":100,
         "comment":"Botao PAS 12"
+      },
+	  {
+        "name":"ST_PNL_EXTC_BTN_PWR_01",
+        "class":"Sensor",
+        "pin":44,
+        "address":"4421",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":120,
+        "deactivateDelayMs":100,
+        "comment":"Botao PWR 01"
+      },
+	  {
+        "name":"ST_PNL_EXTC_BTN_PWR_02",
+        "class":"Sensor",
+        "pin":45,
+        "address":"4422",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":120,
+        "deactivateDelayMs":100,
+        "comment":"Botao PWR 02"
+      },
+	  {
+        "name":"ST_PNL_EXTC_BTN_PWR_03",
+        "class":"Sensor",
+        "pin":42,
+        "address":"4423",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":120,
+        "deactivateDelayMs":100,
+        "comment":"Botao PWR 03"
+      },
+	  {
+        "name":"ST_PNL_EXTC_BTN_PWR_04",
+        "class":"Sensor",
+        "pin":43,
+        "address":"4424",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":120,
+        "deactivateDelayMs":100,
+        "comment":"Botao PWR 04"
+      },
+      {
+        "name":"ST_PNL_EXTC_BTN_PWR_05",
+        "class":"Sensor",
+        "pin":40,
+        "address":"4425",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":120,
+        "deactivateDelayMs":100,
+        "comment":"Botao PWR 05"
+      },
+      {
+        "name":"ST_PNL_EXTC_BTN_PWR_06",
+        "class":"Sensor",
+        "pin":41,
+        "address":"4426",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":120,
+        "deactivateDelayMs":100,
+        "comment":"Botao PWR 06"
+      },
+      {
+        "name":"ST_PNL_EXTC_BTN_PWR_07",
+        "class":"Sensor",
+        "pin":38,
+        "address":"4427",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":120,
+        "deactivateDelayMs":100,
+        "comment":"Botao PWR 07"
+      },
+      {
+        "name":"ST_PNL_EXTC_BTN_PWR_08",
+        "class":"Sensor",
+        "pin":39,
+        "address":"4428",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":120,
+        "deactivateDelayMs":100,
+        "comment":"Botao PWR 08"
+      },
+      {
+        "name":"ST_PNL_EXTC_BTN_PWR_09",
+        "class":"Sensor",
+        "pin":36,
+        "address":"4429",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":120,
+        "deactivateDelayMs":100,
+        "comment":"Botao PWR 09"
+      },
+      {
+        "name":"ST_PNL_EXTC_BTN_PWR_10",
+        "class":"Sensor",
+        "pin":37,
+        "address":"4430",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":120,
+        "deactivateDelayMs":100,
+        "comment":"Botao PWR 10"
+      },
+      {
+        "name":"ST_PNL_EXTC_BTN_PWR_11",
+        "class":"Sensor",
+        "pin":34,
+        "address":"4431",
+        "pullup":true,
+        "inverted":true,
+        "activateDelayMs":120,
+        "deactivateDelayMs":100,
+        "comment":"Botao PWR 11"
+      },
+      {
+        "name":"ST_PNL_EXTC_BTN_PWR_12",
+        "class":"Sensor",
+        "pin":35,
+        "address":"4432",
+        "pullup":true,
+        "inverted":false,
+        "activateDelayMs":120,
+        "deactivateDelayMs":100,
+        "comment":"Botao PWR 12"
+      },
+	  {
+        "name": "ST_PNL_EXTC_LED_PWR_01",
+        "class": "Output",
+        "address": "4441",
+        "pin": 61,
+        "inverted": false,
+        "ignoreSavedState": true
+      },
+	  {
+        "name": "ST_PNL_EXTC_LED_PWR_02",
+        "class": "Output",
+        "address": "4442",
+        "pin": 62,
+        "inverted": false,
+        "ignoreSavedState": true
+      },
+	  {
+        "name": "ST_PNL_EXTC_LED_PWR_03",
+        "class": "Output",
+        "address": "4443",
+        "pin": 63,
+        "inverted": false,
+        "ignoreSavedState": true
+      },
+	  {
+        "name": "ST_PNL_EXTC_LED_PWR_04",
+        "class": "Output",
+        "address": "4444",
+        "pin": 64,
+        "inverted": false,
+        "ignoreSavedState": true
+      },
+	  {
+        "name": "ST_PNL_EXTC_LED_PWR_05",
+        "class": "Output",
+        "address": "4445",
+        "pin": 65,
+        "inverted": false,
+        "ignoreSavedState": true
+      },
+	  {
+        "name": "ST_PNL_EXTC_LED_PWR_06",
+        "class": "Output",
+        "address": "4446",
+        "pin": 66,
+        "inverted": false,
+        "ignoreSavedState": true
+      },
+	  {
+        "name": "ST_PNL_EXTC_LED_PWR_07",
+        "class": "Output",
+        "address": "4447",
+        "pin": 67,
+        "inverted": false,
+        "ignoreSavedState": true
+      },
+	  {
+        "name": "ST_PNL_EXTC_LED_PWR_08",
+        "class": "Output",
+        "address": "4448",
+        "pin": 68,
+        "inverted": false,
+        "ignoreSavedState": true
+      },
+	  {
+        "name": "ST_PNL_EXTC_LED_PWR_09",
+        "class": "Output",
+        "address": "4449",
+        "pin": 69,
+        "inverted": false,
+        "ignoreSavedState": true
+      },
+	  {
+        "name": "ST_PNL_EXTC_LED_PWR_10",
+        "class": "Output",
+        "address": "4450",
+        "pin": 47,
+        "inverted": false,
+        "ignoreSavedState": true
+      },
+      {
+        "name": "ST_PNL_EXTC_LED_PWR_11",
+        "class": "Output",
+        "address": "4451",
+        "pin": 48,
+        "inverted": false,
+        "ignoreSavedState": true
+      },
+      {
+        "name": "ST_PNL_EXTC_LED_PWR_12",
+        "class": "Output",
+        "address": "4452",
+        "pin": 49,
+        "inverted": false,
+        "ignoreSavedState": true
       }
 ]

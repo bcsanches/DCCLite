@@ -6,5 +6,7 @@ run_script("soledade_barra_helix_monitor.lua");
 
 run_script("soledade_barra_monitor.lua")
 
-log_info("Autoexec finished");
+run_script("st_panel_exitc.lua")
+
+log_info("Autoexec finished")
 

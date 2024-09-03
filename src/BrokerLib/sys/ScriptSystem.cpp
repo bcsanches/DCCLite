@@ -48,6 +48,7 @@ namespace dcclite::broker::ScriptSystem
 		dcclite::Log::Trace("[ScriptService::Start] Opening lua libraries");
 
 		g_clLua.open_libraries(sol::lib::base);
+		g_clLua.open_libraries(sol::lib::string);
 
 		dcclite::Log::Trace("[ScriptService::Start] Exporting functions");
 
