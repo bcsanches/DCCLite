@@ -10,6 +10,9 @@
 
 #pragma once
 
+#include <list>
+#include <map>
+
 #include "../sys/EventHub.h"
 #include "../sys/Service.h"
 
