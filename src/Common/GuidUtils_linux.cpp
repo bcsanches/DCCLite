@@ -10,6 +10,7 @@
 
 #include "GuidUtils.h"
 
+#include <cstdint>
 #include <cstring>
 #include <uuid/uuid.h>
 
