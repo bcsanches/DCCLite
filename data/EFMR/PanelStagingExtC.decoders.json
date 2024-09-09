@@ -267,7 +267,7 @@
         "name": "ST_PNL_EXTC_LED_PWR_01",
         "class": "Output",
         "address": "4441",
-        "pin": 61,
+        "pin": 12,
         "inverted": false,
         "ignoreSavedState": true
       },
@@ -275,7 +275,7 @@
         "name": "ST_PNL_EXTC_LED_PWR_02",
         "class": "Output",
         "address": "4442",
-        "pin": 62,
+        "pin": 11,
         "inverted": false,
         "ignoreSavedState": true
       },
@@ -283,7 +283,7 @@
         "name": "ST_PNL_EXTC_LED_PWR_03",
         "class": "Output",
         "address": "4443",
-        "pin": 63,
+        "pin": 10,
         "inverted": false,
         "ignoreSavedState": true
       },
@@ -291,7 +291,7 @@
         "name": "ST_PNL_EXTC_LED_PWR_04",
         "class": "Output",
         "address": "4444",
-        "pin": 64,
+        "pin": 9,
         "inverted": false,
         "ignoreSavedState": true
       },
@@ -299,7 +299,7 @@
         "name": "ST_PNL_EXTC_LED_PWR_05",
         "class": "Output",
         "address": "4445",
-        "pin": 65,
+        "pin": 8,
         "inverted": false,
         "ignoreSavedState": true
       },
@@ -307,7 +307,7 @@
         "name": "ST_PNL_EXTC_LED_PWR_06",
         "class": "Output",
         "address": "4446",
-        "pin": 66,
+        "pin": 7,
         "inverted": false,
         "ignoreSavedState": true
       },
@@ -315,7 +315,7 @@
         "name": "ST_PNL_EXTC_LED_PWR_07",
         "class": "Output",
         "address": "4447",
-        "pin": 67,
+        "pin": 6,
         "inverted": false,
         "ignoreSavedState": true
       },
@@ -323,7 +323,7 @@
         "name": "ST_PNL_EXTC_LED_PWR_08",
         "class": "Output",
         "address": "4448",
-        "pin": 68,
+        "pin": 5,
         "inverted": false,
         "ignoreSavedState": true
       },
@@ -331,7 +331,7 @@
         "name": "ST_PNL_EXTC_LED_PWR_09",
         "class": "Output",
         "address": "4449",
-        "pin": 69,
+        "pin": 4,
         "inverted": false,
         "ignoreSavedState": true
       },
@@ -339,7 +339,7 @@
         "name": "ST_PNL_EXTC_LED_PWR_10",
         "class": "Output",
         "address": "4450",
-        "pin": 47,
+        "pin": 3,
         "inverted": false,
         "ignoreSavedState": true
       },
@@ -347,7 +347,7 @@
         "name": "ST_PNL_EXTC_LED_PWR_11",
         "class": "Output",
         "address": "4451",
-        "pin": 48,
+        "pin": 2,
         "inverted": false,
         "ignoreSavedState": true
       },
@@ -355,7 +355,7 @@
         "name": "ST_PNL_EXTC_LED_PWR_12",
         "class": "Output",
         "address": "4452",
-        "pin": 49,
+        "pin": 14,
         "inverted": false,
         "ignoreSavedState": true
       }

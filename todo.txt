@@ -1,6 +1,8 @@
 DCCLite
 -------
 
+- Embedded: make led 13 blink slow when searching for server, blink fast while connecting and keep lit when connected
+
 - update route section to know next section and avoid re-ocupying the block
 
 - remove deprecate SHA1 usage on Linux
