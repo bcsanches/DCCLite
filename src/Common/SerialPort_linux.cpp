@@ -9,6 +9,7 @@
 // defined by the Mozilla Public License, v. 2.0.
 #include "SerialPort_linux.h"
 
+#include <cstdint>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <termios.h>
