@@ -358,5 +358,101 @@
         "pin": 14,
         "inverted": false,
         "ignoreSavedState": true
+	  },      
+      {
+        "name": "ST_PNL_EXTC_LED_TRK_01",
+        "class": "Output",
+        "address": "4461",
+        "pin": 58,
+        "inverted": false,
+        "ignoreSavedState": true
+      },      
+      {
+        "name": "ST_PNL_EXTC_LED_TRK_02",
+        "class": "Output",
+        "address": "4462",
+        "pin": 59,
+        "inverted": false,
+        "ignoreSavedState": true
+      },
+      {
+        "name": "ST_PNL_EXTC_LED_TRK_03",
+        "class": "Output",
+        "address": "4463",
+        "pin": 60,
+        "inverted": false,
+        "ignoreSavedState": true
+      },
+      {
+        "name": "ST_PNL_EXTC_LED_TRK_04",
+        "class": "Output",
+        "address": "4464",
+        "pin": 61,
+        "inverted": false,
+        "ignoreSavedState": true
+      },
+      {
+        "name": "ST_PNL_EXTC_LED_TRK_05",
+        "class": "Output",
+        "address": "4465",
+        "pin": 62,
+        "inverted": false,
+        "ignoreSavedState": true
+      },
+      {
+        "name": "ST_PNL_EXTC_LED_TRK_06",
+        "class": "Output",
+        "address": "4466",
+        "pin": 63,
+        "inverted": false,
+        "ignoreSavedState": true
+      },
+      {
+        "name": "ST_PNL_EXTC_LED_TRK_07",
+        "class": "Output",
+        "address": "4467",
+        "pin": 64,
+        "inverted": false,
+        "ignoreSavedState": true
+      },
+      {
+        "name": "ST_PNL_EXTC_LED_TRK_08",
+        "class": "Output",
+        "address": "4468",
+        "pin": 65,
+        "inverted": false,
+        "ignoreSavedState": true
+      },
+      {
+        "name": "ST_PNL_EXTC_LED_TRK_09",
+        "class": "Output",
+        "address": "4469",
+        "pin": 66,
+        "inverted": false,
+        "ignoreSavedState": true
+      },
+      {
+        "name": "ST_PNL_EXTC_LED_TRK_10",
+        "class": "Output",
+        "address": "4470",
+        "pin": 67,
+        "inverted": false,
+        "ignoreSavedState": true
+      },
+      {
+        "name": "ST_PNL_EXTC_LED_TRK_11",
+        "class": "Output",
+        "address": "4471",
+        "pin": 68,
+        "inverted": false,
+        "ignoreSavedState": true
+      },      
+      {
+        "name": "ST_PNL_EXTC_LED_TRK_12",
+        "class": "Output",
+        "address": "4472",
+        "pin": 69,
+        "inverted": false,
+        "ignoreSavedState": true
       }
 ]

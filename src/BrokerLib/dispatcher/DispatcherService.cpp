@@ -272,6 +272,15 @@ namespace dcclite::broker
 		std::string name = obj["name"];
 		RName rname{ name };
 
+		if (auto decoder = this->m_rclDccLite.TryFindDecoder(rname))
+		{
+			auto vdecoder = dynamic_cast<VirtualSensorDecoder *>(decoder);
+			if(!vdecoder)
+				throw std::invalid_argument(fmt::format("[DispatcherServiceImpl::CreateSectionSensor] Decoder {} is not an virtual sensor, cannot continue. Check names!!!", name));
+
+			return *vdecoder;
+		}
+
 		if (address > std::numeric_limits<uint16_t>::max())
 			throw std::invalid_argument(fmt::format("[DispatcherServiceImpl::CreateSectionSensor] Invalid address {} for {}", address, name));
 

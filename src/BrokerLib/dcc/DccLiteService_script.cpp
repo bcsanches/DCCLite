@@ -315,11 +315,13 @@ namespace dcclite::broker
 
 		state.new_usertype<DecoderProxy>(
 			"decoder", sol::no_constructor,
+			"name", sol::property(&DecoderProxy::GetName),
 			"address", sol::property(&DecoderProxy::GetAddress),
 			"thrown", sol::property(&DecoderProxy::IsActive),
 			"closed", sol::property(&DecoderProxy::IsInactive),
 			"active", sol::property(&DecoderProxy::IsActive),
 			"inactive", sol::property(&DecoderProxy::IsInactive),
+			"state", sol::property(&DecoderProxy::IsActive),
 			"set_state", &DecoderProxy::SetState,
 			"on_state_change", &DecoderProxy::OnStateChange
 		);
