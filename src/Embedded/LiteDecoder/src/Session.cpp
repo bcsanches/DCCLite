@@ -229,7 +229,7 @@ static void GotoOfflineState()
 
 	ConnectionStateManager::Set(ConnectionStates::OFFLINE);
 
-	Blinker::SetState(Blinker::State::FAST_FLASH);
+	Blinker::SetState(Blinker::State::SLOW_FLASH);
 }
 
 static void OfflineTick(const unsigned long ticks)
@@ -335,6 +335,7 @@ static void SendHelloPacket()
 
 	NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
 
+	Blinker::SetState(Blinker::State::FAST_FLASH);
 	PingManager::Reset(millis());
 }
 
@@ -743,12 +744,12 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 	const auto time = millis();
 	PingManager::Reset(time);
 
-	Blinker::Pulse(3);
+	//Blinker::Pulse(3);
 
 	switch (type)
 	{
 		case dcclite::MsgTypes::MSG_PING:
-			Blinker::Pulse(5);
+			//Blinker::Pulse(5);
 			
 			DCCLITE_LOG_MODULE_LN(F("PING"));
 
@@ -788,7 +789,7 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 
 		default:
 			LogInvalidPacket(OnOnlineStateNameStr, type);
-			Blinker::Pulse(20);
+			//Blinker::Pulse(20);
 			break;
 	}		
 }

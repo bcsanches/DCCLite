@@ -1,6 +1,10 @@
 DCCLite
 -------
 
+- Lua script failing to reload, seems to be a problem with sections
+- Why lua scripts are not notified when devices gets online and state changes during sync? Check routes
+- Implement coroutine support on lua scripts?
+
 - add const for all timeouts on a single file
 - add port list for all connections on a single file
 - update route section to know next section and avoid re-ocupying the block
