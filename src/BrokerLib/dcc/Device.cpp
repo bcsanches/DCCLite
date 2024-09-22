@@ -128,11 +128,11 @@ namespace dcclite::broker
 
 	void Device::Load()
 	{
-		dcclite::Log::Info("[Device::{}] [Load] Loading {}", this->GetName(), m_pathConfigFile.string());
+		dcclite::Log::Info("[Device::{}] [Load] Loading {}", this->GetName(), m_pathConfigFile.c_str());
 		std::ifstream configFile(m_pathConfigFile);
 		if (!configFile)
 		{
-			dcclite::Log::Error("[Device::{} [Load] cannot find {}", this->GetName(), m_pathConfigFile.string());
+			dcclite::Log::Error("[Device::{} [Load] cannot find {}", this->GetName(), m_pathConfigFile.c_str());
 
 			return;
 		}

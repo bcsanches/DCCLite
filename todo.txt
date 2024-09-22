@@ -1,6 +1,8 @@
 DCCLite
 -------
 
+- add const for all timeouts on a single file
+- add port list for all connections on a single file
 - update route section to know next section and avoid re-ocupying the block
 
 - remove deprecate SHA1 usage on Linux
