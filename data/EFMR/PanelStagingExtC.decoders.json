@@ -123,7 +123,7 @@
       {
         "name":"ST_PNL_EXTC_BTN_PAS_12",
         "class":"Sensor",
-        "pin":23,
+        "pin":47,
         "address":"4412",
         "pullup":true,
         "inverted":false,

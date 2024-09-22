@@ -151,18 +151,18 @@ namespace dcclite::broker
 		m_rclDccLite{ dep },
 		m_pSections{ static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{"sections"}))) }
 	{
-		dcclite::Log::Info("[DispatcherServiceImpl] Init");
+		dcclite::Log::Info("[DispatcherServiceImpl] Init");		
 
-		auto it = params.FindMember("device");
-		if (it == params.MemberEnd())
+		auto deviceName = RName::TryGetName(json::GetString(params, "device", "DispatcherServiceImpl"));
+		if (!deviceName)
 		{
-			throw std::invalid_argument(fmt::format("[DispatcherServiceImpl::{}] device name not set, sensors will not be created", this->GetName()));
+			throw std::invalid_argument(fmt::format("[DispatcherServiceImpl::{}] device {} not registered", this->GetName(), deviceName));
 		}
 
-		m_pclDevice = m_rclDccLite.TryFindDeviceByName(RName::Get(it->value.GetString()));
+		m_pclDevice = m_rclDccLite.TryFindDeviceByName(deviceName);
 		if (!m_pclDevice)
 		{
-			throw std::invalid_argument(fmt::format("[DispatcherServiceImpl::{}] device {} not found", this->GetName(), it->value.GetString()));
+			throw std::invalid_argument(fmt::format("[DispatcherServiceImpl::{}] device {} not found", this->GetName(), name));
 		}
 	}
 
