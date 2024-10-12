@@ -32,75 +32,75 @@ namespace dcclite::broker
 {
 	class BaseSectionWrapper: public Object
 	{
-	public:
-		BaseSectionWrapper(RName name, sol::table obj, VirtualSensorDecoder &sensor):
-			Object(name),
-			m_clObject{ obj },
-			m_rclSensor{ sensor }
-		{
-			//empty
-		}
+		public:
+			BaseSectionWrapper(RName name, sol::table obj, VirtualSensorDecoder &sensor):
+				Object(name),
+				m_clObject{ obj },
+				m_rclSensor{ sensor }
+			{
+				//empty
+			}
 
-		void Serialize(JsonOutputStream_t &stream) const override
-		{
-			Object::Serialize(stream);
+			void Serialize(JsonOutputStream_t &stream) const override
+			{
+				Object::Serialize(stream);
 
-			stream.AddStringValue("systemName", this->GetParent()->GetParent()->GetNameData());
-			stream.AddIntValue("state", m_clObject["state"]);
-		}
+				stream.AddStringValue("systemName", this->GetParent()->GetParent()->GetNameData());
+				stream.AddIntValue("state", m_clObject["state"]);
+			}
 
-		void Reset()
-		{
-			m_clObject["reset"](m_clObject);
-		}
+			void Reset()
+			{
+				m_clObject["reset"](m_clObject);
+			}
 
-		void OnStateUpdate()
-		{
-			const bool clear = m_clObject["is_clear"](m_clObject);
+			void OnStateUpdate()
+			{
+				const bool clear = m_clObject["is_clear"](m_clObject);
 
-			m_rclSensor.SetSensorState(clear ? dcclite::DecoderStates::INACTIVE : dcclite::DecoderStates::ACTIVE);
-		}
+				m_rclSensor.SetSensorState(clear ? dcclite::DecoderStates::INACTIVE : dcclite::DecoderStates::ACTIVE);
+			}
 
-	protected:
-		sol::table				m_clObject;
-		VirtualSensorDecoder &m_rclSensor;
+		protected:
+			sol::table				m_clObject;
+			VirtualSensorDecoder	&m_rclSensor;
 	};
 
 	class SectionWrapper: public BaseSectionWrapper
 	{
-	public:
-		SectionWrapper(RName name, sol::table obj, VirtualSensorDecoder &sensor):
-			BaseSectionWrapper(name, obj, sensor)
-		{
-			//empty
-		}
+		public:
+			SectionWrapper(RName name, sol::table obj, VirtualSensorDecoder &sensor):
+				BaseSectionWrapper(name, obj, sensor)
+			{
+				//empty
+			}
 
-		inline const char *GetTypeName() const noexcept override
-		{
-			return "Dispatcher::Section";
-		}
+			inline const char *GetTypeName() const noexcept override
+			{
+				return "Dispatcher::Section";
+			}
 	};
 
 	class TSectionWrapper: public BaseSectionWrapper
 	{
-	public:
-		TSectionWrapper(RName name, sol::table obj, VirtualSensorDecoder &sensor):
-			BaseSectionWrapper(name, obj, sensor)
-		{
-			//empty
-		}
+		public:
+			TSectionWrapper(RName name, sol::table obj, VirtualSensorDecoder &sensor):
+				BaseSectionWrapper(name, obj, sensor)
+			{
+				//empty
+			}
 
-		inline const char *GetTypeName() const noexcept override
-		{
-			return "Dispatcher::TSection";
-		}
+			inline const char *GetTypeName() const noexcept override
+			{
+				return "Dispatcher::TSection";
+			}
 
-		void Serialize(JsonOutputStream_t &stream) const override
-		{
-			BaseSectionWrapper::Serialize(stream);
+			void Serialize(JsonOutputStream_t &stream) const override
+			{
+				BaseSectionWrapper::Serialize(stream);
 
-			//stream.AddStringValue("turnout", m_clObject["turnout"]);
-		}
+				//stream.AddStringValue("turnout", m_clObject["turnout"]);
+			}
 	};
 
 	///////////////////////////////////////////////////////////////////////////////
@@ -267,13 +267,15 @@ namespace dcclite::broker
 		rapidjson::Document json;
 
 		auto &params = json.SetObject();
-
-		int address = obj["address"];
+		
+		//must assign to a string to make sure SOL reads a string
 		std::string name = obj["name"];
 		RName rname{ name };
 
+		//was decoder created before?
 		if (auto decoder = this->m_rclDccLite.TryFindDecoder(rname))
 		{
+			//Ok, use it... but make sure it is the correct type
 			auto vdecoder = dynamic_cast<VirtualSensorDecoder *>(decoder);
 			if(!vdecoder)
 				throw std::invalid_argument(fmt::format("[DispatcherServiceImpl::CreateSectionSensor] Decoder {} is not an virtual sensor, cannot continue. Check names!!!", name));
@@ -281,9 +283,12 @@ namespace dcclite::broker
 			return *vdecoder;
 		}
 
+		int address = obj["address"];
 		if (address > std::numeric_limits<uint16_t>::max())
 			throw std::invalid_argument(fmt::format("[DispatcherServiceImpl::CreateSectionSensor] Invalid address {} for {}", address, name));
 
+		//
+		//no decoder, so create a new one
 		auto &decoder = m_pclDevice->CreateInternalDecoder(VIRTUAL_SENSOR_DECODER_CLASSNAME, DccAddress{ static_cast<uint16_t>(address) }, rname, params);
 
 		return static_cast<VirtualSensorDecoder &>(decoder);
