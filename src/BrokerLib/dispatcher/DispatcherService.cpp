@@ -111,39 +111,39 @@ namespace dcclite::broker
 
 	class DispatcherServiceImpl: public DispatcherService, public ScriptSystem::IScriptSupport, public IResettableService
 	{
-	public:
-		typedef DccLiteService Requirement_t;
+		public:
+			typedef DccLiteService Requirement_t;
 
-		DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, const Project &project, DccLiteService &dep);
-		~DispatcherServiceImpl() override;
+			DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, const Project &project, DccLiteService &dep);
+			~DispatcherServiceImpl() override;
 
-		void Serialize(JsonOutputStream_t &stream) const override;
+			void Serialize(JsonOutputStream_t &stream) const override;
 
-		void IResettableService_ResetItem(RName name) override;
+			void IResettableService_ResetItem(RName name) override;
 
-	private:
-		void RegisterSection(std::string_view name, sol::table obj);
-		void RegisterTSection(std::string_view name, sol::table obj);
+		private:
+			void RegisterSection(std::string_view name, sol::table obj);
+			void RegisterTSection(std::string_view name, sol::table obj);
 
-		void OnSectionStateChange(sol::table obj, int newState);
+			void OnSectionStateChange(sol::table obj, int newState);
 
-		void IScriptSupport_RegisterProxy(sol::table &table) override;
+			void IScriptSupport_RegisterProxy(sol::table &table) override;
 
-		void IScriptSupport_OnVMInit(sol::state &state) override;
-		void IScriptSupport_OnVMFinalize(sol::state &state) override;
+			void IScriptSupport_OnVMInit(sol::state &state) override;
+			void IScriptSupport_OnVMFinalize(sol::state &state) override;
 
-		void Panic(sol::table src, const char *reason);
+			void Panic(sol::table src, const char *reason);
 
-		VirtualSensorDecoder &CreateSectionSensor(sol::table obj);
+			VirtualSensorDecoder &CreateSectionSensor(sol::table obj);
 
-	private:
-		sigslot::scoped_connection m_slotScriptVMInit;
-		sigslot::scoped_connection m_slotScriptVMFinalize;
+		private:
+			sigslot::scoped_connection m_slotScriptVMInit;
+			sigslot::scoped_connection m_slotScriptVMFinalize;
 
-		DccLiteService &m_rclDccLite;
+			DccLiteService &m_rclDccLite;
 
-		FolderObject *m_pSections;
-		Device *m_pclDevice = nullptr;
+			FolderObject *m_pSections;
+			Device *m_pclDevice = nullptr;
 	};
 
 	DispatcherServiceImpl::DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, const Project &project, DccLiteService &dep):

@@ -65,6 +65,8 @@ namespace SharpTerminal
 			// 
 			// m_gridMain
 			// 
+			m_gridMain.AllowUserToAddRows = false;
+			m_gridMain.AllowUserToDeleteRows = false;
 			m_gridMain.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 			m_gridMain.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] { Column1, Column2, Column4, Column3, Column5 });
 			m_gridMain.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -74,6 +76,7 @@ namespace SharpTerminal
 			m_gridMain.Name = "m_gridMain";
 			m_gridMain.ReadOnly = true;
 			m_gridMain.RowHeadersVisible = false;
+			m_gridMain.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
 			m_gridMain.Size = new System.Drawing.Size(586, 253);
 			m_gridMain.TabIndex = 0;
 			// 
