@@ -201,7 +201,7 @@
         "inverted": true,
         "powerPin": 10,
         "frogPin": 54,
-        "range":35,
+        "range":45,
         "invertedFrog": true,
         "invertedPower": false,
         "operationTime": 3000
@@ -214,7 +214,7 @@
         "inverted": false,
         "powerPin": 67,
         "frogPin": 66,
-        "range":35,
+        "range":25,
         "invertedFrog": false,
         "invertedPower": true,
         "operationTime": 3000
@@ -264,11 +264,11 @@
         "class": "ServoTurnout",
         "address": "1438",
         "pin": 39,
-        "inverted": false,
+        "inverted": true,
         "powerPin": 61,
         "frogPin": 62 ,
         "range":25,
-        "invertedFrog": true,
+        "invertedFrog": false,
         "invertedPower": true,
         "operationTime": 3000
     },
