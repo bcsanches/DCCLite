@@ -111,7 +111,7 @@ static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 	return true;
 }
 
-int main(int, char **)
+int main(int argc, char **argv)
 {
 	dcclite::LogInit("Emulator.log");
 
@@ -121,7 +121,7 @@ int main(int, char **)
 
 	dcclite::PathUtils::InitAppFolders("Emulator");
 
-	ArduinoLib::Setup("LiteDecoderLib.dll", dcclite::LogGetDefault());
+	ArduinoLib::Setup("LiteDecoderLib.dll", dcclite::LogGetDefault(), argc > 1 ? argv[1] : nullptr);
 
 	TerminalService terminalService;		
 

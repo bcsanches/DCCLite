@@ -23,7 +23,7 @@ namespace ArduinoLib
 {
 	typedef void(*ArduinoProc_t)();
 
-	ARDUINO_API void Setup(std::string moduleName, dcclite::Logger_t log);
+	ARDUINO_API void Setup(std::string moduleName, dcclite::Logger_t log, const char *projectPath);
 
 	ARDUINO_API void Finalize();
 
