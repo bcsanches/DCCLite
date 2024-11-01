@@ -47,9 +47,9 @@ namespace ArduinoLib
 		{
 			public:
 				ArduinoPin() :
-					//default mode is with pullup resistor
-					m_eMode(INPUT_PULLUP),
-					m_eVoltage(HIGH)
+					//default mode is INPUT LOW
+					m_eMode(INPUT),
+					m_eVoltage(LOW)
 				{
 					//empty
 				}
@@ -58,18 +58,28 @@ namespace ArduinoLib
 				{
 					m_eMode = mode;
 
-					if (mode != INPUT_PULLUP)
+					if (mode == INPUT_PULLUP)
+						m_eVoltage = HIGH;
+					else if (mode == INPUT)
 						m_eVoltage = LOW;
 				}
 
-				void digitalWrite(VoltageModes mode)
+				void digitalWrite(VoltageModes voltage)
 				{
-					m_eVoltage = mode;
+					if (m_eMode != OUTPUT)
+					{
+						//writing HIGH to input pin turn on PULLUP
+						setPinMode(voltage == HIGH ? INPUT_PULLUP : INPUT);
+					}
+					else
+					{
+						m_eVoltage = voltage;
+					}
 				}
 
 				int digitalRead()
 				{
-					return m_eVoltage;
+					return m_eMode == INPUT_PULLUP ? (m_eVoltage == HIGH ? LOW : HIGH) : m_eVoltage;
 				}
 
 				void setDigitalVoltage(VoltageModes mode)
@@ -124,7 +134,7 @@ namespace ArduinoLib
 	DynamicLibrary g_ModuleLib;
 	std::string g_strModuleName;
 
-	void Setup(std::string moduleName, dcclite::Logger_t log)
+	void Setup(std::string moduleName, dcclite::Logger_t log, const char *projectPath)
 	{
 		dcclite::LogReplace(log);
 
@@ -134,6 +144,11 @@ namespace ArduinoLib
 
 		g_pfnSetup = reinterpret_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("setup"));
 		g_pfnLoop = reinterpret_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("loop"));
+
+		if (projectPath)
+		{
+
+		}
 
 		g_Clock = dcclite::Clock();
 
