@@ -244,7 +244,6 @@ namespace ArduinoLib::detail
 		//first time?
 		if (!g_thWorker.joinable())
 		{			
-
 			dcclite::Log::Info("RomSetupModule: started worker thread");
 
 			//start the thread

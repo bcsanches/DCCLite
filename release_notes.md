@@ -11,6 +11,10 @@
 - Added code to keep sensor compatible with old decoders
 - NetworkDevices not store protocol version
 
+## Emulator
+
+- Fixed pins initial state
+
 ## LiteDecoder
 
 - Decoders storage version bumped to 18

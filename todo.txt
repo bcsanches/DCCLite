@@ -1,6 +1,20 @@
 DCCLite
 -------
 
+- Better emulator:
+	- Show it on SharpConsole and remote connect to it.
+	- Allow pin states to be set:
+		- Set voltage level: LOW or HIGH
+		- Do a Pin "click", so voltage invert for a short time (put a time config, like 10ms)
+	- On device on sharp console, put a button "emulate":
+		- Will run emulator with the correctly EEPROM
+		- Generate blank EEPROM if does not exists?
+	- On device on sharp console, put a button "block", so Broke drops connection to device and ignore its ip...
+	- put a emulator hints field on device config? So initial voltage for pins can be set, like a grounded pin or a pin connected to 5v
+		- pin on emulator must have a "externalVoltage" field, a tri state field and when reading, check if the externalVoltage is set, if yes, consider it, otherwise, the internal voltage
+		- digitalWrite will never affetct externalVoltage
+		- SharpTerminal will be able to set this externalVoltage value
+
 - Change DccDevice decoder structure: expose a DecoderProxy, that is never destroyed.
 	- This will make all code around simple, no need for handling create / destroy events
 	- The proxy keeps a reference to the real decoder

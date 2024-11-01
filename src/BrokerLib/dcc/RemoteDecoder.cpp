@@ -14,6 +14,7 @@
 
 #include "FmtUtils.h"
 #include "Log.h"
+#include "JsonUtils.h"
 #include "Packet.h"
 
 namespace dcclite::broker
@@ -21,9 +22,7 @@ namespace dcclite::broker
 	RemoteDecoder::RemoteDecoder(const DccAddress &address, RName name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params):
 		StateDecoder(address, name, owner, dev, params)	
 	{	
-		auto it = params.FindMember("broken");
-		if (it != params.MemberEnd())
-			m_fBroken = it->value.GetBool();
+		m_fBroken = dcclite::json::TryGetDefaultBool(params, "broken", false);		
 	}
 
 	void RemoteDecoder::WriteConfig(dcclite::Packet &packet) const

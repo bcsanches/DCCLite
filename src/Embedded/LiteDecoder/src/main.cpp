@@ -229,6 +229,8 @@ void setup()
 
 	g_fNetReady = NetUdp::Init(Session::GetReceiverCallback());
 
+	Blinker::SetState(Blinker::State::FAST_FLASH);
+
 	g_uStartTime = millis();	
 
 	if(g_uDecodersPosition > 0)
@@ -236,7 +238,7 @@ void setup()
 		Storage_LoadDecoders(g_uDecodersPosition);
 	}
 
-	Blinker::SetState(Blinker::State::FAST_FLASH);
+	
 
 	//Console::SendLogEx(FSTR_SETUP, " ", FSTR_OK);
 	DCCLITE_LOG_MODULE_LN(FSTR_SETUP << ' ' << FSTR_OK);
