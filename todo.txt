@@ -2,6 +2,8 @@ DCCLite
 -------
 
 - Better emulator:
+	- Make sharpConsole able to start emulator as is
+	- Make sharpconsole start emulator using a existing device name
 	- Show it on SharpConsole and remote connect to it.
 	- Allow pin states to be set:
 		- Set voltage level: LOW or HIGH

@@ -319,19 +319,12 @@ namespace SharpTerminal
                             var filePath = responseObj["filepath"];
                             Console_Println("Stored EEPROM at " + filePath);
 
-                            String viewerPath = "SharpEEpromViewer.exe";
-							if (!System.IO.File.Exists("SharpEEpromViewer.exe"))
+                            String viewerPath = Util.FindExecutable("SharpEEpromViewer");
+                            if(viewerPath == null)
                             {
-                                viewerPath = System.Reflection.Assembly.GetEntryAssembly().Location;
-								viewerPath = viewerPath.Replace("SharpTerminal.dll", "SharpEEPromViewer.exe");
-                                viewerPath = viewerPath.Replace("SharpTerminal", "SharpEEpromViewer");
-
-                                if (!System.IO.File.Exists(viewerPath))
-                                {
-                                    MessageBox.Show("Cannot locate SharpEEPromViewer.exe", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                    break;
-                                }
-							}
+								MessageBox.Show("Cannot locate SharpEEPromViewer.exe", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+								break;
+							}                            
 
                             var process = new System.Diagnostics.Process();
                             process.StartInfo.FileName = viewerPath;
