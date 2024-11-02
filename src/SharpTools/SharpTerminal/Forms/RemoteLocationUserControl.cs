@@ -10,7 +10,6 @@
 
 using System;
 using System.Drawing;
-using System.Linq;
 using System.Runtime.Versioning;
 using System.Windows.Forms;
 
@@ -46,25 +45,23 @@ namespace SharpTerminal
 			if (num <= 0)
 				return;			
 
-			this.DoubleBuffered = true;			
-			m_gridMain.SuspendLayout();
-			m_gridMain.Rows.Add(num);
+			this.DoubleBuffered = true;
+			m_lvItems.SuspendLayout();			
 
 			for (int i = mBeginAddress, pos = 0; i < mEndAddress; ++i, ++pos)
 			{
-				var row = m_gridMain.Rows[pos];
-
-				row.Cells[0].Value = i;
-
+				var item = new ListViewItem(i.ToString());
+				m_lvItems.Items.Add(item);
+				
 				if ((mDecodersPath == null) || (mDecodersPath[pos] == null))
 					continue;
 
-				row.Tag = RemoteObjectManager.GetRemoteObjectAsync(mDecodersPath[pos]);
+				item.Tag = RemoteObjectManager.GetRemoteObjectAsync(mDecodersPath[pos]);
 			}
 
 			for (int i = mBeginAddress, pos = 0; i < mEndAddress; ++i, ++pos)
 			{
-				var row = m_gridMain.Rows[pos];
+				var row = m_lvItems.Items[pos];
 
 				var task = (System.Threading.Tasks.Task<RemoteObject>)row.Tag;
 				if (task == null)
@@ -73,15 +70,18 @@ namespace SharpTerminal
 				row.Tag = null;
 				var decoder = (RemoteDecoder) await task;
 
-				row.Cells[1].Value = decoder.ClassName;
-				row.Cells[2].Value = decoder.Name;
-				row.Cells[3].Value = decoder.DeviceName;
-
+				row.SubItems.Add(decoder.ClassName);
+				row.SubItems.Add(decoder.Name);
+				row.SubItems.Add(decoder.DeviceName);
 				if (decoder.Broken)
-					row.DefaultCellStyle.BackColor = Color.Red;
+					row.BackColor = Color.Red;
 			}
-			
-			m_gridMain.ResumeLayout();			
+
+			m_lvItems.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+			m_lvItems.AutoResizeColumn(m_lvItems.Columns.Count - 1, ColumnHeaderAutoResizeStyle.HeaderSize);
+
+			m_lvItems.ResumeLayout();			
 		}
 	}
 }
+	
