@@ -11,6 +11,9 @@
     <Compile Update="Forms\DashboardUserControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="Forms\EmulatorDashboardUserControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="Forms\Form1.cs">
       <SubType>Form</SubType>
     </Compile>

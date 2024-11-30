@@ -40,6 +40,22 @@
 			columnHeader4 = new System.Windows.Forms.ColumnHeader();
 			SuspendLayout();
 			// 
+			// columnHeader1
+			// 
+			columnHeader1.Text = "Address";
+			// 
+			// columnHeader2
+			// 
+			columnHeader2.Text = "Type";
+			// 
+			// columnHeader3
+			// 
+			columnHeader3.Text = "Name";
+			// 
+			// columnHeader4
+			// 
+			columnHeader4.Text = "Device";
+			// 
 			// m_lbTitle
 			// 
 			m_lbTitle.AutoSize = true;
@@ -64,22 +80,6 @@
 			m_lvItems.TabIndex = 2;
 			m_lvItems.UseCompatibleStateImageBehavior = false;
 			m_lvItems.View = System.Windows.Forms.View.Details;
-			// 
-			// columnHeader1
-			// 
-			columnHeader1.Text = "Address";
-			// 
-			// columnHeader2
-			// 
-			columnHeader2.Text = "Type";
-			// 
-			// columnHeader3
-			// 
-			columnHeader3.Text = "Name";
-			// 
-			// columnHeader4
-			// 
-			columnHeader4.Text = "Device";
 			// 
 			// RemoteLocationUserControl
 			// 

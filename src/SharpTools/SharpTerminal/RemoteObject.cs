@@ -11,7 +11,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Json;
 using System.Linq;
 using System.Runtime.Versioning;
@@ -42,7 +41,7 @@ namespace SharpTerminal
 	}
 
 	[SupportedOSPlatform("windows")]
-	public class RemoteObject: NotifyPropertyBase
+	public class RemoteObject: NotifyPropertyBase, IControlProvider
 	{
 		[Category("Object")]
 		public string Name { get; }

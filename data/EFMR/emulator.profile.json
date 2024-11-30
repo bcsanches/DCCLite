@@ -3,7 +3,7 @@
     [
         {
 			"pin":1,
-			"state":"high"
+			"voltage":"high"
 		}
     ]
 }

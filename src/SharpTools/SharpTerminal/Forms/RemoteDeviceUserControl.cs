@@ -36,6 +36,11 @@ namespace SharpTerminal
 
 			m_btnRename.Enabled = !mRemoteDevice.Registered;
 
+			this.RefreshButtonsState();
+
+			mRemoteDevice.StateChanged += RemoteDevice_StateChanged;
+			remoteDevice.PropertyChanged += RemoteDevice_PropertyChanged;
+
 			this.UpdateLabel();
 
 			if (pins == null)
@@ -59,8 +64,17 @@ namespace SharpTerminal
 					row.DefaultCellStyle.BackColor = Color.Red;
 				}
 			}
+		}
 
-			remoteDevice.PropertyChanged += RemoteDevice_PropertyChanged;
+		private void RefreshButtonsState()
+		{
+			m_btnBlock.Enabled = mRemoteDevice.ConnectionStatus == RemoteDevice.Status.ONLINE;
+			m_btnEmulate.Enabled = mRemoteDevice.ConnectionStatus == RemoteDevice.Status.OFFLINE;
+		}
+
+		private void RemoteDevice_StateChanged(RemoteObject sender, EventArgs args)
+		{
+			this.RefreshButtonsState();
 		}
 
 		private void UpdateLabel()
@@ -102,7 +116,7 @@ namespace SharpTerminal
 
 		private async void m_btnClear_Click(object sender, EventArgs e)
 		{
-			if(MessageBox.Show("Are you sure? This cannot be undone!!", "Are you sure?", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
+			if (MessageBox.Show("Are you sure? This cannot be undone!!", "Are you sure?", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
 				return;
 
 			try
@@ -113,8 +127,13 @@ namespace SharpTerminal
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show("Error: " + ex.Message, "Error during operation", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show("Error: " + ex.Message, "Operation failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
+		}
+
+		private void m_btnEmulate_Click(object sender, EventArgs e)
+		{
+			EmulatorManager.StartEmulator(mRemoteDevice.Name);
 		}
 	}
 }
