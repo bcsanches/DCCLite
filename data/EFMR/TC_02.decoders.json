@@ -136,7 +136,7 @@
         "inverted": true,
         "powerPin": 36,
         "frogPin": 34,
-        "range":15,
+        "range":35,
         "invertedFrog": true,
         "invertedPower": true,
         "operationTime": 3000
@@ -199,7 +199,7 @@
         "address": "1414",
         "pin": 47,
         "inverted": true,
-        "powerPin": 10,
+        "powerPin": 49,
         "frogPin": 54,
         "range":45,
         "invertedFrog": true,
