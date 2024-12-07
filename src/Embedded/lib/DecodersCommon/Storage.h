@@ -12,6 +12,7 @@
 #define _STORAGE_H
 
 #include <Arduino.h>
+#include <cstdint>
 
 #include "Strings.h"
 
