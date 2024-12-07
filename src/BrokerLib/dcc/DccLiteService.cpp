@@ -410,14 +410,9 @@ namespace dcclite::broker
 		m_pDecoders->VisitChildren([&vecDecoders](auto &obj)
 			{
 				auto decoder = dynamic_cast<StateDecoder *>(&obj);
-				if (!decoder)
-					return true;
-
-				if (!decoder->IsInputDecoder())
-					return true;
-
-				vecDecoders.push_back(decoder);
-
+				if (decoder && (decoder->IsInputDecoder()))
+					vecDecoders.push_back(decoder);
+				
 				return true;
 			}
 		);		
@@ -430,10 +425,8 @@ namespace dcclite::broker
 		std::vector<TurnoutDecoder *> vecDecoders;
 
 		m_pDecoders->VisitChildren([&vecDecoders](auto &obj)
-			{
-				auto decoder = dynamic_cast<TurnoutDecoder *>(&obj);
-
-				if (decoder)
+			{				
+				if (auto decoder = dynamic_cast<TurnoutDecoder *>(&obj))
 					vecDecoders.push_back(decoder);
 
 				return true;
@@ -670,6 +663,7 @@ namespace dcclite::broker
 					this->NetworkThread_OnNetHello(sender, pkt);
 					break;
 
+				[[likely]]
 				default:
 					dcclite::broker::EventHub::PostEvent<GenericNetworkEvent>(std::ref(*this), sender, pkt, msgType);
 					break;

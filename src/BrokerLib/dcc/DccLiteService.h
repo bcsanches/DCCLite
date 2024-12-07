@@ -172,7 +172,7 @@ namespace dcclite::broker
 			void Device_RegisterSession(NetworkDevice& dev, const dcclite::Guid& configToken) override;
 			void Device_UnregisterSession(NetworkDevice& dev, const dcclite::Guid& sessionToken) override;
 
-			void Device_DestroyUnregistered(NetworkDevice &dev);
+			void Device_DestroyUnregistered(NetworkDevice &dev) override;
 
 			friend class DestroyUnregisteredDeviceEvent;
 
