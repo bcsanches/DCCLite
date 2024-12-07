@@ -13,6 +13,8 @@
 
 #include <Arduino.h>
 
+#include <cstdint>
+
 namespace Storage
 {
 	class EpromStream;

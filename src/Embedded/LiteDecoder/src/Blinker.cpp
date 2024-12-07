@@ -13,6 +13,8 @@
 #include <assert.h>
 #include <Arduino.h>
 
+#include <cstdint>
+
 constexpr auto LOCAL_LED = 13;
 
 constexpr auto SLOW_INTERVAL = 1000;
