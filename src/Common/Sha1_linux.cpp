@@ -9,51 +9,49 @@
 // defined by the Mozilla Public License, v. 2.0.
 
 
-#include <openssl/sha.h>
+#include <openssl/evp.h>
 #include <cassert>
 
 #include "Sha1.h"
-
 
 class Hasher : public dcclite::detail::NonCopyable
 {
 	public:
 		Hasher()
-		{
-			assert(dcclite::SHA1_LENGTH == SHA_DIGEST_LENGTH);
+		{			
+			m_pContext = EVP_MD_CTX_new();
+			if(m_pContext == nullptr)
+			{
+				throw std::runtime_error("[Hasher] Cannot create SSL context");
+			}
 
-			SHA1_Init(&m_Context);
+			if(!EVP_DigestInit(m_pContext, EVP_sha1()))
+			{
+				EVP_MD_CTX_free(m_pContext);
+
+				throw std::runtime_error("[Hasher] Cannot init SSL digest");
+			}						
 		}
 
 		~Hasher()
-		{
-			if (!m_fFinalized)
-			{
-				unsigned char hash[dcclite::SHA1_LENGTH];
-
-				SHA1_Final(hash, &m_Context);
-			}
+		{			
+			EVP_MD_CTX_free(m_pContext);
 		}
 
 		void Compute(const void* data, size_t length)
 		{
-			assert(!m_fFinalized);
-
-			SHA1_Update(&m_Context, data, length);
+			EVP_DigestUpdate(m_pContext, data, length);
 		}
 
 		void Finalize(unsigned char hash[dcclite::SHA1_LENGTH])
 		{
-			assert(!m_fFinalized);
+			unsigned int s = dcclite::SHA1_LENGTH;
 
-			SHA1_Final(hash, &m_Context);
-			m_fFinalized = true;
+			EVP_DigestFinal_ex(m_pContext, hash, &s);
 		}
 
-	private:
-		bool m_fFinalized = false;
-
-		SHA_CTX m_Context;
+	private:		
+		EVP_MD_CTX *m_pContext;
 };
 
 void dcclite::Sha1::ComputeForFile(const dcclite::fs::path &fileName)

@@ -147,7 +147,7 @@ namespace dcclite::broker
 		}
 
 		dcclite::Log::Trace("[Device::{}] [Load] stored config token {}", this->GetName(), storedConfigToken);
-		dcclite::Log::Trace("[Device::{}] [Load] config token {}", this->GetName(), m_ConfigToken);
+		dcclite::Log::Trace("[Device::{}] [Load] currently config token {}", this->GetName(), m_ConfigToken);
 		dcclite::Log::Trace("[Device::{}] [Load] reading config {}", this->GetName(), m_pathConfigFile.string());
 
 		rapidjson::IStreamWrapper isw(configFile);

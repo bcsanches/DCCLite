@@ -43,7 +43,7 @@ namespace dcclite::broker
 		dcclite::Sha1 currentFileHash;
 		currentFileHash.ComputeForFile(this->GetFilePath(fileName));
 
-		//dcclite::Log::Trace("hash {} -> {}", filePath.string(), currentFileHash.ToString());
+		dcclite::Log::Trace("[Project::GetFileToken] {} hash is {}", fileName, currentFileHash.ToString());
 
 		dcclite::Guid token;
 		dcclite::Sha1 storedHash;
@@ -95,13 +95,13 @@ namespace dcclite::broker
 			}
 			else
 			{
-				dcclite::Log::Info("[Project::GetFileToken] Project state file for {} not found", fileName);
+				dcclite::Log::Info("[Project::GetFileToken] {} Project state file not found", fileName);
 			}
 
 		SKIP_LOAD:
 			if (storedHash != currentFileHash)
 			{
-				dcclite::Log::Info("[Project::GetFileToken] Project config file {} modified", fileName);
+				dcclite::Log::Info("[Project::GetFileToken] {} Project config file modified", fileName);
 
 				token = dcclite::GuidCreate();
 
@@ -113,7 +113,7 @@ namespace dcclite::broker
 
 				if (ec)
 				{
-					dcclite::Log::Error("[Project::GetFileToken] Cannot create app path for storing state for {}, system error: {}", fileName, ec.message());
+					dcclite::Log::Error("[Project::GetFileToken] {} Cannot create app path for storing state, system error: {}", fileName, ec.message());
 				}
 				else
 				{
@@ -129,8 +129,12 @@ namespace dcclite::broker
 
 					newStateFile << responseWriter.GetString();
 
-					dcclite::Log::Info("[Project::GetFileToken] Stored {} state data on {}", fileName, stateFilePath.string());
+					dcclite::Log::Info("[Project::GetFileToken] {} state data on {}", fileName, stateFilePath.string());
 				}
+			}
+			else
+			{
+				dcclite::Log::Info("[Project::GetFileToken] {} Stored hash on state match {}", fileName, storedHash.ToString());
 			}
 		}
 
