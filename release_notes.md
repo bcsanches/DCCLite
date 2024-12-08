@@ -27,6 +27,10 @@
 
 - Support to new sensor with milliseconds delay and legacy sensors
 
+## Code
+
+- Updated to stop using deprecated OpenSSL functions for computing SHA1
+
 # Version 0.9.0
 
 ## General Features

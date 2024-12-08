@@ -23,3 +23,4 @@ src/LiteDecoder/.pio/
 check-cppcheck-build-dir/
 src/Embedded/.pio/
 src/Embedded/.vscode/
+.vscode/DccLiteBroker.log
