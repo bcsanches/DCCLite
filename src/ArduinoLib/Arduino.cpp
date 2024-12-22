@@ -134,9 +134,14 @@ namespace ArduinoLib
 	DynamicLibrary g_ModuleLib;
 	std::string g_strModuleName;
 
-	void Setup(std::string moduleName, dcclite::Logger_t log, const char *projectPath)
+	void Setup(std::string moduleName, dcclite::Logger_t log, const char *deviceName)
 	{
 		dcclite::LogReplace(log);
+
+#error todo
+
+		//
+		//Check if device name rom exists, if not, load the module, init session, save it... unload module and continue
 
 		g_ModuleLib.Load(moduleName);
 
@@ -145,14 +150,9 @@ namespace ArduinoLib
 		g_pfnSetup = reinterpret_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("setup"));
 		g_pfnLoop = reinterpret_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("loop"));
 
-		if (projectPath)
-		{
-
-		}
-
 		g_Clock = dcclite::Clock();
 
-		detail::RomSetupModule(g_strModuleName);
+		detail::RomSetupModule(deviceName ? deviceName : g_strModuleName);
 
 		//initialize client
 		g_pfnSetup();

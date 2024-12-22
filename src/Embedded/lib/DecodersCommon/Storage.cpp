@@ -68,9 +68,7 @@ extern size_t Storage::Length() noexcept
 }
 
 bool Storage::LoadConfig()
-{	
-    //Console::SendLog(MODULE_NAME, "init %d", sizeof(STORAGE_MAGIC));		
-	//Console::SendLogEx(MODULE_NAME, FSTR_INIT, ' ', static_cast<unsigned>(FStrLen(STORAGE_MAGIC)));
+{	    
 	DCCLITE_LOG_MODULE_LN(FSTR_INIT << ' ' << static_cast<unsigned>(FStrLen(STORAGE_MAGIC)));
 
 	Lump header;
@@ -112,8 +110,7 @@ bool Storage::LoadConfig()
 
 				break;
 			}			
-			
-			//Console::SendLogEx(MODULE_NAME, FSTR_UNKNOWN, ' ', FSTR_LUMP, ' ', lump.m_archName);
+						
 			DCCLITE_LOG << MODULE_NAME << ' ' << FSTR_UNKNOWN << ' ' << FSTR_LUMP << ' ' << lump.m_archName << DCCLITE_ENDL;
 
 			stream.Skip(lump.m_uLength);
@@ -122,8 +119,7 @@ bool Storage::LoadConfig()
 				break;		
 		}
     }
-
-    //Console::SendLogEx(MODULE_NAME, FSTR_OK);
+    
 	DCCLITE_LOG_MODULE_LN(FSTR_OK);
 
     return true;

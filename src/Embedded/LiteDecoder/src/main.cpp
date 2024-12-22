@@ -56,19 +56,22 @@ bool Console::Custom_ParseCommand(const char *command)
 
 			return true;
 		}
+
+		NetUdp::Configure(nodeName);
 			
 		int srvport = 0;
 		auto token = parser.GetNumber(srvport);
-		if((token != dcclite::Tokens::END_OF_BUFFER) && (token != dcclite::Tokens::NUMBER))
+		if (token == dcclite::Tokens::NUMBER)
+		{
+			Session::Configure(srvport);			
+		}
+		else if(token != dcclite::Tokens::END_OF_BUFFER)
 		{
 			//Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_SRVPORT);
 			DCCLITE_LOG << MODULE_NAME << FSTR_NOK << ' ' << FSTR_SRVPORT << DCCLITE_ENDL;
 
 			return true;
-		}
-
-		NetUdp::Configure(nodeName);
-		Session::Configure(srvport);
+		}				
 		
 		DCCLITE_LOG_MODULE_LN(FSTR_OK);
 
@@ -114,7 +117,6 @@ bool Console::Custom_ParseCommand(const char *command)
 #define SESSION_STORAGE_ID  F("Sson002")
 
 #define NET_UDP_OLD_STORAGE_ID	F("NetU002")
-#define SESSION_OLD_STORAGE_ID  F("Sson001")
 
 bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream &stream)
 {
@@ -142,8 +144,7 @@ bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream
 	}
 
 	if (FStrNCmp(lump.m_archName, NET_UDP_STORAGE_ID, FStrLen(NET_UDP_STORAGE_ID)) == 0)
-	{
-		//Console::SendLogEx(MODULE_NAME, "net", "udp", ' ', "cfg");
+	{		
 		DCCLITE_LOG_MODULE_LN(MODULE_NAME << F(" net udp cfg"));
 
 		NetUdp::LoadConfig(stream);
@@ -151,19 +152,8 @@ bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream
 		return true;
 	}
 
-	if (FStrNCmp(lump.m_archName, SESSION_OLD_STORAGE_ID, FStrLen(SESSION_STORAGE_ID)) == 0)
-	{
-		//Console::SendLogEx(MODULE_NAME, FSTR_SESSION, ' ', "cfg");
-		DCCLITE_LOG_MODULE_LN(FSTR_SESSION << F(" OLD OLD OLD cfg"));
-
-		Session::LoadConfig(stream, true);
-
-		return true;
-	}
-
 	if (FStrNCmp(lump.m_archName, SESSION_STORAGE_ID, FStrLen(SESSION_STORAGE_ID)) == 0)
-	{
-		//Console::SendLogEx(MODULE_NAME, FSTR_SESSION, ' ', "cfg");
+	{		
 		DCCLITE_LOG_MODULE_LN(FSTR_SESSION << F(" cfg"));
 
 		Session::LoadConfig(stream);
@@ -205,14 +195,12 @@ void Storage_LoadDecoders(uint32_t position)
 	stream.Get(lump.m_uLength);
 
 	if (FStrNCmp(lump.m_archName, DECODERS_STORAGE_ID, FStrLen(DECODERS_STORAGE_ID)) != 0)
-	{
-		//Console::SendLogEx(MODULE_NAME, FSTR_UNKNOWN, ' ', FSTR_LUMP, ' ', lump.m_archName);
+	{		
 		DCCLITE_LOG << MODULE_NAME << FSTR_UNKNOWN << ' ' << FSTR_LUMP << ' ' << lump.m_archName << DCCLITE_ENDL;
 
 		return;
 	}
-
-	//Console::SendLogEx(MODULE_NAME, F("Loading config"));
+	
 	DCCLITE_LOG_MODULE_LN(F("Loading config"));	
 
 	DecoderManager::LoadConfig(stream);
@@ -237,10 +225,7 @@ void setup()
 	{
 		Storage_LoadDecoders(g_uDecodersPosition);
 	}
-
-	
-
-	//Console::SendLogEx(FSTR_SETUP, " ", FSTR_OK);
+		
 	DCCLITE_LOG_MODULE_LN(FSTR_SETUP << ' ' << FSTR_OK);
 }
 

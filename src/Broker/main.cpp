@@ -18,11 +18,9 @@
 #include <LogUtils.h>
 #include <PathUtils.h>
 
-
 #include "sys/Broker.h"
 #include "sys/EventHub.h"
 #include "sys/Thinker.h"
-
 
 #include <spdlog/logger.h>
 
@@ -89,28 +87,16 @@ int main(int argc, char **argv)
 
 		dcclite::broker::Broker broker{ (argc == 1) ? "MyRailroad" : argv[1] };
 		
-		dcclite::Log::Info("Ready, main loop...");
-
-		unsigned frameCount = 0;
-		auto startTime = dcclite::Clock::DefaultClock_t::now();
+		dcclite::Log::Info("Ready, main loop...");		
 		
 		while (!g_fExitRequested.test(std::memory_order_relaxed))
 		{			
 			auto now = dcclite::Clock::DefaultClock_t::now();
-
-			++frameCount;			
-			if ((now - startTime) >= std::chrono::seconds{ 1 })
-			{
-				startTime += std::chrono::seconds{ 1 };
-
-				//dcclite::Log::Debug("[{}]", frameCount);
-				frameCount = 0;
-			}
-			
+						
 			auto timeout = dcclite::broker::Thinker::UpdateThinkers(now);
 			
-			dcclite::broker::EventHub::PumpEvents(timeout);						
-		}			
+			dcclite::broker::EventHub::PumpEvents(timeout);
+		}
 	}	
 	catch (std::exception &ex)
 	{

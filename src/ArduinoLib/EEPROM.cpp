@@ -201,8 +201,8 @@ namespace ArduinoLib::detail
 
 	1 - First, check if the rom state file exists, if yes load it
 
-	If no rom state, check for a backup file if yes, check for rom temporary, if exists, rename it and goevilto 1.
-		- that should not happen, but if a backup and no temporary rom, rename backup and goevilto 1
+	If no rom state, check for a backup file if yes, check for rom temporary, if exists, rename it and goto 1.
+		- that should not happen, but if a backup and no temporary rom, rename backup and goto 1
 
 	if no backup file, sorry, no rom state... clear it
 

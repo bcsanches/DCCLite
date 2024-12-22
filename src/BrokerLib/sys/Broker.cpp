@@ -51,25 +51,19 @@ namespace dcclite::broker
 	static RName GetServiceClassName(const rapidjson::Value &data)
 	{
 		const char *className = dcclite::json::GetString(data, "class", "service block");
-		auto rclassName = RName::TryGetName(className);
-		if (!rclassName)
-		{
-			throw std::runtime_error(fmt::format("[Broker] [CreateBrokerService] error: service type {} not registered", className));
-		}
-
-		return rclassName;
+		if (auto rclassName = RName::TryGetName(className))
+			return rclassName;
+		
+		throw std::runtime_error(fmt::format("[Broker] [CreateBrokerService] error: service type {} not registered", className));		
 	}
 
 	static ServiceFactory &FindServiceFactory(const rapidjson::Value &data)
 	{
-		auto className = GetServiceClassName(data);
-		auto factory = ServiceFactory::TryFindFactory(className);
-		if (!factory)
-		{
-			throw std::runtime_error(fmt::format("[Broker] [CreateBrokerService] error: unknown service type {}", className));
-		}
+		auto className = GetServiceClassName(data);		
+		if (auto factory = ServiceFactory::TryFindFactory(className))		
+			return *factory;					
 
-		return *factory;
+		throw std::runtime_error(fmt::format("[Broker] [CreateBrokerService] error: unknown service type {}", className));
 	}
 
 	static std::unique_ptr<Service> CreateBrokerService(const ServiceFactory &factory, Broker &broker, const rapidjson::Value &data, const Project &project)

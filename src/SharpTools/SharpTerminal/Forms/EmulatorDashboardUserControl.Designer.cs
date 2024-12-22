@@ -30,7 +30,7 @@
 		{
 			System.Windows.Forms.Label m_lbTitle;
 			System.Windows.Forms.GroupBox groupBox1;
-			listView1 = new System.Windows.Forms.ListView();
+			m_lvEmulators = new System.Windows.Forms.ListView();
 			m_lbTitle = new System.Windows.Forms.Label();
 			groupBox1 = new System.Windows.Forms.GroupBox();
 			groupBox1.SuspendLayout();
@@ -50,7 +50,7 @@
 			// groupBox1
 			// 
 			groupBox1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			groupBox1.Controls.Add(listView1);
+			groupBox1.Controls.Add(m_lvEmulators);
 			groupBox1.Location = new System.Drawing.Point(4, 27);
 			groupBox1.Name = "groupBox1";
 			groupBox1.Size = new System.Drawing.Size(466, 437);
@@ -58,17 +58,17 @@
 			groupBox1.TabStop = false;
 			groupBox1.Text = "Running";
 			// 
-			// listView1
+			// m_lvEmulators
 			// 
-			listView1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			listView1.FullRowSelect = true;
-			listView1.GridLines = true;
-			listView1.Location = new System.Drawing.Point(6, 22);
-			listView1.Name = "listView1";
-			listView1.Size = new System.Drawing.Size(454, 409);
-			listView1.TabIndex = 3;
-			listView1.UseCompatibleStateImageBehavior = false;
-			listView1.View = System.Windows.Forms.View.Details;
+			m_lvEmulators.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+			m_lvEmulators.FullRowSelect = true;
+			m_lvEmulators.GridLines = true;
+			m_lvEmulators.Location = new System.Drawing.Point(6, 22);
+			m_lvEmulators.Name = "m_lvEmulators";
+			m_lvEmulators.Size = new System.Drawing.Size(454, 409);
+			m_lvEmulators.TabIndex = 3;
+			m_lvEmulators.UseCompatibleStateImageBehavior = false;
+			m_lvEmulators.View = System.Windows.Forms.View.Details;
 			// 
 			// EmulatorDashboardUserControl
 			// 
@@ -85,6 +85,6 @@
 
 		#endregion
 
-		private System.Windows.Forms.ListView listView1;
+		private System.Windows.Forms.ListView m_lvEmulators;
 	}
 }

@@ -1,13 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Windows.Forms;
 
 namespace SharpTerminal
 {
 	class Emulator
 	{
+		string m_strDeviceName;
 
+		public Emulator(string deviceName)
+		{
+			m_strDeviceName = deviceName;
+
+			if (string.IsNullOrWhiteSpace(m_strDeviceName))
+			{
+				throw new ArgumentNullException(nameof(deviceName));
+			}
+		}
 	}
 
 	internal static class EmulatorManager
@@ -27,7 +36,7 @@ namespace SharpTerminal
 				return;
 			}
 
-			var emulator = new Emulator();
+			var emulator = new Emulator(deviceName);
 			g_mapEmulators[deviceName] = emulator;
 		}
 	}
