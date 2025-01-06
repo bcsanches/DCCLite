@@ -703,7 +703,6 @@ namespace dcclite::broker
 	//
 	//
 
-
 	void NetworkDevice::Decoder_OnChangeStateRequest(const Decoder &decoder) noexcept
 	{
 		if (auto *onlineState = std::get_if<OnlineState>(&m_vState))
@@ -839,29 +838,42 @@ namespace dcclite::broker
 		return true;
 	}
 
-	void NetworkDevice::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteConfigToken)
+	struct OnPacketImpl
 	{
-		if (!m_pclCurrentState)
+		void operator()(std::monostate &nullState, dcclite::RName devName, dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteConfigToken)
 		{
-			dcclite::Log::Error("[Device::{}] [OnPacket] Cannot process packet on Offline mode, packet: {}", this->GetName(), dcclite::MsgName(msgType));
+			dcclite::Log::Error("[Device::{}] [OnPacket] Cannot process packet on Offline mode, packet: {}", devName, dcclite::MsgName(msgType));
+		}
 
-			return;
-		}		
+#if 1
+		template <typename T>
+		void operator()(T &state, dcclite::RName devName, dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteConfigToken)
+		{
+			state.OnPacket(packet, time, msgType, remoteAddress, remoteConfigToken);
+		}
+#endif
+	};
 
-		m_pclCurrentState->OnPacket(packet, time, msgType, remoteAddress, remoteConfigToken);
+	void NetworkDevice::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteConfigToken)
+	{				
+		std::visit([name = this->GetName(), &packet, time, msgType, remoteAddress, remoteConfigToken](auto &s)
+			{
+				OnPacketImpl impl;
+				impl(s, name, packet, time, msgType, remoteAddress, remoteConfigToken);
+			},
+			m_vState
+		);
 	}
 
 	void NetworkDevice::ClearState()
 	{
-		m_vState = std::monostate{};
-		m_pclCurrentState = nullptr;
+		m_vState = std::monostate{};		
 	}
 
 	template <typename T, class... Args>
 	void NetworkDevice::SetState(Args&&...args)
 	{
 		m_vState.emplace<T>(*this, args...);
-		m_pclCurrentState = &std::get<T>(m_vState);
 	}
 
 	void NetworkDevice::GotoSyncState()

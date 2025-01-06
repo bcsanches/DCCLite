@@ -182,11 +182,13 @@ namespace dcclite::broker
 			//
 			//
 			//Connection status
-			Status				m_kStatus = Status::OFFLINE;			
+			Status				m_kStatus = Status::OFFLINE;
+
+			friend struct OnPacketImpl;
 
 			struct State
 			{
-				virtual void OnPacket(					
+				void OnPacket(					
 					dcclite::Packet &packet, 
 					const dcclite::Clock::TimePoint_t time, 
 					const dcclite::MsgTypes msgType, 
@@ -215,7 +217,7 @@ namespace dcclite::broker
 
 				Thinker				m_clTimeoutThinker;
 
-				ConfigState(NetworkDevice &self, const dcclite::Clock::TimePoint_t time);			
+				ConfigState(NetworkDevice &self, const dcclite::Clock::TimePoint_t time);					
 
 				void OnPacket(					
 					dcclite::Packet &packet,
@@ -223,7 +225,7 @@ namespace dcclite::broker
 					const dcclite::MsgTypes msgType,
 					const dcclite::NetworkAddress remoteAddress,
 					const dcclite::Guid remoteConfigToken
-				) override;				
+				);				
 
 				[[nodiscard]] 
 				const char *GetName() const override { return "ConfigState"; }
@@ -262,7 +264,7 @@ namespace dcclite::broker
 					const dcclite::MsgTypes msgType,
 					const dcclite::NetworkAddress remoteAddress,
 					const dcclite::Guid remoteConfigToken
-				) override;				
+				);				
 
 				[[nodiscard]] const char *GetName() const override { return "SyncState"; }
 
@@ -282,7 +284,7 @@ namespace dcclite::broker
 					const dcclite::MsgTypes msgType,
 					const dcclite::NetworkAddress remoteAddress,
 					const dcclite::Guid remoteConfigToken
-				) override;				
+				);				
 
 				[[nodiscard]] const char *GetName() const override { return "OnlineState"; }
 
@@ -325,8 +327,7 @@ namespace dcclite::broker
 			//
 			//Connection state
 		
-			std::variant< std::monostate, ConfigState, SyncState, OnlineState> m_vState;
-			State *m_pclCurrentState = nullptr;			
+			std::variant< std::monostate, ConfigState, SyncState, OnlineState> m_vState;			
 
 			TimeoutController	m_clTimeoutController;
 

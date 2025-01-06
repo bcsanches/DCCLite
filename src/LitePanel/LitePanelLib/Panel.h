@@ -12,6 +12,8 @@
 
 #include "TileMap.h"
 
+#include <string>
+
 namespace LitePanel
 {
 	class RailObject;

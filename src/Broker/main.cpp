@@ -28,17 +28,19 @@ constexpr auto BUILD_NUM = DCCLITE_VERSION;
 
 static std::atomic_flag g_fExitRequested;
 
-class NullEventTarget: public dcclite::broker::EventHub::IEventTarget
-{
-	public:
-		//empty
-};
-
 class QuitEvent: public dcclite::broker::EventHub::IEvent
 {
+	private:
+		class NullEventTarget: public dcclite::broker::EventHub::IEventTarget
+		{
+			//empty
+		};
+
+		static NullEventTarget g_clTarget;
+
 	public:
-		QuitEvent(dcclite::broker::EventHub::IEventTarget &target) :
-			IEvent{ target }
+		QuitEvent() :
+			IEvent{ std::ref(g_clTarget)}
 		{
 			//empty
 		}
@@ -49,14 +51,14 @@ class QuitEvent: public dcclite::broker::EventHub::IEvent
 		}
 };
 
+QuitEvent::NullEventTarget QuitEvent::g_clTarget;
+
 static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 {
 	g_fExitRequested.test_and_set(std::memory_order_relaxed);	
 
-	static NullEventTarget g_NullTarget;
-
 	//wake up main thread if it is sitting waiting for events...
-	dcclite::broker::EventHub::PostEvent<QuitEvent>(std::ref(g_NullTarget));
+	dcclite::broker::EventHub::PostEvent<QuitEvent>();
 
 	dcclite::Log::Info("[Main] CTRL+C detected, exiting...");
 
