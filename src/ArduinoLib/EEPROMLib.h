@@ -14,7 +14,12 @@
 
 namespace ArduinoLib::detail
 {
-	void RomSetupModule(std::string_view moduleName);
+	/**
+	* 
+	* Returns: true if rom module was loaded, false if not found or load failed.	
+	*
+	*/
+	bool RomSetupModule(std::string_view moduleName);
 
 	void RomAfterLoop();
 

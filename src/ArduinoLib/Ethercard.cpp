@@ -87,6 +87,12 @@ bool EtherCard::clientWaitIp(const uint8_t *ip)
 	return false;
 }
 
+void EtherCard::udpServerPauseListenOnPort(uint16_t port)
+{
+	g_Socket.Close();
+	g_vecListeners.clear();
+}
+
 void EtherCard::udpServerListenOnPort(UdpServerCallback callback, uint16_t port)
 {
 	if (g_Socket.IsOpen())

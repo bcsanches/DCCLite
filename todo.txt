@@ -1,6 +1,14 @@
 DCCLite
 -------
 
+- Modify sync behavior: use DCCLite server data for outputs, not device. DCCLite with rule the device state
+	- Scripts does not need to monitor device reload after script has run
+	- states changes when devices are offline will be sent down to the device when it becomes online
+
+- Expose signals to scripts
+
+- Parser: use std::string_view
+
 - Better emulator:
 	- Make sharpConsole able to start emulator as is
 	- Make sharpconsole start emulator using a existing device name (auto generate eprom?)
@@ -29,6 +37,8 @@ DCCLite
 - Implement coroutine support on lua scripts?
 
 - update route section to know next section and avoid re-ocupying the block
+
+- Make a EngineDriver Server, redirect to DCCex Directly and goodbye JMRI
 
 LitePanelSDL
 ------------

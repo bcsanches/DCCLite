@@ -47,6 +47,12 @@ struct ARDUINO_API SerialImpl
 		m_strData.assign(data);
 	}
 
+	inline void internalSetData(std::string str)
+	{
+		m_uPos = 0;
+		m_strData = std::move(str);
+	}
+
 	private:
 #pragma warning(disable:4251)
 		std::string m_strData;

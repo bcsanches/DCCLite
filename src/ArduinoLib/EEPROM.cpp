@@ -239,7 +239,7 @@ namespace ArduinoLib::detail
 		return true;
 	}
 
-	void RomSetupModule(std::string_view moduleName)
+	bool RomSetupModule(std::string_view moduleName)
 	{
 		//first time?
 		if (!g_thWorker.joinable())
@@ -274,7 +274,7 @@ namespace ArduinoLib::detail
 		g_strRomBackup = g_strRomFileName;
 		g_strRomBackup += ".bkp";
 		
-		TryLoadRomState();
+		return TryLoadRomState();
 	}	
 
 	void RomFinalize()

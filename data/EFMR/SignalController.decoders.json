@@ -33,5 +33,40 @@
             "off":["red", "green"]
         }        
     ]  
+  },
+  {
+    "name":"TC_SIG_6D",
+    "class":"VirtualSignal",    
+    "address":"1352",  
+    "heads":
+    {
+        "red":"TC_SIG_6D_HR",
+        "green":"TC_SIG_6D_HG"
+    },        
+    "aspects":
+    [
+        {
+            "name":"Stop",
+            "on":["red"]
+        },
+        {
+            "name":"Restricted",
+            "on":["red"],
+            "flash":true
+        },
+        {
+            "name":"Aproach",
+            "on":["green"],
+            "flash":true
+        },
+        {
+            "name":"Clear",
+            "on":["green"]
+        },
+        {
+            "name":"Dark",
+            "off":["red", "green"]
+        }        
+    ]  
   }
 ]

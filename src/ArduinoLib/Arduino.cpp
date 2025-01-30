@@ -15,6 +15,7 @@
 
 #include "ArduinoLib.h"
 #include "Clock.h"
+#include "Ethercard.h"
 
 #include "DynamicLibrary.h"
 
@@ -134,15 +135,10 @@ namespace ArduinoLib
 	DynamicLibrary g_ModuleLib;
 	std::string g_strModuleName;
 
-	void Setup(std::string moduleName, dcclite::Logger_t log, const char *deviceName)
+	bool Setup(std::string moduleName, dcclite::Logger_t log, const char *deviceName)
 	{
 		dcclite::LogReplace(log);
-
-#error todo
-
-		//
-		//Check if device name rom exists, if not, load the module, init session, save it... unload module and continue
-
+		
 		g_ModuleLib.Load(moduleName);
 
 		g_strModuleName = std::move(moduleName);
@@ -152,15 +148,20 @@ namespace ArduinoLib
 
 		g_Clock = dcclite::Clock();
 
-		detail::RomSetupModule(deviceName ? deviceName : g_strModuleName);
+		bool romResult = detail::RomSetupModule(deviceName ? deviceName : g_strModuleName);
 
 		//initialize client
 		g_pfnSetup();
+
+		return romResult;
 	}
 
 	void Finalize()
 	{
 		detail::RomFinalize();
+
+		//hack to reset ehtercard lib
+		ether.udpServerPauseListenOnPort(0);
 	}
 
 	void Tick()
@@ -176,6 +177,11 @@ namespace ArduinoLib
 	}
 
 	void SetSerialInput(const char *data) 
+	{
+		Serial.internalSetData(data);
+	}
+
+	void SetSerialInput(std::string data)
 	{
 		Serial.internalSetData(data);
 	}

@@ -1,12 +1,12 @@
 [
     {
-        "name": "TC_PL20A",
+        "name": "TC_PL20B",
         "class": "Output",
         "address": "1320",
         "pin": 6,
         "inverted": false,
         "ignoreSavedState": true,
-        "comment":"Power track L20A - rabicho estação"
+        "comment":"Power track L20B - rabicho estação"
     },
     {
         "name": "TC_PL22",
@@ -268,7 +268,7 @@
         "powerPin": 61,
         "frogPin": 62 ,
         "range":25,
-        "invertedFrog": false,
+        "invertedFrog": true,
         "invertedPower": true,
         "operationTime": 3000
     },

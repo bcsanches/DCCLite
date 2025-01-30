@@ -121,7 +121,32 @@ int main(int argc, char **argv)
 
 	dcclite::PathUtils::InitAppFolders("Emulator");
 
-	ArduinoLib::Setup("LiteDecoderLib.dll", dcclite::LogGetDefault(), argc > 1 ? argv[1] : nullptr);
+	const char *deviceName =  argc > 1 ? argv[1] : nullptr;
+	if (!ArduinoLib::Setup("LiteDecoderLib.dll", dcclite::LogGetDefault(), deviceName) && deviceName)
+	{
+		//If setup returned false, rom failed to load, also if we have a device name, we need to configure it....
+		dcclite::Log::Info("[main] Initializing module to create rom");
+
+		std::stringstream stream;
+		stream << "/cfg " << deviceName << ';';
+		ArduinoLib::SetSerialInput(stream.str().c_str());
+
+		ArduinoLib::Tick();
+
+		dcclite::Log::Info("[main] Killing module");
+		ArduinoLib::Finalize();
+
+		dcclite::Log::Info("[main] Reloading module");
+		//try again...
+		if (!ArduinoLib::Setup("LiteDecoderLib.dll", dcclite::LogGetDefault(), deviceName))
+		{
+			dcclite::Log::Critical("[main] Failed to reload arduino lib to use new rom");
+
+			return EXIT_FAILURE;
+		}		
+	}
+
+	dcclite::Log::Info("[main] Setup complete, starting main loop");
 
 	TerminalService terminalService;		
 

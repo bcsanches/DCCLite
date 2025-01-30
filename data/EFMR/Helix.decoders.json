@@ -135,7 +135,23 @@
     "activateDelay":1,
     "deactivateDelay":1,
     "comment":"unused"
-  }, 
+  },  
+  {
+    "name": "TC_SIG_6D_HR",
+    "class": "Output",
+    "address": "1350",
+    "pin": 65,
+    "inverted": true,
+    "ignoreSavedState": false    
+  },
+  {
+    "name": "TC_SIG_6D_HG",
+    "class": "Output",
+    "address": "1351",
+    "pin": 64,
+    "inverted": true,
+    "ignoreSavedState": false    
+  },
   {
     "name": "INV_HELIX_TC_SOL",
     "class": "QuadInverter",
