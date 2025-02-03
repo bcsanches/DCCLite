@@ -98,7 +98,7 @@ namespace dcclite::broker
 		auto item = m_clContext.GetItem();
 
 		//item may be null during system shutdown... 
-		if (!item && !item->IsFolder())
+		if (!item || (!item->IsFolder()))
 		{
 			dcclite::Log::Error("[TerminalClient::RegisterListeners] Current location {} is invalid", m_clContext.GetLocation().string());
 

@@ -327,7 +327,7 @@ namespace dcclite::broker
 			return false;
 		}
 
-		signal->SetAspect(packetAspect, "DccppClient::ParseSignalCommandM");
+		signal->SetAspect(packetAspect, "DccppClient::ParseSignalCommandM", "Direct command");
 
 		return true;
 	}

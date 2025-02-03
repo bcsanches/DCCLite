@@ -71,13 +71,13 @@ local signal_state = SIGNAL_STATES.automatic
 function set_stop_aspect(reason)
 	log_info(reason)
 
-	signal_d06:set_aspect(SignalAspects.Stop)
+	signal_d06:set_aspect(SignalAspects.Stop, "TC_SIGNAL_D06_SCRIPT", reason)
 	signal_state = SIGNAL_STATES.automatic
 end
 
 function set_helix_down_aspect()
 	log_info("TC_SIGNAL_D06 Route to staging CLEAR")
-	signal_d06:set_aspect(SignalAspects.Clear)
+	signal_d06:set_aspect(SignalAspects.Clear, "TC_SIGNAL_D06_SCRIPT", "helix path down to staging is set")
 
 	signal_state = SIGNAL_STATES.helix_path_clear
 end

@@ -80,7 +80,7 @@ namespace dcclite::broker
 			//
 			//
 
-			void SetAspect(const dcclite::SignalAspects aspect, const char *requester);
+			void SetAspect(const dcclite::SignalAspects aspect, std::string requester, std::string reason);
 			inline dcclite::SignalAspects GetAspect() const
 			{
 				return m_eCurrentAspect;
@@ -154,6 +154,9 @@ namespace dcclite::broker
 		private:
 			dcclite::SignalAspects	m_eCurrentAspect;
 			unsigned				m_uCurrentAspectIndex;
+
+			std::string				m_strAspectReason;
+			std::string				m_strAspectRequester;
 
 			std::variant<std::monostate, State_Flash, State_WaitTurnOff> m_vState;			
 

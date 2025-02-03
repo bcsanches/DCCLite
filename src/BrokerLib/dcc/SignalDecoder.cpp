@@ -28,7 +28,6 @@ namespace dcclite::broker
 	static auto constexpr FLASH_INTERVAL = 500ms;
 	static auto constexpr WAIT_STATE_TIMEOUT = 250ms;
 
-
 	SignalDecoder::SignalDecoder(
 		const DccAddress &address,
 		RName decoderName,
@@ -162,6 +161,9 @@ namespace dcclite::broker
 
 		stream.AddStringValue("requestedAspectName", dcclite::ConvertAspectToName(m_eCurrentAspect));
 		stream.AddStringValue("currentAspectName", dcclite::ConvertAspectToName(m_vecAspects[m_uCurrentAspectIndex].m_kAspect));
+		stream.AddStringValue("aspectRequester", m_strAspectRequester);
+		stream.AddStringValue("aspectReason", m_strAspectReason);
+
 		auto aspectsData = stream.AddArray("aspects");
 		
 		for (const auto &item : m_vecAspects)
@@ -184,10 +186,29 @@ namespace dcclite::broker
 		}
 	}
 
-	void SignalDecoder::SetAspect(const dcclite::SignalAspects aspect, const char *requester)
+	void SignalDecoder::SetAspect(const dcclite::SignalAspects aspect, std::string requester, std::string reason)
 	{
+		bool changed = false;
+
+		if (m_strAspectRequester != requester)
+		{
+			m_strAspectRequester = requester;
+			changed = true;
+		}
+
+		if (m_strAspectReason != reason)
+		{
+			m_strAspectReason = reason;
+			changed = true;
+		}		
+
 		if (aspect == m_eCurrentAspect)
+		{
+			if(changed)
+				m_rclManager.Decoder_OnStateChanged(*this);
+
 			return;
+		}			
 
 		int index = 0;
 		for (const auto &it : m_vecAspects)
@@ -216,11 +237,12 @@ namespace dcclite::broker
 		}
 		
 		Log::Info(
-			"[SignalDecoder::{}] [SetAspect] Changed from {} to {}, requested by {}",
+			"[SignalDecoder::{}] [SetAspect] Changed from {} to {}, requested by {} - {}",
 			this->GetName(),
 			dcclite::ConvertAspectToName(m_vecAspects[m_uCurrentAspectIndex].m_kAspect),
 			dcclite::ConvertAspectToName(aspect),
-			requester
+			requester,
+			reason
 		);
 
 		this->ApplyAspect(aspect, index);

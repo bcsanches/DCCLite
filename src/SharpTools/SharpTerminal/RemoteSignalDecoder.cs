@@ -13,6 +13,9 @@ namespace SharpTerminal
 		public string m_strCurrentAspect;
 		public string m_strRequestedAspect;
 
+		public string m_strAspectReason;
+		public string m_strAspectRequester;
+
 		IRemoteObjectAction[] m_arActions;
 
 		public RemoteSignalDecoder(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) :
@@ -38,6 +41,8 @@ namespace SharpTerminal
 		{
 			CurrentAspect = (String)objectDef["currentAspectName"];
 			RequestedAspect = (String)objectDef["requestedAspectName"];
+			m_strAspectRequester = (String)objectDef["aspectRequester"];
+			m_strAspectReason = (String)objectDef["aspectReason"];
 		}
 
 		public override string TryGetIconName()
@@ -64,6 +69,26 @@ namespace SharpTerminal
 			set
 			{
 				this.UpdateProperty(ref m_strRequestedAspect, value);
+			}
+		}
+
+		[Category("Aspect")]
+		public string AspectRequester
+		{
+			get { return m_strAspectRequester; }
+			set
+			{
+				this.UpdateProperty(ref m_strAspectRequester, value);
+			}
+		}
+
+		[Category("Aspect")]
+		public string AspectReason
+		{
+			get { return m_strAspectReason; }
+			set
+			{
+				this.UpdateProperty(ref m_strAspectReason, value);
 			}
 		}
 

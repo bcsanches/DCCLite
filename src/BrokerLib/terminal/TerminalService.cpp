@@ -471,7 +471,7 @@ namespace dcclite::broker
 					throw TerminalCmdException(fmt::format("Invalid aspect name {}", aspectName), id);
 				}
 
-				signalDecoder->SetAspect(aspect.value(), this->GetName().GetData().data());
+				signalDecoder->SetAspect(aspect.value(), this->GetName().GetData().data(), "Json proc");
 
 				return detail::MakeRpcResultMessage(id, [aspectName](Result_t &results)
 					{

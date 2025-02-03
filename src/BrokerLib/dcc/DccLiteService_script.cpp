@@ -98,11 +98,11 @@ class DecoderProxy
 				this->RegisterStateSyncCallback();
 		}
 
-		void SetAspect(dcclite::SignalAspects aspect)
+		void SetAspect(dcclite::SignalAspects aspect, std::string requester, std::string reason)
 		{
 			auto decoder = DynamicDecoderCast<dcclite::broker::SignalDecoder>();
 
-			decoder->SetAspect(aspect, "LuaScript");
+			decoder->SetAspect(aspect, std::move(requester), std::move(reason));
 		}
 
 		dcclite::SignalAspects GetAspect()
