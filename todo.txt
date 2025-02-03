@@ -5,8 +5,6 @@ DCCLite
 	- Scripts does not need to monitor device reload after script has run
 	- states changes when devices are offline will be sent down to the device when it becomes online
 
-- Expose signals to scripts
-
 - Parser: use std::string_view
 
 - Better emulator:

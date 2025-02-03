@@ -402,6 +402,7 @@ namespace dcclite::broker
 			auto remoteDecoder = static_cast<RemoteDecoder *>(m_rclSelf.m_vecDecoders[i]);
 			remoteDecoder->SyncRemoteState(state);
 
+#if 0
 			if (remoteDecoder->IsOutputDecoder())
 			{
 				auto *outputDecoder = static_cast<OutputDecoder *>(remoteDecoder);
@@ -413,6 +414,8 @@ namespace dcclite::broker
 					outputDecoder->ToggleState("OnPacket_Sync");
 				}
 			}
+#endif
+
 		}
 
 		dcclite::Log::Info("[Device::{}] [SyncState::OnPacket] Sync OK", m_rclSelf.GetName());
@@ -653,7 +656,6 @@ namespace dcclite::broker
 
 			So if we received any sensor state, we send back to the client our current state so it can ACK our current state
 			*/
-
 			sensorStateRefresh = remoteDecoder->IsInputDecoder() || sensorStateRefresh;			
 		}		
 

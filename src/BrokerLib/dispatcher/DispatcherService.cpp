@@ -61,6 +61,11 @@ namespace dcclite::broker
 				m_rclSensor.SetSensorState(clear ? dcclite::DecoderStates::INACTIVE : dcclite::DecoderStates::ACTIVE);
 			}
 
+			inline sol::table GetScriptObject() noexcept
+			{
+				return m_clObject;
+			}
+
 		protected:
 			sol::table				m_clObject;
 			VirtualSensorDecoder	&m_rclSensor;
@@ -125,6 +130,8 @@ namespace dcclite::broker
 			void RegisterSection(std::string_view name, sol::table obj);
 			void RegisterTSection(std::string_view name, sol::table obj);
 
+			sol::table TryGetSection(std::string_view name);
+
 			void OnSectionStateChange(sol::table obj, int newState);
 
 			void IScriptSupport_RegisterProxy(sol::table &table) override;
@@ -185,6 +192,7 @@ namespace dcclite::broker
 			"register_section", &DispatcherServiceImpl::RegisterSection,
 			"register_tsection", &DispatcherServiceImpl::RegisterTSection,
 			"on_section_state_change", &DispatcherServiceImpl::OnSectionStateChange,
+			"get_section", &DispatcherServiceImpl::TryGetSection,
 			"panic", &DispatcherServiceImpl::Panic
 		);
 	}
@@ -217,6 +225,15 @@ namespace dcclite::broker
 
 		this->NotifyItemCreated(*wrapper);
 #endif
+	}
+
+	sol::table DispatcherServiceImpl::TryGetSection(std::string_view name)
+	{
+		auto section = static_cast<BaseSectionWrapper *>(m_pSections->TryGetChild(RName{name}));
+		if (!section)
+			return sol::nil;
+
+		return section->GetScriptObject();
 	}
 
 	void DispatcherServiceImpl::RegisterSection(std::string_view name, sol::table obj)

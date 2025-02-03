@@ -116,10 +116,10 @@ TEST(SignalDecoderTest, Basic)
 	auto &aspects = tester.GetAspects();
 
 	ASSERT_EQ(aspects.size(), 4);
-	ASSERT_EQ(aspects[0].m_eAspect, dcclite::SignalAspects::Dark);
-	ASSERT_EQ(aspects[1].m_eAspect, dcclite::SignalAspects::Clear);
-	ASSERT_EQ(aspects[2].m_eAspect, dcclite::SignalAspects::Aproach);
-	ASSERT_EQ(aspects[3].m_eAspect, dcclite::SignalAspects::Stop);
+	ASSERT_EQ(aspects[0].m_kAspect, dcclite::SignalAspects::Dark);
+	ASSERT_EQ(aspects[1].m_kAspect, dcclite::SignalAspects::Clear);
+	ASSERT_EQ(aspects[2].m_kAspect, dcclite::SignalAspects::Aproach);
+	ASSERT_EQ(aspects[3].m_kAspect, dcclite::SignalAspects::Stop);
 
 	//
 	// 	   

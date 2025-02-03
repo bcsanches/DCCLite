@@ -55,12 +55,19 @@ QuitEvent::NullEventTarget QuitEvent::g_clTarget;
 
 static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 {
-	g_fExitRequested.test_and_set(std::memory_order_relaxed);	
+	g_fExitRequested.test_and_set(std::memory_order_relaxed);
 
 	//wake up main thread if it is sitting waiting for events...
 	dcclite::broker::EventHub::PostEvent<QuitEvent>();
 
 	dcclite::Log::Info("[Main] CTRL+C detected, exiting...");
+
+	//give some time for main thread to finish up... so it can do the cleanup
+	using namespace std::chrono_literals;
+
+	//if we return befor the main thread, it may not finish cleaning up...
+	while(g_fExitRequested.test())
+		std::this_thread::sleep_for(1000ms);
 
 	return true;
 }
@@ -104,8 +111,11 @@ int main(int argc, char **argv)
 	{
 		dcclite::LogGetDefault()->critical("caught {}", ex.what());
 	}
-
+	
 	dcclite::Log::Info("[Main] Bye");
+
+	//notify console handler that we are done
+	g_fExitRequested.clear(std::memory_order_relaxed);	
 
 	return 0;
 }
