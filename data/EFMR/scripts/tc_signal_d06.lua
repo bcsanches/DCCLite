@@ -10,13 +10,13 @@ The Signal D06 has a diagram like this:
 			   | / 
 			   |/  HLX_T04                               HLX_T08
 			   |                                            /---> Coronel Fulgêncio (down line - internal - Stop)
-               |                       HLX_T07             /
+                           |                       HLX_T07             /
 			   |\  HLX_T05           ---------------------------> Coronel Fulgêncio (up line - external - RESTRICTED)
 			   | \                      /                  
 			   |  \--------------------/                    
 			   |
 			   |
-sl_bp_main_d04 O  /
+sl_bp_main_d04             O  /
 			   | /
 			   |/    HLX_T06
 			   O     sl_bp_main_s03
