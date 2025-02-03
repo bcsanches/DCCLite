@@ -190,6 +190,8 @@ namespace dcclite::broker
 	{
 		bool changed = false;
 
+		//
+		//we track those strings here because it is helpful for debbuging the CTC actions
 		if (m_strAspectRequester != requester)
 		{
 			m_strAspectRequester = requester;
@@ -204,6 +206,8 @@ namespace dcclite::broker
 
 		if (aspect == m_eCurrentAspect)
 		{
+			//just propagate the messages because it is helpful to understand the decisions made by the dispatcher
+			//but this should not affect anything else
 			if(changed)
 				m_rclManager.Decoder_OnStateChanged(*this);
 

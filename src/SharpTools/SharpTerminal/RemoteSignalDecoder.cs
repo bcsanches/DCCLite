@@ -41,8 +41,8 @@ namespace SharpTerminal
 		{
 			CurrentAspect = (String)objectDef["currentAspectName"];
 			RequestedAspect = (String)objectDef["requestedAspectName"];
-			m_strAspectRequester = (String)objectDef["aspectRequester"];
-			m_strAspectReason = (String)objectDef["aspectReason"];
+			AspectRequester = (String)objectDef["aspectRequester"];
+			AspectReason = (String)objectDef["aspectReason"];
 		}
 
 		public override string TryGetIconName()
