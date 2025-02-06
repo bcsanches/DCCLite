@@ -10,21 +10,29 @@
 
 #pragma once
 
+#include <optional>
 #include <string_view>
+
+#include "SharedLibDefs.h"
 
 namespace dcclite
 {
 	class Guid;
+	class RName;
 }
 
 namespace dcclite::broker
 {
+	class Decoder;
 	class Device;
-	class Project;
+	class Project;	
 
 	namespace StorageManager
 	{
 		void SaveState(const Device &device, const Project &project);
+		void LoadState(RName deviceName, const Project &project, const dcclite::Guid expectedToken);
+
+		std::optional<DecoderStates> TryGetStoredState(Decoder &decoder);
 
 		dcclite::Guid GetFileToken(const std::string_view fileName, const Project &project);
 	}

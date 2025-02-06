@@ -16,6 +16,7 @@
 #include "IDccLiteService.h"
 #include "IDevice.h"
 #include "JsonUtils.h"
+#include "StorageManager.h"
 
 namespace dcclite::broker
 {
@@ -33,6 +34,11 @@ namespace dcclite::broker
 		m_fActivateOnPowerUp = json::TryGetDefaultBool(params, "activateOnPowerUp", false);
 
 		this->SyncRemoteState(this->IgnoreSavedState() && this->ActivateOnPowerUp() ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
+		
+		if (auto storedState = StorageManager::TryGetStoredState(*this))
+		{
+			this->SetState(storedState.value(), "StoredState");
+		}
 	}
 
 	bool OutputDecoder::SetState(dcclite::DecoderStates newState, const char *requester)

@@ -125,7 +125,8 @@ namespace dcclite::broker
 		//
 		//cleanup everything while we still have our members live...
 		//Devices may need to still acess m_clProject data during destruction, so make sure they go first
-		this->RemoveAllChildren();
+		//Do this on Services folder instead of destroying it, because some services (Terminal) will try to access Services folder on destruction
+		m_pServices->RemoveAllChildren();
 	}	
 
 	void Broker::LoadConfig()

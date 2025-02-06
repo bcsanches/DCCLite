@@ -27,10 +27,10 @@ namespace fmt
 		template <typename FormatContext>
 		auto format(const dcclite::Guid &g, FormatContext &ctx) 
 		{
-			return fmt::format_to(ctx.out(), "{:08x}-{:04x}-{:04x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}", 
-				*reinterpret_cast<const uint32_t*>(&g.m_bId[0]),
-				*reinterpret_cast<const uint16_t*>(&g.m_bId[4]),
-				*reinterpret_cast<const uint16_t*>(&g.m_bId[6]),
+			return fmt::format_to(ctx.out(), "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}", 
+				g.m_bId[0], g.m_bId[1], g.m_bId[2], g.m_bId[3],
+				g.m_bId[4], g.m_bId[5],
+				g.m_bId[6], g.m_bId[7],
 				g.m_bId[8], g.m_bId[9],
 				g.m_bId[10], g.m_bId[11], g.m_bId[12], g.m_bId[13], g.m_bId[14], g.m_bId[15]
 			);

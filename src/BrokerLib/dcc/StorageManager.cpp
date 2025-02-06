@@ -12,6 +12,8 @@
 
 #include <fstream>
 
+#include <map>
+
 #include <fmt/format.h>
 
 #include <JsonCreator/StringWriter.h>
@@ -29,8 +31,14 @@
 
 #include "../sys/Project.h"
 
+//Win32 headers leak...
+#undef GetObject
+
 namespace dcclite::broker::StorageManager
 {
+	typedef std::map<RName, bool> DecodersMap_t;
+	static std::map<RName, DecodersMap_t> g_mapDevices;
+
 	static bool CreateFilePath(const dcclite::fs::path &filePath)
 	{		
 		auto path = filePath;
@@ -47,6 +55,116 @@ namespace dcclite::broker::StorageManager
 		}
 
 		return true;
+	}
+
+	static dcclite::fs::path GenerateBaseDeviceStateFileName(RName deviceName, const Project &project)
+	{
+		return project.GetAppFilePath(fmt::format("{}.state", deviceName.GetData()));
+	}
+
+	std::optional<DecoderStates> TryGetStoredState(Decoder &decoder)
+	{
+		auto deviceName = decoder.GetDeviceName();
+
+		auto decodersMap = g_mapDevices.find(deviceName);
+		if (decodersMap == g_mapDevices.end())
+			return {};
+
+		auto it = decodersMap->second.find(decoder.GetName());
+		if (it == decodersMap->second.end())
+			return {};
+
+		return it->second ? DecoderStates::ACTIVE : DecoderStates::INACTIVE;
+	}
+
+	void LoadState(RName deviceName, const Project &project, const dcclite::Guid expectedToken)
+	{
+		auto path = GenerateBaseDeviceStateFileName(deviceName, project);
+		path.concat(".json");
+
+		std::ifstream stateFile(path);
+
+		if (!stateFile)
+		{
+			dcclite::Log::Warn("[StorageManager::LoadState] [{}] Failed to open state file: {}", deviceName.GetData(), path.string());
+
+			return;			
+		}
+
+		dcclite::Log::Info("[StorageManager::LoadState] [{}] Opened {}, starting parser", deviceName.GetData(), path.string());
+
+		rapidjson::IStreamWrapper isw(stateFile);
+		rapidjson::Document data;
+		if (data.ParseStream(isw).HasParseError())
+		{
+			dcclite::Log::Error("[StorageManager::LoadState] [{}] Parser error for {}", deviceName.GetData(), path.string());
+			
+			return;
+		}
+
+		//read token first, because if it fails, hash is already null			
+		auto tokenData = data.FindMember("token");
+		if ((tokenData == data.MemberEnd()) || (!tokenData->value.IsString()))
+		{
+			dcclite::Log::Error("[StorageManager::LoadState] [{}] State file does not contain token: {}", deviceName.GetData(), path.string());
+			
+			return;
+		}
+
+		dcclite::Guid token;
+
+		//read tokenStr
+		if (!dcclite::TryGuidLoadFromString(token, tokenData->value.GetString()))
+		{
+			dcclite::Log::Error("[StorageManager::LoadState] [{}] error parsing stored token: {}", deviceName.GetData(), path.string());
+			
+			return;
+		}
+
+		dcclite::Log::Trace("[StorageManager::LoadState] [{}] config token on state file is {}", deviceName.GetData(), token);
+
+		//
+		//we cannot compare against device current token, because it may havent loaded it yet, so it must provide a token to us
+		if (token != expectedToken)
+		{
+			dcclite::Log::Error("[StorageManager::LoadState] [{}] config token on file is invalid, ignoring config: {}", deviceName.GetData(), path.string());
+
+			return;
+		}
+
+		auto decodersData = data.FindMember("decoders");
+		if (decodersData == data.MemberEnd())
+		{
+			dcclite::Log::Error("[StorageManager::LoadState] [{}] State file does not contain decoders data: {}", deviceName.GetData(), path.string());
+
+			return;
+		}
+
+		if (!decodersData->value.IsObject())
+		{
+			dcclite::Log::Error("[StorageManager::LoadState] [{}] State file decoders data is not an object: {}", deviceName.GetData(), path.string());
+
+			return;
+		}
+
+		//
+		//got a valid config, load states
+		auto &decodersMap = g_mapDevices[deviceName] = {};
+
+		for (auto &it : decodersData->value.GetObject())
+		{
+			RName decoderName{ it.name.GetString() };
+
+			if (!it.value.IsBool())
+			{
+				dcclite::Log::Error("[StorageManager::LoadState] [{}] State data for decoder {} is not a bool: {}", deviceName.GetData(), it.name.GetString(), path.string());
+				continue;
+			}
+
+			decodersMap[decoderName] = it.value.GetBool();
+		}
+
+		dcclite::Log::Info("[StorageManager::LoadState][{}] State file loaded.", deviceName.GetData());
 	}
 
 	void SaveState(const Device &device, const Project &project)
@@ -78,9 +196,12 @@ namespace dcclite::broker::StorageManager
 
 			if (!dataStored)
 				return;
-		}
+		}		
 		
-		auto path = project.GetAppFilePath(fmt::format("{}.state.tmp", device.GetName().GetData()));
+		auto path = GenerateBaseDeviceStateFileName(device.GetName(), project);
+		path.concat(".tmp");
+
+		dcclite::Log::Info("[StorageManager::SaveState][{}] Generating state file: {}", device.GetNameData(), path.string());
 
 		if (!CreateFilePath(path))
 		{
@@ -98,6 +219,8 @@ namespace dcclite::broker::StorageManager
 		auto newName{ path };
 		newName.replace_extension(".json");
 		dcclite::fs::rename(path, newName);
+
+		dcclite::Log::Info("[StorageManager::SaveState][{}] State file stored at: {}", device.GetNameData(), newName.string());
 	}
 
 	dcclite::Guid GetFileToken(const std::string_view fileName, const Project &project)

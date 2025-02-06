@@ -38,6 +38,7 @@ endmacro()
 package_add_test(UnitTest
 	BitPackUnitTest.cpp
 	EventHubTest.cpp
+    GuidTest.cpp
 	NetMessengerTest.cpp
    	NmraUtilUnitTest.cpp
   	ObjectPathUnitTest.cpp

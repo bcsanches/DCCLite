@@ -26,7 +26,6 @@
 
 namespace dcclite::broker
 {
-
 	Device::Device(RName name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project) :
 		FolderObject{ name },
 		m_clDccService{ dccService },
@@ -172,6 +171,10 @@ namespace dcclite::broker
 		//also this indicates that we have an inconsistent state	
 		this->Unload();
 
+		//
+		//Load state data
+		StorageManager::LoadState(this->GetName(), m_rclProject, storedConfigToken);
+
 		try
 		{
 			for (auto &element : decodersData.GetArray())
@@ -208,7 +211,7 @@ namespace dcclite::broker
 
 		//if this point is reached, data is loaded, so store new token
 		m_ConfigToken = storedConfigToken;
-		dcclite::Log::Info("[Device::{}] [Load] loaded.", this->GetName());
+		dcclite::Log::Info("[Device::{}] [Load] loaded {}.", this->GetName(), m_ConfigToken);
 	}
 
 	void Device::ConstVisitDecoders(ConstVisitor_t visitor) const

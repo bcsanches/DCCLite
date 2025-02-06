@@ -11,6 +11,7 @@
 #pragma once
 
 #include "DccAddress.h"
+#include "IDevice.h"
 #include "Object.h"
 
 namespace dcclite
@@ -19,9 +20,8 @@ namespace dcclite
 }
 
 namespace dcclite::broker
-{
+{	
 	class IDccLite_DecoderServices;
-	class IDevice_DecoderServices;
 	class Node;	
 
 	class Decoder: public dcclite::Object
@@ -48,6 +48,11 @@ namespace dcclite::broker
 			virtual void InitAfterDeviceLoad()
 			{
 				//empty
+			}
+
+			inline RName GetDeviceName() const noexcept
+			{
+				return m_rclDevice.GetDeviceName();
 			}
 
 			//
