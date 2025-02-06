@@ -48,6 +48,7 @@ package_add_test(UnitTest
 	RNameTest.cpp
   	ServoTurnoutDecoderTest.cpp
   	SignalDecoderTest.cpp
+    SimpleOutputDecoderTest.cpp
   	SocketTest.cpp
   	ThinkerTest.cpp
   	UtilUnitTest.cpp
