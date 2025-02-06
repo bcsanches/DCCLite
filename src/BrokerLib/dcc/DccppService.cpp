@@ -224,7 +224,7 @@ namespace dcclite::broker
 		}
 	}
 
-	static inline std::string CreateSensorStateResponse(const std::vector<StateDecoder *> &sensorDecoders)
+	static inline std::string CreateSensorStateResponse(const std::vector<const StateDecoder *> &sensorDecoders)
 	{
 		std::stringstream response;
 	

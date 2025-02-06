@@ -42,14 +42,9 @@ namespace dcclite::broker
 		networkDevice->Decoder_RegisterPin(*this, m_arTrackAPins[1], "trackA1");
 
 		networkDevice->Decoder_RegisterPin(*this, m_arTrackBPins[0], "trackB0");
-		networkDevice->Decoder_RegisterPin(*this, m_arTrackBPins[1], "trackB1");
-		
-		m_fIgnoreSavedState = json::TryGetDefaultBool(params, "ignoreSavedState", false);
-		m_fActivateOnPowerUp = json::TryGetDefaultBool(params, "activateOnPowerUp", false);
+		networkDevice->Decoder_RegisterPin(*this, m_arTrackBPins[1], "trackB1");		
 
-		m_u8FlipInterval = json::TryGetDefaultInt(params, "flipInterval", m_u8FlipInterval);		
-
-		this->SyncRemoteState(m_fIgnoreSavedState && m_fActivateOnPowerUp ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
+		m_u8FlipInterval = json::TryGetDefaultInt(params, "flipInterval", m_u8FlipInterval);
 	}
 
 	QuadInverter::~QuadInverter()
@@ -67,7 +62,7 @@ namespace dcclite::broker
 	{
 		OutputDecoder::WriteConfig(packet);
 
-		const uint8_t flags = (m_fIgnoreSavedState ? dcclite::QUAD_IGNORE_SAVED_STATE : 0) | (m_fActivateOnPowerUp ? dcclite::QUAD_ACTIVATE_ON_POWER_UP : 0);
+		const uint8_t flags = (this->IgnoreSavedState() ? dcclite::QUAD_IGNORE_SAVED_STATE : 0) | (this->ActivateOnPowerUp() ? dcclite::QUAD_ACTIVATE_ON_POWER_UP : 0);
 		
 		packet.Write8(flags);	
 		packet.Write8(m_u8FlipInterval);
@@ -80,10 +75,7 @@ namespace dcclite::broker
 
 	void QuadInverter::Serialize(dcclite::JsonOutputStream_t &stream) const
 	{
-		OutputDecoder::Serialize(stream);		
-
-		stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
-		stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
+		OutputDecoder::Serialize(stream);
 
 		stream.AddIntValue("flipInterval", m_u8FlipInterval);
 
@@ -91,6 +83,6 @@ namespace dcclite::broker
 		stream.AddIntValue("trackA1Pin", m_arTrackAPins[1].Raw());
 
 		stream.AddIntValue("trackB0Pin", m_arTrackBPins[0].Raw());
-		stream.AddIntValue("trackB1Pin", m_arTrackBPins[1].Raw());		
+		stream.AddIntValue("trackB1Pin", m_arTrackBPins[1].Raw());
 	}
 }

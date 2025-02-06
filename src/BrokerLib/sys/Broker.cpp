@@ -121,6 +121,11 @@ namespace dcclite::broker
 		ScriptSystem::Stop();
 
 		ZeroConfSystem::Stop();
+
+		//
+		//cleanup everything while we still have our members live...
+		//Devices may need to still acess m_clProject data during destruction, so make sure they go first
+		this->RemoveAllChildren();
 	}	
 
 	void Broker::LoadConfig()

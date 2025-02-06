@@ -99,14 +99,14 @@ namespace dcclite::broker
 
 					auto dataArray = results.AddArray("children");
 
-					folder->VisitChildren([&dataArray](IObject &item)
+					folder->ConstVisitChildren([&dataArray](const IObject &item)
 						{
 							auto itemObject = dataArray.AddObject();
 							item.Serialize(itemObject);
 
 							return true;
 						}
-					);					
+					);
 				});
 			}
 	};
@@ -245,7 +245,7 @@ namespace dcclite::broker
 
 						auto dataArray = results.AddArray("cmds");
 
-						folder->VisitChildren([&dataArray](auto &cmd)
+						folder->ConstVisitChildren([&dataArray](auto &cmd)
 							{
 								auto itemObject = dataArray.AddObject();
 								cmd.Serialize(itemObject);
@@ -501,7 +501,7 @@ namespace dcclite::broker
 				std::string fileName{ device.GetName().GetData() };
 				fileName.append(".rom");
 				
-				m_pathRomFileName = device.GetProject().GetAppFilePath(fileName);				
+				m_pathRomFileName = device.GetProject().GetAppFilePath(fileName);
 			}	
 
 			~ReadEEPromFiber()

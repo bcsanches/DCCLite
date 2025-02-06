@@ -7,6 +7,8 @@ DCCLite
 
 - Parser: use std::string_view
 
+- ReadEEPromFiber: accessing Project on device, try to remove this dependency
+
 - Better emulator:
 	- Make sharpConsole able to start emulator as is
 	- Make sharpconsole start emulator using a existing device name (auto generate eprom?)

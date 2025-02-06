@@ -22,6 +22,7 @@
 #include "IDccLiteService.h"
 #include "JsonUtils.h"
 #include "Log.h"
+#include "StorageManager.h"
 
 namespace dcclite::broker
 {
@@ -61,7 +62,7 @@ namespace dcclite::broker
 	Device::~Device()
 	{
 		if (!m_pathConfigFile.empty())
-			FileWatcher::UnwatchFile(m_pathConfigFile);
+			FileWatcher::UnwatchFile(m_pathConfigFile);		
 	}
 
 	void Device::OnUnload()
@@ -72,6 +73,9 @@ namespace dcclite::broker
 	void Device::Unload()
 	{
 		this->OnUnload();
+
+		if(!m_vecDecoders.empty())
+			StorageManager::SaveState(*this, m_rclProject);
 
 		//clear the token
 		m_ConfigToken = {};
@@ -137,7 +141,7 @@ namespace dcclite::broker
 			return;
 		}
 
-		auto storedConfigToken = m_rclProject.GetFileToken(m_strConfigFileName);
+		auto storedConfigToken = StorageManager::GetFileToken(m_strConfigFileName, m_rclProject);
 
 		if (storedConfigToken == m_ConfigToken)
 		{
@@ -206,4 +210,14 @@ namespace dcclite::broker
 		m_ConfigToken = storedConfigToken;
 		dcclite::Log::Info("[Device::{}] [Load] loaded.", this->GetName());
 	}
+
+	void Device::ConstVisitDecoders(ConstVisitor_t visitor) const
+	{
+		for (auto it : m_vecDecoders)
+		{
+			if (!visitor(*it))
+				break;
+		}
+	}
+
 }

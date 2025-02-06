@@ -8,20 +8,24 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "Project.h"
+#pragma once
 
-#include "PathUtils.h"
+#include <string_view>
+
+namespace dcclite
+{
+	class Guid;
+}
 
 namespace dcclite::broker
 {
+	class Device;
+	class Project;
 
-	dcclite::fs::path Project::GetAppFilePath(const std::string_view fileName) const
+	namespace StorageManager
 	{
-		auto cacheFilePath = dcclite::PathUtils::GetAppFolder();
+		void SaveState(const Device &device, const Project &project);
 
-		cacheFilePath.append(m_strName);
-		cacheFilePath.append(fileName);
-
-		return cacheFilePath;
+		dcclite::Guid GetFileToken(const std::string_view fileName, const Project &project);
 	}
 }

@@ -122,11 +122,11 @@ namespace dcclite::broker
 			//
 
 			//This returns only pure outputs, turnouts are ignored
-			std::vector<SimpleOutputDecoder *> FindAllSimpleOutputDecoders();
+			std::vector<const SimpleOutputDecoder *> FindAllSimpleOutputDecoders() const;
 
-			std::vector<StateDecoder *> FindAllInputDecoders();
+			std::vector<const StateDecoder *> FindAllInputDecoders() const;
 
-			std::vector<TurnoutDecoder *> FindAllTurnoutDecoders();
+			std::vector<const TurnoutDecoder *> FindAllTurnoutDecoders() const;
 
 			//
 			//
@@ -147,6 +147,9 @@ namespace dcclite::broker
 				const dcclite::Guid				remoteConfigToken,
 				const std::uint16_t				protocolVersion
 			);
+
+			template <typename T>
+			std::vector<const T *> FindAllDecoders() const;
 
 			void OnNetEvent_Packet(const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet, const dcclite::MsgTypes msgType);
 
@@ -169,8 +172,8 @@ namespace dcclite::broker
 			//		
 			void Device_SendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet& packet) override;
 
-			void Device_RegisterSession(NetworkDevice& dev, const dcclite::Guid& configToken) override;
-			void Device_UnregisterSession(NetworkDevice& dev, const dcclite::Guid& sessionToken) override;
+			void Device_RegisterSession(NetworkDevice &dev, const dcclite::Guid& configToken) override;
+			void Device_UnregisterSession(NetworkDevice &dev, const dcclite::Guid& sessionToken) override;
 
 			void Device_DestroyUnregistered(NetworkDevice &dev) override;
 

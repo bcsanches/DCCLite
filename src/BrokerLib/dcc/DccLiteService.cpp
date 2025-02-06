@@ -387,46 +387,14 @@ namespace dcclite::broker
 		return static_cast<Decoder *>(decoder ? decoder : m_pDecoders->TryResolveChild(id));
 	}
 
-	std::vector<SimpleOutputDecoder *> DccLiteService::FindAllSimpleOutputDecoders()
+	template <typename T>
+	std::vector<const T *> DccLiteService::FindAllDecoders() const
 	{
-		std::vector<SimpleOutputDecoder*> vecDecoders;
-
-		m_pDecoders->VisitChildren([&vecDecoders](auto &obj)
-			{				
-				if (auto decoder = dynamic_cast<SimpleOutputDecoder *>(&obj))
-					vecDecoders.push_back(decoder);
-
-				return true;
-			}
-		);		
-
-		return vecDecoders;
-	}
-
-	std::vector<StateDecoder *> DccLiteService::FindAllInputDecoders()
-	{
-		std::vector<StateDecoder *> vecDecoders;
+		std::vector<const T *> vecDecoders;
 
 		m_pDecoders->VisitChildren([&vecDecoders](auto &obj)
 			{
-				auto decoder = dynamic_cast<StateDecoder *>(&obj);
-				if (decoder && (decoder->IsInputDecoder()))
-					vecDecoders.push_back(decoder);
-				
-				return true;
-			}
-		);		
-
-		return vecDecoders;
-	}
-
-	std::vector<TurnoutDecoder *> DccLiteService::FindAllTurnoutDecoders()
-	{
-		std::vector<TurnoutDecoder *> vecDecoders;
-
-		m_pDecoders->VisitChildren([&vecDecoders](auto &obj)
-			{				
-				if (auto decoder = dynamic_cast<TurnoutDecoder *>(&obj))
+				if (auto decoder = dynamic_cast<const T *>(&obj))
 					vecDecoders.push_back(decoder);
 
 				return true;
@@ -434,6 +402,21 @@ namespace dcclite::broker
 		);
 
 		return vecDecoders;
+	}
+
+	std::vector<const SimpleOutputDecoder *> DccLiteService::FindAllSimpleOutputDecoders() const
+	{
+		return this->FindAllDecoders<SimpleOutputDecoder>();
+	}
+
+	std::vector<const StateDecoder *> DccLiteService::FindAllInputDecoders() const
+	{
+		return this->FindAllDecoders<StateDecoder>();		
+	}
+
+	std::vector<const TurnoutDecoder *> DccLiteService::FindAllTurnoutDecoders() const
+	{
+		return this->FindAllDecoders<TurnoutDecoder>();		
 	}
 
 	void DccLiteService::Decoder_OnStateChanged(Decoder& decoder)

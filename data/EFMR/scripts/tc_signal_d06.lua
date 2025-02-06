@@ -10,13 +10,13 @@ The Signal D06 has a diagram like this:
 			   | / 
 			   |/  HLX_T04                               HLX_T08
 			   |                                            /---> Coronel Fulgêncio (down line - internal - Stop)
-                           |                       HLX_T07             /
+               |                       HLX_T07             /
 			   |\  HLX_T05           ---------------------------> Coronel Fulgêncio (up line - external - RESTRICTED)
 			   | \                      /                  
 			   |  \--------------------/                    
 			   |
 			   |
-sl_bp_main_d04             O  /
+sl_bp_main_d04 O  /
 			   | /
 			   |/    HLX_T06
 			   O     sl_bp_main_s03
@@ -77,14 +77,14 @@ end
 
 function set_helix_down_aspect()
 	log_info("TC_SIGNAL_D06 Route to staging CLEAR")
-	signal_d06:set_aspect(SignalAspects.Clear)
+	signal_d06:set_aspect(SignalAspects.Clear, "TC_SIGNAL_D06_SCRIPT", "Path to staging entrance is set")
 
 	signal_state = SIGNAL_STATES.helix_path_clear
 end
 
 function set_soledade_branch_aspect()
-	log_info("[TC_SIGNAL_D06] soledade path CLEAR")
-	signal_d06:set_aspect(SignalAspects.Aproach)
+	log_info("[TC_SIGNAL_D06] Soledade path CLEAR")
+	signal_d06:set_aspect(SignalAspects.Aproach, "TC_SIGNAL_D06_SCRIPT", "Path to Soledade is set")
 	signal_state = SIGNAL_STATES.soledade_path_clear
 end
 
@@ -105,7 +105,7 @@ function on_train_entered_helix_down(device)
 		-- now wait for train to reach end sensor
 		signal_state = SIGNAL_STATES.soledade_path_busy
 
-		signal_d06:set_aspect(SignalAspects.Stop)
+		signal_d06:set_aspect(SignalAspects.Stop, "TC_SIGNAL_D06_SCRIPT", "Train entered Soledade path")
 
 	elseif signal_state == SIGNAL_STATES.helix_path_clear then
 		log_trace("[TC_SIGNAL_D06] on_train_entered_helix_down sensor is on, now path is busy, signal is STOP")
@@ -113,7 +113,7 @@ function on_train_entered_helix_down(device)
 		-- now wait for train to reach end sensor
 		signal_state = SIGNAL_STATES.helix_path_busy
 
-		signal_d06:set_aspect(SignalAspects.Stop)
+		signal_d06:set_aspect(SignalAspects.Stop, "TC_SIGNAL_D06_SCRIPT", "Train entered helix path to staging entrance")
 	end	
 end
 
@@ -186,7 +186,7 @@ function on_device_change(device)
 
 			-- Going up... give a restricted, as line is incomplete
 			log_info("[TC_SIGNAL_D06] hlx_t07 thrown - going up the helix - RESTRICTED")
-			signal_d06:set_aspect(SignalAspects.Restricted)
+			signal_d06:set_aspect(SignalAspects.Restricted, "TC_SIGNAL_D06_SCRIPT", "Path to Helix UP is set")
 			return
 		end
 
@@ -276,8 +276,6 @@ function on_device_change(device)
 	-- Finally path clear and no blocks ocupied...
 	set_helix_down_aspect()
 end
-
-signal_d06:set_aspect(SignalAspects.Stop)
 
 hlx_t08:on_state_change(on_device_change)
 hlx_t07:on_state_change(on_device_change)

@@ -31,6 +31,7 @@ namespace dcclite
 
 			IObject *TryGetChild(RName name) override;		
 
+			void ConstVisitChildren(ConstVisitor_t visitor) const override;
 			void VisitChildren(Visitor_t visitor) override;
 			
 			const char *GetTypeName() const noexcept override

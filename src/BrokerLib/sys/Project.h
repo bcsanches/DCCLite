@@ -36,9 +36,7 @@ namespace dcclite::broker
 				return path.string();
 			}
 
-			dcclite::fs::path GetAppFilePath(const std::string_view fileName) const;
-
-			dcclite::Guid GetFileToken(const std::string_view fileName) const;
+			dcclite::fs::path GetAppFilePath(const std::string_view fileName) const;			
 
 			inline void SetName(std::string_view name)
 			{
@@ -50,6 +48,10 @@ namespace dcclite::broker
 				return m_strName;
 			}
 
+			/// <summary>
+			/// 
+			/// </summary>
+			/// <returns>Returns the path to the root used for the current project</returns>
 			inline const dcclite::fs::path &GetRoot() const noexcept
 			{
 				return m_pthRoot;

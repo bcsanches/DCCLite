@@ -38,10 +38,10 @@ namespace dcclite::broker
 
 			Service *TryFindService(RName name) const;
 
-			inline void VisitServices(Visitor_t visitor)
+			inline void VisitServices(Visitor_t visitor) const
 			{
 				m_pServices->VisitChildren(visitor);
-			}
+			}			
 
 			TerminalCmdHost *GetTerminalCmdHost()
 			{
