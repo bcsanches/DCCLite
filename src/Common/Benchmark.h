@@ -11,13 +11,14 @@
 #pragma once
 
 #include <chrono>
+#include <string_view>
 
 namespace dcclite
 {
 	class Benchmark
 	{
 		public:
-			typedef long double µs_t;
+			typedef long double us_t;
 			typedef long double ms_t;
 			typedef long double second_t;
 
@@ -31,9 +32,9 @@ namespace dcclite
 
 			void Stop();
 
-			inline µs_t GetUs() const noexcept
+			inline us_t GetUs() const noexcept
 			{
-				return (µs_t)std::chrono::duration_cast<std::chrono::microseconds>(m_tEnd - m_tStart).count();
+				return (us_t)std::chrono::duration_cast<std::chrono::microseconds>(m_tEnd - m_tStart).count();
 			}
 
 			inline ms_t GetMs() const noexcept
@@ -47,7 +48,7 @@ namespace dcclite
 			}
 
 		private:
-			typedef std::chrono::time_point<std::chrono::steady_clock> TimePoint_t;
+			typedef std::chrono::time_point<std::chrono::high_resolution_clock> TimePoint_t;
 
 			TimePoint_t m_tStart;
 			TimePoint_t m_tEnd;
