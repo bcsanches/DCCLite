@@ -22,6 +22,7 @@
 #include "IDccLiteService.h"
 #include "JsonUtils.h"
 #include "Log.h"
+#include "OutputDecoder.h"
 #include "StorageManager.h"
 
 namespace dcclite::broker
@@ -169,11 +170,7 @@ namespace dcclite::broker
 		//we clear the current config token, because if anything fails after this point and user rollback file to a previous version
 		//we want to make sure the previous file is loaded, if we did not clear the token, it may get ignored
 		//also this indicates that we have an inconsistent state	
-		this->Unload();
-
-		//
-		//Load state data
-		StorageManager::LoadState(this->GetName(), m_rclProject, storedConfigToken);
+		this->Unload();		
 
 		try
 		{
@@ -193,8 +190,27 @@ namespace dcclite::broker
 				this->RegisterDecoder(decoder);				
 			}
 
+			//
+			//Load state data
+			auto decodersState = StorageManager::LoadState(this->GetName(), m_rclProject, storedConfigToken);
+			if (!decodersState.empty())
+			{
+				for (auto dec : m_vecDecoders)
+				{
+					auto outputDecoder = dynamic_cast<OutputDecoder *>(dec);
+					if (!outputDecoder)
+						continue;
+
+					auto it = decodersState.find(outputDecoder->GetName());
+					if (it == decodersState.end())
+						continue;
+
+					outputDecoder->SetState(it->second, "StorageData");
+				}
+			}
+
 			//let decoder know that each decoder on this device has been created
-			for (auto &dec : m_vecDecoders)
+			for (auto dec : m_vecDecoders)
 			{
 				dec->InitAfterDeviceLoad();
 			}

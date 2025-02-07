@@ -12,8 +12,6 @@
 
 #include <fstream>
 
-#include <map>
-
 #include <fmt/format.h>
 
 #include <JsonCreator/StringWriter.h>
@@ -35,10 +33,7 @@
 #undef GetObject
 
 namespace dcclite::broker::StorageManager
-{
-	typedef std::map<RName, bool> DecodersMap_t;
-	static std::map<RName, DecodersMap_t> g_mapDevices;
-
+{	
 	static bool CreateFilePath(const dcclite::fs::path &filePath)
 	{		
 		auto path = filePath;
@@ -62,22 +57,7 @@ namespace dcclite::broker::StorageManager
 		return project.GetAppFilePath(fmt::format("{}.state", deviceName.GetData()));
 	}
 
-	std::optional<DecoderStates> TryGetStoredState(Decoder &decoder)
-	{
-		auto deviceName = decoder.GetDeviceName();
-
-		auto decodersMap = g_mapDevices.find(deviceName);
-		if (decodersMap == g_mapDevices.end())
-			return {};
-
-		auto it = decodersMap->second.find(decoder.GetName());
-		if (it == decodersMap->second.end())
-			return {};
-
-		return it->second ? DecoderStates::ACTIVE : DecoderStates::INACTIVE;
-	}
-
-	void LoadState(RName deviceName, const Project &project, const dcclite::Guid expectedToken)
+	DecodersMap_t LoadState(RName deviceName, const Project &project, const dcclite::Guid expectedToken)
 	{
 		auto path = GenerateBaseDeviceStateFileName(deviceName, project);
 		path.concat(".json");
@@ -88,7 +68,7 @@ namespace dcclite::broker::StorageManager
 		{
 			dcclite::Log::Warn("[StorageManager::LoadState] [{}] Failed to open state file: {}", deviceName.GetData(), path.string());
 
-			return;			
+			return {};
 		}
 
 		dcclite::Log::Info("[StorageManager::LoadState] [{}] Opened {}, starting parser", deviceName.GetData(), path.string());
@@ -99,7 +79,7 @@ namespace dcclite::broker::StorageManager
 		{
 			dcclite::Log::Error("[StorageManager::LoadState] [{}] Parser error for {}", deviceName.GetData(), path.string());
 			
-			return;
+			return {};
 		}
 
 		//read token first, because if it fails, hash is already null			
@@ -108,7 +88,7 @@ namespace dcclite::broker::StorageManager
 		{
 			dcclite::Log::Error("[StorageManager::LoadState] [{}] State file does not contain token: {}", deviceName.GetData(), path.string());
 			
-			return;
+			return {};
 		}
 
 		dcclite::Guid token;
@@ -118,7 +98,7 @@ namespace dcclite::broker::StorageManager
 		{
 			dcclite::Log::Error("[StorageManager::LoadState] [{}] error parsing stored token: {}", deviceName.GetData(), path.string());
 			
-			return;
+			return {};
 		}
 
 		dcclite::Log::Trace("[StorageManager::LoadState] [{}] config token on state file is {}", deviceName.GetData(), token);
@@ -129,7 +109,7 @@ namespace dcclite::broker::StorageManager
 		{
 			dcclite::Log::Error("[StorageManager::LoadState] [{}] config token on file is invalid, ignoring config: {}", deviceName.GetData(), path.string());
 
-			return;
+			return {};
 		}
 
 		auto decodersData = data.FindMember("decoders");
@@ -137,19 +117,19 @@ namespace dcclite::broker::StorageManager
 		{
 			dcclite::Log::Error("[StorageManager::LoadState] [{}] State file does not contain decoders data: {}", deviceName.GetData(), path.string());
 
-			return;
+			return {};
 		}
 
 		if (!decodersData->value.IsObject())
 		{
 			dcclite::Log::Error("[StorageManager::LoadState] [{}] State file decoders data is not an object: {}", deviceName.GetData(), path.string());
 
-			return;
+			return {};
 		}
 
 		//
 		//got a valid config, load states
-		auto &decodersMap = g_mapDevices[deviceName] = {};
+		DecodersMap_t decodersState;
 
 		for (auto &it : decodersData->value.GetObject())
 		{
@@ -161,10 +141,11 @@ namespace dcclite::broker::StorageManager
 				continue;
 			}
 
-			decodersMap[decoderName] = it.value.GetBool();
+			decodersState[decoderName] = it.value.GetBool() ? DecoderStates::ACTIVE : DecoderStates::INACTIVE;
 		}
 
 		dcclite::Log::Info("[StorageManager::LoadState][{}] State file loaded.", deviceName.GetData());
+		return decodersState;
 	}
 
 	void SaveState(const Device &device, const Project &project)

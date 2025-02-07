@@ -1,10 +1,6 @@
 DCCLite
 -------
 
-- Modify sync behavior: use DCCLite server data for outputs, not device. DCCLite with rule the device state
-	- Scripts does not need to monitor device reload after script has run
-	- states changes when devices are offline will be sent down to the device when it becomes online
-
 - Parser: use std::string_view
 
 - ReadEEPromFiber: accessing Project on device, try to remove this dependency

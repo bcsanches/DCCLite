@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <map>
 #include <optional>
 #include <string_view>
 
@@ -29,10 +30,10 @@ namespace dcclite::broker
 
 	namespace StorageManager
 	{
-		void SaveState(const Device &device, const Project &project);
-		void LoadState(RName deviceName, const Project &project, const dcclite::Guid expectedToken);
+		typedef std::map<RName, dcclite::DecoderStates> DecodersMap_t;
 
-		std::optional<DecoderStates> TryGetStoredState(Decoder &decoder);
+		void SaveState(const Device &device, const Project &project);
+		DecodersMap_t LoadState(RName deviceName, const Project &project, const dcclite::Guid expectedToken);
 
 		dcclite::Guid GetFileToken(const std::string_view fileName, const Project &project);
 	}
