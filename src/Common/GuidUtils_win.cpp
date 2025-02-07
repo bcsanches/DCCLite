@@ -37,6 +37,11 @@ dcclite::Guid dcclite::GuidCreate()
 
 	dcclite::Guid guid;
 
+	static_assert(sizeof(g.Data1) == 4);
+	static_assert(sizeof(g.Data2) == 2);
+	static_assert(sizeof(g.Data3) == 2);
+	static_assert(sizeof(g.Data4) == 8);
+
 	memcpy(&guid.m_bId[0], &g.Data1, 4);
 	memcpy(&guid.m_bId[4], &g.Data2, 2);
 	memcpy(&guid.m_bId[6], &g.Data3, 2);

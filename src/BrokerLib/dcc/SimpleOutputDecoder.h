@@ -59,18 +59,11 @@ namespace dcclite::broker
 			{
 				OutputDecoder::Serialize(stream);
 
-				stream.AddIntValue ("pin", m_clPin.Raw());
-				stream.AddBool("invertedOperation", m_fInvertedOperation);
-				stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
-				stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
+				stream.AddIntValue ("pin", m_clPin.Raw());				
 			}
 
 		private:
-			dcclite::BasicPin m_clPin;
-
-			bool m_fInvertedOperation = false;
-			bool m_fIgnoreSavedState = false;
-			bool m_fActivateOnPowerUp = false;		
+			dcclite::BasicPin m_clPin;			
 	};
 
 }

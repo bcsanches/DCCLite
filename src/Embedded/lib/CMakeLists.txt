@@ -1,2 +1,5 @@
 add_subdirectory(Shared)
-add_subdirectory(DecodersCommon)
+
+if(${DCCLITE_MSVC})
+    add_subdirectory(DecodersCommon)
+endif()

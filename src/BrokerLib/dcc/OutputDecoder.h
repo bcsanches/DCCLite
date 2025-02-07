@@ -23,16 +23,12 @@ namespace dcclite::broker
 	{
 		public:
 			OutputDecoder(
-				const DccAddress& address,
+				const DccAddress &address,
 				RName name,
-				IDccLite_DecoderServices & owner,
+				IDccLite_DecoderServices &owner,
 				IDevice_DecoderServices &dev,
-				const rapidjson::Value& params
-			) :
-				RemoteDecoder(address, name, owner, dev, params)
-			{
-				//empty
-			}		
+				const rapidjson::Value &params
+			);
 
 			dcclite::DecoderTypes GetType() const noexcept override
 			{
@@ -78,6 +74,21 @@ namespace dcclite::broker
 
 			void Serialize(dcclite::JsonOutputStream_t& stream) const override;
 
+			inline bool InvertedOperation() const noexcept
+			{
+				return m_fInvertedOperation;
+			}
+
+			inline bool IgnoreSavedState() const noexcept
+			{
+				return m_fIgnoreSavedState;
+			}
+
+			inline bool ActivateOnPowerUp() const noexcept
+			{
+				return m_fActivateOnPowerUp;
+			}
+
 			//
 			//IObject
 			//
@@ -90,5 +101,9 @@ namespace dcclite::broker
 
 		private:				
 			dcclite::DecoderStates m_kRequestedState = dcclite::DecoderStates::INACTIVE;
+
+			bool m_fInvertedOperation = false;
+			bool m_fIgnoreSavedState = false;
+			bool m_fActivateOnPowerUp = false;
 	};
 }

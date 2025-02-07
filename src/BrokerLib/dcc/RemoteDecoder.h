@@ -62,7 +62,7 @@ namespace dcclite::broker
 			virtual dcclite::DecoderTypes GetType() const noexcept = 0;
 
 		private:							
-			bool		m_fBroken = false;			
+			bool		m_fBroken;
 	};
 }
 

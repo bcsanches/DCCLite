@@ -14,7 +14,12 @@
 
 namespace dcclite::broker
 {
-
+	/*
+	* Useful decode for exposing a virtual button on JMRI. 
+	* 
+	* Can be used to trigger Lua scripts, for example.
+	* 
+	*/
 	class VirtualTurnoutDecoder : public TurnoutDecoder
 	{
 		public:

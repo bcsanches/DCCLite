@@ -11,6 +11,10 @@
 - Added code to keep sensor compatible with old decoders
 - NetworkDevices not store protocol version
 
+## Emulator
+
+- Fixed pins initial state
+
 ## LiteDecoder
 
 - Decoders storage version bumped to 18
@@ -22,6 +26,10 @@
 ## SharpEEPromViewer
 
 - Support to new sensor with milliseconds delay and legacy sensors
+
+## Code
+
+- Updated to stop using deprecated OpenSSL functions for computing SHA1
 
 # Version 0.9.0
 

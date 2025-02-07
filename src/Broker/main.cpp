@@ -18,11 +18,9 @@
 #include <LogUtils.h>
 #include <PathUtils.h>
 
-
 #include "sys/Broker.h"
 #include "sys/EventHub.h"
 #include "sys/Thinker.h"
-
 
 #include <spdlog/logger.h>
 
@@ -30,17 +28,19 @@ constexpr auto BUILD_NUM = DCCLITE_VERSION;
 
 static std::atomic_flag g_fExitRequested;
 
-class NullEventTarget: public dcclite::broker::EventHub::IEventTarget
-{
-	public:
-		//empty
-};
-
 class QuitEvent: public dcclite::broker::EventHub::IEvent
 {
+	private:
+		class NullEventTarget: public dcclite::broker::EventHub::IEventTarget
+		{
+			//empty
+		};
+
+		static NullEventTarget g_clTarget;
+
 	public:
-		QuitEvent(dcclite::broker::EventHub::IEventTarget &target) :
-			IEvent{ target }
+		QuitEvent() :
+			IEvent{ std::ref(g_clTarget)}
 		{
 			//empty
 		}
@@ -51,16 +51,23 @@ class QuitEvent: public dcclite::broker::EventHub::IEvent
 		}
 };
 
+QuitEvent::NullEventTarget QuitEvent::g_clTarget;
+
 static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 {
-	g_fExitRequested.test_and_set(std::memory_order_relaxed);	
-
-	static NullEventTarget g_NullTarget;
+	g_fExitRequested.test_and_set(std::memory_order_relaxed);
 
 	//wake up main thread if it is sitting waiting for events...
-	dcclite::broker::EventHub::PostEvent<QuitEvent>(std::ref(g_NullTarget));
+	dcclite::broker::EventHub::PostEvent<QuitEvent>();
 
 	dcclite::Log::Info("[Main] CTRL+C detected, exiting...");
+
+	//give some time for main thread to finish up... so it can do the cleanup
+	using namespace std::chrono_literals;
+
+	//if we return befor the main thread, it may not finish cleaning up...
+	while(g_fExitRequested.test())
+		std::this_thread::sleep_for(1000ms);
 
 	return true;
 }
@@ -86,39 +93,30 @@ int main(int argc, char **argv)
 
 		dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
 
-		dcclite::ConsoleTryMakeNice();
+		dcclite::ConsoleTryMakeNice();		
 
-		dcclite::broker::Broker broker{ (argc == 1) ? "MyRailroad" : argv[1] };
+		dcclite::broker::Broker broker{ (argc == 1) ? "MyRailroad" : argv[1] };		
 		
-		dcclite::Log::Info("Ready, main loop...");
-
-		unsigned frameCount = 0;
-		auto startTime = dcclite::Clock::DefaultClock_t::now();
+		dcclite::Log::Info("Ready, main loop...");		
 		
 		while (!g_fExitRequested.test(std::memory_order_relaxed))
 		{			
 			auto now = dcclite::Clock::DefaultClock_t::now();
-
-			++frameCount;			
-			if ((now - startTime) >= std::chrono::seconds{ 1 })
-			{
-				startTime += std::chrono::seconds{ 1 };
-
-				//dcclite::Log::Debug("[{}]", frameCount);
-				frameCount = 0;
-			}
-			
+						
 			auto timeout = dcclite::broker::Thinker::UpdateThinkers(now);
 			
-			dcclite::broker::EventHub::PumpEvents(timeout);						
-		}			
+			dcclite::broker::EventHub::PumpEvents(timeout);
+		}
 	}	
 	catch (std::exception &ex)
 	{
 		dcclite::LogGetDefault()->critical("caught {}", ex.what());
 	}
-
+	
 	dcclite::Log::Info("[Main] Bye");
+
+	//notify console handler that we are done
+	g_fExitRequested.clear(std::memory_order_relaxed);	
 
 	return 0;
 }

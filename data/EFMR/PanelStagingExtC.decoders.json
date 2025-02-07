@@ -10,7 +10,7 @@
         "deactivateDelayMs":100,
         "comment":"Botao PAS 01"
       },
-	  {
+	    {
         "name":"ST_PNL_EXTC_BTN_PAS_02",
         "class":"Sensor",
         "pin":33,
@@ -21,7 +21,7 @@
         "deactivateDelayMs":100,
         "comment":"Botao PAS 02"
       },
-	  {
+	    {
         "name":"ST_PNL_EXTC_BTN_PAS_03",
         "class":"Sensor",
         "pin":30,
@@ -123,7 +123,7 @@
       {
         "name":"ST_PNL_EXTC_BTN_PAS_12",
         "class":"Sensor",
-        "pin":23,
+        "pin":47,
         "address":"4412",
         "pullup":true,
         "inverted":false,

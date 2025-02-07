@@ -185,6 +185,8 @@ namespace SharpTerminal
         private uint mActivateDelay;
         private uint mDeactivateDelay;
 
+        private uint mPin;
+
         [Category("Sensor")]
         public uint ActivateDelay
         {
@@ -208,7 +210,13 @@ namespace SharpTerminal
         {
             get { return mfInverted; }
         }
-		
+
+		[Category("Sensor")]
+		public uint Pin
+		{
+			get { return mPin; }
+		}
+
 		public RemoteSensorDecoder(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) :
             base(name, className, path, internalId, objectDef, parent)
         {
@@ -222,6 +230,8 @@ namespace SharpTerminal
 
         private void ParseStateData(JsonValue objectDef)
         {
+            mPin = (uint)objectDef["pin"];
+
             mActivateDelay = (uint)objectDef["activateDelay"];
             mDeactivateDelay = (uint)objectDef["deactivateDelay"];
 

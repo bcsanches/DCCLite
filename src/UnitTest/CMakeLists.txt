@@ -38,6 +38,7 @@ endmacro()
 package_add_test(UnitTest
 	BitPackUnitTest.cpp
 	EventHubTest.cpp
+    GuidTest.cpp
 	NetMessengerTest.cpp
    	NmraUtilUnitTest.cpp
   	ObjectPathUnitTest.cpp
@@ -48,6 +49,7 @@ package_add_test(UnitTest
 	RNameTest.cpp
   	ServoTurnoutDecoderTest.cpp
   	SignalDecoderTest.cpp
+    SimpleOutputDecoderTest.cpp
   	SocketTest.cpp
   	ThinkerTest.cpp
   	UtilUnitTest.cpp

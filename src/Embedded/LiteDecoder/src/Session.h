@@ -27,7 +27,7 @@ namespace dcclite
 
 namespace Session
 {
-	extern void LoadConfig(Storage::EpromStream &stream, bool oldConfig = false);
+	extern void LoadConfig(Storage::EpromStream &stream);
 #
 	extern void SaveConfig(Storage::EpromStream &stream);	
 

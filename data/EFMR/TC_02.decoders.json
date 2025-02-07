@@ -1,9 +1,18 @@
 [
     {
+        "name": "TC_PL20B",
+        "class": "Output",
+        "address": "1320",
+        "pin": 6,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L20B - rabicho estação"
+    },
+    {
         "name": "TC_PL22",
         "class": "Output",
         "address": "1322",
-        "pin": 14,
+        "pin": 17,
         "inverted": false,
         "ignoreSavedState": true,
         "comment":"Power track L22 - combustivel"
@@ -12,7 +21,7 @@
         "name": "TC_PL24B",
         "class": "Output",
         "address": "1300",
-        "pin": 18,
+        "pin": 21,
         "inverted": false,
         "ignoreSavedState": true,
         "comment":"Power track L24B"
@@ -21,7 +30,7 @@
         "name": "TC_PL26",
         "class": "Output",
         "address": "1326",
-        "pin": 17,
+        "pin": 20,
         "inverted": false,
         "ignoreSavedState": true,
         "comment":"Power track L26"
@@ -30,7 +39,7 @@
         "name": "TC_PL24A",
         "class": "Output",
         "address": "1324",
-        "pin": 16,
+        "pin": 19,
         "inverted": false,
         "ignoreSavedState": true,
         "comment":"Power track L24A"
@@ -39,7 +48,7 @@
         "name": "TC_PL30",
         "class": "Output",
         "address": "1330",
-        "pin": 15,
+        "pin": 18,
         "inverted": false,
         "ignoreSavedState": true,
         "comment":"Power track L30 / Turntable access"
@@ -48,7 +57,7 @@
         "name": "TC_PL34",
         "class": "Output",
         "address": "1334",
-        "pin": 2,
+        "pin": 16,
         "inverted": false,
         "ignoreSavedState": true,
         "comment":"Power track L34 - deposito"
@@ -57,7 +66,7 @@
         "name": "TC_PL36",
         "class": "Output",
         "address": "1336",
-        "pin": 3,
+        "pin": 15,
         "inverted": false,
         "ignoreSavedState": true,
         "comment":"Power track L36 - deposito"
@@ -66,7 +75,7 @@
         "name": "TC_PL38",
         "class": "Output",
         "address": "1338",
-        "pin": 4,
+        "pin": 14,
         "inverted": false,
         "ignoreSavedState": true,
         "comment":"Power track L38 - deposito"
@@ -75,7 +84,7 @@
         "name": "TC_PL40",
         "class": "Output",
         "address": "1340",
-        "pin": 5,
+        "pin": 2,
         "inverted": false,
         "ignoreSavedState": true,
         "comment":"Power track L40 - deposito"
@@ -84,7 +93,7 @@
         "name": "TC_PL42",
         "class": "Output",
         "address": "1342",
-        "pin": 8,
+        "pin": 5,
         "inverted": false,
         "ignoreSavedState": true,
         "comment":"Power track L42 - deposito"
@@ -93,7 +102,7 @@
         "name": "TC_PL44",
         "class": "Output",
         "address": "1344",
-        "pin": 7,
+        "pin": 4,
         "inverted": false,
         "ignoreSavedState": true,
         "comment":"Power track L44 - deposito"
@@ -102,7 +111,7 @@
         "name": "TC_PL46",
         "class": "Output",
         "address": "1346",
-        "pin": 6,
+        "pin": 3,
         "inverted": false,
         "ignoreSavedState": true,
         "comment":"Power track L46 - deposito"
@@ -127,7 +136,7 @@
         "inverted": true,
         "powerPin": 36,
         "frogPin": 34,
-        "range":15,
+        "range":35,
         "invertedFrog": true,
         "invertedPower": true,
         "operationTime": 3000
@@ -143,19 +152,7 @@
         "invertedFrog": true,
         "invertedPower": true,
         "operationTime": 3000
-    },
-    {
-        "name": "TC_T16",
-        "class": "ServoTurnout",
-        "address": "1416",
-        "pin": 29,
-        "inverted": false,
-        "powerPin": 46,
-        "frogPin": 48,
-        "invertedFrog": true,
-        "invertedPower": true,
-        "operationTime": 3000
-    },
+    },    
     {
         "name": "TC_T08",
         "class": "ServoTurnout",
@@ -165,19 +162,6 @@
         "powerPin": 69,
         "frogPin": 68,
         "range":30,
-        "invertedFrog": false,
-        "invertedPower": true,
-        "operationTime": 3000
-    },
-    {
-        "name": "TC_T15",
-        "class": "ServoTurnout",
-        "address": "1415",
-        "pin": 33,
-        "inverted": false,
-        "powerPin": 67,
-        "frogPin": 66,
-        "range":25,
         "invertedFrog": false,
         "invertedPower": true,
         "operationTime": 3000
@@ -210,11 +194,77 @@
         "operationTime": 300
     },
     {
+        "name": "TC_T14",
+        "class": "ServoTurnout",
+        "address": "1414",
+        "pin": 47,
+        "inverted": true,
+        "powerPin": 49,
+        "frogPin": 54,
+        "range":45,
+        "invertedFrog": true,
+        "invertedPower": false,
+        "operationTime": 3000
+    },   
+    {
+        "name": "TC_T15",
+        "class": "ServoTurnout",
+        "address": "1415",
+        "pin": 33,
+        "inverted": false,
+        "powerPin": 67,
+        "frogPin": 66,
+        "range":25,
+        "invertedFrog": false,
+        "invertedPower": true,
+        "operationTime": 3000
+    },
+    {
+        "name": "TC_T16",
+        "class": "ServoTurnout",
+        "address": "1416",
+        "pin": 29,
+        "inverted": false,
+        "powerPin": 46,
+        "frogPin": 48, 
+        "invertedFrog": true,
+        "invertedPower": true,
+        "operationTime": 3000
+    },
+    {
+        "name": "TC_T34",
+        "class": "ServoTurnout",
+        "address": "1434",
+        "pin": 43,
+        "inverted": true,
+        "powerPin": 57,
+        "frogPin": 58,
+        "startPos":59,
+        "endPos":74,
+        "invertedFrog": false,
+        "invertedPower": true,
+        "operationTime": 3000
+    },
+    {
+        "name": "TC_T36",
+        "class": "ServoTurnout",
+        "address": "1436",
+        "pin": 45,
+        "inverted": false,
+        "powerPin": 55,
+        "frogPin": 56,
+        "startPos":63,
+        "endPos":78,
+        "invertedFrog": true,
+        "invertedPower": true,
+        "operationTime": 3000
+    },
+    {
         "name": "TC_T38",
         "class": "ServoTurnout",
         "address": "1438",
         "pin": 39,
-        "inverted": false,
+        "inverted": true,
         "powerPin": 61,
         "frogPin": 62 ,
         "range":25,

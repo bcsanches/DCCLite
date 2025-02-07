@@ -13,6 +13,7 @@
 #include <exception>
 #include <Log.h>
 
+#include <Benchmark.h>
 #include <JsonUtils.h>
 #include <FmtUtils.h>
 #include <GuidUtils.h>
@@ -125,6 +126,8 @@ namespace dcclite::broker
 	DccLiteService::DccLiteService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project) :
 		Service(name, broker, params, project)		
 	{
+		BenchmarkLogger benchmark{ "DccLiteService", name.GetData() };
+
 		m_pDecoders = static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{ "decoders" })));
 		m_pAddresses = static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{ "addresses" })));
 		m_pDevices = static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{ "devices" })));
@@ -387,53 +390,14 @@ namespace dcclite::broker
 		return static_cast<Decoder *>(decoder ? decoder : m_pDecoders->TryResolveChild(id));
 	}
 
-	std::vector<SimpleOutputDecoder *> DccLiteService::FindAllSimpleOutputDecoders()
+	template <typename T>
+	std::vector<const T *> DccLiteService::FindAllDecoders() const
 	{
-		std::vector<SimpleOutputDecoder*> vecDecoders;
-
-		m_pDecoders->VisitChildren([&vecDecoders](auto &obj)
-			{				
-				if (auto decoder = dynamic_cast<SimpleOutputDecoder *>(&obj))
-					vecDecoders.push_back(decoder);
-
-				return true;
-			}
-		);		
-
-		return vecDecoders;
-	}
-
-	std::vector<StateDecoder *> DccLiteService::FindAllInputDecoders()
-	{
-		std::vector<StateDecoder *> vecDecoders;
+		std::vector<const T *> vecDecoders;
 
 		m_pDecoders->VisitChildren([&vecDecoders](auto &obj)
 			{
-				auto decoder = dynamic_cast<StateDecoder *>(&obj);
-				if (!decoder)
-					return true;
-
-				if (!decoder->IsInputDecoder())
-					return true;
-
-				vecDecoders.push_back(decoder);
-
-				return true;
-			}
-		);		
-
-		return vecDecoders;
-	}
-
-	std::vector<TurnoutDecoder *> DccLiteService::FindAllTurnoutDecoders()
-	{
-		std::vector<TurnoutDecoder *> vecDecoders;
-
-		m_pDecoders->VisitChildren([&vecDecoders](auto &obj)
-			{
-				auto decoder = dynamic_cast<TurnoutDecoder *>(&obj);
-
-				if (decoder)
+				if (auto decoder = dynamic_cast<const T *>(&obj))
 					vecDecoders.push_back(decoder);
 
 				return true;
@@ -441,6 +405,21 @@ namespace dcclite::broker
 		);
 
 		return vecDecoders;
+	}
+
+	std::vector<const SimpleOutputDecoder *> DccLiteService::FindAllSimpleOutputDecoders() const
+	{
+		return this->FindAllDecoders<SimpleOutputDecoder>();
+	}
+
+	std::vector<const StateDecoder *> DccLiteService::FindAllInputDecoders() const
+	{
+		return this->FindAllDecoders<StateDecoder>();		
+	}
+
+	std::vector<const TurnoutDecoder *> DccLiteService::FindAllTurnoutDecoders() const
+	{
+		return this->FindAllDecoders<TurnoutDecoder>();		
 	}
 
 	void DccLiteService::Decoder_OnStateChanged(Decoder& decoder)
@@ -670,6 +649,7 @@ namespace dcclite::broker
 					this->NetworkThread_OnNetHello(sender, pkt);
 					break;
 
+				[[likely]]
 				default:
 					dcclite::broker::EventHub::PostEvent<GenericNetworkEvent>(std::ref(*this), sender, pkt, msgType);
 					break;

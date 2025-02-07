@@ -47,6 +47,7 @@ class ARDUINO_API EtherCard : public Ethernet
 		static bool dhcpSetup(const char *hname = nullptr, bool fromRam = false);
 
 		static void udpServerListenOnPort(UdpServerCallback callback, uint16_t port);
+		static void udpServerPauseListenOnPort(uint16_t port);
 
 		static void sendUdp(const char *data, uint8_t len, uint16_t sport, const uint8_t *dip, uint16_t dport);
 

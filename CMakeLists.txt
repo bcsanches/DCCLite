@@ -13,8 +13,13 @@ set(DCCLITE_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
 add_compile_definitions(DCCLITE_VERSION=\"${DCCLITE_VERSION}\")
 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+	set (DCCLITE_MSVC true)
+else()
+	set (DCCLITE_MSVC false)
+endif()
+
 option(DCCLITE_GUI_TOOLS "Build GUI tools (LitePanel and LiteWiring)")
-#option(DCCLITE_GUI_SHARP_TOOLS "Build C# GUI tools - SharpTerminal")
 option(DCCLITE_IMGUI_TOOLS "Build IMGUI tools")
 
 if(${DCCLITE_IMGUI_TOOLS})
@@ -34,24 +39,29 @@ add_subdirectory(src)
 
 set_property(TARGET CityHash PROPERTY FOLDER "contrib") 
 set_property(TARGET fmt PROPERTY FOLDER "contrib")
-set_property(TARGET gtest PROPERTY FOLDER "contrib")
-set_property(TARGET gtest_main PROPERTY FOLDER "contrib")
-set_property(TARGET gmock PROPERTY FOLDER "contrib")
-set_property(TARGET gmock_main PROPERTY FOLDER "contrib")
+
+if (${DCCLITE_MSVC})
+	set_property(TARGET gtest PROPERTY FOLDER "contrib")
+	set_property(TARGET gtest_main PROPERTY FOLDER "contrib")
+	set_property(TARGET gmock PROPERTY FOLDER "contrib")
+	set_property(TARGET gmock_main PROPERTY FOLDER "contrib")
+
+	set_property(TARGET ArduinoLib PROPERTY FOLDER "Emulator")
+	set_property(TARGET Emulator PROPERTY FOLDER "Emulator")
+
+	set_property(TARGET DecodersCommonLib PROPERTY FOLDER "Embedded")	
+	set_property(TARGET LiteDecoderLib PROPERTY FOLDER "Embedded")
+	set_property(TARGET QueraltLib PROPERTY FOLDER "Embedded")
+	set_property(TARGET StandAloneDecoderLib PROPERTY FOLDER "Embedded")
+	
+	set_property(TARGET Terminal PROPERTY FOLDER "Tools")
+endif()
+
 set_property(TARGET ldmonitor PROPERTY FOLDER "contrib")
 set_property(TARGET LuaLib PROPERTY FOLDER "contrib")
 
-set_property(TARGET ArduinoLib PROPERTY FOLDER "Emulator")
-set_property(TARGET Emulator PROPERTY FOLDER "Emulator")
-
-set_property(TARGET DecodersCommonLib PROPERTY FOLDER "Embedded")
-set_property(TARGET SharedLib PROPERTY FOLDER "Embedded")
-set_property(TARGET LiteDecoderLib PROPERTY FOLDER "Embedded")
-set_property(TARGET QueraltLib PROPERTY FOLDER "Embedded")
-set_property(TARGET StandAloneDecoderLib PROPERTY FOLDER "Embedded")
-
 set_property(TARGET Launcher PROPERTY FOLDER "Tools")
-set_property(TARGET Terminal PROPERTY FOLDER "Tools")
+set_property(TARGET SharedLib PROPERTY FOLDER "Embedded")
 
 set(LFWATCH_BUILD_DEMO OFF CACHE BOOL "" FORCE)
 
@@ -129,7 +139,7 @@ endif()
 
 include(InstallRequiredSystemLibraries)
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+if (${DCCLITE_MSVC})
 	if(${DCCLITE_GUI_SHARP_TOOLS})
 		install(TARGETS Broker Launcher SharpTerminal SharpEEpromViewer)
 	else()

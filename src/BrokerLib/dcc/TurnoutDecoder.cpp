@@ -61,9 +61,9 @@ namespace dcclite::broker
 			networkDevice->Decoder_RegisterPin(*this, m_clFrogPin, "frogPin");
 		}
 
-		m_fFlags |= ReadFlag(params, "inverted",			ServoTurnoutDecoderFlags::SRVT_INVERTED_OPERATION);
-		m_fFlags |= ReadFlag(params, "ignoreSavedState",	ServoTurnoutDecoderFlags::SRVT_IGNORE_SAVED_STATE);
-		m_fFlags |= ReadFlag(params, "activateOnPowerUp",	ServoTurnoutDecoderFlags::SRVT_ACTIVATE_ON_POWER_UP);
+		m_fFlags |= this->InvertedOperation() ? ServoTurnoutDecoderFlags::SRVT_INVERTED_OPERATION : 0;
+		m_fFlags |= this->IgnoreSavedState() ? ServoTurnoutDecoderFlags::SRVT_IGNORE_SAVED_STATE : 0;
+		m_fFlags |= this->ActivateOnPowerUp() ? ServoTurnoutDecoderFlags::SRVT_ACTIVATE_ON_POWER_UP : 0;
 
 		m_fFlags |= ReadFlag(params, "invertedFrog",		ServoTurnoutDecoderFlags::SRVT_INVERTED_FROG);
 		m_fFlags |= ReadFlag(params, "invertedPower",		ServoTurnoutDecoderFlags::SRVT_INVERTED_POWER);						
@@ -90,11 +90,7 @@ namespace dcclite::broker
 		this->CheckServoData(m_uStartPos, m_uEndPos, this->GetName().GetData());
 
 		auto operationTime = params.FindMember("operationTime");
-		m_tOperationTime = operationTime != params.MemberEnd() ? std::chrono::milliseconds{ operationTime->value.GetUint() } : m_tOperationTime;
-
-		this->SyncRemoteState(
-			(m_fFlags & ServoTurnoutDecoderFlags::SRVT_IGNORE_SAVED_STATE) && (m_fFlags & ServoTurnoutDecoderFlags::SRVT_ACTIVATE_ON_POWER_UP) ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE
-		);
+		m_tOperationTime = operationTime != params.MemberEnd() ? std::chrono::milliseconds{ operationTime->value.GetUint() } : m_tOperationTime;		
 	}
 
 	ServoTurnoutDecoder::~ServoTurnoutDecoder()

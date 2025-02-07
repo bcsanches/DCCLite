@@ -17,6 +17,8 @@
 
 #include <Clock.h>
 
+#include "Log.h"
+
 #define DCCLITE_EVENT_HUB_INTERNAL_POOL
 
 namespace dcclite::broker
@@ -91,6 +93,17 @@ namespace dcclite::broker
 			{
 				ptr = std::make_unique<T>(std::forward<Args>(args)...);
 			}
+#ifdef DCCLITE_DEBUG
+			catch (std::bad_alloc &)
+			{
+				dcclite::Log::Warn("[EventHub::PostEvent] Alloc failed, are you debugging??");
+
+				detail::Unlock();
+
+				//ignore it.. drop the event...
+				return;
+			}
+#endif
 			catch (...)
 			{
 				detail::Unlock();

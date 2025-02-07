@@ -60,6 +60,8 @@ add_library(
         dcc/SignalDecoder.h
         dcc/SimpleOutputDecoder.cpp
         dcc/SimpleOutputDecoder.h
+		dcc/StorageManager.cpp
+		dcc/StorageManager.h
         dcc/TurnoutDecoder.cpp
         dcc/TurnoutDecoder.h 
         dcc/TurntableAutoInverterDecoder.cpp

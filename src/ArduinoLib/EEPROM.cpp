@@ -201,8 +201,8 @@ namespace ArduinoLib::detail
 
 	1 - First, check if the rom state file exists, if yes load it
 
-	If no rom state, check for a backup file if yes, check for rom temporary, if exists, rename it and goevilto 1.
-		- that should not happen, but if a backup and no temporary rom, rename backup and goevilto 1
+	If no rom state, check for a backup file if yes, check for rom temporary, if exists, rename it and goto 1.
+		- that should not happen, but if a backup and no temporary rom, rename backup and goto 1
 
 	if no backup file, sorry, no rom state... clear it
 
@@ -239,12 +239,11 @@ namespace ArduinoLib::detail
 		return true;
 	}
 
-	void RomSetupModule(std::string_view moduleName)
+	bool RomSetupModule(std::string_view moduleName)
 	{
 		//first time?
 		if (!g_thWorker.joinable())
 		{			
-
 			dcclite::Log::Info("RomSetupModule: started worker thread");
 
 			//start the thread
@@ -275,7 +274,7 @@ namespace ArduinoLib::detail
 		g_strRomBackup = g_strRomFileName;
 		g_strRomBackup += ".bkp";
 		
-		TryLoadRomState();
+		return TryLoadRomState();
 	}	
 
 	void RomFinalize()

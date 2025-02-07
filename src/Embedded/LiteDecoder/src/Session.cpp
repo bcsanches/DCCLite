@@ -65,15 +65,8 @@ static uint16_t g_uFreeRam = UINT16_MAX;
 //
 //
 
-void Session::LoadConfig(Storage::EpromStream &stream, bool oldConfig)
+void Session::LoadConfig(Storage::EpromStream &stream)
 {	
-	if(oldConfig)
-	{
-		uint8_t oldSrvIp;
-		for (int i = 0; i < 4; ++i)
-			stream.Get(oldSrvIp);
-	}
-
 	stream.Get(g_uSrvPort);
 
 	Session::LogStatus();
@@ -181,7 +174,6 @@ namespace ConnectionStateManager
 
 static void LogInvalidPacket(const FlashStringHelper_t *fstr, dcclite::MsgTypes type)
 {
-	//Console::SendLogEx(MODULE_NAME, FSTR_INVALID, ' ', F("pkt"), ' ', fstr, ' ', static_cast<int>(type));
 	DCCLITE_LOG_MODULE_LN(FSTR_INVALID << F("pkt ") << fstr << ' ' << static_cast<int>(type));
 }
 	
@@ -189,7 +181,6 @@ static bool IsValidServer(uint8_t src_ip[4], uint16_t src_port)
 {
 	if (memcmp(src_ip, g_u8ServerIp, sizeof(g_u8ServerIp)) || (g_uSrvPort != src_port))
 	{
-		//Console::SendLogEx(MODULE_NAME, FSTR_UNKNOWN, ' ', F("ip"));
 		DCCLITE_LOG_MODULE_LN(FSTR_UNKNOWN << F("ip "));
 		return false;
 	}
@@ -199,8 +190,6 @@ static bool IsValidServer(uint8_t src_ip[4], uint16_t src_port)
 
 void Session::LogStatus()
 {
-	//Console::SendLogEx(MODULE_NAME, "srv", ':', ' ', Console::IpPrinter(g_u8ServerIp), ':', g_uSrvPort);
-
 	Console::OutputStream stream;
 
 	stream << '[' << MODULE_NAME << ']' << F(" srv: ");
@@ -234,7 +223,6 @@ static void GotoOfflineState()
 
 static void OfflineTick(const unsigned long ticks)
 {	
-	//Console::SendLogEx(MODULE_NAME, FSTR_BROADCAST, ':', g_uSrvPort);
 	DCCLITE_LOG_MODULE_LN(FSTR_BROADCAST << ':' << g_uSrvPort);
 
 	//

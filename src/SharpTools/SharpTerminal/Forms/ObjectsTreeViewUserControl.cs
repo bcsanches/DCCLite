@@ -207,6 +207,7 @@ namespace SharpTerminal
 
                 var emulatorNode = mTreeView.Nodes.Add("Emulator");
                 emulatorNode.Name = "Emulator";
+                emulatorNode.Tag = new EmulatorManagerProxy();
 
                 if(mPreviousSelectedObject != null)
                 {
@@ -336,10 +337,10 @@ namespace SharpTerminal
                 control.Dispose();
             }
 
-            if (e.Node.Tag is not RemoteObject remoteObject)
+            if (e.Node.Tag is not IControlProvider controlProvider)
                 return;
 
-            var newControl = remoteObject.CreateControl(mConsole);            
+            var newControl = controlProvider.CreateControl(mConsole);            
 
             MainDisplayPanel.Controls.Add(newControl);
             newControl.Dock = DockStyle.Fill;

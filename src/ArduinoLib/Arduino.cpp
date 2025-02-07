@@ -15,6 +15,7 @@
 
 #include "ArduinoLib.h"
 #include "Clock.h"
+#include "Ethercard.h"
 
 #include "DynamicLibrary.h"
 
@@ -47,9 +48,9 @@ namespace ArduinoLib
 		{
 			public:
 				ArduinoPin() :
-					//default mode is with pullup resistor
-					m_eMode(INPUT_PULLUP),
-					m_eVoltage(HIGH)
+					//default mode is INPUT LOW
+					m_eMode(INPUT),
+					m_eVoltage(LOW)
 				{
 					//empty
 				}
@@ -58,18 +59,28 @@ namespace ArduinoLib
 				{
 					m_eMode = mode;
 
-					if (mode != INPUT_PULLUP)
+					if (mode == INPUT_PULLUP)
+						m_eVoltage = HIGH;
+					else if (mode == INPUT)
 						m_eVoltage = LOW;
 				}
 
-				void digitalWrite(VoltageModes mode)
+				void digitalWrite(VoltageModes voltage)
 				{
-					m_eVoltage = mode;
+					if (m_eMode != OUTPUT)
+					{
+						//writing HIGH to input pin turn on PULLUP
+						setPinMode(voltage == HIGH ? INPUT_PULLUP : INPUT);
+					}
+					else
+					{
+						m_eVoltage = voltage;
+					}
 				}
 
 				int digitalRead()
 				{
-					return m_eVoltage;
+					return m_eMode == INPUT_PULLUP ? (m_eVoltage == HIGH ? LOW : HIGH) : m_eVoltage;
 				}
 
 				void setDigitalVoltage(VoltageModes mode)
@@ -124,10 +135,10 @@ namespace ArduinoLib
 	DynamicLibrary g_ModuleLib;
 	std::string g_strModuleName;
 
-	void Setup(std::string moduleName, dcclite::Logger_t log)
+	bool Setup(std::string moduleName, dcclite::Logger_t log, const char *deviceName)
 	{
 		dcclite::LogReplace(log);
-
+		
 		g_ModuleLib.Load(moduleName);
 
 		g_strModuleName = std::move(moduleName);
@@ -137,15 +148,20 @@ namespace ArduinoLib
 
 		g_Clock = dcclite::Clock();
 
-		detail::RomSetupModule(g_strModuleName);
+		bool romResult = detail::RomSetupModule(deviceName ? deviceName : g_strModuleName);
 
 		//initialize client
 		g_pfnSetup();
+
+		return romResult;
 	}
 
 	void Finalize()
 	{
 		detail::RomFinalize();
+
+		//hack to reset ehtercard lib
+		ether.udpServerPauseListenOnPort(0);
 	}
 
 	void Tick()
@@ -161,6 +177,11 @@ namespace ArduinoLib
 	}
 
 	void SetSerialInput(const char *data) 
+	{
+		Serial.internalSetData(data);
+	}
+
+	void SetSerialInput(std::string data)
 	{
 		Serial.internalSetData(data);
 	}

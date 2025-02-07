@@ -17,15 +17,17 @@
 #include "../sys/FileWatcher.h"
 #include "../sys/Project.h"
 
+#include "Benchmark.h"
 #include "Decoder.h"
 #include "FmtUtils.h"
 #include "IDccLiteService.h"
 #include "JsonUtils.h"
 #include "Log.h"
+#include "OutputDecoder.h"
+#include "StorageManager.h"
 
 namespace dcclite::broker
 {
-
 	Device::Device(RName name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project) :
 		FolderObject{ name },
 		m_clDccService{ dccService },
@@ -61,7 +63,7 @@ namespace dcclite::broker
 	Device::~Device()
 	{
 		if (!m_pathConfigFile.empty())
-			FileWatcher::UnwatchFile(m_pathConfigFile);
+			FileWatcher::UnwatchFile(m_pathConfigFile);		
 	}
 
 	void Device::OnUnload()
@@ -72,6 +74,9 @@ namespace dcclite::broker
 	void Device::Unload()
 	{
 		this->OnUnload();
+
+		if(!m_vecDecoders.empty())
+			StorageManager::SaveState(*this, m_rclProject);
 
 		//clear the token
 		m_ConfigToken = {};
@@ -128,7 +133,9 @@ namespace dcclite::broker
 
 	void Device::Load()
 	{
-		dcclite::Log::Info("[Device::{}] [Load] Loading {}", this->GetName(), m_pathConfigFile.c_str());
+		BenchmarkLogger benchmark{ "Device::Load", this->GetNameData() };
+
+		dcclite::Log::Info("[Device::{}] [Load] Loading {}", this->GetName(), m_pathConfigFile.string());
 		std::ifstream configFile(m_pathConfigFile);
 		if (!configFile)
 		{
@@ -137,7 +144,7 @@ namespace dcclite::broker
 			return;
 		}
 
-		auto storedConfigToken = m_rclProject.GetFileToken(m_strConfigFileName);
+		auto storedConfigToken = StorageManager::GetFileToken(m_strConfigFileName, m_rclProject);
 
 		if (storedConfigToken == m_ConfigToken)
 		{
@@ -147,7 +154,7 @@ namespace dcclite::broker
 		}
 
 		dcclite::Log::Trace("[Device::{}] [Load] stored config token {}", this->GetName(), storedConfigToken);
-		dcclite::Log::Trace("[Device::{}] [Load] config token {}", this->GetName(), m_ConfigToken);
+		dcclite::Log::Trace("[Device::{}] [Load] currently config token {}", this->GetName(), m_ConfigToken);
 		dcclite::Log::Trace("[Device::{}] [Load] reading config {}", this->GetName(), m_pathConfigFile.string());
 
 		rapidjson::IStreamWrapper isw(configFile);
@@ -166,7 +173,7 @@ namespace dcclite::broker
 		//we clear the current config token, because if anything fails after this point and user rollback file to a previous version
 		//we want to make sure the previous file is loaded, if we did not clear the token, it may get ignored
 		//also this indicates that we have an inconsistent state	
-		this->Unload();
+		this->Unload();		
 
 		try
 		{
@@ -186,8 +193,43 @@ namespace dcclite::broker
 				this->RegisterDecoder(decoder);				
 			}
 
+			//
+			//Load state data
+			auto decodersState = StorageManager::LoadState(this->GetName(), m_rclProject, storedConfigToken);
+
+#if 1
+			for (auto &it : decodersState)
+			{
+				auto shortcut = dynamic_cast<Shortcut *>(this->TryGetChild(it.first));
+				if (!shortcut)
+					continue;
+
+				auto outputDecoder = dynamic_cast<OutputDecoder *>(shortcut->TryResolve());
+				if (!outputDecoder)
+					continue;
+
+				outputDecoder->SetState(it.second, "StorageData");
+			}
+#else
+			if (!decodersState.empty())
+			{
+				for (auto dec : m_vecDecoders)
+				{
+					auto outputDecoder = dynamic_cast<OutputDecoder *>(dec);
+					if (!outputDecoder)
+						continue;
+
+					auto it = decodersState.find(outputDecoder->GetName());
+					if (it == decodersState.end())
+						continue;
+
+					outputDecoder->SetState(it->second, "StorageData");
+				}
+			}
+#endif
+
 			//let decoder know that each decoder on this device has been created
-			for (auto &dec : m_vecDecoders)
+			for (auto dec : m_vecDecoders)
 			{
 				dec->InitAfterDeviceLoad();
 			}
@@ -204,6 +246,16 @@ namespace dcclite::broker
 
 		//if this point is reached, data is loaded, so store new token
 		m_ConfigToken = storedConfigToken;
-		dcclite::Log::Info("[Device::{}] [Load] loaded.", this->GetName());
+		dcclite::Log::Info("[Device::{}] [Load] loaded {}.", this->GetName(), m_ConfigToken);
 	}
+
+	void Device::ConstVisitDecoders(ConstVisitor_t visitor) const
+	{
+		for (auto it : m_vecDecoders)
+		{
+			if (!visitor(*it))
+				break;
+		}
+	}
+
 }

@@ -45,6 +45,8 @@ namespace SharpTerminal
 			m_lbTitle = new System.Windows.Forms.Label();
 			m_btnRename = new System.Windows.Forms.Button();
 			m_btnClear = new System.Windows.Forms.Button();
+			m_btnEmulate = new System.Windows.Forms.Button();
+			m_btnBlock = new System.Windows.Forms.Button();
 			groupBox1 = new System.Windows.Forms.GroupBox();
 			groupBox1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)m_gridMain).BeginInit();
@@ -65,6 +67,8 @@ namespace SharpTerminal
 			// 
 			// m_gridMain
 			// 
+			m_gridMain.AllowUserToAddRows = false;
+			m_gridMain.AllowUserToDeleteRows = false;
 			m_gridMain.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 			m_gridMain.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] { Column1, Column2, Column4, Column3, Column5 });
 			m_gridMain.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -74,6 +78,7 @@ namespace SharpTerminal
 			m_gridMain.Name = "m_gridMain";
 			m_gridMain.ReadOnly = true;
 			m_gridMain.RowHeadersVisible = false;
+			m_gridMain.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
 			m_gridMain.Size = new System.Drawing.Size(586, 253);
 			m_gridMain.TabIndex = 0;
 			// 
@@ -149,10 +154,35 @@ namespace SharpTerminal
 			m_btnClear.UseVisualStyleBackColor = true;
 			m_btnClear.Click += m_btnClear_Click;
 			// 
+			// m_btnEmulate
+			// 
+			m_btnEmulate.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+			m_btnEmulate.Enabled = false;
+			m_btnEmulate.Location = new System.Drawing.Point(192, 323);
+			m_btnEmulate.Name = "m_btnEmulate";
+			m_btnEmulate.Size = new System.Drawing.Size(75, 23);
+			m_btnEmulate.TabIndex = 5;
+			m_btnEmulate.Text = "Emulate";
+			m_btnEmulate.UseVisualStyleBackColor = true;
+			m_btnEmulate.Click += m_btnEmulate_Click;
+			// 
+			// m_btnBlock
+			// 
+			m_btnBlock.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+			m_btnBlock.Enabled = false;
+			m_btnBlock.Location = new System.Drawing.Point(273, 323);
+			m_btnBlock.Name = "m_btnBlock";
+			m_btnBlock.Size = new System.Drawing.Size(75, 23);
+			m_btnBlock.TabIndex = 6;
+			m_btnBlock.Text = "Block";
+			m_btnBlock.UseVisualStyleBackColor = true;
+			// 
 			// RemoteDeviceUserControl
 			// 
 			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			Controls.Add(m_btnBlock);
+			Controls.Add(m_btnEmulate);
 			Controls.Add(m_btnClear);
 			Controls.Add(m_btnRename);
 			Controls.Add(groupBox1);
@@ -177,5 +207,7 @@ namespace SharpTerminal
         private System.Windows.Forms.DataGridViewTextBoxColumn Column5;
 		private System.Windows.Forms.Button m_btnRename;
 		private System.Windows.Forms.Button m_btnClear;
+		private System.Windows.Forms.Button m_btnEmulate;
+		private System.Windows.Forms.Button m_btnBlock;
 	}
 }

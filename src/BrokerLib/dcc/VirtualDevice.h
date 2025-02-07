@@ -14,7 +14,13 @@
 
 namespace dcclite::broker
 {
-
+	/*
+	* This is used as the name implies as a Virtual Device, a device without a physical representation.
+	* 
+	* Useful for storing Virtual decoders to be used to trigger actions, like, for example:
+	*	- Making a button available at JMRI for triggering a lua script.
+	* 
+	*/	
 	class VirtualDevice : public Device
 	{
 		public:

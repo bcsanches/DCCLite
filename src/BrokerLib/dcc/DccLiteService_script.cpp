@@ -15,7 +15,9 @@
 #include <FmtUtils.h>
 #include <Log.h>
 
+#include "NmraUtil.h"
 #include "RemoteDecoder.h"
+#include "SignalDecoder.h"
 #include "TurnoutDecoder.h"
 
 /******************************************************************************
@@ -63,7 +65,7 @@ class DecoderProxy
 
 		inline bool IsActive() const
 		{
-			auto turnout = DynamicDecoderCast<dcclite::broker::RemoteDecoder>();
+			auto turnout = DynamicDecoderCast<dcclite::broker::StateDecoder>();
 
 			return turnout->GetState() == dcclite::DecoderStates::ACTIVE;
 		}
@@ -94,6 +96,20 @@ class DecoderProxy
 
 			if (!m_slotRemoteDecoderStateSyncConnection.connected())
 				this->RegisterStateSyncCallback();
+		}
+
+		void SetAspect(dcclite::SignalAspects aspect, std::string requester, std::string reason)
+		{
+			auto decoder = DynamicDecoderCast<dcclite::broker::SignalDecoder>();
+
+			decoder->SetAspect(aspect, std::move(requester), std::move(reason));
+		}
+
+		dcclite::SignalAspects GetAspect()
+		{
+			auto decoder = DynamicDecoderCast<dcclite::broker::SignalDecoder>();
+
+			return decoder->GetAspect();
 		}
 
 	private:
@@ -213,7 +229,7 @@ void DecoderProxy::OnDecoderDestroy(dcclite::broker::Decoder &decoder)
 *
 * DccLiteProxy
 * 
-* We put all the scripting funtionality on a helper class to better code isolation
+* We put all the scripting funtionality on a helper class for better code isolation
 * and to reduce dependencies.
 * 
 ******************************************************************************/
@@ -323,7 +339,43 @@ namespace dcclite::broker
 			"inactive", sol::property(&DecoderProxy::IsInactive),
 			"state", sol::property(&DecoderProxy::IsActive),
 			"set_state", &DecoderProxy::SetState,
-			"on_state_change", &DecoderProxy::OnStateChange
+			"on_state_change", &DecoderProxy::OnStateChange,
+			"set_aspect", &DecoderProxy::SetAspect,
+			"aspect", sol::property(&DecoderProxy::GetAspect)
+		);
+
+		state.new_enum<dcclite::SignalAspects>(
+			"SignalAspects",
+			{
+				{magic_enum::enum_name(SignalAspects::Stop),					SignalAspects::Stop},
+				{magic_enum::enum_name(SignalAspects::TakeSiding),				SignalAspects::TakeSiding},
+				{magic_enum::enum_name(SignalAspects::StopOrders),				SignalAspects::StopOrders},
+				{magic_enum::enum_name(SignalAspects::StopProceed),				SignalAspects::StopProceed},
+				{magic_enum::enum_name(SignalAspects::Restricted),				SignalAspects::Restricted},
+				{magic_enum::enum_name(SignalAspects::SlowAproach),				SignalAspects::SlowAproach},
+				{magic_enum::enum_name(SignalAspects::Slow),					SignalAspects::Slow},
+				{magic_enum::enum_name(SignalAspects::MediumAproach),			SignalAspects::MediumAproach},
+				{magic_enum::enum_name(SignalAspects::MediumSlow),				SignalAspects::MediumSlow},
+				{magic_enum::enum_name(SignalAspects::Medium),					SignalAspects::Medium},
+				{magic_enum::enum_name(SignalAspects::MediumLimited),			SignalAspects::MediumLimited},
+				{magic_enum::enum_name(SignalAspects::MediumClear),				SignalAspects::MediumClear},
+				{magic_enum::enum_name(SignalAspects::LimitedAproach),			SignalAspects::LimitedAproach},
+				{magic_enum::enum_name(SignalAspects::LimitedSlow),				SignalAspects::LimitedSlow},
+				{magic_enum::enum_name(SignalAspects::LimitedMedium),			SignalAspects::LimitedMedium},
+				{magic_enum::enum_name(SignalAspects::Limited),					SignalAspects::Limited},
+				{magic_enum::enum_name(SignalAspects::LimitedClear),			SignalAspects::LimitedClear},
+				{magic_enum::enum_name(SignalAspects::Aproach),					SignalAspects::Aproach},
+				{magic_enum::enum_name(SignalAspects::AdvanceAproach),			SignalAspects::AdvanceAproach},
+				{magic_enum::enum_name(SignalAspects::AproachSlow),				SignalAspects::AproachSlow},
+				{magic_enum::enum_name(SignalAspects::AdvanceAproachSlow),		SignalAspects::AdvanceAproachSlow},
+				{magic_enum::enum_name(SignalAspects::AproachMedium),			SignalAspects::AproachMedium},
+				{magic_enum::enum_name(SignalAspects::AdvanceAproachMedium),	SignalAspects::AdvanceAproachMedium},
+				{magic_enum::enum_name(SignalAspects::AproachLimited),			SignalAspects::AproachLimited},
+				{magic_enum::enum_name(SignalAspects::AdvanceAproachLimited),	SignalAspects::AdvanceAproachLimited},
+				{magic_enum::enum_name(SignalAspects::Clear),					SignalAspects::Clear},
+				{magic_enum::enum_name(SignalAspects::CabSpeed),				SignalAspects::CabSpeed},
+				{magic_enum::enum_name(SignalAspects::Dark),					SignalAspects::Dark}
+			}
 		);
 	}
 

@@ -41,8 +41,8 @@
     "powerPin": 63,
     "frogPin": 62,
     "invertedFrog": false,
-    "range":25,
-    "operationTime": 1000
+    "range":40,
+    "operationTime": 2000
   },
   {
     "name": "STC_T04",

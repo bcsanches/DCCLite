@@ -1,0 +1,9 @@
+{
+    "pins":
+    [
+        {
+			"pin":1,
+			"voltage":"high"
+		}
+    ]
+}

@@ -1,51 +1,11 @@
-[
-  {
-    "name":"SensorTest",
-    "class":"Sensor",
-    "pin":5,
-    "address":"0x96",
-    "pullup":true,
-    "inverted":true,
-    "activateDelay":0,
-    "deactivateDelay":0
-  },  
-  {
-    "name": "TestATrack01",
-    "class": "Output",
-    "address": "0x10",
-    "pin": 3,
-    "inverted": false,
-    "ignoreSavedState": false,
-    "activateOnPowerUp": false
-  },  
-  {
-    "name":"ServoTest",
-    "class":"ServoTurnout",
-    "address":"0100",
-    "pin": 14,
-    "inverted": false,    
-    "operationTime":4000,
-    "startPos":48,
-    "endPos":105
-  },
-  {
-    "name":"ServoRelayTest",
-    "class":"ServoTurnout",
-    "address":"0101",
-    "pin": 15,
-    "powerPin":16,
-    "inverted": false,    
-    "operationTime":4000,
-    "startPos":48,
-    "endPos":105
-  },
+[  
   {
     "name":"TurntableSensorA",
     "class":"Sensor",
     "pin":20,
     "address":"0x114",
     "pullup":true,
-    "inverted":true,
+    "inverted":false,
     "activateDelay":0,
     "deactivateDelay":0
   },
@@ -55,7 +15,7 @@
     "pin":21,
     "address":"0x115",
     "pullup":true,
-    "inverted":true,
+    "inverted":false,
     "activateDelay":0,
     "deactivateDelay":0
   },  

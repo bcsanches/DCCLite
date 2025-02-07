@@ -224,7 +224,7 @@ namespace dcclite::broker
 		}
 	}
 
-	static inline std::string CreateSensorStateResponse(const std::vector<StateDecoder *> &sensorDecoders)
+	static inline std::string CreateSensorStateResponse(const std::vector<const StateDecoder *> &sensorDecoders)
 	{
 		std::stringstream response;
 	
@@ -327,7 +327,7 @@ namespace dcclite::broker
 			return false;
 		}
 
-		signal->SetAspect(packetAspect, "DccppClient::ParseSignalCommandM");
+		signal->SetAspect(packetAspect, "DccppClient::ParseSignalCommandM", "Direct command");
 
 		return true;
 	}

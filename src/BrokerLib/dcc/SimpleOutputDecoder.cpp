@@ -27,17 +27,6 @@ namespace dcclite::broker
 		m_clPin(params["pin"].GetInt())
 	{
 		m_rclDevice.TryGetINetworkDevice()->Decoder_RegisterPin(*this, m_clPin, "pin");
-
-		auto inverted = params.FindMember("inverted");
-		m_fInvertedOperation = inverted != params.MemberEnd() ? inverted->value.GetBool() : false;
-
-		auto ignoreSavedState = params.FindMember("ignoreSavedState");
-		m_fIgnoreSavedState = ignoreSavedState != params.MemberEnd() ? ignoreSavedState->value.GetBool() : false;
-
-		auto activateOnPowerUp = params.FindMember("activateOnPowerUp");
-		m_fActivateOnPowerUp = activateOnPowerUp != params.MemberEnd() ? activateOnPowerUp->value.GetBool() : false;
-
-		this->SyncRemoteState(m_fIgnoreSavedState && m_fActivateOnPowerUp ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
 	}
 
 	SimpleOutputDecoder::~SimpleOutputDecoder()
@@ -47,9 +36,9 @@ namespace dcclite::broker
 
 	uint8_t SimpleOutputDecoder::GetDccppFlags() const noexcept
 	{
-		return	(m_fInvertedOperation ? dcclite::OutputDecoderFlags::OUTD_INVERTED_OPERATION : 0) |
-			(m_fIgnoreSavedState ? dcclite::OutputDecoderFlags::OUTD_IGNORE_SAVED_STATE : 0) |
-			(m_fActivateOnPowerUp ? dcclite::OUTD_ACTIVATE_ON_POWER_UP : 0);
+		return	(this->InvertedOperation() ? dcclite::OutputDecoderFlags::OUTD_INVERTED_OPERATION : 0) |
+			(this->IgnoreSavedState() ? dcclite::OutputDecoderFlags::OUTD_IGNORE_SAVED_STATE : 0) |
+			(this->ActivateOnPowerUp() ? dcclite::OUTD_ACTIVATE_ON_POWER_UP : 0);
 	}
 
 

@@ -174,7 +174,8 @@ namespace dcclite::broker
 
 	NetworkDevice::ConfigState::ConfigState(NetworkDevice &self, const dcclite::Clock::TimePoint_t time):
 		State(self),
-		m_clTimeoutThinker{"NetworkDevice::ConfigState::TimeoutThinker", THINKER_MF_LAMBDA(OnTimeout)}
+		m_clTimeoutThinker{"NetworkDevice::ConfigState::TimeoutThinker", THINKER_MF_LAMBDA(OnTimeout)},
+		m_clBenchmark{"NetworkDevice::ConfigState", self.GetNameData()}
 	{
 		this->m_vecAcks.resize(self.m_vecDecoders.size());
 
@@ -347,7 +348,8 @@ namespace dcclite::broker
 
 	NetworkDevice::SyncState::SyncState(NetworkDevice &self):
 		State{ self },
-		m_clTimeoutThinker{"NetworkDevice::SyncState::TimeoutThinker", THINKER_MF_LAMBDA(OnTimeout)}
+		m_clTimeoutThinker{"NetworkDevice::SyncState::TimeoutThinker", THINKER_MF_LAMBDA(OnTimeout)},
+		m_clBenchmark{ "NetworkDevice::SyncState", self.GetNameData() }
 	{
 		//force it to run ASAP
 		m_clTimeoutThinker.Schedule({});
@@ -402,6 +404,7 @@ namespace dcclite::broker
 			auto remoteDecoder = static_cast<RemoteDecoder *>(m_rclSelf.m_vecDecoders[i]);
 			remoteDecoder->SyncRemoteState(state);
 
+#if 0
 			if (remoteDecoder->IsOutputDecoder())
 			{
 				auto *outputDecoder = static_cast<OutputDecoder *>(remoteDecoder);
@@ -413,6 +416,8 @@ namespace dcclite::broker
 					outputDecoder->ToggleState("OnPacket_Sync");
 				}
 			}
+#endif
+
 		}
 
 		dcclite::Log::Info("[Device::{}] [SyncState::OnPacket] Sync OK", m_rclSelf.GetName());
@@ -442,7 +447,8 @@ namespace dcclite::broker
 	NetworkDevice::OnlineState::OnlineState(NetworkDevice &self, const dcclite::Clock::TimePoint_t time):
 		State{ self },
 		m_clPingThinker{"NetworkDevice::OnlineState::m_clPingThinker", THINKER_MF_LAMBDA(OnPingThink)},
-		m_clSendStateDeltaThinker{"NetworkDevice::OnlineState::m_clSendStateDeltaThinker", THINKER_MF_LAMBDA(OnStateDeltaThink)}
+		m_clSendStateDeltaThinker{"NetworkDevice::OnlineState::m_clSendStateDeltaThinker", THINKER_MF_LAMBDA(OnStateDeltaThink)},
+		m_clBenchmark{ "NetworkDevice::OnlineState", self.GetNameData() }
 	{		
 		m_clPingThinker.Schedule(time + PING_TIMEOUT);
 
@@ -653,7 +659,6 @@ namespace dcclite::broker
 
 			So if we received any sensor state, we send back to the client our current state so it can ACK our current state
 			*/
-
 			sensorStateRefresh = remoteDecoder->IsInputDecoder() || sensorStateRefresh;			
 		}		
 
@@ -702,7 +707,6 @@ namespace dcclite::broker
 	//
 	//
 	//
-
 
 	void NetworkDevice::Decoder_OnChangeStateRequest(const Decoder &decoder) noexcept
 	{
@@ -839,29 +843,42 @@ namespace dcclite::broker
 		return true;
 	}
 
-	void NetworkDevice::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteConfigToken)
+	struct OnPacketImpl
 	{
-		if (!m_pclCurrentState)
+		void operator()(std::monostate &nullState, dcclite::RName devName, dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteConfigToken)
 		{
-			dcclite::Log::Error("[Device::{}] [OnPacket] Cannot process packet on Offline mode, packet: {}", this->GetName(), dcclite::MsgName(msgType));
+			dcclite::Log::Error("[Device::{}] [OnPacket] Cannot process packet on Offline mode, packet: {}", devName, dcclite::MsgName(msgType));
+		}
 
-			return;
-		}		
+#if 1
+		template <typename T>
+		void operator()(T &state, dcclite::RName devName, dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteConfigToken)
+		{
+			state.OnPacket(packet, time, msgType, remoteAddress, remoteConfigToken);
+		}
+#endif
+	};
 
-		m_pclCurrentState->OnPacket(packet, time, msgType, remoteAddress, remoteConfigToken);
+	void NetworkDevice::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteConfigToken)
+	{				
+		std::visit([name = this->GetName(), &packet, time, msgType, remoteAddress, remoteConfigToken](auto &s)
+			{
+				OnPacketImpl impl;
+				impl(s, name, packet, time, msgType, remoteAddress, remoteConfigToken);
+			},
+			m_vState
+		);
 	}
 
 	void NetworkDevice::ClearState()
 	{
-		m_vState = std::monostate{};
-		m_pclCurrentState = nullptr;
+		m_vState = std::monostate{};		
 	}
 
 	template <typename T, class... Args>
 	void NetworkDevice::SetState(Args&&...args)
 	{
 		m_vState.emplace<T>(*this, args...);
-		m_pclCurrentState = &std::get<T>(m_vState);
 	}
 
 	void NetworkDevice::GotoSyncState()

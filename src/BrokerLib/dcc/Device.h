@@ -53,6 +53,13 @@ namespace dcclite::broker
 
 			Decoder &CreateInternalDecoder(const char *className, DccAddress address, RName name, const rapidjson::Value &params);
 
+			inline dcclite::Guid GetConfigToken() const noexcept
+			{
+				return m_ConfigToken;
+			}
+
+			void ConstVisitDecoders(ConstVisitor_t visitor) const;
+
 		protected:
 			void Load();
 			void Unload();
@@ -76,9 +83,9 @@ namespace dcclite::broker
 			const std::string		m_strConfigFileName;
 			const dcclite::fs::path m_pathConfigFile;
 
-			const Project &m_rclProject;
+			const Project			&m_rclProject;
 
-			dcclite::Guid		m_ConfigToken;
+			dcclite::Guid			m_ConfigToken;
 	};
 
 }

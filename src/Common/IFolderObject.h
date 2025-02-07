@@ -19,6 +19,7 @@ namespace dcclite
 	class IFolderObject : public Object
 	{
 		public:
+			typedef std::function<bool(const IObject &child)> ConstVisitor_t;
 			typedef std::function<bool(IObject &child)> Visitor_t;
 
 		public:
@@ -36,6 +37,7 @@ namespace dcclite
 
 			bool IsFolder() const noexcept override { return true; }
 
+			virtual void ConstVisitChildren(ConstVisitor_t visitor) const = 0;
 			virtual void VisitChildren(Visitor_t visitor) = 0;
 	};	
 }

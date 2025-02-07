@@ -28,7 +28,6 @@ namespace dcclite::broker
 	static auto constexpr FLASH_INTERVAL = 500ms;
 	static auto constexpr WAIT_STATE_TIMEOUT = 250ms;
 
-
 	SignalDecoder::SignalDecoder(
 		const DccAddress &address,
 		RName decoderName,
@@ -76,14 +75,14 @@ namespace dcclite::broker
 
 			auto aspectId = dcclite::ConvertNameToAspect(name);
 
-			if (std::any_of(m_vecAspects.begin(), m_vecAspects.end(), [aspectId](const Aspect &aspect) { return aspect.m_eAspect == aspectId; }))
+			if (std::any_of(m_vecAspects.begin(), m_vecAspects.end(), [aspectId](const Aspect &aspect) { return aspect.m_kAspect == aspectId; }))
 			{
 				throw std::invalid_argument(fmt::format("[SignalDecoder::{}] [SignalDecoder] Error: aspect {} already defined", this->GetName(), name));
 			}
 
 			Aspect newAspect;
 
-			newAspect.m_eAspect = aspectId;
+			newAspect.m_kAspect = aspectId;
 
 			auto onLights = aspectElement.FindMember("on");
 			if (onLights != aspectElement.MemberEnd())
@@ -147,12 +146,12 @@ namespace dcclite::broker
 
 		std::sort(m_vecAspects.begin(), m_vecAspects.end(), [](const Aspect &a, const Aspect &b)
 		{
-			return b.m_eAspect < a.m_eAspect;
+			return b.m_kAspect < a.m_kAspect;
 		});
 
 		//start with most restrictive aspect, expected to be Stop
 		const auto aspectIndex = static_cast<unsigned>(m_vecAspects.size() - 1);
-		this->ApplyAspect(m_vecAspects[aspectIndex].m_eAspect, aspectIndex);		
+		this->ApplyAspect(m_vecAspects[aspectIndex].m_kAspect, aspectIndex);		
 	}
 
 
@@ -161,11 +160,14 @@ namespace dcclite::broker
 		Decoder::Serialize(stream);
 
 		stream.AddStringValue("requestedAspectName", dcclite::ConvertAspectToName(m_eCurrentAspect));
-		stream.AddStringValue("currentAspectName", dcclite::ConvertAspectToName(m_vecAspects[m_uCurrentAspectIndex].m_eAspect));
+		stream.AddStringValue("currentAspectName", dcclite::ConvertAspectToName(m_vecAspects[m_uCurrentAspectIndex].m_kAspect));
+		stream.AddStringValue("aspectRequester", m_strAspectRequester);
+		stream.AddStringValue("aspectReason", m_strAspectReason);
+
 		auto aspectsData = stream.AddArray("aspects");
 		
 		for (const auto &item : m_vecAspects)
-			aspectsData.AddString(dcclite::ConvertAspectToName(item.m_eAspect));
+			aspectsData.AddString(dcclite::ConvertAspectToName(item.m_kAspect));
 	}
 
 	void SignalDecoder::ForEachHead(const std::vector<RName> &heads, const dcclite::SignalAspects aspect, std::function<bool(OutputDecoder &)> proc) const
@@ -184,15 +186,38 @@ namespace dcclite::broker
 		}
 	}
 
-	void SignalDecoder::SetAspect(const dcclite::SignalAspects aspect, const char *requester)
+	void SignalDecoder::SetAspect(const dcclite::SignalAspects aspect, std::string requester, std::string reason)
 	{
+		bool changed = false;
+
+		//
+		//we track those strings here because it is helpful for debbuging the CTC actions
+		if (m_strAspectRequester != requester)
+		{
+			m_strAspectRequester = requester;
+			changed = true;
+		}
+
+		if (m_strAspectReason != reason)
+		{
+			m_strAspectReason = reason;
+			changed = true;
+		}		
+
 		if (aspect == m_eCurrentAspect)
+		{
+			//just propagate the messages because it is helpful to understand the decisions made by the dispatcher
+			//but this should not affect anything else
+			if(changed)
+				m_rclManager.Decoder_OnStateChanged(*this);
+
 			return;
+		}			
 
 		int index = 0;
 		for (const auto &it : m_vecAspects)
 		{
-			if (it.m_eAspect <= aspect)
+			if (it.m_kAspect <= aspect)
 			{
 				break;
 			}
@@ -204,23 +229,24 @@ namespace dcclite::broker
 			--index;		
 
 		//warn user...
-		if (aspect != m_vecAspects[index].m_eAspect)
+		if (aspect != m_vecAspects[index].m_kAspect)
 		{
 			Log::Warn(
 				"[SignalDecoder::{}] [SetAspect] Aspect {} requested by {} not found, using {}", 
 				this->GetName(), 
 				dcclite::ConvertAspectToName(aspect), 
 				requester,
-				dcclite::ConvertAspectToName(m_vecAspects[index].m_eAspect)
+				dcclite::ConvertAspectToName(m_vecAspects[index].m_kAspect)
 			);
 		}
 		
 		Log::Info(
-			"[SignalDecoder::{}] [SetAspect] Changed from {} to {}, requested by {}",
+			"[SignalDecoder::{}] [SetAspect] Changed from {} to {}, requested by {} - {}",
 			this->GetName(),
-			dcclite::ConvertAspectToName(m_vecAspects[m_uCurrentAspectIndex].m_eAspect),
+			dcclite::ConvertAspectToName(m_vecAspects[m_uCurrentAspectIndex].m_kAspect),
 			dcclite::ConvertAspectToName(aspect),
-			requester
+			requester,
+			reason
 		);
 
 		this->ApplyAspect(aspect, index);

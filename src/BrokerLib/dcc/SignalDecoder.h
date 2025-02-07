@@ -80,7 +80,11 @@ namespace dcclite::broker
 			//
 			//
 
-			void SetAspect(const dcclite::SignalAspects aspect, const char *requester);			
+			void SetAspect(const dcclite::SignalAspects aspect, std::string requester, std::string reason);
+			inline dcclite::SignalAspects GetAspect() const
+			{
+				return m_eCurrentAspect;
+			}
 
 		private:
 			void ForEachHead(const std::vector<RName> &heads, const dcclite::SignalAspects aspect, std::function<bool(OutputDecoder &)> proc) const;
@@ -90,7 +94,7 @@ namespace dcclite::broker
 		private:
 			struct Aspect
 			{			
-				dcclite::SignalAspects m_eAspect;
+				dcclite::SignalAspects m_kAspect;
 
 				std::vector<RName> m_vecOnHeads;
 				std::vector<RName> m_vecOffHeads;
@@ -150,6 +154,9 @@ namespace dcclite::broker
 		private:
 			dcclite::SignalAspects	m_eCurrentAspect;
 			unsigned				m_uCurrentAspectIndex;
+
+			std::string				m_strAspectReason;
+			std::string				m_strAspectRequester;
 
 			std::variant<std::monostate, State_Flash, State_WaitTurnOff> m_vState;			
 

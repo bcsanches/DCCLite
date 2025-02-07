@@ -68,10 +68,19 @@ namespace dcclite
 		return ptr;
 	}
 
-	void FolderObject::VisitChildren(Visitor_t visitor)
+	void FolderObject::ConstVisitChildren(ConstVisitor_t visitor) const
 	{
 		for (auto &pair : m_mapObjects)
 		{				
+			if (!visitor(*pair.second.get()))
+				break;
+		}
+	}
+
+	void FolderObject::VisitChildren(Visitor_t visitor)
+	{
+		for (auto &pair : m_mapObjects)
+		{
 			if (!visitor(*pair.second.get()))
 				break;
 		}

@@ -23,6 +23,7 @@
 
 #include <spdlog/logger.h>
 
+#include <Benchmark.h>
 #include <Log.h>
 #include <Parser.h>
 
@@ -51,25 +52,19 @@ namespace dcclite::broker
 	static RName GetServiceClassName(const rapidjson::Value &data)
 	{
 		const char *className = dcclite::json::GetString(data, "class", "service block");
-		auto rclassName = RName::TryGetName(className);
-		if (!rclassName)
-		{
-			throw std::runtime_error(fmt::format("[Broker] [CreateBrokerService] error: service type {} not registered", className));
-		}
-
-		return rclassName;
+		if (auto rclassName = RName::TryGetName(className))
+			return rclassName;
+		
+		throw std::runtime_error(fmt::format("[Broker] [CreateBrokerService] error: service type {} not registered", className));		
 	}
 
 	static ServiceFactory &FindServiceFactory(const rapidjson::Value &data)
 	{
-		auto className = GetServiceClassName(data);
-		auto factory = ServiceFactory::TryFindFactory(className);
-		if (!factory)
-		{
-			throw std::runtime_error(fmt::format("[Broker] [CreateBrokerService] error: unknown service type {}", className));
-		}
+		auto className = GetServiceClassName(data);		
+		if (auto factory = ServiceFactory::TryFindFactory(className))		
+			return *factory;					
 
-		return *factory;
+		throw std::runtime_error(fmt::format("[Broker] [CreateBrokerService] error: unknown service type {}", className));
 	}
 
 	static std::unique_ptr<Service> CreateBrokerService(const ServiceFactory &factory, Broker &broker, const rapidjson::Value &data, const Project &project)
@@ -98,7 +93,9 @@ namespace dcclite::broker
 	Broker::Broker(dcclite::fs::path projectPath):		
 		FolderObject{ RName{"root"} },
 		m_clProject(std::move(projectPath))
-	{		
+	{	
+		BenchmarkLogger benchmark{ "Broker", "Contructor" };
+
 		{
 			auto cmdHost = std::make_unique<TerminalCmdHost>();
 			m_pclTerminalCmdHost = cmdHost.get();
@@ -114,9 +111,18 @@ namespace dcclite::broker
 			std::make_unique<FolderObject>(SpecialFolders::GetName(SpecialFolders::Folders::ServicesId)))
 		);				
 
-		this->LoadConfig();
+		{
+			BenchmarkLogger loadTime{ "Broker", "LoadConfig" };
 
-		ScriptSystem::Start(*this, m_clProject);
+			this->LoadConfig();
+		}
+
+		{
+			BenchmarkLogger script{ "Broker", "ScriptSystem" };
+
+			ScriptSystem::Start(*this, m_clProject);
+		}
+
 
 		//Start after load, so project name is already loaded
 		ZeroConfSystem::Start(m_clProject.GetName());
@@ -127,6 +133,12 @@ namespace dcclite::broker
 		ScriptSystem::Stop();
 
 		ZeroConfSystem::Stop();
+
+		//
+		//cleanup everything while we still have our members live...
+		//Devices may need to still acess m_clProject data during destruction, so make sure they go first
+		//Do this on Services folder instead of destroying it, because some services (Terminal) will try to access Services folder on destruction
+		m_pServices->RemoveAllChildren();
 	}	
 
 	void Broker::LoadConfig()

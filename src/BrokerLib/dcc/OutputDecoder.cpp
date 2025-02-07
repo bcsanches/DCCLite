@@ -15,9 +15,25 @@
 
 #include "IDccLiteService.h"
 #include "IDevice.h"
+#include "JsonUtils.h"
 
 namespace dcclite::broker
 {
+	OutputDecoder::OutputDecoder(
+		const DccAddress &address,
+		RName name,
+		IDccLite_DecoderServices &owner,
+		IDevice_DecoderServices &dev,
+		const rapidjson::Value &params
+	):
+		RemoteDecoder(address, name, owner, dev, params)
+	{
+		m_fInvertedOperation = json::TryGetDefaultBool(params, "inverted", false);		
+		m_fIgnoreSavedState = json::TryGetDefaultBool(params, "ignoreSavedState", false);
+		m_fActivateOnPowerUp = json::TryGetDefaultBool(params, "activateOnPowerUp", false);
+
+		this->SyncRemoteState(this->IgnoreSavedState() && this->ActivateOnPowerUp() ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);				
+	}
 
 	bool OutputDecoder::SetState(dcclite::DecoderStates newState, const char *requester)
 	{
@@ -49,5 +65,9 @@ namespace dcclite::broker
 		RemoteDecoder::Serialize(stream);
 
 		stream.AddBool("requestedState", m_kRequestedState == dcclite::DecoderStates::ACTIVE);
+
+		stream.AddBool("invertedOperation", m_fInvertedOperation);
+		stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
+		stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
 	}
 }

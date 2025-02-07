@@ -108,6 +108,14 @@ namespace dcclite::broker
 		return nullptr;
 	}
 
+	void LocationManager::ConstVisitChildren(ConstVisitor_t visitor) const
+	{
+		for (auto &location : m_vecIndex)
+		{
+			visitor(location);
+		}
+	}
+
 	void LocationManager::VisitChildren(Visitor_t visitor)
 	{
 		for (auto &location : m_vecIndex)

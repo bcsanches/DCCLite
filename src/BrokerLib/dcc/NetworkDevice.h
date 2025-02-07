@@ -15,6 +15,7 @@
 #include <string>
 #include <variant>
 
+#include "Benchmark.h"
 #include "IDccLiteService.h"
 #include "Device.h"
 #include "IDevice.h"
@@ -182,11 +183,13 @@ namespace dcclite::broker
 			//
 			//
 			//Connection status
-			Status				m_kStatus = Status::OFFLINE;			
+			Status				m_kStatus = Status::OFFLINE;
+
+			friend struct OnPacketImpl;
 
 			struct State
 			{
-				virtual void OnPacket(					
+				void OnPacket(					
 					dcclite::Packet &packet, 
 					const dcclite::Clock::TimePoint_t time, 
 					const dcclite::MsgTypes msgType, 
@@ -215,7 +218,9 @@ namespace dcclite::broker
 
 				Thinker				m_clTimeoutThinker;
 
-				ConfigState(NetworkDevice &self, const dcclite::Clock::TimePoint_t time);			
+				BenchmarkLogger		m_clBenchmark;
+
+				ConfigState(NetworkDevice &self, const dcclite::Clock::TimePoint_t time);					
 
 				void OnPacket(					
 					dcclite::Packet &packet,
@@ -223,7 +228,7 @@ namespace dcclite::broker
 					const dcclite::MsgTypes msgType,
 					const dcclite::NetworkAddress remoteAddress,
 					const dcclite::Guid remoteConfigToken
-				) override;				
+				);				
 
 				[[nodiscard]] 
 				const char *GetName() const override { return "ConfigState"; }
@@ -262,7 +267,7 @@ namespace dcclite::broker
 					const dcclite::MsgTypes msgType,
 					const dcclite::NetworkAddress remoteAddress,
 					const dcclite::Guid remoteConfigToken
-				) override;				
+				);				
 
 				[[nodiscard]] const char *GetName() const override { return "SyncState"; }
 
@@ -270,6 +275,8 @@ namespace dcclite::broker
 					void OnTimeout(const dcclite::Clock::TimePoint_t time);
 
 					Thinker				m_clTimeoutThinker;
+
+					BenchmarkLogger		m_clBenchmark;
 			};
 
 			struct OnlineState: State
@@ -282,7 +289,7 @@ namespace dcclite::broker
 					const dcclite::MsgTypes msgType,
 					const dcclite::NetworkAddress remoteAddress,
 					const dcclite::Guid remoteConfigToken
-				) override;				
+				);				
 
 				[[nodiscard]] const char *GetName() const override { return "OnlineState"; }
 
@@ -300,6 +307,8 @@ namespace dcclite::broker
 
 					Thinker				m_clPingThinker;
 					Thinker				m_clSendStateDeltaThinker;
+
+					BenchmarkLogger		m_clBenchmark;
 			};
 
 			class TimeoutController
@@ -325,8 +334,7 @@ namespace dcclite::broker
 			//
 			//Connection state
 		
-			std::variant< std::monostate, ConfigState, SyncState, OnlineState> m_vState;
-			State *m_pclCurrentState = nullptr;			
+			std::variant< std::monostate, ConfigState, SyncState, OnlineState> m_vState;			
 
 			TimeoutController	m_clTimeoutController;
 
