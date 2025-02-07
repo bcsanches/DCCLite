@@ -26,7 +26,7 @@ void dcclite::PathUtils::InitAppFolders(std::string_view name)
 
 	if (ec)
 	{
-		throw std::runtime_error(fmt::format("Cannot create app path {}, system error: {}", path.c_str(), ec.message()));				
+		throw std::runtime_error(fmt::format("Cannot create app path {}, system error: {}", path.string(), ec.message()));				
 	}	
 }
 

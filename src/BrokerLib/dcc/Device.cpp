@@ -139,7 +139,7 @@ namespace dcclite::broker
 		std::ifstream configFile(m_pathConfigFile);
 		if (!configFile)
 		{
-			dcclite::Log::Error("[Device::{} [Load] cannot find {}", this->GetName(), m_pathConfigFile.c_str());
+			dcclite::Log::Error("[Device::{} [Load] cannot find {}", this->GetName(), m_pathConfigFile.string());
 
 			return;
 		}

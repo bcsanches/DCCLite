@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 #endif
 
 		dcclite::Log::Info("DCClite {} {}", BUILD_NUM, __DATE__);
-		dcclite::Log::Info("[DccLite] Working dir: {}", dcclite::fs::current_path().c_str());
+		dcclite::Log::Info("[DccLite] Working dir: {}", dcclite::fs::current_path().string());
 
 		dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
 
