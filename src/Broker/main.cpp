@@ -92,9 +92,9 @@ int main(int argc, char **argv)
 
 		dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
 
-		dcclite::ConsoleTryMakeNice();
+		dcclite::ConsoleTryMakeNice();		
 
-		dcclite::broker::Broker broker{ (argc == 1) ? "MyRailroad" : argv[1] };
+		dcclite::broker::Broker broker{ (argc == 1) ? "MyRailroad" : argv[1] };		
 		
 		dcclite::Log::Info("Ready, main loop...");		
 		

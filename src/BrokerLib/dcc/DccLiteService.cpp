@@ -13,6 +13,7 @@
 #include <exception>
 #include <Log.h>
 
+#include <Benchmark.h>
 #include <JsonUtils.h>
 #include <FmtUtils.h>
 #include <GuidUtils.h>
@@ -125,6 +126,8 @@ namespace dcclite::broker
 	DccLiteService::DccLiteService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project) :
 		Service(name, broker, params, project)		
 	{
+		BenchmarkLogger benchmark{ "DccLiteService", name.GetData() };
+
 		m_pDecoders = static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{ "decoders" })));
 		m_pAddresses = static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{ "addresses" })));
 		m_pDevices = static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{ "devices" })));

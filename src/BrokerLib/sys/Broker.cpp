@@ -23,6 +23,7 @@
 
 #include <spdlog/logger.h>
 
+#include <Benchmark.h>
 #include <Log.h>
 #include <Parser.h>
 
@@ -92,7 +93,9 @@ namespace dcclite::broker
 	Broker::Broker(dcclite::fs::path projectPath):		
 		FolderObject{ RName{"root"} },
 		m_clProject(std::move(projectPath))
-	{		
+	{	
+		BenchmarkLogger benchmark{ "Broker", "Contructor" };
+
 		{
 			auto cmdHost = std::make_unique<TerminalCmdHost>();
 			m_pclTerminalCmdHost = cmdHost.get();
@@ -108,9 +111,18 @@ namespace dcclite::broker
 			std::make_unique<FolderObject>(SpecialFolders::GetName(SpecialFolders::Folders::ServicesId)))
 		);				
 
-		this->LoadConfig();
+		{
+			BenchmarkLogger loadTime{ "Broker", "LoadConfig" };
 
-		ScriptSystem::Start(*this, m_clProject);
+			this->LoadConfig();
+		}
+
+		{
+			BenchmarkLogger script{ "Broker", "ScriptSystem" };
+
+			ScriptSystem::Start(*this, m_clProject);
+		}
+
 
 		//Start after load, so project name is already loaded
 		ZeroConfSystem::Start(m_clProject.GetName());

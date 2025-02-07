@@ -1,6 +1,8 @@
 
-add_library(
-	Common  
+add_library(	
+	Common
+	Benchmark.cpp
+	Benchmark.h
 	Clock.cpp
 	Clock.h
 	ConsoleUtils.h	

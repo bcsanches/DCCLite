@@ -17,6 +17,7 @@
 #include "../sys/FileWatcher.h"
 #include "../sys/Project.h"
 
+#include "Benchmark.h"
 #include "Decoder.h"
 #include "FmtUtils.h"
 #include "IDccLiteService.h"
@@ -132,6 +133,8 @@ namespace dcclite::broker
 
 	void Device::Load()
 	{
+		BenchmarkLogger benchmark{ "Device::Load", this->GetNameData() };
+
 		dcclite::Log::Info("[Device::{}] [Load] Loading {}", this->GetName(), m_pathConfigFile.string());
 		std::ifstream configFile(m_pathConfigFile);
 		if (!configFile)
