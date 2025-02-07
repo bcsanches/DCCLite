@@ -1,2 +1,8 @@
 sudo apt-get install uuid-dev
 sudo apt-get install libssl-dev
+
+wsl:
+new-netfirewallhyperVRule -Name wsl-udp-dcclite-zero -LocalPorts 9381 -Action Allow -DisplayName wsl-udp-dcclite-zero -Direction Inbound
+
+
+Remove-NetFirewallHyperVRule wsl-udp-dcclite
