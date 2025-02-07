@@ -196,6 +196,21 @@ namespace dcclite::broker
 			//
 			//Load state data
 			auto decodersState = StorageManager::LoadState(this->GetName(), m_rclProject, storedConfigToken);
+
+#if 1
+			for (auto &it : decodersState)
+			{
+				auto shortcut = dynamic_cast<Shortcut *>(this->TryGetChild(it.first));
+				if (!shortcut)
+					continue;
+
+				auto outputDecoder = dynamic_cast<OutputDecoder *>(shortcut->TryResolve());
+				if (!outputDecoder)
+					continue;
+
+				outputDecoder->SetState(it.second, "StorageData");
+			}
+#else
 			if (!decodersState.empty())
 			{
 				for (auto dec : m_vecDecoders)
@@ -211,6 +226,7 @@ namespace dcclite::broker
 					outputDecoder->SetState(it->second, "StorageData");
 				}
 			}
+#endif
 
 			//let decoder know that each decoder on this device has been created
 			for (auto dec : m_vecDecoders)

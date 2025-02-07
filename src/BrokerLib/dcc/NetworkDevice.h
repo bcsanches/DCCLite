@@ -15,6 +15,7 @@
 #include <string>
 #include <variant>
 
+#include "Benchmark.h"
 #include "IDccLiteService.h"
 #include "Device.h"
 #include "IDevice.h"
@@ -217,6 +218,8 @@ namespace dcclite::broker
 
 				Thinker				m_clTimeoutThinker;
 
+				BenchmarkLogger		m_clBenchmark;
+
 				ConfigState(NetworkDevice &self, const dcclite::Clock::TimePoint_t time);					
 
 				void OnPacket(					
@@ -272,6 +275,8 @@ namespace dcclite::broker
 					void OnTimeout(const dcclite::Clock::TimePoint_t time);
 
 					Thinker				m_clTimeoutThinker;
+
+					BenchmarkLogger		m_clBenchmark;
 			};
 
 			struct OnlineState: State
@@ -302,6 +307,8 @@ namespace dcclite::broker
 
 					Thinker				m_clPingThinker;
 					Thinker				m_clSendStateDeltaThinker;
+
+					BenchmarkLogger		m_clBenchmark;
 			};
 
 			class TimeoutController

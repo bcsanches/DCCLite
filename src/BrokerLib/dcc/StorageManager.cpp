@@ -20,6 +20,7 @@
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
 
+#include "Benchmark.h"
 #include "FmtUtils.h"
 #include "Device.h"
 #include "GuidUtils.h"
@@ -59,6 +60,8 @@ namespace dcclite::broker::StorageManager
 
 	DecodersMap_t LoadState(RName deviceName, const Project &project, const dcclite::Guid expectedToken)
 	{
+		BenchmarkLogger benchmark{ "StorageManager::LoadState", deviceName.GetData() };
+
 		auto path = GenerateBaseDeviceStateFileName(deviceName, project);
 		path.concat(".json");
 
@@ -150,6 +153,8 @@ namespace dcclite::broker::StorageManager
 
 	void SaveState(const Device &device, const Project &project)
 	{
+		BenchmarkLogger benchmark{ "StorageManager::SaveState", device.GetNameData()};
+
 		bool dataStored = false;
 
 		JsonCreator::StringWriter responseWriter;
@@ -176,7 +181,11 @@ namespace dcclite::broker::StorageManager
 			}
 
 			if (!dataStored)
+			{
+				dcclite::Log::Info("[StorageManager::SaveState][{}] No data to save, aborting", device.GetNameData());
 				return;
+			}
+				
 		}		
 		
 		auto path = GenerateBaseDeviceStateFileName(device.GetName(), project);
@@ -206,8 +215,15 @@ namespace dcclite::broker::StorageManager
 
 	dcclite::Guid GetFileToken(const std::string_view fileName, const Project &project)
 	{
+		BenchmarkLogger benchmark{ "StorageManager::GetFileToken", fileName };
+
 		dcclite::Sha1 currentFileHash;
-		currentFileHash.ComputeForFile(project.GetFilePath(fileName));
+
+		{
+			BenchmarkLogger benchmark{ "StorageManager::GetFileToken::Hash", fileName };
+
+			currentFileHash.ComputeForFile(project.GetFilePath(fileName));			
+		}
 
 		dcclite::Log::Trace("[StorageManager::GetFileToken] {} hash is {}", fileName, currentFileHash.ToString());
 
