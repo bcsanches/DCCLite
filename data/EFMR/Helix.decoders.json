@@ -135,7 +135,19 @@
     "activateDelay":1,
     "deactivateDelay":1,
     "comment":"unused"
-  },  
+  },
+  {
+    "name":"HLX_DTC00",
+    "class":"Sensor",
+    "pin":63,
+    "address":"1895",
+    "pullup":true,
+    "inverted":true,
+    "activateDelay":0,
+    "deactivateDelay":10,
+    "location":"Helix",
+    "comment":"Sensor infrared 00 - Entrada Staging A"
+  },
   {
     "name": "TC_SIG_6D_HR",
     "class": "Output",

@@ -48,8 +48,8 @@ namespace dcclite::broker
 		m_uActivateDelay = dcclite::json::TryGetDefaultInt(params, "activateDelay", 0) * 1000;
 		m_uDeactivateDelay = dcclite::json::TryGetDefaultInt(params, "deactivateDelay", 0) * 1000;
 
-		m_uActivateDelay = dcclite::json::TryGetDefaultInt(params, "activateDelayMs", 0);
-		m_uDeactivateDelay = dcclite::json::TryGetDefaultInt(params, "deactivateDelayMs", 0);
+		m_uActivateDelay = dcclite::json::TryGetDefaultInt(params, "activateDelayMs", m_uActivateDelay);
+		m_uDeactivateDelay = dcclite::json::TryGetDefaultInt(params, "deactivateDelayMs", m_uDeactivateDelay);
 	}
 
 	SensorDecoder::~SensorDecoder()

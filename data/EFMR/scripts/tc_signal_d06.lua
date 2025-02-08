@@ -3,10 +3,10 @@
 The Signal D06 has a diagram like this:
 
          HLX_T03                     HLX_T02        HLX_T01
---------------O----|-------O-----|----------------------------------- -> Staging Exit - Stop
-    |-O     \ HLX_DTC02  HLX_DTC01     /                \
-     D06     \                        /                  \----------- -> Staging Entrance - Clear
-              \  ____________________/
+--------------O----|-------O-----|-------------O--------------------- -> Staging Exit - Stop
+    |-O     \ HLX_DTC02  HLX_DTC01     /   HLX_DMT03    \
+     D06     \                        /                  \-----O----- -> Staging Entrance - Clear
+              \  ____________________/                       HLX_DTC00
 			   | / 
 			   |/  HLX_T04                               HLX_T08
 			   |                                            /---> Coronel Fulgêncio (down line - internal - Stop)
@@ -47,6 +47,9 @@ local hlx_t01 = dcclite.dcc0.HLX_T01
 -- sensors for helix route
 local hlx_sensor_dtc02 = dcclite.dcc0.HLX_DTC02
 local hlx_sensor_dtc01 = dcclite.dcc0.HLX_DTC01
+local hlx_sensor_dtc00 = dcclite.dcc0.HLX_DTC00
+
+local hlx_sensor_dmt03 = dcclite.dcc0.HLX_DMT03
 
 -- soledade branch sections
 -- local sl_bp_main_s03 = dcclite.dcc0.sl_bp_main_s03
@@ -85,12 +88,13 @@ end
 function set_soledade_branch_aspect()
 	log_info("[TC_SIGNAL_D06] Soledade path CLEAR")
 	signal_d06:set_aspect(SignalAspects.Aproach, "TC_SIGNAL_D06_SCRIPT", "Path to Soledade is set")
+
 	signal_state = SIGNAL_STATES.soledade_path_clear
 end
 
 function on_train_entered_helix_down(device)
 
-	log_info("[TC_SIGNAL_D06] on_train_entered_helix_down")
+	log_info("[TC_SIGNAL_D06] on_train_entered_helix_down " .. device.name)
 
 	-- sensor turned off? We do not care...
 	if not device.active then
@@ -105,15 +109,15 @@ function on_train_entered_helix_down(device)
 		-- now wait for train to reach end sensor
 		signal_state = SIGNAL_STATES.soledade_path_busy
 
-		signal_d06:set_aspect(SignalAspects.Stop, "TC_SIGNAL_D06_SCRIPT", "Train entered Soledade path")
+		signal_d06:set_aspect(SignalAspects.Stop, "TC_SIGNAL_D06_SCRIPT", "Train entered Soledade path " .. signal_state)
 
 	elseif signal_state == SIGNAL_STATES.helix_path_clear then
-		log_trace("[TC_SIGNAL_D06] on_train_entered_helix_down sensor is on, now path is busy, signal is STOP")
+		log_trace("[TC_SIGNAL_D06] on_train_entered_helix_down sensor is on, now path is busy, signal is STOP " .. signal_state)
 
 		-- now wait for train to reach end sensor
 		signal_state = SIGNAL_STATES.helix_path_busy
 
-		signal_d06:set_aspect(SignalAspects.Stop, "TC_SIGNAL_D06_SCRIPT", "Train entered helix path to staging entrance")
+		signal_d06:set_aspect(SignalAspects.Stop, "TC_SIGNAL_D06_SCRIPT", "Train entered helix path to staging entrance " .. signal_state)
 	end	
 end
 
@@ -152,7 +156,7 @@ end
 
 function on_device_change(device)
 
-	log_info("[TC_SIGNAL_D06] on_device_change")
+	log_info("[TC_SIGNAL_D06] on_device_change " .. device.name)
 
 	-- Are we going to Soledade or up the helix?
     if hlx_t03.thrown then
@@ -238,14 +242,14 @@ function on_device_change(device)
 
 	-- is path blocked?
     if hlx_t02.thrown then		
-        set_stop_aspect("[TC_SIGNAL_D06] hlx_t02 thrown - path down helix blocked - stop")
+        set_stop_aspect("[TC_SIGNAL_D06] hlx_t02 thrown - path down helix blocked - stop " .. signal_state)
 
         return
     end
 
 	-- is path toward helix exit?
 	if hlx_t01.closed then		
-        set_stop_aspect("[TC_SIGNAL_D06] hlx_t01 closed - path set to staging entrance - stop")
+        set_stop_aspect("[TC_SIGNAL_D06] hlx_t01 closed - path set to staging entrance - stop " .. signal_state)
 
         return
     end
@@ -253,7 +257,7 @@ function on_device_change(device)
 	-- path is down to helix entrance, ok, right path... but
 
 	-- if heading down the helix, ignore sensors...
-	if (signal_state == SIGNAL_STATES.helix_path_busy) or (signal_state == SIGNAL_STATES.helix_path_exiting) then
+	if (signal_state ~= SIGNAL_STATES.automatic) then
 		-- do not modify signal, wait for sensors
 		log_trace("[TC_SIGNAL_D06] path is busy by helix, waiting sensors: " .. signal_state)
 		return
@@ -261,17 +265,29 @@ function on_device_change(device)
 
 	-- is block ocupied?
 	if hlx_sensor_dtc02.active then		
-		set_stop_aspect("[TC_SIGNAL_D06] DTC02 ACTIVE - path to Helix is ocupied - stop")
+		set_stop_aspect("[TC_SIGNAL_D06] DTC02 ACTIVE - path to Helix is ocupied - stop " .. signal_state)
 
 		return
 	end
 
 	-- is block ocupied?
 	if hlx_sensor_dtc01.active then		
-		set_stop_aspect("[TC_SIGNAL_D06] DTC01 ACTIVE - path to Helix is ocupied - stop")
+		set_stop_aspect("[TC_SIGNAL_D06] DTC01 ACTIVE - path to Helix is ocupied - stop " .. signal_state)
 
 		return
-	end	
+	end
+
+	if hlx_sensor_dmt03.active then
+		set_stop_aspect("[TC_SIGNAL_D06] DMT03 ACTIVE - path to Helix is ocupied - stop " .. signal_state)
+
+		return
+	end
+
+	if hlx_sensor_dtc00.active then
+		set_stop_aspect("[TC_SIGNAL_D06] DTC00 ACTIVE - path to Helix is ocupied - stop " .. signal_state)
+
+		return
+	end
 
 	-- Finally path clear and no blocks ocupied...
 	set_helix_down_aspect()
@@ -288,9 +304,11 @@ hlx_t01:on_state_change(on_device_change)
 
 hlx_sensor_dtc02:on_state_change(on_device_change)
 hlx_sensor_dtc01:on_state_change(on_device_change)
+hlx_sensor_dtc00:on_state_change(on_device_change)
+hlx_sensor_dmt03:on_state_change(on_device_change)
 
 hlx_sensor_dtc02:on_state_change(on_train_entered_helix_down)
-hlx_sensor_dtc01:on_state_change(on_helix_exit_sensor)
+hlx_sensor_dtc00:on_state_change(on_helix_exit_sensor)
 
 sl_bp_main_d01:on_state_change(on_soledade_branch_exit_sensor)
 
