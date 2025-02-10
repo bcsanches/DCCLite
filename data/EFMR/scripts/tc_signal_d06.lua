@@ -154,6 +154,10 @@ function on_soledade_branch_exit_sensor(sensor)
 	end
 end
 
+function is_helix_path_reserved()
+	return (signal_state ~= SIGNAL_STATES.helix_path_clear) and (signal_state ~= SIGNAL_STATES.helix_path_busy) and (signal_state ~= SIGNAL_STATES.helix_path_exiting)
+end
+
 function on_device_change(device)
 
 	log_info("[TC_SIGNAL_D06] on_device_change " .. device.name)
@@ -257,7 +261,7 @@ function on_device_change(device)
 	-- path is down to helix entrance, ok, right path... but
 
 	-- if heading down the helix, ignore sensors...
-	if (signal_state ~= SIGNAL_STATES.automatic) then
+	if not is_helix_path_reserved() then
 		-- do not modify signal, wait for sensors
 		log_trace("[TC_SIGNAL_D06] path is busy by helix, waiting sensors: " .. signal_state)
 		return

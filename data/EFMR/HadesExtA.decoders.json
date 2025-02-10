@@ -99,7 +99,7 @@
     "pullup":true,
     "inverted":true,
     "activateDelay":0,
-    "deactivateDelay":5,
+    "deactivateDelay":15,
     "location":"Soledade",
     "comment":"Sensor infrared 01 - Principal Soledade x Barra"
   },
@@ -111,7 +111,7 @@
     "pullup":true,
     "inverted":true,
     "activateDelay":0,
-    "deactivateDelay":5,
+    "deactivateDelay":15,
     "location":"Soledade",
     "comment":"Sensor infrared 02 - Principal Soledade x Barra"
   },

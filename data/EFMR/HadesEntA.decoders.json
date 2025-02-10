@@ -245,7 +245,7 @@
     "pullup":true,
     "inverted":true,
     "activateDelay":0,
-    "deactivateDelay":5,
+    "deactivateDelay":15,
     "location":"Soledade",
     "comment":"Sensor infrared 03 - Principal Soledade x Barra - Entrada AMV Triângulo"
   },
@@ -257,7 +257,7 @@
     "pullup":true,
     "inverted":true,
     "activateDelay":0,
-    "deactivateDelay":5,
+    "deactivateDelay":15,
     "location":"Soledade",
     "comment":"Sensor infrared 04 - Principal Soledade x Barra - Perna Triângulo para o staging"
   },
@@ -269,7 +269,7 @@
     "pullup":true,
     "inverted":true,
     "activateDelay":0,
-    "deactivateDelay":5,
+    "deactivateDelay":15,
     "location":"Soledade",
     "comment":"Sensor infrared 05 - Principal Soledade x Barra - Perna Triângulo para subir helix"
   }

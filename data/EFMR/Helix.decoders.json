@@ -101,8 +101,8 @@
     "address":"1898",
     "pullup":false,
     "inverted":false,
-    "activateDelay":1,
-    "deactivateDelay":1
+    "activateDelay":2,
+    "deactivateDelay":5
   },
   {
     "name":"HLX_DTC01",
@@ -111,8 +111,8 @@
     "address":"1899",
     "pullup":false,
     "inverted":false,
-    "activateDelay":1,
-    "deactivateDelay":1
+    "activateDelay":2,
+    "deactivateDelay":5
   },
   {
     "name":"HLX_DTC02",
@@ -121,8 +121,8 @@
     "address":"1897",
     "pullup":false,
     "inverted":false,
-    "activateDelay":1,
-    "deactivateDelay":1,
+    "activateDelay":2,
+    "deactivateDelay":5,
     "comment":"Junction turnout"
   },  
   {
@@ -132,8 +132,8 @@
     "address":"1896",
     "pullup":false,
     "inverted":false,
-    "activateDelay":1,
-    "deactivateDelay":1,
+    "activateDelay":2,
+    "deactivateDelay":5,
     "comment":"unused"
   },
   {
@@ -142,7 +142,7 @@
     "pin":63,
     "address":"1895",
     "pullup":true,
-    "inverted":true,
+    "inverted":false,
     "activateDelay":0,
     "deactivateDelay":10,
     "location":"Helix",
