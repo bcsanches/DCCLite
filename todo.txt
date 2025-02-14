@@ -9,6 +9,8 @@ DCCLite
 
 - ReadEEPromFiber: accessing Project on device, try to remove this dependency
 
+- Add a connection tester to sharpterminal and dcclite to check devices connections
+
 - Better emulator:
 	- Make sharpConsole able to start emulator as is
 	- Make sharpconsole start emulator using a existing device name (auto generate eprom?)
@@ -26,6 +28,8 @@ DCCLite
 		- SharpTerminal will be able to set this externalVoltage value
 
 - Change DccDevice decoder structure: expose a DecoderProxy, that is never destroyed.
+	- How sharpterminal will handle the "mutating" objects?
+		- Send a object update that will change the internal structure?
 	- This will make all code around simple, no need for handling create / destroy events
 	- The proxy keeps a reference to the real decoder
 	- use a std::variant inside the proxy?
