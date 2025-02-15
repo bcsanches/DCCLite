@@ -17,6 +17,7 @@
 
 #include "Clock.h"
 #include "Packet.h"
+#include "SharedLibDefs.h"
 #include "Util.h"
 
 using namespace std::chrono_literals;
@@ -30,7 +31,7 @@ namespace dcclite::broker::ZeroConfSystem
 	
 	static void OpenSocket()
 	{
-		if (!g_clSocket.Open(9381, dcclite::Socket::Type::DATAGRAM, dcclite::Socket::FLAG_ADDRESS_REUSE | dcclite::Socket::FLAG_BLOCKING_MODE))
+		if (!g_clSocket.Open(DEFAULT_ZEROCONF_PORT, dcclite::Socket::Type::DATAGRAM, dcclite::Socket::FLAG_ADDRESS_REUSE | dcclite::Socket::FLAG_BLOCKING_MODE))
 		{
 			throw std::runtime_error("[ZeroconfService] [OpenSocket] Cannot open port 9381 for listening");
 		}

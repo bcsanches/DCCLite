@@ -35,7 +35,7 @@ namespace dcclite::broker::ScriptSystem
 	
 	static void RunScripts()
 	{
-		auto path = g_pclProject->GetFilePath("scripts");
+		auto path{ g_pclProject->GetFilePath("scripts") };
 		path.append("autoexec.lua");
 
 		if (!dcclite::fs::exists(path))

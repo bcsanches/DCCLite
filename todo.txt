@@ -43,7 +43,6 @@ DCCLite
 - Implement coroutine support on lua scripts?
 
 - add const for all timeouts on a single file
-- add port list for all connections on a single file
 - update route section to know next section and avoid re-ocupying the block
 
 - Make a EngineDriver Server, redirect to DCCex Directly and goodbye JMRI

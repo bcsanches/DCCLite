@@ -3,10 +3,10 @@
 The Signal D06 has a diagram like this:
 
          HLX_T03                     HLX_T02        HLX_T01
---------------O----|-------O-----|-------------O--------------------- -> Staging Exit - Stop
+---------|----O----|-------O-----|-------------O------------|-------- -> Staging Exit - Stop
     |-O     \ HLX_DTC02  HLX_DTC01     /   HLX_DMT03    \
-     D06     \                        /                  \-----O----- -> Staging Entrance - Clear
-              \  ____________________/                       HLX_DTC00
+     D06     \                        /                  \--|--O----- -> Staging Entrance - Clear
+              \   ---------------|---/                       HLX_DTC00
 			   | / 
 			   |/  HLX_T04                               HLX_T08
 			   |                                            /---> Coronel Fulgêncio (down line - internal - Stop)
@@ -131,13 +131,13 @@ function on_helix_exit_sensor(sensor)
 		signal_state = SIGNAL_STATES.helix_path_exiting
 
 	elseif (signal_state == SIGNAL_STATES.helix_path_exiting) and sensor.inactive then
-			log_trace("[TC_SIGNAL_D06] on_helix_exit_sensor INACTIVE - resetting")
+		log_trace("[TC_SIGNAL_D06] on_helix_exit_sensor INACTIVE - resetting")
 
-			--reset signal
-			signal_state = SIGNAL_STATES.automatic
+		--reset signal
+		signal_state = SIGNAL_STATES.automatic
 
-			-- check state
-			on_device_change(sensor)
+		-- check state
+		on_device_change(sensor)
 	end
 end
 
@@ -154,6 +154,29 @@ function on_soledade_branch_exit_sensor(sensor)
 	end
 end
 
+--[[
+function on_helix_path_section_change(section)
+    log_info("[TC_SIGNAL_D06] [on_helix_path_section_change] " .. section:get_state_name())
+
+    if section:is_clear() then
+        log_trace("[TC_SIGNAL_D06] [on_helix_path_section_change] train left the block")        
+
+        return
+    end
+
+    if section.state == SECTION_STATES.up_start then
+        log_trace("[TC_SIGNAL_D06] [on_helix_path_section_change] train leaving TC")    
+    elseif section.state == SECTION_STATES.down_start then
+        -- train is aproaching Soledade and entered the block?
+        log_trace("[TC_SIGNAL_D06] [on_helix_path_section_change] train aproaching TC")
+    elseif section.state == SECTION_STATES.up then
+        log_trace("[TC_SIGNAL_D06] [on_helix_path_section_change] train entering staging - block complete")    
+    elseif section.state == SECTION_STATES.down then
+        log_trace("[TC_SIGNAL_D06] [on_helix_path_section_change] train entering TC - block complete")    
+    end            
+end
+--]]
+
 function is_helix_path_reserved()
 	return (signal_state ~= SIGNAL_STATES.helix_path_clear) and (signal_state ~= SIGNAL_STATES.helix_path_busy) and (signal_state ~= SIGNAL_STATES.helix_path_exiting)
 end
@@ -163,7 +186,7 @@ function on_device_change(device)
 	log_info("[TC_SIGNAL_D06] on_device_change " .. device.name)
 
 	-- Are we going to Soledade or up the helix?
-    if hlx_t03.thrown then
+    if hlx_t03.thrown then		
 		
 		log_info("[TC_SIGNAL_D06] hlx_t03 thrown - Soledade or Helix UP path")
 
@@ -291,7 +314,7 @@ function on_device_change(device)
 		set_stop_aspect("[TC_SIGNAL_D06] DTC00 ACTIVE - path to Helix is ocupied - stop " .. signal_state)
 
 		return
-	end
+	end	
 
 	-- Finally path clear and no blocks ocupied...
 	set_helix_down_aspect()
@@ -315,6 +338,16 @@ hlx_sensor_dtc02:on_state_change(on_train_entered_helix_down)
 hlx_sensor_dtc00:on_state_change(on_helix_exit_sensor)
 
 sl_bp_main_d01:on_state_change(on_soledade_branch_exit_sensor)
+
+--[[
+helix_down_path_section = Section:new({
+	name = "tc_stg_ent_s01",
+	start_sensor = hlx_sensor_dtc02,
+	end_sensor = hlx_sensor_dtc00,
+	callback = on_helix_path_section_change,
+	address = 1880
+})
+]]--
 
 -- set initial state
 on_device_change(signal_d06)

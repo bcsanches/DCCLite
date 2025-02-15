@@ -17,7 +17,6 @@
 
 namespace dcclite::broker
 {
-
 	class Project
 	{
 		public:

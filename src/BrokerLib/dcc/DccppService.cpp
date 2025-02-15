@@ -725,7 +725,7 @@ ERROR_RESPONSE:
 		m_rclDccService{ dependency }
 	{		
 		//standard port used by DCC++
-		const auto port = dcclite::json::TryGetDefaultInt(params, "port", 2560);		
+		const auto port = dcclite::json::TryGetDefaultInt(params, "port", DEFAULT_DCCPP_PORT);
 
 		if (!m_clSocket.Open(port, dcclite::Socket::Type::STREAM, dcclite::Socket::Flags::FLAG_BLOCKING_MODE))
 		{

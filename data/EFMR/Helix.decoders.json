@@ -1,174 +1,182 @@
 [
-  {
-    "name": "HLX_T01",
-    "class": "ServoTurnout",
-    "address": "1851",
-    "pin": 21,
-    "inverted": true,
-    "powerPin": 43,    
-    "frogPin": 42,
-    "invertedFrog": false,
-    "operationTime": 1500,
-    "range":25,
-    "comment": "AMV 01 divisão para staging (descendo)"
-  },
-  {
-    "name": "HLX_T02",
-    "class": "ServoTurnout",
-    "address": "1852",
-    "pin": 20,
-    "inverted": true,
-    "powerPin": 45,    
-    "frogPin": 44,
-    "invertedFrog": false,
-    "operationTime": 3000,
-    "range":20,
-    "comment": "AMV 02 - inferior saida para TC"
-  },
-  {
-    "name": "HLX_T03",
-    "class": "ServoTurnout",
-    "address": "1853",
-    "pin": 19,
-    "inverted": true,
-    "powerPin": 47,
-    "frogPin": 46, 
-    "invertedFrog": false,
-    "operationTime": 3000,
-    "comment": "AMV 03 - ponta do triangulo para TC"
-  },
-  {
-    "name": "HLX_T04",
-    "class": "ServoTurnout",
-    "address": "1854",
-    "pin": 17,
-    "inverted": true,
-    "powerPin": 40,
-    "invertedFrog": true,
-    "operationTime": 3000,
-    "range":25,
-    "comment": "AMV 04 - superior saída para TC"
-  },
-  {
-    "name": "HLX_T05",
-    "class": "ServoTurnout",
-    "address": "1855",  
-    "pin": 16,
-    "inverted": false,
-    "powerPin": 41,
-    "invertedFrog": true,
-    "operationTime": 3000,
-    "range":25,
-    "comment": "AMV 05 - inferior - saída do helix para Soledade"
-  },      
-  {
-    "name": "HLX_T06",
-    "class": "IgnoreMe",
-    "address": "1856",  
-    "pin": 15,
-    "inverted": false,    
-    "invertedFrog": true,
-    "operationTime": 3000,
-    "comment0": "Definido em HadesEntA.decoders",
-    "comment1": "AMV 06 - ponta triângulo - Soledade x Barra do Piraí"
-  }, 
-  {
-    "name": "HLX_T07",
-    "class": "ServoTurnout",
-    "address": "1857",  
-    "pin": 15,    
-    "powerPin": 38,
-    "inverted": false,    
-    "invertedFrog": true,
-    "operationTime": 3000,
-    "comment": "AMV 07 - superior - saída do helix para Soledade"
-  }, 
-  {
-    "name": "HLX_T08",
-    "class": "ServoTurnout",
-    "address": "1858",  
-    "pin": 14,     
-    "powerPin": 39,   
-    "inverted": true,    
-    "invertedFrog": true,
-    "operationTime": 3000,
-    "comment": "AMV 08 - inferior - bifurcação sentido subindo - após Soledade"
-  },   
-  {
-    "name":"HLX_DMT03", 
-    "class":"Sensor", 
-    "pin":69,
-    "address":"1898",
-    "pullup":false,
-    "inverted":false,
-    "activateDelay":2,
-    "deactivateDelay":5
-  },
-  {
-    "name":"HLX_DTC01",
-    "class":"Sensor",
-    "pin":68,
-    "address":"1899",
-    "pullup":false,
-    "inverted":false,
-    "activateDelay":2,
-    "deactivateDelay":5
-  },
-  {
-    "name":"HLX_DTC02",
-    "class":"Sensor",
-    "pin":67,
-    "address":"1897",
-    "pullup":false,
-    "inverted":false,
-    "activateDelay":2,
-    "deactivateDelay":5,
-    "comment":"Junction turnout"
-  },  
-  {
-    "name":"HLX_DTC03",
-    "class":"Sensor",
-    "pin":66,
-    "address":"1896",
-    "pullup":false,
-    "inverted":false,
-    "activateDelay":2,
-    "deactivateDelay":5,
-    "comment":"unused"
-  },
-  {
-    "name":"HLX_DTC00",
-    "class":"Sensor",
-    "pin":63,
-    "address":"1895",
-    "pullup":true,
-    "inverted":false,
-    "activateDelay":0,
-    "deactivateDelay":10,
-    "location":"Helix",
-    "comment":"Sensor infrared 00 - Entrada Staging A"
-  },
-  {
-    "name": "TC_SIG_6D_HR",
-    "class": "Output",
-    "address": "1350",
-    "pin": 65,
-    "inverted": true,
-    "ignoreSavedState": true
-  },
-  {
-    "name": "TC_SIG_6D_HG",
-    "class": "Output",
-    "address": "1351",
-    "pin": 64,
-    "inverted": true,
-    "ignoreSavedState": true    
-  },
-  {
-    "name": "INV_HELIX_TC_SOL",
-    "class": "QuadInverter",
-    "address":1890,
-    "trackPowerAPins": [9, 10],
-    "trackPowerBPins": [11, 12]
-  }
+	{
+		"name": "HLX_T01",
+		"class": "ServoTurnout",
+		"address": "1851",
+		"pin": 21,
+		"inverted": true,
+		"powerPin": 43,
+		"frogPin": 42,
+		"invertedFrog": false,
+		"operationTime": 1500,
+		"range": 25,
+		"comment": "AMV 01 divisão para staging (descendo)"
+	},
+	{
+		"name": "HLX_T02",
+		"class": "ServoTurnout",
+		"address": "1852",
+		"pin": 20,
+		"inverted": true,
+		"powerPin": 45,
+		"frogPin": 44,
+		"invertedFrog": false,
+		"operationTime": 3000,
+		"range": 20,
+		"comment": "AMV 02 - inferior saida para TC"
+	},
+	{
+		"name": "HLX_T03",
+		"class": "ServoTurnout",
+		"address": "1853",
+		"pin": 19,
+		"inverted": true,
+		"powerPin": 47,
+		"frogPin": 46,
+		"invertedFrog": false,
+		"operationTime": 3000,
+		"comment": "AMV 03 - ponta do triangulo para TC"
+	},
+	{
+		"name": "HLX_T04",
+		"class": "ServoTurnout",
+		"address": "1854",
+		"pin": 17,
+		"inverted": true,
+		"powerPin": 40,
+		"invertedFrog": true,
+		"operationTime": 3000,
+		"range": 25,
+		"comment": "AMV 04 - superior saída para TC"
+	},
+	{
+		"name": "HLX_T05",
+		"class": "ServoTurnout",
+		"address": "1855",
+		"pin": 16,
+		"inverted": false,
+		"powerPin": 41,
+		"invertedFrog": true,
+		"operationTime": 3000,
+		"range": 25,
+		"comment": "AMV 05 - inferior - saída do helix para Soledade"
+	},
+	{
+		"name": "HLX_T06",
+		"class": "IgnoreMe",
+		"address": "1856",
+		"pin": 15,
+		"inverted": false,
+		"invertedFrog": true,
+		"operationTime": 3000,
+		"comment0": "Definido em HadesEntA.decoders",
+		"comment1": "AMV 06 - ponta triângulo - Soledade x Barra do Piraí"
+	},
+	{
+		"name": "HLX_T07",
+		"class": "ServoTurnout",
+		"address": "1857",
+		"pin": 15,
+		"powerPin": 38,
+		"inverted": false,
+		"invertedFrog": true,
+		"operationTime": 3000,
+		"comment": "AMV 07 - superior - saída do helix para Soledade"
+	},
+	{
+		"name": "HLX_T08",
+		"class": "ServoTurnout",
+		"address": "1858",
+		"pin": 14,
+		"powerPin": 39,
+		"inverted": true,
+		"invertedFrog": true,
+		"operationTime": 3000,
+		"comment": "AMV 08 - inferior - bifurcação sentido subindo - após Soledade"
+	},
+	{
+		"name": "HLX_DMT03",
+		"class": "Sensor",
+		"pin": 69,
+		"address": "1898",
+		"pullup": false,
+		"inverted": false,
+		"activateDelay": 2,
+		"deactivateDelay": 5
+	},
+	{
+		"name": "HLX_DTC01",
+		"class": "Sensor",
+		"pin": 68,
+		"address": "1899",
+		"pullup": false,
+		"inverted": false,
+		"activateDelay": 2,
+		"deactivateDelay": 5
+	},
+	{
+		"name": "HLX_DTC02",
+		"class": "Sensor",
+		"pin": 67,
+		"address": "1897",
+		"pullup": false,
+		"inverted": false,
+		"activateDelay": 2,
+		"deactivateDelay": 5,
+		"comment": "Junction turnout"
+	},
+	{
+		"name": "HLX_DTC03",
+		"class": "Sensor",
+		"pin": 66,
+		"address": "1896",
+		"pullup": false,
+		"inverted": false,
+		"activateDelay": 2,
+		"deactivateDelay": 5,
+		"comment": "unused"
+	},
+	{
+		"name": "HLX_DTC00",
+		"class": "Sensor",
+		"pin": 63,
+		"address": "1895",
+		"pullup": true,
+		"inverted": false,
+		"activateDelay": 0,
+		"deactivateDelay": 10,
+		"location": "Helix",
+		"comment": "Sensor infrared 00 - Entrada Staging A"
+	},
+	{
+		"name": "TC_SIG_6D_HR",
+		"class": "Output",
+		"address": "1350",
+		"pin": 65,
+		"inverted": true,
+		"ignoreSavedState": true,
+		"location": "TC"
+	},
+	{
+		"name": "TC_SIG_6D_HG",
+		"class": "Output",
+		"address": "1351",
+		"pin": 64,
+		"inverted": true,
+		"ignoreSavedState": true,
+		"location": "TC"
+	},
+	{
+		"name": "INV_HELIX_TC_SOL",
+		"class": "QuadInverter",
+		"address": 1890,
+		"trackPowerAPins": [
+			9,
+			10
+		],
+		"trackPowerBPins": [
+			11,
+			12
+		]
+	}
 ]

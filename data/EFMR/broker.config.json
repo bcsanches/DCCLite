@@ -111,8 +111,7 @@
 		},
 		{
 			"class": "Terminal",
-			"name": "terminal",
-			"port": 4190
+			"name": "terminal"			
 		},
 		{
 			"class": "DccppService",

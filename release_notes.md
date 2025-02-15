@@ -10,10 +10,13 @@
 - Protocol version bumped to 9 (sensor delay changes)
 - Added code to keep sensor compatible with old decoders
 - NetworkDevices not store protocol version
+- All socket ports listed on a single file
+- Added unit test for sensors
 
 ## Emulator
 
 - Fixed pins initial state
+- Support to custom EEPROM and custom names for modules
 
 ## LiteDecoder
 

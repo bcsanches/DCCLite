@@ -123,6 +123,12 @@ function dispatch_mini_block_sensor_event(sensor, mini_block)
     end
 end
 
+-------------------------------------------------------------------------------
+--
+-- Section
+--
+-------------------------------------------------------------------------------
+
 function Section:_on_mini_block_finished()    
     self:_update_state(SECTION_STATES.clear)    
     self.mini_block = nil
@@ -165,7 +171,11 @@ end
 
 
 function Section:on_start_sensor_change(sensor)
-    log_trace("[Section:" .. self.name .. "] on_start_sensor_change")    
+    log_trace("[Section:" .. self.name .. "] on_start_sensor_change")
+
+	if self.inactive then
+		return
+	end
 
     if self.mini_block then
         dispatch_mini_block_sensor_event(sensor, self.mini_block)
@@ -176,6 +186,10 @@ end
 
 function Section:on_end_sensor_change(sensor)    
     log_trace("[Section:" .. self.name .. "] on_end_sensor_change")
+
+	if self.inactive then
+		return
+	end
 
     if self.mini_block then
         dispatch_mini_block_sensor_event(sensor, self.mini_block)
@@ -199,6 +213,38 @@ end
 function Section:get_state_name()
     return get_section_state_name(self.state)
 end
+
+function Section:deactivate()
+	o.inactive = true
+	
+	if self.state ~= SECTION_STATES.clear then
+		self:_on_mini_block_finished()
+	end
+end
+
+function Section:activate()
+	if not self.inactive then
+		return
+	end
+
+	self.inactive = false
+	if self.start_sensor.active and self.end_sensor.active then
+        log_error("[Section:activate] both sensors active, state will be undefined")        
+    else
+        if self.start_sensor.active then
+            self:on_start_sensor_change(self.start_sensor)            
+        elseif self.end_sensor.active then
+            self:on_end_sensor_change(self.end_sensor)            
+        else
+            self:_update_state(SECTION_STATES.clear)            
+        end
+    end
+end
+
+function Section:is_active()
+	return not self.inactive
+end
+
 
 function Section:_update_state(newState)    
     log_trace("[Section] _update_state")
@@ -253,29 +299,21 @@ function Section:new(o)
 
     log_trace("[Section:new] configuring initial state")
 
-    -- how are the sensors?
-    if o.start_sensor.active and o.end_sensor.active then
-        log_error("[Section:new] both sensors active, state will be undefined")        
-    else
-        if o.start_sensor.active then
-            o:on_start_sensor_change(o.start_sensor)            
-        elseif o.end_sensor.active then
-            o:on_end_sensor_change(o.end_sensor)            
-        else
-            o:_update_state(SECTION_STATES.clear)            
-        end
-    end       
+    -- Activate it?
+	if not o:inactive then
+    	o:activate()
+	end
     
     log_trace("[Section:new] OK")
     
     return o
 end
 
---
+-------------------------------------------------------------------------------
 --
 -- TSECTION
 --
---
+-------------------------------------------------------------------------------
 
 function TSection:on_start_sensor_change(sensor)
     log_trace("[TSection:on_start_sensor_change] on_start_sensor_change")

@@ -807,7 +807,7 @@ namespace dcclite::broker
 			cmdHost->AddAlias(RName{ "ren" }, *renameItemCmd);
 		}
 
-		const auto port = params["port"].GetInt();
+		const auto port = dcclite::json::TryGetDefaultInt(params, "port", DEFAULT_TERMINAL_SERVER_PORT);
 		
 		m_thListenThread = std::thread{ [port, this] {this->ListenThreadProc(port); } };		
 		dcclite::SetThreadName(m_thListenThread, "TerminalService::ListenThread");
