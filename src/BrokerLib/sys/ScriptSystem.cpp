@@ -26,8 +26,7 @@ namespace dcclite::broker::ScriptSystem
 {
 	static sol::state g_clLua;	
 
-	Broker *g_pclBroker = nullptr;
-	const Project *g_pclProject = nullptr;
+	Broker *g_pclBroker = nullptr;	
 
 	std::vector<IScriptSupport *> g_vecRegisteredServices;
 
@@ -35,7 +34,7 @@ namespace dcclite::broker::ScriptSystem
 	
 	static void RunScripts()
 	{
-		auto path{ g_pclProject->GetFilePath("scripts") };
+		auto path{ Project::GetFilePath("scripts") };
 		path.append("autoexec.lua");
 
 		if (!dcclite::fs::exists(path))
@@ -58,7 +57,7 @@ namespace dcclite::broker::ScriptSystem
 			"run_script", 
 			[](const char *fileName)
 			{
-				auto path = g_pclProject->GetFilePath("scripts");
+				auto path = Project::GetFilePath("scripts");
 				path.append(fileName);
 
 				WatchFile(path);
@@ -166,10 +165,9 @@ namespace dcclite::broker::ScriptSystem
 #endif
 	}	
 
-	void Start(Broker &broker, const Project &project)
+	void Start(Broker &broker)
 	{				
-		g_pclBroker = &broker;
-		g_pclProject = &project;
+		g_pclBroker = &broker;		
 					
 		RunScripts();		
 	}

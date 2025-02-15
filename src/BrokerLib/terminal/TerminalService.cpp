@@ -27,6 +27,7 @@
 
 #include "../sys/BonjourService.h"
 #include "../sys/Broker.h"
+#include "../sys/Project.h"
 #include "../sys/ServiceFactory.h"
 #include "../sys/ZeroConfSystem.h"
 
@@ -501,7 +502,7 @@ namespace dcclite::broker
 				std::string fileName{ device.GetName().GetData() };
 				fileName.append(".rom");
 				
-				m_pathRomFileName = device.GetProject().GetAppFilePath(fileName);
+				m_pathRomFileName = Project::GetAppFilePath(fileName);
 			}	
 
 			~ReadEEPromFiber()
@@ -735,12 +736,12 @@ namespace dcclite::broker
 		//empty
 	}
 
-	TerminalService::TerminalService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project) :
-		Service(name, broker, params, project)		
+	TerminalService::TerminalService(RName name, Broker &broker, const rapidjson::Value &params) :
+		Service(name, broker, params)
 	{	
 		auto cmdHost = broker.GetTerminalCmdHost();
 
-		assert(cmdHost);	
+		assert(cmdHost);
 
 		{
 			auto getChildItemCmd = cmdHost->AddCmd(std::make_unique<GetChildItemCmd>());

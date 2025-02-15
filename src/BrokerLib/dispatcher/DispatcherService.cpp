@@ -119,7 +119,7 @@ namespace dcclite::broker
 		public:
 			typedef DccLiteService Requirement_t;
 
-			DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, const Project &project, DccLiteService &dep);
+			DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, DccLiteService &dep);
 			~DispatcherServiceImpl() override;
 
 			void Serialize(JsonOutputStream_t &stream) const override;
@@ -153,8 +153,8 @@ namespace dcclite::broker
 			Device *m_pclDevice = nullptr;
 	};
 
-	DispatcherServiceImpl::DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, const Project &project, DccLiteService &dep):
-		DispatcherService(name, broker, params, project),
+	DispatcherServiceImpl::DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, DccLiteService &dep):
+		DispatcherService(name, broker, params),
 		m_rclDccLite{ dep },
 		m_pSections{ static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{"sections"}))) }
 	{
@@ -324,8 +324,8 @@ namespace dcclite::broker
 		//empty
 	}
 
-	DispatcherService::DispatcherService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project):
-		Service(name, broker, params, project)
+	DispatcherService::DispatcherService(RName name, Broker &broker, const rapidjson::Value &params):
+		Service(name, broker, params)
 	{
 		//empty
 	}

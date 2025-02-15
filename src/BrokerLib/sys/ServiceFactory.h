@@ -23,7 +23,6 @@
 namespace dcclite::broker
 {
 	class Service;	
-	class Project;
 
 	class ServiceFactory
 	{
@@ -40,7 +39,7 @@ namespace dcclite::broker
 
 			virtual ~ServiceFactory() = default;
 
-			virtual std::unique_ptr<Service> Create(RName name, Broker &broker, const rapidjson::Value &data, const Project &project) const = 0;
+			virtual std::unique_ptr<Service> Create(RName name, Broker &broker, const rapidjson::Value &data) const = 0;
 
 			virtual bool HasDependencies() const noexcept
 			{
@@ -62,9 +61,9 @@ namespace dcclite::broker
 				this->Register();
 			}
 
-			inline std::unique_ptr<Service> Create(RName name, Broker &broker, const rapidjson::Value &data, const Project &project) const override
+			inline std::unique_ptr<Service> Create(RName name, Broker &broker, const rapidjson::Value &data) const override
 			{
-				return std::make_unique<T>(name, broker, data, project);
+				return std::make_unique<T>(name, broker, data);
 			}
 	};
 
@@ -77,9 +76,9 @@ namespace dcclite::broker
 				this->Register();
 			}
 
-			inline std::unique_ptr<Service> Create(RName name, Broker &broker, const rapidjson::Value &data, const Project &project) const override
+			inline std::unique_ptr<Service> Create(RName name, Broker &broker, const rapidjson::Value &data) const override
 			{
-				return std::make_unique<T>(name, broker, data, project, this->ResolveRequirement(broker, data));
+				return std::make_unique<T>(name, broker, data, this->ResolveRequirement(broker, data));
 			}
 
 		private:

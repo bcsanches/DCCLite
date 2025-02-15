@@ -17,47 +17,21 @@
 
 namespace dcclite::broker
 {
-	class Project
+	namespace Project
 	{
-		public:
-			explicit Project(dcclite::fs::path path)  :
-				m_pthRoot(std::move(path))
-			{
-				//empty
-			}
+		void SetWorkingDir(dcclite::fs::path path);
 
-			dcclite::fs::path GetFilePath(const std::string_view fileName) const
-			{
-				dcclite::fs::path path(m_pthRoot);
+		dcclite::fs::path GetFilePath(const std::string_view fileName);
+		dcclite::fs::path GetAppFilePath(const std::string_view fileName);
 
-				path.append(fileName);
+		void SetName(std::string_view name);			
 
-				return path.string();
-			}
+		const std::string &GetName() noexcept;			
 
-			dcclite::fs::path GetAppFilePath(const std::string_view fileName) const;			
-
-			inline void SetName(std::string_view name)
-			{
-				m_strName = name;
-			}
-
-			inline const std::string &GetName() const noexcept
-			{
-				return m_strName;
-			}
-
-			/// <summary>
-			/// 
-			/// </summary>
-			/// <returns>Returns the path to the root used for the current project</returns>
-			inline const dcclite::fs::path &GetRoot() const noexcept
-			{
-				return m_pthRoot;
-			}
-
-		private:
-			const dcclite::fs::path m_pthRoot;
-			std::string m_strName;
-	};
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <returns>Returns the path to the root used for the current project</returns>
+		const dcclite::fs::path &GetRoot() noexcept;
+	}
 }

@@ -25,10 +25,8 @@ namespace dcclite
 
 namespace dcclite::broker
 {
-	class Broker;
-	class Project;
+	class Broker;	
 	class Service;
-
 
 	class ObjectManagerEvent
 	{		
@@ -86,18 +84,16 @@ namespace dcclite::broker
 			mutable sigslot::signal< const ObjectManagerEvent &> m_sigEvent;
 	
 		protected:
-			Service(RName name, Broker &broker, const rapidjson::Value &params, const Project &project):
+			Service(RName name, Broker &broker, const rapidjson::Value &params):
 				FolderObject{name},
-				m_rclBroker(broker),
-				m_rclProject(project)
+				m_rclBroker(broker)
 			{
 				//empty
 			}
 
-			Service(RName name, Broker& broker, const Project& project) :
+			Service(RName name, Broker& broker) :
 				FolderObject{name},
-				m_rclBroker(broker),
-				m_rclProject(project)
+				m_rclBroker(broker)
 			{
 				//empty
 			}
@@ -126,9 +122,7 @@ namespace dcclite::broker
 			void DispatchEvent(const ObjectManagerEvent &event) const;
 
 		protected:		
-			Broker &m_rclBroker;
-
-			const Project &m_rclProject;			
+			Broker &m_rclBroker;		
 	};
 }
 

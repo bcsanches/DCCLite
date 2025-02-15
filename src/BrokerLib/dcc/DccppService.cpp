@@ -106,7 +106,7 @@ namespace dcclite::broker
 		public:
 			typedef DccLiteService Requirement_t;
 
-			DccppServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, const Project &project, DccLiteService &dependency);
+			DccppServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, DccLiteService &dependency);
 			~DccppServiceImpl() override;				
 
 		private:			
@@ -720,8 +720,8 @@ ERROR_RESPONSE:
 	//
 
 
-	DccppServiceImpl::DccppServiceImpl(RName name, Broker &broker, const rapidjson::Value& params, const Project& project, DccLiteService &dependency):
-		DccppService(name, broker, params, project),		
+	DccppServiceImpl::DccppServiceImpl(RName name, Broker &broker, const rapidjson::Value& params, DccLiteService &dependency):
+		DccppService(name, broker, params),		
 		m_rclDccService{ dependency }
 	{		
 		//standard port used by DCC++
@@ -800,19 +800,12 @@ ERROR_RESPONSE:
 	{
 		std::unique_lock<std::mutex> guard{ m_mtxClientsLock };
 
-		for (size_t i = 0; i < m_vecClients.size(); ++i)
-		{
-			auto &c = m_vecClients[i];
+		auto it = std::find_if(m_vecClients.begin(), m_vecClients.end(), [&client](auto &c) { return c.get() == &client; });
 
-			if (c.get() == &client)
-			{
-				dcclite::Log::Info("[DccppService] Client disconnected");
+		if (it == m_vecClients.end())
+			return;
 
-				m_vecClients.erase(m_vecClients.begin() + i);
-
-				return;
-			}
-		}
+		m_vecClients.erase(it);		
 	}
 
 	void DccppService::RegisterFactory()
@@ -820,8 +813,8 @@ ERROR_RESPONSE:
 		//empty
 	}
 
-	DccppService::DccppService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project) :
-		Service{ name, broker, params, project }
+	DccppService::DccppService(RName name, Broker &broker, const rapidjson::Value &params) :
+		Service{ name, broker, params }
 	{
 		//empty
 	}

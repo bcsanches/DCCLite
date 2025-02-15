@@ -45,7 +45,7 @@ namespace dcclite::broker
 
 			static void RegisterFactory();
 
-			ThrottleService(RName name, Broker &broker, const rapidjson::Value& params, const Project& project);
+			ThrottleService(RName name, Broker &broker, const rapidjson::Value& params);
 		
 			~ThrottleService() override = default;
 

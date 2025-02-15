@@ -26,7 +26,6 @@ namespace dcclite
 
 namespace dcclite::broker
 {
-
 	class DccAddress;
 	class Decoder;
 	class NetworkDevice;

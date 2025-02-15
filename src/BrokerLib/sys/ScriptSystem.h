@@ -15,8 +15,7 @@
 #include <sol/sol.hpp>
 
 namespace dcclite::broker
-{
-	class Project;
+{	
 	class Broker;
 }
 
@@ -31,6 +30,6 @@ namespace dcclite::broker::ScriptSystem
 			virtual void IScriptSupport_OnVMFinalize(sol::state &state) = 0;
 	};	
 
-	extern void Start(Broker &broker, const Project &project);
+	extern void Start(Broker &broker);
 	extern void Stop();
 }

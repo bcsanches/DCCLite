@@ -5,9 +5,6 @@ DCCLite
 	- write test cases for all tokens before starting?
 
 - Device should inherit from IFolderObject instead of FolderObject?
-- Should Service inherit from FolderObject?
-
-- ReadEEPromFiber: accessing Project on device, try to remove this dependency
 
 - Add a connection tester to sharpterminal and dcclite to check devices connections
 

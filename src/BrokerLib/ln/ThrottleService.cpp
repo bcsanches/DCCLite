@@ -650,7 +650,7 @@ namespace dcclite::broker
 	class ThrottleServiceImpl : public ThrottleService
 	{
 		public:
-			ThrottleServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);
+			ThrottleServiceImpl(RName name, Broker &broker, const rapidjson::Value &params);
 			~ThrottleServiceImpl() override;			
 
 			void Serialize(JsonOutputStream_t &stream) const override;	
@@ -669,8 +669,8 @@ namespace dcclite::broker
 	};
 
 
-	ThrottleServiceImpl::ThrottleServiceImpl(RName name, Broker &broker, const rapidjson::Value& params, const Project& project):
-		ThrottleService(name, broker, params, project),		
+	ThrottleServiceImpl::ThrottleServiceImpl(RName name, Broker &broker, const rapidjson::Value& params):
+		ThrottleService(name, broker, params),
 		m_clServerAddress{ dcclite::NetworkAddress::ParseAddress(DetermineServerAddress(params)) },
 		m_tThinker{"ThrottleServiceImpl::Thinker", THINKER_MF_LAMBDA(Think)}
 	{				
@@ -743,8 +743,8 @@ namespace dcclite::broker
 		//empty
 	}
 
-	ThrottleService::ThrottleService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project):
-		Service(name, broker, params, project)
+	ThrottleService::ThrottleService(RName name, Broker &broker, const rapidjson::Value &params):
+		Service(name, broker, params)
 	{
 		//empty
 	}

@@ -25,16 +25,15 @@ namespace dcclite
 namespace dcclite::broker
 {
 	class Decoder;
-	class Device;
-	class Project;	
+	class Device;	
 
 	namespace StorageManager
 	{
 		typedef std::map<RName, dcclite::DecoderStates> DecodersMap_t;
 
-		void SaveState(const Device &device, const Project &project);
-		DecodersMap_t LoadState(RName deviceName, const Project &project, const dcclite::Guid expectedToken);
+		void SaveState(const Device &device);
+		DecodersMap_t LoadState(RName deviceName, const dcclite::Guid expectedToken);
 
-		dcclite::Guid GetFileToken(const std::string_view fileName, const Project &project);
+		dcclite::Guid GetFileToken(const std::string_view fileName);
 	}
 }

@@ -81,7 +81,7 @@ namespace dcclite::broker
 
 			static void RegisterFactory();
 
-			LoconetService(RName name, Broker &broker, const rapidjson::Value& params, const Project& project);
+			LoconetService(RName name, Broker &broker, const rapidjson::Value& params);
 		
 			~LoconetService() override
 			{

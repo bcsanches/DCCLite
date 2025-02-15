@@ -14,8 +14,9 @@
 #include <memory>
 #include <string>
 
+#include <FileSystem.h>
+
 #include "Object.h"
-#include "Project.h"
 #include "Service.h"
 
 namespace dcclite
@@ -59,8 +60,6 @@ namespace dcclite::broker
 			dcclite::FolderObject	*m_pServices;
 
 			TerminalCmdHost			*m_pclTerminalCmdHost = nullptr;
-
-			Project m_clProject;
 
 		private:
 			void LoadConfig();	

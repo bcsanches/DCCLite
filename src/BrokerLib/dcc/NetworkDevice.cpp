@@ -25,7 +25,6 @@
 
 namespace dcclite::broker
 {
-
 	using namespace std::chrono_literals;
 
 	static auto constexpr TIMEOUT_TICKS = 10s;
@@ -89,8 +88,8 @@ namespace dcclite::broker
 
 
 
-	NetworkDevice::NetworkDevice(RName name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project):
-		Device(name, dccService, params, project),		
+	NetworkDevice::NetworkDevice(RName name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params):
+		Device(name, dccService, params),		
 		m_clPinManager(DecodeBoardName(params["class"].GetString())),
 		m_fRegistered(true),
 		m_clTimeoutController{ *this }
@@ -99,8 +98,8 @@ namespace dcclite::broker
 	}
 
 
-	NetworkDevice::NetworkDevice(RName name, IDccLite_DeviceServices &dccService, const Project &project) :
-		Device(name, dccService, project),		
+	NetworkDevice::NetworkDevice(RName name, IDccLite_DeviceServices &dccService) :
+		Device(name, dccService),		
 		m_clPinManager(ArduinoBoards::MEGA),		
 		m_fRegistered(false),
 		m_clTimeoutController{*this}

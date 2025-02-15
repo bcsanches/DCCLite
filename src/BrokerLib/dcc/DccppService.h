@@ -23,7 +23,7 @@ namespace dcclite::broker
 
 			static const char *TYPE_NAME;
 
-			DccppService(RName name, Broker &broker, const rapidjson::Value& params, const Project& project);
+			DccppService(RName name, Broker &broker, const rapidjson::Value& params);
 		
 			~DccppService() override = default;
 	};

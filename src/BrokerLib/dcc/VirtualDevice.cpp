@@ -21,14 +21,14 @@
 namespace dcclite::broker
 {
 
-	VirtualDevice::VirtualDevice(RName name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project) :
-		Device{ name, dccService, params, project }
+	VirtualDevice::VirtualDevice(RName name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params) :
+		Device{ name, dccService, params }
 	{
 		this->Load();
 	}
 
-	VirtualDevice::VirtualDevice(RName name, IDccLite_DeviceServices &dccService, const Project &project) :
-		Device{ name, dccService, project }
+	VirtualDevice::VirtualDevice(RName name, IDccLite_DeviceServices &dccService) :
+		Device{ name, dccService }
 	{
 		//emtpy
 	}	

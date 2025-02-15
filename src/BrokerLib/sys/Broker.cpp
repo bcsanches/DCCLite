@@ -31,6 +31,7 @@
 
 #include "BonjourService.h"
 #include "JsonUtils.h"
+#include "Project.h"
 #include "ServiceFactory.h"
 #include "Thinker.h"
 #include "ScriptSystem.h"
@@ -67,7 +68,7 @@ namespace dcclite::broker
 		throw std::runtime_error(fmt::format("[Broker] [CreateBrokerService] error: unknown service type {}", className));
 	}
 
-	static std::unique_ptr<Service> CreateBrokerService(const ServiceFactory &factory, Broker &broker, const rapidjson::Value &data, const Project &project)
+	static std::unique_ptr<Service> CreateBrokerService(const ServiceFactory &factory, Broker &broker, const rapidjson::Value &data)
 	{		
 		RName name{ dcclite::json::GetString(data, "name", "service block") };
 
@@ -75,7 +76,7 @@ namespace dcclite::broker
 
 		try
 		{							
-			return factory.Create(name, broker, data, project);			
+			return factory.Create(name, broker, data);			
 		}
 		catch (std::exception &ex)
 		{
@@ -91,10 +92,11 @@ namespace dcclite::broker
 	}
 
 	Broker::Broker(dcclite::fs::path projectPath):		
-		FolderObject{ RName{"root"} },
-		m_clProject(std::move(projectPath))
+		FolderObject{ RName{"root"} }
 	{	
 		BenchmarkLogger benchmark{ "Broker", "Contructor" };
+
+		Project::SetWorkingDir(std::move(projectPath));
 
 		{
 			auto cmdHost = std::make_unique<TerminalCmdHost>();
@@ -120,12 +122,12 @@ namespace dcclite::broker
 		{
 			BenchmarkLogger script{ "Broker", "ScriptSystem" };
 
-			ScriptSystem::Start(*this, m_clProject);
+			ScriptSystem::Start(*this);
 		}
 
 
 		//Start after load, so project name is already loaded
-		ZeroConfSystem::Start(m_clProject.GetName());
+		ZeroConfSystem::Start(Project::GetName());
 	}
 
 	Broker::~Broker()
@@ -143,7 +145,7 @@ namespace dcclite::broker
 
 	void Broker::LoadConfig()
 	{		
-		const auto configFileName = m_clProject.GetFilePath("broker.config.json");
+		const auto configFileName = Project::GetFilePath("broker.config.json");
 		const auto configFileNameStr = configFileName.string();
 
 		dcclite::Log::Info("[Broker] [LoadConfig] Trying to open {}", configFileNameStr);
@@ -164,14 +166,14 @@ namespace dcclite::broker
 			throw std::runtime_error(fmt::format("[Broker] [LoadConfig] {} is not a valid json", configFileNameStr));
 		}		
 		
-		m_clProject.SetName(dcclite::json::GetString(data, "name", "broker"));
+		Project::SetName(dcclite::json::GetString(data, "name", "broker"));
 
 		const auto &services = dcclite::json::GetArray(data, "services", "broker");		
 
 		dcclite::Log::Info("[Broker] [LoadConfig] Loaded config {}", configFileNameStr);
 
 		if(dcclite::json::TryGetDefaultBool(data, "bonjourService", false))
-			m_pServices->AddChild(BonjourService::Create(RName{ BONJOUR_SERVICE_NAME }, *this, m_clProject));
+			m_pServices->AddChild(BonjourService::Create(RName{ BONJOUR_SERVICE_NAME }, *this));
 
 		dcclite::Log::Debug("[Broker] [LoadConfig] Processing config services array entries: {}", services.Size());				
 
@@ -187,18 +189,18 @@ namespace dcclite::broker
 			}
 			else
 			{
-				auto service{ CreateBrokerService(factory, *this, serviceData, m_clProject) };
+				auto service{ CreateBrokerService(factory, *this, serviceData) };
 
 				if (!service)
 					continue;
 
 				m_pServices->AddChild(std::move(service));
 			}
-		}				
+		}
 
 		for (auto &serviceData : pendingServices)
 		{
-			std::unique_ptr<Service> service{ CreateBrokerService(*serviceData.second, *this, *serviceData.first, m_clProject)};
+			std::unique_ptr<Service> service{ CreateBrokerService(*serviceData.second, *this, *serviceData.first)};
 			
 			if (!service)
 				continue;

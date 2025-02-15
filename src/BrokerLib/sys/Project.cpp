@@ -12,14 +12,45 @@
 
 #include "PathUtils.h"
 
-namespace dcclite::broker
+namespace dcclite::broker::Project
 {
+	static dcclite::fs::path g_pthRoot;
+	static std::string g_strName;
 
-	dcclite::fs::path Project::GetAppFilePath(const std::string_view fileName) const
+	void SetWorkingDir(dcclite::fs::path path)
+	{
+		g_pthRoot = std::move(path);
+	}
+
+	dcclite::fs::path GetFilePath(const std::string_view fileName)
+	{
+		dcclite::fs::path path(g_pthRoot);
+
+		path.append(fileName);
+
+		return path.string();
+	}
+
+	void SetName(std::string_view name)
+	{
+		g_strName = name;
+	}
+
+	const std::string &GetName() noexcept
+	{
+		return g_strName;
+	}
+
+	const dcclite::fs::path &GetRoot() noexcept
+	{
+		return g_pthRoot;
+	}
+
+	dcclite::fs::path GetAppFilePath(const std::string_view fileName)
 	{
 		auto cacheFilePath = dcclite::PathUtils::GetAppFolder();
 
-		cacheFilePath.append(m_strName);
+		cacheFilePath.append(g_strName);
 		cacheFilePath.append(fileName);
 
 		return cacheFilePath;

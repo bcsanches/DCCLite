@@ -77,7 +77,7 @@ namespace dcclite::broker
 		public:
 			static const char *TYPE_NAME;
 
-			DccLiteService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);
+			DccLiteService(RName name, Broker &broker, const rapidjson::Value &params);
 
 			~DccLiteService() override;			
 

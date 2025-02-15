@@ -28,12 +28,11 @@
 
 namespace dcclite::broker
 {
-	Device::Device(RName name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params, const Project &project) :
+	Device::Device(RName name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params):
 		FolderObject{ name },
 		m_clDccService{ dccService },
 		m_strConfigFileName{ std::string(this->GetName().GetData()) + ".decoders.json" },
-		m_pathConfigFile{ project.GetFilePath(m_strConfigFileName) },
-		m_rclProject{ project }
+		m_pathConfigFile{ Project::GetFilePath(m_strConfigFileName) }
 	{
 		FileWatcher::TryWatchFile(m_pathConfigFile, [this](const dcclite::fs::path path, std::string fileName)
 			{
@@ -51,11 +50,10 @@ namespace dcclite::broker
 			});
 	}
 
-	Device::Device(RName name, IDccLite_DeviceServices &dccService, const Project &project) :
+	Device::Device(RName name, IDccLite_DeviceServices &dccService):
 		FolderObject{ name },
-		m_clDccService{ dccService },
-		m_rclProject{ project },
-		m_pathConfigFile{ project.GetFilePath(m_strConfigFileName) }
+		m_clDccService{ dccService },		
+		m_pathConfigFile{ Project::GetFilePath(m_strConfigFileName) }
 	{
 		//emtpy
 	}
@@ -76,7 +74,7 @@ namespace dcclite::broker
 		this->OnUnload();
 
 		if(!m_vecDecoders.empty())
-			StorageManager::SaveState(*this, m_rclProject);
+			StorageManager::SaveState(*this);
 
 		//clear the token
 		m_ConfigToken = {};
@@ -144,7 +142,7 @@ namespace dcclite::broker
 			return;
 		}
 
-		auto storedConfigToken = StorageManager::GetFileToken(m_strConfigFileName, m_rclProject);
+		auto storedConfigToken = StorageManager::GetFileToken(m_strConfigFileName);
 
 		if (storedConfigToken == m_ConfigToken)
 		{
@@ -195,7 +193,7 @@ namespace dcclite::broker
 
 			//
 			//Load state data
-			auto decodersState = StorageManager::LoadState(this->GetName(), m_rclProject, storedConfigToken);
+			auto decodersState = StorageManager::LoadState(this->GetName(), storedConfigToken);
 
 #if 1
 			for (auto &it : decodersState)

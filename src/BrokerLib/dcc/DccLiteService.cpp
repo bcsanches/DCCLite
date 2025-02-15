@@ -123,8 +123,8 @@ namespace dcclite::broker
 	}
 
 
-	DccLiteService::DccLiteService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project) :
-		Service(name, broker, params, project)		
+	DccLiteService::DccLiteService(RName name, Broker &broker, const rapidjson::Value &params) :
+		Service(name, broker, params)		
 	{
 		BenchmarkLogger benchmark{ "DccLiteService", name.GetData() };
 
@@ -155,9 +155,9 @@ namespace dcclite::broker
 				auto className = json::GetString(device, "class", "device data for DccLiteService");
 
 				if (strcmp(className, "Virtual"))
-					m_pDevices->AddChild(std::make_unique<NetworkDevice>(nodeName, *static_cast<IDccLite_DeviceServices *>(this), device, project));
+					m_pDevices->AddChild(std::make_unique<NetworkDevice>(nodeName, *static_cast<IDccLite_DeviceServices *>(this), device));
 				else
-					m_pDevices->AddChild(std::make_unique<VirtualDevice>(nodeName, *static_cast<IDccLite_DeviceServices *>(this), device, project));
+					m_pDevices->AddChild(std::make_unique<VirtualDevice>(nodeName, *static_cast<IDccLite_DeviceServices *>(this), device));
 			}
 		}
 		catch (std::exception &)
@@ -536,8 +536,7 @@ namespace dcclite::broker
 			netDevice = static_cast<NetworkDevice *>(m_pDevices->AddChild(
 				std::make_unique<NetworkDevice>(
 					deviceName,
-					*static_cast<IDccLite_DeviceServices *>(this),
-					m_rclProject
+					*static_cast<IDccLite_DeviceServices *>(this)					
 				)
 			));
 

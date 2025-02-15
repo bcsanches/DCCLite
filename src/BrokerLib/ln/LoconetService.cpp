@@ -973,10 +973,10 @@ namespace dcclite::broker
 		public:
 			typedef ThrottleService Requirement_t;
 
-			LoconetServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, const Project &project, ThrottleService &requirement);
+			LoconetServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, ThrottleService &requirement);
 			~LoconetServiceImpl() override;			
 
-			static std::unique_ptr<Service> Create(RName name, Broker &broker, const rapidjson::Value &params, const Project &project);
+			static std::unique_ptr<Service> Create(RName name, Broker &broker, const rapidjson::Value &params);
 
 			void Serialize(JsonOutputStream_t &stream) const override;
 
@@ -1012,8 +1012,8 @@ namespace dcclite::broker
 	};
 
 
-	LoconetServiceImpl::LoconetServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, const Project &project, ThrottleService &requirement):
-		LoconetService(name, broker, params, project),
+	LoconetServiceImpl::LoconetServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, ThrottleService &requirement):
+		LoconetService(name, broker, params),
 		m_clSerialPort(params["port"].GetString()),
 		m_tThinker{ {}, THINKER_MF_LAMBDA(Think) },
 		m_tPurgeThinker{ {}, THINKER_MF_LAMBDA(PurgeThink) }
@@ -1474,8 +1474,8 @@ namespace dcclite::broker
 		//empty
 	}
 
-	LoconetService::LoconetService(RName name, Broker &broker, const rapidjson::Value &params, const Project &project) :
-		Service(name, broker, params, project)
+	LoconetService::LoconetService(RName name, Broker &broker, const rapidjson::Value &params) :
+		Service(name, broker, params)
 	{
 		//empty
 	}

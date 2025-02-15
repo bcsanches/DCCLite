@@ -316,7 +316,7 @@ namespace dcclite::broker
 	class BonjourServiceImpl : public BonjourService
 	{
 		public:
-			BonjourServiceImpl(RName name, Broker &broker, const Project &project);
+			BonjourServiceImpl(RName name, Broker &broker);
 			~BonjourServiceImpl() override;			
 
 			void Serialize(JsonOutputStream_t &stream) const override;		
@@ -350,8 +350,8 @@ namespace dcclite::broker
 	};
 
 
-	BonjourServiceImpl::BonjourServiceImpl(RName name, Broker &broker, const Project& project):
-		BonjourService(name, broker, project),
+	BonjourServiceImpl::BonjourServiceImpl(RName name, Broker &broker):
+		BonjourService(name, broker),
 		m_tNetworkThread{ [this]() { this->NetworkProc(); }}		
 	{				
 		//empty
@@ -954,14 +954,14 @@ READ_NAME_AGAIN:
 	//
 	///////////////////////////////////////////////////////////////////////////////
 
-	BonjourService::BonjourService(RName name, Broker &broker, const Project &project) :
-		Service(name, broker, project)
+	BonjourService::BonjourService(RName name, Broker &broker) :
+		Service(name, broker)
 	{
 		//empty
 	}
 
-	std::unique_ptr<Service> BonjourService::Create(RName name, Broker &broker, const Project &project)
+	std::unique_ptr<Service> BonjourService::Create(RName name, Broker &broker)
 	{
-		return std::make_unique<BonjourServiceImpl>(name, broker, project);
+		return std::make_unique<BonjourServiceImpl>(name, broker);
 	}
 }

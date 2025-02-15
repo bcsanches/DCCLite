@@ -300,7 +300,9 @@ function Section:new(o)
     log_trace("[Section:new] configuring initial state")
 
     -- Activate it?
-	if not o:inactive then
+	if not o.inactive then
+        -- force inactive or activate will fail...hack?
+        o.inactive = true
     	o:activate()
 	end
     

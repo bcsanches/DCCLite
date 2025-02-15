@@ -13,7 +13,6 @@
 
 #include "Service.h"
 
-
 namespace dcclite::broker
 { 
 	enum class NetworkProtocol
@@ -27,7 +26,7 @@ namespace dcclite::broker
 	class BonjourService: public Service
 	{	
 		public:
-			BonjourService(RName name, Broker &broker, const Project& project);
+			BonjourService(RName name, Broker &broker);
 		
 			~BonjourService() override = default;
 
@@ -37,7 +36,7 @@ namespace dcclite::broker
 			//
 			//
 		
-			static std::unique_ptr<Service> Create(RName name, Broker &broker, const Project &project);
+			static std::unique_ptr<Service> Create(RName name, Broker &broker);
 
 			const char *GetTypeName() const noexcept override
 			{

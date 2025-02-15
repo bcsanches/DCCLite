@@ -24,7 +24,7 @@ namespace dcclite::broker
 
 			static const char *TYPE_NAME;
 
-			DispatcherService(RName name, Broker &broker, const rapidjson::Value& params, const Project& project);
+			DispatcherService(RName name, Broker &broker, const rapidjson::Value& params);
 		
 			~DispatcherService() override = default;
 
