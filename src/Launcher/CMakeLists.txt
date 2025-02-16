@@ -17,6 +17,7 @@ if(WIN32)
     target_link_libraries(Launcher 
 		PRIVATE Common 		
 		PRIVATE fmt
+		PRIVATE spdlog
         PRIVATE SharedLib
 	)
 
@@ -28,7 +29,8 @@ else(WIN32)
 		Common 	
         SharedLib	
 		stdc++fs 
-		fmt 		
+		PRIVATE fmt
+		PRIVATE spdlog	
 	)
 
 endif(WIN32)

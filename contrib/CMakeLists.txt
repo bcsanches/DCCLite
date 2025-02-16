@@ -3,6 +3,7 @@ add_subdirectory(fmt)
 add_subdirectory(ldmonitor)
 add_subdirectory(lua-5.4.6)
 add_subdirectory(sigslot)
+add_subdirectory(spdlog)
 
 if(${DCCLITE_IMGUI_TOOLS})
 	add_subdirectory(SDL)

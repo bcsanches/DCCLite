@@ -51,7 +51,7 @@ if(WIN32)
 		PRIVATE Common	
 		PRIVATE LitePanelLib
 		PRIVATE SDL3-shared
-		PRIVATE IMGUI
+		PRIVATE IMGUI		
     )
 
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
@@ -74,7 +74,7 @@ else(WIN32)
 		PRIVATE LitePanelLib
 		PRIVATE SDL3-shared
 		PRIVATE IMGUI
-		PRIVATE freetype
+		PRIVATE freetype		
 	)
 
 endif(WIN32)

@@ -5,9 +5,9 @@ file(GLOB_RECURSE SRC_RENDER
 
  
 set(LitePanelLib_SRCS	
-    	EditCmds.cpp
+    EditCmds.cpp
 	MapObject.cpp
-    	MapObjectFactory.cpp
+    MapObjectFactory.cpp
 	Panel.cpp
 	RailObject.cpp
 	TileMap.cpp	
@@ -21,7 +21,7 @@ set(LitePanelLib_HDRS
 	EditCmds.h
 	LitePanelLibDefs.h
 	MapObject.h
-    	MapObjectFactory.h
+    MapObjectFactory.h
 	Panel.h
 	Point.h
 	RailObject.h
@@ -40,13 +40,14 @@ if(WIN32)
 
 endif(WIN32)
 
-add_library(LitePanelLib  ${LitePanelLib_SRCS} ${LitePanelLib_HDRS})
+add_library(LitePanelLib ${LitePanelLib_SRCS} ${LitePanelLib_HDRS})
 
 target_include_directories(LitePanelLib
   PUBLIC  ${DCCLite_SOURCE_DIR}/src/LitePanelLib/
   PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/fmt/include
   PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/JsonCreator/include
-          ${DCCLite_SOURCE_DIR}/contrib/rapidjson/include
-          ${DCCLite_SOURCE_DIR}/contrib/spdlog/include       
+          ${DCCLite_SOURCE_DIR}/contrib/rapidjson/include          
   PRIVATE ${DCCLite_SOURCE_DIR}/contrib/magic_enum/include   
 )
+
+target_link_libraries(LitePanelLib PRIVATE spdlog PRIVATE fmt)

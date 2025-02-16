@@ -20,13 +20,14 @@
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
 
-#include "Benchmark.h"
-#include "FmtUtils.h"
+#include <dcclite/Benchmark.h>
+#include <dcclite/FmtUtils.h>
+#include <dcclite/Guid.h>
+#include <dcclite/Log.h>
+#include <dcclite/RName.h>
+
 #include "Device.h"
-#include "GuidUtils.h"
-#include "Log.h"
 #include "OutputDecoder.h"
-#include "RName.h"
 
 #include "../sys/Project.h"
 

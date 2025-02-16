@@ -13,8 +13,8 @@
 #include <chrono>
 #include <thread>
 
-#include "Socket.h"
-#include "NetMessenger.h"
+#include <dcclite/Socket.h>
+#include <dcclite/NetMessenger.h>
 
 using namespace dcclite;
 using namespace std::chrono_literals;

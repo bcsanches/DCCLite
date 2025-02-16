@@ -10,7 +10,7 @@
 
 #include <gtest/gtest.h>
 
-#include "NmraUtil.h"
+#include <dcclite/Nmra.h>
 
 using namespace dcclite;
 

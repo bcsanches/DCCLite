@@ -10,7 +10,7 @@
 
 #include "Socket.h"
 
-#include "LogUtils.h"
+#include "Log.h"
 #include "Parser.h"
 #include "Util.h"
 

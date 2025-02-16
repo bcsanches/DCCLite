@@ -71,7 +71,7 @@ else(WIN32)
 
 endif(WIN32)
 
-target_link_libraries(Common PUBLIC CityHash fmt SharedLib)
+target_link_libraries(Common PUBLIC CityHash SharedLib)
 
 target_include_directories(Common
 	PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/cityhash/

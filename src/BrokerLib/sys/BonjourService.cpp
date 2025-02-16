@@ -243,7 +243,7 @@ namespace fmt
 		constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
 
 		template <typename FormatContext>
-		auto format(const dcclite::broker::QSection &q, FormatContext &ctx)
+		auto format(const dcclite::broker::QSection &q, FormatContext &ctx) const
 		{		
 			return fmt::format_to(ctx.out(), "{}", dcclite::broker::LabelsVector2String(q.m_vecLabels));
 		}
@@ -256,7 +256,7 @@ namespace fmt
 		constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
 
 		template <typename FormatContext>
-		auto format(const dcclite::broker::ResourceRecord &rr, FormatContext &ctx)
+		auto format(const dcclite::broker::ResourceRecord &rr, FormatContext &ctx) const
 		{
 			return fmt::format_to(ctx.out(), "{}", dcclite::broker::LabelsVector2String(rr.m_vecLabels));
 		}

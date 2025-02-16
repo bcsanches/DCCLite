@@ -130,6 +130,7 @@ if(WIN32)
         PRIVATE CityHash
         PRIVATE Common
         PRIVATE fmt
+        PRIVATE spdlog
         PRIVATE ldmonitor
 	    PRIVATE LuaLib
 		PRIVATE SharedLib		        
@@ -147,6 +148,7 @@ else(WIN32)
         Common 
         dl
         fmt 
+        spdlog
         ldmonitor
 		LuaLib
         OpenSSL::Crypto

@@ -6,10 +6,16 @@ set(Terminal_SRCS
 add_executable(Terminal  ${Terminal_SRCS})
 
 target_include_directories(Terminal 
-  PRIVATE 
+	PRIVATE 
     ${DCCLite_SOURCE_DIR}/src/Common    
 )
 
-target_link_libraries(Terminal PRIVATE Common fmt SharedLib)
+target_link_libraries(
+	Terminal 
+	PRIVATE Common 
+	PRIVATE fmt
+	PRIVATE spdlog
+	PRIVATE SharedLib
+)
 
 

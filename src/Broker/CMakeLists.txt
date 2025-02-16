@@ -13,7 +13,7 @@ target_include_directories(Broker
 
 if(WIN32)
     target_link_libraries(Broker   
-        PRIVATE BrokerLib    
+        PRIVATE BrokerLib		
 	)
 
 	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
@@ -24,7 +24,7 @@ if(WIN32)
 else(WIN32)
 
 	target_link_libraries(Broker         
-		BrokerLib        
+		BrokerLib			
 	)
 
 endif(WIN32)

@@ -15,6 +15,7 @@ add_compile_definitions(DCCLITE_VERSION=\"${DCCLITE_VERSION}\")
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	set (DCCLITE_MSVC true)
+	add_compile_options(/utf-8)
 else()
 	set (DCCLITE_MSVC false)
 endif()
@@ -39,12 +40,13 @@ add_subdirectory(src)
 
 set_property(TARGET CityHash PROPERTY FOLDER "contrib") 
 set_property(TARGET fmt PROPERTY FOLDER "contrib")
+set_property(TARGET spdlog PROPERTY FOLDER "contrib")
 
 if (${DCCLITE_MSVC})
 	set_property(TARGET gtest PROPERTY FOLDER "contrib")
 	set_property(TARGET gtest_main PROPERTY FOLDER "contrib")
 	set_property(TARGET gmock PROPERTY FOLDER "contrib")
-	set_property(TARGET gmock_main PROPERTY FOLDER "contrib")
+	set_property(TARGET gmock_main PROPERTY FOLDER "contrib")	
 
 	set_property(TARGET ArduinoLib PROPERTY FOLDER "Emulator")
 	set_property(TARGET Emulator PROPERTY FOLDER "Emulator")
@@ -54,7 +56,7 @@ if (${DCCLITE_MSVC})
 	set_property(TARGET QueraltLib PROPERTY FOLDER "Embedded")
 	set_property(TARGET StandAloneDecoderLib PROPERTY FOLDER "Embedded")
 	
-	set_property(TARGET Terminal PROPERTY FOLDER "Tools")
+	set_property(TARGET Terminal PROPERTY FOLDER "Tools")	
 endif()
 
 set_property(TARGET ldmonitor PROPERTY FOLDER "contrib")
@@ -63,7 +65,7 @@ set_property(TARGET LuaLib PROPERTY FOLDER "contrib")
 set_property(TARGET Launcher PROPERTY FOLDER "Tools")
 set_property(TARGET SharedLib PROPERTY FOLDER "Embedded")
 
-set(LFWATCH_BUILD_DEMO OFF CACHE BOOL "" FORCE)
+set(SPDLOG_FMT_EXTERNAL ON CACHE BOOL "" FORCE)
 
 set(BUILD_GMOCK ON CACHE BOOL "" FORCE)
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)

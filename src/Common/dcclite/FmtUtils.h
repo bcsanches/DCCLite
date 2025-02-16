@@ -19,13 +19,13 @@
 namespace fmt 
 {
 	template <>
-	struct formatter<dcclite::Guid> 
+	struct formatter<dcclite::Guid> : fmt::formatter<std::string>
 	{
 		template <typename ParseContext>
 		constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
 
 		template <typename FormatContext>
-		auto format(const dcclite::Guid &g, FormatContext &ctx) 
+		auto format(const dcclite::Guid &g, FormatContext &ctx) const
 		{
 			return fmt::format_to(ctx.out(), "{:02x}{:02x}{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}", 
 				g.m_bId[0], g.m_bId[1], g.m_bId[2], g.m_bId[3],
@@ -44,7 +44,7 @@ namespace fmt
 		constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
 
 		template <typename FormatContext>
-		auto format(const dcclite::NetworkAddress &a, FormatContext &ctx)
+		auto format(const dcclite::NetworkAddress &a, FormatContext &ctx) const
 		{
 			return fmt::format_to(ctx.out(), "{:03d}.{:03d}.{:03d}.{:03d}",
 				a.GetA(),
