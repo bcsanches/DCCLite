@@ -12,7 +12,7 @@
 
 #include <fmt/format.h>
 
-#include "FmtUtils.h"
+#include <dcclite/FmtUtils.h>
 
 #include "IDccLiteService.h"
 #include "IDevice.h"

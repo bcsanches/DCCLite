@@ -14,7 +14,7 @@
 
 #include <thread>
 
-#include <Socket.h>
+#include <dcclite/Socket.h>
 
 #include "../sys/Service.h"
 #include "../sys/EventHub.h"

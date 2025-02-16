@@ -17,11 +17,12 @@
 #include <thread>
 #include <vector>
 
+#include <dcclite/Socket.h>
+
 #include "Decoder.h"
 #include "Guid.h"
 #include "IDccLiteService.h"
 #include "Packet.h"
-#include "Socket.h"
 
 #include "../sys/EventHub.h"
 #include "../sys/ScriptSystem.h"

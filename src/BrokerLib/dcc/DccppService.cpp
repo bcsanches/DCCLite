@@ -1,7 +1,11 @@
 #include "DccppService.h"
 
-#include <FmtUtils.h>
-#include <Log.h>
+#include <dcclite/FmtUtils.h>
+#include <dcclite/JsonUtils.h>
+#include <dcclite/Log.h>
+#include <dcclite/NetMessenger.h>
+#include <dcclite/NmraUtil.h>
+#include <dcclite/Util.h>
 
 #include "../sys/BonjourService.h"
 #include "../sys/Broker.h"
@@ -11,15 +15,12 @@
 
 #include "Decoder.h"
 #include "DccLiteService.h"
-#include "JsonUtils.h"
-#include "NetMessenger.h"
-#include "NmraUtil.h"
 #include "SignalDecoder.h"
 #include "SimpleOutputDecoder.h"
 #include "Parser.h"
 #include "SensorDecoder.h"
 #include "TurnoutDecoder.h"
-#include "Util.h"
+
 
 using namespace std::chrono_literals;
 

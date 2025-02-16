@@ -17,8 +17,8 @@
 
 #include "imgui_internal.h"
 
-#include "Log.h"
-#include "LogUtils.h"
+#include <dcclite/Log.h>
+#include <dcclite/LogUtils.h>
 
 namespace dcclite::PanelEditor
 {

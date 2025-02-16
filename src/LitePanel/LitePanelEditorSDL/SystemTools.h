@@ -12,7 +12,7 @@
 
 #include <optional>
 
-#include "FileSystem.h"
+#include <dcclite/FileSystem.h>
 
 namespace dcclite::PanelEditor
 {

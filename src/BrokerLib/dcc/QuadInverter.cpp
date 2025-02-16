@@ -10,7 +10,8 @@
 
 #include "QuadInverter.h"
 
-#include <JsonUtils.h>
+#include <dcclite/JsonUtils.h>
+
 #include <Packet.h>
 
 #include "IDevice.h"

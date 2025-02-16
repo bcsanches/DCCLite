@@ -17,11 +17,12 @@
 
 #include <spdlog/logger.h>
 
-#include "EEPROMLib.h"
-#include "FileSystem.h"
-#include "PathUtils.h"
+#include <dcclite/FileSystem.h>
+#include <dcclite/Log.h>
+#include <dcclite/PathUtils.h>
 
-#include <Log.h>
+#include "EEPROMLib.h"
+
 
 EEPROMImpl EEPROM;
 

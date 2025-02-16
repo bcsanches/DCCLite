@@ -14,7 +14,7 @@
 
 #include <rapidjson/document.h>
 
-#include <RName.h>
+#include <dcclite/RName.h>
 
 namespace dcclite
 {

@@ -10,7 +10,7 @@
 
 #include <gtest/gtest.h>
 
-#include "Socket.h"
+#include <dcclite/Socket.h>
 
 using namespace dcclite;
 

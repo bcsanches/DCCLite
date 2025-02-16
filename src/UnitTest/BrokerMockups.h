@@ -13,7 +13,7 @@
 #include "dcc/IDccLiteService.h"
 #include "dcc/IDevice.h"
 
-#include "RName.h"
+#include <dcclite/RName.h>
 
 namespace dcclite::broker
 {

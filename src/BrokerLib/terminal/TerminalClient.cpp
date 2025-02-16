@@ -15,9 +15,9 @@
 
 #include "../dcc/NetworkDeviceTasks.h"
 
-#include "FmtUtils.h"
-#include "Log.h"
-#include "Util.h"
+#include <dcclite/FmtUtils.h>
+#include <dcclite/Log.h>
+#include <dcclite/Util.h>
 
 #include "../sys/SpecialFolders.h"
 

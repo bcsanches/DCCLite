@@ -11,10 +11,9 @@
 
 #include "LocationManager.h"
 
-#include <FmtUtils.h>
-
-#include <JsonUtils.h>
-#include <Log.h>
+#include <dcclite/FmtUtils.h>
+#include <dcclite/JsonUtils.h>
+#include <dcclite/Log.h>
 
 #include "Decoder.h"
 

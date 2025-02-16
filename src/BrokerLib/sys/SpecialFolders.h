@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "RName.h"
+#include <dcclite/RName.h>
 
 namespace SpecialFolders
 {

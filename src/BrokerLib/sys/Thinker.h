@@ -14,7 +14,7 @@
 #include <optional>
 #include <string_view>
 
-#include "Clock.h"
+#include <dcclite/Clock.h>
 
 #define THINKER_MF_LAMBDA(proc) ([this](const dcclite::Clock::TimePoint_t &tp) {this->proc(tp); })
 

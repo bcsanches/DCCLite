@@ -10,13 +10,13 @@
 
 #include "VirtualDevice.h"
 
+#include <fmt/format.h>
+
+#include <dcclite/FmtUtils.h>
+
 #include "SignalDecoder.h"
 #include "VirtualTurnoutDecoder.h"
 #include "VirtualSensorDecoder.h"
-
-#include <fmt/format.h>
-
-#include "FmtUtils.h"
 
 namespace dcclite::broker
 {

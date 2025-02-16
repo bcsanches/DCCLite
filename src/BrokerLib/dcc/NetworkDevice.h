@@ -15,14 +15,15 @@
 #include <string>
 #include <variant>
 
-#include "Benchmark.h"
+#include <dcclite/Benchmark.h>
+#include <dcclite/Socket.h>
+
 #include "IDccLiteService.h"
 #include "Device.h"
 #include "IDevice.h"
 #include "NetworkDeviceTasks.h"
 #include "Packet.h"
 #include "PinManager.h"
-#include "Socket.h"
 
 #include "../sys/Thinker.h"
 

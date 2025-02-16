@@ -10,9 +10,11 @@
 
 #pragma once
 
+#include <dcclite/Object.h>
+
 #include "DccAddress.h"
 #include "IDevice.h"
-#include "Object.h"
+
 
 namespace dcclite
 {

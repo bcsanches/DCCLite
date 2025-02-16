@@ -15,9 +15,8 @@
 #include <memory>
 #include <optional>
 
-#include <Clock.h>
-
-#include "Log.h"
+#include <dcclite/Clock.h>
+#include <dcclite/Log.h>
 
 #define DCCLITE_EVENT_HUB_INTERNAL_POOL
 

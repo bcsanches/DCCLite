@@ -10,8 +10,8 @@
 
 #include "DeviceClearEEPromCmd.h"
 
-#include "FmtUtils.h"
-#include "Util.h"
+#include <dcclite/FmtUtils.h>
+#include <dcclite/Util.h>
 
 #include "../dcc/DccLiteService.h"
 #include "../dcc/NetworkDevice.h"

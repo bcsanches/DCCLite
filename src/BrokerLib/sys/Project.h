@@ -10,10 +10,10 @@
 
 #pragma once
 
-#include <FileSystem.h>
+#include <dcclite/FileSystem.h>
+#include <dcclite/Sha1.h>
 
 #include "Guid.h"
-#include "Sha1.h"
 
 namespace dcclite::broker
 {

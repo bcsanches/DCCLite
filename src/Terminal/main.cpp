@@ -12,9 +12,8 @@
 
 #include <spdlog/logger.h>
 
-#include "LogUtils.h"
-
-#include "NetMessenger.h"
+#include <dcclite/LogUtils.h>
+#include <dcclite/NetMessenger.h>
 
 using namespace dcclite;
 

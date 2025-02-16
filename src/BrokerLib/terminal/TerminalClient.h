@@ -13,10 +13,10 @@
 #include <list>
 #include <map>
 
+#include <dcclite/NetMessenger.h>
+
 #include "../sys/EventHub.h"
 #include "../sys/Service.h"
-
-#include "NetMessenger.h"
 
 #include "TerminalCmd.h"
 #include "TerminalService.h"

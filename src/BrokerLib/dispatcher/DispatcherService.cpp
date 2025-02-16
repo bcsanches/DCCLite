@@ -14,11 +14,9 @@
 #include <stdexcept>
 #include <memory>
 
-#include <Log.h>
-
-#include <JsonUtils.h>
-
-#include "FmtUtils.h"
+#include <dcclite/Log.h>
+#include <dcclite/FmtUtils.h>
+#include <dcclite/JsonUtils.h>
 
 #include "../dcc/DccLiteService.h"
 #include "../dcc/Device.h"

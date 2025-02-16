@@ -11,14 +11,14 @@
 
 #include "ZeroConfSystem.h"
 
-#include <Log.h>
+#include <dcclite/Clock.h>
+#include <dcclite/Log.h>
+#include <dcclite/Util.h>
 
 #include <mutex>
 
-#include "Clock.h"
 #include "Packet.h"
 #include "SharedLibDefs.h"
-#include "Util.h"
 
 using namespace std::chrono_literals;
 

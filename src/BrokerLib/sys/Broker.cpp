@@ -23,14 +23,14 @@
 
 #include <spdlog/logger.h>
 
-#include <Benchmark.h>
-#include <Log.h>
+#include <dcclite/Benchmark.h>
+#include <dcclite/FmtUtils.h>
+#include <dcclite/JsonUtils.h>
+#include <dcclite/Log.h>
+
 #include <Parser.h>
 
-#include <FmtUtils.h>
-
 #include "BonjourService.h"
-#include "JsonUtils.h"
 #include "Project.h"
 #include "ServiceFactory.h"
 #include "Thinker.h"

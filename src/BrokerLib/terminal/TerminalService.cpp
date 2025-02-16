@@ -16,9 +16,9 @@
 #include <sstream>
 #include <stdexcept>
 
-#include <Log.h>
-
-#include "FmtUtils.h"
+#include <dcclite/Log.h>
+#include <dcclite/FmtUtils.h>
+#include <dcclite/Util.h>
 
 #include "../dcc/DccLiteService.h"
 #include "../dcc/NetworkDevice.h"
@@ -38,7 +38,6 @@
 #include "TerminalClient.h"
 #include "TerminalCmd.h"
 #include "TerminalUtils.h"
-#include "Util.h"
 
 #include <thread>
 

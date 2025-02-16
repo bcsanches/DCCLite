@@ -17,10 +17,10 @@
 
 #include "imgui.h"
 
-#include "Util.h"
+#include <dcclite/FolderObject.h>
+#include <dcclite/Util.h>
 
 #include "EditorWidget.h"
-#include "FolderObject.h"
 
 namespace dcclite::PanelEditor
 {

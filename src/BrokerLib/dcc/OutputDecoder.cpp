@@ -10,12 +10,12 @@
 
 #include "OutputDecoder.h"
 
-#include <FmtUtils.h>
-#include <Log.h>
+#include <dcclite/FmtUtils.h>
+#include <dcclite/JsonUtils.h>
+#include <dcclite/Log.h>
 
 #include "IDccLiteService.h"
 #include "IDevice.h"
-#include "JsonUtils.h"
 
 namespace dcclite::broker
 {

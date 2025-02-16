@@ -14,8 +14,8 @@
 
 #include <fmt/format.h>
 
-#include "FileSystem.h"
-#include "Util.h"
+#include <dcclite/FileSystem.h>
+#include <dcclite/Util.h>
 
 //based on https://github.com/bcsanches/phobos3d/blob/master/src/Base/DynamicLibrary.cpp
 

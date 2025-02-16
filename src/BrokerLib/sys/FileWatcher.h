@@ -12,7 +12,7 @@
 
 #include <functional>
 
-#include <FileSystem.h>
+#include <dcclite/FileSystem.h>
 
 namespace FileWatcher
 {	

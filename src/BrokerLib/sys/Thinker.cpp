@@ -12,7 +12,7 @@
 
 #include <assert.h>
 
-#include "Log.h"
+#include <dcclite/Log.h>
 
 namespace dcclite::broker
 {

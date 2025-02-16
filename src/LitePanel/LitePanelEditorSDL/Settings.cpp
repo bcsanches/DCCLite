@@ -15,9 +15,9 @@
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
 
-#include "FileSystem.h"
-#include "Log.h"
-#include "PathUtils.h"
+#include <dcclite/FileSystem.h>
+#include <dcclite/Log.h>
+#include <dcclite/PathUtils.h>
 
 namespace dcclite::PanelEditor::Settings
 {	

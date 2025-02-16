@@ -10,7 +10,8 @@
 
 #include <gtest/gtest.h>
 
-#include "Clock.h"
+#include <dcclite/Clock.h>
+
 #include "sys/Thinker.h"
 
 using namespace dcclite;

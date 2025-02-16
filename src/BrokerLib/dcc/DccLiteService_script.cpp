@@ -12,10 +12,10 @@
 
 #include <magic_enum/magic_enum.hpp>
 
-#include <FmtUtils.h>
-#include <Log.h>
+#include <dcclite/FmtUtils.h>
+#include <dcclite/Log.h>
+#include <dcclite/NmraUtil.h>
 
-#include "NmraUtil.h"
 #include "RemoteDecoder.h"
 #include "SignalDecoder.h"
 #include "TurnoutDecoder.h"

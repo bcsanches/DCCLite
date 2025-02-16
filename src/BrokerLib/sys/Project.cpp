@@ -10,7 +10,7 @@
 
 #include "Project.h"
 
-#include "PathUtils.h"
+#include <dcclite/PathUtils.h>
 
 namespace dcclite::broker::Project
 {

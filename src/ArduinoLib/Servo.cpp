@@ -10,7 +10,7 @@
 
 #include "Servo.h"
 
-#include "Log.h"
+#include <dcclite/Log.h>
 
 void Servo::attach(int pin)
 {

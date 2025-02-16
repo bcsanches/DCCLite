@@ -12,8 +12,9 @@
 
 #include <string_view>
 
+#include <dcclite/RName.h>
+
 #include "BasicPin.h"
-#include "RName.h"
 
 namespace dcclite::broker
 {

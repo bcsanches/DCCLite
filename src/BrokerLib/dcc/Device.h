@@ -13,11 +13,12 @@
 #include <vector>
 #include <string>
 
+#include <dcclite/FileSystem.h>
+#include <dcclite/FolderObject.h>
+
 #include "DccAddress.h"
 #include "IDevice.h"
 #include "Guid.h"
-#include "FileSystem.h"
-#include "FolderObject.h"
 
 #include <rapidjson/document.h>
 

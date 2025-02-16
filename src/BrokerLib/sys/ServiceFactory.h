@@ -15,8 +15,8 @@
 
 #include <rapidjson/document.h>
 
-#include <JsonUtils.h>
-#include <RName.h>
+#include <dcclite/JsonUtils.h>
+#include <dcclite/RName.h>
 
 #include "Broker.h"
 

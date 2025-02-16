@@ -10,10 +10,10 @@
 
 #include <SDL3/SDL.h>
 
-#include <Clock.h>
-#include <ConsoleUtils.h>
-#include <Log.h>
-#include <LogUtils.h>
+#include <dcclite/Clock.h>
+#include <dcclite/ConsoleUtils.h>
+#include <dcclite/Log.h>
+#include <dcclite/LogUtils.h>
 
 #include <spdlog/logger.h>
 

@@ -13,7 +13,10 @@
 
 #include "LoconetService.h"
 
-#include <Log.h>
+#include <dcclite/Clock.h>
+#include <dcclite/Log.h>
+#include <dcclite/JsonUtils.h>
+#include <dcclite/SerialPort.h>
 
 #include <exception>
 #include <optional>
@@ -21,15 +24,11 @@
 
 #include <magic_enum/magic_enum.hpp>
 
-#include <JsonUtils.h>
-
 #include "../sys/Broker.h"
 #include "../sys/ServiceFactory.h"
 #include "../sys/Thinker.h"
 
-#include "Clock.h"
 #include "ThrottleService.h"
-#include "SerialPort.h"
 
 enum Bits : uint8_t
 {

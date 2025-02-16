@@ -15,7 +15,7 @@
 #include "ArduinoLibDefs.h"
 #include "ArduinoDefs.h"
 
-#include <LogUtils.h>
+#include <dcclite/LogUtils.h>
 
 #include <string>
 

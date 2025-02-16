@@ -14,12 +14,11 @@
 
 #include <spdlog/logger.h>
 
-#include "ConsoleUtils.h"
-#include "FileSystem.h"
-#include "LogUtils.h"
-#include "PathUtils.h"
-
-#include "NetMessenger.h"
+#include <dcclite/ConsoleUtils.h>
+#include <dcclite/FileSystem.h>
+#include <dcclite/LogUtils.h>
+#include <dcclite/NetMessenger.h>
+#include <dcclite/PathUtils.h>
 
 using namespace dcclite;
 

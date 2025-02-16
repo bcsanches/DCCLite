@@ -15,7 +15,7 @@
 
 #include "DccAddress.h"
 
-#include "IFolderObject.h"
+#include <dcclite/IFolderObject.h>
 
 #include <rapidjson/document.h>
 

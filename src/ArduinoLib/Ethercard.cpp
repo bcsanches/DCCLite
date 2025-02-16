@@ -13,11 +13,12 @@
 
 #include <fmt/format.h>
 
+#include <dcclite/Socket.h>
+
 #include "Ethercard.h"
 
 #include "Serial.h"
 
-#include <Socket.h>
 
 EtherCard ether;
 

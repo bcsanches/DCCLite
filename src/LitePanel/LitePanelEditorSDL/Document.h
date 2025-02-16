@@ -10,10 +10,10 @@
 
 #pragma once
 
-#include "FileSystem.h"
+#include <dcclite/FileSystem.h>
+#include <dcclite/Util.h>
 
 #include "LitePanelLib/Panel.h"
-#include "Util.h"
 
 namespace dcclite::PanelEditor
 {	

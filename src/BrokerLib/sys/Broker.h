@@ -14,9 +14,9 @@
 #include <memory>
 #include <string>
 
-#include <FileSystem.h>
+#include <dcclite/FileSystem.h>
+#include <dcclite/Object.h>
 
-#include "Object.h"
 #include "Service.h"
 
 namespace dcclite

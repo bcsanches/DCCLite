@@ -15,7 +15,7 @@
 #include <string_view>
 #include <variant>
 
-#include "FolderObject.h"
+#include <dcclite/FolderObject.h>
 
 #include <rapidjson/document.h>
 

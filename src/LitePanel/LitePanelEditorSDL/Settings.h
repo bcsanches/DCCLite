@@ -13,7 +13,7 @@
 #include <optional>
 #include <vector>
 
-#include "FileSystem.h"
+#include <dcclite/FileSystem.h>
 
 namespace dcclite::PanelEditor::Settings
 {

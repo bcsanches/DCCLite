@@ -10,13 +10,13 @@
 
 #include <stdio.h>
 
-#include "Clock.h"
-#include "ConsoleUtils.h"
-#include "Log.h"
-#include "LogUtils.h"
-#include "NetMessenger.h"
-#include "PathUtils.h"
-#include "Socket.h"
+#include <dcclite/Clock.h>
+#include <dcclite/ConsoleUtils.h>
+#include <dcclite/Log.h>
+#include <dcclite/LogUtils.h>
+#include <dcclite/NetMessenger.h>
+#include <dcclite/PathUtils.h>
+#include <dcclite/Socket.h>
 
 #include "ArduinoLib.h"
 

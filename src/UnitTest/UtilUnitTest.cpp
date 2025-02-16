@@ -10,7 +10,7 @@
 
 #include <gtest/gtest.h>
 
-#include "Util.h"
+#include <dcclite/Util.h>
 
 using namespace dcclite;
 

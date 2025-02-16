@@ -13,8 +13,9 @@
 #include <array>
 #include <chrono>
 
+#include <dcclite/Clock.h>
+
 #include "ArduinoLib.h"
-#include "Clock.h"
 #include "Ethercard.h"
 
 #include "DynamicLibrary.h"

@@ -4,8 +4,10 @@
 
 #include <rapidjson/document.h>
 
+#include <dcclite/Log.h>
+
 #include "dcc/SignalDecoder.h"
-#include "Log.h"
+
 
 using testing::HasSubstr;
 

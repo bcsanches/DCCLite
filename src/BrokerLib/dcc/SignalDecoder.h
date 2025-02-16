@@ -18,11 +18,10 @@
 #include <variant>
 #include <vector>
 
-#include <Clock.h>
+#include <dcclite/Clock.h>
+#include <dcclite/NmraUtil.h>
 
 #include "sigslot/signal.hpp"
-
-#include "NmraUtil.h"
 
 #include "../sys/Thinker.h"
 

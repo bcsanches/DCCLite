@@ -16,8 +16,8 @@
 #include <mutex>
 #include <new>
 
-#include "Clock.h"
-#include "Log.h"
+#include <dcclite/Clock.h>
+#include <dcclite/Log.h>
 
 namespace dcclite::broker
 {

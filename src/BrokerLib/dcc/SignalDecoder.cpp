@@ -10,9 +10,8 @@
 
 #include "SignalDecoder.h"
 
-#include <Log.h>
-
-#include "FmtUtils.h"
+#include <dcclite/FmtUtils.h>
+#include <dcclite/Log.h>
 
 #include "IDccLiteService.h"
 #include "OutputDecoder.h"

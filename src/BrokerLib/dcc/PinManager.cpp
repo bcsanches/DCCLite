@@ -17,7 +17,7 @@
 #include <fmt/format.h>
 #include <magic_enum/magic_enum.hpp>
 
-#include <FmtUtils.h>
+#include <dcclite/FmtUtils.h>
 
 namespace dcclite::broker
 {

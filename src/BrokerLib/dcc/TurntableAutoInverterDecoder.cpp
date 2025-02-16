@@ -10,7 +10,8 @@
 
 #include "TurntableAutoInverterDecoder.h"
 
-#include <FmtUtils.h>
+#include <dcclite/FmtUtils.h>
+
 #include <Packet.h>
 
 #include "IDevice.h"
