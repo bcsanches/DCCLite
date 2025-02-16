@@ -12,7 +12,8 @@
 
 #include <fmt/format.h>
 
-#include "GuidDefs.h"
+#include <dcclite_shared/GuidDefs.h>
+
 #include "RName.h"
 #include "Socket.h"
 

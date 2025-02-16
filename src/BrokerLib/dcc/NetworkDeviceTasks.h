@@ -19,7 +19,7 @@
 #include <dcclite/Clock.h>
 #include <dcclite/RName.h>
 
-#include "Packet.h"
+#include <dcclite_shared/Packet.h>
 
 namespace dcclite::broker
 { 

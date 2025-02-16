@@ -11,8 +11,9 @@
 #include "OutputDecoder.h"
 
 #include <Arduino.h>
-#include <SharedLibDefs.h>
-#include <Packet.h>
+
+#include <dcclite_shared/SharedLibDefs.h>
+#include <dcclite_shared/Packet.h>
 
 #include "Console.h"
 #include "Storage.h"

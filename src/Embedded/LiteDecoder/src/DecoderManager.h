@@ -10,9 +10,8 @@
 
 #pragma once
 
-#include "SharedLibDefs.h"
-
-#include "Packet.h"
+#include <dcclite_shared/SharedLibDefs.h>
+#include <dcclite_shared/Packet.h>
 
 class Decoder;
 

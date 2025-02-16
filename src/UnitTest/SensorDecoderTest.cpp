@@ -2,8 +2,9 @@
 
 #include <rapidjson/document.h>
 
+#include <dcclite_shared/Packet.h>
+
 #include "BrokerMockups.h"
-#include "Packet.h"
 #include "dcc/SensorDecoder.h"
 
 using namespace rapidjson;

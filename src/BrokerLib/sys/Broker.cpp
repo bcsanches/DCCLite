@@ -23,12 +23,13 @@
 
 #include <spdlog/logger.h>
 
+#include <dcclite_shared/Parser.h>
+
 #include <dcclite/Benchmark.h>
 #include <dcclite/FmtUtils.h>
 #include <dcclite/JsonUtils.h>
 #include <dcclite/Log.h>
 
-#include <Parser.h>
 
 #include "BonjourService.h"
 #include "Project.h"

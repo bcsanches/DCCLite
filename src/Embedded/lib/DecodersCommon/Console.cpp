@@ -16,11 +16,11 @@
 #include <avr/pgmspace.h>
 #include <Arduino.h>
 
-#include "Parser.h"
+#include <dcclite_shared/ArduinoTypes.h>
+#include <dcclite_shared/Parser.h>
+#include <dcclite_shared/SharedLibDefs.h>
+#include <dcclite_shared/Printf.h>
 
-#include "ArduinoTypes.h"
-#include "Printf.h"
-#include "SharedLibDefs.h"
 #include "Strings.h"
 
 //hack for emulator for avoiding polutating namespace with stupid names

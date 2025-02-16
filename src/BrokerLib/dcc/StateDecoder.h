@@ -12,7 +12,7 @@
 
 #include "Decoder.h"
 
-#include "SharedLibDefs.h"
+#include <dcclite_shared/SharedLibDefs.h>
 
 namespace dcclite::broker
 {

@@ -10,8 +10,9 @@
 
 #include "Socket.h"
 
+#include <dcclite_shared/Parser.h>
+
 #include "Log.h"
-#include "Parser.h"
 #include "Util.h"
 
 #include <cassert>

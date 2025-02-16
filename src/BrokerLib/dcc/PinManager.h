@@ -13,9 +13,9 @@
 #include <string_view>
 #include <vector>
 
-#include <dcclite/Object.h>
+#include <dcclite_shared/BasicPin.h>
 
-#include "BasicPin.h"
+#include <dcclite/Object.h>
 
 namespace dcclite::broker
 {

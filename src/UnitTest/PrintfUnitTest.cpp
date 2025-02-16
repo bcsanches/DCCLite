@@ -10,7 +10,7 @@
 
 #include <gtest/gtest.h>
 
-#include "Printf.h"
+#include <dcclite_shared/Printf.h>
 
 class TestStream
 {

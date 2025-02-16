@@ -12,12 +12,12 @@
 
 #include <fmt/format.h>
 
+#include <dcclite_shared/Packet.h>
+
 #include <dcclite/FmtUtils.h>
 
 #include "IDccLiteService.h"
 #include "IDevice.h"
-
-#include <Packet.h>
 
 namespace dcclite::broker
 {

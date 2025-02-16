@@ -12,13 +12,14 @@
 
 #include <limits.h>
 
+#include <dcclite_shared/Misc.h>
+#include <dcclite_shared/Parser.h>
+
 #include "main.h"
 #include "Blinker.h"
 #include "Console.h"
 #include "DecoderManager.h"
-#include "Misc.h"
 #include "NetUdp.h"
-#include "Parser.h"
 #include "Session.h"
 #include "Storage.h"
 #include "Strings.h"

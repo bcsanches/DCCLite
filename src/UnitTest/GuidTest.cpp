@@ -10,7 +10,8 @@
 
 #include <gtest/gtest.h>
 
-#include "GuidDefs.h"
+#include <dcclite_shared/GuidDefs.h>
+
 #include <dcclite/Guid.h>
 
 using namespace dcclite;

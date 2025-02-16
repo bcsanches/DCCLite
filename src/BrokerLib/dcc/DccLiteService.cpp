@@ -19,8 +19,6 @@
 #include <dcclite/Log.h>
 #include <dcclite/Util.h>
 
-#include <Packet.h>
-
 #include "magic_enum/magic_enum.hpp"
 
 #include "NetworkDevice.h"

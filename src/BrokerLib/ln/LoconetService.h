@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include <Packet.h>
+#include <dcclite_shared/BitPack.h>
 
 #include "../sys/Service.h"
 

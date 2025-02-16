@@ -17,8 +17,8 @@
 
 #include <mutex>
 
-#include "Packet.h"
-#include "SharedLibDefs.h"
+#include <dcclite_shared/Packet.h>
+#include <dcclite_shared/SharedLibDefs.h>
 
 using namespace std::chrono_literals;
 

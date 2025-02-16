@@ -27,13 +27,14 @@ https://datatracker.ietf.org/doc/html/rfc6335 -> Internet Assigned Numbers Autho
 #include <magic_enum/magic_enum.hpp>
 #include <mutex>
 
+#include <dcclite_shared/Packet.h>
+
 #include <dcclite/Clock.h>
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Log.h>
 #include <dcclite/Socket.h>
 #include <dcclite/Util.h>
 
-#include "Packet.h"
 
 using namespace std::chrono_literals;
 

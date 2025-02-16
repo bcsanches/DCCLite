@@ -11,12 +11,13 @@
 
 #include "RemoteDecoder.h"
 
+#include <dcclite_shared/Packet.h>
+
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Log.h>
 #include <dcclite/JsonUtils.h>
 
 #include "IDccLiteService.h"
-#include "Packet.h"
 
 namespace dcclite::broker
 {

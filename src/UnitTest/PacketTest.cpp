@@ -10,7 +10,7 @@
 
 #include <gtest/gtest.h>
 
-#include "Packet.h"
+#include <dcclite_shared/Packet.h>
 
 using namespace dcclite;
 

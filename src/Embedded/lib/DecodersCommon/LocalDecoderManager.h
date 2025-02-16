@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "BasicPin.h"
+#include <dcclite_shared/BasicPin.h>
 
 class Decoder;
 class SensorDecoder;

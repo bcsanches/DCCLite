@@ -12,9 +12,10 @@
 
 #include <Arduino.h>
 
+#include <dcclite_shared/Packet.h>
+#include <dcclite_shared/SharedLibDefs.h>
+
 #include "Console.h"
-#include "Packet.h"
-#include "SharedLibDefs.h"
 #include "Storage.h"
 
 const char SensorModuleName[] PROGMEM = {"SensorDecoder"} ;

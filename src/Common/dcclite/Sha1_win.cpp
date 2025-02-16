@@ -23,7 +23,6 @@
 #include <Windows.h>    // Win32 Platform SDK
 #include <bcrypt.h>     // Cryptography API
 
-#include "Misc.h"
 #include "Util.h"
 
 #ifndef WIN32

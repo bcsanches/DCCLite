@@ -10,8 +10,9 @@
 
 #include "SimpleOutputDecoder.h"
 
+#include <dcclite_shared/Packet.h>
+
 #include "IDevice.h"
-#include "Packet.h"
 
 namespace dcclite::broker
 {

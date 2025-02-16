@@ -10,7 +10,7 @@
 
 #include "Decoder.h"
 
-#include "Packet.h"
+#include <dcclite_shared/Packet.h>
 
 Decoder::Decoder(dcclite::Packet &packet)
 {

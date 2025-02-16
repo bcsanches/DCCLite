@@ -10,10 +10,11 @@
 
 #include "NetUdp.h"
 
+#include <dcclite_shared/Packet.h>
+
 #include "Ethercard.h"
 
 #include "Console.h"
-#include "Packet.h"
 #include "Storage.h"
 #include "Strings.h"
 

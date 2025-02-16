@@ -12,7 +12,7 @@
 
 #include "RemoteDecoder.h"
 
-#include "BasicPin.h"
+#include <dcclite_shared/BasicPin.h>
 
 namespace dcclite::broker
 {

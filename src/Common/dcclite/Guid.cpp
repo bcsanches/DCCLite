@@ -10,10 +10,10 @@
 
 #include "Guid.h"
 
+#include <dcclite_shared/GuidDefs.h>
+
 #include "FmtUtils.h"
 #include "Util.h"
-
-#include "GuidDefs.h"
 
 std::string dcclite::GuidToString(const dcclite::Guid &g)
 {

@@ -12,18 +12,13 @@
 
 #include <Windows.h>
 
-#include "fmt/format.h"
+#include <fmt/format.h>
+
+#include <dcclite_shared/Misc.h>
+
 #include "FmtUtils.h"
 
-#include "Guid.h"
-#include "Misc.h"
 #include "Util.h"
-
-#if 0
-
-#include "Log.h"
-#endif
-
 
 dcclite::Guid dcclite::GuidCreate()
 {

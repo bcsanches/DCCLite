@@ -10,8 +10,9 @@
 
 #include "ServoTurnoutDecoder.h"
 
+#include <dcclite_shared/Packet.h>
+
 #include "Console.h"
-#include "Packet.h"
 #include "Storage.h"
 
 constexpr auto POWER_OFF_TICKS = 500;

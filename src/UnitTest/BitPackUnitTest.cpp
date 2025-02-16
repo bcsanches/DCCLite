@@ -10,7 +10,7 @@
 
 #include <gtest/gtest.h>
 
-#include "BitPack.h"
+#include <dcclite_shared/BitPack.h>
 
 using namespace dcclite;
 

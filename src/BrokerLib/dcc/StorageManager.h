@@ -14,7 +14,7 @@
 #include <optional>
 #include <string_view>
 
-#include "SharedLibDefs.h"
+#include <dcclite_shared/SharedLibDefs.h>
 
 namespace dcclite
 {

@@ -12,7 +12,8 @@
 
 #include <chrono>
 
-#include "BasicPin.h"
+#include <dcclite_shared/BasicPin.h>
+
 #include "OutputDecoder.h"
 
 namespace dcclite::broker

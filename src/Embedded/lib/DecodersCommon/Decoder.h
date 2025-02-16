@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "SharedLibDefs.h"
+#include <dcclite_shared/SharedLibDefs.h>
 
 namespace Storage
 {

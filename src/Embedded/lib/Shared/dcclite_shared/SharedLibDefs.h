@@ -13,7 +13,9 @@
 #include <stdint.h>
 
 #if (!defined WIN32) && (!defined __linux__)
-#define assert(x)
+	#if (!defined assert)
+		#define assert(x)
+	#endif
 #else
 #include <assert.h>
 #endif

@@ -13,6 +13,8 @@
 
 #include "LoconetService.h"
 
+#include <dcclite_shared/Packet.h>
+
 #include <dcclite/Clock.h>
 #include <dcclite/Log.h>
 #include <dcclite/JsonUtils.h>

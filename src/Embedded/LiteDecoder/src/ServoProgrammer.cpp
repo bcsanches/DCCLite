@@ -10,9 +10,10 @@
 
 #include "ServoProgrammer.h"
 
+#include <dcclite_shared/Packet.h>
+
 #include "Console.h"
 #include "DecoderManager.h"
-#include "Packet.h"
 #include "ServoTurnoutDecoder.h"
 #include "Session.h"
 

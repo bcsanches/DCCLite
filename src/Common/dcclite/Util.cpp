@@ -10,8 +10,8 @@
 
 #include "Util.h"
 
-#include "Misc.h"
-#include "Parser.h"
+#include <dcclite_shared/Misc.h>
+#include <dcclite_shared/Parser.h>
 
 #include <algorithm>
 

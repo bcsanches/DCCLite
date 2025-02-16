@@ -10,9 +10,9 @@
 
 #include "DccAddress.h"
 
-#include <dcclite/Util.h>
+#include <dcclite_shared/Packet.h>
 
-#include "Packet.h"
+#include <dcclite/Util.h>
 
 namespace dcclite::broker
 {

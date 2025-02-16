@@ -12,7 +12,7 @@
 
 #include <dcclite/JsonUtils.h>
 
-#include <Packet.h>
+#include <dcclite_shared/Packet.h>
 
 #include "IDevice.h"
 

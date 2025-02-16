@@ -15,6 +15,8 @@
 
 #include <fmt/chrono.h>
 
+#include <dcclite_shared/Parser.h>
+
 #include <dcclite/Clock.h>
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Log.h>
@@ -24,7 +26,6 @@
 #include "../sys/Thinker.h"
 
 #include "LoconetService.h"
-#include "Parser.h"
 
 using namespace std::chrono_literals;
 

@@ -12,13 +12,14 @@
 
 #include <magic_enum/magic_enum.hpp>
 
+#include <dcclite_shared/BitPack.h>
+
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Guid.h>
 #include <dcclite/Log.h>
 
 #include "../sys/Project.h"
 
-#include "BitPack.h"
 #include "IDccLiteService.h"
 #include "OutputDecoder.h"
 #include "SensorDecoder.h"

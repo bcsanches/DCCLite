@@ -10,7 +10,7 @@
 
 #include <gtest/gtest.h>
 
-#include "Parser.h"
+#include <dcclite_shared/Parser.h>
 
 using namespace dcclite;
 

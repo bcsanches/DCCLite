@@ -12,15 +12,15 @@
 
 #include <stdint.h>
 
+#include <dcclite_shared/Packet.h>
+
 #include "Blinker.h"
 #include "Console.h"
 #include "Config.h"
 #include "Decoder.h"
 #include "DecoderManager.h"
 #include "NetUdp.h"
-#include "Packet.h"
 #include "ServoProgrammer.h"
-#include "SharedLibDefs.h"
 #include "Storage.h"
 #include "Strings.h"
 

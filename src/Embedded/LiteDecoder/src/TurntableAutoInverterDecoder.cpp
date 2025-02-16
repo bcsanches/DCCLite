@@ -12,11 +12,11 @@
 
 #include <Arduino.h>
 
+#include <dcclite_shared/Packet.h>
+
 #include "Console.h"
 #include "DecoderManager.h"
-#include "Packet.h"
 #include "SensorDecoder.h"
-#include "SharedLibDefs.h"
 #include "Storage.h"
 
 #define MODULE_NAME F("TurntableAID")

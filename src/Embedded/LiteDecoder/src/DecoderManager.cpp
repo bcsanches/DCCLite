@@ -19,8 +19,6 @@
 #include "Storage.h"
 #include "TurntableAutoInverterDecoder.h"
 
-#include <Packet.h>
-
 #if (defined ARDUINO_AVR_MEGA2560) || (defined DCCLITE_ARDUINO_EMULATOR)
 #define MAX_DECODERS 48
 #else

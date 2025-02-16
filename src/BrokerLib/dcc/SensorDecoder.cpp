@@ -10,11 +10,12 @@
 
 #include "SensorDecoder.h"
 
+#include <dcclite_shared/Packet.h>
+
 #include <dcclite/FmtUtils.h>
 #include <dcclite/JsonUtils.h>
 #include <dcclite/Log.h>
 
-#include <Packet.h>
 
 #include "IDevice.h"
 

@@ -15,6 +15,8 @@
 #include <string>
 #include <variant>
 
+#include <dcclite_shared/Packet.h>
+
 #include <dcclite/Benchmark.h>
 #include <dcclite/Socket.h>
 
@@ -22,7 +24,6 @@
 #include "Device.h"
 #include "IDevice.h"
 #include "NetworkDeviceTasks.h"
-#include "Packet.h"
 #include "PinManager.h"
 
 #include "../sys/Thinker.h"

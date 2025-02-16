@@ -12,8 +12,8 @@
 
 #include "OutputDecoder.h"
 
-#include "SharedLibDefs.h"
-#include "BasicPin.h"
+#include <dcclite_shared/BasicPin.h>
+#include <dcclite_shared/SharedLibDefs.h>
 
 namespace dcclite::broker
 {
