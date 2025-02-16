@@ -14,14 +14,8 @@
 #include <chrono>
 
 #include <dcclite/Clock.h>
-#include <dcclite/Log.h>
 
 #include "ArduinoLib.h"
-#include "Ethercard.h"
-
-#include "DynamicLibrary.h"
-
-#include "EEPROMLib.h"
 
 using namespace std;
 
@@ -116,82 +110,25 @@ namespace ArduinoLib
 		static int digitalRead(int pin)
 		{
 			return g_Pins.at(pin).digitalRead();
+		}	
+
+		void BoardInit()
+		{
+			g_Clock = dcclite::Clock();
 		}
 
-		//
-		//
-		//
+		void BoardTick()
+		{
+			g_Clock.Tick();
 
-		static ArduinoProc_t g_pfnSetup;
-		static ArduinoProc_t g_pfnLoop;
-	}
-	
-	using namespace detail;
+			g_Millis = static_cast<unsigned long>(g_Clock.Total().count());
+		}
 
-	//
-	//
-	// Emulator Entry points
-	//
-	//
+		void BoardFinalize()
+		{
 
-	DynamicLibrary g_ModuleLib;
-	std::string g_strModuleName;
-
-	bool Setup(std::string moduleName, dcclite::Logger_t log, const char *deviceName)
-	{
-		dcclite::Log::Replace(log);
-		
-		g_ModuleLib.Load(moduleName);
-
-		g_strModuleName = std::move(moduleName);
-
-		g_pfnSetup = reinterpret_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("setup"));
-		g_pfnLoop = reinterpret_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("loop"));
-
-		g_Clock = dcclite::Clock();
-
-		bool romResult = detail::RomSetupModule(deviceName ? deviceName : g_strModuleName);
-
-		//initialize client
-		g_pfnSetup();
-
-		return romResult;
-	}
-
-	void Finalize()
-	{
-		detail::RomFinalize();
-
-		//hack to reset ehtercard lib
-		ether.udpServerPauseListenOnPort(0);
-	}
-
-	void Tick()
-	{
-		g_Clock.Tick();
-
-		g_Millis = static_cast<unsigned long>(g_Clock.Total().count());
-
-		//run client loop
-		g_pfnLoop();
-
-		detail::RomAfterLoop();
-	}
-
-	void SetSerialInput(const char *data) 
-	{
-		Serial.internalSetData(data);
-	}
-
-	void SetSerialInput(std::string data)
-	{
-		Serial.internalSetData(data);
-	}
-
-	void SetPinDigitalVoltage(int pin, VoltageModes voltage)
-	{
-		g_Pins.at(pin).setDigitalVoltage(voltage);
-	}
+		}
+	}		
 }
 
 //
@@ -217,11 +154,22 @@ void digitalWrite(int pin, int value)
 
 int digitalRead(int pin)
 {
-	return ArduinoLib::digitalRead(pin);
+	return ArduinoLib::detail::digitalRead(pin);
 }
 
 unsigned int bitRead(unsigned int flags, int pos)
 {
 	return (flags >> pos) & 1;
+}
+
+//
+//
+// Emulator Entry Point
+//
+//
+
+void ArduinoLib::SetPinDigitalVoltage(int pin, VoltageModes voltage)
+{
+	detail::g_Pins.at(pin).setDigitalVoltage(voltage);
 }
 

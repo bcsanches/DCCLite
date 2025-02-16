@@ -16,6 +16,7 @@
 #include "ArduinoDefs.h"
 
 #include <string>
+#include <memory>
 
 namespace spdlog
 {

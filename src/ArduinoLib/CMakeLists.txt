@@ -1,6 +1,7 @@
 
 set(ArduinoLib_SRCS
 	Arduino.cpp
+	ArduinoLib.cpp
 	DynamicLibrary.cpp
 	EEPROM.cpp
 	Ethercard.cpp
