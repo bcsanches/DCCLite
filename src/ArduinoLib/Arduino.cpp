@@ -14,6 +14,7 @@
 #include <chrono>
 
 #include <dcclite/Clock.h>
+#include <dcclite/Log.h>
 
 #include "ArduinoLib.h"
 #include "Ethercard.h"
@@ -138,7 +139,7 @@ namespace ArduinoLib
 
 	bool Setup(std::string moduleName, dcclite::Logger_t log, const char *deviceName)
 	{
-		dcclite::LogReplace(log);
+		dcclite::Log::Replace(log);
 		
 		g_ModuleLib.Load(moduleName);
 

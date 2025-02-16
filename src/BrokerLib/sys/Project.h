@@ -13,8 +13,6 @@
 #include <dcclite/FileSystem.h>
 #include <dcclite/Sha1.h>
 
-#include "Guid.h"
-
 namespace dcclite::broker
 {
 	namespace Project

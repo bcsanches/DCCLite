@@ -14,7 +14,7 @@
 
 #include <dcclite/Benchmark.h>
 #include <dcclite/FmtUtils.h>
-#include <dcclite/GuidUtils.h>
+#include <dcclite/Guid.h>
 #include <dcclite/JsonUtils.h>
 #include <dcclite/Log.h>
 #include <dcclite/Util.h>

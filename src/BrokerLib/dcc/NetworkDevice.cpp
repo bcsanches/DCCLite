@@ -13,7 +13,7 @@
 #include <magic_enum/magic_enum.hpp>
 
 #include <dcclite/FmtUtils.h>
-#include <dcclite/GuidUtils.h>
+#include <dcclite/Guid.h>
 #include <dcclite/Log.h>
 
 #include "../sys/Project.h"

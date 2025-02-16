@@ -20,7 +20,7 @@
 #include <dcclite/Socket.h>
 
 #include "Decoder.h"
-#include "Guid.h"
+#include "GuidDefs.h"
 #include "IDccLiteService.h"
 #include "Packet.h"
 

@@ -15,9 +15,17 @@
 #include "ArduinoLibDefs.h"
 #include "ArduinoDefs.h"
 
-#include <dcclite/LogUtils.h>
-
 #include <string>
+
+namespace spdlog
+{
+	class logger;
+}
+
+namespace dcclite
+{
+	typedef std::shared_ptr<spdlog::logger> Logger_t;
+}
 
 namespace ArduinoLib
 {

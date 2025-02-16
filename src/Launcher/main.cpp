@@ -14,9 +14,10 @@
 
 #include <spdlog/logger.h>
 
-#include <dcclite/ConsoleUtils.h>
+#include <dcclite/Console.h>
+#include <dcclite/dcclite.h>
 #include <dcclite/FileSystem.h>
-#include <dcclite/LogUtils.h>
+#include <dcclite/Log.h>
 #include <dcclite/NetMessenger.h>
 #include <dcclite/PathUtils.h>
 
@@ -158,11 +159,7 @@ class Process
 
 int main(int argc, char **argv)
 {
-	dcclite::PathUtils::InitAppFolders("Launcher");
-
-	LogInit("launcher.log");
-
-	auto log = LogGetDefault();
+	dcclite::Init("Launcher", "Launcher.log");		
 
 	fs::path brokerPath = fs::path{ gBrokerExecutableName };
 
@@ -170,11 +167,11 @@ int main(int argc, char **argv)
 	ConsoleTryMakeNice();
 #endif
 
-	log->info("[LAUNCHER] Looking for Broker main file at {}", fs::current_path().string());	
+	dcclite::Log::Info("[LAUNCHER] Looking for Broker main file at {}", fs::current_path().string());	
 
 	if (!fs::exists(brokerPath))
 	{
-		log->warn("[LAUNCHER] Broker executable {} not found at running path", brokerPath.string());
+		dcclite::Log::Warn("[LAUNCHER] Broker executable {} not found at running path", brokerPath.string());
 
 		brokerPath = fs::path{ argv[0] };
 
@@ -182,13 +179,13 @@ int main(int argc, char **argv)
 
 		if (!fs::exists(brokerPath))
 		{
-			log->critical("[LAUNCHER] Broker executable {} not found, cannot continue", brokerPath.string());
+			dcclite::Log::Critical("[LAUNCHER] Broker executable {} not found, cannot continue", brokerPath.string());
 
 			return -1;
 		}
 	}
 
-	log->info("[LAUNCHER] Broker executable found at {}", brokerPath.string());
+	dcclite::Log::Info("[LAUNCHER] Broker executable found at {}", brokerPath.string());
 
 	try
 	{
@@ -199,27 +196,27 @@ int main(int argc, char **argv)
 		{
 			if (!broker.IsRunning())
 			{
-				log->critical("[LAUNCHER] Broker process appears to be dead");
+				dcclite::Log::Critical("[LAUNCHER] Broker process appears to be dead");
 
 				return -1;
 			}
 
 			std::this_thread::sleep_for(1000ms);
 
-			log->info("[LAUNCHER] Trying to connect to Broker");
+			dcclite::Log::Info("[LAUNCHER] Trying to connect to Broker");
 
 			Socket socket{};
 
 			if (!socket.Open(0, Socket::Type::STREAM))
 			{
-				log->critical("[LAUNCHER] Cannot create socket");
+				dcclite::Log::Critical("[LAUNCHER] Cannot create socket");
 
 				return -1;
 			}
 
 			if (!socket.StartConnection(NetworkAddress(127, 0, 0, 1, 4190)))
 			{
-				log->error("[LAUNCHER] Cannot connect to Broker");
+				dcclite::Log::Error("[LAUNCHER] Cannot connect to Broker");
 
 				continue;
 			}
@@ -238,12 +235,12 @@ int main(int argc, char **argv)
 	}
 	catch (std::exception& ex)
 	{
-		log->critical(ex.what());
+		dcclite::Log::Critical("[LAUNCHER] Critical error: {}", ex.what());
 
 		return -1;
 	}	
 
-	log->info("[LAUNCHER] Broker is running, launcher exiting...");
+	dcclite::Log::Info("[LAUNCHER] Broker is running, launcher exiting...");
 
 	return 0;
 }

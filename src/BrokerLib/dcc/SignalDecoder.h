@@ -19,7 +19,7 @@
 #include <vector>
 
 #include <dcclite/Clock.h>
-#include <dcclite/NmraUtil.h>
+#include <dcclite/Nmra.h>
 
 #include "sigslot/signal.hpp"
 

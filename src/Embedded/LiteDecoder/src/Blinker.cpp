@@ -13,7 +13,7 @@
 #include <assert.h>
 #include <Arduino.h>
 
-#include <cstdint>
+#include <stdint.h>
 
 constexpr auto LOCAL_LED = 13;
 

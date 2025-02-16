@@ -15,7 +15,7 @@
 #include <stdint.h>
 
 #include "BitPack.h"
-#include "Guid.h"
+#include "GuidDefs.h"
 
 namespace dcclite
 {

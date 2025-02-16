@@ -11,9 +11,9 @@
 #include <SDL3/SDL.h>
 
 #include <dcclite/Clock.h>
-#include <dcclite/ConsoleUtils.h>
+#include <dcclite/Console.h>
+#include <dcclite/dcclite.h>
 #include <dcclite/Log.h>
-#include <dcclite/LogUtils.h>
 
 #include <spdlog/logger.h>
 
@@ -35,10 +35,10 @@ int main(int argc, char **argv)
 {				
 	try
 	{ 
-		dcclite::LogInit("LitePanelSDL.log");
+		dcclite::Init("LitePanelSDL", "LitePanelSDL.log");		
 
 #ifndef DEBUG
-		dcclite::LogGetDefault()->set_level(spdlog::level::trace);
+		dcclite::Log::GetDefault()->set_level(spdlog::level::trace);
 #else
 		dcclite::LogGetDefault()->set_level(spdlog::level::trace);
 #endif
@@ -184,7 +184,7 @@ int main(int argc, char **argv)
 	}	
 	catch (std::exception &ex)
 	{
-		dcclite::LogGetDefault()->critical("caught {}", ex.what());
+		dcclite::Log::GetDefault()->critical("caught {}", ex.what());
 	}
 
 	return 0;

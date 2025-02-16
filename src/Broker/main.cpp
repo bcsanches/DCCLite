@@ -13,9 +13,9 @@
 #include <chrono>
 
 #include <dcclite/Clock.h>
-#include <dcclite/ConsoleUtils.h>
+#include <dcclite/Console.h>
+#include <dcclite/dcclite.h>
 #include <dcclite/Log.h>
-#include <dcclite/LogUtils.h>
 #include <dcclite/PathUtils.h>
 
 #include "sys/Broker.h"
@@ -78,14 +78,12 @@ int main(int argc, char **argv)
 
 	try
 	{ 
-		dcclite::PathUtils::InitAppFolders("Broker");
-
-		dcclite::LogInit("DccLiteBroker.log");
+		dcclite::Init("Broker", "DccLiteBroker.log");		
 
 #ifndef DEBUG
-		dcclite::LogGetDefault()->set_level(spdlog::level::trace);
+		dcclite::Log::GetDefault()->set_level(spdlog::level::trace);
 #else
-		dcclite::LogGetDefault()->set_level(spdlog::level::trace);
+		dcclite::Log::GetDefault()->set_level(spdlog::level::trace);
 #endif
 
 		dcclite::Log::Info("DCClite {} {}", BUILD_NUM, __DATE__);
@@ -110,7 +108,7 @@ int main(int argc, char **argv)
 	}	
 	catch (std::exception &ex)
 	{
-		dcclite::LogGetDefault()->critical("caught {}", ex.what());
+		dcclite::Log::Critical("caught {}", ex.what());
 	}
 	
 	dcclite::Log::Info("[Main] Bye");

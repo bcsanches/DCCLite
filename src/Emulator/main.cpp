@@ -11,9 +11,9 @@
 #include <stdio.h>
 
 #include <dcclite/Clock.h>
-#include <dcclite/ConsoleUtils.h>
+#include <dcclite/Console.h>
+#include <dcclite/dcclite.h>
 #include <dcclite/Log.h>
-#include <dcclite/LogUtils.h>
 #include <dcclite/NetMessenger.h>
 #include <dcclite/PathUtils.h>
 #include <dcclite/Socket.h>
@@ -113,16 +113,15 @@ static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 
 int main(int argc, char **argv)
 {
-	dcclite::LogInit("Emulator.log");
+	dcclite::Init("Emulator", "Emulator.log");
 
 	dcclite::ConsoleTryMakeNice();
 
 	dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
-
-	dcclite::PathUtils::InitAppFolders("Emulator");
+	
 
 	const char *deviceName =  argc > 1 ? argv[1] : nullptr;
-	if (!ArduinoLib::Setup("LiteDecoderLib.dll", dcclite::LogGetDefault(), deviceName) && deviceName)
+	if (!ArduinoLib::Setup("LiteDecoderLib.dll", dcclite::Log::GetDefault(), deviceName) && deviceName)
 	{
 		//If setup returned false, rom failed to load, also if we have a device name, we need to configure it....
 		dcclite::Log::Info("[main] Initializing module to create rom");
@@ -138,7 +137,7 @@ int main(int argc, char **argv)
 
 		dcclite::Log::Info("[main] Reloading module");
 		//try again...
-		if (!ArduinoLib::Setup("LiteDecoderLib.dll", dcclite::LogGetDefault(), deviceName))
+		if (!ArduinoLib::Setup("LiteDecoderLib.dll", dcclite::Log::GetDefault(), deviceName))
 		{
 			dcclite::Log::Critical("[main] Failed to reload arduino lib to use new rom");
 

@@ -10,23 +10,24 @@
 
 #pragma once
 
+#include "dcclite.h"
+
+#include "Log.h"
+#include "PathUtils.h"
+
 namespace dcclite
 {
-	enum class ConsoleEvent
+	void Init(std::string_view appFolderName, const char *logFile)
 	{
-		CTRL_C,
-		CTRL_BREAK,
-		CLOSE,
-		LOGOFF,
-		SHUTDOWN
-	};
+		Log::detail::Init(logFile);
 
-	typedef bool (*ConsoleEventCallback_t)(ConsoleEvent );
+		PathUtils::detail::Init(appFolderName);		
+	}
 
-	extern void ConsoleInstallEventHandler(ConsoleEventCallback_t callback);
+	void Finalize()
+	{
+		PathUtils::detail::Finalize();
 
-	extern bool ConsoleTryMakeNice();
-
-
+		Log::detail::Finalize();
+	}
 }
-

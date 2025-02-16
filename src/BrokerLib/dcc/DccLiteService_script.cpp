@@ -14,7 +14,7 @@
 
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Log.h>
-#include <dcclite/NmraUtil.h>
+#include <dcclite/Nmra.h>
 
 #include "RemoteDecoder.h"
 #include "SignalDecoder.h"

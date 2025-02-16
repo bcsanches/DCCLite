@@ -8,7 +8,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "NmraUtil.h"
+#include "Nmra.h"
 
 #include "fmt/format.h"
 #include "magic_enum/magic_enum.hpp"

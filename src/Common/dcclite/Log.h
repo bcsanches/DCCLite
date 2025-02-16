@@ -52,5 +52,17 @@ namespace dcclite
 			spdlog::critical(fmt, std::forward<Args>(args)...);
 		}
 
+		typedef std::shared_ptr<spdlog::logger> Logger_t;
+
+		namespace detail
+		{
+			extern void Init(const char *fileName);
+			extern void Finalize();
+		}
+
+		extern void Replace(Logger_t log);
+
+		extern Logger_t GetDefault();
+
 	} //end of namespace Log
 } //end of namespace dcclite

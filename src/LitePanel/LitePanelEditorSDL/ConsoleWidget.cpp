@@ -18,7 +18,6 @@
 #include "imgui_internal.h"
 
 #include <dcclite/Log.h>
-#include <dcclite/LogUtils.h>
 
 namespace dcclite::PanelEditor
 {
@@ -68,7 +67,7 @@ namespace dcclite::PanelEditor
         m_spLogSink = std::make_shared<LogSink>(*this);
         m_spLogSink->set_pattern("[%T] [%^-%L-%$] [T %t] %v");
 
-        auto &sinks = dcclite::LogGetDefault()->sinks();
+        auto &sinks = dcclite::Log::GetDefault()->sinks();
         sinks.push_back(m_spLogSink);
 
         this->RegisterCommand(RName{ "help" }, [](const ConsoleCmdParams &params)
@@ -120,7 +119,7 @@ namespace dcclite::PanelEditor
 
 	ConsoleWidget::~ConsoleWidget()
 	{
-        auto &sinks = dcclite::LogGetDefault()->sinks();
+        auto &sinks = dcclite::Log::GetDefault()->sinks();
 
         auto it = std::find_if(sinks.begin(), sinks.end(), [this](spdlog::sink_ptr &ptr)
             {

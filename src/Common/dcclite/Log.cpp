@@ -73,12 +73,12 @@ namespace dcclite::Log
 		}
 	}
 	
-	void LogReplace(Logger_t log)
+	void Replace(Logger_t log)
 	{		
 		spdlog::set_default_logger(log);
 	}	
 
-	extern Logger_t LogGetDefault()
+	extern Logger_t GetDefault()
 	{
 		return spdlog::default_logger();
 	}

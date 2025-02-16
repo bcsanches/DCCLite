@@ -12,7 +12,7 @@
 
 #include <fmt/format.h>
 
-#include "Guid.h"
+#include "GuidDefs.h"
 #include "RName.h"
 #include "Socket.h"
 

@@ -8,18 +8,12 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "GuidUtils.h"
+#pragma once
 
-#include "FmtUtils.h"
-#include "Guid.h"
-#include "Util.h"
+#include <string>
 
-std::string dcclite::GuidToString(const dcclite::Guid &g)
+namespace dcclite
 {
-	return fmt::format("{}", g);
-}
-
-bool dcclite::TryGuidLoadFromString(dcclite::Guid &dest, std::string_view str)
-{
-	return TryHexStrToBinary(dest.m_bId, sizeof(dest.m_bId), str);
+	void Init(std::string_view appFolderName, const char *logFile);
+	void Finalize();
 }

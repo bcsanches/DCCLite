@@ -14,7 +14,7 @@ set(SharedLib_HDRS
     BasicPin.h
     BitPack.h    
     SharedLibDefs.h
-    Guid.h  
+    GuidDefs.h  
     Misc.h
     Packet.h
     Parser.h  

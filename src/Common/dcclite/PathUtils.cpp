@@ -12,11 +12,16 @@
 
 #include <fmt/format.h>
 
+#include "Util.h"
+
 static std::string g_strAppName;
 
-void dcclite::PathUtils::InitAppFolders(std::string_view name)
+void dcclite::PathUtils::detail::Init(std::string_view name)
 {
-	g_strAppName = name;
+	g_strAppName = StrTrim(name);
+
+	if (name.empty())
+		return;
 
 	//invoke it to make sure it exists
 	auto path = GetAppFolder();
@@ -28,6 +33,11 @@ void dcclite::PathUtils::InitAppFolders(std::string_view name)
 	{
 		throw std::runtime_error(fmt::format("Cannot create app path {}, system error: {}", path.string(), ec.message()));				
 	}	
+}
+
+void dcclite::PathUtils::detail::Finalize()
+{
+	g_strAppName.clear();
 }
 
 #ifdef WIN32

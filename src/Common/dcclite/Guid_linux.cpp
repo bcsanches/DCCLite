@@ -8,25 +8,23 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#pragma once
+#include "Guid.h"
 
-#include <memory>
+#include <cstdint>
+#include <cstring>
+#include <uuid/uuid.h>
 
-namespace spdlog
+#include "GuidDefs.h"
+
+dcclite::Guid dcclite::GuidCreate()
 {
-	class logger;
+	uuid_t uuid;
+
+	uuid_generate(uuid);
+
+	dcclite::Guid guid;
+
+	memcpy(guid.m_bId, uuid, sizeof(guid.m_bId));
+
+	return guid;
 }
-
-namespace dcclite
-{
-	typedef std::shared_ptr<spdlog::logger> Logger_t;
-
-	extern void LogInit(const char *fileName);
-
-	extern void LogFinalize();
-
-	extern void LogReplace(Logger_t log);
-
-	extern Logger_t LogGetDefault();
-} //end of namespace dcclite
-

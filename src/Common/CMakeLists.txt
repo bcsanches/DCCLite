@@ -10,25 +10,26 @@ add_library(
 	dcclite/Benchmark.h
 	dcclite/Clock.cpp
 	dcclite/Clock.h
-	dcclite/ConsoleUtils.h	
+	dcclite/Console.h
+	dcclite/dcclite.cpp
+	dcclite/dcclite.h
 	dcclite/defs.h
 	dcclite/FileSystem.h
 	dcclite/FolderObject.cpp
 	dcclite/FolderObject.h
 	dcclite/FmtUtils.h
-	dcclite/GuidUtils.cpp
-	dcclite/GuidUtils.h
+	dcclite/Guid.cpp
+	dcclite/Guid.h
 	dcclite/IFolderObject.cpp
 	dcclite/IFolderObject.h
 	dcclite/JsonUtils.cpp
 	dcclite/JsonUtils.h
 	dcclite/Log.h
-	dcclite/LogUtils.cpp
-	dcclite/LogUtils.h
+	dcclite/Log.cpp	
 	dcclite/NetMessenger.cpp
 	dcclite/NetMessenger.h
-	dcclite/NmraUtil.cpp
-	dcclite/NmraUtil.h
+	dcclite/Nmra.cpp
+	dcclite/Nmra.h
 	dcclite/Object.cpp
 	dcclite/Object.h
 	dcclite/RName.cpp
@@ -51,8 +52,8 @@ if(WIN32)
 	target_compile_definitions(Common PRIVATE _CRT_SECURE_NO_WARNINGS)
 		
 		target_sources(Common PRIVATE
-			dcclite/ConsoleUtils_win.cpp
-			dcclite/GuidUtils_win.cpp
+			dcclite/Console_win.cpp
+			dcclite/Guid_win.cpp
 			dcclite/SerialPort_win.cpp
 			dcclite/SerialPort_win.h
 			dcclite/Sha1_win.cpp
@@ -61,13 +62,13 @@ if(WIN32)
 else(WIN32)
 
 	target_sources(Common PRIVATE
-		dcclite/ConsoleUtils_linux.cpp
-		dcclite/GuidUtils_linux.cpp
+		dcclite/Console_linux.cpp
+		dcclite/Guid_linux.cpp
 		dcclite/Sha1_linux.cpp
 		dcclite/SerialPort_linux.cpp
 		dcclite/SerialPort_linux.h
 	)   
-		 
+
 endif(WIN32)
 
 target_link_libraries(Common PUBLIC CityHash fmt SharedLib)

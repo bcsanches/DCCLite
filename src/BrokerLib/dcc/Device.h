@@ -18,7 +18,7 @@
 
 #include "DccAddress.h"
 #include "IDevice.h"
-#include "Guid.h"
+#include "GuidDefs.h"
 
 #include <rapidjson/document.h>
 

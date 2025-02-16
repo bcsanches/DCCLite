@@ -8,23 +8,23 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "GuidUtils.h"
+#pragma once
 
-#include <cstdint>
-#include <cstring>
-#include <uuid/uuid.h>
-
-#include "Guid.h"
-
-dcclite::Guid dcclite::GuidCreate()
+namespace dcclite
 {
-	uuid_t uuid;
+	enum class ConsoleEvent
+	{
+		CTRL_C,
+		CTRL_BREAK,
+		CLOSE,
+		LOGOFF,
+		SHUTDOWN
+	};
 
-	uuid_generate(uuid);
+	typedef bool (*ConsoleEventCallback_t)(ConsoleEvent );
 
-	dcclite::Guid guid;
+	extern void ConsoleInstallEventHandler(ConsoleEventCallback_t callback);
 
-	memcpy(guid.m_bId, uuid, sizeof(guid.m_bId));
-
-	return guid;
+	extern bool ConsoleTryMakeNice();
 }
+

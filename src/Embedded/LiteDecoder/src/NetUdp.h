@@ -13,7 +13,7 @@
 
 #include <Arduino.h>
 
-#include <cstdint>
+#include <stdint.h>
 
 namespace Storage
 {

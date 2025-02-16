@@ -4,7 +4,7 @@
 #include <dcclite/JsonUtils.h>
 #include <dcclite/Log.h>
 #include <dcclite/NetMessenger.h>
-#include <dcclite/NmraUtil.h>
+#include <dcclite/Nmra.h>
 #include <dcclite/Util.h>
 
 #include "../sys/BonjourService.h"
