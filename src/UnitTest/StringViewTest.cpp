@@ -7,24 +7,25 @@
 // 
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
-#include "dcclite.h"
 
-#include "Log.h"
-#include "PathUtils.h"
+#include <gtest/gtest.h>
 
-namespace dcclite
+#include <dcclite_shared/StringView.h>
+
+using namespace dcclite;
+
+TEST(dcclite_shared, StringViewTest)
 {
-	void Init(std::string_view appFolderName, const char *logFile)
-	{
-		Log::detail::Init(logFile);
+	StringView sv("Hello");
 
-		PathUtils::detail::Init(appFolderName);		
-	}
+	ASSERT_EQ(sv.GetSize(), 5);
+	ASSERT_EQ(sv.Compare("Hello"), 0);
 
-	void Finalize()
-	{
-		PathUtils::detail::Finalize();
+	char str2[] = "Hello World";
 
-		Log::detail::Finalize();
-	}
+	ASSERT_EQ(sv.Compare(str2), -1);
+	ASSERT_EQ(sv[1], 'e');
+
+	char str3[] = "Hello";
+	ASSERT_TRUE(sv == StringView(str3));
 }

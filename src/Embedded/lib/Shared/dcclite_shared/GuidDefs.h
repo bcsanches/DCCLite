@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 namespace dcclite
 {
 	class Guid

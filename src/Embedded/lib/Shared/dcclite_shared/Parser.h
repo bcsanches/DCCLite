@@ -42,9 +42,7 @@ namespace dcclite
 			const char *m_pszCmd;
 
 			unsigned int m_iPos;
-			unsigned int m_iLastKnowPos;	
-
-			void SkipBlanks();
+			unsigned int m_iLastKnowPos;
 
 			[[nodiscard]] Tokens ParseId(char *dest, unsigned int destPos, const unsigned int destSize, const Tokens returnType);
 

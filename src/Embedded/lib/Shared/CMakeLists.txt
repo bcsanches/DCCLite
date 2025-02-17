@@ -24,6 +24,7 @@ set(SharedLib_HDRS
     dcclite_shared/Packet.h
     dcclite_shared/Parser.h  
 	dcclite_shared/Printf.h
+    dcclite_shared/StringView.h
     dcclite_shared/Version.h
 )
 

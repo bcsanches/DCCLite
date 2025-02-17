@@ -53,22 +53,6 @@ namespace dcclite
 		}
 	}
 
-	void Parser::SkipBlanks()
-	{
-		for (;;)
-		{
-			char ch = m_pszCmd[m_iPos];		
-
-			if ((ch == ' ') || (ch == '\n') || (ch == '\t') || (ch == '\r'))
-			{
-				++m_iPos;
-				continue;
-			}
-
-			break;
-		}
-	}
-
 	Tokens Parser::ParseId(char *dest, unsigned int destPos, const unsigned int destSize, const Tokens returnType)
 	{				
 		for (;;)
@@ -97,7 +81,18 @@ namespace dcclite
 
 		for (;;)
 		{
-			this->SkipBlanks();
+			for (;;)
+			{
+				char ch = m_pszCmd[m_iPos];
+
+				if ((ch == ' ') || (ch == '\n') || (ch == '\t') || (ch == '\r'))
+				{
+					++m_iPos;
+					continue;
+				}
+
+				break;
+			}
 
 			char ch = m_pszCmd[m_iPos];
 			if (ch)
@@ -196,12 +191,12 @@ namespace dcclite
 		return Tokens::END_OF_BUFFER;
 	}
 
-	inline int NumChar2Num(const char digit)
+	inline static int NumChar2Num(const char digit)
 	{
 		return (digit >= '0' && digit <= '9') ? digit - '0' : 0;
 	}
 
-	inline int Char2Num(const char digit)
+	inline static int Char2Num(const char digit)
 	{
 		return (digit >= 'a') && (digit <= 'f') ? (digit - 'a') + 10 : 
 			(digit >= 'A') && (digit <= 'F') ? (digit - 'A') + 10 : 
