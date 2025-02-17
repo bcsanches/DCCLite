@@ -210,7 +210,7 @@ namespace dcclite
 			int nonBlocking = 1;
 			if (fcntl(m_hHandle, F_SETFL, O_NONBLOCK, nonBlocking) == -1)
 			{
-				LogGetDefault()->error("[Socket::Open] Failed to set socket to non-blocking mode.");
+				spdlog::error("[Socket::Open] Failed to set socket to non-blocking mode.");
 				return false;
 			}
 
