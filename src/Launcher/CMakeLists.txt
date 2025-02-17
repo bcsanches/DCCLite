@@ -26,7 +26,7 @@ if(WIN32)
 else(WIN32)
 	
 	target_link_libraries(Launcher 		
-		Common 	
+		PRIVATE Common 	
         PRIVATE SharedLib	
 		PRIVATE stdc++fs 
 		PRIVATE fmt

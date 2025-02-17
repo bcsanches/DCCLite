@@ -3,6 +3,7 @@ DCCLite
 
 - Parser: use std::string_view
 	- write test cases for all tokens before starting?
+	- Arduino does not support it, define own?
 
 - Device should inherit from IFolderObject instead of FolderObject?
 
