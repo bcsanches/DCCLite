@@ -14,7 +14,7 @@
 #include <cstring>
 #include <uuid/uuid.h>
 
-#include "GuidDefs.h"
+#include <dcclite_shared/GuidDefs.h>
 
 dcclite::Guid dcclite::GuidCreate()
 {
