@@ -56,8 +56,7 @@ namespace dcclite
 		private:
 			StringView m_svCmd;
 
-			unsigned int m_iPos;
-			unsigned int m_iLastKnowPos;
+			unsigned int m_iPos = 0;			
 
 			[[nodiscard]] inline Token MakeSingleCharToken(Tokens type, unsigned int pos) const noexcept;
 
@@ -69,8 +68,6 @@ namespace dcclite
 			[[nodiscard]] Token GetToken(bool forceHexMode = false);
 			[[nodiscard]] Tokens GetNumber(int &dest);
 			[[nodiscard]] Tokens GetHexNumber(int &dest);
-
-			void PushToken();
 	};
 }
 

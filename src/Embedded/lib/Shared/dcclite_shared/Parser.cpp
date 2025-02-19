@@ -21,9 +21,7 @@ namespace dcclite
 {
 
 	Parser::Parser(StringView cmd) :
-		m_svCmd(cmd),
-		m_iPos(0),
-		m_iLastKnowPos(0)
+		m_svCmd(cmd)		
 	{
 		//empty
 	}
@@ -59,7 +57,6 @@ namespace dcclite
 
 	Token Parser::GetToken(bool forceHexMode)
 	{		
-		m_iLastKnowPos = m_iPos;
 		for (;;)
 		{
 			if (m_iPos == m_svCmd.GetSize())
@@ -211,10 +208,5 @@ namespace dcclite
 		dest = Str2Num(token.m_svData, token.m_kToken == Tokens::HEX_NUMBER);
 
 		return Tokens::NUMBER;
-	}
-
-	void Parser::PushToken()
-	{
-		m_iPos = m_iLastKnowPos;
 	}
 }
