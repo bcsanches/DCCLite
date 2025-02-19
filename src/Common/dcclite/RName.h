@@ -157,7 +157,7 @@ namespace dcclite
 				m_stIndex{ index },
 				m_svName{data}
 #else
-			RName(detail::NameIndex index) :
+			RName(detail::NameIndex index)
 #endif				
 			{
 				//empty
