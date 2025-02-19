@@ -42,6 +42,14 @@ namespace Console
 				return *this;
 			}
 
+			OutputStream &operator<<(dcclite::StringView sv)
+			{
+				for (size_t i = 0, sz = sv.GetSize(); i < sz; ++i)
+					Serial.print(sv[i]);
+
+				return *this;
+			}
+
 			OutputStream &operator<<(char value)
 			{
 				Serial.print(value);
@@ -119,7 +127,7 @@ namespace Console
 
 	extern void Update();
 
-	extern bool Custom_ParseCommand(const char *command);
+	extern bool Custom_ParseCommand(dcclite::StringView command);
 };
 
 #define DCCLITE_LOG Console::OutputStream{}

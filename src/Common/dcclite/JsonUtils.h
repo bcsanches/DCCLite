@@ -12,6 +12,8 @@
 
 #include <rapidjson/document.h>
 
+#include <string_view>
+
 namespace dcclite::json
 {
 	bool TryGetDefaultBool(const rapidjson::Value &data, const char *fieldName, const bool defaultValue);
@@ -20,8 +22,8 @@ namespace dcclite::json
 
 	const rapidjson::Value &GetValue(const rapidjson::Value &data, const char *fieldName, const char *context);
 
-	const char *GetString(const rapidjson::Value &data, const char *fieldName, const char *context = nullptr);
-	const char *TryGetDefaultString(const rapidjson::Value &data, const char *fieldName, const char *defaultValue);
+	std::string_view GetString(const rapidjson::Value &data, const char *fieldName, const char *context = nullptr);
+	std::string_view TryGetDefaultString(const rapidjson::Value &data, const char *fieldName, std::string_view defaultValue);
 
 
 	int GetInt(const rapidjson::Value &data, const char *fieldName, const char *context = nullptr);

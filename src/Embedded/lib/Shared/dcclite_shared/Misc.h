@@ -33,4 +33,10 @@ namespace dcclite
 	}	
 
 	int GetHeapFreeSpace();
+
+	template <typename T>
+	inline T MyMin(T a, T b) noexcept
+	{
+		return a < b ? a : b;
+	}
 }

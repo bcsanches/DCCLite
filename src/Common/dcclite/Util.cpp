@@ -31,9 +31,9 @@
 #include <sstream>
 
 
-int dcclite::ParseNumber(const char *str)
+int dcclite::ParseNumber(std::string_view str)
 {
-	dcclite::Parser parser{ str };
+	dcclite::Parser parser{ StringView{str} };
 
 	int adr;
 	if (parser.GetNumber(adr) != dcclite::Tokens::NUMBER)

@@ -10,6 +10,7 @@
 
 #include "NetUdp.h"
 
+#include <dcclite_shared/Misc.h>
 #include <dcclite_shared/Packet.h>
 
 #include "Ethercard.h"
@@ -71,10 +72,12 @@ void NetUdp::SaveConfig(Storage::EpromStream &stream)
 		stream.Put(g_szNodeName[i]);
 }
 
-void NetUdp::Configure(const char *nodeName)
+void NetUdp::Configure(dcclite::StringView nodeName)
 {
-	strncpy(g_szNodeName, nodeName, sizeof(g_szNodeName));
-	g_szNodeName[dcclite::MAX_NODE_NAME] = 0;
+	auto size = dcclite::MyMin(sizeof(g_szNodeName), nodeName.GetSize());
+
+	strncpy(g_szNodeName, nodeName.GetData(), size);
+	g_szNodeName[size] = 0;
 }
 
 static void GenerateMac(uint8_t mac[6])

@@ -12,7 +12,13 @@
 
 #include <string.h>
 
+#include "Misc.h"
 #include "SharedLibDefs.h"
+
+#ifdef DCCLITE_DESKTOP
+#include <string>
+#include <string_view>
+#endif
 
 namespace dcclite
 {
@@ -26,7 +32,7 @@ namespace dcclite
 	class StringView final
 	{
 		public:
-			inline StringView(const char *str) noexcept:
+			inline explicit StringView(const char *str) noexcept:
 				m_pszData(str),
 				m_cbSize(strlen(str))
 			{
@@ -39,6 +45,22 @@ namespace dcclite
 			{
 				assert(str);
 			}
+
+#ifdef DCCLITE_DESKTOP
+			inline explicit StringView(std::string_view sv) noexcept:
+				m_pszData{ sv.data() },
+				m_cbSize{ sv.size() }
+			{
+				//empty
+			}
+
+			inline explicit StringView(const std::string &str) noexcept:
+				m_pszData{ str.data() },
+				m_cbSize{ str.size() }
+			{
+				//empty
+			}
+#endif
 
 			~StringView() = default;
 
@@ -68,7 +90,7 @@ namespace dcclite
 			{
 				if (m_pszData == rhs.m_pszData)
 				{
-					if (m_cbSize == m_cbSize)
+					if (m_cbSize == rhs.m_cbSize)
 						return 0;
 				}
 
@@ -84,12 +106,12 @@ namespace dcclite
 			{
 				return m_cbSize;
 			}
-
-		private:
-			inline static size_t MyMin(size_t a, size_t b) noexcept
+#ifdef DCCLITE_DESKTOP
+			inline std::string_view ToStdView() const noexcept
 			{
-				return a < b ? a : b;
+				return std::string_view{ m_pszData, m_cbSize };
 			}
+#endif
 
 		private:
 			const char	*m_pszData = nullptr;

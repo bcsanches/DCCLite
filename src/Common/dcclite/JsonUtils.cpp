@@ -45,14 +45,14 @@ namespace dcclite::json
 		return field->value;
 	}
 
-	const char *TryGetDefaultString(const rapidjson::Value &data, const char *fieldName, const char *defaultValue)
+	std::string_view TryGetDefaultString(const rapidjson::Value &data, const char *fieldName, std::string_view defaultValue)
 	{
 		const auto &field = data.FindMember(fieldName);
 
-		return ((field == data.MemberEnd()) ? defaultValue : field->value.GetString());
+		return ((field == data.MemberEnd()) ? defaultValue : std::string_view{field->value.GetString(), field->value.GetStringLength()});
 	}
 
-	const char *GetString(const rapidjson::Value &data, const char *fieldName, const char *context)
+	std::string_view GetString(const rapidjson::Value &data, const char *fieldName, const char *context)
 	{
 		const auto &field = GetValue(data, fieldName, context);
 		
@@ -64,7 +64,7 @@ namespace dcclite::json
 				throw std::runtime_error(fmt::format("[dcclite::json::GetString] Required field {} must be a string", fieldName));
 		}
 
-		return field.GetString();
+		return std::string_view{ field.GetString(), field.GetStringLength() };
 	}
 
 	int GetInt(const rapidjson::Value &data, const char *fieldName, const char *context)

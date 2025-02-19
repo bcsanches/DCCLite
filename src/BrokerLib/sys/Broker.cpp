@@ -53,7 +53,7 @@ namespace dcclite::broker
 
 	static RName GetServiceClassName(const rapidjson::Value &data)
 	{
-		const char *className = dcclite::json::GetString(data, "class", "service block");
+		auto className = dcclite::json::GetString(data, "class", "service block");
 		if (auto rclassName = RName::TryGetName(className))
 			return rclassName;
 		
@@ -210,27 +210,26 @@ namespace dcclite::broker
 		}		
 	}
 
-	Service &Broker::ResolveRequirement(const char *requirement) const
+	Service &Broker::ResolveRequirement(std::string_view requirement) const
 	{
-		Parser parser{ requirement };
+		Parser parser{ StringView{requirement} };
+		
+		auto token = parser.GetToken();
 
-		char reqName[128];
-		auto token = parser.GetToken(reqName, sizeof(reqName));
-
-		if (token == Tokens::VARIABLE_NAME)
+		if (token.m_kToken == Tokens::VARIABLE_NAME)
 		{
-			auto name = RName::Get(reqName);
+			auto name = RName::Get(token.m_svData);
 			if (auto *service = this->TryFindService(name))
 				return *service;
 
 			throw std::invalid_argument(fmt::format("[Broker::ResolveRequirement] Requested service {} not found", requirement));
 		}
-		else if (token == Tokens::ID)
+		else if (token.m_kToken == Tokens::ID)
 		{
 			Service *result = nullptr;
-			m_pServices->VisitChildren([reqName, &result](auto &obj)
+			m_pServices->VisitChildren([&token, &result](auto &obj)
 				{					
-					if (strcmp(reqName, obj.GetTypeName()) == 0)
+					if (token.m_svData.Compare(obj.GetTypeName()) == 0)
 					{
 						result = static_cast<Service *>(&obj);
 

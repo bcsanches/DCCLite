@@ -25,7 +25,7 @@ namespace dcclite
 
 	//
 	//Try to parse a number, throws if string contains no number
-	int ParseNumber(const char *str);
+	int ParseNumber(std::string_view str);
 
 	/**
 	* Returns a view to a string without leading and trailing white spaces

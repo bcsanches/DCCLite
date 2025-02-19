@@ -23,7 +23,8 @@
 			"chrono": "cpp",
 			"cstdint": "cpp",
 			"format": "cpp",
-			"xstring": "cpp"
+			"xstring": "cpp",
+			"ostream": "cpp"
 		}
 	}
 }

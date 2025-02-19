@@ -40,6 +40,7 @@ TEST(Socket, NetworkAddressParse)
 
 	ASSERT_THROW(NetworkAddress::ParseAddress("127.0.0.1:a"), std::invalid_argument);
 
+	ASSERT_THROW(NetworkAddress::ParseAddress("127.0.0.1:65536"), std::out_of_range);
 
 	auto addr = NetworkAddress::ParseAddress("127.1.2.3:2560");	
 

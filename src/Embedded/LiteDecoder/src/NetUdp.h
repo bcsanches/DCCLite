@@ -15,6 +15,8 @@
 
 #include <stdint.h>
 
+#include <dcclite_shared/StringView.h>
+
 namespace Storage
 {
 	class EpromStream;
@@ -33,7 +35,7 @@ namespace NetUdp
 
 	extern void SaveConfig(Storage::EpromStream &stream);
 
-	extern void Configure(const char *nodeName);
+	extern void Configure(dcclite::StringView nodeName);
 
 	extern bool Init(ReceiveCallback_t callback);
 

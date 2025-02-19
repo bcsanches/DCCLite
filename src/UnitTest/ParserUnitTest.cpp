@@ -17,7 +17,7 @@ using namespace dcclite;
 static void TestNum(const char *cmd, const int expectedNum)
 {
 	int num;
-	Parser parser(cmd);
+	Parser parser(StringView{ cmd });
 
 	EXPECT_EQ(parser.GetNumber(num), Tokens::NUMBER);
 	EXPECT_EQ(num, expectedNum);
@@ -27,7 +27,11 @@ TEST(Parser, GetNumber)
 {			
 	TestNum("   5 ", 5);
 	TestNum("10", 10);
+
+	//This one is special, as it checks for a special case inside the parser while trying to detect hex numbers
 	TestNum("0", 0);
+
+	TestNum("3", 3);
 
 	TestNum("255", 255);
 
@@ -53,47 +57,45 @@ TEST(Parser, GetNumber_HEX)
 TEST(Parser, GetVariable)
 {
 	char cmd[] = "   $VaRiA01_B   ";
-	Parser parser(cmd);
+	Parser parser(StringView{ cmd });
 
-	char dest[32];
-	ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::VARIABLE_NAME);
+	auto token = parser.GetToken();
+	ASSERT_EQ(token.m_kToken, Tokens::VARIABLE_NAME);
 
-	ASSERT_STREQ(dest, "VaRiA01_B");
+	ASSERT_TRUE(token.m_svData.Compare("VaRiA01_B") == 0);
 }
 
 TEST(Parser, GetVariableErrors)
-{	
-	char dest[32];
-
+{		
 	{
-		Parser parser("$ Var");
+		Parser parser(StringView{ "$ Var" });
 		
-		ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::SYNTAX_ERROR);
+		ASSERT_EQ(parser.GetToken().m_kToken, Tokens::SYNTAX_ERROR);
 	}
 
 	{
-		Parser parser("$0Var");
+		Parser parser(StringView{ "$0Var" });
 
-		ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::SYNTAX_ERROR);
+		ASSERT_EQ(parser.GetToken().m_kToken, Tokens::SYNTAX_ERROR);
 	}
 	
 	{
-		Parser parser("$");
+		Parser parser(StringView{ "$" });
 
-		ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::SYNTAX_ERROR);
+		ASSERT_EQ(parser.GetToken().m_kToken, Tokens::SYNTAX_ERROR);
 	}
 
 	{
-		Parser parser("$-as");
+		Parser parser(StringView{ "$-as" });
 
-		ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::SYNTAX_ERROR);
+		ASSERT_EQ(parser.GetToken().m_kToken, Tokens::SYNTAX_ERROR);
 	}
 }
 
 static void TestHexNum(const char *cmd, const int expectedNum)
 {
 	int num;
-	Parser parser(cmd);
+	Parser parser(StringView{ cmd });
 
 	EXPECT_EQ(parser.GetHexNumber(num), Tokens::HEX_NUMBER);
 	EXPECT_EQ(num, expectedNum);
@@ -105,38 +107,83 @@ TEST(Parser, GetHexNumber)
 	TestHexNum("0x8B", 0x8B);	
 }
 
+TEST(Parser, HexErrors)
+{
+	ASSERT_EQ(Parser{ StringView{ "0x" } }.GetToken().m_kToken, Tokens::SYNTAX_ERROR);
+	ASSERT_EQ(Parser{ StringView{ "0X" } }.GetToken().m_kToken, Tokens::SYNTAX_ERROR);
+	ASSERT_EQ(Parser{ StringView{ "0x 5" } }.GetToken().m_kToken, Tokens::SYNTAX_ERROR);
+	ASSERT_EQ(Parser{ StringView{ "0x abc" } }.GetToken().m_kToken, Tokens::SYNTAX_ERROR);
+
+	ASSERT_EQ(Parser{ StringView{ "0x_abc" } }.GetToken().m_kToken, Tokens::SYNTAX_ERROR);
+	ASSERT_EQ(Parser{ StringView{ "0xZabc" } }.GetToken().m_kToken, Tokens::SYNTAX_ERROR);
+}
+
 TEST(Parser, GetId)
 {
 	char cmd[] = "   abc def _kij1a   ";
-	Parser parser(cmd);
+	Parser parser(StringView{ cmd });
 
-	char dest[32];
-	ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::ID);	
+	auto token = parser.GetToken();
+	ASSERT_EQ(token.m_kToken, Tokens::ID);
+	ASSERT_TRUE(token.m_svData.Compare("abc") == 0);
 
-	ASSERT_STREQ(dest, "abc");
+	token = parser.GetToken();
+	ASSERT_EQ(token.m_kToken, Tokens::ID);
+	ASSERT_TRUE(token.m_svData.Compare("def") == 0);
 
-	ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::ID);
-
-	ASSERT_STREQ(dest, "def");
-
-	ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::ID);
-
-	ASSERT_STREQ(dest, "_kij1a");
+	token = parser.GetToken();	
+	ASSERT_EQ(token.m_kToken, Tokens::ID);
+	ASSERT_TRUE(token.m_svData.Compare("_kij1a") == 0);	
 }
 
 TEST(Parser, GetSlash)
 {
 	char cmd[] = "   /abc / ";
-	Parser parser(cmd);
+	Parser parser(StringView{ cmd });
+	
+	ASSERT_EQ(parser.GetToken().m_kToken, Tokens::SLASH);	
 
-	char dest[32];
-	ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::SLASH);	
+	auto token = parser.GetToken();
+	ASSERT_EQ(token.m_kToken, Tokens::ID);
 
-	ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::ID);
+	ASSERT_TRUE(token.m_svData.Compare("abc") == 0);
 
-	ASSERT_STREQ(dest, "abc");
+	ASSERT_EQ(parser.GetToken().m_kToken, Tokens::SLASH);	
 
-	ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::SLASH);	
+	ASSERT_EQ(parser.GetToken().m_kToken, Tokens::END_OF_BUFFER);
+}
 
-	ASSERT_EQ(parser.GetToken(dest, sizeof(dest)), Tokens::END_OF_BUFFER);
+TEST(Parser, SingleCharTokens)
+{		
+	Parser parser{ StringView{ "<>.:#/$a a" } };
+
+	ASSERT_EQ(parser.GetToken().m_kToken, Tokens::CMD_START);
+	ASSERT_EQ(parser.GetToken().m_kToken, Tokens::CMD_END);
+	ASSERT_EQ(parser.GetToken().m_kToken, Tokens::DOT);
+	ASSERT_EQ(parser.GetToken().m_kToken, Tokens::COLON);
+	ASSERT_EQ(parser.GetToken().m_kToken, Tokens::HASH);
+	ASSERT_EQ(parser.GetToken().m_kToken, Tokens::SLASH);
+	ASSERT_EQ(parser.GetToken().m_kToken, Tokens::VARIABLE_NAME);
+	ASSERT_EQ(parser.GetToken().m_kToken, Tokens::ID);
+}
+
+TEST(Parser, SpecialCases)
+{
+	{
+		//empty string
+		Parser parser(StringView{ "", 0 });
+
+		ASSERT_EQ(parser.GetToken().m_kToken, Tokens::END_OF_BUFFER);
+	}
+
+	{
+		//only blanks...
+		Parser parser(StringView{ "   \n\t\r   \t"});
+
+		ASSERT_EQ(parser.GetToken().m_kToken, Tokens::END_OF_BUFFER);
+	}
+
+
+
+
 }

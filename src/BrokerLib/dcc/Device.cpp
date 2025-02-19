@@ -183,7 +183,7 @@ namespace dcclite::broker
 				auto className = json::GetString(element, "class", "Device");
 
 				//Just used for annotations on JSON file...as the parser does not support comments
-				if (strcmp(className, "IgnoreMe") == 0)
+				if (className.compare("IgnoreMe") == 0)
 					continue;
 
 				auto decoderName = RName{ json::GetString(element, "name", "Device") };

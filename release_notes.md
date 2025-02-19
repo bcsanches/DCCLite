@@ -33,6 +33,8 @@
 ## Code
 
 - Updated to stop using deprecated OpenSSL functions for computing SHA1
+- Parser is using StringView
+- Better organization of Common and Shared libs
 
 # Version 0.9.0
 

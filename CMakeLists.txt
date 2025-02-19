@@ -12,6 +12,7 @@ set(VERSION_PATCH "0" )
 set(DCCLITE_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
 add_compile_definitions(DCCLITE_VERSION=\"${DCCLITE_VERSION}\")
+add_compile_definitions(SharedLib PUBLIC DCCLITE_DESKTOP=1)
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	set (DCCLITE_MSVC true)

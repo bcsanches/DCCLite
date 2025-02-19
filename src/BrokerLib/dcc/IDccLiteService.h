@@ -97,7 +97,7 @@ namespace dcclite::broker
 		public:
 			virtual Decoder &Device_CreateDecoder(
 				IDevice_DecoderServices &dev,
-				const std::string &className,
+				std::string_view className,
 				DccAddress address,
 				RName name,
 				const rapidjson::Value &params

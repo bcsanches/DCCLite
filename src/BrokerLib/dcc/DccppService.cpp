@@ -460,9 +460,8 @@ namespace dcclite::broker
 	}
 
 	bool DccppClient::ParseSensorCommand(dcclite::Parser &parser, const std::string &msg)
-	{
-		char token[128];
-		if (parser.GetToken(token, sizeof(token)) != Tokens::END_OF_BUFFER)
+	{		
+		if (parser.GetToken().m_kToken != Tokens::END_OF_BUFFER)
 		{
 			Log::Error("[DccppClient::Update] Error parsing msg, expected TOKEN_EOF for: {}", msg);
 
@@ -514,38 +513,33 @@ namespace dcclite::broker
 	{
 		dcclite::Log::Debug("[DccppClient] Received {}", msg);
 
-		dcclite::Parser parser(msg.c_str());
+		dcclite::Parser parser(StringView{ msg });
 
-		char token[128];
-		if (parser.GetToken(token, sizeof(token)) != Tokens::CMD_START)
+		if (parser.GetToken().m_kToken != Tokens::CMD_START)
 		{
 			Log::Error("[DccppClient::OnMessage] Error parsing msg, expected TOKEN_CMD_START: {}", msg);
 
-			goto ERROR_RESPONSE;
-		}
+			m_clMessenger.Send(m_clAddress, "<X>");
+			return;			
+		}		
 
-		char cmd[4];
-
+		auto cmdToken = parser.GetToken();
+		if (cmdToken.m_kToken == Tokens::HASH)
 		{
-			auto tokenType = parser.GetToken(cmd, sizeof(cmd));
+			//max slots, have no idea why and how it is used
+			m_clMessenger.Send(m_clAddress, "<# 0>");
 
-			if (tokenType == Tokens::HASH)
-			{
-				//max slots, have no idea why and how it is used
-				m_clMessenger.Send(m_clAddress, "<# 0>");
-
-				return;
-			}
-
-			if (tokenType != Tokens::ID)
-			{
-				Log::Error("[DccppClient::OnMessage] Error parsing msg, expected TOKEN_ID for cmd identification: {}", msg);
-
-				goto ERROR_RESPONSE;
-			}
+			return;
 		}
 
-		switch (cmd[0])
+		if (cmdToken.m_kToken != Tokens::ID)
+		{
+			Log::Error("[DccppClient::OnMessage] Error parsing msg, expected TOKEN_ID for cmd identification: {}", msg);
+
+			goto ERROR_RESPONSE;
+		}		
+
+		switch (cmdToken.m_svData[0])
 		{
 			case 'c':
 				//current
@@ -558,20 +552,19 @@ namespace dcclite::broker
 			//
 			case 'J':
 			{
-				if (cmd[1] != 'T')
-				{
-					char param[10];
-					const auto tokenType = parser.GetToken(param, sizeof(param));
-					if (tokenType != Tokens::ID)
+				if ((cmdToken.m_svData.GetSize() == 1) && (cmdToken.m_svData[1] != 'T'))
+				{					
+					auto token = parser.GetToken();
+					if (token.m_kToken != Tokens::ID)
 					{
-						Log::Error("[DccppClient::Update] Unknown parameter for {}, msg>: {}", cmd, msg);
+						Log::Error("[DccppClient::Update] Unknown parameter for {}, msg>: {}", cmdToken.m_svData, msg);
 
 						goto ERROR_RESPONSE;
 					}
 
-					if (strcmp(param, "T"))
+					if (token.m_svData.Compare("T"))
 					{
-						Log::Error("[DccppClient::Update] Unknown parameter {} for {}, msg>: {}", param, cmd, msg);
+						Log::Error("[DccppClient::Update] Unknown parameter {} for {}, msg>: {}", token.m_svData, cmdToken.m_svData, msg);
 
 						goto ERROR_RESPONSE;
 					}
@@ -581,12 +574,12 @@ namespace dcclite::broker
 				const auto tokenType = parser.GetNumber(id);
 				if (tokenType == Tokens::NUMBER)
 				{
-					Log::Error("[DccppClient::Update] TODO HANDLE ID {} for {}, msg>: {}", id, cmd, msg);
+					Log::Error("[DccppClient::Update] TODO HANDLE ID {} for {}, msg>: {}", id, cmdToken.m_svData, msg);
 					goto ERROR_RESPONSE;
 				}
 				else if (tokenType != Tokens::END_OF_BUFFER)
 				{
-					Log::Error("[DccppClient::Update] Unknown parameter {}, msg>: {}", cmd, msg);
+					Log::Error("[DccppClient::Update] Unknown parameter {}, msg>: {}", cmdToken.m_svData, msg);
 
 					goto ERROR_RESPONSE;
 				}
@@ -599,7 +592,7 @@ namespace dcclite::broker
 			}
 
 			case 'M':
-				Log::Debug("[DccppClient::OnMessage] Custom packet cmd {}, msg: {}", cmd, msg);
+				Log::Debug("[DccppClient::OnMessage] Custom packet cmd {}, msg: {}", cmdToken.m_svData, msg);
 				if (!ParseSignalCommandM(parser, msg, m_rclSystem))
 					goto ERROR_RESPONSE;
 
@@ -615,7 +608,7 @@ namespace dcclite::broker
 				break;
 
 			case 'Q':
-				if (parser.GetToken(token, sizeof(token)) != Tokens::END_OF_BUFFER)
+				if (parser.GetToken().m_kToken != Tokens::END_OF_BUFFER)
 				{
 					Log::Error("[DccppClient::OnMessage] Error parsing msg, expected TOKEN_EOF for: {}", msg);
 
@@ -637,7 +630,7 @@ namespace dcclite::broker
 				{
 					std::stringstream response;
 
-					if (cmd[0] == 'T')
+					if (cmdToken.m_svData[0] == 'T')
 						this->CreateTurnoutsDefResponse(response);
 					else
 						this->CreateOutputsDefResponse(response);
@@ -698,7 +691,7 @@ namespace dcclite::broker
 			break;
 
 			default:
-				Log::Error("[DccppClient::Update] Unknown cmd {}, msg>: {}", cmd, msg);
+				Log::Error("[DccppClient::Update] Unknown cmd {}, msg>: {}", cmdToken.m_svData, msg);
 				goto ERROR_RESPONSE;
 				break;
 		}	
@@ -706,7 +699,7 @@ namespace dcclite::broker
 		return;
 
 ERROR_RESPONSE:
-		m_clMessenger.Send(m_clAddress, "<X>");			
+		m_clMessenger.Send(m_clAddress, "<X>");
 	}
 
 	void DccppClient::ThreadProc()

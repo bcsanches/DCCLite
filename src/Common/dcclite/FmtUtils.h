@@ -13,6 +13,7 @@
 #include <fmt/format.h>
 
 #include <dcclite_shared/GuidDefs.h>
+#include <dcclite_shared/StringView.h>
 
 #include "RName.h"
 #include "Socket.h"
@@ -68,4 +69,20 @@ namespace fmt
 			return fmt::format_to(ctx.out(), "{}", n.GetData());			
 		}
 	};
+
+	template <>
+	struct formatter<dcclite::StringView>
+	{
+		template <typename ParseContext>
+		constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
+
+		template <typename FormatContext>
+		auto format(const dcclite::StringView sv, FormatContext &ctx) const
+		{
+			std::string_view stdsv{ sv.GetData(), sv.GetSize() };
+
+			return fmt::format_to(ctx.out(), "{}", stdsv);
+		}
+	};
 }
+

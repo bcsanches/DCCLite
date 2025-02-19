@@ -10,46 +10,63 @@
 
 #pragma once
 
+#include "StringView.h"
+
 namespace dcclite
 {
 	enum class Tokens
-	{
+	{	
+		CMD_START = '<',
+		CMD_END = '>',
+
+		DOT = '.',
+
+		COLON = ':',		
+
+		HASH = '#',
+
+		SLASH = '/',
+
+		VARIABLE_NAME = 256,
+
 		ID,
 		NUMBER,
 		HEX_NUMBER,
 
-		CMD_START,
-		CMD_END,
-
-		DOT,
-
-		COLON,
-
 		END_OF_BUFFER,
 
-		HASH,
-
-		VARIABLE_NAME,
-
-		SLASH,
-
 		SYNTAX_ERROR
+	};
+
+	struct Token
+	{
+		inline Token(Tokens tk, StringView view):
+			m_svData{ view },
+			m_kToken{ tk }
+		{
+			//empty
+		}
+
+		StringView	m_svData;
+		Tokens		m_kToken;
 	};
 
 	class Parser
 	{
 		private:
-			const char *m_pszCmd;
+			StringView m_svCmd;
 
 			unsigned int m_iPos;
 			unsigned int m_iLastKnowPos;
 
-			[[nodiscard]] Tokens ParseId(char *dest, unsigned int destPos, const unsigned int destSize, const Tokens returnType);
+			[[nodiscard]] inline Token MakeSingleCharToken(Tokens type, unsigned int pos) const noexcept;
+
+			[[nodiscard]] Token ParseId(const Tokens returnType);
 
 		public:
-			explicit Parser(const char *cmd);
+			explicit Parser(StringView cmd);
 
-			[[nodiscard]] Tokens GetToken(char *dest, const unsigned int destSize, bool forceHexMode = false);
+			[[nodiscard]] Token GetToken(bool forceHexMode = false);
 			[[nodiscard]] Tokens GetNumber(int &dest);
 			[[nodiscard]] Tokens GetHexNumber(int &dest);
 
