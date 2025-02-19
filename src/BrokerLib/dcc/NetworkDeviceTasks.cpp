@@ -74,9 +74,9 @@ namespace dcclite::broker::detail
 	{
 		public:
 			DownloadEEPromTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, IObserver *observer, DownloadEEPromTaskResult_t &results):
-				NetworkTaskImpl{owner, taskId, observer },
-				m_vecResults{ results },
-				m_clThinker{ "DownloadEEPromTask::Thinker", THINKER_MF_LAMBDA(OnThink)}
+				NetworkTaskImpl{owner, taskId, observer },				
+				m_clThinker{ "DownloadEEPromTask::Thinker", THINKER_MF_LAMBDA(OnThink)},
+				m_vecResults{ results }
 			{
 				//start running
 				m_clThinker.Schedule({});
@@ -499,7 +499,7 @@ namespace dcclite::broker::detail
 		{
 			m_fWaitingAck = false;
 
-			auto &owner = m_rclOwner;
+			//auto &owner = m_rclOwner;
 
 			this->MarkFinished();				
 		}
@@ -735,9 +735,9 @@ namespace dcclite::broker::detail
 
 	ServoTurnoutProgrammerTask::ServoTurnoutProgrammerTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, IObserver *observer, ServoTurnoutDecoder &decoder):
 		NetworkTaskImpl{ owner, taskId, observer },
-		m_rclDecoder{ decoder },
-		m_u8DecoderIndex{ owner.FindDecoderIndex(decoder) },
-		m_vState{ NullState{*this} }
+		m_rclDecoder{ decoder },		
+		m_vState{ NullState{*this} },
+		m_u8DecoderIndex{ owner.FindDecoderIndex(decoder) }
 	{		
 		m_u8ServoPosition = decoder.GetStartPosition();
 

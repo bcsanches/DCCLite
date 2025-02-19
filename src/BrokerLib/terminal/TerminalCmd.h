@@ -102,7 +102,7 @@ namespace dcclite::broker
 
 			TerminalContext(TerminalContext &&other) = delete;
 
-			TerminalContext &operator=(TerminalContext &&other) = default;
+			TerminalContext &operator=(TerminalContext &&other) = delete;
 
 			void SetLocation(const dcclite::Path_t &newLocation);		
 
@@ -180,13 +180,13 @@ namespace dcclite::broker
 			TerminalCmdHost();
 			virtual ~TerminalCmdHost();
 
-			virtual IObject *AddChild(std::unique_ptr<IObject> obj);
+			IObject *AddChild(std::unique_ptr<Object> obj) override;
 			TerminalCmd *AddCmd(std::unique_ptr<TerminalCmd> cmd);
 			void AddAlias(RName name, TerminalCmd &target);
 
 			TerminalCmd *TryFindCmd(RName name);
 
-			virtual const char *GetTypeName() const noexcept
+			const char *GetTypeName() const noexcept override
 			{
 				return "TerminalCmdHost";
 			}		

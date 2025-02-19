@@ -50,7 +50,7 @@ namespace dcclite::broker
 		//empty
 	}
 
-	dcclite::IObject *TerminalCmdHost::AddChild(std::unique_ptr<IObject> obj)
+	dcclite::IObject *TerminalCmdHost::AddChild(std::unique_ptr<Object> obj)
 	{
 		throw std::logic_error(fmt::format("[TerminalCmdHost::AddChild] Cannot add childs, sorry, obj name {}", obj->GetName()));
 	}

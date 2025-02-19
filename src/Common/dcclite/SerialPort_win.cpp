@@ -117,7 +117,7 @@ namespace dcclite
 			throw std::runtime_error(fmt::format("[SerialPort] {}: Cannot read DCB data - {}", portName, GetSystemLastErrorMessage()));
 		}
 
-		DCB old = dcb;
+		//DCB old = dcb;
 
 		dcb.BaudRate = CBR_57600;
 		dcb.fBinary = TRUE;

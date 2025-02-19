@@ -739,7 +739,7 @@ ERROR_RESPONSE:
 
 		//
 		//start listening thread
-		m_thListenThread = std::move(std::thread{ [this, port]() {this->ListenThreadProc(port); } });		
+		m_thListenThread = std::thread{ [this, port]() {this->ListenThreadProc(port); } };
 		dcclite::SetThreadName(m_thListenThread, "DccppServiceImpl::ListenThread");
 		
 		if (auto bonjourService = static_cast<BonjourService *>(m_rclBroker.TryFindService(RName{ BONJOUR_SERVICE_NAME })))

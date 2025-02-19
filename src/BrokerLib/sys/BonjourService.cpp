@@ -537,7 +537,7 @@ namespace dcclite::broker
 		*/
 		int previousIndex = -1;
 		
-		for (int nameCount = 0;; ++nameCount)
+		for(;;)
 		{
 
 READ_NAME_AGAIN:

@@ -322,7 +322,7 @@ namespace dcclite::detail
 				continue;
 
 			//if(((name.data() + len) < (&m_vecClusters[i]->m_arNames[0] + m_vecClusters[i]->m_arNames.size())))
-				return static_cast<uint32_t>(i);
+			return static_cast<uint32_t>(i);
 		}
 
 		throw std::runtime_error(fmt::format("[RNameState::FindNameCluster] cluster for {} not found, where is it?", name));
