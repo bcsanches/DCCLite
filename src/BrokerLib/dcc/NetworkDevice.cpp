@@ -92,9 +92,9 @@ namespace dcclite::broker
 
 	NetworkDevice::NetworkDevice(RName name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params):
 		Device(name, dccService, params),		
-		m_clPinManager(DecodeBoardName(params["class"].GetString())),
-		m_fRegistered(true),
-		m_clTimeoutController{ *this }
+		m_clPinManager(DecodeBoardName(params["class"].GetString())),		
+		m_clTimeoutController{ *this },
+		m_fRegistered{ true }
 	{
 		this->Load();
 	}
@@ -102,9 +102,9 @@ namespace dcclite::broker
 
 	NetworkDevice::NetworkDevice(RName name, IDccLite_DeviceServices &dccService) :
 		Device(name, dccService),		
-		m_clPinManager(ArduinoBoards::MEGA),		
-		m_fRegistered(false),
-		m_clTimeoutController{*this}
+		m_clPinManager(ArduinoBoards::MEGA),
+		m_clTimeoutController{*this},
+		m_fRegistered{ false }
 	{
 		//empty
 	}

@@ -92,7 +92,7 @@ namespace dcclite::broker
 				return this;
 			}
 
-			[[nodiscard]] virtual std::uint16_t GetProtocolVersion() const noexcept
+			[[nodiscard]] std::uint16_t GetProtocolVersion() const noexcept override
 			{
 				return m_uProtocolVersion;
 			}
@@ -191,6 +191,8 @@ namespace dcclite::broker
 
 			struct State
 			{
+				virtual ~State() = default;
+
 				void OnPacket(					
 					dcclite::Packet &packet, 
 					const dcclite::Clock::TimePoint_t time, 

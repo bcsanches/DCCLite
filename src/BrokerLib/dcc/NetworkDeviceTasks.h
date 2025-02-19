@@ -50,6 +50,8 @@ namespace dcclite::broker
 	class NetworkTask
 	{
 		public:
+			virtual ~NetworkTask() = default;
+
 			class IObserver
 			{
 				public:
@@ -94,9 +96,9 @@ namespace dcclite::broker
 
 		protected:
 			inline NetworkTask(detail::INetworkDevice_TaskServices &owner, const uint32_t taskId, IObserver *observer = nullptr) noexcept:
-				m_rclOwner{ owner },
-				m_u32TaskId{ taskId },
-				m_pclObserver{ observer }
+				m_rclOwner{ owner },				
+				m_pclObserver{ observer },
+				m_u32TaskId{ taskId }
 			{
 				//empty
 			}
@@ -169,8 +171,8 @@ namespace dcclite::broker
 
 		/**
 		* TASK_DATA Packet format
-
-		/**
+		*
+		*
 		* Packet format
 
 										1  1  1  1  1  1

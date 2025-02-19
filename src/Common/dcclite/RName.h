@@ -147,11 +147,11 @@ namespace dcclite
 		private:			
 #ifdef DCCLITE_DEBUG
 			RName(detail::NameIndex index, std::string_view data) :
-				m_svName{data},
+				m_stIndex{ index },
+				m_svName{data}
 #else
 			RName(detail::NameIndex index) :
-#endif
-				m_stIndex{ index }
+#endif				
 			{
 				//empty
 			}

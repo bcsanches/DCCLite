@@ -41,9 +41,9 @@ class Throttle: public dcclite::Object, public dcclite::broker::IThrottle
 	public:
 #if 1
 		Throttle(const dcclite::NetworkAddress &serverAddress, const dcclite::broker::ILoconetSlot &owner) :
-			Object(dcclite::RName{ fmt::format("slot[{}][{}]", owner.GetId(), owner.GetLocomotiveAddress().GetAddress()) }),
-			m_clServerAddress{serverAddress},
-			m_vState{ ConnectState {serverAddress} },			
+			Object(dcclite::RName{ fmt::format("slot[{}][{}]", owner.GetId(), owner.GetLocomotiveAddress().GetAddress()) }),			
+			m_vState{ ConnectState {serverAddress} },
+			m_clServerAddress{ serverAddress },
 			m_rclOwnerSlot{ owner }
 		{
 			m_pclCurrentState = &std::get<ConnectState>(m_vState);
@@ -195,6 +195,8 @@ class Throttle: public dcclite::Object, public dcclite::broker::IThrottle
 	private:		
 		struct State
 		{
+			virtual ~State() = default;
+
 			virtual void Update(Throttle &self, const dcclite::Clock::TimePoint_t time) = 0;
 		};
 
@@ -672,9 +674,9 @@ namespace dcclite::broker
 
 
 	ThrottleServiceImpl::ThrottleServiceImpl(RName name, Broker &broker, const rapidjson::Value& params):
-		ThrottleService(name, broker, params),
-		m_clServerAddress{ dcclite::NetworkAddress::ParseAddress(DetermineServerAddress(params)) },
-		m_tThinker{"ThrottleServiceImpl::Thinker", THINKER_MF_LAMBDA(Think)}
+		ThrottleService(name, broker, params),		
+		m_tThinker{"ThrottleServiceImpl::Thinker", THINKER_MF_LAMBDA(Think)},
+		m_clServerAddress{ dcclite::NetworkAddress::ParseAddress(DetermineServerAddress(params)) }
 	{				
 		dcclite::Log::Info("[ThrottleServiceImpl] Started, server at {}", m_clServerAddress);		
 	}

@@ -56,10 +56,10 @@ namespace dcclite::broker
 	/////////////////////////////////////////////////////////////////////////////
 
 	TerminalClient::TerminalClient(ITerminalServiceClientProxy &owner, TerminalCmdHost &cmdHost, dcclite::IObject &root, const dcclite::Path_t &ownerPath, const NetworkAddress address, Socket &&socket):
-		m_clMessenger(std::move(socket)),
+		m_clMessenger(std::move(socket)),		
+		m_clContext(static_cast<dcclite::FolderObject &>(root), *this),
 		m_rclOwner(owner),
 		m_rclCmdHost(cmdHost),
-		m_clContext(static_cast<dcclite::FolderObject &>(root), *this),
 		m_clAddress(address)
 	{
 		m_clContext.SetLocation(ownerPath);

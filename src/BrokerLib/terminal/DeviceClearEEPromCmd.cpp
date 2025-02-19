@@ -53,7 +53,7 @@ namespace dcclite::broker
 
 				if (m_spTask->HasFinished())
 				{					
-					auto msg = detail::MakeRpcResultMessage(m_tCmdId, [this](Result_t &results)
+					auto msg = detail::MakeRpcResultMessage(m_tCmdId, [](Result_t &results)
 						{
 							results.AddStringValue("classname", "ClearEEPromResult");							
 						}

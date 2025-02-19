@@ -97,16 +97,16 @@ namespace dcclite::broker
 #endif
 	}
 
-	Thinker::Thinker(const std::string_view name, Proc_t proc) noexcept:
-		m_strvName{name},
-		m_pfnCallback{proc}
+	Thinker::Thinker(const std::string_view name, Proc_t proc) noexcept:		
+		m_pfnCallback{proc},
+		m_strvName{ name }
 	{
 
 	}
 
-	Thinker::Thinker(const dcclite::Clock::TimePoint_t tp, const std::string_view name, Proc_t proc) noexcept:
-		m_strvName{ name },
-		m_pfnCallback{ proc }
+	Thinker::Thinker(const dcclite::Clock::TimePoint_t tp, const std::string_view name, Proc_t proc) noexcept:		
+		m_pfnCallback{ proc },
+		m_strvName{ name }
 	{
 		this->Schedule(tp);
 	}	

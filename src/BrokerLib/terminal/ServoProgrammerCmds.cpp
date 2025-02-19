@@ -170,7 +170,7 @@ namespace dcclite::broker
 	static const Action g_Actions[] =
 	{
 		{"position", HandleMoveAction},
-		nullptr, nullptr
+		{nullptr, nullptr}
 	};
 
 	TerminalCmd::CmdResult_t EditServoProgrammerCmd::Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
@@ -248,7 +248,7 @@ namespace dcclite::broker
 				}
 				else if (task.HasFinished())
 				{
-					auto msg = detail::MakeRpcResultMessage(m_tCmdId, [this](Result_t &results)
+					auto msg = detail::MakeRpcResultMessage(m_tCmdId, [](Result_t &results)
 						{
 							results.AddStringValue("classname", "string");
 							results.AddStringValue("msg", "OK");
