@@ -15,6 +15,8 @@
 #include <optional>
 #include <vector>
 
+#include <dcclite_shared/StringView.h>
+
 /**
 * 
 * Registered Name System (RName)
@@ -88,6 +90,11 @@ namespace dcclite
 			// We only allow creation thought static methods to make it clear when it is registering and just grabbing
 			//
 			static RName Get(std::string_view name);
+			static inline RName Get(StringView name) 
+			{
+				return Get(name.ToStdView());
+			}
+
 			inline static RName Create(std::string_view name)
 			{
 				return RName{ name };

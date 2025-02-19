@@ -84,7 +84,7 @@ namespace dcclite
 
 	NetworkAddress NetworkAddress::ParseAddress(const std::string_view address)
 	{
-		Parser parser(address.data());
+		Parser parser(StringView{ address });
 
 		uint8_t numbers[4];
 
@@ -99,16 +99,19 @@ namespace dcclite
 			if (i == 3)
 				break;
 			
-			if (parser.GetToken(nullptr, 0) != Tokens::DOT)			
+			if (parser.GetToken().m_kToken != Tokens::DOT)			
 				throw std::invalid_argument(fmt::format("[NetworkAddress::ParseAddress] Error parsing address {}, expected dot", address));			
 		}
 
-		if(parser.GetToken(nullptr, 0) != Tokens::COLON)
+		if(parser.GetToken().m_kToken != Tokens::COLON)
 			throw std::invalid_argument(fmt::format("[NetworkAddress::ParseAddress] Error parsing address {}, expected colon", address));
 
 		int port;
 		if(parser.GetNumber(port) != Tokens::NUMBER)
 			throw std::invalid_argument(fmt::format("[NetworkAddress::ParseAddress] Error parsing address {}, expected port number", address));
+
+		if(port > 0xFFFF)
+			throw std::out_of_range(fmt::format("[NetworkAddress::ParseAddress] Error parsing address {}, port number is too big {}", address, port));
 
 		return NetworkAddress{ numbers[0], numbers[1], numbers[2], numbers[3], static_cast<uint16_t>(port) };
 	}

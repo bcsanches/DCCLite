@@ -26,7 +26,7 @@ static float g_uFps = 0;
 
 static ServoTurnoutDecoder *g_pclTurnouts[MAX_DECODERS];
 
-bool Console::Custom_ParseCommand(const char *command)
+bool Console::Custom_ParseCommand(dcclite::StringView command)
 {
 	return false;
 }

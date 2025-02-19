@@ -481,7 +481,7 @@ class Throttle: public dcclite::Object, public dcclite::broker::IThrottle
 
 						if (message[0] == '*')
 						{
-							dcclite::Parser parser{ message.c_str() + 1};
+							dcclite::Parser parser{ dcclite::StringView{message.data() + 1, message.length() - 1 } };
 
 							int heartBeat;
 							if(parser.GetNumber(heartBeat) != dcclite::Tokens::NUMBER)

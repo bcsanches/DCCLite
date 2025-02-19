@@ -667,7 +667,7 @@ static void RenameTaskHandler(dcclite::Packet &packet)
 				//has name changed?
 				if (strcmp(NetUdp::GetNodeName(), name))
 				{					
-					NetUdp::Configure(name);
+					NetUdp::Configure(dcclite::StringView{name, dcclite::MAX_NODE_NAME});
 					Storage::SaveConfig();
 				}				
 

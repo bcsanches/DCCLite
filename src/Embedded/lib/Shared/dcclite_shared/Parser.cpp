@@ -20,132 +20,103 @@
 namespace dcclite
 {
 
-	Parser::Parser(const char *cmd) :
-		m_pszCmd(cmd),
-		m_iPos(0),
-		m_iLastKnowPos(0)
+	Parser::Parser(StringView cmd) :
+		m_svCmd(cmd)		
 	{
 		//empty
 	}
 		
 	#define IS_ID_START(x) (((x >= 'a') && (x <= 'z')) || ((x >= 'A') && (x <= 'Z')) || (x == '_'))
 	#define IS_ID(x) (IS_ID_START(x) || IsDigit(x))
-
-
-	inline void SafeCopy(char *dest, unsigned int &destPos, unsigned int destSize, char ch)
-	{
-		if (destPos < destSize)
-		{
-			dest[destPos] = ch;
-			++destPos;
-		}
-	}
-
-	inline void FinishToken(char *dest, unsigned int &destPos, int destSize)
-	{
-		if (destSize > 0)
-		{
-			//if string is small, put a 0 on right position
-			SafeCopy(dest, destPos, destSize, 0);
-
-			//make sure string is closed if safeCopy does nothing
-			dest[destSize - 1] = 0;			
-		}
-	}
-
-	Tokens Parser::ParseId(char *dest, unsigned int destPos, const unsigned int destSize, const Tokens returnType)
-	{				
+	
+	Token Parser::ParseId(const Tokens returnType)
+	{			
+		auto start = m_iPos;
 		for (;;)
 		{
-			char ch = m_pszCmd[m_iPos];
-
+			char ch = m_svCmd[m_iPos];
 			if (IS_ID(ch))
 			{
-				SafeCopy(dest, destPos, destSize, ch);
 				++m_iPos;
+				if (m_iPos == m_svCmd.GetSize())
+					break;
 			}
 			else
 			{
-				FinishToken(dest, destPos, destSize);
-
-				return returnType;
+				break;
 			}
 		}
+
+		return Token{ returnType, StringView{m_svCmd.GetData() + start, m_iPos - start} };
 	}
 
-	Tokens Parser::GetToken(char *dest, unsigned int destSize, bool forceHexMode)
+	inline Token Parser::MakeSingleCharToken(Tokens type, unsigned int pos) const noexcept
 	{
-		unsigned int destPos = 0;
+		return Token{ type, StringView{m_svCmd.GetData() + pos, 1 } };
+	}
 
-		m_iLastKnowPos = m_iPos;		
-
+	Token Parser::GetToken(bool forceHexMode)
+	{		
 		for (;;)
 		{
-			for (;;)
-			{
-				char ch = m_pszCmd[m_iPos];
-
-				if ((ch == ' ') || (ch == '\n') || (ch == '\t') || (ch == '\r'))
-				{
-					++m_iPos;
-					continue;
-				}
-
+			if (m_iPos == m_svCmd.GetSize())
 				break;
-			}
+			
+			char ch = m_svCmd[m_iPos++];
 
-			char ch = m_pszCmd[m_iPos];
-			if (ch)
-			{
-				++m_iPos;
-			}
-			else
-			{
-				break;
-			}			
+			if ((ch == ' ') || (ch == '\n') || (ch == '\t') || (ch == '\r'))
+				continue;			
 
 			switch (ch)
 			{				
 				case '<':
-					return Tokens::CMD_START;
+					return this->MakeSingleCharToken(Tokens::CMD_START, m_iPos - 1);
 
 				case '>':
-					return Tokens::CMD_END;
+					return this->MakeSingleCharToken(Tokens::CMD_END, m_iPos - 1);
 
 				case '.':
-					return Tokens::DOT;
+					return this->MakeSingleCharToken(Tokens::DOT, m_iPos - 1);
 
 				case ':':
-					return Tokens::COLON;
+					return this->MakeSingleCharToken(Tokens::COLON, m_iPos - 1);
 
 				case '#':
-					return Tokens::HASH;
+					return this->MakeSingleCharToken(Tokens::HASH, m_iPos - 1);
 
 				case '/':
-					return Tokens::SLASH;
+					return this->MakeSingleCharToken(Tokens::SLASH, m_iPos - 1);
 
 				case '$':
-					ch = m_pszCmd[m_iPos];
+					if (m_iPos == m_svCmd.GetSize())
+						return Token{ Tokens::SYNTAX_ERROR, m_svCmd };
+
+					//look ahead...
+					ch = m_svCmd[m_iPos];
 					if (!IS_ID_START(ch))
-						return Tokens::SYNTAX_ERROR;
+						return Token{ Tokens::SYNTAX_ERROR, m_svCmd };
 
-					SafeCopy(dest, destPos, destSize, ch);
+					return this->ParseId(Tokens::VARIABLE_NAME);
 
-					++m_iPos;
+				case '0':										
+					if (m_iPos == m_svCmd.GetSize())
+					{
+						return this->MakeSingleCharToken(Tokens::NUMBER, m_iPos - 1);
+					}
 
-					return this->ParseId(dest, destPos, destSize, Tokens::VARIABLE_NAME);
-
-				case '0':
-					ch = m_pszCmd[m_iPos];
+					//look ahead...
+					ch = m_svCmd[m_iPos];
 					if ((ch == 'x') || (ch == 'X'))
 					{
-						//hex digit
+						//hex digit - 0x or 0X
 						++m_iPos;
-						ch = m_pszCmd[m_iPos];
 
-						if (!ch)
-							return Tokens::SYNTAX_ERROR;
+						//we must have something after 0x
+						if(m_iPos == m_svCmd.GetSize())
+							return Token{ Tokens::SYNTAX_ERROR, m_svCmd };
 
+						//first digit after 0x
+						ch = m_svCmd[m_iPos];
 						++m_iPos;
 
 						forceHexMode = true;
@@ -158,37 +129,37 @@ namespace dcclite
 
 				default:
 					if (IsDigit(ch) || (forceHexMode && IsHexLetter(ch)))
-					{
-						SafeCopy(dest, destPos, destSize, ch);					
-
+					{						
+						unsigned int startPos = m_iPos - 1;
 						for (;;)
 						{
-							ch = m_pszCmd[m_iPos];
-							if (IsDigit(ch) || (forceHexMode && IsHexLetter(ch)))
+							if (m_iPos == m_svCmd.GetSize())
 							{
-								SafeCopy(dest, destPos, destSize, ch);
+								return Token{ forceHexMode ? Tokens::HEX_NUMBER : Tokens::NUMBER , StringView{m_svCmd.GetData() + startPos, m_iPos - startPos} };
+							}
+
+							ch = m_svCmd[m_iPos];
+							if (IsDigit(ch) || (forceHexMode && IsHexLetter(ch)))
+							{								
 								++m_iPos;
 							}
 							else
 							{
-								FinishToken(dest, destPos, destSize);
-
-								return forceHexMode ? Tokens::HEX_NUMBER : Tokens::NUMBER;
+								return Token{ forceHexMode ? Tokens::HEX_NUMBER : Tokens::NUMBER , StringView{m_svCmd.GetData() + startPos, m_iPos - startPos} };
 							}
 						}
 					}
-					else if (IS_ID_START(ch))
+					else if (IS_ID_START(ch) && !forceHexMode)
 					{
-						SafeCopy(dest, destPos, destSize, ch);
-
-						return this->ParseId(dest, destPos, destSize, Tokens::ID);						
+						--m_iPos;
+						return this->ParseId(Tokens::ID);						
 					}
 
-					return Tokens::SYNTAX_ERROR;
+					return Token{ Tokens::SYNTAX_ERROR, m_svCmd };
 			}
 		}
 
-		return Tokens::END_OF_BUFFER;
+		return Token{ Tokens::END_OF_BUFFER, m_svCmd };
 	}
 
 	inline static int NumChar2Num(const char digit)
@@ -203,12 +174,12 @@ namespace dcclite
 			NumChar2Num(digit);
 	}
 
-	static int Str2Num(const char *buffer, const bool hex)
+	static int Str2Num(StringView buffer, const bool hex)
 	{
 		int dest = 0;
 		auto base = hex ? 16 : 10;
 
-		for (unsigned i = 0; buffer[i]; ++i)
+		for (unsigned i = 0; i < buffer.GetSize(); ++i)
 		{
 			dest = (dest * base) + Char2Num(buffer[i]);
 		}
@@ -217,13 +188,12 @@ namespace dcclite
 	}
 
 	Tokens Parser::GetHexNumber(int &dest)
-	{
-		char buffer[9];
-		auto token = this->GetToken(buffer, sizeof(buffer), true);
-		if (token != Tokens::HEX_NUMBER)
-			return token;
+	{		
+		auto token = this->GetToken(true);
+		if (token.m_kToken != Tokens::HEX_NUMBER)
+			return token.m_kToken;
 
-		dest = Str2Num(buffer, true);
+		dest = Str2Num(token.m_svData, true);
 
 		return Tokens::HEX_NUMBER;
 	}
@@ -231,19 +201,12 @@ namespace dcclite
 
 	Tokens Parser::GetNumber(int &dest)
 	{
-		char buffer[9];
+		auto token = this->GetToken();
+		if ((token.m_kToken != Tokens::NUMBER) && (token.m_kToken != Tokens::HEX_NUMBER))
+			return token.m_kToken;
 
-		auto token = this->GetToken(buffer, sizeof(buffer));
-		if ((token != Tokens::NUMBER) && (token != Tokens::HEX_NUMBER))
-			return token;
-
-		dest = Str2Num(buffer, token == Tokens::HEX_NUMBER);
+		dest = Str2Num(token.m_svData, token.m_kToken == Tokens::HEX_NUMBER);
 
 		return Tokens::NUMBER;
-	}
-
-	void Parser::PushToken()
-	{
-		m_iPos = m_iLastKnowPos;
 	}
 }

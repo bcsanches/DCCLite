@@ -75,7 +75,7 @@ namespace dcclite::broker
 	}
 
 
-	static std::unique_ptr<Decoder> TryCreateDecoder(const std::string &className, DccAddress address, RName name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params)
+	static std::unique_ptr<Decoder> TryCreateDecoder(std::string_view className, DccAddress address, RName name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params)
 	{
 		//
 		//Check the most common first....
@@ -153,7 +153,7 @@ namespace dcclite::broker
 				RName nodeName{ json::GetString(device, "name", "device data for DccLiteService")};
 				auto className = json::GetString(device, "class", "device data for DccLiteService");
 
-				if (strcmp(className, "Virtual"))
+				if (className.compare("Virtual"))
 					m_pDevices->AddChild(std::make_unique<NetworkDevice>(nodeName, *static_cast<IDccLite_DeviceServices *>(this), device));
 				else
 					m_pDevices->AddChild(std::make_unique<VirtualDevice>(nodeName, *static_cast<IDccLite_DeviceServices *>(this), device));
@@ -205,7 +205,7 @@ namespace dcclite::broker
 
 	Decoder &DccLiteService::Device_CreateDecoder(
 		IDevice_DecoderServices &dev,
-		const std::string &className,
+		std::string_view className,
 		DccAddress address,
 		RName name,
 		const rapidjson::Value &params

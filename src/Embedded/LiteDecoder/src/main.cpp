@@ -41,16 +41,16 @@ bool g_fNetReady = false;
 
 #define MODULE_NAME F("MAIN")
 
-bool Console::Custom_ParseCommand(const char *command)
+bool Console::Custom_ParseCommand(dcclite::StringView command)
 {
 	if (FStrNCmp(command, CMD_CFG_NAME, 3) == 0)
 	{
 		//format: cfg <nodeName> [srvport]
 
-		dcclite::Parser parser(command + 3);
+		dcclite::Parser parser(dcclite::StringView{ command.GetData() + 3, command.GetSize() - 3});
 
-		char nodeName[dcclite::MAX_NODE_NAME + 1];
-		if (parser.GetToken(nodeName, sizeof(nodeName)) != dcclite::Tokens::ID)
+		auto token = parser.GetToken();
+		if (token.m_kToken != dcclite::Tokens::ID)
 		{
 			//Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_NODE, " ", FSTR_NAME);
 			DCCLITE_LOG_MODULE_LN(FSTR_NOK << ' ' << FSTR_NODE << ' ' << FSTR_NAME);
@@ -58,15 +58,15 @@ bool Console::Custom_ParseCommand(const char *command)
 			return true;
 		}
 
-		NetUdp::Configure(nodeName);
+		NetUdp::Configure(token.m_svData);
 			
 		int srvport = 0;
-		auto token = parser.GetNumber(srvport);
-		if (token == dcclite::Tokens::NUMBER)
+		auto tokenType = parser.GetNumber(srvport);
+		if (tokenType == dcclite::Tokens::NUMBER)
 		{
 			Session::Configure(srvport);			
 		}
-		else if(token != dcclite::Tokens::END_OF_BUFFER)
+		else if(tokenType != dcclite::Tokens::END_OF_BUFFER)
 		{
 			//Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_SRVPORT);
 			DCCLITE_LOG << MODULE_NAME << FSTR_NOK << ' ' << FSTR_SRVPORT << DCCLITE_ENDL;

@@ -123,11 +123,20 @@ namespace dcclite::detail
 
 				auto registeredName = this->GetName(index);
 				if (registeredName.compare(name) == 0)
+				{
 #ifdef DCCLITE_DEBUG
 					return RName{ index,  registeredName };
 #else
 					return RName{ index };
 #endif
+				}
+				else
+				{
+					//OMG, we got a collision!!!
+					//lets try to see this on the log...
+					for (int i = 0; i < 30; ++i)
+						dcclite::Log::Warn("[RNameState::RegisterName] Hash collision {} with {}", name, this->GetName(index));
+				}
 			}
 		}
 

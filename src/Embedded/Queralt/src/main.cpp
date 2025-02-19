@@ -23,7 +23,7 @@ constexpr auto MAX_ROUTES = 15;
 
 static unsigned long g_uLastFrameTime = 0;
 
-bool Console::Custom_ParseCommand(const char *command)
+bool Console::Custom_ParseCommand(dcclite::StringView command)
 {
 	return false;
 }

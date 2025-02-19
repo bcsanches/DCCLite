@@ -4,6 +4,8 @@
 
 #include <WString.h>
 
+#include <dcclite_shared/StringView.h>
+
 typedef __FlashStringHelper FlashStringHelper_t;
 
 #define FSTR_ARP		F("ARP")
@@ -45,6 +47,11 @@ inline int FStrNCmp(const char *str1, const __FlashStringHelper *fstr2, size_t m
 	return strncmp_P(str1, fstr2, maxCount);
 }
 
+inline int FStrNCmp(dcclite::StringView sv, const __FlashStringHelper *fstr2, size_t maxCount)
+{
+	return strncmp_P(sv.GetData(), fstr2, dcclite::MyMin(sv.GetSize(), maxCount));
+}
+
 inline char *FStrCpy(char *dest, const __FlashStringHelper *fsrc, size_t count)
 {
 	return strncpy_P(dest, fsrc, count);
@@ -65,6 +72,11 @@ inline char FStrReadChar(const FlashStringHelper_t *fstr, size_t index)
 inline int FStrNCmp(const char *str1, const __FlashStringHelper *fstr2, size_t maxCount)
 {
 	return strncmp_P(str1, (PGM_P)fstr2, maxCount);
+}
+
+inline int FStrNCmp(dcclite::StringView sv, const __FlashStringHelper *fstr2, size_t maxCount)
+{
+	return strncmp_P(sv.GetData(), (PGM_P)fstr2, dcclite::MyMin(sv.GetSize(), maxCount));
 }
 
 inline char *FStrCpy(char *dest, const __FlashStringHelper *fsrc, size_t count)

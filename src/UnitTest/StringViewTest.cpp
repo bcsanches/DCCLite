@@ -23,9 +23,14 @@ TEST(dcclite_shared, StringViewTest)
 
 	char str2[] = "Hello World";
 
-	ASSERT_EQ(sv.Compare(str2), -1);
+	ASSERT_EQ(sv.Compare(str2), 0);
 	ASSERT_EQ(sv[1], 'e');
 
 	char str3[] = "Hello";
 	ASSERT_TRUE(sv == StringView(str3));
+
+	StringView sv2(str2 + 6, 3);
+	StringView sv3("Wor");
+
+	ASSERT_EQ(sv2, sv3);
 }

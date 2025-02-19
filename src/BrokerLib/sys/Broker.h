@@ -54,7 +54,7 @@ namespace dcclite::broker
 				return "dcclite::Broker";
 			}
 
-			Service &ResolveRequirement(const char *requirement) const;
+			Service &ResolveRequirement(std::string_view requirement) const;
 
 		private:				
 			dcclite::FolderObject	*m_pServices;

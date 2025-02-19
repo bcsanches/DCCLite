@@ -52,7 +52,7 @@ void Console::Init()
     Serial.println(__TIME__);    
 }
 
-static void Parse(const char *command)
+static void Parse(dcclite::StringView command)
 {
 	//Console::SendLogEx(MODULE_NAME, "in:", " ", command);
     //DCCLITE_LOG << MODULE_NAME << "in: " << command << DCCLITE_ENDL;        
@@ -153,7 +153,7 @@ constexpr auto MAX_COMMAND_LENGTH = 65;
 void Console::Update()
 {
 	static char command[MAX_COMMAND_LENGTH + 1];
-    static int pos = 0;	
+    static size_t pos = 0;	
 
     while(Serial.available() > 0)
     {
@@ -167,7 +167,7 @@ void Console::Update()
         else if(c == ';')
         {
             command[pos] = 0;
-            Parse(command);
+            Parse(dcclite::StringView{command, pos});
 
 			pos = 0;
         }
