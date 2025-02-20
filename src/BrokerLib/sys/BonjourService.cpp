@@ -68,12 +68,12 @@ namespace dcclite::broker
 
 			inline uint32_t ReadDoubleWord() noexcept
 			{
-				return dcclite::ntohl(m_clPacket.Read<uint32_t>());
+				return dcclite::n2hl(m_clPacket.Read<uint32_t>());
 			}
 
 			inline uint16_t ReadWord() noexcept
 			{
-				return dcclite::ntohs(m_clPacket.Read<uint16_t>());
+				return dcclite::n2hs(m_clPacket.Read<uint16_t>());
 			}
 
 			inline uint8_t ReadByte() noexcept
@@ -93,12 +93,12 @@ namespace dcclite::broker
 
 			void WriteDoubleWord(uint32_t w)
 			{
-				m_clPacket.Write32(dcclite::htonl(w));
+				m_clPacket.Write32(dcclite::h2nl(w));
 			}
 
 			void WriteWord(uint16_t w)
 			{
-				m_clPacket.Write16(dcclite::htons(w));
+				m_clPacket.Write16(dcclite::h2ns(w));
 			}
 
 			void WriteByte(uint8_t b)

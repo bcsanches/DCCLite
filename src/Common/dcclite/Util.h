@@ -48,11 +48,11 @@ namespace dcclite
 	//
 	// 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
-	std::uint32_t htonl(const std::uint32_t v) noexcept;
-	std::uint16_t htons(const std::uint16_t v) noexcept;
+	std::uint32_t h2nl(const std::uint32_t v) noexcept;
+	std::uint16_t h2ns(const std::uint16_t v) noexcept;
 
-	std::uint16_t ntohs(const std::uint16_t v) noexcept;
-	std::uint32_t ntohl(const std::uint32_t v) noexcept;
+	std::uint16_t n2hs(const std::uint16_t v) noexcept;
+	std::uint32_t n2hl(const std::uint32_t v) noexcept;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	//

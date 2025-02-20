@@ -118,22 +118,22 @@ std::string dcclite::GetSystemLastErrorMessage() noexcept
 #endif
 }
 
-std::uint32_t dcclite::htonl(const std::uint32_t v) noexcept
+std::uint32_t dcclite::h2nl(const std::uint32_t v) noexcept
 {
 	return ::htonl(v);
 }
 
-std::uint16_t dcclite::htons(const std::uint16_t v) noexcept
+std::uint16_t dcclite::h2ns(const std::uint16_t v) noexcept
 {
 	return ::htons(v);
 }
 
-std::uint16_t dcclite::ntohs(const std::uint16_t v) noexcept
+std::uint16_t dcclite::n2hs(const std::uint16_t v) noexcept
 {
 	return ::ntohs(v);
 }
 
-std::uint32_t dcclite::ntohl(const std::uint32_t v) noexcept
+std::uint32_t dcclite::n2hl(const std::uint32_t v) noexcept
 {
 	return ::ntohl(v);
 }
