@@ -39,7 +39,7 @@ namespace dcclite::broker
 			void Decoder_OnChangeStateRequest(const Decoder &decoder) noexcept override;
 
 		protected:
-			void CheckLoadedDecoder(Decoder &decoder) override;
+			void CheckIfDecoderTypeIsAllowed(Decoder &decoder) override;
 			bool IsInternalDecoderAllowed() const noexcept override;
 	};
 

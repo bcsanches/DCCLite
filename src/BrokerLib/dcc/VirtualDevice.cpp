@@ -33,7 +33,7 @@ namespace dcclite::broker
 		//emtpy
 	}	
 
-	void VirtualDevice::CheckLoadedDecoder(Decoder &decoder)
+	void VirtualDevice::CheckIfDecoderTypeIsAllowed(Decoder &decoder)
 	{		
 		if (dynamic_cast<SignalDecoder *>(&decoder))
 			return;

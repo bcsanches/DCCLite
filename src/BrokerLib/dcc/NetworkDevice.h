@@ -126,7 +126,7 @@ namespace dcclite::broker
 		protected:
 			void OnUnload() override;
 
-			void CheckLoadedDecoder(Decoder &decoder) override;
+			void CheckIfDecoderTypeIsAllowed(Decoder &decoder) override;
 			[[nodiscard]] bool IsInternalDecoderAllowed() const noexcept override;
 
 		private:									

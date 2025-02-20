@@ -112,7 +112,7 @@ namespace dcclite::broker
 
     void Device::RegisterDecoder(Decoder &decoder)
 	{
-		this->CheckLoadedDecoder(decoder);
+		this->CheckIfDecoderTypeIsAllowed(decoder);
 
 		m_vecDecoders.push_back(&decoder);
 

@@ -114,7 +114,7 @@ namespace dcclite::broker
 		this->Unload();
 	}
 
-	void NetworkDevice::CheckLoadedDecoder(Decoder &decoder)
+	void NetworkDevice::CheckIfDecoderTypeIsAllowed(Decoder &decoder)
 	{
 		if (!dynamic_cast<RemoteDecoder *>(&decoder))
 			throw std::invalid_argument(fmt::format("[NetworkDevice::{}] [CheckLoadedDecoder] Decoder {} must be a RemoteDecoder subtype, but it is: {}", this->GetName(), decoder.GetName(), decoder.GetTypeName()));

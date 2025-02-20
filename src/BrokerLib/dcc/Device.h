@@ -61,7 +61,7 @@ namespace dcclite::broker
 
 			virtual void OnUnload();
 
-			virtual void CheckLoadedDecoder(Decoder &decoder) = 0;	
+			virtual void CheckIfDecoderTypeIsAllowed(Decoder &decoder) = 0;	
 			[[nodiscard]] virtual bool IsInternalDecoderAllowed() const noexcept = 0;
 
 		private:
