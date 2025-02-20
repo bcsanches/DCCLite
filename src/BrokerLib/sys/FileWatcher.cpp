@@ -19,9 +19,8 @@
 #include <dcclite/Log.h>
 
 #include "EventHub.h"
+#include "Timeouts.h"
 #include "Thinker.h"
-
-using namespace std::chrono_literals;
 
 namespace FileWatcher
 {			
@@ -85,7 +84,7 @@ namespace FileWatcher
 					return;
 
 				//too fast? Probably filesystem noise...
-				if ((time - it->second.m_tLastTime) < 50ms)
+				if ((time - it->second.m_tLastTime) < dcclite::broker::FILE_WATCHER_IGNORE_TIME)
 				{
 					dcclite::Log::Trace("[FileWatcher::DirectoryWatcher::TryFireEvent] Ignoring event for {}, too soon", fileName);
 

@@ -16,17 +16,15 @@
 #include "IDccLiteService.h"
 #include "OutputDecoder.h"
 
+#include "../sys/Timeouts.h"
+
 // ms define leak...
 #ifdef GetObject
 #undef GetObject
 #endif
 
 namespace dcclite::broker
-{
-	using namespace std::chrono_literals;
-	static auto constexpr FLASH_INTERVAL = 500ms;
-	static auto constexpr WAIT_STATE_TIMEOUT = 250ms;
-
+{		
 	SignalDecoder::SignalDecoder(
 		const DccAddress &address,
 		RName decoderName,
@@ -281,7 +279,7 @@ namespace dcclite::broker
 
 		//do we have to wait for any heads to turn off?
 		if(m_uWaitListSize)
-			m_clTimeoutThinker.Schedule(dcclite::Clock::DefaultClock_t::now() + WAIT_STATE_TIMEOUT);
+			m_clTimeoutThinker.Schedule(dcclite::Clock::DefaultClock_t::now() + SIGNAL_WAIT_STATE_TIMEOUT);
 	}
 
 	void SignalDecoder::State_WaitTurnOff::Init()
@@ -328,7 +326,7 @@ namespace dcclite::broker
 			return;
 		}
 
-		m_clTimeoutThinker.Schedule(time + WAIT_STATE_TIMEOUT);
+		m_clTimeoutThinker.Schedule(time + SIGNAL_WAIT_STATE_TIMEOUT);
 	}
 
 	void SignalDecoder::State_WaitTurnOff::OnDecoderStateSync(RemoteDecoder &decoder)
@@ -390,6 +388,6 @@ namespace dcclite::broker
 			}
 		);
 
-		m_clThinker.Schedule(time + FLASH_INTERVAL);		
+		m_clThinker.Schedule(time + SIGNAL_FLASH_INTERVAL);
 	}		
 }

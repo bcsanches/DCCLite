@@ -35,8 +35,7 @@ https://datatracker.ietf.org/doc/html/rfc6335 -> Internet Assigned Numbers Autho
 #include <dcclite/Socket.h>
 #include <dcclite/Util.h>
 
-
-using namespace std::chrono_literals;
+#include "Timeouts.h"
 
 //#define NO_ENDIANNESS
 
@@ -739,10 +738,10 @@ READ_NAME_AGAIN:
 
 			auto endTime = dcclite::Clock::DefaultClock_t::now();
 
-			if ((endTime - startTime) < 100ms)
+			if ((endTime - startTime) < BONJOUR_SERVICE_PACKET_INTERVAL)
 			{
 				//are we going too fast?
-				std::this_thread::sleep_for(100ms);
+				std::this_thread::sleep_for(BONJOUR_SERVICE_SLEEP_TIME);
 			}
 		}
 	}

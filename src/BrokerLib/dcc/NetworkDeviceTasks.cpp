@@ -18,6 +18,7 @@
 #include <dcclite/FmtUtils.h>
 
 #include "../sys/Thinker.h"
+#include "../sys/Timeouts.h"
 
 #include "TurnoutDecoder.h"
 
@@ -64,12 +65,6 @@ namespace dcclite::broker::detail
 	+--+--+--+--+--+--+--+--+
 
 	*/
-
-	using namespace std::chrono_literals;
-
-	static auto constexpr DOWNLOAD_RETRY_TIMEOUT = 100ms;
-
-
 	class DownloadEEPromTask: public NetworkTaskImpl
 	{
 		public:
@@ -151,7 +146,7 @@ namespace dcclite::broker::detail
 					if (sequence >= numSlices)
 					{
 						//corrupted data?
-						dcclite::Log::Error("[DownloadEEPromTask::OnPacket] sequence({}) >= numSlices({})", sequence, numSlices);
+						this->MarkFailed(fmt::format("[DownloadEEPromTask::OnPacket] sequence({}) >= numSlices({})", sequence, numSlices));
 
 						return;
 					}					
@@ -179,8 +174,7 @@ namespace dcclite::broker::detail
 					if (sequence >= numSlices)
 					{
 						//corrupted data?
-						dcclite::Log::Error("[DownloadEEPromTask::OnPacket] sequence({}) >= numSlices({})", sequence, numSlices);
-
+						this->MarkFailed(fmt::format("[DownloadEEPromTask::OnPacket] sequence({}) >= numSlices({})", sequence, numSlices));
 						return;
 					}
 
@@ -191,7 +185,7 @@ namespace dcclite::broker::detail
 					this->ReadSlice(packet, sliceSize, sequence);					
 
 					//force restart ... but wait a bit, so more packets may arrive
-					m_clThinker.Schedule(time + 10ms);
+					m_clThinker.Schedule(time + TASK_DOWNLOAD_EEPROM_DOWNLOAD_WAIT);
 				}
 				break;
 		}
@@ -222,7 +216,7 @@ namespace dcclite::broker::detail
 				//Wait for a stable connection (after config, sync, etc)
 				if (!m_rclOwner.IsConnectionStable())
 				{
-					m_clThinker.Schedule(time + 100ms);
+					m_clThinker.Schedule(time + TASK_DOWNLOAD_EEPROM_WAIT_CONNECTION);
 
 					return;
 				}
@@ -235,7 +229,7 @@ namespace dcclite::broker::detail
 				//slice number, request 0... always valid
 				this->RequestSlice(m_rclOwner, 0);
 
-				m_clThinker.Schedule(time + DOWNLOAD_RETRY_TIMEOUT);
+				m_clThinker.Schedule(time + TASK_DOWNLOAD_EEPROM_RETRY_TIMEOUT);
 				break;
 
 			case States::DOWNLOADING:
@@ -258,7 +252,7 @@ namespace dcclite::broker::detail
 					//Do we still have work to do?
 					if (packetCount)
 					{
-						m_clThinker.Schedule(time + DOWNLOAD_RETRY_TIMEOUT);
+						m_clThinker.Schedule(time + TASK_DOWNLOAD_EEPROM_RETRY_TIMEOUT);
 
 						return;
 					}						
@@ -420,7 +414,7 @@ namespace dcclite::broker::detail
 		packet.Write8('\0');
 
 		m_rclOwner.TaskServices_SendPacket(packet);
-		m_clThinker.Schedule(time + 50ms);
+		m_clThinker.Schedule(time + TASK_RENAME_DEVICE_TIMEOUT);
 
 		++m_iCount;
 	}
@@ -538,7 +532,7 @@ namespace dcclite::broker::detail
 		m_rclOwner.TaskServices_FillPacketHeader(packet, m_u32TaskId, NetworkTaskTypes::TASK_CLEAR_EEPROM);
 
 		m_rclOwner.TaskServices_SendPacket(packet);
-		m_clThinker.Schedule(time + 50ms);
+		m_clThinker.Schedule(time + TASK_CLEAR_EEPROM_TIMEOUT);
 
 		++m_iCount;
 	}
@@ -921,7 +915,7 @@ namespace dcclite::broker::detail
 	{
 		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StartingState::SendStartPacket] Sent start packet - {}", m_rclSelf.m_u32TaskId);
 
-		m_clThinker.Schedule(time + 50ms);
+		m_clThinker.Schedule(time + TASK_SERVO_PROGRAMMER_TIMEOUT);
 
 		//
 		// Start it
@@ -1026,7 +1020,7 @@ namespace dcclite::broker::detail
 
 		m_rclSelf.m_rclOwner.TaskServices_SendPacket(packet);
 
-		m_clThinker.Schedule(dcclite::Clock::DefaultClock_t::now() + 50ms);
+		m_clThinker.Schedule(dcclite::Clock::DefaultClock_t::now() + TASK_SERVO_PROGRAMMER_TIMEOUT);
 	}
 
 	void ServoTurnoutProgrammerTask::RunningState::OnThink(const dcclite::Clock::TimePoint_t time)
@@ -1097,7 +1091,7 @@ namespace dcclite::broker::detail
 	{
 		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::DeployState::SendDeployPacket] Sending Deploy packet {} {}", m_rclSelf.m_u32TaskId, time.time_since_epoch().count());
 
-		m_clThinker.Schedule(time + 50ms);
+		m_clThinker.Schedule(time + TASK_SERVO_PROGRAMMER_TIMEOUT);
 
 		//
 		// Deploy it
@@ -1162,7 +1156,7 @@ namespace dcclite::broker::detail
 	{
 		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StoppingState::SendStopPacket] Sending stop packet {} {}", m_rclSelf.m_u32TaskId, time.time_since_epoch().count());
 
-		m_clThinker.Schedule(time + 50ms);
+		m_clThinker.Schedule(time + TASK_SERVO_PROGRAMMER_TIMEOUT);
 
 		//
 		// Stop it

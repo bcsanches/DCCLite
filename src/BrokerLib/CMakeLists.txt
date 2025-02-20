@@ -61,7 +61,7 @@ add_library(
         dcc/SimpleOutputDecoder.cpp
         dcc/SimpleOutputDecoder.h
 		dcc/StorageManager.cpp
-		dcc/StorageManager.h
+		dcc/StorageManager.h        
         dcc/TurnoutDecoder.cpp
         dcc/TurnoutDecoder.h 
         dcc/TurntableAutoInverterDecoder.cpp
@@ -98,6 +98,7 @@ add_library(
         sys/SpecialFolders.h
         sys/Thinker.cpp
         sys/Thinker.h
+        sys/Timeouts.h
         sys/ZeroConfSystem.cpp
         sys/ZeroConfSystem.h
         terminal/DeviceClearEEPromCmd.cpp

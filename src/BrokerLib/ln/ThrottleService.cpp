@@ -24,10 +24,9 @@
 
 #include "../sys/ServiceFactory.h"
 #include "../sys/Thinker.h"
+#include "../sys/Timeouts.h"
 
 #include "LoconetService.h"
-
-using namespace std::chrono_literals;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -694,7 +693,7 @@ namespace dcclite::broker
 
 	void ThrottleServiceImpl::Think(const dcclite::Clock::TimePoint_t ticks)
 	{	
-		m_tThinker.Schedule(ticks + 20ms);
+		m_tThinker.Schedule(ticks + THROTTLE_SERVICE_THINK_TIME);
 
 		this->VisitChildren([ticks](auto &item)
 			{

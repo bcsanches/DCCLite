@@ -29,6 +29,7 @@
 #include "../sys/Broker.h"
 #include "../sys/ServiceFactory.h"
 #include "../sys/Thinker.h"
+#include "../sys/Timeouts.h"
 
 #include "ThrottleService.h"
 
@@ -73,11 +74,6 @@ enum Opcodes : uint8_t
 	OPC_IMM_PACKET =		0xED,
 	OPC_WR_SL_DATA =		0xEF
 };
-
-using namespace std::chrono_literals;
-
-static auto constexpr PURGE_INTERVAL = 100s;
-static auto constexpr PURGE_TIMEOUT = 200s;
 
 static constexpr auto MAX_LN_MESSAGE_LEN = 20;
 static constexpr auto MAX_SLOTS = 120;
@@ -729,7 +725,7 @@ void SlotManager::ForceSlotState(const uint8_t slot, const Slot::States state, c
 
 void SlotManager::RefreshSlotTimeout(const uint8_t slot, const dcclite::Clock::TimePoint_t ticks) noexcept
 {
-	m_arSlotsTimeout[slot] = ticks + PURGE_TIMEOUT;
+	m_arSlotsTimeout[slot] = ticks + dcclite::broker::LOCONET_PURGE_TIMEOUT;
 }
 
 void SlotManager::SerializeSlot(const uint8_t slotIndex, dcclite::JsonOutputStream_t &stream) const
@@ -1355,12 +1351,12 @@ namespace dcclite::broker
 			}
 		);
 
-		m_tPurgeThinker.Schedule(ticks + PURGE_INTERVAL);
+		m_tPurgeThinker.Schedule(ticks + dcclite::broker::LOCONET_PURGE_INTERVAL);
 	}
 
 	void LoconetServiceImpl::Think(const dcclite::Clock::TimePoint_t ticks)
 	{			
-		m_tThinker.Schedule(ticks + 20ms);
+		m_tThinker.Schedule(ticks + LOCONET_THINK_TIME);
 				
 		//pump outgoing messages
 		m_clMessageDispatcher.Update(m_clSerialPort);

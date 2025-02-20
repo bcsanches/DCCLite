@@ -20,7 +20,7 @@
 #include <dcclite_shared/Packet.h>
 #include <dcclite_shared/SharedLibDefs.h>
 
-using namespace std::chrono_literals;
+#include "Timeouts.h"
 
 namespace dcclite::broker::ZeroConfSystem
 {		
@@ -200,10 +200,10 @@ namespace dcclite::broker::ZeroConfSystem
 			}
 
 			auto endTime = dcclite::Clock::DefaultClock_t::now();
-			if ((endTime - startTime) < 50ms)
+			if ((endTime - startTime) < ZERO_CONF_SERVICE_PACKET_INTERVAL)
 			{
 				//we are going too fast.... wait a bit so we do not flood if someone is attacking
-				std::this_thread::sleep_for(100ms);
+				std::this_thread::sleep_for(ZERO_CONF_SERVICE_SLEEP_TIME);
 			}
 		}			
 	}		
