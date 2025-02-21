@@ -37,7 +37,8 @@ namespace dcclite
 		DISCONNECT,
 		TASK_REQUEST,
 		TASK_DATA,
-		RAM_DATA
+		RAM_DATA,
+		RESET_BOARD
 	};
 
 	enum class NetworkTaskTypes: uint8_t

@@ -10,27 +10,10 @@
 
 #pragma once
 
-#include "ArduinoDefs.h"
-#include "Serial.h"
+#define WDTO_120MS  3
 
-enum PinModes
+inline void wdt_enable (const uint8_t value)
 {
-	OUTPUT,
-	INPUT,
-	INPUT_PULLUP
-};
-
-#define BCS_ARDUINO_EMULATOR 1
-
-ARDUINO_API extern void pinMode(int pin, PinModes mode);
-ARDUINO_API extern int digitalRead(int pin);
-
-ARDUINO_API extern void digitalWrite(int pin, int value);
-
-ARDUINO_API extern unsigned int bitRead(unsigned int flags, int pos);
-
-ARDUINO_API extern unsigned long millis();
-
-ARDUINO_API void delay(unsigned long ms);
-
+    //nothing...
+}
 

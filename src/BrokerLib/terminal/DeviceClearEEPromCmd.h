@@ -11,17 +11,17 @@
 
 #pragma once
 
-#include "ServiceCmdBase.h"
+#include "TerminalCmd.h"
 
 namespace dcclite::broker
 {
 	class NetworkTask;
 
-	class ClearEEPromCmd: public DccLiteCmdBase
+	class ClearEEPromCmd: public TerminalCmd
 	{
 		public:
 			explicit ClearEEPromCmd(RName name = RName{ "Clear-EEProm" }):
-				DccLiteCmdBase(name)
+				TerminalCmd(name)
 			{
 				//empty
 			}

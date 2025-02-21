@@ -3,6 +3,8 @@ DCCLite
 
 - Add a connection tester to sharpterminal and dcclite to check devices connections
 
+- Implement reboot on emulator
+
 - Better emulator:
 	- Make sharpConsole able to start emulator as is
 	- Make sharpconsole start emulator using a existing device name (auto generate eprom?)

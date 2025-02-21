@@ -95,7 +95,7 @@ namespace dcclite::broker
 
 	FolderObject *TerminalClient::TryGetServicesFolder() const
 	{
-		auto item = m_clContext.GetItem();
+		auto item = m_clContext.TryGetItem();
 
 		//item may be null during system shutdown... 
 		if (!item || (!item->IsFolder()))

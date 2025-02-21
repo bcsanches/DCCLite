@@ -132,7 +132,7 @@ namespace dcclite::broker
 					The item pointed by the m_pthLocation
 
 			*/
-			dcclite::IObject *GetItem() const;
+			dcclite::IObject *TryGetItem() const;
 
 			TerminalContext &operator=(TerminalContext &rhs) = delete;			
 
@@ -238,6 +238,6 @@ namespace dcclite::broker
 			virtual const char *GetTypeName() const noexcept
 			{
 				return "TerminalCmd";
-			}
+			}		
 	};
 }

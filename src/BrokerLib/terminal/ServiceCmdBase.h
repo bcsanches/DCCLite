@@ -31,7 +31,7 @@ namespace dcclite::broker
 			template <typename T>
 			T &GetService(const TerminalContext &context, const CmdId_t id, std::string_view serviceName)
 			{
-				auto &root = static_cast<FolderObject &>(context.GetItem()->GetRoot());
+				auto &root = static_cast<FolderObject &>(context.TryGetItem()->GetRoot());
 
 				ObjectPath path{ SpecialFolders::GetPath(SpecialFolders::Folders::ServicesId) };
 				path.append(serviceName);

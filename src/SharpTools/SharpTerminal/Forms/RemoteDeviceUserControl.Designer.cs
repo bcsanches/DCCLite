@@ -47,6 +47,7 @@ namespace SharpTerminal
 			m_btnClear = new System.Windows.Forms.Button();
 			m_btnEmulate = new System.Windows.Forms.Button();
 			m_btnBlock = new System.Windows.Forms.Button();
+			m_btnReboot = new System.Windows.Forms.Button();
 			groupBox1 = new System.Windows.Forms.GroupBox();
 			groupBox1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)m_gridMain).BeginInit();
@@ -177,10 +178,23 @@ namespace SharpTerminal
 			m_btnBlock.Text = "Block";
 			m_btnBlock.UseVisualStyleBackColor = true;
 			// 
+			// m_btnReboot
+			// 
+			m_btnReboot.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+			m_btnReboot.Enabled = false;
+			m_btnReboot.Location = new System.Drawing.Point(354, 323);
+			m_btnReboot.Name = "m_btnReboot";
+			m_btnReboot.Size = new System.Drawing.Size(75, 23);
+			m_btnReboot.TabIndex = 7;
+			m_btnReboot.Text = "Reboot";
+			m_btnReboot.UseVisualStyleBackColor = true;
+			m_btnReboot.Click += m_btnReboot_Click;
+			// 
 			// RemoteDeviceUserControl
 			// 
 			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			Controls.Add(m_btnReboot);
 			Controls.Add(m_btnBlock);
 			Controls.Add(m_btnEmulate);
 			Controls.Add(m_btnClear);
@@ -209,5 +223,6 @@ namespace SharpTerminal
 		private System.Windows.Forms.Button m_btnClear;
 		private System.Windows.Forms.Button m_btnEmulate;
 		private System.Windows.Forms.Button m_btnBlock;
+		private System.Windows.Forms.Button m_btnReboot;
 	}
 }

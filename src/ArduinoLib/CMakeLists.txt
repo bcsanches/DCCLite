@@ -22,6 +22,7 @@ set(ArduinoLib_HDRS
 	Servo.h
 	avr/boot.h
 	avr/pgmspace.h
+	avr/wdt.h
 	WString.h
 )
 

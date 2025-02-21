@@ -78,35 +78,19 @@ namespace dcclite::broker
 	/////////////////////////////////////////////////////////////////////////////
 
 	TerminalCmd::CmdResult_t RenameItemCmd::Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
-	{
-		auto item = context.GetItem();
-		if (!item->IsFolder())
-		{
-			throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
-		}
-		auto folder = static_cast<IFolderObject *>(item);
-
+	{		
 		auto paramsIt = request.FindMember("params");
 		if (paramsIt->value.Size() < 2)
 		{
 			throw TerminalCmdException(fmt::format("Usage: {} <itemPath> <newName>", this->GetName()), id);
 		}
 
-		auto locationParam = paramsIt->value[0].GetString();
-		item = folder->TryNavigate(dcclite::Path_t(locationParam));
-		if (!item)
-		{
-			throw TerminalCmdException(fmt::format("Invalid location {}", locationParam), id);
-		}
+		auto locationParam = paramsIt->value[0].GetString();		
 
-		auto networkDevice = dynamic_cast<NetworkDevice *>(item);
-		if (!networkDevice)
-		{
-			throw TerminalCmdException(fmt::format("Rename operation only supported by NetworkDevice, {} is not a network device", networkDevice->GetName()), id);
-		}	
+		auto &networkDevice = detail::GetNetworkDevice(dcclite::Path_t{ locationParam }, context, id);		
 
 		const RName newName{ paramsIt->value[1].GetString() };
-		const auto otherItem = networkDevice->GetParent()->TryGetChild(newName);
+		const auto otherItem = networkDevice.GetParent()->TryGetChild(newName);
 		if (otherItem)
 		{
 			const auto otherDevice = dynamic_cast<NetworkDevice *>(otherItem);
@@ -120,7 +104,7 @@ namespace dcclite::broker
 			}
 		}
 
-		return std::make_unique<DeviceRenameFiber>(id, context, *networkDevice, newName);
+		return std::make_unique<DeviceRenameFiber>(id, context, networkDevice, newName);
 	}	
 }
 

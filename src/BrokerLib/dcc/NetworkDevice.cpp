@@ -611,6 +611,15 @@ namespace dcclite::broker
 
 		}
 
+		//we expect this only after a REBOOT MSG, they notify us with a DISCONNECT
+		if (msgType == dcclite::MsgTypes::DISCONNECT)
+		{
+			Log::Warn("[NetworkDevice::{}] [OnlineState::OnPacket] Got a DISCONNECT message", this->m_rclSelf.GetName());
+
+			m_rclSelf.DisconnectDevice();
+			return;
+		}
+
 		if (msgType != dcclite::MsgTypes::STATE)
 		{
 			State::OnPacket(packet, time, msgType, remoteAddress, remoteConfigToken);
@@ -1017,5 +1026,16 @@ namespace dcclite::broker
 		m_lstTasks.push_back(task);
 
 		return task;
+	}
+
+	void NetworkDevice::ResetRemoteDevice()
+	{
+		if (!this->IsConnectionStable())
+			throw std::logic_error(fmt::format("[NetworkDevice::{}] [ResetRemoteDevice] Device is not connected", this->GetName()));
+
+
+		Log::Warn("[NetworkDevice::{}] [ResetRemoteDevice] Sending a RESET_BOARD msg", this->GetName());
+		DevicePacket pkt{ dcclite::MsgTypes::RESET_BOARD, m_SessionToken, m_ConfigToken };
+		m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
 	}
 }

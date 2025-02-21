@@ -72,6 +72,10 @@ namespace dcclite::broker
 
 			[[nodiscard]] virtual Decoder &FindDecoder(RName name) const override;
 
+			void ResetRemoteDevice();
+
+			bool IsConnectionStable() const noexcept override;
+
 			//
 			//IObject
 			//
@@ -95,23 +99,7 @@ namespace dcclite::broker
 			[[nodiscard]] std::uint16_t GetProtocolVersion() const noexcept override
 			{
 				return m_uProtocolVersion;
-			}
-
-			//
-			//
-			//INetworkDevice_TaskServices
-			//
-			//
-
-			void TaskServices_FillPacketHeader(dcclite::Packet &packet, const uint32_t taskId, const NetworkTaskTypes taskType) const noexcept override;
-
-			void TaskServices_SendPacket(dcclite::Packet &packet) override;
-
-			void TaskServices_Disconnect() override;
-
-			bool IsConnectionStable() const noexcept override;
-
-			void TaskServices_ForgetTask(NetworkTask &task) override;			
+			}						
 
 			//
 			//
@@ -129,7 +117,25 @@ namespace dcclite::broker
 			void CheckIfDecoderTypeIsAllowed(Decoder &decoder) override;
 			[[nodiscard]] bool IsInternalDecoderAllowed() const noexcept override;
 
-		private:									
+		private:
+			//
+			//
+			//INetworkDevice_TaskServices
+			//
+			//
+
+			void TaskServices_FillPacketHeader(dcclite::Packet &packet, const uint32_t taskId, const NetworkTaskTypes taskType) const noexcept override;
+
+			void TaskServices_SendPacket(dcclite::Packet &packet) override;
+
+			void TaskServices_Disconnect() override;			
+
+			void TaskServices_ForgetTask(NetworkTask &task) override;
+
+			////////////////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////////////////
+
 			[[nodiscard]] bool CheckSessionConfig(const dcclite::Guid remoteConfigToken, const dcclite::NetworkAddress remoteAddress);
 			
 			[[nodiscard]] bool CheckSession(const dcclite::NetworkAddress remoteAddress);

@@ -34,7 +34,7 @@ namespace dcclite::broker
 		m_pthLocation = newLocation;
 	}
 
-	dcclite::IObject *TerminalContext::GetItem() const
+	dcclite::IObject *TerminalContext::TryGetItem() const
 	{
 		return m_pclRoot->TryNavigate(m_pthLocation);
 	}

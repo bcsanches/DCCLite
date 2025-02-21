@@ -26,6 +26,10 @@
 					"class": "ArduinoMega"
 				},
 				{
+					"name":"TC_01",
+					"class":"ArduinoMega"
+				},
+				{
 					"name": "TC_02",
 					"class": "ArduinoMega"
 				},

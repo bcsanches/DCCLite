@@ -68,8 +68,13 @@ namespace SharpTerminal
 
 		private void RefreshButtonsState()
 		{
-			m_btnBlock.Enabled = mRemoteDevice.ConnectionStatus == RemoteDevice.Status.ONLINE;
-			m_btnEmulate.Enabled = mRemoteDevice.ConnectionStatus == RemoteDevice.Status.OFFLINE;
+			bool onlineDevice = mRemoteDevice.ConnectionStatus == RemoteDevice.Status.ONLINE;
+
+			m_btnBlock.Enabled = onlineDevice;
+			m_btnReboot.Enabled = onlineDevice;
+			m_btnClear.Enabled = onlineDevice;
+
+			m_btnEmulate.Enabled = !onlineDevice;
 		}
 
 		private void RemoteDevice_StateChanged(RemoteObject sender, EventArgs args)
@@ -134,6 +139,18 @@ namespace SharpTerminal
 		private void m_btnEmulate_Click(object sender, EventArgs e)
 		{
 			EmulatorManager.StartEmulator(mRemoteDevice.Name);
+		}
+
+		private async void m_btnReboot_Click(object sender, EventArgs e)
+		{			
+			try
+			{
+				await mConsole.RequestAsync(["Reboot-Device", mRemoteDevice.Path]);				
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show("Error: " + ex.Message, "Operation failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
 		}
 	}
 }

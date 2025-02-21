@@ -10,6 +10,8 @@
 
 #include "Session.h"
 
+#include <avr/wdt.h>
+
 #include <stdint.h>
 
 #include <dcclite_shared/Packet.h>
@@ -105,7 +107,7 @@ namespace PingManager
 			//Console::SendLogEx(MODULE_NAME, F("server"), ' ',  FSTR_TIMEOUT);
 			DCCLITE_LOG_MODULE_LN(F("server") << ' ' << FSTR_TIMEOUT);
 
-			GotoOfflineState();			
+			GotoOfflineState();
 
 			return true;
 		}
@@ -770,6 +772,20 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 				g_uRemoteRamValue = packet.Read<uint16_t>();
 			}
 			break;
+
+		case dcclite::MsgTypes::RESET_BOARD:
+			{
+				#if 1
+				dcclite::Packet pkt;
+				dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::DISCONNECT, g_SessionToken, g_ConfigToken };
+
+				NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
+				#endif
+
+				//why????
+				wdt_enable( WDTO_120MS);
+				delay(250);				
+			}
 
 		case dcclite::MsgTypes::TASK_REQUEST:			
 			OnTaskRequestPacket(packet);

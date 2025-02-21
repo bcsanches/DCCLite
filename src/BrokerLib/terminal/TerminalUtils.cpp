@@ -11,6 +11,10 @@
 
 #include "TerminalUtils.h"
 
+#include <fmt/format.h>
+
+#include "../dcc/NetworkDevice.h"
+
 namespace dcclite::broker::detail
 {			
 	using namespace dcclite;
@@ -41,5 +45,35 @@ namespace dcclite::broker::detail
 		}
 
 		return messageWriter.GetString();
-	}	
+	}
+
+	IFolderObject &GetCurrentFolder(const TerminalContext &context, const CmdId_t id)
+	{
+		auto item = context.TryGetItem();
+		if (!item || !item->IsFolder())
+		{
+			throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
+		}
+
+		return static_cast<IFolderObject &>(*item);
+	}
+
+	NetworkDevice &GetNetworkDevice(const dcclite::Path_t &path, const TerminalContext &context, const CmdId_t id)
+	{
+		auto &folder = GetCurrentFolder(context, id);
+
+		auto item = folder.TryNavigate(path);
+		if (item == nullptr)
+		{
+			throw TerminalCmdException(fmt::format("Invalid path {}", path.string()), id);
+		}
+
+		auto dev = dynamic_cast<NetworkDevice *>(item);
+		if (dev == nullptr)
+		{
+			throw TerminalCmdException(fmt::format("Path does lead to a NetworkDevice: {}", path.string()), id);
+		}
+
+		return *dev;
+	}
 }

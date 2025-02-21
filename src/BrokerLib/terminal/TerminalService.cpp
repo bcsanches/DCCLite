@@ -66,19 +66,14 @@ namespace dcclite::broker
 			}
 
 			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
-			{
-				auto item = context.GetItem();
-				if (!item->IsFolder())
-				{
-					throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
-				}
-				auto folder = static_cast<IFolderObject *>(item);
+			{				
+				auto folder = &detail::GetCurrentFolder(context, id);
 
 				auto paramsIt = request.FindMember("params");
 				if (paramsIt != request.MemberEnd())
 				{
 					auto locationParam = paramsIt->value[0].GetString();
-					item = folder->TryNavigate(dcclite::Path_t(locationParam));
+					auto item = folder->TryNavigate(dcclite::Path_t(locationParam));
 					if (!item)
 					{
 						throw TerminalCmdException(fmt::format("Invalid location {}", locationParam), id);
@@ -126,13 +121,8 @@ namespace dcclite::broker
 			}
 
 			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
-			{
-				auto item = context.GetItem();
-				if (!item->IsFolder())
-				{
-					throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
-				}
-				auto folder = static_cast<IFolderObject *>(item);
+			{				
+				auto &folder = detail::GetCurrentFolder(context, id);
 
 				auto paramsIt = request.FindMember("params");
 				if (paramsIt == request.MemberEnd())
@@ -141,7 +131,7 @@ namespace dcclite::broker
 				}
 
 				auto locationParam = paramsIt->value[0].GetString();
-				item = folder->TryNavigate(dcclite::Path_t(locationParam));
+				auto item = folder.TryNavigate(dcclite::Path_t(locationParam));
 				if (!item)
 				{
 					throw TerminalCmdException(fmt::format("Invalid location {}", locationParam), id);
@@ -175,13 +165,9 @@ namespace dcclite::broker
 
 			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
 			{
-				auto item = context.GetItem();
-				if (!item->IsFolder())
-				{
-					throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
-				}
+				auto &folder = detail::GetCurrentFolder(context, id);
 
-				auto folder = static_cast<IFolderObject *>(item);
+				dcclite::Path_t path;
 
 				auto paramsIt = request.FindMember("params");
 				if (paramsIt != request.MemberEnd())
@@ -193,7 +179,7 @@ namespace dcclite::broker
 
 					auto destinationPath = paramsIt->value[0].GetString();
 
-					auto destinationObj = folder->TryNavigate(Path_t(destinationPath));
+					auto destinationObj = folder.TryNavigate(Path_t(destinationPath));
 					if (!destinationObj)
 					{
 						throw TerminalCmdException(fmt::format("Invalid path {}", destinationPath), id);
@@ -204,14 +190,18 @@ namespace dcclite::broker
 						throw TerminalCmdException(fmt::format("Path {} led to an IObject, not IFolder", destinationPath), id);
 					}
 
-					context.SetLocation(destinationObj->GetPath());
-					item = destinationObj;
+					path = destinationObj->GetPath();
+					context.SetLocation(path);					
+				}
+				else
+				{
+					path = folder.GetPath();
 				}
 
-				return detail::MakeRpcResultMessage(id, [item](Result_t &results)
+				return detail::MakeRpcResultMessage(id, [&path](Result_t &results)
 					{
 						results.AddStringValue("classname", "Location");
-						results.AddStringValue("location", item->GetPath().string());
+						results.AddStringValue("location", path.string());
 					}
 				);
 			}
@@ -296,6 +286,43 @@ namespace dcclite::broker
 				);
 			}
 	};	
+
+	/////////////////////////////////////////////////////////////////////////////
+	//
+	// RebootDeviceCmd
+	//
+	/////////////////////////////////////////////////////////////////////////////
+	class RebootDeviceCmd: public TerminalCmd
+	{
+		public:
+			explicit RebootDeviceCmd(RName name = RName{ "Reboot-Device" }):
+				TerminalCmd(name)
+			{
+				//empty
+			}
+
+			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
+			{
+				auto paramsIt = request.FindMember("params");
+				if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() < 1))
+				{
+					throw TerminalCmdException(fmt::format("Usage: {} <NetworkDevicePath>", this->GetName()), id);
+				}
+
+				auto path = paramsIt->value[0].GetString();
+
+				auto &device = detail::GetNetworkDevice(dcclite::Path_t{ path }, context, id);						
+
+				device.ResetRemoteDevice();
+
+				return detail::MakeRpcResultMessage(id, [](Result_t &results)
+					{
+						results.AddStringValue("classname", "string");
+						results.AddStringValue("msg", "OK");
+					}
+				);
+			}
+	};
 
 	/////////////////////////////////////////////////////////////////////////////
 	//
@@ -791,6 +818,10 @@ namespace dcclite::broker
 
 		{
 			cmdHost->AddCmd(std::make_unique<ResetItemCmd>());
+		}
+
+		{
+			cmdHost->AddCmd(std::make_unique<RebootDeviceCmd>());
 		}
 
 		{

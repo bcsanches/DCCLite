@@ -14,6 +14,11 @@
 
 #include "TerminalCmd.h"
 
+namespace dcclite::broker
+{
+	class NetworkDevice;
+}
+
 namespace dcclite::broker::detail
 {
 	constexpr auto JSONRPC_KEY = "jsonrpc";
@@ -35,4 +40,8 @@ namespace dcclite::broker::detail
 	{
 		return MakeRpcMessage(id, nullptr, "result", filler);
 	}
+
+	IFolderObject &GetCurrentFolder(const TerminalContext &context, const CmdId_t id);
+		
+	NetworkDevice &GetNetworkDevice(const dcclite::Path_t &path, const TerminalContext &context, const CmdId_t id);
 }

@@ -17,11 +17,11 @@ namespace dcclite::broker
 {
 	class NetworkTask;
 
-	class RenameItemCmd: public DccLiteCmdBase
+	class RenameItemCmd: public TerminalCmd
 	{
 		public:
 			explicit RenameItemCmd(RName name = RName{ "Rename-Item" }):
-				DccLiteCmdBase(name)
+				TerminalCmd(name)
 			{
 				//empty
 			}

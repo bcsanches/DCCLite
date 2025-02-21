@@ -78,33 +78,17 @@ namespace dcclite::broker
 
 	TerminalCmd::CmdResult_t ClearEEPromCmd::Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
 	{
-		auto item = context.GetItem();
-		if (!item->IsFolder())
-		{
-			throw TerminalCmdException(fmt::format("Current location {} is invalid", context.GetLocation().string()), id);
-		}
-		auto folder = static_cast<IFolderObject *>(item);
-
 		auto paramsIt = request.FindMember("params");
 		if (paramsIt->value.Size() < 1)
 		{
 			throw TerminalCmdException(fmt::format("Usage: {} <itemPath>", this->GetName()), id);
 		}
 
-		auto locationParam = paramsIt->value[0].GetString();
-		item = folder->TryNavigate(dcclite::Path_t(locationParam));
-		if (!item)
-		{
-			throw TerminalCmdException(fmt::format("Invalid location {}", locationParam), id);
-		}
+		auto locationParam = paramsIt->value[0].GetString();		
 
-		auto networkDevice = dynamic_cast<NetworkDevice *>(item);
-		if (!networkDevice)
-		{
-			throw TerminalCmdException(fmt::format("Clear EEPROM operation only supported by NetworkDevice, {} is not a network device", networkDevice->GetName()), id);
-		}			
+		auto &networkDevice = detail::GetNetworkDevice(dcclite::Path_t(locationParam), context, id);
 
-		return std::make_unique<DeviceClearEEPromFiber>(id, context, *networkDevice);
+		return std::make_unique<DeviceClearEEPromFiber>(id, context, networkDevice);
 	}	
 }
 

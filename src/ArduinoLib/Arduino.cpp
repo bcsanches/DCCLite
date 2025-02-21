@@ -12,6 +12,7 @@
 
 #include <array>
 #include <chrono>
+#include <thread>
 
 #include <dcclite/Clock.h>
 
@@ -160,6 +161,11 @@ int digitalRead(int pin)
 unsigned int bitRead(unsigned int flags, int pos)
 {
 	return (flags >> pos) & 1;
+}
+
+void delay(unsigned long ms)
+{
+	std::this_thread::sleep_for(std::chrono::milliseconds{ ms });
 }
 
 //
