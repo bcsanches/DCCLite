@@ -11,41 +11,24 @@
 
 #pragma once
 
-#include "ServiceCmdBase.h"
+#include "TerminalCmd.h"
 
 namespace dcclite::broker
 {
 	class NetworkTask;
 
-	class StartServoProgrammerCmd: public DccLiteCmdBase
+	class StartNetworkTestCmd: public TerminalCmd
 	{
 		public:
-			explicit StartServoProgrammerCmd(RName name = RName{ "Start-ServoProgrammer" }):
-				DccLiteCmdBase(name)
-			{
-				//empty
-			}
-
-			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override;
-	};	
-
-	class StopServoProgrammerCmd: public DccLiteCmdBase
-	{
-		public:
-			explicit StopServoProgrammerCmd(RName name = RName{ "Stop-ServoProgrammer" }):
-				DccLiteCmdBase(name)
-			{
-				//empty
-			}
-
-			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override;
-	};
-
-	class EditServoProgrammerCmd: public DccLiteCmdBase
-	{		
-		public:
-			explicit EditServoProgrammerCmd(RName name = RName{ "Edit-ServoProgrammer" }):
-				DccLiteCmdBase(name)
+			/// <summary>
+			/// Start a network test task: Start-NetworkTest <device-path>
+			/// </summary>
+			/// 
+			/// Returns the task id
+			/// 
+			/// <param name="name"></param>
+			explicit StartNetworkTestCmd(RName name = RName{ "Start-NetworkTest" }):
+				TerminalCmd(name)
 			{
 				//empty
 			}
@@ -53,13 +36,31 @@ namespace dcclite::broker
 			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override;
 	};
 
-	
-
-	class DeployServoProgrammerCmd: public DccLiteCmdBase
+	class StopNetworkTestCmd: public TerminalCmd
 	{
 		public:
-			explicit DeployServoProgrammerCmd(RName name = RName{ "Deploy-ServoProgrammer" }):
-				DccLiteCmdBase(name)
+			/// <summary>
+			/// Stops a Network test task: Stop-NetworkTest <task-id>
+			/// </summary>
+			/// <param name="name"></param>
+			explicit StopNetworkTestCmd(RName name = RName{ "Stop-NetworkTest" }):
+				TerminalCmd(name)
+			{
+				//empty
+			}
+
+			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override;
+	};
+
+	class ReceiveNetworkTestDataCmd: public TerminalCmd
+	{
+		public:
+			/// <summary>
+			/// Grabs the current data from an existing network test: Receive-NetworkTestData <task-id>
+			/// </summary>
+			/// <param name="name"></param>
+			explicit ReceiveNetworkTestDataCmd(RName name = RName{ "Receive-NetworkTestData" }):
+				TerminalCmd(name)
 			{
 				//empty
 			}

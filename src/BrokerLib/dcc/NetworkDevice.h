@@ -27,6 +27,7 @@
 #include "PinManager.h"
 
 #include "../sys/Thinker.h"
+#include "../sys/Timeouts.h"
 
 #include <rapidjson/document.h>
 
@@ -110,6 +111,7 @@ namespace dcclite::broker
 			[[nodiscard]] std::shared_ptr<NetworkTask> StartServoTurnoutProgrammerTask(NetworkTask::IObserver *observer, RName servoDecoderName);
 			[[nodiscard]] std::shared_ptr<NetworkTask> StartDeviceRenameTask(NetworkTask::IObserver *observer, RName newName);
 			[[nodiscard]] std::shared_ptr<NetworkTask> StartDeviceClearEEPromTask(NetworkTask::IObserver *observer);
+			[[nodiscard]] std::shared_ptr<NetworkTask> StartDeviceNetworkTestTask(NetworkTask::IObserver *observer, std::chrono::milliseconds timeout = TASK_NETWORK_TEST_DEFAULT_TIMEOUT);
 
 		protected:
 			void OnUnload() override;

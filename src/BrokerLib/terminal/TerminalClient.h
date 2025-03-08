@@ -77,21 +77,21 @@ namespace dcclite::broker
 
 			class MsgArrivedEvent: public EventHub::IEvent
 			{
-			public:
-				MsgArrivedEvent(TerminalClient &target, std::string &&msg):
-					IEvent(target),
-					m_strMessage(msg)
-				{
-					//empty
-				}
+				public:
+					MsgArrivedEvent(TerminalClient &target, std::string &&msg):
+						IEvent(target),
+						m_strMessage(msg)
+					{
+						//empty
+					}
 
-				void Fire() override
-				{
-					static_cast<TerminalClient &>(this->GetTarget()).OnMsg(m_strMessage);
-				}
+					void Fire() override
+					{
+						static_cast<TerminalClient &>(this->GetTarget()).OnMsg(m_strMessage);
+					}
 
-			private:
-				std::string m_strMessage;
+				private:
+					std::string m_strMessage;
 			};
 
 		private:

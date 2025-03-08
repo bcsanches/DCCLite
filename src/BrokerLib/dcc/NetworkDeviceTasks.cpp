@@ -1167,7 +1167,6 @@ namespace dcclite::broker::detail
 		m_rclSelf.m_rclOwner.TaskServices_SendPacket(packet);
 	}
 
-
 	//
 	//
 	//
@@ -1185,6 +1184,125 @@ namespace dcclite::broker::detail
 	void ServoTurnoutProgrammerTask::FailureState::OnPacket(dcclite::Packet &packet, const ServoProgrammerClientMsgTypes msg, dcclite::Clock::TimePoint_t time)
 	{
 		//ignore packets...
+	}
+
+	/////////////////////////////////////////////////////////////////////////////
+	//
+	// NetworkTestTask
+	//
+	/////////////////////////////////////////////////////////////////////////////
+
+	/**
+	* NetworkTestTask Packet format
+
+
+	  0  1  2  3  4  5  6  7
+	+--+--+--+--+--+--+--+--+
+	|        Sequence       |
+	|                       |
+	|                       |
+	|                       |
+	+--+--+--+--+--+--+--+--+
+	
+	*/
+
+	class NetworkTestTask: public NetworkTaskImpl, public INetworkDeviceTestTask
+	{
+		public:
+			NetworkTestTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, IObserver *observer, std::chrono::milliseconds timeout):
+				NetworkTaskImpl{ owner, taskId, observer },
+				m_clThinker{ "NetworkTestTask::Thinker", THINKER_MF_LAMBDA(OnThink) },				
+				m_tTimeout{timeout}
+			{
+				if (!m_rclOwner.IsConnectionStable())
+					throw std::runtime_error(fmt::format("[NetworkTestTask] Cannot start a network test without a valid connection"));				
+
+				m_tTimeout = std::max(TASK_NETWORK_TEST_DEFAULT_TIMEOUT, m_tTimeout);
+				
+				this->SendPacket(dcclite::Clock::DefaultClock_t::now());
+			}
+
+			void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time) override;
+
+			void Abort() noexcept override;
+			void Stop() noexcept override;
+
+			NetworkTestTaskResults GetCurrentResults() const noexcept override
+			{
+				return m_tResults;
+			}
+
+		private:
+			void OnThink(const dcclite::Clock::TimePoint_t time);
+			void SendPacket(const dcclite::Clock::TimePoint_t time);
+
+		private:
+			Thinker	m_clThinker;			
+
+			NetworkTestTaskResults m_tResults = {};
+
+			dcclite::Clock::TimePoint_t m_tSentTime;			
+	
+			uint32_t m_uSequence = {};
+			uint32_t m_uExpectedAck;
+
+			std::chrono::milliseconds m_tTimeout;
+	};
+
+	void NetworkTestTask::OnThink(const dcclite::Clock::TimePoint_t time)
+	{
+		++m_tResults.m_uLostPacketsCount;		
+
+		this->SendPacket(time);		
+	}
+
+	void NetworkTestTask::SendPacket(const dcclite::Clock::TimePoint_t time)
+	{
+		dcclite::Packet packet;
+
+		m_rclOwner.TaskServices_FillPacketHeader(packet, m_u32TaskId, NetworkTaskTypes::TASK_NET_TEST);
+		packet.Write32(++m_uSequence);	
+		m_uExpectedAck = m_uSequence;
+
+		m_rclOwner.TaskServices_SendPacket(packet);		
+		m_tResults.m_uSentPacketsCount++;
+
+		m_tSentTime = time;
+
+		m_clThinker.Schedule(time + m_tTimeout);
+	}
+
+	void NetworkTestTask::OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time)
+	{
+		const auto currentAck = packet.Read<uint32_t>();
+
+		if (currentAck != m_uExpectedAck)
+		{
+			m_tResults.m_uOutOfSyncPacketsCount++;
+		}
+		else
+		{
+			++m_tResults.m_uReceivedPacketsCount;			
+
+			m_tResults.m_tLatency = std::chrono::duration_cast<std::chrono::milliseconds>(time - m_tSentTime);
+			
+			if(!this->HasFinished())
+				this->SendPacket(time);
+		}
+	}
+
+	void NetworkTestTask::Abort() noexcept
+	{
+		this->MarkAbort();
+		m_clThinker.Cancel();
+	}
+
+	void NetworkTestTask::Stop() noexcept
+	{
+		//just finish it... as we may never stop
+		this->MarkFinished();
+
+		m_clThinker.Cancel();
 	}
 
 	//
@@ -1210,5 +1328,10 @@ namespace dcclite::broker::detail
 	std::shared_ptr<NetworkTaskImpl> StartDeviceClearEEPromTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, NetworkTask::IObserver *observer)
 	{
 		return std::make_shared<ClearEEPromTask>(owner, taskId, observer);
+	}
+
+	extern std::shared_ptr<NetworkTaskImpl> StartDeviceNetworkTestTask(INetworkDevice_TaskServices &owner, const uint32_t taskId, NetworkTask::IObserver *observer, const std::chrono::milliseconds timeOut)
+	{
+		return std::make_shared<NetworkTestTask>(owner, taskId, observer, timeOut);
 	}
 }

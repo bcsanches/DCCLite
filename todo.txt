@@ -1,8 +1,5 @@
 DCCLite
 -------
-
-- Add a connection tester to sharpterminal and dcclite to check devices connections
-
 - Implement reboot on emulator
 
 - Better emulator:
@@ -30,7 +27,7 @@ DCCLite
 	- decoders may have no device
 	- keep decoders type inside the device, do not leak specific decoders code to outside
 
-- Make all terminal commands rely on paths instead of a device name?
+- Make all terminal commands rely on paths instead of a device name
 
 - Lua script failing to reload, seems to be a problem with sections
 - Why lua scripts are not notified when devices gets online and state changes during sync? Check routes

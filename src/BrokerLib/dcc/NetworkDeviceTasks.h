@@ -164,6 +164,22 @@ namespace dcclite::broker
 			virtual void SetPosition(const uint8_t position) = 0;
 	};
 
+	struct NetworkTestTaskResults
+	{
+		std::chrono::milliseconds	m_tLatency;
+
+		uint32_t m_uSentPacketsCount;
+		uint32_t m_uReceivedPacketsCount;
+		uint32_t m_uOutOfSyncPacketsCount;
+		uint32_t m_uLostPacketsCount;
+	};
+
+	class INetworkDeviceTestTask
+	{
+		public:
+			virtual NetworkTestTaskResults GetCurrentResults() const noexcept = 0;
+	};
+
 	typedef std::vector<uint8_t> DownloadEEPromTaskResult_t;
 
 	namespace detail
@@ -238,6 +254,13 @@ namespace dcclite::broker
 			INetworkDevice_TaskServices &owner, 
 			const uint32_t taskId, 
 			NetworkTask::IObserver *observer
+		);
+
+		extern std::shared_ptr<NetworkTaskImpl> StartDeviceNetworkTestTask(
+			INetworkDevice_TaskServices &owner,
+			const uint32_t taskId,
+			NetworkTask::IObserver *observer,
+			const std::chrono::milliseconds timeOut
 		);
 	}	
 }

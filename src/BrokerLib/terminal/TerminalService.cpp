@@ -32,6 +32,7 @@
 #include "../sys/ZeroConfSystem.h"
 
 #include "DeviceClearEEPromCmd.h"
+#include "DeviceNetworkTestCmds.h"
 #include "DeviceRenameCmd.h"
 #include "ServiceCmdBase.h"
 #include "ServoProgrammerCmds.h"
@@ -836,6 +837,12 @@ namespace dcclite::broker
 			auto renameItemCmd = cmdHost->AddCmd(std::make_unique<RenameItemCmd>());
 
 			cmdHost->AddAlias(RName{ "ren" }, *renameItemCmd);
+		}
+
+		{
+			cmdHost->AddCmd(std::make_unique<StartNetworkTestCmd>());
+			cmdHost->AddCmd(std::make_unique<StopNetworkTestCmd>());
+			cmdHost->AddCmd(std::make_unique<ReceiveNetworkTestDataCmd>());
 		}
 
 		const auto port = dcclite::json::TryGetDefaultInt(params, "port", DEFAULT_TERMINAL_SERVER_PORT);

@@ -17,6 +17,9 @@
     <Compile Update="Forms\Form1.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Forms\NetworkTestForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Forms\ObjectsTreeViewUserControl.cs">
       <SubType>UserControl</SubType>
     </Compile>

@@ -34,6 +34,8 @@ namespace dcclite::broker
 
 	auto constexpr TASK_SERVO_PROGRAMMER_TIMEOUT = 50ms;
 
+	auto constexpr TASK_NETWORK_TEST_DEFAULT_TIMEOUT = 20ms;
+
 	auto constexpr FILE_WATCHER_IGNORE_TIME = 100ms;
 
 	auto constexpr LOCONET_THINK_TIME = 20ms;

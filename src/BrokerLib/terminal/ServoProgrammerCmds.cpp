@@ -69,47 +69,7 @@ namespace dcclite::broker
 			}
 		);
 	}	
-
-	/////////////////////////////////////////////////////////////////////////////
-	//
-	// ServoProgrammerBaseCmd
-	//
-	/////////////////////////////////////////////////////////////////////////////
-
-	dcclite::broker::NetworkTask *ServoProgrammerBaseCmd::GetTask(TerminalContext &context, const CmdId_t id, const rapidjson::Value &taskIdData)
-	{
-		auto taskId = taskIdData.IsString() ? dcclite::ParseNumber(taskIdData.GetString()) : taskIdData.GetInt();
-
-		auto &taskManager = context.GetTaskManager();
-
-		auto task = taskManager.TryFindTask(taskId);
-		if (!task)
-		{
-			throw TerminalCmdException(fmt::format("{}: task {} not found", this->GetName(), taskId), id);
-		}
-
-		if (task->HasFailed())
-		{
-			//
-			//forget about it
-			taskManager.RemoveTask(task->GetTaskId());
-
-			throw TerminalCmdException(fmt::format("{}: task {} failed", this->GetName(), taskId), id);
-		}
-
-		if (task->HasFinished())
-		{
-			//
-			//forget about it
-			taskManager.RemoveTask(task->GetTaskId());
-
-			throw TerminalCmdException(fmt::format("{}: task {} finished", this->GetName(), taskId), id);
-
-		}
-
-		return task;
-	}
-
+	
 	static int ParseNumParam(const rapidjson::Value &p)
 	{
 		return p.IsString() ? dcclite::ParseNumber(p.GetString()) : p.GetInt();
@@ -123,29 +83,7 @@ namespace dcclite::broker
 
 	TerminalCmd::CmdResult_t StopServoProgrammerCmd::Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
 	{
-		auto paramsIt = request.FindMember("params");
-		if (paramsIt->value.Size() < 1)
-		{
-			throw TerminalCmdException(fmt::format("Usage: {} <taskId>", this->GetName()), id);
-		}
-
-		auto task = this->GetTask(context, id, paramsIt->value[0]);
-
-		//
-		//tell the task to stop
-		task->Stop();
-
-		//
-		//forget about it
-		context.GetTaskManager().RemoveTask(task->GetTaskId());
-
-		//notify client
-		return detail::MakeRpcResultMessage(id, [](Result_t &results)
-			{
-				results.AddStringValue("classname", "string");
-				results.AddStringValue("msg", "OK");
-			}
-		);
+		return detail::RunStopTaskCmd(context, this->GetName(), id, request);
 	}
 
 	/////////////////////////////////////////////////////////////////////////////
@@ -181,7 +119,7 @@ namespace dcclite::broker
 			throw TerminalCmdException(fmt::format("Usage: {} <taskId> <cmdType> <params>", this->GetName()), id);
 		}
 
-		auto task = this->GetTask(context, id, paramsIt->value[0]);
+		auto task = detail::GetValidTask(context, this->GetName(), id, paramsIt->value[0]);
 
 		auto programmerTask = dynamic_cast<dcclite::broker::IServoProgrammerTask *>(task);
 		if (!programmerTask)
@@ -271,7 +209,7 @@ namespace dcclite::broker
 			throw TerminalCmdException(fmt::format("Usage: {} <taskId> <flags> <startPos> <endPos> <operationTimeMs>", this->GetName()), id);
 		}
 
-		auto task = this->GetTask(context, id, paramsIt->value[0]);
+		auto task = detail::GetValidTask(context, this->GetName(), id, paramsIt->value[0]);
 
 		auto programmerTask = dynamic_cast<dcclite::broker::IServoProgrammerTask *>(task);
 		if (!programmerTask)

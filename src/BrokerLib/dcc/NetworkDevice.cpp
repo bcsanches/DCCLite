@@ -1028,6 +1028,15 @@ namespace dcclite::broker
 		return task;
 	}
 
+	std::shared_ptr<NetworkTask> NetworkDevice::StartDeviceNetworkTestTask(NetworkTask::IObserver *observer, std::chrono::milliseconds timeout)
+	{
+		auto task = detail::StartDeviceNetworkTestTask(*this, ++g_u32TaskId, observer, timeout);
+
+		m_lstTasks.push_back(task);
+
+		return task;
+	}
+
 	void NetworkDevice::ResetRemoteDevice()
 	{
 		if (!this->IsConnectionStable())

@@ -13,6 +13,11 @@
 
 #include <fmt/format.h>
 
+#include <dcclite/FmtUtils.h>
+#include <dcclite/Util.h>
+
+#include "TerminalClient.h"
+
 #include "../dcc/NetworkDevice.h"
 
 namespace dcclite::broker::detail
@@ -75,5 +80,68 @@ namespace dcclite::broker::detail
 		}
 
 		return *dev;
+	}
+
+	dcclite::broker::NetworkTask *GetValidTask(TerminalContext &context, RName cmdName, const CmdId_t id, const rapidjson::Value &taskIdData)
+	{
+		auto taskId = taskIdData.IsString() ? dcclite::ParseNumber(taskIdData.GetString()) : taskIdData.GetInt();
+
+		auto &taskManager = context.GetTaskManager();
+
+		auto task = taskManager.TryFindTask(taskId);
+		if (!task)
+		{
+			throw TerminalCmdException(fmt::format("{}: task {} not found", cmdName, taskId), id);
+		}
+
+		if (task->HasFailed())
+		{
+			//
+			//forget about it
+			taskManager.RemoveTask(task->GetTaskId());
+
+			throw TerminalCmdException(fmt::format("{}: task {} failed", cmdName, taskId), id);
+		}
+
+		if (task->HasFinished())
+		{
+			//
+			//forget about it
+			taskManager.RemoveTask(task->GetTaskId());
+
+			throw TerminalCmdException(fmt::format("{}: task {} finished", cmdName, taskId), id);
+
+		}
+
+		return task;
+	}
+
+	TerminalCmd::CmdResult_t RunStopTaskCmd(TerminalContext &context, RName cmdName, const CmdId_t id, const rapidjson::Document &request)
+	{
+		auto paramsIt = request.FindMember("params");
+		if (paramsIt->value.Size() < 1)
+		{
+			throw TerminalCmdException(fmt::format("Usage: {} <taskId>", cmdName), id);
+		}
+
+		auto task = detail::GetValidTask(context, cmdName, id, paramsIt->value[0]);
+
+		task->Stop();
+
+		//
+		//tell the task to stop
+		task->Stop();
+
+		//
+		//forget about it
+		context.GetTaskManager().RemoveTask(task->GetTaskId());
+
+		//notify client
+		return detail::MakeRpcResultMessage(id, [](TerminalCmd::Result_t &results)
+			{
+				results.AddStringValue("classname", "string");
+				results.AddStringValue("msg", "OK");
+			}
+		);
 	}
 }

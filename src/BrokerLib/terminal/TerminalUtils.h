@@ -17,6 +17,7 @@
 namespace dcclite::broker
 {
 	class NetworkDevice;
+	class NetworkTask;
 }
 
 namespace dcclite::broker::detail
@@ -44,4 +45,8 @@ namespace dcclite::broker::detail
 	IFolderObject &GetCurrentFolder(const TerminalContext &context, const CmdId_t id);
 		
 	NetworkDevice &GetNetworkDevice(const dcclite::Path_t &path, const TerminalContext &context, const CmdId_t id);
+
+	dcclite::broker::NetworkTask *GetValidTask(TerminalContext &context, RName cmdName, const CmdId_t id, const rapidjson::Value &taskIdData);
+
+	TerminalCmd::CmdResult_t RunStopTaskCmd(TerminalContext &context, RName cmdName, const CmdId_t id, const rapidjson::Document &request);
 }

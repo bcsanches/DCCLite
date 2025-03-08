@@ -698,6 +698,17 @@ static void ClearEEPromTaskHandler(dcclite::Packet &packet)
 	NetUdp::SendPacket(packet.GetData(), packet.GetSize(), g_u8ServerIp, g_uSrvPort);
 }
 
+static void NetTestTaskHandler(dcclite::Packet &packet)
+{
+	const uint32_t taskId = packet.Read<uint32_t>();
+	const uint32_t counter = packet.Read<uint32_t>();
+
+	Session::detail::InitTaskPacket(packet, taskId);
+	packet.Write32(counter);
+
+	NetUdp::SendPacket(packet.GetData(), packet.GetSize(), g_u8ServerIp, g_uSrvPort);
+}
+
 static void OnTaskRequestPacket(dcclite::Packet &packet)
 {
 	using namespace dcclite;
@@ -720,6 +731,10 @@ static void OnTaskRequestPacket(dcclite::Packet &packet)
 
 		case NetworkTaskTypes::TASK_CLEAR_EEPROM:
 			ClearEEPromTaskHandler(packet);
+			break;
+
+		case NetworkTaskTypes::TASK_NET_TEST:
+			NetTestTaskHandler(packet);
 			break;
 
 		default:

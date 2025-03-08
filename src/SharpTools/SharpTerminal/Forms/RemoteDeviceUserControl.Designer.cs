@@ -48,6 +48,7 @@ namespace SharpTerminal
 			m_btnEmulate = new System.Windows.Forms.Button();
 			m_btnBlock = new System.Windows.Forms.Button();
 			m_btnReboot = new System.Windows.Forms.Button();
+			m_btnNetworkTest = new System.Windows.Forms.Button();
 			groupBox1 = new System.Windows.Forms.GroupBox();
 			groupBox1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)m_gridMain).BeginInit();
@@ -190,10 +191,22 @@ namespace SharpTerminal
 			m_btnReboot.UseVisualStyleBackColor = true;
 			m_btnReboot.Click += m_btnReboot_Click;
 			// 
+			// m_btnNetworkTest
+			// 
+			m_btnNetworkTest.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+			m_btnNetworkTest.Location = new System.Drawing.Point(435, 323);
+			m_btnNetworkTest.Name = "m_btnNetworkTest";
+			m_btnNetworkTest.Size = new System.Drawing.Size(75, 23);
+			m_btnNetworkTest.TabIndex = 8;
+			m_btnNetworkTest.Text = "Network...";
+			m_btnNetworkTest.UseVisualStyleBackColor = true;
+			m_btnNetworkTest.Click += m_btnNetworkTest_Click;
+			// 
 			// RemoteDeviceUserControl
 			// 
 			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			Controls.Add(m_btnNetworkTest);
 			Controls.Add(m_btnReboot);
 			Controls.Add(m_btnBlock);
 			Controls.Add(m_btnEmulate);
@@ -224,5 +237,6 @@ namespace SharpTerminal
 		private System.Windows.Forms.Button m_btnEmulate;
 		private System.Windows.Forms.Button m_btnBlock;
 		private System.Windows.Forms.Button m_btnReboot;
+		private System.Windows.Forms.Button m_btnNetworkTest;
 	}
 }

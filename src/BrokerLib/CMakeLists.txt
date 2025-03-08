@@ -103,6 +103,8 @@ add_library(
         sys/ZeroConfSystem.h
         terminal/DeviceClearEEPromCmd.cpp
         terminal/DeviceClearEEPromCmd.h
+        terminal/DeviceNetworkTestCmds.cpp
+        terminal/DeviceNetworkTestCmds.h      
         terminal/DeviceRenameCmd.cpp
         terminal/DeviceRenameCmd.h
 		terminal/ServiceCmdBase.cpp

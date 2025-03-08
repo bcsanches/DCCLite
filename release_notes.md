@@ -4,6 +4,7 @@
 
 - Sensor decoder activate delay and deactivate delay now support milliseconds
 - Added reboot command to remotely reboot devices
+- Added network device connection tester
 
 ## Broker
 

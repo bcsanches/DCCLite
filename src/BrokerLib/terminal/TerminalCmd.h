@@ -192,6 +192,13 @@ namespace dcclite::broker
 			}		
 	};
 
+	/**
+	* 
+	* This is not a real fiber, but we call it as it stays "alive" waiting a for most cases 
+	* a network device task to complete
+	*
+	*
+	*/
 	class TerminalCmdFiber
 	{
 		public:
