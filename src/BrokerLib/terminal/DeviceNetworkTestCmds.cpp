@@ -88,7 +88,7 @@ namespace dcclite::broker
 				results.AddIntValue("sentPacketsCount", netTastkResults.m_uSentPacketsCount);
 				results.AddIntValue("receivedPacketsCount", netTastkResults.m_uReceivedPacketsCount);
 				results.AddIntValue("outOfSyncPacketsCount", netTastkResults.m_uOutOfSyncPacketsCount);
-				results.AddIntValue("latency", netTastkResults.m_tLatency.count());
+				results.AddIntValue("latency", static_cast<int>(netTastkResults.m_tLatency.count()));
 			}
 		);
 	}

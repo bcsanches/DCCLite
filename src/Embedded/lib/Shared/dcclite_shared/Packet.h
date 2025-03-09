@@ -95,9 +95,8 @@ namespace dcclite
 	constexpr uint8_t PACKET_MAX_SIZE = 128;
 
 	constexpr uint8_t MAX_DECODERS_STATES_PER_PACKET = 64;
-
-	constexpr uint16_t PROTOCOL_VERSION9 = 9;
-	constexpr uint16_t PROTOCOL_VERSION = 10;
+	
+	constexpr uint16_t PROTOCOL_VERSION = 11;
 
 	constexpr uint8_t MAX_NODE_NAME = 16;
 
@@ -187,32 +186,32 @@ namespace dcclite
 			{
 				assert((m_uIndex + 2u) < SIZE);
 
-				m_arData[m_uIndex++] = ((uint8_t *)(&data))[0];
-				m_arData[m_uIndex++] = ((uint8_t *)(&data))[1];
+				m_arData[m_uIndex++] = reinterpret_cast<uint8_t *>(&data)[0];
+				m_arData[m_uIndex++] = reinterpret_cast<uint8_t *>(&data)[1];
 			}
 			
 			inline void Write32(const uint32_t data) noexcept
 			{
 				assert(m_uIndex + sizeof(data) < SIZE);
 
-				m_arData[m_uIndex++] = ((uint8_t *)(&data))[0];
-				m_arData[m_uIndex++] = ((uint8_t *)(&data))[1];
-				m_arData[m_uIndex++] = ((uint8_t *)(&data))[2];
-				m_arData[m_uIndex++] = ((uint8_t *)(&data))[3];				
+				m_arData[m_uIndex++] = reinterpret_cast<const uint8_t *>(&data)[0];
+				m_arData[m_uIndex++] = reinterpret_cast<const uint8_t *>(&data)[1];
+				m_arData[m_uIndex++] = reinterpret_cast<const uint8_t *>(&data)[2];
+				m_arData[m_uIndex++] = reinterpret_cast<const uint8_t *>(&data)[3];
 			}
 
 			inline void Write64(uint64_t data) noexcept
 			{
 				assert(m_uIndex + sizeof(data) < SIZE);
 
-				m_arData[m_uIndex++] = ((uint8_t *)(&data))[0];
-				m_arData[m_uIndex++] = ((uint8_t *)(&data))[1];
-				m_arData[m_uIndex++] = ((uint8_t *)(&data))[2];
-				m_arData[m_uIndex++] = ((uint8_t *)(&data))[3];
-				m_arData[m_uIndex++] = ((uint8_t *)(&data))[4];
-				m_arData[m_uIndex++] = ((uint8_t *)(&data))[5];
-				m_arData[m_uIndex++] = ((uint8_t *)(&data))[6];
-				m_arData[m_uIndex++] = ((uint8_t *)(&data))[7];
+				m_arData[m_uIndex++] = reinterpret_cast<uint8_t *>(&data)[0];
+				m_arData[m_uIndex++] = reinterpret_cast<uint8_t *>(&data)[1];
+				m_arData[m_uIndex++] = reinterpret_cast<uint8_t *>(&data)[2];
+				m_arData[m_uIndex++] = reinterpret_cast<uint8_t *>(&data)[3];
+				m_arData[m_uIndex++] = reinterpret_cast<uint8_t *>(&data)[4];
+				m_arData[m_uIndex++] = reinterpret_cast<uint8_t *>(&data)[5];
+				m_arData[m_uIndex++] = reinterpret_cast<uint8_t *>(&data)[6];
+				m_arData[m_uIndex++] = reinterpret_cast<uint8_t *>(&data)[7];
 			}
 
 			inline void Write(const Guid &guid) noexcept
@@ -247,7 +246,7 @@ namespace dcclite
 			template <size_t NBITS>
 			inline void ReadBitPack(dcclite::BitPack<NBITS> &dest) noexcept
 			{
-				assert(m_uIndex + sizeof(dest.GetNumBytes()) < SIZE);
+				assert((m_uIndex + dest.GetNumBytes()) < SIZE);
 
 				dest.Set(m_arData + m_uIndex);
 				m_uIndex += dest.GetNumBytes();
@@ -260,7 +259,7 @@ namespace dcclite
 				
 				T num;
 
-				uint8_t *dst = (uint8_t *) &num;
+				uint8_t *dst = reinterpret_cast<uint8_t *>(&num);
 
 				for (LENSIZE i = 0; i < sizeof(num); ++i)
 					dst[i] = m_arData[m_uIndex + i];

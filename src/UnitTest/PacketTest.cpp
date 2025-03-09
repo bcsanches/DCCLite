@@ -11,6 +11,7 @@
 #include <gtest/gtest.h>
 
 #include <dcclite_shared/Packet.h>
+#include <dcclite_shared/BitPack.h>
 
 using namespace dcclite;
 
@@ -89,4 +90,42 @@ TEST(Packet, Base)
 	name[4] = '\0';
 
 	ASSERT_EQ(strcmp(name, "John"), 0);
+}
+
+TEST(Packet, BitPack)
+{
+	BasePacket<32> packet;
+
+	{
+		BitPack<32> pack;
+
+		pack.SetBit(0);
+		pack.SetBit(1);
+		pack.SetBit(2);
+		pack.SetBit(3);
+
+		pack.SetBit(28);
+		pack.SetBit(31);
+
+		packet.Write(pack);
+	}
+
+	packet.Reset();
+	{
+		BitPack<32> pack;
+		packet.ReadBitPack(pack);
+
+		ASSERT_EQ(pack[0], 1);
+		ASSERT_EQ(pack[1], 1);
+		ASSERT_EQ(pack[2], 1);
+		ASSERT_EQ(pack[3], 1);
+
+		for (int i = 4; i < 28; ++i)
+			ASSERT_EQ(pack[i], 0);
+
+		ASSERT_EQ(pack[28], 1);
+		ASSERT_EQ(pack[29], 0);
+		ASSERT_EQ(pack[30], 0);
+		ASSERT_EQ(pack[31], 1);
+	}
 }

@@ -487,7 +487,7 @@ namespace dcclite::broker
 		const auto procotolVersion = packet.Read<std::uint16_t>();
 
 		[[unlikely]]
-		if ((procotolVersion != dcclite::PROTOCOL_VERSION) && (procotolVersion != dcclite::PROTOCOL_VERSION9))
+		if (procotolVersion != dcclite::PROTOCOL_VERSION)
 		{
 			dcclite::Log::Error("[DccLiteService::{}] [OnNet_Hello] Hello from {} - {} with invalid protocol version {}, expected {}, ignoring",
 				this->GetName(),

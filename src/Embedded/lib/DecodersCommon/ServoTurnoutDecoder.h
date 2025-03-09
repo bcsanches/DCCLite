@@ -64,7 +64,7 @@ class ServoTurnoutDecoder : public Decoder
 			return true;
 		}
 
-		bool AcceptServerState(const dcclite::DecoderStates decoderState, const unsigned long ticks);
+		bool AcceptServerState(const dcclite::DecoderStates decoderState, const unsigned long ticks) override;
 
 		bool IsActive() const override
 		{

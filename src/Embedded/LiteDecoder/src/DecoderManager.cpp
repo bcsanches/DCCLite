@@ -123,7 +123,7 @@ void DecoderManager::SaveConfig(Storage::EpromStream &stream)
 	for (unsigned int i = 0; i < sizeof(token.m_bId); ++i)
 		stream.Put(token.m_bId[i]);
 
-	dcclite::DecoderTypes types[] = { 
+	const dcclite::DecoderTypes types[] = { 
 		dcclite::DecoderTypes::DEC_OUTPUT , 
 		dcclite::DecoderTypes::DEC_SENSOR,
 		dcclite::DecoderTypes::DEC_SERVO_TURNOUT,
