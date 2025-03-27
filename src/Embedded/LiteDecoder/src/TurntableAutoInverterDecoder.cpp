@@ -77,12 +77,12 @@ void TurntableAutoInverterDecoder::SaveConfig(Storage::EpromStream& stream) noex
 		stream.Put(m_arTrackPins[i].Raw());	
 }
 
-inline void TurnTrackOn(Pin &track)
+inline static void TurnTrackOn(Pin &track)
 {
 	track.DigitalWrite(Pin::VHIGH);	
 }
 
-inline void TurnTrackOff(Pin &track)
+inline static void TurnTrackOff(Pin &track)
 {
 	track.DigitalWrite(Pin::VLOW);	
 }
