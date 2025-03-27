@@ -15,14 +15,16 @@
 
 class SensorDecoder;
 
+constexpr auto TURNTABLE_AID_MAX_PINS = 2;
+
 class TurntableAutoInverterDecoder : public Decoder
 {
 	private:		
 		uint8_t			m_uSensorAIndex;
 		uint8_t			m_uSensorBIndex;
 
-		//0 and 1, trackA | 2 and 3, track B
-		Pin				m_arTrackPins[4];				
+		//0 trackA | 1 track B
+		Pin				m_arTrackPins[TURNTABLE_AID_MAX_PINS];
 
 		unsigned long	m_uWaitingTrackTurnOff = 0;
 

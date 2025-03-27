@@ -36,36 +36,27 @@ namespace dcclite::broker
 			throw std::invalid_argument(fmt::format("[TurntableAutoInverterDecoder::{}] Sensors cannot be the same: {}", this->GetName(), m_rnSensorAName));
 		}
 
-		const auto &trackAPins = params["trackPowerAPins"].GetArray();
-		const auto &trackBPins = params["trackPowerBPins"].GetArray();
+		const auto &trackAPin = params["trackPowerAPin"];
+		const auto &trackBPin = params["trackPowerBPin"];
 
-		m_arTrackAPins[0] = dcclite::BasicPin{ static_cast<PinType_t>(trackAPins[0].GetInt()) };
-		m_arTrackAPins[1] = dcclite::BasicPin{ static_cast<PinType_t>(trackAPins[1].GetInt()) };
-
-		m_arTrackBPins[0] = dcclite::BasicPin{ static_cast<PinType_t>(trackBPins[0].GetInt()) };
-		m_arTrackBPins[1] = dcclite::BasicPin{ static_cast<PinType_t>(trackBPins[1].GetInt()) };
-
+		m_pinTrackA = dcclite::BasicPin{ static_cast<PinType_t>(trackAPin.GetInt()) };		
+		m_pinTrackB = dcclite::BasicPin{ static_cast<PinType_t>(trackBPin.GetInt()) };
+		
 		auto flipIntervalData = params.FindMember("flipInterval");
 		m_u8FlipInterval = flipIntervalData != params.MemberEnd() ? flipIntervalData->value.GetInt() : m_u8FlipInterval;
 
 		auto networkDevice = m_rclDevice.TryGetINetworkDevice();		
 
-		networkDevice->Decoder_RegisterPin(*this, m_arTrackAPins[0], "trackA0");
-		networkDevice->Decoder_RegisterPin(*this, m_arTrackAPins[1], "trackA1");
-
-		networkDevice->Decoder_RegisterPin(*this, m_arTrackBPins[0], "trackB0");
-		networkDevice->Decoder_RegisterPin(*this, m_arTrackBPins[1], "trackB1");
+		networkDevice->Decoder_RegisterPin(*this, m_pinTrackA, "trackA");
+		networkDevice->Decoder_RegisterPin(*this, m_pinTrackB, "trackB");		
 	}
 
 	TurntableAutoInverterDecoder::~TurntableAutoInverterDecoder()
 	{
 		auto networkDevice = m_rclDevice.TryGetINetworkDevice();
 
-		networkDevice->Decoder_UnregisterPin(*this, m_arTrackAPins[0]);
-		networkDevice->Decoder_UnregisterPin(*this, m_arTrackAPins[1]);
-
-		networkDevice->Decoder_UnregisterPin(*this, m_arTrackBPins[0]);
-		networkDevice->Decoder_UnregisterPin(*this, m_arTrackBPins[1]);
+		networkDevice->Decoder_UnregisterPin(*this, m_pinTrackA);
+		networkDevice->Decoder_UnregisterPin(*this, m_pinTrackB);
 	}
 
 	static uint8_t FindSensorDecoderIndex(RName name, INetworkDevice_DecoderServices &service)
@@ -99,10 +90,8 @@ namespace dcclite::broker
 		packet.Write8(m_u8SensorAIndex);
 		packet.Write8(m_u8SensorBIndex);
 
-		packet.Write8(m_arTrackAPins[0].Raw());
-		packet.Write8(m_arTrackAPins[1].Raw());
-		packet.Write8(m_arTrackBPins[0].Raw());
-		packet.Write8(m_arTrackBPins[1].Raw());
+		packet.Write8(m_pinTrackA.Raw());
+		packet.Write8(m_pinTrackB.Raw());		
 	}
 
 	void TurntableAutoInverterDecoder::Serialize(dcclite::JsonOutputStream_t &stream) const
@@ -114,10 +103,7 @@ namespace dcclite::broker
 		stream.AddStringValue("sensorAName", m_rnSensorAName.GetData());
 		stream.AddStringValue("sensorBName", m_rnSensorBName.GetData());
 
-		stream.AddIntValue("trackA0Pin", m_arTrackAPins[0].Raw());
-		stream.AddIntValue("trackA1Pin", m_arTrackAPins[1].Raw());
-
-		stream.AddIntValue("trackB0Pin", m_arTrackBPins[0].Raw());
-		stream.AddIntValue("trackB1Pin", m_arTrackBPins[1].Raw());
+		stream.AddIntValue("trackAPin", m_pinTrackA.Raw());
+		stream.AddIntValue("trackBPin", m_pinTrackB.Raw());		
 	}
 }

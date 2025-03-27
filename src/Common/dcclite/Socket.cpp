@@ -439,9 +439,14 @@ namespace dcclite
 		return m_hHandle != NULL_SOCKET;
 	}
 
-	bool Socket::Send(const NetworkAddress &destination, const void *data, size_t size)
+	bool Socket::Send(const NetworkAddress &destination, const void *data, size_t size) const
 	{
-		assert(m_hHandle != NULL_SOCKET);
+		if (m_hHandle == NULL_SOCKET)
+		{
+			spdlog::error("[Socket::Send] Socket handle is null. Did you closed it?");
+
+			return false;
+		}		
 
 		auto saddr = MakeAddr(destination);
 
@@ -463,7 +468,7 @@ namespace dcclite
 		return true;
 	}
 
-	std::tuple<Socket::Status, size_t> Socket::Send(const void *data, size_t size)
+	std::tuple<Socket::Status, size_t> Socket::Send(const void *data, size_t size) const
 	{
 		assert(m_hHandle != NULL_SOCKET);
 

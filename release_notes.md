@@ -1,4 +1,16 @@
-# Version 0.10.0
+# Version ???
+
+## General Features
+
+- Turntable auto inverter now use a single output for each track
+
+## LiteDecoder
+
+- Decoders storage version bumped to 19
+
+## SharpEEPromViewer
+
+- Update to recognize new decoders storage format
 
 ## General Features
 

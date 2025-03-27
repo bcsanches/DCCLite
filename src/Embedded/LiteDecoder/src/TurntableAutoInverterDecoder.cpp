@@ -30,14 +30,12 @@ TurntableAutoInverterDecoder::TurntableAutoInverterDecoder(dcclite::Packet& pack
 	m_uSensorAIndex = packet.Read<uint8_t>();
 	m_uSensorBIndex = packet.Read<uint8_t>();
 
-	dcclite::PinType_t trackPins[4];
+	dcclite::PinType_t trackPins[TURNTABLE_AID_MAX_PINS];
 
-	for(int i = 0;i < 4; ++i)
+	for(int i = 0;i < TURNTABLE_AID_MAX_PINS; ++i)
 		trackPins[i] = packet.Read<dcclite::PinType_t>();
 	
 	this->Init(trackPins);
-
-	//Console::SendLogEx(MODULE_NAME, F("Packet"));
 }
 
 TurntableAutoInverterDecoder::TurntableAutoInverterDecoder(Storage::EpromStream& stream) noexcept:
@@ -54,9 +52,9 @@ TurntableAutoInverterDecoder::TurntableAutoInverterDecoder(Storage::EpromStream&
 	stream.Get(m_uSensorAIndex);
 	stream.Get(m_uSensorBIndex);
 	
-	dcclite::PinType_t trackPins[4];
+	dcclite::PinType_t trackPins[TURNTABLE_AID_MAX_PINS];
 
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < TURNTABLE_AID_MAX_PINS; ++i)
 		stream.Get(trackPins[i]);	
 
 	this->Init(trackPins);
@@ -75,20 +73,18 @@ void TurntableAutoInverterDecoder::SaveConfig(Storage::EpromStream& stream) noex
 	stream.Put(m_uSensorAIndex);
 	stream.Put(m_uSensorBIndex);
 
-	for(int i = 0; i < 4; ++i)
+	for(int i = 0; i < TURNTABLE_AID_MAX_PINS; ++i)
 		stream.Put(m_arTrackPins[i].Raw());	
 }
 
-inline void TurnTrackOn(Pin track[2])
+inline void TurnTrackOn(Pin &track)
 {
-	track[0].DigitalWrite(Pin::VHIGH);
-	track[1].DigitalWrite(Pin::VHIGH);
+	track.DigitalWrite(Pin::VHIGH);	
 }
 
-inline void TurnTrackOff(Pin track[2])
+inline void TurnTrackOff(Pin &track)
 {
-	track[0].DigitalWrite(Pin::VLOW);
-	track[1].DigitalWrite(Pin::VLOW);
+	track.DigitalWrite(Pin::VLOW);	
 }
 
 void TurntableAutoInverterDecoder::TurnOnTrackPower() noexcept
@@ -98,14 +94,14 @@ void TurntableAutoInverterDecoder::TurnOnTrackPower() noexcept
 		//Console::SendLogEx(MODULE_NAME, F("TurnOnTrackPower TrackB"));
 		DCCLITE_LOG_MODULE_LN(F("TurnOnTrackPower Track") << 'B');
 
-		TurnTrackOn(m_arTrackPins + 2);
+		TurnTrackOn(m_arTrackPins[1]);
 	}
 	else
 	{
 		//Console::SendLogEx(MODULE_NAME, F("TurnOnTrackPower TrackA"));
 		DCCLITE_LOG_MODULE_LN(F("TurnOnTrackPower Track") << 'A');
 
-		TurnTrackOn(m_arTrackPins);
+		TurnTrackOn(m_arTrackPins[0]);
 	}
 }
 
@@ -113,7 +109,7 @@ void TurntableAutoInverterDecoder::Init(const dcclite::PinType_t trackPins[4]) n
 {
 	using namespace dcclite;	
 
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < TURNTABLE_AID_MAX_PINS; ++i)
 	{
 		m_arTrackPins[i].Attach(trackPins[i], Pin::MODE_OUTPUT);
 		m_arTrackPins[i].DigitalWrite(Pin::VLOW);
@@ -174,7 +170,7 @@ bool TurntableAutoInverterDecoder::Update(const unsigned long ticks) noexcept
 		
 		//Console::SendLogEx(MODULE_NAME, F("Update m_pclSensorB"));
 		DCCLITE_LOG_MODULE_LN(F("Update m_pclSensorB"));
-		TurnTrackOff(m_arTrackPins + 2);
+		TurnTrackOff(m_arTrackPins[1]);
 
 		m_fFlags = m_fFlags & ~dcclite::TRTD_ACTIVE;		
 	}
@@ -191,7 +187,7 @@ bool TurntableAutoInverterDecoder::Update(const unsigned long ticks) noexcept
 		//Console::SendLogEx(MODULE_NAME, F("Update m_pclSensorA"));
 		DCCLITE_LOG_MODULE_LN(F("Update m_pclSensorA"));
 
-		TurnTrackOff(m_arTrackPins);		
+		TurnTrackOff(m_arTrackPins[0]);
 
 		m_fFlags = m_fFlags | dcclite::TRTD_ACTIVE;		
 	}

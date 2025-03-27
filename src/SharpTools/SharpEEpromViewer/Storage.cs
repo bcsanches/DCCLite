@@ -237,7 +237,7 @@ namespace SharpEEPromViewer
 		}
 	}
 
-	class TurntableAutoInverterDecoder: Item
+	class TurntableAutoInverterDecoderV018: Item
     {
         [Flags]
         enum Flags : byte
@@ -258,7 +258,7 @@ namespace SharpEEPromViewer
         public byte TrackBPin0 { get; }
         public byte TrackBPin1 { get; }
 
-        public TurntableAutoInverterDecoder(byte slot, BinaryReader reader):
+        public TurntableAutoInverterDecoderV018(byte slot, BinaryReader reader):
             base(slot, 8)
         {
             var flags = (Flags)reader.ReadByte();
@@ -277,7 +277,43 @@ namespace SharpEEPromViewer
         }
     }
 
-    class QuadInverterDecoderV016 : Item
+	class TurntableAutoInverterDecoder : Item
+	{
+		[Flags]
+		enum Flags : byte
+		{
+			TRTD_REMOTE_ACTIVE = 0x40,
+			TRTD_ACTIVE = 0x80
+		}
+
+		public bool IsActive { get; }
+
+		public byte FlipInterval { get; }
+
+		public byte SensorAIndex { get; }
+		public byte SensorBIndex { get; }
+
+		public byte TrackAPin { get; }		
+		public byte TrackBPin { get; }		
+
+		public TurntableAutoInverterDecoder(byte slot, BinaryReader reader) :
+			base(slot, 6)
+		{
+			var flags = (Flags)reader.ReadByte();
+
+			IsActive = (flags & Flags.TRTD_ACTIVE) == Flags.TRTD_ACTIVE;
+
+			FlipInterval = reader.ReadByte();
+
+			SensorAIndex = reader.ReadByte();
+			SensorBIndex = reader.ReadByte();
+
+			TrackAPin = reader.ReadByte();
+			TrackBPin = reader.ReadByte();
+		}
+	}
+
+	class QuadInverterDecoderV016 : Item
     {
         [Flags]
         enum Flags : byte
@@ -365,9 +401,10 @@ namespace SharpEEPromViewer
 			{ "Sson001\0", typeof(SessionLumpV001) },
 			{ "Sson002\0", typeof(SessionLump) },
 			{ "DECS015\0", typeof(DecodersLumpV016) },
-            { "DECS016\0", typeof(DecodersLumpV016) }, //015 and 016 the same, but 016 has QuadInverterDecoder
-            { "DECS017\0", typeof(DecodersLumpV017) }, //017 Turntable auto inverter changed
-            { "DECS018\0", typeof(DecodersLump) }, //018 Sensor using word instead of byte for delays
+            { "DECS016\0", typeof(DecodersLumpV016) },  //015 and 016 the same, but 016 has QuadInverterDecoder
+            { "DECS017\0", typeof(DecodersLumpV017) },  //017 Turntable auto inverter changed
+            { "DECS018\0", typeof(DecodersLumpV018) },  //018 Sensor using word instead of byte for delays
+            { "DECS019\0", typeof(DecodersLump) },      //019 Turntable auto inverter using single pin for each track
             { "ENDEND1\0", typeof(MarkerLump) }
         };
 
@@ -621,6 +658,78 @@ namespace SharpEEPromViewer
 		public Guid Guid { get; }
 
 		public DecodersLumpV017(string name, UInt16 size, BinaryReader reader) :
+			base(name, size)
+		{
+			if (size < 17)
+				throw new ArgumentOutOfRangeException("[DecodersLump] Must have at least 17 bytes, but got " + size);
+
+			Guid = new Guid(reader.ReadBytes(16));
+
+			var bytesLeft = size - 16;
+
+			for (; ; )
+			{
+				--bytesLeft;
+				var decType = (DecoderTypes)reader.ReadByte();
+				if (decType == DecoderTypes.DEC_NULL)
+					break;
+
+				Type decoderClassType;
+				if (!gKnownTypes.TryGetValue(decType, out decoderClassType))
+					throw new ArgumentOutOfRangeException("dectype not suppported: " + decType.ToString());
+
+				--bytesLeft;
+				var decQuantity = reader.ReadByte();
+
+				for (var i = 0; i < decQuantity; ++i)
+				{
+					--bytesLeft;
+					var slot = reader.ReadByte();
+
+					var decoder = (Item)System.Activator.CreateInstance(decoderClassType, slot, reader);
+
+					bytesLeft -= decoder.Size;
+
+					this.AddItem(decoder);
+				}
+
+			}
+
+			if (bytesLeft != 0)
+			{
+				throw new ArgumentOutOfRangeException("bytes left...");
+			}
+
+			//skip...
+			//reader.ReadBytes(size - 16);
+		}
+	}
+
+	class DecodersLumpV018 : Lump
+	{
+		enum DecoderTypes : byte
+		{
+			DEC_NULL = 0,
+			DEC_OUTPUT = 1,
+			DEC_SENSOR = 2,
+			DEC_SERVO_TURNOUT = 3,
+			DEC_SIGNAL = 4,         //Only virtual, not implemented on Arduino
+			DEC_TURNTABLE_AUTO_INVERTER = 5,
+			DEC_QUAD_INVERTER = 6
+		};
+
+		static Dictionary<DecoderTypes, Type> gKnownTypes = new()
+		{
+			{ DecoderTypes.DEC_OUTPUT,                  typeof(OutputDecoder) },
+			{ DecoderTypes.DEC_SENSOR,                  typeof(SensorDecoder) },
+			{ DecoderTypes.DEC_SERVO_TURNOUT,           typeof(ServoTurnoutDecoder) },
+			{ DecoderTypes.DEC_TURNTABLE_AUTO_INVERTER, typeof(TurntableAutoInverterDecoderV018) },
+			{ DecoderTypes.DEC_QUAD_INVERTER,           typeof(QuadInverterDecoder) }
+		};
+
+		public Guid Guid { get; }
+
+		public DecodersLumpV018(string name, UInt16 size, BinaryReader reader) :
 			base(name, size)
 		{
 			if (size < 17)

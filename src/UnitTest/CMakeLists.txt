@@ -54,6 +54,7 @@ package_add_test(UnitTest
 	SocketTest.cpp
 	StringViewTest.cpp
 	ThinkerTest.cpp
+	TurntableAutoInverterTest.cpp
 	UtilUnitTest.cpp
 )
 

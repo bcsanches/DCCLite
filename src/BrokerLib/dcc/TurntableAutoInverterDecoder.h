@@ -18,6 +18,8 @@ namespace dcclite::broker
 {
 	class SensorDecoder;
 
+	constexpr uint8_t TURNTABLE_AUTO_INVERTER_DEFAULT_FLIP_INTERVAL = 5;
+
 	class TurntableAutoInverterDecoder : public RemoteDecoder
 	{
 		public:
@@ -66,13 +68,13 @@ namespace dcclite::broker
 			RName m_rnSensorAName;
 			RName m_rnSensorBName;
 
-			dcclite::BasicPin m_arTrackAPins[2];
-			dcclite::BasicPin m_arTrackBPins[2];
+			dcclite::BasicPin m_pinTrackA;
+			dcclite::BasicPin m_pinTrackB;
 
 			uint8_t		m_u8SensorAIndex = 0;
 			uint8_t		m_u8SensorBIndex = 0;		
 
-			uint8_t		m_u8FlipInterval = 5;
+			uint8_t		m_u8FlipInterval = TURNTABLE_AUTO_INVERTER_DEFAULT_FLIP_INTERVAL;
 	};
 
 }

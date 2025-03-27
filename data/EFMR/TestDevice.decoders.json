@@ -25,8 +25,8 @@
     "address": "0x116",
     "sensorA": "TurntableSensorA",
     "sensorB": "TurntableSensorB",    
-    "trackPowerAPins": [30, 31],
-    "trackPowerBPins": [32, 33]
+    "trackPowerAPin": 30,
+    "trackPowerBPin": 31
   },
   {
     "name": "QuadInverter",

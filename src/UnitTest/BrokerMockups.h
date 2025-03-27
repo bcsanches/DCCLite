@@ -10,6 +10,10 @@
 
 #pragma once
 
+#include <map>
+#include <vector>
+
+#include "dcc/Decoder.h"
 #include "dcc/IDccLiteService.h"
 #include "dcc/IDevice.h"
 
@@ -23,30 +27,58 @@ namespace dcclite::broker
 
 class NetworkDeviceDecoderServicesMockup: public dcclite::broker::INetworkDevice_DecoderServices
 {
+	private:
+		std::map<dcclite::RName, dcclite::broker::Decoder *> m_mapDecoders;
+		std::vector< dcclite::broker::Decoder *> m_vecDecoders;
+
 	public:
 		void Decoder_RegisterPin(const dcclite::broker::RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage) override
 		{
-
+			//empty
 		}
 
 		void Decoder_UnregisterPin(const dcclite::broker::RemoteDecoder &decoder, dcclite::BasicPin pin) override
 		{
-
+			//empty
 		}
 
 		[[nodiscard]] dcclite::broker::Decoder &FindDecoder(const dcclite::RName name) const override
 		{
-			throw std::exception("Not implemented: FindDecoder");
+			auto it = m_mapDecoders.find(name);
+			if (it == m_mapDecoders.end())
+			{
+				throw std::exception("Decoder not found");
+			}
+
+			return *(it->second);
 		}
 
 		[[nodiscard]] uint8_t FindDecoderIndex(const dcclite::broker::Decoder &decoder) const override
 		{
-			throw std::exception("Not implemented: FindDecoderIndex");
+			auto it = std::find(m_vecDecoders.begin(), m_vecDecoders.end(), &decoder);
+			if (it == m_vecDecoders.end())
+				throw std::exception("Decoder not registered");
+
+			if (m_vecDecoders.size() > 255)
+				throw std::exception("too many decoders, which arduino are you using?");
+
+			return static_cast<uint8_t>(it - m_vecDecoders.begin());
 		}
 
 		[[nodiscard]] uint16_t GetProtocolVersion() const noexcept override
 		{
 			return 0;
+		}
+
+		void RegisterDecoder(dcclite::broker::Decoder &decoder)
+		{
+			if (m_mapDecoders.find(decoder.GetName()) != m_mapDecoders.end())
+			{
+				throw std::exception("decoder already registered");
+			}
+
+			m_mapDecoders.insert(std::make_pair(decoder.GetName(), &decoder));
+			m_vecDecoders.push_back(&decoder);
 		}
 };
 
@@ -71,6 +103,11 @@ class DeviceDecoderServicesMockup : public dcclite::broker::IDevice_DecoderServi
 		void Decoder_OnChangeStateRequest(const dcclite::broker::Decoder &decoder) noexcept override
 		{
 			//empty
+		}
+
+		void RegisterDecoder(dcclite::broker::Decoder &decoder)
+		{
+			m_DecoderServices.RegisterDecoder(decoder);			
 		}
 
 	private:

@@ -8,7 +8,6 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-using System;
 using System.Json;
 using System.ComponentModel;
 using System.Runtime.Versioning;
@@ -408,7 +407,7 @@ namespace SharpTerminal
 
         public override IRemoteObjectAction[] GetActions()
         {
-            return new IRemoteObjectAction[2] { g_FlipAction, gProgrammerAction };
+            return [g_FlipAction, gProgrammerAction];
         }
 
         protected override void OnUpdateState(JsonValue objectDef)
