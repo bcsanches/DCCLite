@@ -7,156 +7,159 @@ namespace SharpEEPromViewer
 {
 	[SupportedOSPlatform("windows")]
 	public partial class MainForm : Form
-    {        
-        public MainForm(string param = null)
-        {
-            InitializeComponent();
+	{
+		public MainForm(string param = null)
+		{
+			InitializeComponent();
 
-            DefaultIcons.LoadIcons(mImageList);
-            mTreeView.ImageList = mImageList;
+			this.KeyPreview = true;
 
-            if (param != null)
-                this.LoadEEProm(param);                
-        }        
+			DefaultIcons.LoadIcons(mImageList);
+			mTreeView.ImageList = mImageList;
 
-        private void btnExit_Click(object sender, EventArgs e)
-        {
-            this.Close();
-        }
+			if (param != null)
+				this.LoadEEProm(param);
+		}
 
-        private void LoadEEProm(string filePath)
-        {
-            using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-            {
-				this.LoadEEProm(fileStream);
-			}
+		private void btnExit_Click(object sender, EventArgs e)
+		{
+			this.Close();
+		}
+
+		private void LoadEEProm(string filePath)
+		{
+			using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+			
+			this.LoadEEProm(fileStream);			
 
 			this.Text = filePath;
-        }        
+		}
 
-        private static void ConfigureNode(TreeNode node, Lump lump)
-        {
-            node.ImageKey = DefaultIcons.FOLDER_ICON;
-            node.SelectedImageKey = DefaultIcons.FOLDER_ICON;
-            node.Tag = lump;
+		private static void ConfigureNode(TreeNode node, Lump lump)
+		{
+			node.ImageKey = DefaultIcons.FOLDER_ICON;
+			node.SelectedImageKey = DefaultIcons.FOLDER_ICON;
+			node.Tag = lump;
 
-            var items = lump.Items;
-            if (items == null)
-                return;
+			var items = lump.Items;
+			if (items == null)
+				return;
 
-
-            foreach(var item in items)
-            {
-                var name = item.GetType().Name;
+			foreach (var item in items)
+			{
+				var name = item.GetType().Name;
 
 				var itemNode = node.Nodes.Add(item.Deprecated ? name + " - DEPRECATED" : name);
-                itemNode.Tag = item;
+				itemNode.Tag = item;
 
-                itemNode.ImageKey = DefaultIcons.FILE_GEAR_ICON;
-                itemNode.SelectedImageKey = DefaultIcons.FILE_GEAR_ICON;
-            }
-        }
+				itemNode.ImageKey = DefaultIcons.FILE_GEAR_ICON;
+				itemNode.SelectedImageKey = DefaultIcons.FILE_GEAR_ICON;
+			}
+		}
 
-        private static void FillTree_r(TreeNode parent, Lump lump)
-        {
-            if (lump.Children == null)
-                return;
+		private static void FillTree_r(TreeNode parent, Lump lump)
+		{
+			if (lump.Children == null)
+				return;
 
-            foreach(var child in lump.Children)
-            {
-                var node = parent.Nodes.Add(child.Deprecated ? child.Name + " - DEPRECATED" : child.Name);
+			foreach (var child in lump.Children)
+			{
+				var node = parent.Nodes.Add(child.Deprecated ? child.Name + " - DEPRECATED" : child.Name);
 
-                ConfigureNode(node, child);
+				ConfigureNode(node, child);
 
-                FillTree_r(node, child);
-            }            
-        }
+				FillTree_r(node, child);
+			}
+		}
 
-        private void LoadEEProm(Stream stream)
-        {
-            try
-            {
-				using (var reader = new System.IO.BinaryReader(stream, System.Text.Encoding.ASCII))
-                {
-					var lump = Lump.Create(reader);
+		private void LoadEEProm(Stream stream)
+		{
+			try
+			{
+				using var reader = new System.IO.BinaryReader(stream, System.Text.Encoding.ASCII);
+				var lump = Lump.Create(reader);
 
-					if (lump is not RootLump)
-					{
-						MessageBox.Show("Error: file does not contains a valid header", "Error reading", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				if (lump is not RootLump)
+				{
+					MessageBox.Show("Error: file does not contains a valid header", "Error reading", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-						return;
-					}
+					return;
+				}
 
-					//so far it appears that the EEProm is fine, so clear and load
-					this.Clear();
+				//so far it appears that the EEProm is fine, so clear and load
+				this.Clear();
 
-					mTreeView.Nodes.Add(lump.Deprecated ? lump.Name + " - DEPRECATED" : lump.Name);
+				mTreeView.Nodes.Add(lump.Deprecated ? lump.Name + " - DEPRECATED" : lump.Name);
 
-					var node = mTreeView.Nodes[0];
+				var node = mTreeView.Nodes[0];
 
-					ConfigureNode(node, lump);
+				ConfigureNode(node, lump);
 
-					FillTree_r(node, lump);
+				FillTree_r(node, lump);
 
-					node.ExpandAll();
-				}					
-            }
-            catch (Exception ex)
-            {
-                if (ex.InnerException != null)
-                    ex = ex.InnerException;
+				node.ExpandAll();
+			}
+			catch (Exception ex)
+			{
+				if (ex.InnerException != null)
+					ex = ex.InnerException;
 
-                MessageBox.Show("Error: Loading EEPROM failed: " + ex.Message, "Error loading data", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show("Error: Loading EEPROM failed: " + ex.Message, "Error loading data", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-                mSplitContainer.Panel2.Controls.Clear();
-                mTreeView.Nodes.Clear();
+				mSplitContainer.Panel2.Controls.Clear();
+				mTreeView.Nodes.Clear();
 
-                return;
-            }
-            
-        }
+				return;
+			}
 
-        private void openToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
-            {
-                openFileDialog.Filter = "rom files (*.rom)|*.rom|All files (*.*)|*.*";
-                openFileDialog.FilterIndex = 2;
+		}
 
-                if (openFileDialog.ShowDialog() != DialogResult.OK)
-                    return;
+		private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			using OpenFileDialog openFileDialog = new OpenFileDialog();
+			openFileDialog.Filter = "rom files (*.rom)|*.rom|All files (*.*)|*.*";
+			openFileDialog.FilterIndex = 2;
 
-                //Get the path of specified file
-                var filePath = openFileDialog.FileName;
+			if (openFileDialog.ShowDialog() != DialogResult.OK)
+				return;
 
-                //Read the contents of the file into a stream
-                using var fileStream = openFileDialog.OpenFile();
+			//Get the path of specified file
+			var filePath = openFileDialog.FileName;
 
-                this.LoadEEProm(fileStream);
-                
-                //fileStream.ReadByte
-            }
-        }
+			//Read the contents of the file into a stream
+			using var fileStream = openFileDialog.OpenFile();
 
-        private void Clear()
-        {
-            mTreeView.Nodes.Clear();
-        }
+			this.LoadEEProm(fileStream);
+		}
 
-        private void mTreeView_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-            var selectedNode = mTreeView.SelectedNode;
+		private void Clear()
+		{
+			mTreeView.Nodes.Clear();
+		}
 
-            mSplitContainer.Panel2.Controls.Clear();
+		private void mTreeView_AfterSelect(object sender, TreeViewEventArgs e)
+		{
+			var selectedNode = mTreeView.SelectedNode;
 
-            if (selectedNode == null)            
-                return;
-                        
-            var inspector = new ObjectInspectorUserControl(selectedNode.Tag);
-            mSplitContainer.Panel2.Controls.Clear();
+			mSplitContainer.Panel2.Controls.Clear();
 
-            inspector.Dock = DockStyle.Fill;
-            mSplitContainer.Panel2.Controls.Add(inspector);
-        }
-    }
+			if (selectedNode == null)
+				return;
+
+			var inspector = new ObjectInspectorUserControl(selectedNode.Tag);
+			mSplitContainer.Panel2.Controls.Clear();
+
+			inspector.Dock = DockStyle.Fill;
+			mSplitContainer.Panel2.Controls.Add(inspector);
+		}
+
+		private void MainForm_KeyUp(object sender, KeyEventArgs e)
+		{
+			if((e.KeyCode == Keys.O) && (e.Modifiers == Keys.Control))
+			{
+				this.OpenToolStripMenuItem_Click(sender, e);
+				e.Handled = true;
+			}
+		}
+	}
 }

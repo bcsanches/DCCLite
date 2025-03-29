@@ -11,6 +11,13 @@
 ## SharpEEPromViewer
 
 - Update to recognize new decoders storage format
+- Make CTRL+O works
+
+## Broker
+
+- Fix bug on ReadEEPromCmd that causes uncaught exception if operation is aborted
+
+# Version 0.10.0
 
 ## General Features
 

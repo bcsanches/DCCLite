@@ -536,7 +536,8 @@ namespace dcclite::broker
 			{
 				//
 				//Must wait, so we make sure the thread will not fire a event after it is destroyed
-				m_Future.wait();
+				if(m_Future.valid())
+					m_Future.wait();
 
 				EventHub::CancelEvents(*this);
 			}
