@@ -27,6 +27,22 @@ DCCLite
 	- decoders may have no device
 	- keep decoders type inside the device, do not leak specific decoders code to outside
 
+- Create SignalLogic
+	- new entity, used to control signals.
+	- It will refer to a Signal and set its aspects
+	- states:
+		- danger: signal starts on danger state, runs danger logic, if still in danger, waits for any condition to change
+			- if not in danger, stays idle
+	- Contains
+		- danger / stop logic: list of turnouts, sensors, returns true with in danger.
+		- aspects, for example:
+			- Clear: contains list of turnouts, sensors, returns true if aspect can be set
+			- Slow:  contains list of turnouts, sensors, returns true if aspect can be set
+
+		- When an aspect is set, the signal locks its turnouts and monitor sensors / rouse_sections
+			- hint route_section of the expected direction
+
+
 - Make all terminal commands rely on paths instead of a device name
 
 - Lua script failing to reload, seems to be a problem with sections
@@ -34,6 +50,7 @@ DCCLite
 - Implement coroutine support on lua scripts?
 
 - update route section to know next section and avoid re-ocupying the block
+- it may have a direction set (will be used by signal logic)
 
 - Make a EngineDriver Server, redirect to DCCex Directly and goodbye JMRI
 

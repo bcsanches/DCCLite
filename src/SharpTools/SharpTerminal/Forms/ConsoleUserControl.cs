@@ -281,6 +281,26 @@ namespace SharpTerminal
             Console_Println("Call failed for " + id + ": " + msg);            
         }
 
+        public void HandleReadEEPromResult(JsonObject responseObj)
+        {
+			var filePath = responseObj["filepath"];
+			Console_Println("Stored EEPROM at " + filePath);
+
+			String viewerPath = Util.FindExecutable("SharpEEpromViewer");
+			if (viewerPath == null)
+			{
+				MessageBox.Show("Cannot locate SharpEEPromViewer.exe", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
+			}
+
+			var process = new System.Diagnostics.Process();
+			process.StartInfo.FileName = viewerPath;
+			process.StartInfo.Arguments = filePath;
+			process.StartInfo.UseShellExecute = false;
+
+			process.Start();
+		}
+
         void IResponseHandler.OnResponse(JsonValue response, int id)
         {            
             if (response.JsonType == JsonType.Object)
@@ -316,23 +336,7 @@ namespace SharpTerminal
 
                     case "ReadEEPromResult":                        
                         {
-                            var filePath = responseObj["filepath"];
-                            Console_Println("Stored EEPROM at " + filePath);
-
-                            String viewerPath = Util.FindExecutable("SharpEEpromViewer");
-                            if(viewerPath == null)
-                            {
-								MessageBox.Show("Cannot locate SharpEEPromViewer.exe", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-								break;
-							}                            
-
-                            var process = new System.Diagnostics.Process();
-                            process.StartInfo.FileName = viewerPath;
-                            //process.StartInfo.WorkingDirectory = System.IO.Path.GetDirectoryName(mAvrDude.GetName());
-                            process.StartInfo.Arguments = filePath;
-                            process.StartInfo.UseShellExecute = false;
-
-                            process.Start();                            
+                            HandleReadEEPromResult(responseObj);
                         }
 
                         break;

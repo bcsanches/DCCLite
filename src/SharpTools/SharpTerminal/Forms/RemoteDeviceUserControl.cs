@@ -11,6 +11,7 @@
 using SharpTerminal.Forms;
 using System;
 using System.Drawing;
+using System.Json;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Windows.Forms;
@@ -74,6 +75,7 @@ namespace SharpTerminal
 			m_btnReboot.Enabled = onlineDevice;
 			m_btnClear.Enabled = onlineDevice;
 			m_btnNetworkTest.Enabled = onlineDevice;
+			m_btnReadEEPROM.Enabled = onlineDevice;
 
 			m_btnEmulate.Enabled = !onlineDevice;
 		}
@@ -158,6 +160,19 @@ namespace SharpTerminal
 		{
 			using var form = new NetworkTestForm(mRemoteDevice, mConsole);
 			form.ShowDialog();
+		}
+
+		private async void m_btnReadEEPROM_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				var result = await mConsole.RequestAsync(["Read-EEProm", mRemoteDevice.Path]);
+				mConsole.HandleReadEEPromResult((JsonObject)result);
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show("Error: " + ex.Message, "Operation failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
 		}
 	}
 }

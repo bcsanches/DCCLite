@@ -5,9 +5,9 @@
     "pin":20,
     "address":"0x114",
     "pullup":true,
-    "inverted":false,
-    "activateDelay":0,
-    "deactivateDelay":0
+    "inverted":true,
+    "activateDelayMs":5,
+    "deactivateDelayMs":5
   },
   {
     "name":"TurntableSensorB",
@@ -15,9 +15,9 @@
     "pin":21,
     "address":"0x115",
     "pullup":true,
-    "inverted":false,
-    "activateDelay":0,
-    "deactivateDelay":0
+    "inverted":true,
+    "activateDelayMs":5,
+    "deactivateDelayMs":5
   },  
   {
     "name": "TurntableInverter",

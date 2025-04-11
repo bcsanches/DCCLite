@@ -11,7 +11,10 @@ namespace SharpTerminal
 
         Task<JsonValue> RequestAsync(params object[] vargs);
 
-        void Println(string text);
+        void HandleReadEEPromResult(JsonObject responseObj);
+
+
+		void Println(string text);
         void Clear();
     }
 }

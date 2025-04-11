@@ -8,6 +8,10 @@
 
 - Decoders storage version bumped to 19
 
+## SharpTerminal
+
+- Added button to read EEPROM from device panel
+
 ## SharpEEPromViewer
 
 - Update to recognize new decoders storage format
@@ -16,6 +20,7 @@
 ## Broker
 
 - Fix bug on ReadEEPromCmd that causes uncaught exception if operation is aborted
+- ReadEEPromCmd now uses device path instead of system and device name
 
 # Version 0.10.0
 

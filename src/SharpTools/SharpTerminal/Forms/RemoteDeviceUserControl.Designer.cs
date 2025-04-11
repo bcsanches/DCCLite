@@ -49,20 +49,23 @@ namespace SharpTerminal
 			m_btnBlock = new System.Windows.Forms.Button();
 			m_btnReboot = new System.Windows.Forms.Button();
 			m_btnNetworkTest = new System.Windows.Forms.Button();
+			m_btnReadEEPROM = new System.Windows.Forms.Button();
+			flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
 			groupBox1 = new System.Windows.Forms.GroupBox();
 			groupBox1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)m_gridMain).BeginInit();
+			flowLayoutPanel1.SuspendLayout();
 			SuspendLayout();
 			// 
 			// groupBox1
 			// 
 			groupBox1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
 			groupBox1.Controls.Add(m_gridMain);
-			groupBox1.Location = new System.Drawing.Point(4, 42);
+			groupBox1.Location = new System.Drawing.Point(116, 42);
 			groupBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			groupBox1.Name = "groupBox1";
 			groupBox1.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-			groupBox1.Size = new System.Drawing.Size(594, 275);
+			groupBox1.Size = new System.Drawing.Size(510, 352);
 			groupBox1.TabIndex = 2;
 			groupBox1.TabStop = false;
 			groupBox1.Text = "Pins";
@@ -81,7 +84,7 @@ namespace SharpTerminal
 			m_gridMain.ReadOnly = true;
 			m_gridMain.RowHeadersVisible = false;
 			m_gridMain.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-			m_gridMain.Size = new System.Drawing.Size(586, 253);
+			m_gridMain.Size = new System.Drawing.Size(502, 330);
 			m_gridMain.TabIndex = 0;
 			// 
 			// Column1
@@ -137,9 +140,9 @@ namespace SharpTerminal
 			// m_btnRename
 			// 
 			m_btnRename.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
-			m_btnRename.Location = new System.Drawing.Point(8, 323);
+			m_btnRename.Location = new System.Drawing.Point(3, 3);
 			m_btnRename.Name = "m_btnRename";
-			m_btnRename.Size = new System.Drawing.Size(75, 23);
+			m_btnRename.Size = new System.Drawing.Size(97, 23);
 			m_btnRename.TabIndex = 3;
 			m_btnRename.Text = "Rename...";
 			m_btnRename.UseVisualStyleBackColor = true;
@@ -148,7 +151,7 @@ namespace SharpTerminal
 			// m_btnClear
 			// 
 			m_btnClear.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
-			m_btnClear.Location = new System.Drawing.Point(89, 323);
+			m_btnClear.Location = new System.Drawing.Point(3, 32);
 			m_btnClear.Name = "m_btnClear";
 			m_btnClear.Size = new System.Drawing.Size(97, 23);
 			m_btnClear.TabIndex = 4;
@@ -160,9 +163,9 @@ namespace SharpTerminal
 			// 
 			m_btnEmulate.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
 			m_btnEmulate.Enabled = false;
-			m_btnEmulate.Location = new System.Drawing.Point(192, 323);
+			m_btnEmulate.Location = new System.Drawing.Point(3, 90);
 			m_btnEmulate.Name = "m_btnEmulate";
-			m_btnEmulate.Size = new System.Drawing.Size(75, 23);
+			m_btnEmulate.Size = new System.Drawing.Size(97, 23);
 			m_btnEmulate.TabIndex = 5;
 			m_btnEmulate.Text = "Emulate";
 			m_btnEmulate.UseVisualStyleBackColor = true;
@@ -172,9 +175,9 @@ namespace SharpTerminal
 			// 
 			m_btnBlock.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
 			m_btnBlock.Enabled = false;
-			m_btnBlock.Location = new System.Drawing.Point(273, 323);
+			m_btnBlock.Location = new System.Drawing.Point(3, 119);
 			m_btnBlock.Name = "m_btnBlock";
-			m_btnBlock.Size = new System.Drawing.Size(75, 23);
+			m_btnBlock.Size = new System.Drawing.Size(97, 23);
 			m_btnBlock.TabIndex = 6;
 			m_btnBlock.Text = "Block";
 			m_btnBlock.UseVisualStyleBackColor = true;
@@ -183,9 +186,9 @@ namespace SharpTerminal
 			// 
 			m_btnReboot.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
 			m_btnReboot.Enabled = false;
-			m_btnReboot.Location = new System.Drawing.Point(354, 323);
+			m_btnReboot.Location = new System.Drawing.Point(3, 148);
 			m_btnReboot.Name = "m_btnReboot";
-			m_btnReboot.Size = new System.Drawing.Size(75, 23);
+			m_btnReboot.Size = new System.Drawing.Size(97, 23);
 			m_btnReboot.TabIndex = 7;
 			m_btnReboot.Text = "Reboot";
 			m_btnReboot.UseVisualStyleBackColor = true;
@@ -194,31 +197,53 @@ namespace SharpTerminal
 			// m_btnNetworkTest
 			// 
 			m_btnNetworkTest.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
-			m_btnNetworkTest.Location = new System.Drawing.Point(435, 323);
+			m_btnNetworkTest.Location = new System.Drawing.Point(3, 177);
 			m_btnNetworkTest.Name = "m_btnNetworkTest";
-			m_btnNetworkTest.Size = new System.Drawing.Size(75, 23);
+			m_btnNetworkTest.Size = new System.Drawing.Size(97, 23);
 			m_btnNetworkTest.TabIndex = 8;
 			m_btnNetworkTest.Text = "Network...";
 			m_btnNetworkTest.UseVisualStyleBackColor = true;
 			m_btnNetworkTest.Click += m_btnNetworkTest_Click;
 			// 
+			// m_btnReadEEPROM
+			// 
+			m_btnReadEEPROM.Location = new System.Drawing.Point(3, 61);
+			m_btnReadEEPROM.Name = "m_btnReadEEPROM";
+			m_btnReadEEPROM.Size = new System.Drawing.Size(97, 23);
+			m_btnReadEEPROM.TabIndex = 9;
+			m_btnReadEEPROM.Text = "Read EEPROM";
+			m_btnReadEEPROM.UseVisualStyleBackColor = true;
+			m_btnReadEEPROM.Click += m_btnReadEEPROM_Click;
+			// 
+			// flowLayoutPanel1
+			// 
+			flowLayoutPanel1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+			flowLayoutPanel1.Controls.Add(m_btnRename);
+			flowLayoutPanel1.Controls.Add(m_btnClear);
+			flowLayoutPanel1.Controls.Add(m_btnReadEEPROM);
+			flowLayoutPanel1.Controls.Add(m_btnEmulate);
+			flowLayoutPanel1.Controls.Add(m_btnBlock);
+			flowLayoutPanel1.Controls.Add(m_btnReboot);
+			flowLayoutPanel1.Controls.Add(m_btnNetworkTest);
+			flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+			flowLayoutPanel1.Location = new System.Drawing.Point(4, 42);
+			flowLayoutPanel1.Name = "flowLayoutPanel1";
+			flowLayoutPanel1.Size = new System.Drawing.Size(105, 352);
+			flowLayoutPanel1.TabIndex = 10;
+			// 
 			// RemoteDeviceUserControl
 			// 
 			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			Controls.Add(m_btnNetworkTest);
-			Controls.Add(m_btnReboot);
-			Controls.Add(m_btnBlock);
-			Controls.Add(m_btnEmulate);
-			Controls.Add(m_btnClear);
-			Controls.Add(m_btnRename);
+			Controls.Add(flowLayoutPanel1);
 			Controls.Add(groupBox1);
 			Controls.Add(m_lbTitle);
 			Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			Name = "RemoteDeviceUserControl";
-			Size = new System.Drawing.Size(601, 349);
+			Size = new System.Drawing.Size(629, 397);
 			groupBox1.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)m_gridMain).EndInit();
+			flowLayoutPanel1.ResumeLayout(false);
 			ResumeLayout(false);
 			PerformLayout();
 		}
@@ -238,5 +263,7 @@ namespace SharpTerminal
 		private System.Windows.Forms.Button m_btnBlock;
 		private System.Windows.Forms.Button m_btnReboot;
 		private System.Windows.Forms.Button m_btnNetworkTest;
+		private System.Windows.Forms.Button m_btnReadEEPROM;
+		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
 	}
 }

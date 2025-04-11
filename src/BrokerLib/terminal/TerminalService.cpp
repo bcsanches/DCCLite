@@ -641,29 +641,16 @@ namespace dcclite::broker
 			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document& request) override
 			{
 				auto paramsIt = request.FindMember("params");
-				if (paramsIt->value.Size() < 2)
+				if (paramsIt->value.Size() < 1)
 				{
-					throw TerminalCmdException(fmt::format("Usage: {} <dccSystem> <device>", this->GetName()), id);
-				}				
-
-				auto systemName = paramsIt->value[0].GetString();
-				auto deviceName{ RName::Get(paramsIt->value[1].GetString()) };
-
-				auto &service = this->GetDccLiteService(context, id, systemName);
-
-				auto device = service.TryFindDeviceByName(deviceName);
-				if (device == nullptr)
-				{
-					throw TerminalCmdException(fmt::format("Device {} not found on {} system", deviceName, systemName), id);
+					throw TerminalCmdException(fmt::format("Usage: {} <itemPath>", this->GetName()), id);
 				}
 
-				auto networkDevice = dynamic_cast<NetworkDevice *>(device);
-				if (networkDevice == nullptr)
-				{
-					throw TerminalCmdException(fmt::format("Device {} on {} system is NOT a network device", deviceName, systemName), id);
-				}				
+				auto locationParam = paramsIt->value[0].GetString();
 
-				return std::make_unique<ReadEEPromFiber>(id, context, *networkDevice);
+				auto &networkDevice = detail::GetNetworkDevice(dcclite::Path_t(locationParam), context, id);				
+
+				return std::make_unique<ReadEEPromFiber>(id, context, networkDevice);
 			}
 	};
 
