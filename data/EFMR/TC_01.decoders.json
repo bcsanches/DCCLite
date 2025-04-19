@@ -1,0 +1,32 @@
+[
+	{
+		"name":"TC_TurntableSensorA",
+		"class":"Sensor",
+		"pin":49,
+		"address":"1451",
+		"pullup":true,
+		"inverted":true,
+		"activateDelayMs":0,
+		"deactivateDelayMs":50
+	},
+	{
+		"name":"TC_TurntableSensorB",
+		"class":"Sensor",
+		"pin":48,
+		"address":"1452",
+		"pullup":true,
+		"inverted":true,
+		"activateDelayMs":0,
+		"deactivateDelayMs":50
+	},  
+	{
+		"name": "TC_TurntableInverter",
+		"class": "TurntableAutoInverter",
+		"address": "1450",
+		"sensorA": "TC_TurntableSensorA",
+		"sensorB": "TC_TurntableSensorB",    
+		"trackPowerAPin": 47,
+		"trackPowerBPin": 46,
+		"flipInterval":5
+	}
+]

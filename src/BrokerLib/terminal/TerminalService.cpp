@@ -15,8 +15,8 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
+#include <thread>
 
-#include <dcclite/Log.h>
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Util.h>
 
@@ -39,8 +39,6 @@
 #include "TerminalClient.h"
 #include "TerminalCmd.h"
 #include "TerminalUtils.h"
-
-#include <thread>
 
 using namespace std::chrono_literals;
 
