@@ -19,6 +19,11 @@ DCCLite
 		- SharpTerminal will be able to set this externalVoltage value
 
 - Change DccDevice decoder structure: expose a DecoderProxy, that is never destroyed.
+	- Instead, when a device file changes, reload everything?
+		+ This makes everything simpler
+		+ Changes are not expected all the time
+		+ reload time is minimal
+		- Runtime editing is gone...
 	- How sharpterminal will handle the "mutating" objects?
 		- Send a object update that will change the internal structure?
 	- This will make all code around simple, no need for handling create / destroy events
