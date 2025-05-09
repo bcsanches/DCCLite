@@ -117,6 +117,105 @@
         "comment":"Power track L46 - deposito"
     },
     {
+        "name": "TC_PL50",
+        "class": "Output",
+        "address": 1350,
+        "pin": 7,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L50 - lateral rotunda"
+    },
+    {
+        "name": "TC_PL52",
+        "class": "Output",
+        "address": 1352,
+        "pin": 8,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L52 - rotunda"
+    },
+    {
+        "name": "TC_PL54",
+        "class": "Output",
+        "address": 1354,
+        "pin": 9,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L54 - rotunda"
+    },
+    {
+        "name": "TC_PL56",
+        "class": "Output",
+        "address": 1356,
+        "pin": 22,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L56 - rotunda"
+    },
+	{
+        "name": "TC_PL58",
+        "class": "Output",
+        "address": 1358,
+        "pin": 24,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L58 - rotunda"
+    },
+	{
+        "name": "TC_PL60",
+        "class": "Output",
+        "address": 1360,
+        "pin": 26,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L60 - rotunda"
+    },
+	{
+        "name": "TC_PL62",
+        "class": "Output",
+        "address": 1362,
+        "pin": 28,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L62 - rotunda"
+    },
+	{
+        "name": "TC_PL64",
+        "class": "Output",
+        "address": 1364,
+        "pin": 30,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L64 - rotunda"
+    },
+	{
+        "name": "TC_PL66",
+        "class": "Output",
+        "address": 1366,
+        "pin": 32,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L66 - rotunda"
+    },
+	{
+        "name": "TC_PL68",
+        "class": "Output",
+        "address": 1368,
+        "pin": 11,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L68 - rotunda"
+    },
+	{
+        "name": "TC_PL28",
+        "class": "Output",
+        "address": 1328,
+        "pin": 12,
+        "inverted": false,
+        "ignoreSavedState": true,
+        "comment":"Power track L28 - abastecimento carvao"
+    },
+    {
         "name": "TC_T02",
         "class": "ServoTurnout",
         "address": "1402",

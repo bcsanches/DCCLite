@@ -213,10 +213,19 @@ namespace dcclite::broker
 
 			std::thread		m_clNetworkThread;
 
-			FolderObject *m_pDecoders;
-			FolderObject *m_pAddresses;
+			FolderObject *m_pDecoders;			
 			FolderObject *m_pDevices;
 			FolderObject *m_pSessions;
+
+			/// <summary>
+			/// Keep track of existing addresses. No pratical use, just to track and avoid duplicate addresses
+			/// </summary>
+			FolderObject *m_pAddresses;
+
+			/// <summary>
+			/// Keep a listing of decimal addresses for easier inspection on SharpTerminal
+			/// </summary>
+			FolderObject *m_pDecAddresses;
 
 			LocationManager *m_pLocations;
 	};

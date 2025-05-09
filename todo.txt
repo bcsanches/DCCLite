@@ -27,6 +27,11 @@ DCCLite
 	- decoders may have no device
 	- keep decoders type inside the device, do not leak specific decoders code to outside
 
+- SharpTerminal
+	- Dashboard
+		- Display unregistered arduinos
+		- Detect arduino on USB and offer to burn it
+
 - Create SignalLogic
 	- new entity, used to control signals.
 	- It will refer to a Signal and set its aspects
@@ -42,6 +47,8 @@ DCCLite
 		- When an aspect is set, the signal locks its turnouts and monitor sensors / rouse_sections
 			- hint route_section of the expected direction
 
+- TrackSection
+	- BlockSection: a block with an entry and exit sensor, no turnouts, simple block for stopping a train
 
 - Make all terminal commands rely on paths instead of a device name
 

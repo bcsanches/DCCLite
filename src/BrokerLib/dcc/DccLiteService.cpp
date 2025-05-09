@@ -129,6 +129,7 @@ namespace dcclite::broker
 
 		m_pDecoders = static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{ "decoders" })));
 		m_pAddresses = static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{ "addresses" })));
+		m_pDecAddresses = static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{ "dec_addresses" })));
 		m_pDevices = static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{ "devices" })));
 		m_pSessions = static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{ "sessions" })));
 
@@ -194,13 +195,16 @@ namespace dcclite::broker
 		//send mesage before we destroy it
 		this->NotifyItemDestroyed(dec);
 
-		auto addressName = RName{ dec.GetAddress().ToString() };
-		this->NotifyItemDestroyed(*(m_pAddresses->TryGetChild(addressName)));
+		const auto &address = dec.GetAddress();
+
+		auto addressName = RName{ address.ToString() };
+		this->NotifyItemDestroyed(*(m_pAddresses->TryGetChild(addressName)));		
 
 		m_pLocations->UnregisterDecoder(dec);
 
 		m_pAddresses->RemoveChild(addressName);
 		m_pDecoders->RemoveChild(dec.GetName());	
+		m_pDecAddresses->RemoveChild(RName{ address.ToDecimalString() });
 	}
 
 	Decoder &DccLiteService::Device_CreateDecoder(
@@ -221,22 +225,45 @@ namespace dcclite::broker
 
 		auto pDecoder = decoder.get();	
 
-		m_pDecoders->AddChild(std::move(decoder));
+		m_pDecoders->AddChild(std::move(decoder));		
+
+		RName decimalAddress{ address.ToDecimalString() };
+		RName hexAddress{ address.ToString() };
 
 		try
-		{
+		{			
+			auto decimalAddressShortcut = m_pDecAddresses->AddChild(
+				std::make_unique<dcclite::Shortcut>(
+					decimalAddress,
+					*pDecoder
+				)
+			);
+
 			auto addressShortcut = m_pAddresses->AddChild(
 				std::make_unique<dcclite::Shortcut>(
-					RName{ pDecoder->GetAddress().ToString() },
+					hexAddress,
 					*pDecoder
 				)
 			);
 
 			this->NotifyItemCreated(*pDecoder);
 			this->NotifyItemCreated(*addressShortcut);
+			this->NotifyItemCreated(*decimalAddressShortcut);
 		}
 		catch (...)
-		{
+		{	
+			//this if should never fail...
+			[[likely]]
+			if (auto existingDec = dynamic_cast<Shortcut *>(m_pAddresses->TryGetChild(hexAddress)))
+			{
+				dcclite::Log::Warn("[DccLiteService::Device_CreateDecoder] Cannot create {}, decoder at address {} ({}) - {} already exists",
+					name,
+					decimalAddress,
+					hexAddress,
+					existingDec->TryResolve()->GetName()
+				);
+			}
+
 			//something bad happenned, cleanup to keep a consistent state
 			m_pDecoders->RemoveChild(pDecoder->GetName());
 

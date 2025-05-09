@@ -83,6 +83,11 @@ namespace dcclite::broker
 				return fmt::format("{:#05x}", m_iAddress);
 			}
 
+			inline std::string ToDecimalString() const
+			{
+				return fmt::format("{:#04}", m_iAddress);
+			}
+
 			void WriteConfig(dcclite::Packet &packet) const;		
 
 		private:

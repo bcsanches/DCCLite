@@ -151,7 +151,7 @@
 	{
 		"name": "TC_SIG_6D_HR",
 		"class": "Output",
-		"address": "1350",
+		"address": 1310,
 		"pin": 65,
 		"inverted": true,
 		"ignoreSavedState": true,
@@ -160,7 +160,7 @@
 	{
 		"name": "TC_SIG_6D_HG",
 		"class": "Output",
-		"address": "1351",
+		"address": 1311,
 		"pin": 64,
 		"inverted": true,
 		"ignoreSavedState": true,

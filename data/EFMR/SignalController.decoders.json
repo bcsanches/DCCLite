@@ -37,7 +37,7 @@
   {
     "name":"TC_SIG_6D",
     "class":"VirtualSignal",    
-    "address":"1352",  
+    "address":1312,  
     "heads":
     {
         "red":"TC_SIG_6D_HR",
