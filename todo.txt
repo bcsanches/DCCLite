@@ -36,7 +36,7 @@ DCCLite
 		- Sharp terminal will always reload all when hardware changes
 		- Is it worth to really organize those layers? Perhaps:
 			- kernel
-			- hal
+			- executive
 			- shell
 	- How sharpterminal will handle the "mutating" objects?
 		- Send a object update that will change the internal structure?
