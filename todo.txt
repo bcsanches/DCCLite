@@ -24,6 +24,20 @@ DCCLite
 		+ Changes are not expected all the time
 		+ reload time is minimal
 		- Runtime editing is gone...
+	- Still on reload plan:
+		- Organize system in layers or modules
+		- Broker - base layer, if main config changes, restart everything (rarest case)
+		- Dcc - hardware layer, if any device changes, reload the device and reload all the shell layer
+		- Shell layer: systems that rely on before layers, like: 
+			- dispatcher
+			- script (remvoe it from sys)
+			- loconet
+			- terminal
+		- Sharp terminal will always reload all when hardware changes
+		- Is it worth to really organize those layers? Perhaps:
+			- kernel
+			- hal
+			- shell
 	- How sharpterminal will handle the "mutating" objects?
 		- Send a object update that will change the internal structure?
 	- This will make all code around simple, no need for handling create / destroy events
