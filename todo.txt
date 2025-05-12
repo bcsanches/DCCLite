@@ -24,6 +24,7 @@ DCCLite
 		+ Changes are not expected all the time
 		+ reload time is minimal
 		- Runtime editing is gone...
+		- What for a future gui system with editing functionality? Only for signals and "logical" objects?
 	- How sharpterminal will handle the "mutating" objects?
 		- Send a object update that will change the internal structure?
 	- This will make all code around simple, no need for handling create / destroy events
