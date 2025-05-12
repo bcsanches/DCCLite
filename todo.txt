@@ -25,6 +25,8 @@ DCCLite
 		+ reload time is minimal
 		- Runtime editing is gone...
 	- Still on reload plan:
+		- first thing: remove dependencies on the "services" folder
+		- second: create a DccSystem class, that manages all DccLiteServices
 		- Organize system in layers or modules
 		- Broker - base layer, if main config changes, restart everything (rarest case)
 		- Dcc - hardware layer, if any device changes, reload the device and reload all the shell layer
