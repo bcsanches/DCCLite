@@ -35,7 +35,7 @@ DCCLite
 			- terminal
 		- Sharp terminal will always reload all when hardware changes
 		- Is it worth to really organize those layers? Perhaps:
-			- kernel
+			- system
 			- executive
 			- shell
 		- What for a future gui system with editing functionality? Only for signals and "logical" objects?
