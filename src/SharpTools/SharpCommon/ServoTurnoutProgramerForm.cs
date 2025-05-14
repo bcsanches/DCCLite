@@ -148,6 +148,8 @@ namespace SharpCommon
                     {
                         this.DialogResult = DialogResult.Cancel;
                         this.Close();
+
+                        return;
                     }
                 }
             }

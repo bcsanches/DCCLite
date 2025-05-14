@@ -14,6 +14,7 @@
 
 #include <rapidjson/document.h>
 
+#include <dcclite/Object.h>
 #include <dcclite/RName.h>
 
 namespace dcclite
@@ -87,9 +88,7 @@ namespace dcclite::broker
 		public:
 			virtual void Decoder_OnStateChanged(Decoder& decoder) = 0;
 
-			virtual Decoder *TryFindDecoder(RName id) const = 0;
-
-			[[nodiscard]] virtual RName Decoder_GetSystemName() const noexcept = 0;
+			virtual Decoder *TryFindDecoder(RName id) const = 0;					
 	};
 
 	class IDccLite_DeviceServices

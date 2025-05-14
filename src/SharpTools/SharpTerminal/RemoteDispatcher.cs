@@ -38,14 +38,14 @@ namespace SharpTerminal.Dispatcher
     }
 
 	[SupportedOSPlatform("windows")]
-	public class RemoteSection : RemoteServiceObject
+	public class RemoteSection : RemoteObject
     {
-        protected static IRemoteObjectAction g_ResetAction = new RemoteServiceObjectCmdAction("Reset-Item", "Reset", "Reset the section");
+        protected static IRemoteObjectAction g_ResetAction = new RemoteObjectCmdAction("Reset-Item", "Reset", "Reset the section");
 
         public SectionStates m_kState;                
 
         public RemoteSection(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) :
-            base(name, className, path, internalId, objectDef, parent)
+            base(name, className, path, internalId, parent)
         {
             this.ParseStateData(objectDef);           
         }
@@ -88,7 +88,7 @@ namespace SharpTerminal.Dispatcher
       
         public override IRemoteObjectAction[] GetActions()
         {
-            return new IRemoteObjectAction[1] { g_ResetAction };
+            return [g_ResetAction];
         }
     }  
 }

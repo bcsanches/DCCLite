@@ -21,6 +21,7 @@
 #include <dcclite/Util.h>
 
 #include "../dcc/DccLiteService.h"
+#include "../dcc/IResettableObject.h"
 #include "../dcc/NetworkDevice.h"
 #include "../dcc/OutputDecoder.h"
 #include "../dcc/SignalDecoder.h"
@@ -252,11 +253,11 @@ namespace dcclite::broker
 	// ResetItemCmd
 	//
 	/////////////////////////////////////////////////////////////////////////////
-	class ResetItemCmd : public ServiceCmdBase
+	class ResetItemCmd : public TerminalCmd
 	{
 		public:
 			explicit ResetItemCmd(RName name = RName{ "Reset-Item" }) :
-				ServiceCmdBase(name)
+				TerminalCmd(name)
 			{
 				//empty
 			}
@@ -264,18 +265,27 @@ namespace dcclite::broker
 			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
 			{
 				auto paramsIt = request.FindMember("params");
-				if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() < 2))
+				if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() < 1))
 				{
-					throw TerminalCmdException(fmt::format("Usage: {} <service> <item>", this->GetName()), id);
+					throw TerminalCmdException(fmt::format("Usage: {} <item_path>", this->GetName()), id);
 				}
 
-				auto serviceName = paramsIt->value[0].GetString();
-				auto itemName = RName::Get(paramsIt->value[1].GetString());
+				auto itemPath = paramsIt->value[0].GetString();				
 
-				auto &ireset = this->GetService<IResettableService>(context, id, serviceName);
+				auto obj = dynamic_cast<IFolderObject *>(context.TryGetItem());
+				if (!obj)
+				{
+					throw TerminalCmdException("Terminal is not on a valid location", id);
+				}
 
-				dcclite::Log::Info("[ResetCmd] Resetting {} at {}.", itemName, serviceName);
-				ireset.IResettableService_ResetItem(itemName);
+				auto ireset = dynamic_cast<IResettableObject *>(obj->TryNavigate(Path_t{ itemPath }));
+				if (!ireset)
+				{
+					throw TerminalCmdException(fmt::format("Service at {} it not resetable or not found", itemPath), id);
+				}
+
+				dcclite::Log::Info("[ResetCmd] Resetting {}.", itemPath);
+				ireset->Reset();
 
 				return detail::MakeRpcResultMessage(id, [](Result_t &results)
 					{
@@ -337,36 +347,45 @@ namespace dcclite::broker
 				//empty
 			}
 
-			std::tuple<Decoder *, const char *, RName> FindDecoder(const TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
+			Decoder &FindDecoder(const TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
 			{
 				auto paramsIt = request.FindMember("params");
-				if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() < 2))
+				if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() < 1))
 				{
-					throw TerminalCmdException(fmt::format("Usage: {} <dccSystem> <decoder>", this->GetName()), id);
+					throw TerminalCmdException(fmt::format("Usage: {} <decoder_path>", this->GetName()), id);
 				}
 
-				auto dccSystemName = paramsIt->value[0].GetString();
-				auto decoderId = RName::Get(paramsIt->value[1].GetString());
+				auto folder = dynamic_cast<IFolderObject *>(context.TryGetItem());
+				if (folder == nullptr)
+				{
+					throw TerminalCmdException(fmt::format("Currently location is invalid"), id);
+				}
 
-				auto &service = this->GetDccLiteService(context, id, dccSystemName);
+				auto path = Path_t{ paramsIt->value[0].GetString() };
 
-				auto *decoder = service.TryFindDecoder(decoderId);
+				auto obj = folder->TryNavigate(path);
+				if (obj == nullptr)
+				{
+					throw TerminalCmdException(fmt::format("Decoder not found: {}", path.string()), id);
+				}				
+
+				auto decoder = dynamic_cast<Decoder *>(obj);
 				if (decoder == nullptr)
 				{
-					throw TerminalCmdException(fmt::format("Decoder {} not found on DCC System {}", decoderId, dccSystemName), id);
+					throw TerminalCmdException(fmt::format("Path does not lead to a decoder: {}", path.string()), id);
 				}
 
-				return std::make_tuple(decoder, dccSystemName, decoderId);
+				return *decoder;
 			}
 
 			OutputDecoder *FindOutputDecoder(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
 			{
-				auto[decoder, dccSystemName, decoderName] = this->FindDecoder(context, id, request);
+				auto &decoder = this->FindDecoder(context, id, request);
 
-				auto outputDecoder = dynamic_cast<OutputDecoder *>(decoder);
+				auto outputDecoder = dynamic_cast<OutputDecoder *>(&decoder);
 				if (outputDecoder == nullptr)
 				{
-					throw TerminalCmdException(fmt::format("Decoder {} on DCC System {} is not an output type", decoderName, dccSystemName), id);
+					throw TerminalCmdException(fmt::format("Decoder {} on DCC System is not an output type", decoder.GetName()), id);
 				}
 
 				return outputDecoder;
@@ -476,21 +495,21 @@ namespace dcclite::broker
 
 			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
 			{
-				auto [decoder, dccSystemName, decoderName] = this->FindDecoder(context, id, request);
+				auto &decoder = this->FindDecoder(context, id, request);
 
-				auto signalDecoder = dynamic_cast<SignalDecoder *>(decoder);
+				auto signalDecoder = dynamic_cast<SignalDecoder *>(&decoder);
 				if (signalDecoder == nullptr)
 				{
-					throw TerminalCmdException(fmt::format("Decoder {} on DCC System {} is not an Signal type", decoderName, dccSystemName), id);
+					throw TerminalCmdException(fmt::format("Decoder {} on DCC System is not an Signal type", decoder.GetName()), id);
 				}
 
 				auto paramsIt = request.FindMember("params");
-				if (paramsIt->value.Size() < 3)
+				if (paramsIt->value.Size() < 2)
 				{
-					throw TerminalCmdException(fmt::format("Usage: {} <dccSystem> <decoder> <aspect>", this->GetName()), id);
+					throw TerminalCmdException(fmt::format("Usage: {} <decoder_path> <aspect>", this->GetName()), id);
 				}
 
-				auto aspectName = paramsIt->value[2].GetString();
+				auto aspectName = paramsIt->value[1].GetString();
 				auto aspect = dcclite::TryConvertNameToAspect(aspectName);
 				if (!aspect.has_value())
 				{

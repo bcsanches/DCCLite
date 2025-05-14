@@ -68,13 +68,7 @@ namespace dcclite::broker
 			virtual void OnObjectManagerEvent(const ObjectManagerEvent &event) = 0;
 
 			virtual ~IObjectManagerListener() = default;
-	};
-
-	class IResettableService
-	{
-		public:
-			virtual void IResettableService_ResetItem(RName name) = 0;
-	};
+	};	
 
 	class Service: public dcclite::FolderObject
 	{

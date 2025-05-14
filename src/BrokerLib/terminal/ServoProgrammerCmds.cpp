@@ -13,8 +13,8 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Util.h>
 
-#include "../dcc/DccLiteService.h"
 #include "../dcc/NetworkDevice.h"
+#include "../dcc/TurnoutDecoder.h"
 
 #include "TerminalClient.h"
 #include "TerminalUtils.h"
@@ -27,34 +27,35 @@ namespace dcclite::broker
 	// StartServoProgrammerCmd
 	//
 	/////////////////////////////////////////////////////////////////////////////
-
 	TerminalCmd::CmdResult_t StartServoProgrammerCmd::Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
 	{
 		auto paramsIt = request.FindMember("params");
-		if (paramsIt->value.Size() < 3)
+		if (paramsIt->value.Size() < 1)
 		{
-			throw TerminalCmdException(fmt::format("Usage: {} <dccSystem> <device> <decoder>", this->GetName()), id);
+			throw TerminalCmdException(fmt::format("Usage: {} <path>", this->GetName()), id);
 		}
 
-		auto systemName = paramsIt->value[0].GetString();
-		auto deviceName{ RName::Get(paramsIt->value[1].GetString()) };
-		auto decoderName{ RName::Get(paramsIt->value[2].GetString()) };
+		auto path = paramsIt->value[0].GetString();
 
-		auto &service = this->GetDccLiteService(context, id, systemName);
-
-		auto device = service.TryFindDeviceByName(deviceName);
-		if (device == nullptr)
+		auto *obj = dynamic_cast<IFolderObject *>(context.TryGetItem());
+		if (!obj)
 		{
-			throw TerminalCmdException(fmt::format("Device {} not found on {} system", deviceName, systemName), id);
+			throw TerminalCmdException("Terminal path is invalid! No folder found!", id);
 		}
 
-		auto networkDevice = dynamic_cast<NetworkDevice *>(device);
-		if (networkDevice == nullptr)
+		auto decoder = dynamic_cast<Decoder *>(obj->TryNavigate(dcclite::Path_t{ path }));
+		if (!decoder)
 		{
-			throw TerminalCmdException(fmt::format("Device {} on {} system is NOT a network device", deviceName, systemName), id);
+			throw TerminalCmdException(fmt::format("Path {} does not result on a Decoder", path), id);
 		}
 
-		auto task = networkDevice->StartServoTurnoutProgrammerTask(nullptr, decoderName);
+		auto taskProvider = decoder->GetDevice().TryGetINetworkTaskProvider();
+		if (!taskProvider)
+		{
+			throw TerminalCmdException(fmt::format("Device {} not based on a INetworkTaskProvider!!", decoder->GetName()), id);
+		}
+		
+		auto task = taskProvider->StartServoTurnoutProgrammerTask(nullptr, *decoder);
 
 		//
 		//store the task, so future cmds can reference it

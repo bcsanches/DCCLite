@@ -41,17 +41,17 @@ namespace SharpTerminal
 
         public async Task ActivateAsync()
         {
-            await m_clConsole.RequestAsync("Activate-Item", m_clRemoteTurnout.SystemName, m_clRemoteTurnout.Name);
+            await m_clConsole.RequestAsync("Activate-Item", m_clRemoteTurnout.Path);
         }
 
         public async Task DeactivateAsync()
         {
-            await m_clConsole.RequestAsync("Deactivate-Item", m_clRemoteTurnout.SystemName, m_clRemoteTurnout.Name);
+            await m_clConsole.RequestAsync("Deactivate-Item", m_clRemoteTurnout.Path);
         }
 
         public async Task FlipAsync()
         {
-            await m_clConsole.RequestAsync("Flip-Item", m_clRemoteTurnout.SystemName, m_clRemoteTurnout.Name);
+            await m_clConsole.RequestAsync("Flip-Item", m_clRemoteTurnout.Path);
         }
     }
 
@@ -110,7 +110,7 @@ namespace SharpTerminal
                 throw new InvalidOperationException("Start already called");
 
             m_fStartRequested = true;
-            var json = await m_clConsole.RequestAsync("Start-ServoProgrammer", m_clTarget.SystemName, m_clTarget.DeviceName, m_clTarget.Name);
+            var json = await m_clConsole.RequestAsync("Start-ServoProgrammer", m_clTarget.Path);
 
             m_iProgrammerTaskId = (int)json["taskId"];
         }

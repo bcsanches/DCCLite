@@ -20,6 +20,7 @@
 
 #include "../dcc/DccLiteService.h"
 #include "../dcc/Device.h"
+#include "../dcc/IResettableObject.h"
 #include "../dcc/VirtualSensorDecoder.h"
 
 #include "../sys/Broker.h"
@@ -28,7 +29,7 @@
 
 namespace dcclite::broker
 {
-	class BaseSectionWrapper: public Object
+	class BaseSectionWrapper: public Object, public IResettableObject
 	{
 		public:
 			BaseSectionWrapper(RName name, sol::table obj, VirtualSensorDecoder &sensor):
@@ -43,11 +44,11 @@ namespace dcclite::broker
 			{
 				Object::Serialize(stream);
 
-				stream.AddStringValue("systemName", this->GetParent()->GetParent()->GetNameData());
+				stream.AddStringValue("ownerPath", this->GetParent()->GetParent()->GetPath().string());
 				stream.AddIntValue("state", m_clObject["state"]);
 			}
 
-			void Reset()
+			void Reset() override
 			{
 				m_clObject["reset"](m_clObject);
 			}
@@ -112,7 +113,7 @@ namespace dcclite::broker
 	//
 	///////////////////////////////////////////////////////////////////////////////
 
-	class DispatcherServiceImpl: public DispatcherService, public ScriptSystem::IScriptSupport, public IResettableService
+	class DispatcherServiceImpl: public DispatcherService, public ScriptSystem::IScriptSupport
 	{
 		public:
 			typedef DccLiteService Requirement_t;
@@ -120,9 +121,7 @@ namespace dcclite::broker
 			DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, DccLiteService &dep);
 			~DispatcherServiceImpl() override;
 
-			void Serialize(JsonOutputStream_t &stream) const override;
-
-			void IResettableService_ResetItem(RName name) override;
+			void Serialize(JsonOutputStream_t &stream) const override;			
 
 		private:
 			void RegisterSection(std::string_view name, sol::table obj);
@@ -256,18 +255,6 @@ namespace dcclite::broker
 
 		section->OnStateUpdate();
 		this->NotifyItemChanged(*section);
-	}
-
-	void DispatcherServiceImpl::IResettableService_ResetItem(RName name)
-	{
-		if (auto section = static_cast<BaseSectionWrapper *>(m_pSections->TryGetChild(name)))
-		{
-			section->Reset();
-
-			return;
-		}
-
-		throw std::runtime_error(fmt::format("[DispatcherServiceImpl::IResettableService_ResetItem] Section {} not registered", name));
 	}
 
 	void DispatcherServiceImpl::Panic(sol::table src, const char *reason)

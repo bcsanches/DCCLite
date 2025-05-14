@@ -38,6 +38,7 @@ add_library(
         dcc/Device.h      
         dcc/IDccLiteService.h  
         dcc/IDevice.h
+        dcc/IResettableObject.h
         dcc/LocationManager.cpp
         dcc/LocationManager.h
         dcc/NetworkDevice.cpp

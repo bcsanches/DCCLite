@@ -990,18 +990,17 @@ namespace dcclite::broker
 		return task;
 	}
 
-	std::shared_ptr<NetworkTask> NetworkDevice::StartServoTurnoutProgrammerTask(NetworkTask::IObserver *observer, RName servoDecoderName)
+	std::shared_ptr<NetworkTask> NetworkDevice::StartServoTurnoutProgrammerTask(NetworkTask::IObserver *observer, Decoder &decoder)
 	{		
 		if (!this->IsConnectionStable())
 			throw std::runtime_error(fmt::format("[NetworkDevice::{}] [StartServoTurnoutProgrammerTask] Cannot start task without a connectd device", this->GetName()));
 
-		auto obj = this->TryResolveChild(servoDecoderName);
-		if (!obj)
-			throw std::invalid_argument(fmt::format("[NetworkDevice::{}] [StartDownloadEEPromTask] Servo decoder {} not found", this->GetName(), servoDecoderName));
+		if(decoder.GetDevice().TryGetINetworkTaskProvider() != this)
+			throw std::invalid_argument(fmt::format("[NetworkDevice::{}] [StartDownloadEEPromTask] Servo decoder {} does not belong to this device", this->GetName(), decoder.GetName()));
 
-		auto servoTurnout = dynamic_cast<ServoTurnoutDecoder *>(obj);
+		auto servoTurnout = dynamic_cast<ServoTurnoutDecoder *>(&decoder);
 		if(!servoTurnout)
-			throw std::invalid_argument(fmt::format("[NetworkDevice::{}] [StartDownloadEEPromTask] Servo decoder {} is not a ServoTurnoutDecoder", this->GetName(), servoDecoderName));
+			throw std::invalid_argument(fmt::format("[NetworkDevice::{}] [StartDownloadEEPromTask] Servo decoder {} is not a ServoTurnoutDecoder", this->GetName(), decoder.GetName()));
 		
 		auto task = detail::StartServoTurnoutProgrammerTask(*this, ++g_u32TaskId, observer, *servoTurnout);
 		

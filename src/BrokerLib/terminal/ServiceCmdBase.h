@@ -19,10 +19,12 @@
 
 namespace dcclite::broker
 { 
-	class ServiceCmdBase: public TerminalCmd
+	class DccLiteService;
+
+	class DccLiteCmdBase: public TerminalCmd
 	{
 		protected:
-			explicit ServiceCmdBase(RName name):
+			explicit DccLiteCmdBase(RName name):
 				TerminalCmd(name)
 			{
 				//empty
@@ -49,18 +51,6 @@ namespace dcclite::broker
 				}
 
 				return *service;
-			}
-	};
-
-	class DccLiteService;
-
-	class DccLiteCmdBase: public ServiceCmdBase
-	{
-		protected:
-			explicit DccLiteCmdBase(RName name):
-				ServiceCmdBase(name)
-			{
-				//empty
 			}
 
 			DccLiteService &GetDccLiteService(const TerminalContext &context, const CmdId_t id, std::string_view dccSystemName);

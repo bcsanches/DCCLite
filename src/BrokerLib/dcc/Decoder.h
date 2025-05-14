@@ -57,6 +57,11 @@ namespace dcclite::broker
 				return m_rclDevice.GetDeviceName();
 			}
 
+			inline IDevice_DecoderServices &GetDevice() const noexcept
+			{
+				return m_rclDevice;
+			}
+
 			//
 			//IObject
 			//

@@ -3,6 +3,7 @@
 ## General Features
 
 - Turntable auto inverter now use a single output for each track
+- Broker commands now rely on full path, not on device name and item name
 
 ## LiteDecoder
 
@@ -11,6 +12,7 @@
 ## SharpTerminal
 
 - Added button to read EEPROM from device panel
+- Fixed a bug on servo programming that caused infinite loop when device was disconnected while starting the programmer
 
 ## SharpEEPromViewer
 

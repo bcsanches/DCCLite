@@ -126,9 +126,4 @@ class DecoderServicesMockup : public dcclite::broker::IDccLite_DecoderServices
 		{
 			return nullptr;
 		}
-
-		[[nodiscard]] dcclite::RName Decoder_GetSystemName() const noexcept override
-		{
-			return dcclite::RName("dccsystem");
-		}
 };

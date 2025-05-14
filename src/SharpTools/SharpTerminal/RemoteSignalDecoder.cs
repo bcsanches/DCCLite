@@ -101,7 +101,7 @@ namespace SharpTerminal
 				for (int i = 0; i < m_Aspects.Length; i++)
 				{
 					var aspect = m_Aspects[i];
-					m_arActions[i] = new RemoteServiceObjectCmdAction("Set-Aspect", aspect, "Set " + aspect + " aspect", aspect);
+					m_arActions[i] = new RemoteObjectCmdAction("Set-Aspect", aspect, "Set " + aspect + " aspect", aspect);
 				}
 			}
 

@@ -17,11 +17,11 @@ namespace dcclite::broker
 {
 	class NetworkTask;
 
-	class StartServoProgrammerCmd: public DccLiteCmdBase
+	class StartServoProgrammerCmd: public TerminalCmd
 	{
 		public:
 			explicit StartServoProgrammerCmd(RName name = RName{ "Start-ServoProgrammer" }):
-				DccLiteCmdBase(name)
+				TerminalCmd(name)
 			{
 				//empty
 			}

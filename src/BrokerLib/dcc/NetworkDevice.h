@@ -35,7 +35,7 @@ namespace dcclite::broker
 { 	
 	class ServoTurnoutDecoder;
 
-	class NetworkDevice: public Device, private INetworkDevice_DecoderServices, private detail::INetworkDevice_TaskServices
+	class NetworkDevice: public Device, private INetworkDevice_DecoderServices, private detail::INetworkDevice_TaskServices, private INetworkDevice_TaskProvider
 	{
 		public:
 			enum class Status
@@ -97,6 +97,11 @@ namespace dcclite::broker
 				return this;
 			}
 
+			[[nodiscard]] INetworkDevice_TaskProvider *TryGetINetworkTaskProvider() noexcept override
+			{
+				return this;
+			}
+
 			[[nodiscard]] std::uint16_t GetProtocolVersion() const noexcept override
 			{
 				return m_uProtocolVersion;
@@ -107,11 +112,11 @@ namespace dcclite::broker
 			// Tasks
 			//
 			//			
-			[[nodiscard]] std::shared_ptr<NetworkTask> StartDownloadEEPromTask(NetworkTask::IObserver *observer, DownloadEEPromTaskResult_t &resultsStorage);
-			[[nodiscard]] std::shared_ptr<NetworkTask> StartServoTurnoutProgrammerTask(NetworkTask::IObserver *observer, RName servoDecoderName);
-			[[nodiscard]] std::shared_ptr<NetworkTask> StartDeviceRenameTask(NetworkTask::IObserver *observer, RName newName);
-			[[nodiscard]] std::shared_ptr<NetworkTask> StartDeviceClearEEPromTask(NetworkTask::IObserver *observer);
-			[[nodiscard]] std::shared_ptr<NetworkTask> StartDeviceNetworkTestTask(NetworkTask::IObserver *observer, std::chrono::milliseconds timeout = TASK_NETWORK_TEST_DEFAULT_TIMEOUT);
+			[[nodiscard]] std::shared_ptr<NetworkTask> StartDownloadEEPromTask(NetworkTask::IObserver *observer, DownloadEEPromTaskResult_t &resultsStorage) override;
+			[[nodiscard]] std::shared_ptr<NetworkTask> StartServoTurnoutProgrammerTask(NetworkTask::IObserver *observer, Decoder &decoder) override;
+			[[nodiscard]] std::shared_ptr<NetworkTask> StartDeviceRenameTask(NetworkTask::IObserver *observer, RName newName) override;
+			[[nodiscard]] std::shared_ptr<NetworkTask> StartDeviceClearEEPromTask(NetworkTask::IObserver *observer) override;
+			[[nodiscard]] std::shared_ptr<NetworkTask> StartDeviceNetworkTestTask(NetworkTask::IObserver *observer, std::chrono::milliseconds timeout = TASK_NETWORK_TEST_DEFAULT_TIMEOUT) override;
 
 		protected:
 			void OnUnload() override;

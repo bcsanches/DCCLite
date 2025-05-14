@@ -201,12 +201,7 @@ namespace dcclite::broker
 			//
 			//
 
-			void Decoder_OnStateChanged(Decoder& decoder) override;
-
-			[[nodiscard]] RName Decoder_GetSystemName() const noexcept override
-			{
-				return this->GetName();
-			}
+			void Decoder_OnStateChanged(Decoder& decoder) override;		
 
 		private:			
 			dcclite::Socket m_clSocket;		

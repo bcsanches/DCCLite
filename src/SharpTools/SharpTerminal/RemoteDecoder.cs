@@ -36,54 +36,39 @@ namespace SharpTerminal
         {
             return mLabel;
         }
-    }
+    }	
 
 	[SupportedOSPlatform("windows")]
-	public class RemoteServiceObjectCmdAction : RemoteDecoderCmdBaseAction
-    {        
-        private readonly string mCmd;
-        private readonly string[] mExtraParams;
+	public class RemoteObjectCmdAction : RemoteDecoderCmdBaseAction
+	{
+		private readonly string mCmd;
+		private readonly string[] mExtraParams;
 
-        public RemoteServiceObjectCmdAction(string cmd, string label, string description, params string[] extraParams):
-            base(label, description)
-        {            
-            mCmd = cmd ?? throw new System.ArgumentNullException(nameof(cmd));
+		public RemoteObjectCmdAction(string cmd, string label, string description, params string[] extraParams) :
+			base(label, description)
+		{
+			mCmd = cmd ?? throw new System.ArgumentNullException(nameof(cmd));
 
-            mExtraParams = extraParams;
-        }
+			mExtraParams = extraParams;
+		}
 
-        public override void Execute(IConsole console, RemoteObject target)
-        {
-            var decoder = (RemoteServiceObject)target;
-            
-            string[] args = new string[3 + mExtraParams.Length];
-            args[0] = mCmd;
-            args[1] = decoder.SystemName;
-            args[2] = decoder.Name;
+		public override void Execute(IConsole console, RemoteObject target)
+		{			
+			string[] args = new string[2 + mExtraParams.Length];
+			args[0] = mCmd;
+			args[1] = target.Path;			
 
-            for (var i = 0; i < mExtraParams.Length; i++)
-                args[3 + i] = mExtraParams[i];            
+			for (var i = 0; i < mExtraParams.Length; i++)
+				args[2 + i] = mExtraParams[i];
 
-            console.ProcessCmd(args);
-        }        
-    }
+			console.ProcessCmd(args);
+		}
+	}
 
 	[SupportedOSPlatform("windows")]
-	public class RemoteServiceObject: RemoteObject
+	public class RemoteDecoder : RemoteObject
     {
-        public string SystemName { get; }
-
-        public RemoteServiceObject(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) :
-          base(name, className, path, internalId, parent)
-        {
-            SystemName = objectDef["systemName"];
-        }
-    }
-
-	[SupportedOSPlatform("windows")]
-	public class RemoteDecoder : RemoteServiceObject
-    {
-        protected static IRemoteObjectAction g_FlipAction = new RemoteServiceObjectCmdAction("Flip-Item", "Flip", "Activate / deactivate the item");
+        protected static IRemoteObjectAction g_FlipAction = new RemoteObjectCmdAction("Flip-Item", "Flip", "Activate / deactivate the item");
 
         public int Address { get; }
         public string LocationHint { get; }
@@ -125,7 +110,7 @@ namespace SharpTerminal
         }  
 
         public RemoteDecoder(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) :
-            base(name, className, path, internalId, objectDef, parent)
+            base(name, className, path, internalId, parent)
         {
             DeviceName = objectDef["deviceName"];
 

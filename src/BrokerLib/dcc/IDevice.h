@@ -21,6 +21,7 @@ namespace dcclite::broker
 	class Decoder;
 	class RemoteDecoder;
 	class INetworkDevice_DecoderServices;
+	class INetworkDevice_TaskProvider;
 
 	class IDevice_DecoderServices
 	{
@@ -31,6 +32,11 @@ namespace dcclite::broker
 			{
 				return nullptr;
 			}			
+
+			virtual INetworkDevice_TaskProvider *TryGetINetworkTaskProvider() noexcept
+			{
+				return nullptr;
+			}
 
 			virtual void Decoder_OnChangeStateRequest(const Decoder &decoder) noexcept = 0;			
 	};
