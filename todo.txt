@@ -19,8 +19,9 @@ DCCLite
 		- SharpTerminal will be able to set this externalVoltage value
 
 - Change DccDevice decoder structure: expose a DecoderProxy, that is never destroyed.
-	- Instead, when a device file changes, reload everything?	
-		- first thing: remove dependencies on the "services" folder
+	- Instead, when a device file changes, reload everything?
+		- Eliminate DecoderWeakPointer
+		- Remove script system weak pointers
 		- second: create a DccSystem class, that manages all DccLiteServices
 		- Organize system in layers or modules
 		- Broker - base layer, if main config changes, restart everything (rarest case)
@@ -33,11 +34,9 @@ DCCLite
 		- Sharp terminal will always reload all when hardware changes
 		- Is it worth to really organize those layers? Perhaps:
 			- system: broker base systems, event system, thinker, etc
-			- executive: hardware stuff, basically DccLite and arduinos management
+			- core: hardware stuff, basically DccLite and arduinos management
 			- shell: terminal, script system, dispatcher
 		- What for a future gui system with editing functionality? Only for signals and "logical" objects?
-		- Eliminate DecoderWeakPointer
-		- Remove script system weak pointers
 	- How sharpterminal will handle the "mutating" objects?
 		- Send a object update that will change the internal structure?
 	- This will make all code around simple, no need for handling create / destroy events
