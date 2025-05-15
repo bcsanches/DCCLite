@@ -20,7 +20,6 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Util.h>
 
-#include "../dcc/DccLiteService.h"
 #include "../dcc/IResettableObject.h"
 #include "../dcc/NetworkDevice.h"
 #include "../dcc/OutputDecoder.h"
@@ -531,7 +530,6 @@ namespace dcclite::broker
 	// ReadEEPromCmd
 	//
 	/////////////////////////////////////////////////////////////////////////////
-
 	class ReadEEPromFiber : public TerminalCmdFiber, private NetworkTask::IObserver, public EventHub::IEventTarget
 	{
 		public:
@@ -675,7 +673,6 @@ namespace dcclite::broker
 	// GetRNames
 	//
 	/////////////////////////////////////////////////////////////////////////////
-
 	class GetRNames : public TerminalCmd
 	{
 		public:
@@ -714,7 +711,6 @@ namespace dcclite::broker
 	// TerminalService Events
 	//
 	/////////////////////////////////////////////////////////////////////////////
-
 	class TerminalServiceAcceptConnectionEvent: public EventHub::IEvent
 	{
 		public:
@@ -761,7 +757,6 @@ namespace dcclite::broker
 	// TerminalService
 	//
 	/////////////////////////////////////////////////////////////////////////////
-
 	void TerminalService::RegisterFactory()
 	{
 		//empty

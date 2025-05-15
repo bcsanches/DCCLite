@@ -24,14 +24,14 @@ namespace SpecialFolders
 	{
 		switch (id)
 		{
-		case Folders::ServicesId:
-			return "/services";
+			case Folders::ServicesId:
+				return "/services";
 
-		case Folders::CmdHostId:
-			return "/cmds";
+			case Folders::CmdHostId:
+				return "/cmds";
 
-		default:
-			return nullptr;
+			default:
+				return nullptr;
 		}
 	}
 }
