@@ -15,6 +15,6 @@ namespace dcclite::broker::exec
 	class LiteManager: public dcclite::FolderObject
 	{
 		public:
-			LiteManager()
+			LiteManager();
 	};
 }
