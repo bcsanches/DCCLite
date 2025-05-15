@@ -18,33 +18,25 @@ DCCLite
 		- digitalWrite will never affetct externalVoltage
 		- SharpTerminal will be able to set this externalVoltage value
 
-- Change DccDevice decoder structure: expose a DecoderProxy, that is never destroyed.
-	- Instead, when a device file changes, reload everything?			
-		- second: create a DccSystem class, that manages all DccLiteServices
-		- move script system to shell
-		- Organize system in layers or modules
-		- Broker - base layer, if main config changes, restart everything (rarest case)
-		- Dcc - hardware layer, if any device changes, reload the device and reload all the shell layer
-		- Shell layer: systems that rely on before layers, like: 
-			- dispatcher
-			- script (remvoe it from sys)
-			- loconet
-			- terminal
-		- Sharp terminal will always reload all when hardware changes
-		- Is it worth to really organize those layers? Perhaps:
-			- system: broker base systems, event system, thinker, etc
-			- executive: hardware stuff, basically DccLite and arduinos management
-			- shell: terminal, script system, dispatcher
-		- What for a future gui system with editing functionality? Only for signals and "logical" objects?
-		- Eliminate DecoderWeakPointer
-		- Remove script system weak pointers
-	- How sharpterminal will handle the "mutating" objects?
-		- Send a object update that will change the internal structure?
-	- This will make all code around simple, no need for handling create / destroy events
-	- The proxy keeps a reference to the real decoder
-	- use a std::variant inside the proxy?
-	- decoders may have no device
-	- keep decoders type inside the device, do not leak specific decoders code to outside
+- when a device file changes, reload everything?	
+	- second: create a DccSystem class, that manages all DccLiteServices
+	- Organize system in layers or modules
+	- Broker - base layer, if main config changes, restart everything (rarest case)
+	- Dcc - hardware layer, if any device changes, reload the device and reload all the shell layer
+	- Shell layer: systems that rely on before layers, like: 
+		- dispatcher
+		- script (remove it from sys)
+		- loconet
+		- terminal
+	- Sharp terminal will always reload all when hardware changes
+	- Is it worth to really organize those layers? Perhaps:
+		- system: broker base systems, event system, thinker, etc
+		- core: hardware stuff, basically DccLite and arduinos management
+		- shell: terminal, script system, dispatcher
+	- What for a future gui system with editing functionality? Only for signals and "logical" objects?
+	
+- Move Signal to dispatcher?
+	- creata a decoder to bridge the signa on dispatcher do jmri?
 
 - SharpTerminal
 	- Dashboard
@@ -69,7 +61,6 @@ DCCLite
 - TrackSection
 	- BlockSection: a block with an entry and exit sensor, no turnouts, simple block for stopping a train	
 
-- Lua script failing to reload, seems to be a problem with sections
 - Why lua scripts are not notified when devices gets online and state changes during sync? Check routes
 - Implement coroutine support on lua scripts?
 
