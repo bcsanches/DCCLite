@@ -25,10 +25,10 @@
 * DecoderProxy
 *
 * Represents a decoder inside the script VM
-* 
+*
 * It needs to track when decoders are created and destroyed during editing
-* 
-* We simple assume that on regular use decoders will be stable, so we ignore for 
+*
+* We simple assume that on regular use decoders will be stable, so we ignore for
 * example, if a decoder is never recreated... this will leave a dummy proxy on the
 * VM
 *
@@ -36,13 +36,10 @@
 class DecoderProxy
 {
 	public:
-		DecoderProxy(dcclite::broker::Decoder &decoder, dcclite::broker::Service &dccLiteService) :
-			m_wpDecoder{decoder, dccLiteService}			
-		{			
-			dcclite::Log::Trace("[ScriptService] [DecoderProxy] [{}]: Created.", decoder.GetName());
-
-			m_slotDecoderCreatedConnection = m_wpDecoder.m_sigDecoderCreated.connect(&DecoderProxy::OnDecoderCreated, this);
-			m_slotDecoderDestroyConnection = m_wpDecoder.m_sigDecoderDestroy.connect(&DecoderProxy::OnDecoderDestroy, this);
+		DecoderProxy(dcclite::broker::Decoder &decoder, dcclite::broker::Service &dccLiteService):
+			m_rclDecoder{ decoder }
+		{
+			dcclite::Log::Trace("[ScriptService] [DecoderProxy] [{}]: Created.", decoder.GetName());			
 		}
 
 		~DecoderProxy()
@@ -52,15 +49,12 @@ class DecoderProxy
 
 		inline const uint16_t GetAddress() const
 		{
-			return m_wpDecoder.GetAddress().GetAddress();
+			return m_rclDecoder.GetAddress().GetAddress();
 		}
 
 		inline std::string_view GetName() const
 		{
-			if (!m_wpDecoder.TryGetDecoder())
-				throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::GetName] [{}]: Decoder was destroyed, did you reload the config without it?", m_wpDecoder.GetAddress()));
-
-			return this->GetDecoder().GetName().GetData();
+			return m_rclDecoder.GetName().GetData();
 		}
 
 		inline bool IsActive() const
@@ -116,7 +110,7 @@ class DecoderProxy
 		template <typename T>
 		inline T *DynamicDecoderCast()
 		{
-			auto decoder = dynamic_cast<T *>(&this->GetDecoder());
+			auto decoder = dynamic_cast<T *>(&m_rclDecoder);
 			if (!decoder)
 			{
 				throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::SetState] [{}]: Decoder is not an output decoder {}!!!", this->GetName(), typeid(T).name()));
@@ -128,7 +122,7 @@ class DecoderProxy
 		template <typename T>
 		inline const T *DynamicDecoderCast() const
 		{
-			auto decoder = dynamic_cast<const T *>(&this->GetDecoder());
+			auto decoder = dynamic_cast<const T *>(&m_rclDecoder);
 			if (!decoder)
 			{
 				throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::SetState] [{}]: Decoder is not an output decoder {}!!!", this->GetName(), typeid(T).name()));
@@ -152,9 +146,6 @@ class DecoderProxy
 			}
 		}
 
-		void OnDecoderCreated(dcclite::broker::Decoder &decoder);
-		void OnDecoderDestroy(dcclite::broker::Decoder &decoder);		
-
 		void RegisterStateSyncCallback()
 		{
 			auto remoteDecoder = this->DynamicDecoderCast<dcclite::broker::RemoteDecoder>();
@@ -162,103 +153,47 @@ class DecoderProxy
 			m_slotRemoteDecoderStateSyncConnection = remoteDecoder->m_sigRemoteStateSync.connect(&DecoderProxy::OnRemoteDecoderStateSync, this);
 		}
 
-		inline const dcclite::broker::Decoder &GetDecoder() const
-		{
-			if (auto *dec = m_wpDecoder.TryGetDecoder())
-				return *dec;
-			
-			throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::GetDecoder] [{}]: Decoder was destroyed, did you reload the config without it?", m_wpDecoder.GetAddress()));
-		}
+		dcclite::broker::Decoder	&m_rclDecoder;
 
-		inline dcclite::broker::Decoder &GetDecoder()
-		{
-			if (auto *dec = m_wpDecoder.TryGetDecoder())
-				return *dec;
-			
-			throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::GetDecoder] [{}]: Decoder was destroyed, did you reload the config without it?", m_wpDecoder.GetAddress()));
-		}		
-
-		/**
-		* Internal ref to the oficial decoder
-		*
-		* Note that if user changes the device config file, it will get unloaded and reloaded, this will invalidate the pointer and if the user removes the
-		* decoder or the file fails to reload, it may stay null for a long time, so watch for a null pointer here....
-		*
-		*/
-		dcclite::broker::DecoderWeakPointer m_wpDecoder;
-
-		sigslot::scoped_connection	m_slotRemoteDecoderStateSyncConnection;
-
-		sigslot::scoped_connection	m_slotDecoderCreatedConnection;
-		sigslot::scoped_connection	m_slotDecoderDestroyConnection;
+		sigslot::scoped_connection	m_slotRemoteDecoderStateSyncConnection;		
 
 		std::vector<sol::protected_function> m_vStateChangeCallbacks;
 };
 
-/**
-* 
-* We do not expect decoders creation / destruction to be frequent, so we simple track events and 
-* avoid putting more complexity on DccLiteService code
-* 
-* The decoders change will generate a lot of "CHANGE" events... but should not be a problem
-* 
-* If this become too costly, we should modify DccLiteService to directly manage those proxies
-* 
-*/
-void DecoderProxy::OnDecoderCreated(dcclite::broker::Decoder &decoder)
-{
-	if (!m_vStateChangeCallbacks.empty())
-	{
-		this->RegisterStateSyncCallback();
-
-		//make sure we notify because of possible state change
-		OnRemoteDecoderStateSync(*this->DynamicDecoderCast<dcclite::broker::RemoteDecoder>());
-	}
-
-	dcclite::Log::Trace("[ScriptService] [DecoderProxy::OnObjectManagerEvent] [{}]: Decoder recreated", decoder.GetName());
-}
-
-void DecoderProxy::OnDecoderDestroy(dcclite::broker::Decoder &decoder)
-{
-	dcclite::Log::Trace("[ScriptService] [DecoderProxy::OnObjectManagerEvent] [{}]: Decoder destroyed", decoder.GetName());
-
-	m_slotRemoteDecoderStateSyncConnection.disconnect();
-}
-
 /******************************************************************************
 *
 * DccLiteProxy
-* 
+*
 * We put all the scripting funtionality on a helper class for better code isolation
 * and to reduce dependencies.
-* 
+*
 ******************************************************************************/
 class DccLiteProxy
 {
-	public:
-		DccLiteProxy(dcclite::broker::DccLiteService &service) :
-			m_rclService{ service }
-		{
-			dcclite::Log::Trace("[ScriptService] [DccLiteProxy] [{}]: Created.", service.GetName());
-		}
+public:
+	DccLiteProxy(dcclite::broker::DccLiteService &service):
+		m_rclService{ service }
+	{
+		dcclite::Log::Trace("[ScriptService] [DccLiteProxy] [{}]: Created.", service.GetName());
+	}
 
-		DccLiteProxy(DccLiteProxy &&m) = default;
+	DccLiteProxy(DccLiteProxy &&m) = default;
 
-		DccLiteProxy(const DccLiteProxy &) = delete;
-		DccLiteProxy operator=(const DccLiteProxy &) = delete;
+	DccLiteProxy(const DccLiteProxy &) = delete;
+	DccLiteProxy operator=(const DccLiteProxy &) = delete;
 
-		~DccLiteProxy()
-		{
-			dcclite::Log::Trace("[ScriptService] [DccLiteProxy] [{}] Destroyed.", this->m_rclService.GetName());			
-		}
+	~DccLiteProxy()
+	{
+		dcclite::Log::Trace("[ScriptService] [DccLiteProxy] [{}] Destroyed.", this->m_rclService.GetName());
+	}
 
-		DecoderProxy *OnIndexByName(std::string_view key, sol::this_state L);
-		DecoderProxy *OnIndexByAddress(uint16_t key, sol::this_state L);
+	DecoderProxy *OnIndexByName(std::string_view key, sol::this_state L);
+	DecoderProxy *OnIndexByAddress(uint16_t key, sol::this_state L);
 
-	private:
-		dcclite::broker::DccLiteService &m_rclService;
+private:
+	dcclite::broker::DccLiteService &m_rclService;
 
-		std::map<dcclite::broker::DccAddress, std::unique_ptr<DecoderProxy>> m_mapKnowDecoders;
+	std::map<dcclite::broker::DccAddress, std::unique_ptr<DecoderProxy>> m_mapKnowDecoders;
 };
 
 DecoderProxy *DccLiteProxy::OnIndexByName(std::string_view key, sol::this_state L)
@@ -317,7 +252,7 @@ namespace dcclite::broker
 {
 	void DccLiteService::IScriptSupport_RegisterProxy(sol::table &table)
 	{
-		table[this->GetName().GetData()] = DccLiteProxy{*this};
+		table[this->GetName().GetData()] = DccLiteProxy{ *this };
 	}
 
 	void DccLiteService::IScriptSupport_OnVMInit(sol::state &state)

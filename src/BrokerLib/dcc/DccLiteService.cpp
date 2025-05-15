@@ -40,41 +40,6 @@ using namespace std::chrono_literals;
 
 namespace dcclite::broker
 {	
-	DecoderWeakPointer::DecoderWeakPointer(dcclite::broker::Decoder &decoder, dcclite::broker::Service &dccLiteService) :
-		m_pclDecoder{ &decoder },
-		m_clAddress{ decoder.GetAddress() }
-	{
-		m_slotObjectManagerConnection = dccLiteService.m_sigEvent.connect(&DecoderWeakPointer::OnObjectManagerEvent, this);
-	}
-
-	void DecoderWeakPointer::OnObjectManagerEvent(const dcclite::broker::ObjectManagerEvent &event)
-	{
-		if (event.m_kType == dcclite::broker::ObjectManagerEvent::ITEM_CHANGED)
-			return;
-
-		if (event.m_kType == dcclite::broker::ObjectManagerEvent::ITEM_DESTROYED)
-		{
-			if (event.m_pclItem != m_pclDecoder)
-				return;			
-
-			m_sigDecoderDestroy(*m_pclDecoder);
-			
-			m_pclDecoder = nullptr;
-		}
-		else if (!m_pclDecoder && (event.m_kType == dcclite::broker::ObjectManagerEvent::ITEM_CREATED))
-		{
-			auto createdDecoder = static_cast<dcclite::broker::Decoder *>(event.m_pclItem);
-
-			if (createdDecoder->GetAddress() != m_clAddress)
-				return;
-
-			m_pclDecoder = createdDecoder;
-
-			m_sigDecoderCreated(*m_pclDecoder);
-		}
-	}
-
-
 	static std::unique_ptr<Decoder> TryCreateDecoder(std::string_view className, DccAddress address, RName name, IDccLite_DecoderServices &owner, IDevice_DecoderServices &dev, const rapidjson::Value &params)
 	{
 		//
