@@ -5,8 +5,8 @@
 #include <dcclite_shared/Packet.h>
 
 #include "BrokerMockups.h"
-#include "dcc/SensorDecoder.h"
-#include "dcc/TurntableAutoInverterDecoder.h"
+#include "exec/SensorDecoder.h"
+#include "exec/TurntableAutoInverterDecoder.h"
 
 using namespace rapidjson;
 

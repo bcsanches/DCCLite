@@ -19,9 +19,9 @@ DCCLite
 		- SharpTerminal will be able to set this externalVoltage value
 
 - Change DccDevice decoder structure: expose a DecoderProxy, that is never destroyed.
-	- Instead, when a device file changes, reload everything?	
-		- first thing: remove dependencies on the "services" folder
+	- Instead, when a device file changes, reload everything?			
 		- second: create a DccSystem class, that manages all DccLiteServices
+		- move script system to shell
 		- Organize system in layers or modules
 		- Broker - base layer, if main config changes, restart everything (rarest case)
 		- Dcc - hardware layer, if any device changes, reload the device and reload all the shell layer

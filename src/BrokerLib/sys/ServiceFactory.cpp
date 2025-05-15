@@ -12,8 +12,8 @@
 
 #include <stdexcept>
 
-#include "../dcc/DccLiteService.h"
-#include "../dcc/DccppService.h"
+#include "../exec/DccLiteService.h"
+#include "../exec/DccppService.h"
 
 #include "../dispatcher/DispatcherService.h"
 

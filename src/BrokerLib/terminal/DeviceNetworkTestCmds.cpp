@@ -18,7 +18,7 @@
 #include "TerminalClient.h"
 #include "TerminalUtils.h"
 
-#include "../dcc/NetworkDevice.h"
+#include "../exec/NetworkDevice.h"
 
 namespace dcclite::broker
 {	

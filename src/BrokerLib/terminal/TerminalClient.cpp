@@ -13,7 +13,7 @@
 
 #include <magic_enum/magic_enum.hpp>
 
-#include "../dcc/NetworkDeviceTasks.h"
+#include "../exec/NetworkDeviceTasks.h"
 
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Log.h>

@@ -13,9 +13,9 @@
 #include <map>
 #include <vector>
 
-#include "dcc/Decoder.h"
-#include "dcc/IDccLiteService.h"
-#include "dcc/IDevice.h"
+#include "exec/Decoder.h"
+#include "exec/IDccLiteService.h"
+#include "exec/IDevice.h"
 
 #include <dcclite/RName.h>
 

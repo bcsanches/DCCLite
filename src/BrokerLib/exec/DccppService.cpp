@@ -723,8 +723,6 @@ ERROR_RESPONSE:
 	//
 	//
 	//
-
-
 	DccppServiceImpl::DccppServiceImpl(RName name, Broker &broker, const rapidjson::Value& params, DccLiteService &dependency):
 		DccppService(name, broker, params),		
 		m_rclDccService{ dependency }

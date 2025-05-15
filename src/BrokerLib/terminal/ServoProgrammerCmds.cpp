@@ -13,8 +13,8 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Util.h>
 
-#include "../dcc/NetworkDevice.h"
-#include "../dcc/TurnoutDecoder.h"
+#include "../exec/NetworkDevice.h"
+#include "../exec/TurnoutDecoder.h"
 
 #include "TerminalClient.h"
 #include "TerminalUtils.h"

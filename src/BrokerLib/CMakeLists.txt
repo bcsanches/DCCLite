@@ -1,6 +1,6 @@
-file(GLOB_RECURSE SRC_DCC
-    "dcc/*.cpp"
-    "dcc/*.h"
+file(GLOB_RECURSE SRC_EXEC
+    "exec/*.cpp"
+    "exec/*.h"
 )
 
 file(GLOB_RECURSE SRC_LN
@@ -25,54 +25,56 @@ file(GLOB_RECURSE SRC_DISPATCHER
 
 add_library(
     BrokerLib	     	   	     
-        dcc/DccAddress.cpp
-        dcc/DccAddress.h
-        dcc/DccLiteService.cpp
-        dcc/DccLiteService_script.cpp
-        dcc/DccLiteService.h  
-        dcc/DccppService.cpp
-        dcc/DccppService.h
-        dcc/Decoder.cpp
-        dcc/Decoder.h
-        dcc/Device.cpp
-        dcc/Device.h      
-        dcc/IDccLiteService.h  
-        dcc/IDevice.h
-        dcc/IResettableObject.h
-        dcc/LocationManager.cpp
-        dcc/LocationManager.h
-        dcc/NetworkDevice.cpp
-        dcc/NetworkDevice.h
-        dcc/NetworkDeviceTasks.cpp
-        dcc/NetworkDeviceTasks.h
-        dcc/OutputDecoder.cpp
-        dcc/OutputDecoder.h
-        dcc/PinManager.cpp
-        dcc/PinManager.h
-        dcc/QuadInverter.cpp
-        dcc/QuadInverter.h
-        dcc/RemoteDecoder.cpp
-        dcc/RemoteDecoder.h
-        dcc/StateDecoder.cpp
-        dcc/StateDecoder.h
-        dcc/SensorDecoder.cpp
-        dcc/SensorDecoder.h
-        dcc/SignalDecoder.cpp
-        dcc/SignalDecoder.h
-        dcc/SimpleOutputDecoder.cpp
-        dcc/SimpleOutputDecoder.h
-		dcc/StorageManager.cpp
-		dcc/StorageManager.h        
-        dcc/TurnoutDecoder.cpp
-        dcc/TurnoutDecoder.h 
-        dcc/TurntableAutoInverterDecoder.cpp
-        dcc/TurntableAutoInverterDecoder.h       
-        dcc/VirtualDevice.cpp
-        dcc/VirtualDevice.h
-		dcc/VirtualSensorDecoder.cpp
-		dcc/VirtualSensorDecoder.h
-		dcc/VirtualTurnoutDecoder.cpp
-		dcc/VirtualTurnoutDecoder.h        
+        exec/DccAddress.cpp
+        exec/DccAddress.h
+        exec/DccLiteService.cpp
+        exec/DccLiteService_script.cpp
+        exec/DccLiteService.h  
+        exec/DccppService.cpp
+        exec/DccppService.h
+        exec/Decoder.cpp
+        exec/Decoder.h
+        exec/Device.cpp
+        exec/Device.h      
+        exec/IDccLiteService.h  
+        exec/IDevice.h
+        exec/IResettableObject.h
+        exec/LiteManager.cpp
+        exec/LiteManager.h
+        exec/LocationManager.cpp
+        exec/LocationManager.h
+        exec/NetworkDevice.cpp
+        exec/NetworkDevice.h
+        exec/NetworkDeviceTasks.cpp
+        exec/NetworkDeviceTasks.h
+        exec/OutputDecoder.cpp
+        exec/OutputDecoder.h
+        exec/PinManager.cpp
+        exec/PinManager.h
+        exec/QuadInverter.cpp
+        exec/QuadInverter.h
+        exec/RemoteDecoder.cpp
+        exec/RemoteDecoder.h
+        exec/StateDecoder.cpp
+        exec/StateDecoder.h
+        exec/SensorDecoder.cpp
+        exec/SensorDecoder.h
+        exec/SignalDecoder.cpp
+        exec/SignalDecoder.h
+        exec/SimpleOutputDecoder.cpp
+        exec/SimpleOutputDecoder.h
+		exec/StorageManager.cpp
+		exec/StorageManager.h        
+        exec/TurnoutDecoder.cpp
+        exec/TurnoutDecoder.h 
+        exec/TurntableAutoInverterDecoder.cpp
+        exec/TurntableAutoInverterDecoder.h       
+        exec/VirtualDevice.cpp
+        exec/VirtualDevice.h
+		exec/VirtualSensorDecoder.cpp
+		exec/VirtualSensorDecoder.h
+		exec/VirtualTurnoutDecoder.cpp
+		exec/VirtualTurnoutDecoder.h        
         dispatcher/DispatcherService.cpp
         dispatcher/DispatcherService.h
         ln/LoconetService.cpp
@@ -120,7 +122,7 @@ add_library(
         terminal/TerminalUtils.h
 )
 
-source_group("dcc"          FILES ${SRC_DCC})
+source_group("exec"          FILES ${SRC_EXEC})
 source_group("dispatcher"   FILES ${SRC_DISPATCHER})
 source_group("ln"           FILES ${SRC_LN})
 source_group("sys"          FILES ${SRC_SYS})

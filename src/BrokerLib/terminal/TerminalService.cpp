@@ -20,10 +20,10 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Util.h>
 
-#include "../dcc/IResettableObject.h"
-#include "../dcc/NetworkDevice.h"
-#include "../dcc/OutputDecoder.h"
-#include "../dcc/SignalDecoder.h"
+#include "../exec/IResettableObject.h"
+#include "../exec/NetworkDevice.h"
+#include "../exec/OutputDecoder.h"
+#include "../exec/SignalDecoder.h"
 
 #include "../sys/BonjourService.h"
 #include "../sys/Broker.h"
