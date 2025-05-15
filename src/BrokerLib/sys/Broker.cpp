@@ -126,9 +126,18 @@ namespace dcclite::broker
 			ScriptSystem::Start(*this);
 		}
 
-
 		//Start after load, so project name is already loaded
 		ZeroConfSystem::Start(Project::GetName());
+	}
+
+	void Broker::SignalExecutiveChangeStart()
+	{
+		ScriptSystem::Stop();
+	}
+
+	void Broker::SignalExecutiveChangeEnd()
+	{
+		ScriptSystem::Start(*this);
 	}
 
 	Broker::~Broker()

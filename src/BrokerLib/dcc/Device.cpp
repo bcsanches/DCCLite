@@ -19,9 +19,9 @@
 #include <dcclite/JsonUtils.h>
 #include <dcclite/Log.h>
 
+#include "../sys/Broker.h"
 #include "../sys/FileWatcher.h"
 #include "../sys/Project.h"
-
 
 #include "Decoder.h"
 
@@ -31,16 +31,17 @@
 
 namespace dcclite::broker
 {
-	Device::Device(RName name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params):
+	Device::Device(RName name, Broker &broker, IDccLite_DeviceServices &dccService, const rapidjson::Value &params):
 		FolderObject{ name },
 		m_clDccService{ dccService },
 		m_strConfigFileName{ std::string(this->GetName().GetData()) + ".decoders.json" },
 		m_pathConfigFile{ Project::GetFilePath(m_strConfigFileName) }
 	{
-		FileWatcher::TryWatchFile(m_pathConfigFile, [this](const dcclite::fs::path path, std::string fileName)
+		FileWatcher::TryWatchFile(m_pathConfigFile, [this, &broker](const dcclite::fs::path path, std::string fileName)
 			{
 				dcclite::Log::Info("[Device::{}] [FileWatcher::Reload] Attempting to reload config: {}", this->GetName(), fileName);
-
+				
+				broker.SignalExecutiveChangeStart();
 				try
 				{
 					this->Load();
@@ -50,6 +51,7 @@ namespace dcclite::broker
 					dcclite::Log::Error("[Device::{}] [FileWatcher::Reload] failed: {}", this->GetName(), ex.what());
 				}
 
+				broker.SignalExecutiveChangeEnd();
 			});
 	}
 

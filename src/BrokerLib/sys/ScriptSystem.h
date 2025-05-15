@@ -31,5 +31,5 @@ namespace dcclite::broker::ScriptSystem
 	};	
 
 	extern void Start(Broker &broker);
-	extern void Stop();
+	extern void Stop();	
 }

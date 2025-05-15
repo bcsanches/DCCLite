@@ -154,7 +154,7 @@
   {
     "name": "STA_P04",
     "class": "Output",
-    "address": "1713",
+    "address": "1713", 
     "pin": 57,
     "inverted":true,
     "ignoreSavedState": true

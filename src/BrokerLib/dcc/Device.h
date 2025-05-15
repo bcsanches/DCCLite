@@ -25,14 +25,15 @@
 
 namespace dcclite::broker
 {
+	class Broker;
 	class Decoder;
 	class IDccLite_DeviceServices;	
 
 	class Device : public dcclite::FolderObject, IDevice_DecoderServices
 	{
 		public:
-			Device(RName name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params);
-			Device(RName name, IDccLite_DeviceServices &dccService);	
+			Device(RName name, Broker &broker, IDccLite_DeviceServices &dccService, const rapidjson::Value &params);
+			Device(RName name, IDccLite_DeviceServices &dccService);
 
 			virtual ~Device();			
 

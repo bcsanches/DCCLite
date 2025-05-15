@@ -46,7 +46,7 @@ namespace dcclite::broker
 			};		
 
 		public:
-			NetworkDevice(RName name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params);
+			NetworkDevice(RName name, Broker &broker, IDccLite_DeviceServices &dccService, const rapidjson::Value &params);
 			NetworkDevice(RName name, IDccLite_DeviceServices &dccService);
 
 			NetworkDevice(const NetworkDevice &) = delete;

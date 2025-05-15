@@ -155,9 +155,9 @@ namespace dcclite::broker
 				auto className = json::GetString(device, "class", "device data for DccLiteService");
 
 				if (className.compare("Virtual"))
-					m_pDevices->AddChild(std::make_unique<NetworkDevice>(nodeName, *static_cast<IDccLite_DeviceServices *>(this), device));
+					m_pDevices->AddChild(std::make_unique<NetworkDevice>(nodeName, broker, *static_cast<IDccLite_DeviceServices *>(this), device));
 				else
-					m_pDevices->AddChild(std::make_unique<VirtualDevice>(nodeName, *static_cast<IDccLite_DeviceServices *>(this), device));
+					m_pDevices->AddChild(std::make_unique<VirtualDevice>(nodeName, broker, *static_cast<IDccLite_DeviceServices *>(this), device));
 			}
 		}
 		catch (std::exception &)
