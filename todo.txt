@@ -18,16 +18,14 @@ DCCLite
 		- digitalWrite will never affetct externalVoltage
 		- SharpTerminal will be able to set this externalVoltage value
 
-- when a device file changes, reload everything?
-	- Eliminate DecoderWeakPointer
-	- Remove script system weak pointers
+- when a device file changes, reload everything?	
 	- second: create a DccSystem class, that manages all DccLiteServices
 	- Organize system in layers or modules
 	- Broker - base layer, if main config changes, restart everything (rarest case)
 	- Dcc - hardware layer, if any device changes, reload the device and reload all the shell layer
 	- Shell layer: systems that rely on before layers, like: 
 		- dispatcher
-		- script (remvoe it from sys)
+		- script (remove it from sys)
 		- loconet
 		- terminal
 	- Sharp terminal will always reload all when hardware changes
@@ -63,7 +61,6 @@ DCCLite
 - TrackSection
 	- BlockSection: a block with an entry and exit sensor, no turnouts, simple block for stopping a train	
 
-- Lua script failing to reload, seems to be a problem with sections
 - Why lua scripts are not notified when devices gets online and state changes during sync? Check routes
 - Implement coroutine support on lua scripts?
 
