@@ -56,6 +56,9 @@ namespace dcclite::broker
 
 			Service &ResolveRequirement(std::string_view requirement) const;
 
+			void SignalExecutiveChangeStart();
+			void SignalExecutiveChangeEnd();
+
 		private:				
 			dcclite::FolderObject	*m_pServices;
 

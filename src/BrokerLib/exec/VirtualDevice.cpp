@@ -21,8 +21,8 @@
 namespace dcclite::broker
 {
 
-	VirtualDevice::VirtualDevice(RName name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params) :
-		Device{ name, dccService, params }
+	VirtualDevice::VirtualDevice(RName name, Broker &broker, IDccLite_DeviceServices &dccService, const rapidjson::Value &params) :
+		Device{ name, broker, dccService, params }
 	{
 		this->Load();
 	}

@@ -80,8 +80,8 @@ namespace dcclite::broker
 
 
 
-	NetworkDevice::NetworkDevice(RName name, IDccLite_DeviceServices &dccService, const rapidjson::Value &params):
-		Device(name, dccService, params),		
+	NetworkDevice::NetworkDevice(RName name, Broker &broker, IDccLite_DeviceServices &dccService, const rapidjson::Value &params):
+		Device(name, broker, dccService, params),		
 		m_clPinManager(DecodeBoardName(params["class"].GetString())),		
 		m_clTimeoutController{ *this },
 		m_fRegistered{ true }
