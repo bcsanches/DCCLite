@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "ServiceCmdBase.h"
+#include "TerminalCmd.h"
 
 namespace dcclite::broker
 {

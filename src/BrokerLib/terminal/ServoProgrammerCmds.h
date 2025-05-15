@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "ServiceCmdBase.h"
+#include "TerminalCmd.h"
 
 namespace dcclite::broker
 {
@@ -29,11 +29,11 @@ namespace dcclite::broker
 			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override;
 	};	
 
-	class StopServoProgrammerCmd: public DccLiteCmdBase
+	class StopServoProgrammerCmd: public TerminalCmd
 	{
 		public:
 			explicit StopServoProgrammerCmd(RName name = RName{ "Stop-ServoProgrammer" }):
-				DccLiteCmdBase(name)
+				TerminalCmd(name)
 			{
 				//empty
 			}
@@ -41,11 +41,11 @@ namespace dcclite::broker
 			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override;
 	};
 
-	class EditServoProgrammerCmd: public DccLiteCmdBase
+	class EditServoProgrammerCmd: public TerminalCmd
 	{		
 		public:
 			explicit EditServoProgrammerCmd(RName name = RName{ "Edit-ServoProgrammer" }):
-				DccLiteCmdBase(name)
+				TerminalCmd(name)
 			{
 				//empty
 			}
@@ -55,11 +55,11 @@ namespace dcclite::broker
 
 	
 
-	class DeployServoProgrammerCmd: public DccLiteCmdBase
+	class DeployServoProgrammerCmd: public TerminalCmd
 	{
 		public:
 			explicit DeployServoProgrammerCmd(RName name = RName{ "Deploy-ServoProgrammer" }):
-				DccLiteCmdBase(name)
+				TerminalCmd(name)
 			{
 				//empty
 			}

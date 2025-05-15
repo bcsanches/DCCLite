@@ -108,8 +108,6 @@ add_library(
         terminal/DeviceNetworkTestCmds.h      
         terminal/DeviceRenameCmd.cpp
         terminal/DeviceRenameCmd.h
-		terminal/ServiceCmdBase.cpp
-		terminal/ServiceCmdBase.h
 		terminal/ServoProgrammerCmds.cpp
 		terminal/ServoProgrammerCmds.h
 		terminal/TerminalClient.cpp

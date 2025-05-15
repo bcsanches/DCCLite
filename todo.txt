@@ -19,12 +19,7 @@ DCCLite
 		- SharpTerminal will be able to set this externalVoltage value
 
 - Change DccDevice decoder structure: expose a DecoderProxy, that is never destroyed.
-	- Instead, when a device file changes, reload everything?
-		+ This makes everything simpler
-		+ Changes are not expected all the time
-		+ reload time is minimal
-		- Runtime editing is gone...
-	- Still on reload plan:
+	- Instead, when a device file changes, reload everything?	
 		- first thing: remove dependencies on the "services" folder
 			- remove references to "systemName" on json.
 			- rename to manager?
@@ -39,10 +34,12 @@ DCCLite
 			- terminal
 		- Sharp terminal will always reload all when hardware changes
 		- Is it worth to really organize those layers? Perhaps:
-			- system
-			- executive
-			- shell
+			- system: broker base systems, event system, thinker, etc
+			- executive: hardware stuff, basically DccLite and arduinos management
+			- shell: terminal, script system, dispatcher
 		- What for a future gui system with editing functionality? Only for signals and "logical" objects?
+		- Eliminate DecoderWeakPointer
+		- Remove script system weak pointers
 	- How sharpterminal will handle the "mutating" objects?
 		- Send a object update that will change the internal structure?
 	- This will make all code around simple, no need for handling create / destroy events
@@ -72,7 +69,7 @@ DCCLite
 			- hint route_section of the expected direction
 
 - TrackSection
-	- BlockSection: a block with an entry and exit sensor, no turnouts, simple block for stopping a train
+	- BlockSection: a block with an entry and exit sensor, no turnouts, simple block for stopping a train	
 
 - Lua script failing to reload, seems to be a problem with sections
 - Why lua scripts are not notified when devices gets online and state changes during sync? Check routes

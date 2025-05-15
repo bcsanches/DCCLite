@@ -35,7 +35,6 @@
 #include "DeviceClearEEPromCmd.h"
 #include "DeviceNetworkTestCmds.h"
 #include "DeviceRenameCmd.h"
-#include "ServiceCmdBase.h"
 #include "ServoProgrammerCmds.h"
 #include "TerminalClient.h"
 #include "TerminalCmd.h"
@@ -338,11 +337,11 @@ namespace dcclite::broker
 	// DecoderCmdBase
 	//
 	/////////////////////////////////////////////////////////////////////////////
-	class DecoderCmdBase : public DccLiteCmdBase
+	class DecoderCmdBase : public TerminalCmd
 	{
 		protected:
 			explicit DecoderCmdBase(RName name) :
-				DccLiteCmdBase(name)
+				TerminalCmd(name)
 			{
 				//empty
 			}
@@ -646,11 +645,11 @@ namespace dcclite::broker
 			std::future<void> m_Future;
 	};
 
-	class ReadEEPromCmd : public DccLiteCmdBase
+	class ReadEEPromCmd : public TerminalCmd
 	{
 		public:
 			explicit ReadEEPromCmd(RName name = RName{ "Read-EEProm" }) :
-				DccLiteCmdBase(name)
+				TerminalCmd(name)
 			{
 				//empty
 			}
