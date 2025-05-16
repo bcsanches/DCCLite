@@ -57,7 +57,7 @@ jobs:
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
     - name: Install Libs
-      if: "$RUNNER_OS" == "Linux"
+      if: runner.os == 'Linux'
       run: sudo apt install -y uuid-dev libssl-dev
       
     - name: Configure CMake
