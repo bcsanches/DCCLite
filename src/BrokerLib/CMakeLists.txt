@@ -8,6 +8,11 @@ file(GLOB_RECURSE SRC_LN
     "ln/*.h"
 )
 
+file(GLOB_RECURSE SRC_SHELL
+    "shell/*.cpp"
+    "shell/*.h"
+)
+
 file(GLOB_RECURSE SRC_SYS
     "sys/*.cpp"
     "sys/*.h"
@@ -79,6 +84,8 @@ add_library(
         ln/LoconetService.h
         ln/ThrottleService.cpp
         ln/ThrottleService.h
+		shell/ScriptSystem.cpp
+	    shell/ScriptSystem.h
         sys/BonjourService.cpp
         sys/BonjourService.h        
         sys/Broker.cpp        
@@ -89,8 +96,6 @@ add_library(
         sys/EventHub.h
         sys/Project.cpp
         sys/Project.h
-	    sys/ScriptSystem.cpp
-	    sys/ScriptSystem.h
         sys/Service.cpp
         sys/Service.h
 		sys/ServiceFactory.cpp
@@ -123,6 +128,7 @@ add_library(
 source_group("dcc"          FILES ${SRC_DCC})
 source_group("dispatcher"   FILES ${SRC_DISPATCHER})
 source_group("ln"           FILES ${SRC_LN})
+source_group("shell"        FILES ${SRC_SHELL})
 source_group("sys"          FILES ${SRC_SYS})
 source_group("terminal"     FILES ${SRC_TERMINAL})
 
