@@ -17,9 +17,9 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Log.h>
 
-#include "Broker.h"
-#include "FileWatcher.h"
-#include "Project.h"
+#include "../sys/Broker.h"
+#include "../sys/FileWatcher.h"
+#include "../sys/Project.h"
 
 
 namespace dcclite::broker::ScriptSystem

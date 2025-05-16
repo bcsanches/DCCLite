@@ -23,9 +23,10 @@
 #include "../exec/IResettableObject.h"
 #include "../exec/VirtualSensorDecoder.h"
 
+#include "../shell/ScriptSystem.h"
+
 #include "../sys/Broker.h"
 #include "../sys/ServiceFactory.h"
-#include "../sys/ScriptSystem.h"
 
 namespace dcclite::broker
 {

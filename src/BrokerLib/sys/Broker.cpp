@@ -35,9 +35,10 @@
 #include "Project.h"
 #include "ServiceFactory.h"
 #include "Thinker.h"
-#include "ScriptSystem.h"
 #include "SpecialFolders.h"
 #include "ZeroConfSystem.h"
+
+#include "../shell/ScriptSystem.h"
 
 #include "../terminal/TerminalCmd.h"
 

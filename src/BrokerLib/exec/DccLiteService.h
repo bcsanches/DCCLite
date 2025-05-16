@@ -25,8 +25,9 @@
 #include "Decoder.h"
 #include "IDccLiteService.h"
 
+#include "../shell/ScriptSystem.h"
+
 #include "../sys/EventHub.h"
-#include "../sys/ScriptSystem.h"
 #include "../sys/Thinker.h"
 
 namespace dcclite::broker

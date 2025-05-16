@@ -170,30 +170,30 @@ class DecoderProxy
 ******************************************************************************/
 class DccLiteProxy
 {
-public:
-	DccLiteProxy(dcclite::broker::DccLiteService &service):
-		m_rclService{ service }
-	{
-		dcclite::Log::Trace("[ScriptService] [DccLiteProxy] [{}]: Created.", service.GetName());
-	}
+	public:
+		DccLiteProxy(dcclite::broker::DccLiteService &service):
+			m_rclService{ service }
+		{
+			dcclite::Log::Trace("[ScriptService] [DccLiteProxy] [{}]: Created.", service.GetName());
+		}
 
-	DccLiteProxy(DccLiteProxy &&m) = default;
+		DccLiteProxy(DccLiteProxy &&m) = default;
 
-	DccLiteProxy(const DccLiteProxy &) = delete;
-	DccLiteProxy operator=(const DccLiteProxy &) = delete;
+		DccLiteProxy(const DccLiteProxy &) = delete;
+		DccLiteProxy operator=(const DccLiteProxy &) = delete;
 
-	~DccLiteProxy()
-	{
-		dcclite::Log::Trace("[ScriptService] [DccLiteProxy] [{}] Destroyed.", this->m_rclService.GetName());
-	}
+		~DccLiteProxy()
+		{
+			dcclite::Log::Trace("[ScriptService] [DccLiteProxy] [{}] Destroyed.", this->m_rclService.GetName());
+		}
 
-	DecoderProxy *OnIndexByName(std::string_view key, sol::this_state L);
-	DecoderProxy *OnIndexByAddress(uint16_t key, sol::this_state L);
+		DecoderProxy *OnIndexByName(std::string_view key, sol::this_state L);
+		DecoderProxy *OnIndexByAddress(uint16_t key, sol::this_state L);
 
-private:
-	dcclite::broker::DccLiteService &m_rclService;
+	private:
+		dcclite::broker::DccLiteService &m_rclService;
 
-	std::map<dcclite::broker::DccAddress, std::unique_ptr<DecoderProxy>> m_mapKnowDecoders;
+		std::map<dcclite::broker::DccAddress, std::unique_ptr<DecoderProxy>> m_mapKnowDecoders;
 };
 
 DecoderProxy *DccLiteProxy::OnIndexByName(std::string_view key, sol::this_state L)
