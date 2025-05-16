@@ -26,7 +26,7 @@
 #include "../sys/Thinker.h"
 #include "../sys/Timeouts.h"
 
-#include "LoconetService.h"
+#include "ILoconetSlot.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 //

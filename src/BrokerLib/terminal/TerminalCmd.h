@@ -12,31 +12,32 @@
 #pragma once
 
 #include <memory>
+#include <string>
 #include <string_view>
 #include <variant>
 
-#include <dcclite/FolderObject.h>
-
 #include <rapidjson/document.h>
+
+#include <dcclite/FolderObject.h>
 
 namespace dcclite::broker
 { 
 
-			/*
-			Providers:
-				- ItemProviders
-					Get-Item -> return item info
-					Set-Item -> change the value of a item
-					Clear-Item -> delete contents of a item, but not the item
-					Remove-Item -> delete the item
-					Invoke-item -> run item default action (throw turnout?)
-				- DriverProviders
-				- ContainerProviders
-					- Copy-Item
-					- Get-ChildItem
-					- New-Item
-					- Remove-Item
-					- Rename-Item
+	/*
+	Providers:
+		- ItemProviders
+			Get-Item -> return item info
+			Set-Item -> change the value of a item
+			Clear-Item -> delete contents of a item, but not the item
+			Remove-Item -> delete the item
+			Invoke-item -> run item default action (throw turnout?)
+		- DriverProviders
+		- ContainerProviders
+			- Copy-Item
+			- Get-ChildItem
+			- New-Item
+			- Remove-Item
+			- Rename-Item
 
 			https://docs.microsoft.com/pt-br/powershell/scripting/developer/cmdlet/approved-verbs-for-windows-powershell-commands?view=powershell-7.1
 			New vs. Set
@@ -69,79 +70,8 @@ namespace dcclite::broker
 	*/
 
 	typedef int CmdId_t;
-	class TaskManager;
-	class TerminalCmd;	
-	class TerminalCmdFiber;
 
-	class ITerminalClient_ContextServices
-	{
-		public:
-			virtual TaskManager &GetTaskManager() = 0;
-			virtual void SendClientNotification(const std::string_view msg) = 0;
-
-			virtual void DestroyFiber(TerminalCmdFiber &fiber) = 0;
-	};
-
-	/**
-
-	The terminal context is a little helper to store the cmd current location, last acessed object etc
-
-
-	*/
-	class TerminalContext
-	{
-		public:		
-			explicit TerminalContext(dcclite::FolderObject &root, ITerminalClient_ContextServices &terminalClientServices):
-				m_pclRoot(&root),
-				m_rclTerminalClientServices(terminalClientServices)
-			{
-				//empty
-			}
-
-			TerminalContext(const TerminalContext &) = delete;
-
-			TerminalContext(TerminalContext &&other) = delete;
-
-			TerminalContext &operator=(TerminalContext &&other) = delete;
-
-			void SetLocation(const dcclite::Path_t &newLocation);		
-
-			inline const dcclite::Path_t &GetLocation() const
-			{
-				return m_pthLocation;
-			}		
-
-			inline TaskManager &GetTaskManager() const noexcept
-			{
-				return m_rclTerminalClientServices.GetTaskManager();
-			}
-
-			inline void SendClientNotification(const std::string_view msg)
-			{
-				m_rclTerminalClientServices.SendClientNotification(msg);
-			}
-
-			void DestroyFiber(TerminalCmdFiber &fiber)
-			{
-				m_rclTerminalClientServices.DestroyFiber(fiber);
-			}
-
-			/**
-
-				returns:
-					The item pointed by the m_pthLocation
-
-			*/
-			dcclite::IObject *TryGetItem() const;
-
-			TerminalContext &operator=(TerminalContext &rhs) = delete;			
-
-		private:
-			dcclite::FolderObject *m_pclRoot;
-			dcclite::Path_t m_pthLocation;
-
-			ITerminalClient_ContextServices &m_rclTerminalClientServices;
-	};
+	class TerminalContext;
 
 	class TerminalCmdException: public std::exception
 	{
@@ -167,30 +97,7 @@ namespace dcclite::broker
 		private:
 			CmdId_t		m_iId;
 			std::string m_strWhat;
-	};
-
-
-	/**
-		The cmd host is responsbible for storing the registered cmds
-
-	*/
-	class TerminalCmdHost: public dcclite::FolderObject
-	{
-		public:		
-			TerminalCmdHost();
-			virtual ~TerminalCmdHost();
-
-			IObject *AddChild(std::unique_ptr<Object> obj) override;
-			TerminalCmd *AddCmd(std::unique_ptr<TerminalCmd> cmd);
-			void AddAlias(RName name, TerminalCmd &target);
-
-			TerminalCmd *TryFindCmd(RName name);
-
-			const char *GetTypeName() const noexcept override
-			{
-				return "TerminalCmdHost";
-			}		
-	};
+	};	
 
 	/**
 	* 
@@ -233,12 +140,14 @@ namespace dcclite::broker
 			typedef std::variant<std::string, std::unique_ptr<TerminalCmdFiber>> CmdResult_t;
 
 		public:
-			TerminalCmd(RName name);
+			TerminalCmd(RName name):
+				Object{ name }
+			{
+				//empty
+			}
 
 			TerminalCmd(const TerminalCmd &) = delete;
 			TerminalCmd(TerminalCmd &&) = delete;
-
-			~TerminalCmd();
 			
 			[[nodiscard]] virtual CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) = 0;
 

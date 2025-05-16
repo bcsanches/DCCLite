@@ -82,6 +82,7 @@ add_library(
 		exec/VirtualTurnoutDecoder.h        
         dispatcher/DispatcherService.cpp
         dispatcher/DispatcherService.h
+		ln/ILoconetSlot.h
         ln/LoconetService.cpp
         ln/LoconetService.h
         ln/ThrottleService.cpp
@@ -109,6 +110,8 @@ add_library(
         sys/Timeouts.h
         sys/ZeroConfSystem.cpp
         sys/ZeroConfSystem.h
+		terminal/CmdHost.cpp
+		terminal/CmdHost.h
         terminal/DeviceClearEEPromCmd.cpp
         terminal/DeviceClearEEPromCmd.h
         terminal/DeviceNetworkTestCmds.cpp
@@ -121,6 +124,8 @@ add_library(
         terminal/TerminalClient.h
         terminal/TerminalCmd.cpp
         terminal/TerminalCmd.h
+		terminal/TerminalContext.cpp
+		terminal/TerminalContext.h		
         terminal/TerminalService.cpp
         terminal/TerminalService.h
 		terminal/TerminalUtils.cpp

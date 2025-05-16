@@ -40,7 +40,7 @@
 
 #include "../shell/ScriptSystem.h"
 
-#include "../terminal/TerminalCmd.h"
+#include "../terminal/CmdHost.h"
 
 //win32 header leak
 #undef GetObject
@@ -101,7 +101,7 @@ namespace dcclite::broker
 		Project::SetWorkingDir(std::move(projectPath));
 
 		{
-			auto cmdHost = std::make_unique<TerminalCmdHost>();
+			auto cmdHost = std::make_unique<CmdHost>();
 			m_pclTerminalCmdHost = cmdHost.get();
 
 			this->AddChild(std::move(cmdHost));

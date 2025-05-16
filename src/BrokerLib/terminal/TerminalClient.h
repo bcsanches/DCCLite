@@ -19,11 +19,13 @@
 #include "../sys/Service.h"
 
 #include "TerminalCmd.h"
+#include "TerminalContext.h"
 #include "TerminalService.h"
 
 namespace dcclite::broker
 {
 	class NetworkTask;
+	class CmdHost;
 
 	class TaskManager
 	{
@@ -47,7 +49,7 @@ namespace dcclite::broker
 	class TerminalClient: private IObjectManagerListener, ITerminalClient_ContextServices, EventHub::IEventTarget
 	{
 		public:
-			TerminalClient(ITerminalServiceClientProxy &owner, TerminalCmdHost &cmdHost, dcclite::IObject &root, const dcclite::Path_t &ownerPath, const NetworkAddress address, Socket &&socket);
+			TerminalClient(ITerminalServiceClientProxy &owner, CmdHost &cmdHost, dcclite::IObject &root, const dcclite::IFolderObject &currentLocation, const NetworkAddress address, Socket &&socket);
 			TerminalClient(const TerminalClient &client) = delete;
 			TerminalClient(TerminalClient &&other) = delete;
 
@@ -99,7 +101,7 @@ namespace dcclite::broker
 			TerminalContext m_clContext;
 
 			ITerminalServiceClientProxy &m_rclOwner;
-			TerminalCmdHost &m_rclCmdHost;
+			CmdHost &m_rclCmdHost;
 
 			std::list<std::unique_ptr<TerminalCmdFiber>>	m_lstFibers;
 
