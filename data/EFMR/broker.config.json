@@ -137,8 +137,7 @@
 		},
 		{
 			"class": "ThrottleService",
-			"name": "throttleService",
-			"serverAddress": "127.0.0.1:12090"
+			"name": "throttleService"			
 		}
 	]
 }

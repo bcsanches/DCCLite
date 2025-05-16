@@ -80,6 +80,7 @@ add_library(
 		dcc/VirtualTurnoutDecoder.h        
         dispatcher/DispatcherService.cpp
         dispatcher/DispatcherService.h
+		ln/ILoconetSlot.h
         ln/LoconetService.cpp
         ln/LoconetService.h
         ln/ThrottleService.cpp
