@@ -27,7 +27,7 @@ namespace dcclite
 namespace dcclite::broker
 {
 	class Service;
-	class TerminalCmdHost;
+	class CmdHost;
 
 	class Broker: public FolderObject
 	{
@@ -44,7 +44,7 @@ namespace dcclite::broker
 				m_pServices->VisitChildren(visitor);
 			}			
 
-			TerminalCmdHost *GetTerminalCmdHost()
+			CmdHost *GetTerminalCmdHost()
 			{
 				return m_pclTerminalCmdHost;
 			}
@@ -62,7 +62,7 @@ namespace dcclite::broker
 		private:				
 			dcclite::FolderObject	*m_pServices;
 
-			TerminalCmdHost			*m_pclTerminalCmdHost = nullptr;
+			CmdHost	*m_pclTerminalCmdHost = nullptr;
 
 		private:
 			void LoadConfig();	

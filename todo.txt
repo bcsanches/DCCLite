@@ -25,7 +25,7 @@ DCCLite
 	- Dcc - hardware layer, if any device changes, reload the device and reload all the shell layer
 	- Shell layer: systems that rely on before layers, like: 
 		- dispatcher
-		- script (remove it from sys)
+		- script
 		- loconet
 		- terminal
 	- Sharp terminal will always reload all when hardware changes

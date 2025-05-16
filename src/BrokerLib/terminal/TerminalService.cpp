@@ -31,6 +31,7 @@
 #include "../sys/ServiceFactory.h"
 #include "../sys/ZeroConfSystem.h"
 
+#include "CmdHost.h"
 #include "DeviceClearEEPromCmd.h"
 #include "DeviceNetworkTestCmds.h"
 #include "DeviceRenameCmd.h"
@@ -177,19 +178,13 @@ namespace dcclite::broker
 
 					auto destinationPath = paramsIt->value[0].GetString();
 
-					auto destinationObj = folder.TryNavigate(Path_t(destinationPath));
+					auto destinationObj = dynamic_cast<IFolderObject *>(folder.TryNavigate(Path_t(destinationPath)));
 					if (!destinationObj)
 					{
 						throw TerminalCmdException(fmt::format("Invalid path {}", destinationPath), id);
-					}
-
-					if (!destinationObj->IsFolder())
-					{
-						throw TerminalCmdException(fmt::format("Path {} led to an IObject, not IFolder", destinationPath), id);
-					}
-
-					path = destinationObj->GetPath();
-					context.SetLocation(path);					
+					}					
+					
+					context.SetLocation(*destinationObj);
 				}
 				else
 				{
@@ -901,7 +896,7 @@ namespace dcclite::broker
 				proxy,
 				*m_rclBroker.GetTerminalCmdHost(), 
 				this->GetRoot(), 
-				this->GetPath(), 
+				*this, 
 				address, 
 				std::move(s)
 			)

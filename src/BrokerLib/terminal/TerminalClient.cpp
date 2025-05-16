@@ -21,6 +21,7 @@
 
 #include "../sys/SpecialFolders.h"
 
+#include "CmdHost.h"
 #include "TerminalUtils.h"
 
 namespace dcclite::broker
@@ -55,14 +56,14 @@ namespace dcclite::broker
 	//
 	/////////////////////////////////////////////////////////////////////////////
 
-	TerminalClient::TerminalClient(ITerminalServiceClientProxy &owner, TerminalCmdHost &cmdHost, dcclite::IObject &root, const dcclite::Path_t &ownerPath, const NetworkAddress address, Socket &&socket):
+	TerminalClient::TerminalClient(ITerminalServiceClientProxy &owner, CmdHost &cmdHost, dcclite::IObject &root, const dcclite::IFolderObject &currentLocation, const NetworkAddress address, Socket &&socket):
 		m_clMessenger(std::move(socket)),		
-		m_clContext(static_cast<dcclite::FolderObject &>(root), *this),
+		m_clContext(static_cast<dcclite::IFolderObject &>(root), *this),
 		m_rclOwner(owner),
 		m_rclCmdHost(cmdHost),
 		m_clAddress(address)
 	{
-		m_clContext.SetLocation(ownerPath);
+		m_clContext.SetLocation(currentLocation);
 
 		this->RegisterListeners();
 
