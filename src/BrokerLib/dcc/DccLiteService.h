@@ -25,8 +25,6 @@
 #include "Decoder.h"
 #include "IDccLiteService.h"
 
-#include "../shell/ScriptSystem.h"
-
 #include "../sys/EventHub.h"
 #include "../sys/Thinker.h"
 
@@ -40,7 +38,7 @@ namespace dcclite::broker
 	class StateDecoder;
 	class TurnoutDecoder;	
 
-	class DccLiteService : public Service, private IDccLite_DeviceServices, private IDccLite_DecoderServices, public EventHub::IEventTarget, public ScriptSystem::IScriptSupport
+	class DccLiteService : public Service, private IDccLite_DeviceServices, private IDccLite_DecoderServices, public EventHub::IEventTarget
 	{
 		public:
 			static const char *TYPE_NAME;
@@ -94,18 +92,7 @@ namespace dcclite::broker
 
 			std::vector<const StateDecoder *> FindAllInputDecoders() const;
 
-			std::vector<const TurnoutDecoder *> FindAllTurnoutDecoders() const;
-
-			//
-			//
-			// Scripting
-			//
-			//
-
-			void IScriptSupport_RegisterProxy(sol::table &table) override;
-
-			void IScriptSupport_OnVMInit(sol::state &state) override;
-			void IScriptSupport_OnVMFinalize(sol::state &state) override;
+			std::vector<const TurnoutDecoder *> FindAllTurnoutDecoders() const;			
 
 		private:			
 			void OnNetEvent_Hello(

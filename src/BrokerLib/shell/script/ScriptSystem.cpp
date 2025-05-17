@@ -17,18 +17,17 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Log.h>
 
-#include "../sys/Broker.h"
-#include "../sys/FileWatcher.h"
-#include "../sys/Project.h"
+#include "../../sys/Broker.h"
+#include "../../sys/FileWatcher.h"
+#include "../../sys/Project.h"
 
+#include "Proxies.h"
 
-namespace dcclite::broker::ScriptSystem
+namespace dcclite::broker::shell::ScriptSystem
 {
 	static sol::state g_clLua;	
 
 	Broker *g_pclBroker = nullptr;	
-
-	std::vector<IScriptSupport *> g_vecRegisteredServices;
 
 	static void WatchFile(const dcclite::fs::path &fileName);
 	
@@ -98,34 +97,26 @@ namespace dcclite::broker::ScriptSystem
 			}
 		);
 
-		dcclite::Log::Trace("[ScriptService::Start] Exporting services");
+		dcclite::Log::Trace("[ScriptService::Start] Exporting types");
+
+		detail::AddTypes(g_clLua);
+		
+		dcclite::Log::Trace("[ScriptService::Start] Registering file monitor");
+
+		WatchFile(path);		
+
+		dcclite::Log::Trace("[ScriptService::Start] Looking up for known types");
 
 		//
-		//Export all services
+		//Export all known services
 		g_pclBroker->VisitServices([&dccLiteTable](auto &item)
-			{				
-				if (auto *scripter = dynamic_cast<IScriptSupport *>(&item))
-				{
-					dcclite::Log::Trace("[ScriptService::Start] Registering proxy for service {}", item.GetName());
-
-					scripter->IScriptSupport_RegisterProxy(dccLiteTable);
-					g_vecRegisteredServices.push_back(scripter);
-				}				
+			{
+				detail::TryCreateProxy(g_clLua, dccLiteTable, item);				
 
 				return true;
 			}
 		);
 
-		dcclite::Log::Trace("[ScriptService::Start] Services exported");
-
-		//
-		//Notify whoever wants to register something that VM is ready to start running
-		for (auto it : g_vecRegisteredServices)
-			it->IScriptSupport_OnVMInit(g_clLua);
-
-		dcclite::Log::Trace("[ScriptService::Start] Registering file monitor");
-
-		WatchFile(path);		
 
 		dcclite::Log::Trace("[ScriptService::Start] Running autoexec.lua");
 
@@ -142,14 +133,8 @@ namespace dcclite::broker::ScriptSystem
 				dcclite::Log::Info("[ScriptService] [FileWatcher::Reload] Attempting to reload config: {}", fileName);
 
 				try
-				{		
-					//
-					//Before destroying VM, let others know
-					for (auto it : g_vecRegisteredServices)
-						it->IScriptSupport_OnVMFinalize(g_clLua);
-
-					g_vecRegisteredServices.clear();
-
+				{
+					detail::OnVmFinalize();
 					g_clLua = sol::state{};					
 
 					RunScripts();
@@ -174,17 +159,12 @@ namespace dcclite::broker::ScriptSystem
 
 	void Stop()
 	{
-		dcclite::Log::Trace("[ScriptService::Stop] Notifying scripters");
-
-		for (auto it : g_vecRegisteredServices)
-			it->IScriptSupport_OnVMFinalize(g_clLua);		
-
 		dcclite::Log::Trace("[ScriptService::Stop] Closing lua");
 
-		//force destruction
-		g_clLua = {};
+		detail::OnVmFinalize();
 
-		g_vecRegisteredServices.clear();
+		//force destruction
+		g_clLua = {};		
 		g_pclBroker = nullptr;
 
 		dcclite::Log::Trace("[ScriptService::Stop] done");

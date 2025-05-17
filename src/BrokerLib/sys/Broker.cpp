@@ -38,7 +38,7 @@
 #include "SpecialFolders.h"
 #include "ZeroConfSystem.h"
 
-#include "../shell/ScriptSystem.h"
+#include "../shell/script/ScriptSystem.h"
 
 #include "../terminal/CmdHost.h"
 
@@ -124,7 +124,7 @@ namespace dcclite::broker
 		{
 			BenchmarkLogger script{ "Broker", "ScriptSystem" };
 
-			ScriptSystem::Start(*this);
+			shell::ScriptSystem::Start(*this);
 		}
 
 		//Start after load, so project name is already loaded
@@ -133,17 +133,17 @@ namespace dcclite::broker
 
 	void Broker::SignalExecutiveChangeStart()
 	{
-		ScriptSystem::Stop();
+		shell::ScriptSystem::Stop();
 	}
 
 	void Broker::SignalExecutiveChangeEnd()
 	{
-		ScriptSystem::Start(*this);
+		shell::ScriptSystem::Start(*this);
 	}
 
 	Broker::~Broker()
 	{
-		ScriptSystem::Stop();
+		shell::ScriptSystem::Stop();
 
 		ZeroConfSystem::Stop();
 

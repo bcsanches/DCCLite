@@ -8,17 +8,27 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "DccLiteService.h"
+#include "Proxies.h"
+
+#include <string_view>
 
 #include <magic_enum/magic_enum.hpp>
 
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Log.h>
-#include <dcclite/Nmra.h>
 
-#include "RemoteDecoder.h"
-#include "SignalDecoder.h"
-#include "TurnoutDecoder.h"
+#include "../../dcc/DccLiteService.h"
+#include "../../dcc/Decoder.h"
+#include "../../dcc/OutputDecoder.h"
+#include "../../dcc/StateDecoder.h"
+
+#include "../../dcc/SignalDecoder.h"
+
+#include "../dispatcher/DispatcherService_detail.h"
+
+using Dispatcher = dcclite::broker::shell::dispatcher::detail::DispatcherServiceScripter;
+
+static Dispatcher *g_pclDispatcher = nullptr;
 
 /******************************************************************************
 *
@@ -36,10 +46,10 @@
 class DecoderProxy
 {
 	public:
-		DecoderProxy(dcclite::broker::Decoder &decoder, dcclite::broker::Service &dccLiteService):
+		DecoderProxy(dcclite::broker::Decoder &decoder):
 			m_rclDecoder{ decoder }
 		{
-			dcclite::Log::Trace("[ScriptService] [DecoderProxy] [{}]: Created.", decoder.GetName());			
+			dcclite::Log::Trace("[ScriptService] [DecoderProxy] [{}]: Created.", decoder.GetName());
 		}
 
 		~DecoderProxy()
@@ -153,9 +163,9 @@ class DecoderProxy
 			m_slotRemoteDecoderStateSyncConnection = remoteDecoder->m_sigRemoteStateSync.connect(&DecoderProxy::OnRemoteDecoderStateSync, this);
 		}
 
-		dcclite::broker::Decoder	&m_rclDecoder;
+		dcclite::broker::Decoder &m_rclDecoder;
 
-		sigslot::scoped_connection	m_slotRemoteDecoderStateSyncConnection;		
+		sigslot::scoped_connection	m_slotRemoteDecoderStateSyncConnection;
 
 		std::vector<sol::protected_function> m_vStateChangeCallbacks;
 };
@@ -216,7 +226,7 @@ DecoderProxy *DccLiteProxy::OnIndexByName(std::string_view key, sol::this_state 
 	}
 	else
 	{
-		it = m_mapKnowDecoders.emplace_hint(it, decAddress, std::make_unique<DecoderProxy>(*decoder, m_rclService));
+		it = m_mapKnowDecoders.emplace_hint(it, decAddress, std::make_unique<DecoderProxy>(*decoder));
 
 		return it->second.get();
 	}
@@ -242,20 +252,15 @@ DecoderProxy *DccLiteProxy::OnIndexByAddress(uint16_t key, sol::this_state L)
 			return nullptr;
 		}
 
-		it = m_mapKnowDecoders.emplace_hint(it, decAddress, std::make_unique<DecoderProxy>(*decoder, m_rclService));
+		it = m_mapKnowDecoders.emplace_hint(it, decAddress, std::make_unique<DecoderProxy>(*decoder));
 
 		return it->second.get();
 	}
 }
 
-namespace dcclite::broker
+namespace dcclite::broker::shell::ScriptSystem::detail
 {
-	void DccLiteService::IScriptSupport_RegisterProxy(sol::table &table)
-	{
-		table[this->GetName().GetData()] = DccLiteProxy{ *this };
-	}
-
-	void DccLiteService::IScriptSupport_OnVMInit(sol::state &state)
+	void AddTypes(sol::state &state)
 	{
 		state.new_usertype<DccLiteProxy>(
 			"dcclite_service",
@@ -314,9 +319,47 @@ namespace dcclite::broker
 		);
 	}
 
-	void DccLiteService::IScriptSupport_OnVMFinalize(sol::state &state)
+	void TryCreateProxy(sol::state &state, sol::table &table, IObject &object)
 	{
+		{
+			auto *dccLite = dynamic_cast<dcclite::broker::DccLiteService *>(&object);
+			if (dccLite)
+			{
+				auto name = dccLite->GetName();
+				dcclite::Log::Trace("[ScriptService::TryCreateProxy] Registering proxy for DccLiteService: {}", name);
 
+				table[name.GetData()] = DccLiteProxy{ *dccLite };
+
+				return;
+			}
+		}
+
+		{
+			auto *dispatcher = dynamic_cast<Dispatcher *>(&object);
+			if (dispatcher)
+			{
+				if (g_pclDispatcher)
+					throw std::runtime_error("[TryCreateProxy] We are lazy, can be only one dispatcher");
+				
+				dispatcher->IScriptSupport_OnVMInit(state);
+				
+				dcclite::Log::Trace("[ScriptService::TryCreateProxy] Registering proxy for DccLiteService: {}", dispatcher->GetName());
+
+				dispatcher->IScriptSupport_RegisterProxy(table);
+				g_pclDispatcher = dispatcher;
+
+				return;
+			}
+		}
+	}
+
+	void OnVmFinalize()
+	{
+		if (g_pclDispatcher)
+		{
+			g_pclDispatcher->IScriptSupport_OnVMFinalize();
+			g_pclDispatcher = nullptr;
+		}
 	}
 }
 

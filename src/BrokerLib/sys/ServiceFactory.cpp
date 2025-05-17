@@ -15,7 +15,7 @@
 #include "../dcc/DccLiteService.h"
 #include "../dcc/DccppService.h"
 
-#include "../dispatcher/DispatcherService.h"
+#include "../shell/dispatcher/DispatcherService.h"
 
 #include "../ln/LoconetService.h"
 #include "../ln/ThrottleService.h"
@@ -64,7 +64,7 @@ namespace dcclite::broker
 		//static lib does initialize static variables without this... hack??
 		DccLiteService::RegisterFactory();
 		DccppService::RegisterFactory();
-		DispatcherService::RegisterFactory();
+		shell::dispatcher::DispatcherService::RegisterFactory();
 		LoconetService::RegisterFactory();		
 		TerminalService::RegisterFactory();
 		ThrottleService::RegisterFactory();

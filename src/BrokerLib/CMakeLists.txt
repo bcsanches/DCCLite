@@ -8,9 +8,9 @@ file(GLOB_RECURSE SRC_LN
     "ln/*.h"
 )
 
-file(GLOB_RECURSE SRC_SHELL
-    "shell/*.cpp"
-    "shell/*.h"
+file(GLOB_RECURSE SRC_SHELL_SCRIPT
+    "shell/script/*.cpp"
+    "shell/script/*.h"
 )
 
 file(GLOB_RECURSE SRC_SYS
@@ -23,17 +23,16 @@ file(GLOB_RECURSE SRC_TERMINAL
     "terminal/*.h"
 )
 
-file(GLOB_RECURSE SRC_DISPATCHER
-    "dispatcher/*.cpp"
-    "dispatcher/*.h"
+file(GLOB_RECURSE SRC_SHELL_DISPATCHER
+    "shell/dispatcher/*.cpp"
+    "shell/dispatcher/*.h"
 )
 
 add_library(
     BrokerLib	     	   	     
         dcc/DccAddress.cpp
         dcc/DccAddress.h
-        dcc/DccLiteService.cpp
-        dcc/DccLiteService_script.cpp
+        dcc/DccLiteService.cpp        
         dcc/DccLiteService.h  
         dcc/DccppService.cpp
         dcc/DccppService.h
@@ -78,15 +77,18 @@ add_library(
 		dcc/VirtualSensorDecoder.h
 		dcc/VirtualTurnoutDecoder.cpp
 		dcc/VirtualTurnoutDecoder.h        
-        dispatcher/DispatcherService.cpp
-        dispatcher/DispatcherService.h
 		ln/ILoconetSlot.h
         ln/LoconetService.cpp
         ln/LoconetService.h
         ln/ThrottleService.cpp
         ln/ThrottleService.h
-		shell/ScriptSystem.cpp
-	    shell/ScriptSystem.h
+		shell/dispatcher/DispatcherService.cpp
+        shell/dispatcher/DispatcherService.h
+		shell/dispatcher/DispatcherService_detail.h
+		shell/script/Proxies.cpp
+		shell/script/Proxies.h
+		shell/script/ScriptSystem.cpp
+	    shell/script/ScriptSystem.h
         sys/BonjourService.cpp
         sys/BonjourService.h        
         sys/Broker.cpp        
@@ -130,12 +132,12 @@ add_library(
         terminal/TerminalUtils.h
 )
 
-source_group("dcc"          FILES ${SRC_DCC})
-source_group("dispatcher"   FILES ${SRC_DISPATCHER})
-source_group("ln"           FILES ${SRC_LN})
-source_group("shell"        FILES ${SRC_SHELL})
-source_group("sys"          FILES ${SRC_SYS})
-source_group("terminal"     FILES ${SRC_TERMINAL})
+source_group("dcc"          		FILES ${SRC_DCC})
+source_group("ln"           		FILES ${SRC_LN})
+source_group("shell/dispatcher"   	FILES ${SRC_SHELL_DISPATCHER})
+source_group("shell/script"        	FILES ${SRC_SHELL_SCRIPT})
+source_group("sys"          		FILES ${SRC_SYS})
+source_group("terminal"     		FILES ${SRC_TERMINAL})
 
 if(WIN32)	
     target_link_libraries(BrokerLib         

@@ -19,17 +19,8 @@ namespace dcclite::broker
 	class Broker;
 }
 
-namespace dcclite::broker::ScriptSystem
+namespace dcclite::broker::shell::ScriptSystem
 {
-	class IScriptSupport
-	{
-		public:
-			virtual void IScriptSupport_RegisterProxy(sol::table &table) = 0;
-
-			virtual void IScriptSupport_OnVMInit(sol::state &state) = 0;
-			virtual void IScriptSupport_OnVMFinalize(sol::state &state) = 0;
-	};	
-
 	extern void Start(Broker &broker);
 	extern void Stop();	
 }

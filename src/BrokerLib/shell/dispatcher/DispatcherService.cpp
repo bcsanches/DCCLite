@@ -10,6 +10,7 @@
 
 
 #include "DispatcherService.h"
+#include "DispatcherService_detail.h"
 
 #include <stdexcept>
 #include <memory>
@@ -18,17 +19,15 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/JsonUtils.h>
 
-#include "../dcc/DccLiteService.h"
-#include "../dcc/Device.h"
-#include "../dcc/IResettableObject.h"
-#include "../dcc/VirtualSensorDecoder.h"
+#include "../../dcc/DccLiteService.h"
+#include "../../dcc/Device.h"
+#include "../../dcc/IResettableObject.h"
+#include "../../dcc/VirtualSensorDecoder.h"
 
-#include "../shell/ScriptSystem.h"
+#include "../../sys/Broker.h"
+#include "../../sys/ServiceFactory.h"
 
-#include "../sys/Broker.h"
-#include "../sys/ServiceFactory.h"
-
-namespace dcclite::broker
+namespace dcclite::broker::shell::dispatcher
 {
 	class BaseSectionWrapper: public Object, public IResettableObject
 	{
@@ -114,8 +113,10 @@ namespace dcclite::broker
 	//
 	///////////////////////////////////////////////////////////////////////////////
 
-	class DispatcherServiceImpl: public DispatcherService, public ScriptSystem::IScriptSupport
+	class DispatcherServiceImpl: public detail::DispatcherServiceScripter
 	{
+		friend class DispatcherServiceScripter;
+
 		public:
 			typedef DccLiteService Requirement_t;
 
@@ -130,12 +131,7 @@ namespace dcclite::broker
 
 			sol::table TryGetSection(std::string_view name);
 
-			void OnSectionStateChange(sol::table obj, int newState);
-
-			void IScriptSupport_RegisterProxy(sol::table &table) override;
-
-			void IScriptSupport_OnVMInit(sol::state &state) override;
-			void IScriptSupport_OnVMFinalize(sol::state &state) override;
+			void OnSectionStateChange(sol::table obj, int newState);			
 
 			void Panic(sol::table src, const char *reason);
 
@@ -152,7 +148,7 @@ namespace dcclite::broker
 	};
 
 	DispatcherServiceImpl::DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, DccLiteService &dep):
-		DispatcherService(name, broker, params),
+		DispatcherServiceScripter(name, broker, params),
 		m_rclDccLite{ dep },
 		m_pSections{ static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{"sections"}))) }
 	{
@@ -180,38 +176,7 @@ namespace dcclite::broker
 	void DispatcherServiceImpl::Serialize(JsonOutputStream_t &stream) const
 	{
 		DispatcherService::Serialize(stream);
-	}
-
-	void DispatcherServiceImpl::IScriptSupport_OnVMInit(sol::state &sol)
-	{
-		sol.new_usertype<DispatcherServiceImpl>(
-			"dispatcher_service",
-			sol::no_constructor,
-			"register_section", &DispatcherServiceImpl::RegisterSection,
-			"register_tsection", &DispatcherServiceImpl::RegisterTSection,
-			"on_section_state_change", &DispatcherServiceImpl::OnSectionStateChange,
-			"get_section", &DispatcherServiceImpl::TryGetSection,
-			"panic", &DispatcherServiceImpl::Panic
-		);
-	}
-
-	void DispatcherServiceImpl::IScriptSupport_OnVMFinalize(sol::state &sol)
-	{
-		m_pSections->VisitChildren([this](auto &current)
-			{
-				this->NotifyItemDestroyed(current);
-
-				return true;
-			}
-		);
-
-		m_pSections->RemoveAllChildren();
-	}
-
-	void DispatcherServiceImpl::IScriptSupport_RegisterProxy(sol::table &table)
-	{
-		table[this->GetName().GetData()] = std::ref(*this);
-	}
+	}	
 
 	void DispatcherServiceImpl::RegisterTSection(std::string_view name, sol::table obj)
 	{
@@ -296,6 +261,50 @@ namespace dcclite::broker
 
 		return static_cast<VirtualSensorDecoder &>(decoder);
 	}
+
+	//
+	//
+	// Hack for script.... 
+	//
+	//
+
+	namespace detail
+	{
+		void DispatcherServiceScripter::IScriptSupport_OnVMInit(sol::state &sol)
+		{
+			sol.new_usertype<DispatcherServiceImpl>(
+				"dispatcher_service",
+				sol::no_constructor,
+				"register_section", &DispatcherServiceImpl::RegisterSection,
+				"register_tsection", &DispatcherServiceImpl::RegisterTSection,
+				"on_section_state_change", &DispatcherServiceImpl::OnSectionStateChange,
+				"get_section", &DispatcherServiceImpl::TryGetSection,
+				"panic", &DispatcherServiceImpl::Panic
+			);
+		}
+
+		void DispatcherServiceScripter::IScriptSupport_OnVMFinalize()
+		{
+			auto self = static_cast<DispatcherServiceImpl *>(this);
+
+			self->m_pSections->VisitChildren([this](auto &current)
+				{
+					this->NotifyItemDestroyed(current);
+
+					return true;
+				}
+			);
+
+			self->m_pSections->RemoveAllChildren();
+		}
+
+		void DispatcherServiceScripter::IScriptSupport_RegisterProxy(sol::table &table)
+		{
+			auto self = static_cast<DispatcherServiceImpl *>(this);
+
+			table[this->GetName().GetData()] = std::ref(*self);
+		}
+	}	
 
 	//
 	//

@@ -8,23 +8,18 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-
 #pragma once
 
-#include "../dcc/DccAddress.h"
+#include "../../sys/Service.h"
 
-#include "../sys/Service.h"
-
-namespace dcclite::broker
+namespace dcclite::broker::shell::dispatcher
 { 
 	class DispatcherService: public Service
 	{	
 		public:
 			static void RegisterFactory();
 
-			static const char *TYPE_NAME;
-
-			DispatcherService(RName name, Broker &broker, const rapidjson::Value& params);
+			static const char *TYPE_NAME;			
 		
 			~DispatcherService() override = default;
 
@@ -36,5 +31,8 @@ namespace dcclite::broker
 			{
 				return "DispatcherService";
 			}
-	};
+
+		protected:
+			DispatcherService(RName name, Broker &broker, const rapidjson::Value &params);
+	};	
 }

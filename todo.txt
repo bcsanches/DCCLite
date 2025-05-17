@@ -19,10 +19,8 @@ DCCLite
 		- SharpTerminal will be able to set this externalVoltage value
 
 - when a device file changes, reload everything?	
-	- Modify script system, so core (dcclite) does not rely on it
-	- Move terminal code to shell
 	- Move loconet code to shell
-	- Move dispatcher code to shell
+	- Move terminal code to shell
 	- Create BrokerShellLib ?
 	- second: create a DccSystem class, that manages all DccLiteServices
 	- Organize system in layers or modules
