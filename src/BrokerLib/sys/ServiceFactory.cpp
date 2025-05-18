@@ -12,16 +12,6 @@
 
 #include <stdexcept>
 
-#include "../dcc/DccLiteService.h"
-#include "../dcc/DccppService.h"
-
-#include "../shell/dispatcher/DispatcherService.h"
-
-#include "../ln/LoconetService.h"
-#include "../ln/ThrottleService.h"
-
-#include "../terminal/TerminalService.h"
-
 namespace dcclite::broker
 {
 	//avoid static initialization hell...
@@ -56,19 +46,7 @@ namespace dcclite::broker
 
 		m_pclNext = *head;
 		*head = this;
-	}
-
-	void ServiceFactory::RegisterAll()
-	{
-		//just touch all to register the factories
-		//static lib does initialize static variables without this... hack??
-		DccLiteService::RegisterFactory();
-		DccppService::RegisterFactory();
-		shell::dispatcher::DispatcherService::RegisterFactory();
-		LoconetService::RegisterFactory();		
-		TerminalService::RegisterFactory();
-		ThrottleService::RegisterFactory();
-	}		
+	}			
 }
 
 

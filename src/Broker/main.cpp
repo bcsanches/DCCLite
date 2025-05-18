@@ -18,6 +18,16 @@
 #include <dcclite/Log.h>
 #include <dcclite/PathUtils.h>
 
+#include "dcc/DccLiteService.h"
+#include "dcc/DccppService.h"
+
+#include "shell/dispatcher/DispatcherService.h"
+
+#include "ln/LoconetService.h"
+#include "ln/ThrottleService.h"
+
+#include "terminal/TerminalService.h"
+
 #include "sys/Broker.h"
 #include "sys/EventHub.h"
 #include "sys/Thinker.h"
@@ -72,6 +82,20 @@ static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 	return true;
 }
 
+static void InitServicesFactories()
+{
+	using namespace dcclite::broker;
+
+	//just touch all to register the factories
+	//static lib does initialize static variables without this... hack??
+	DccLiteService::RegisterFactory();
+	DccppService::RegisterFactory();
+	shell::dispatcher::DispatcherService::RegisterFactory();
+	LoconetService::RegisterFactory();
+	TerminalService::RegisterFactory();
+	ThrottleService::RegisterFactory();
+}
+
 int main(int argc, char **argv)
 {			
 	using namespace std::chrono_literals;
@@ -91,7 +115,9 @@ int main(int argc, char **argv)
 
 		dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
 
-		dcclite::ConsoleTryMakeNice();		
+		dcclite::ConsoleTryMakeNice();
+
+		InitServicesFactories();
 
 		dcclite::broker::Broker broker{ (argc == 1) ? "MyRailroad" : argv[1] };		
 		

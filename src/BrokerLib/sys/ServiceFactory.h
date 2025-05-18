@@ -26,8 +26,7 @@ namespace dcclite::broker
 
 	class ServiceFactory
 	{
-		public:
-			static void RegisterAll();
+		public:			
 			static ServiceFactory *TryFindFactory(RName name) noexcept;
 
 		protected:

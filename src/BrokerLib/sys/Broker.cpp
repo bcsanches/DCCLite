@@ -105,9 +105,7 @@ namespace dcclite::broker
 			m_pclTerminalCmdHost = cmdHost.get();
 
 			this->AddChild(std::move(cmdHost));
-		}
-
-		ServiceFactory::RegisterAll();
+		}		
 
 		using namespace dcclite;
 
