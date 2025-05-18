@@ -18,11 +18,9 @@ DCCLite
 		- digitalWrite will never affetct externalVoltage
 		- SharpTerminal will be able to set this externalVoltage value
 
-- when a device file changes, reload everything?
-	- Instead of hardcoding a call do dispacher on VMFinalize, create a lua script for this and call the script first	
+- when a device file changes, reload everything?	
 	- Move loconet code to shell
-	- Move terminal code to shell
-	- Create BrokerShellLib ?
+	- Move terminal code to shell	
 	- second: create a DccSystem class, that manages all DccLiteServices
 	- Organize system in layers or modules
 	- Broker - base layer, if main config changes, restart everything (rarest case)
@@ -35,7 +33,7 @@ DCCLite
 	- Sharp terminal will always reload all when hardware changes
 	- Is it worth to really organize those layers? Perhaps:
 		- system: broker base systems, event system, thinker, etc
-		- core: hardware stuff, basically DccLite and arduinos management
+		- exec: hardware stuff, basically DccLite and arduinos management
 		- shell: terminal, script system, dispatcher
 	- What for a future gui system with editing functionality? Only for signals and "logical" objects?
 	
