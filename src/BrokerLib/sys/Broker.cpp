@@ -125,14 +125,17 @@ namespace dcclite::broker
 				{
 					"class":"ScriptService",
 					"name":"scriptService"
-				},
-				{
-					"class":"BonjourService",
-					"name":"bonjour",
-					"ignoreOnLoadFailure":true
 				}
 			]
 		)JSON";
+
+		/*		
+				{
+					"class":"BonjourService",
+					"name":"bonjour"					
+				}
+		
+		*/
 
 		m_pServices = static_cast<FolderObject *>(this->AddChild(
 			std::make_unique<FolderObject>(SpecialFolders::GetName(SpecialFolders::Folders::ServicesId)))

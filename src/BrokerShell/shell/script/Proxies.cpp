@@ -28,8 +28,6 @@
 
 using Dispatcher = dcclite::broker::shell::dispatcher::detail::DispatcherServiceScripter;
 
-static Dispatcher *g_pclDispatcher = nullptr;
-
 /******************************************************************************
 *
 * DecoderProxy
@@ -337,29 +335,16 @@ namespace dcclite::broker::shell::script::detail
 		{
 			auto *dispatcher = dynamic_cast<Dispatcher *>(&object);
 			if (dispatcher)
-			{
-				if (g_pclDispatcher)
-					throw std::runtime_error("[TryCreateProxy] We are lazy, can be only one dispatcher");
-				
+			{				
 				dispatcher->IScriptSupport_OnVMInit(state);
 				
 				dcclite::Log::Trace("[ScriptService::TryCreateProxy] Registering proxy for DccLiteService: {}", dispatcher->GetName());
 
-				dispatcher->IScriptSupport_RegisterProxy(table);
-				g_pclDispatcher = dispatcher;
+				dispatcher->IScriptSupport_RegisterProxy(state, table);				
 
 				return;
 			}
 		}
-	}
-
-	void OnVmFinalize()
-	{
-		if (g_pclDispatcher)
-		{
-			g_pclDispatcher->IScriptSupport_OnVMFinalize();
-			g_pclDispatcher = nullptr;
-		}
-	}
+	}	
 }
 

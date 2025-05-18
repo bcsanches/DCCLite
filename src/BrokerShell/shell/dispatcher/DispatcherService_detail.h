@@ -28,8 +28,7 @@ namespace dcclite::broker::shell::dispatcher::detail
 			}
 
 		public:
-			void IScriptSupport_OnVMInit(sol::state &sol);
-			void IScriptSupport_OnVMFinalize();
-			void IScriptSupport_RegisterProxy(sol::table &table);
+			void IScriptSupport_OnVMInit(sol::state &sol);			
+			void IScriptSupport_RegisterProxy(sol::state &sol, sol::table &table);
 	};	
 }

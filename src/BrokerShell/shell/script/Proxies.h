@@ -21,7 +21,5 @@ namespace dcclite::broker::shell::script::detail
 {
 	void AddTypes(sol::state &state);
 
-	void TryCreateProxy(sol::state &state, sol::table &table, IObject &object);
-
-	void OnVmFinalize();
+	void TryCreateProxy(sol::state &state, sol::table &table, IObject &object);	
 }

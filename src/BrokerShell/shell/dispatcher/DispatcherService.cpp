@@ -137,6 +137,8 @@ namespace dcclite::broker::shell::dispatcher
 
 			VirtualSensorDecoder &CreateSectionSensor(sol::table obj);
 
+			void OnVMFinalize();
+
 		private:
 			sigslot::scoped_connection m_slotScriptVMInit;
 			sigslot::scoped_connection m_slotScriptVMFinalize;
@@ -262,6 +264,21 @@ namespace dcclite::broker::shell::dispatcher
 		return static_cast<VirtualSensorDecoder &>(decoder);
 	}
 
+	void DispatcherServiceImpl::OnVMFinalize()
+	{
+		auto self = static_cast<DispatcherServiceImpl *>(this);
+
+		self->m_pSections->VisitChildren([this](auto &current)
+			{
+				this->NotifyItemDestroyed(current);
+
+				return true;
+			}
+		);
+
+		self->m_pSections->RemoveAllChildren();
+	}
+
 	//
 	//
 	// Hack for script.... 
@@ -279,30 +296,30 @@ namespace dcclite::broker::shell::dispatcher
 				"register_tsection", &DispatcherServiceImpl::RegisterTSection,
 				"on_section_state_change", &DispatcherServiceImpl::OnSectionStateChange,
 				"get_section", &DispatcherServiceImpl::TryGetSection,
-				"panic", &DispatcherServiceImpl::Panic
+				"panic", &DispatcherServiceImpl::Panic,
+				"on_vm_finalize", &DispatcherServiceImpl::OnVMFinalize
 			);
 		}
 
-		void DispatcherServiceScripter::IScriptSupport_OnVMFinalize()
+		void DispatcherServiceScripter::IScriptSupport_RegisterProxy(sol::state &sol, sol::table &table)
 		{
 			auto self = static_cast<DispatcherServiceImpl *>(this);
 
-			self->m_pSections->VisitChildren([this](auto &current)
-				{
-					this->NotifyItemDestroyed(current);
+			auto rawName = this->GetName().GetData();
+			table[rawName] = std::ref(*self);
 
-					return true;
-				}
+			auto script = fmt::format(
+				R"LUA(					
+					register_vm_finalizer(
+						function()
+							dcclite.{}:on_vm_finalize()
+						end
+					)
+				)LUA",
+				rawName
 			);
 
-			self->m_pSections->RemoveAllChildren();
-		}
-
-		void DispatcherServiceScripter::IScriptSupport_RegisterProxy(sol::table &table)
-		{
-			auto self = static_cast<DispatcherServiceImpl *>(this);
-
-			table[this->GetName().GetData()] = std::ref(*self);
+			sol.script(script);			
 		}
 	}	
 

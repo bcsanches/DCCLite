@@ -58,8 +58,35 @@ namespace dcclite::broker::shell::script
 
 		m_clLua.open_libraries(sol::lib::base);
 		m_clLua.open_libraries(sol::lib::string);
+		m_clLua.open_libraries(sol::lib::table);
 
 		dcclite::Log::Trace("[ScriptService::Start] Exporting functions");
+
+		m_clLua.script(
+			R"LUA(
+				function register_vm_finalizer(func)
+					log_trace("registering vm finalizer")
+
+					if not g_finalizers then
+						g_finalizers = {}
+					end
+
+					table.insert(g_finalizers, func)
+				end
+
+				function run_finalizers()
+					log_trace("running vm finalizers")
+
+					if not g_finalizers then
+						return
+					end
+
+					for key, value in pairs(g_finalizers) do
+						value()
+					end
+				end
+			)LUA"
+		);
 
 		auto dccLiteTable = m_clLua["dcclite"].get_or_create<sol::table>();
 
@@ -197,10 +224,10 @@ namespace dcclite::broker::shell::script
 
 	void ScriptService::Stop()
 	{
-		dcclite::Log::Trace("[ScriptService::Stop] Closing lua");
+		dcclite::Log::Trace("[ScriptService::Stop] Closing lua");		
 
 		//Some services need to do a clenup first... let they know VM is going down
-		detail::OnVmFinalize();
+		m_clLua.script("run_finalizers()");
 
 		//force destruction
 		m_clLua = {};	
