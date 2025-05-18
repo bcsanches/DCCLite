@@ -98,6 +98,22 @@ std::string_view dcclite::StrTrim(std::string_view str) noexcept
 	return str.substr(newBegin - str.begin(), newEnd - newBegin);
 }
 
+size_t dcclite::StrCountLines(std::string_view str, size_t limit)
+{
+	size_t lineCount = 0;
+
+	for (auto ch : str)
+	{
+		if (!limit)
+			return lineCount;
+
+		--limit;
+		lineCount += ch == '\n';
+	}
+
+	return lineCount;
+}
+
 //https://stackoverflow.com/questions/874134/find-out-if-string-ends-with-another-string-in-c
 bool dcclite::StrEndsWith(std::string_view str, std::string_view suffix) noexcept
 {

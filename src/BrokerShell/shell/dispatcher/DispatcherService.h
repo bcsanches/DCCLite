@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "../../sys/Service.h"
+#include "sys/Service.h"
 
 namespace dcclite::broker::shell::dispatcher
 { 
@@ -19,7 +19,7 @@ namespace dcclite::broker::shell::dispatcher
 		public:
 			static void RegisterFactory();
 
-			static const char *TYPE_NAME;			
+			static const char *TYPE_NAME;
 		
 			~DispatcherService() override = default;
 
@@ -29,7 +29,7 @@ namespace dcclite::broker::shell::dispatcher
 
 			const char *GetTypeName() const noexcept override
 			{
-				return "DispatcherService";
+				return TYPE_NAME;
 			}
 
 		protected:

@@ -31,7 +31,7 @@
 #include "../sys/ServiceFactory.h"
 #include "../sys/ZeroConfSystem.h"
 
-#include "CmdHost.h"
+#include "CmdHostService.h"
 #include "DeviceClearEEPromCmd.h"
 #include "DeviceNetworkTestCmds.h"
 #include "DeviceRenameCmd.h"
@@ -44,9 +44,7 @@ using namespace std::chrono_literals;
 
 namespace dcclite::broker
 {
-	const char *TerminalService::TYPE_NAME = "Terminal";
-
-	static GenericServiceFactory<TerminalService> g_clTerminalServiceFactory;	
+	const char *TerminalService::TYPE_NAME = "TerminalService";	
 
 	using namespace dcclite;
 
@@ -754,89 +752,86 @@ namespace dcclite::broker
 	/////////////////////////////////////////////////////////////////////////////
 	void TerminalService::RegisterFactory()
 	{
-		//empty
+		static GenericServiceWithDependenciesFactory<TerminalService> g_clTerminalServiceFactory;
 	}
 
-	TerminalService::TerminalService(RName name, Broker &broker, const rapidjson::Value &params) :
-		Service(name, broker, params)
-	{	
-		auto cmdHost = broker.GetTerminalCmdHost();
-
-		assert(cmdHost);
-
+	TerminalService::TerminalService(RName name, Broker &broker, const rapidjson::Value &params, CmdHostService &cmdHost) :
+		Service(name, broker, params),
+		m_rclCmdHost{cmdHost}
+	{					
 		{
-			auto getChildItemCmd = cmdHost->AddCmd(std::make_unique<GetChildItemCmd>());
-			cmdHost->AddAlias(RName{ "dir" }, *getChildItemCmd);
-			cmdHost->AddAlias(RName{ "ls" }, *getChildItemCmd);
+			auto getChildItemCmd = cmdHost.AddCmd(std::make_unique<GetChildItemCmd>());
+			cmdHost.AddAlias(RName{ "dir" }, *getChildItemCmd);
+			cmdHost.AddAlias(RName{ "ls" }, *getChildItemCmd);
 		}
 
 		{
-			cmdHost->AddCmd(std::make_unique<GetItemCmd>());	
+			cmdHost.AddCmd(std::make_unique<GetItemCmd>());	
 		}
 
 		{
-			auto setLocationCmd = cmdHost->AddCmd(std::make_unique<SetLocationCmd>());
-			cmdHost->AddAlias(RName{ "cd" }, *setLocationCmd);
+			auto setLocationCmd = cmdHost.AddCmd(std::make_unique<SetLocationCmd>());
+			cmdHost.AddAlias(RName{ "cd" }, *setLocationCmd);
 		}	
 
 		{
-			auto getCommandCmd = cmdHost->AddCmd(std::make_unique<GetCommandCmd>());
-			cmdHost->AddAlias(RName{ "gcm" }, *getCommandCmd);
+			auto getCommandCmd = cmdHost.AddCmd(std::make_unique<GetCommandCmd>());
+			cmdHost.AddAlias(RName{ "gcm" }, *getCommandCmd);
 		}	
 
 		{
-			cmdHost->AddCmd(std::make_unique<ActivateItemCmd>());
+			cmdHost.AddCmd(std::make_unique<ActivateItemCmd>());
 		}
 
 		{
-			cmdHost->AddCmd(std::make_unique<DeactivateItemCmd>());
+			cmdHost.AddCmd(std::make_unique<DeactivateItemCmd>());
 		}
 
 		{
-			cmdHost->AddCmd(std::make_unique<FlipItemCmd>());
+			cmdHost.AddCmd(std::make_unique<FlipItemCmd>());
 		}
 
 		{
-			cmdHost->AddCmd(std::make_unique<StartServoProgrammerCmd>());
-			cmdHost->AddCmd(std::make_unique<StopServoProgrammerCmd>());
-			cmdHost->AddCmd(std::make_unique<EditServoProgrammerCmd>());
-			cmdHost->AddCmd(std::make_unique<DeployServoProgrammerCmd>());
+			cmdHost.AddCmd(std::make_unique<StartServoProgrammerCmd>());
+			cmdHost.AddCmd(std::make_unique<StopServoProgrammerCmd>());
+			cmdHost.AddCmd(std::make_unique<EditServoProgrammerCmd>());
+			cmdHost.AddCmd(std::make_unique<DeployServoProgrammerCmd>());
 		}
 
 		{
-			cmdHost->AddCmd(std::make_unique<SetAspectCmd>());
+			cmdHost.AddCmd(std::make_unique<SetAspectCmd>());
 		}
 
 		{
-			cmdHost->AddCmd(std::make_unique<ReadEEPromCmd>());
+			cmdHost.AddCmd(std::make_unique<ReadEEPromCmd>());
 		}
 
 		{
-			cmdHost->AddCmd(std::make_unique<ResetItemCmd>());
+			cmdHost.AddCmd(std::make_unique<ResetItemCmd>());
 		}
 
 		{
-			cmdHost->AddCmd(std::make_unique<RebootDeviceCmd>());
+			cmdHost.AddCmd(std::make_unique<RebootDeviceCmd>());
 		}
 
 		{
-			cmdHost->AddCmd(std::make_unique<ClearEEPromCmd>());
+			cmdHost.AddCmd(std::make_unique<ClearEEPromCmd>());
 		}
 
 		{
-			cmdHost->AddCmd(std::make_unique<GetRNames>());
+			cmdHost.AddCmd(std::make_unique<GetRNames>());
 		}
 
 		{
-			auto renameItemCmd = cmdHost->AddCmd(std::make_unique<RenameItemCmd>());
+			auto renameItemCmd = cmdHost.AddCmd(std::make_unique<RenameItemCmd>());
 
-			cmdHost->AddAlias(RName{ "ren" }, *renameItemCmd);
+			cmdHost.AddAlias(RName{ "ren" }, *renameItemCmd);
 		}
 
 		{
-			cmdHost->AddCmd(std::make_unique<StartNetworkTestCmd>());
-			cmdHost->AddCmd(std::make_unique<StopNetworkTestCmd>());
-			cmdHost->AddCmd(std::make_unique<ReceiveNetworkTestDataCmd>());
+			cmdHost.AddCmd(std::make_unique<StartNetworkTestCmd>());
+			cmdHost.AddCmd(std::make_unique<StopNetworkTestCmd>());
+			cmdHost.AddCmd(std::make_unique<ReceiveNetworkTestDataCmd>());
 		}
 
 		const auto port = dcclite::json::TryGetDefaultInt(params, "port", DEFAULT_TERMINAL_SERVER_PORT);
@@ -894,9 +889,9 @@ namespace dcclite::broker
 		m_vecClients.push_back(
 			std::make_unique<TerminalClient>(
 				proxy,
-				*m_rclBroker.GetTerminalCmdHost(), 
-				this->GetRoot(), 
-				*this, 
+				m_rclCmdHost,
+				m_rclBroker, 
+				*this,
 				address, 
 				std::move(s)
 			)

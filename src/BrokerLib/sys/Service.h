@@ -85,13 +85,6 @@ namespace dcclite::broker
 				//empty
 			}
 
-			Service(RName name, Broker& broker) :
-				FolderObject{name},
-				m_rclBroker(broker)
-			{
-				//empty
-			}
-
 			Service(const Service &) = delete;
 			Service(Service &&) = delete;		
 
@@ -117,6 +110,27 @@ namespace dcclite::broker
 
 		protected:		
 			Broker &m_rclBroker;		
+	};
+
+	/**
+	* 
+	* For services that need to know when everything is loaded
+	* 
+	*/
+	class IPostLoadService
+	{
+		public:
+			virtual void OnLoadFinished() = 0;
+
+			virtual void OnUnload() = 0;
+	};
+
+	class IExecutiveClientService
+	{
+		public:
+			virtual void OnExecutiveChangeStart() = 0;
+
+			virtual void OnExecutiveChangeEnd() = 0;
 	};
 }
 

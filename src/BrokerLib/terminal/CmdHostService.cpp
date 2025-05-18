@@ -8,35 +8,29 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "CmdHost.h"
+#include "CmdHostService.h"
 
 #include <fmt/format.h>
 
 #include <dcclite/FmtUtils.h>
 
-#include "../sys/SpecialFolders.h"
-
 #include "TerminalCmd.h"
+#include "../sys/ServiceFactory.h"
 
 namespace dcclite::broker
 {
-	CmdHost::CmdHost():
-		FolderObject(SpecialFolders::GetName(SpecialFolders::Folders::CmdHostId))
+	CmdHostService::CmdHostService(RName name, Broker &broker, const rapidjson::Value &params):
+		Service(name, broker, params)
 	{
 		//empty
 	}
 
-	CmdHost::~CmdHost()
-	{
-		//empty
-	}
-
-	dcclite::IObject *CmdHost::AddChild(std::unique_ptr<Object> obj)
+	dcclite::IObject *CmdHostService::AddChild(std::unique_ptr<Object> obj)
 	{
 		throw std::logic_error(fmt::format("[CmdHost::AddChild] Cannot add childs, sorry, obj name {}", obj->GetName()));
 	}
 
-	TerminalCmd *CmdHost::AddCmd(std::unique_ptr<TerminalCmd> cmd)
+	TerminalCmd *CmdHostService::AddCmd(std::unique_ptr<TerminalCmd> cmd)
 	{
 		auto tmp = cmd.get();
 
@@ -45,7 +39,7 @@ namespace dcclite::broker
 		return tmp;
 	}
 
-	void CmdHost::AddAlias(RName name, TerminalCmd &target)
+	void CmdHostService::AddAlias(RName name, TerminalCmd &target)
 	{
 		if (target.GetParent() != this)
 		{
@@ -55,8 +49,15 @@ namespace dcclite::broker
 		FolderObject::AddChild(std::make_unique<dcclite::Shortcut>(name, target));
 	}
 
-	TerminalCmd *CmdHost::TryFindCmd(RName name)
+	TerminalCmd *CmdHostService::TryFindCmd(RName name)
 	{
 		return static_cast<TerminalCmd *>(this->TryResolveChild(name));
 	}
+
+	void CmdHostService::RegisterFactory()
+	{
+		static GenericServiceFactory<CmdHostService> g_clFactory;
+	}
+
+	const char *CmdHostService::TYPE_NAME = "CmdHostService";
 }

@@ -35,6 +35,7 @@ https://datatracker.ietf.org/doc/html/rfc6335 -> Internet Assigned Numbers Autho
 #include <dcclite/Socket.h>
 #include <dcclite/Util.h>
 
+#include "ServiceFactory.h"
 #include "Timeouts.h"
 
 //#define NO_ENDIANNESS
@@ -315,7 +316,7 @@ namespace dcclite::broker
 	class BonjourServiceImpl : public BonjourService
 	{
 		public:
-			BonjourServiceImpl(RName name, Broker &broker);
+			BonjourServiceImpl(RName name, Broker &broker, const rapidjson::Value &params);
 			~BonjourServiceImpl() override;			
 
 			void Serialize(JsonOutputStream_t &stream) const override;		
@@ -349,8 +350,8 @@ namespace dcclite::broker
 	};
 
 
-	BonjourServiceImpl::BonjourServiceImpl(RName name, Broker &broker):
-		BonjourService(name, broker),
+	BonjourServiceImpl::BonjourServiceImpl(RName name, Broker &broker, const rapidjson::Value &params):
+		BonjourService(name, broker, params),
 		m_tNetworkThread{ [this]() { this->NetworkProc(); }}		
 	{				
 		//empty
@@ -949,18 +950,20 @@ READ_NAME_AGAIN:
 	
 	///////////////////////////////////////////////////////////////////////////////
 	//
-	// ThrottleServiceImpl
+	// BonjourService
 	//
 	///////////////////////////////////////////////////////////////////////////////
 
-	BonjourService::BonjourService(RName name, Broker &broker) :
-		Service(name, broker)
+	BonjourService::BonjourService(RName name, Broker &broker, const rapidjson::Value &params) :
+		Service(name, broker, params)
 	{
 		//empty
 	}
 
-	std::unique_ptr<Service> BonjourService::Create(RName name, Broker &broker)
+	const char *BonjourService::TYPE_NAME = "BonjourService";
+
+	void BonjourService::RegisterFactory()
 	{
-		return std::make_unique<BonjourServiceImpl>(name, broker);
+		static GenericServiceFactory<BonjourServiceImpl> g_clFactory;
 	}
 }

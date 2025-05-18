@@ -36,11 +36,14 @@ namespace dcclite
 	*/
 	std::string_view StrTrim(std::string_view str) noexcept;
 
+	size_t StrCountLines(std::string_view str, size_t limit);
+
 	bool StrEndsWith(std::string_view str, std::string_view suffix) noexcept;	
 
 	std::string GetSystemLastErrorMessage() noexcept;
 
 	std::string GetSystemErrorMessage(const unsigned int error) noexcept;
+	
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	//

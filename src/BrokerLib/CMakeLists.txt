@@ -8,11 +8,6 @@ file(GLOB_RECURSE SRC_LN
     "ln/*.h"
 )
 
-file(GLOB_RECURSE SRC_SHELL_SCRIPT
-    "shell/script/*.cpp"
-    "shell/script/*.h"
-)
-
 file(GLOB_RECURSE SRC_SYS
     "sys/*.cpp"
     "sys/*.h"
@@ -81,14 +76,7 @@ add_library(
         ln/LoconetService.cpp
         ln/LoconetService.h
         ln/ThrottleService.cpp
-        ln/ThrottleService.h
-		shell/dispatcher/DispatcherService.cpp
-        shell/dispatcher/DispatcherService.h
-		shell/dispatcher/DispatcherService_detail.h
-		shell/script/Proxies.cpp
-		shell/script/Proxies.h
-		shell/script/ScriptSystem.cpp
-	    shell/script/ScriptSystem.h
+        ln/ThrottleService.h		
         sys/BonjourService.cpp
         sys/BonjourService.h        
         sys/Broker.cpp        
@@ -110,8 +98,8 @@ add_library(
         sys/Timeouts.h
         sys/ZeroConfSystem.cpp
         sys/ZeroConfSystem.h
-		terminal/CmdHost.cpp
-		terminal/CmdHost.h
+		terminal/CmdHostService.cpp
+		terminal/CmdHostService.h
         terminal/DeviceClearEEPromCmd.cpp
         terminal/DeviceClearEEPromCmd.h
         terminal/DeviceNetworkTestCmds.cpp
@@ -134,8 +122,6 @@ add_library(
 
 source_group("dcc"          		FILES ${SRC_DCC})
 source_group("ln"           		FILES ${SRC_LN})
-source_group("shell/dispatcher"   	FILES ${SRC_SHELL_DISPATCHER})
-source_group("shell/script"        	FILES ${SRC_SHELL_SCRIPT})
 source_group("sys"          		FILES ${SRC_SYS})
 source_group("terminal"     		FILES ${SRC_TERMINAL})
 
@@ -146,8 +132,7 @@ if(WIN32)
         PRIVATE Common
         PRIVATE fmt
         PRIVATE spdlog
-        PRIVATE ldmonitor
-	    PRIVATE LuaLib
+        PRIVATE ldmonitor	    
 		PRIVATE SharedLib		        
         PRIVATE sigslot
 	)
@@ -164,8 +149,7 @@ else(WIN32)
         dl
         fmt 
         spdlog
-        ldmonitor
-		LuaLib
+        ldmonitor		
         OpenSSL::Crypto
 		OpenSSL::SSL
         pthread	
@@ -184,12 +168,10 @@ target_compile_definitions(BrokerLib
 )
 
 target_include_directories(BrokerLib 	
-    PUBLIC ${DCCLite_SOURCE_DIR}/contrib/JsonCreator/include
-    PUBLIC ${DCCLite_SOURCE_DIR}/contrib/lua-5.4.6/src
+    PUBLIC ${DCCLite_SOURCE_DIR}/contrib/JsonCreator/include    
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/ldmonitor/include    
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/rapidjson/include
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/sigslot/include
-    PUBLIC ${DCCLite_SOURCE_DIR}/contrib/sol2/include
     PUBLIC ${DCCLite_SOURCE_DIR}/src/Common
     PUBLIC ${DCCLite_SOURCE_DIR}/src/Embedded/lib/Shared
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/fmt/include

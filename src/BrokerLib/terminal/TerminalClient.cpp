@@ -19,9 +19,9 @@
 #include <dcclite/Log.h>
 #include <dcclite/Util.h>
 
-#include "../sys/SpecialFolders.h"
+#include "../sys/Broker.h"
 
-#include "CmdHost.h"
+#include "CmdHostService.h"
 #include "TerminalUtils.h"
 
 namespace dcclite::broker
@@ -56,11 +56,19 @@ namespace dcclite::broker
 	//
 	/////////////////////////////////////////////////////////////////////////////
 
-	TerminalClient::TerminalClient(ITerminalServiceClientProxy &owner, CmdHost &cmdHost, dcclite::IObject &root, const dcclite::IFolderObject &currentLocation, const NetworkAddress address, Socket &&socket):
-		m_clMessenger(std::move(socket)),		
-		m_clContext(static_cast<dcclite::IFolderObject &>(root), *this),
+	TerminalClient::TerminalClient(
+		ITerminalServiceClientProxy &owner, 
+		CmdHostService &cmdHost,
+		Broker &broker,
+		const dcclite::IFolderObject &currentLocation, 
+		const NetworkAddress address, 
+		Socket &&socket
+	):
+		m_clMessenger(std::move(socket)),
+		m_clContext(broker.GetRoot(), *this),
 		m_rclOwner(owner),
 		m_rclCmdHost(cmdHost),
+		m_rclBroker(broker),
 		m_clAddress(address)
 	{
 		m_clContext.SetLocation(currentLocation);
@@ -77,11 +85,8 @@ namespace dcclite::broker
 
 		m_thReceiveThread.join();
 
-		auto *servicesFolder = this->TryGetServicesFolder();
-		if (servicesFolder == nullptr)
-			return;
-
-		servicesFolder->VisitChildren([this](auto &item)
+		m_rclBroker.VisitServices(
+			[this](auto &item)
 			{
 				auto *service = dynamic_cast<Service *>(&item);
 				if (service != nullptr)
@@ -92,48 +97,12 @@ namespace dcclite::broker
 		);
 
 		EventHub::CancelEvents(*this);
-	}
-
-	FolderObject *TerminalClient::TryGetServicesFolder() const
-	{
-		auto item = m_clContext.TryGetItem();
-
-		//item may be null during system shutdown... 
-		if (!item || (!item->IsFolder()))
-		{
-			dcclite::Log::Error("[TerminalClient::RegisterListeners] Current location {} is invalid", m_clContext.GetLocation().string());
-
-			return nullptr;
-		}
-		auto folder = static_cast<FolderObject *>(item);
-
-		ObjectPath servicesPath{ SpecialFolders::GetPath(SpecialFolders::Folders::ServicesId) };
-		auto *servicesObj = folder->TryNavigate(servicesPath);
-
-		if (servicesObj == nullptr)
-		{
-			dcclite::Log::Error("[TerminalClient::RegisterListeners] Cannot find services folder at {}", servicesPath.string());
-
-			return nullptr;
-		}
-
-		if (!servicesObj->IsFolder())
-		{
-			dcclite::Log::Error("[TerminalClient::RegisterListeners] Services object is not a folder: {}", servicesPath.string());
-
-			return nullptr;
-		}
-
-		return static_cast<FolderObject *>(servicesObj);
-	}
+	}	
 
 	void TerminalClient::RegisterListeners()
 	{
-		auto *servicesFolder = this->TryGetServicesFolder();
-		if (servicesFolder == nullptr)
-			return;
-
-		servicesFolder->VisitChildren([this](auto &item)
+		m_rclBroker.VisitServices(
+			[this](auto &item)
 			{
 				auto *service = dynamic_cast<Service *>(&item);
 

@@ -21,7 +21,7 @@
 
 namespace dcclite::broker
 {
-
+	class CmdHostService;
 	class TerminalClient;
 
 	class ITerminalServiceClientProxy
@@ -37,9 +37,24 @@ namespace dcclite::broker
 
 			std::vector <std::unique_ptr<TerminalClient>> m_vecClients;
 			
-			std::thread m_thListenThread;
+			std::thread m_thListenThread;	
 
-		private:						
+			CmdHostService &m_rclCmdHost;
+
+		public:
+			static const char *TYPE_NAME;
+
+			static void RegisterFactory();
+
+			TerminalService(RName name, Broker &broker, const rapidjson::Value &params, CmdHostService &cmdHost);
+
+			virtual ~TerminalService();			
+
+			const char *GetTypeName() const noexcept override { return TYPE_NAME; }
+
+			typedef CmdHostService Requirement_t;
+
+		private:
 			void ListenThreadProc(const int port);
 
 			void OnAcceptConnection(const dcclite::NetworkAddress &address, dcclite::Socket &&s);
@@ -50,16 +65,5 @@ namespace dcclite::broker
 
 			friend class TerminalServiceClientDisconnectedEvent;
 			friend class TerminalServiceAcceptConnectionEvent;
-
-		public:
-			static const char *TYPE_NAME;
-
-			static void RegisterFactory();
-
-			TerminalService(RName name, Broker &broker, const rapidjson::Value &params);
-
-			virtual ~TerminalService();			
-
-			const char *GetTypeName() const noexcept override { return "TerminalService"; }
 	};
 }

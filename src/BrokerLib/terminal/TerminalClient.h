@@ -25,7 +25,7 @@
 namespace dcclite::broker
 {
 	class NetworkTask;
-	class CmdHost;
+	class CmdHostService;
 
 	class TaskManager
 	{
@@ -49,7 +49,14 @@ namespace dcclite::broker
 	class TerminalClient: private IObjectManagerListener, ITerminalClient_ContextServices, EventHub::IEventTarget
 	{
 		public:
-			TerminalClient(ITerminalServiceClientProxy &owner, CmdHost &cmdHost, dcclite::IObject &root, const dcclite::IFolderObject &currentLocation, const NetworkAddress address, Socket &&socket);
+			TerminalClient(
+				ITerminalServiceClientProxy &owner, 
+				CmdHostService &cmdHost,
+				Broker &broker, 
+				const dcclite::IFolderObject &currentLocation, 
+				const NetworkAddress address, 
+				Socket &&socket
+			);
 			TerminalClient(const TerminalClient &client) = delete;
 			TerminalClient(TerminalClient &&other) = delete;
 
@@ -60,9 +67,7 @@ namespace dcclite::broker
 
 			void RegisterListeners();
 
-			void SendItemPropertyValueChangedNotification(const ObjectManagerEvent &event);
-
-			FolderObject *TryGetServicesFolder() const;
+			void SendItemPropertyValueChangedNotification(const ObjectManagerEvent &event);			
 
 			void ReceiveDataThreadProc();
 
@@ -101,7 +106,8 @@ namespace dcclite::broker
 			TerminalContext m_clContext;
 
 			ITerminalServiceClientProxy &m_rclOwner;
-			CmdHost &m_rclCmdHost;
+			CmdHostService				&m_rclCmdHost;
+			Broker						&m_rclBroker;
 
 			std::list<std::unique_ptr<TerminalCmdFiber>>	m_lstFibers;
 

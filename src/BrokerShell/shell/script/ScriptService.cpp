@@ -8,7 +8,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "ScriptSystem.h"
+#include "ScriptService.h"
 
 #include <sol/sol.hpp>
 
@@ -17,21 +17,32 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Log.h>
 
-#include "../../sys/Broker.h"
-#include "../../sys/FileWatcher.h"
-#include "../../sys/Project.h"
+#include "sys/Broker.h"
+#include "sys/FileWatcher.h"
+#include "sys/Project.h"
+#include "sys/ServiceFactory.h"
 
 #include "Proxies.h"
 
-namespace dcclite::broker::shell::ScriptSystem
+namespace dcclite::broker::shell::script
 {
-	static sol::state g_clLua;	
+	const char *ScriptService::TYPE_NAME = "ScriptService";
 
-	Broker *g_pclBroker = nullptr;	
+	ScriptService::ScriptService(RName name, Broker &broker, const rapidjson::Value &params):
+		Service(name, broker, params)
+	{
+		//empty
+	}
 
-	static void WatchFile(const dcclite::fs::path &fileName);
+	ScriptService::~ScriptService()
+	{
+		for (const auto &it : m_setScripts)
+		{
+			FileWatcher::UnwatchFile(it);
+		}
+	}
 	
-	static void RunScripts()
+	void ScriptService::ConfigureLua()
 	{
 		auto path{ Project::GetFilePath("scripts") };
 		path.append("autoexec.lua");
@@ -45,27 +56,31 @@ namespace dcclite::broker::shell::ScriptSystem
 
 		dcclite::Log::Trace("[ScriptService::Start] Opening lua libraries");
 
-		g_clLua.open_libraries(sol::lib::base);
-		g_clLua.open_libraries(sol::lib::string);
+		m_clLua.open_libraries(sol::lib::base);
+		m_clLua.open_libraries(sol::lib::string);
 
 		dcclite::Log::Trace("[ScriptService::Start] Exporting functions");
 
-		auto dccLiteTable = g_clLua["dcclite"].get_or_create<sol::table>();
+		auto dccLiteTable = m_clLua["dcclite"].get_or_create<sol::table>();
 
-		g_clLua.set_function(
+		m_clLua.set_function(
 			"run_script", 
-			[](const char *fileName)
+			[this](const char *fileName)
 			{
 				auto path = Project::GetFilePath("scripts");
-				path.append(fileName);
+				path.append(fileName);				
 
-				WatchFile(path);
+				m_clLua.script_file(path.string());
 
-				g_clLua.script_file(path.string());
+				if (m_setScripts.find(path) != m_setScripts.end())
+				{
+					WatchFile(path);
+					m_setScripts.insert(path);
+				}				
 			}
 		);
 
-		g_clLua.set_function(
+		m_clLua.set_function(
 			"log_error", 
 			[](std::string_view msg)
 			{
@@ -73,7 +88,7 @@ namespace dcclite::broker::shell::ScriptSystem
 			}
 		);
 		
-		g_clLua.set_function(
+		m_clLua.set_function(
 			"log_info", 
 			[](std::string_view msg)
 			{
@@ -81,7 +96,7 @@ namespace dcclite::broker::shell::ScriptSystem
 			}
 		);
 
-		g_clLua.set_function(
+		m_clLua.set_function(
 			"log_trace", 
 			[](std::string_view msg)
 			{
@@ -89,7 +104,7 @@ namespace dcclite::broker::shell::ScriptSystem
 			}
 		);
 
-		g_clLua.set_function(
+		m_clLua.set_function(
 			"log_warn", 
 			[](std::string_view msg)
 			{
@@ -99,7 +114,7 @@ namespace dcclite::broker::shell::ScriptSystem
 
 		dcclite::Log::Trace("[ScriptService::Start] Exporting types");
 
-		detail::AddTypes(g_clLua);
+		detail::AddTypes(m_clLua);
 		
 		dcclite::Log::Trace("[ScriptService::Start] Registering file monitor");
 
@@ -109,9 +124,9 @@ namespace dcclite::broker::shell::ScriptSystem
 
 		//
 		//Export all known services
-		g_pclBroker->VisitServices([&dccLiteTable](auto &item)
+		m_rclBroker.VisitServices([&dccLiteTable, this](auto &item)
 			{
-				detail::TryCreateProxy(g_clLua, dccLiteTable, item);				
+				detail::TryCreateProxy(m_clLua, dccLiteTable, item);				
 
 				return true;
 			}
@@ -120,24 +135,23 @@ namespace dcclite::broker::shell::ScriptSystem
 
 		dcclite::Log::Trace("[ScriptService::Start] Running autoexec.lua");
 
-		sol::protected_function_result r = g_clLua.safe_script_file(path.string());
+		sol::protected_function_result r = m_clLua.safe_script_file(path.string());
 
-		dcclite::Log::Info("[ScriptService::Start] done.");
+		dcclite::Log::Info("[ScriptService::Start] done.");		
 	}
 
-	static void WatchFile(const dcclite::fs::path &fileName)
+	void ScriptService::WatchFile(const dcclite::fs::path &fileName)
 	{
 #if 1
-		FileWatcher::TryWatchFile(fileName, [](dcclite::fs::path path, std::string fileName)
+		FileWatcher::TryWatchFile(fileName, [this](dcclite::fs::path path, std::string fileName)
 			{
 				dcclite::Log::Info("[ScriptService] [FileWatcher::Reload] Attempting to reload config: {}", fileName);
 
 				try
 				{
-					detail::OnVmFinalize();
-					g_clLua = sol::state{};					
-
-					RunScripts();
+					//restart...
+					this->Stop();
+					this->Start();
 
 					dcclite::Log::Info("[ScriptService] [FileWatcher::Reload] script system reloaded.");
 				}
@@ -150,23 +164,56 @@ namespace dcclite::broker::shell::ScriptSystem
 #endif
 	}	
 
-	void Start(Broker &broker)
-	{				
-		g_pclBroker = &broker;		
-					
-		RunScripts();		
+	void ScriptService::OnLoadFinished()
+	{
+		this->Start();
 	}
 
-	void Stop()
+	void ScriptService::OnUnload()
+	{
+		this->Stop();
+	}
+
+	void ScriptService::OnExecutiveChangeStart()
+	{
+		this->Stop();
+	}
+
+	void ScriptService::OnExecutiveChangeEnd()
+	{
+		this->Start();
+	}
+
+	void ScriptService::Start()
+	{					
+		if (m_fConfigured)
+		{
+			throw std::runtime_error("[ScriptService::Start] Attempt to start a already running service");
+		}
+
+		this->ConfigureLua();
+		m_fConfigured = true;
+	}
+
+	void ScriptService::Stop()
 	{
 		dcclite::Log::Trace("[ScriptService::Stop] Closing lua");
 
+		//Some services need to do a clenup first... let they know VM is going down
 		detail::OnVmFinalize();
 
 		//force destruction
-		g_clLua = {};		
-		g_pclBroker = nullptr;
+		m_clLua = {};	
+
+		m_fConfigured = false;
 
 		dcclite::Log::Trace("[ScriptService::Stop] done");
 	}
+
+	void ScriptService::RegisterFactory()
+	{
+		//useless empty
+	}
+
+	static GenericServiceFactory<ScriptService> g_ServiceFactory;
 }

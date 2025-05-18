@@ -17,6 +17,8 @@
 
 #include <fmt/format.h>
 
+#include <magic_enum/magic_enum.hpp>
+
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/schema.h>
@@ -29,7 +31,7 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/JsonUtils.h>
 #include <dcclite/Log.h>
-
+#include <dcclite/Util.h>
 
 #include "BonjourService.h"
 #include "Project.h"
@@ -37,10 +39,6 @@
 #include "Thinker.h"
 #include "SpecialFolders.h"
 #include "ZeroConfSystem.h"
-
-#include "../shell/script/ScriptSystem.h"
-
-#include "../terminal/CmdHost.h"
 
 //win32 header leak
 #undef GetObject
@@ -93,6 +91,19 @@ namespace dcclite::broker
 		}
 	}
 
+	static void ThrowParserError(const rapidjson::Document &doc, const char *rawDoc)
+	{
+		auto offset = doc.GetErrorOffset();
+
+		auto lineCount = dcclite::StrCountLines(rawDoc, offset);
+		auto view = std::string_view(rawDoc + offset);
+
+		auto msg = fmt::format("[Broker::Broker] Error {} parsing at line {}: {}", magic_enum::enum_name(doc.GetParseError()), lineCount, view);
+		dcclite::Log::Error("{}", msg);
+
+		throw std::runtime_error(msg.c_str());
+	}
+
 	Broker::Broker(dcclite::fs::path projectPath):		
 		FolderObject{ RName{"root"} }
 	{	
@@ -100,29 +111,51 @@ namespace dcclite::broker
 
 		Project::SetWorkingDir(std::move(projectPath));
 
-		{
-			auto cmdHost = std::make_unique<CmdHost>();
-			m_pclTerminalCmdHost = cmdHost.get();
-
-			this->AddChild(std::move(cmdHost));
-		}		
-
-		using namespace dcclite;
+		constexpr auto initServices = R"JSON(
+			[
+				{
+					"class":"CmdHostService",
+					"name":"cmdHost"
+				},
+				{
+					"class":"TerminalService",
+					"name":"terminal",
+					"requires":"$cmdHost"
+				},
+				{
+					"class":"ScriptService",
+					"name":"scriptService"
+				},
+				{
+					"class":"BonjourService",
+					"name":"bonjour",
+					"ignoreOnLoadFailure":true
+				}
+			]
+		)JSON";
 
 		m_pServices = static_cast<FolderObject *>(this->AddChild(
 			std::make_unique<FolderObject>(SpecialFolders::GetName(SpecialFolders::Folders::ServicesId)))
-		);				
+		);
+
+		{
+			BenchmarkLogger benchmark{ "Broker", "Load init services" };
+
+			rapidjson::Document data;
+			data.Parse(initServices);
+
+			if (data.HasParseError())
+			{
+				ThrowParserError(data, initServices);			
+			}
+
+			this->LoadServices(data.GetArray());
+		}		
 
 		{
 			BenchmarkLogger loadTime{ "Broker", "LoadConfig" };
 
 			this->LoadConfig();
-		}
-
-		{
-			BenchmarkLogger script{ "Broker", "ScriptSystem" };
-
-			shell::ScriptSystem::Start(*this);
 		}
 
 		//Start after load, so project name is already loaded
@@ -131,17 +164,38 @@ namespace dcclite::broker
 
 	void Broker::SignalExecutiveChangeStart()
 	{
-		shell::ScriptSystem::Stop();
+		this->VisitServices([this](auto &item)
+			{
+				if (auto *s = dynamic_cast<IExecutiveClientService *>(&item))
+					s->OnExecutiveChangeStart();
+
+				return true;
+			}
+		);
 	}
 
 	void Broker::SignalExecutiveChangeEnd()
 	{
-		shell::ScriptSystem::Start(*this);
+		this->VisitServices([this](auto &item)
+			{
+				if (auto *s = dynamic_cast<IExecutiveClientService *>(&item))
+					s->OnExecutiveChangeEnd();
+
+				return true;
+			}
+		);
 	}
 
 	Broker::~Broker()
 	{
-		shell::ScriptSystem::Stop();
+		this->VisitServices([this](auto &item)
+			{
+				if (auto *s = dynamic_cast<IPostLoadService *>(&item))
+					s->OnUnload();
+
+				return true;
+			}
+		);
 
 		ZeroConfSystem::Stop();
 
@@ -150,7 +204,41 @@ namespace dcclite::broker
 		//Devices may need to still acess m_clProject data during destruction, so make sure they go first
 		//Do this on Services folder instead of destroying it, because some services (Terminal) will try to access Services folder on destruction
 		m_pServices->RemoveAllChildren();
-	}	
+	}
+
+	void Broker::LoadServices(const rapidjson::Value &servicesDataArray)
+	{
+		std::vector<std::pair<const rapidjson::Value *, const ServiceFactory *>> pendingServices;
+
+		for (auto &serviceData : servicesDataArray.GetArray())
+		{
+			auto &factory = FindServiceFactory(serviceData);
+
+			if (factory.HasDependencies())
+			{
+				pendingServices.push_back(std::make_pair(&serviceData, &factory));
+			}
+			else
+			{
+				auto service{ CreateBrokerService(factory, *this, serviceData) };
+
+				if (!service)
+					continue;
+
+				m_pServices->AddChild(std::move(service));
+			}
+		}
+
+		for (auto &serviceData : pendingServices)
+		{
+			std::unique_ptr<Service> service{ CreateBrokerService(*serviceData.second, *this, *serviceData.first) };
+
+			if (!service)
+				continue;
+
+			m_pServices->AddChild(std::move(service));
+		}
+	}
 
 	void Broker::LoadConfig()
 	{		
@@ -179,43 +267,20 @@ namespace dcclite::broker
 
 		const auto &services = dcclite::json::GetArray(data, "services", "broker");		
 
-		dcclite::Log::Info("[Broker] [LoadConfig] Loaded config {}", configFileNameStr);
-
-		if(dcclite::json::TryGetDefaultBool(data, "bonjourService", false))
-			m_pServices->AddChild(BonjourService::Create(RName{ BONJOUR_SERVICE_NAME }, *this));
+		dcclite::Log::Info("[Broker] [LoadConfig] Loaded config {}", configFileNameStr);		
 
 		dcclite::Log::Debug("[Broker] [LoadConfig] Processing config services array entries: {}", services.Size());				
 
-		std::vector<std::pair<const rapidjson::Value *, const ServiceFactory *>> pendingServices;		
+		this->LoadServices(services);
 
-		for (auto &serviceData : services)
-		{
-			auto &factory = FindServiceFactory(serviceData);
-
-			if (factory.HasDependencies())
+		this->VisitServices([this](auto &item)
 			{
-				pendingServices.push_back(std::make_pair(&serviceData, &factory));
+				if (auto *s = dynamic_cast<IPostLoadService *>(&item))
+					s->OnLoadFinished();
+
+				return true;
 			}
-			else
-			{
-				auto service{ CreateBrokerService(factory, *this, serviceData) };
-
-				if (!service)
-					continue;
-
-				m_pServices->AddChild(std::move(service));
-			}
-		}
-
-		for (auto &serviceData : pendingServices)
-		{
-			std::unique_ptr<Service> service{ CreateBrokerService(*serviceData.second, *this, *serviceData.first)};
-			
-			if (!service)
-				continue;
-
-			m_pServices->AddChild(std::move(service));
-		}		
+		);
 	}
 
 	Service &Broker::ResolveRequirement(std::string_view requirement) const

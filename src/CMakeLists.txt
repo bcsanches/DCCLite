@@ -18,6 +18,7 @@ endif()
 
 add_subdirectory(Broker)
 add_subdirectory(BrokerLib)
+add_subdirectory(BrokerShell)
 add_subdirectory(Common)
 add_subdirectory(Embedded)
 add_subdirectory(Launcher)

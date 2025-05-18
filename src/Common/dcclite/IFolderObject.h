@@ -33,7 +33,9 @@ namespace dcclite
 
 			IObject *TryResolveChild(RName name);
 
-			IObject *TryNavigate(const Path_t &path);
+			IObject *TryNavigate(const Path_t &path);			
+
+			IFolderObject &GetRoot();
 
 			bool IsFolder() const noexcept override { return true; }
 

@@ -22,12 +22,15 @@
 #include "dcc/DccppService.h"
 
 #include "shell/dispatcher/DispatcherService.h"
+#include "shell/script/ScriptService.h"
 
 #include "ln/LoconetService.h"
 #include "ln/ThrottleService.h"
 
+#include "terminal/CmdHostService.h"
 #include "terminal/TerminalService.h"
 
+#include "sys/BonjourService.h"
 #include "sys/Broker.h"
 #include "sys/EventHub.h"
 #include "sys/Thinker.h"
@@ -88,10 +91,13 @@ static void InitServicesFactories()
 
 	//just touch all to register the factories
 	//static lib does initialize static variables without this... hack??
+	BonjourService::RegisterFactory();
 	DccLiteService::RegisterFactory();
 	DccppService::RegisterFactory();
 	shell::dispatcher::DispatcherService::RegisterFactory();
+	shell::script::ScriptService::RegisterFactory();
 	LoconetService::RegisterFactory();
+	CmdHostService::RegisterFactory();
 	TerminalService::RegisterFactory();
 	ThrottleService::RegisterFactory();
 }

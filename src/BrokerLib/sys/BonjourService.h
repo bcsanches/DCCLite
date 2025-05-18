@@ -26,7 +26,11 @@ namespace dcclite::broker
 	class BonjourService: public Service
 	{	
 		public:
-			BonjourService(RName name, Broker &broker);
+			static void RegisterFactory();
+
+			static const char *TYPE_NAME;
+
+			BonjourService(RName name, Broker &broker, const rapidjson::Value &params);
 		
 			~BonjourService() override = default;
 
@@ -34,13 +38,11 @@ namespace dcclite::broker
 
 			//
 			//
-			//
-		
-			static std::unique_ptr<Service> Create(RName name, Broker &broker);
+			//			
 
 			const char *GetTypeName() const noexcept override
 			{
-				return "BonjourService";
+				return TYPE_NAME;
 			}
 	};
 }

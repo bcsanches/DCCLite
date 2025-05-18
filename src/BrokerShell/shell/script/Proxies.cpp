@@ -17,12 +17,12 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Log.h>
 
-#include "../../dcc/DccLiteService.h"
-#include "../../dcc/Decoder.h"
-#include "../../dcc/OutputDecoder.h"
-#include "../../dcc/StateDecoder.h"
+#include "dcc/DccLiteService.h"
+#include "dcc/Decoder.h"
+#include "dcc/OutputDecoder.h"
+#include "dcc/StateDecoder.h"
 
-#include "../../dcc/SignalDecoder.h"
+#include "dcc/SignalDecoder.h"
 
 #include "../dispatcher/DispatcherService_detail.h"
 
@@ -258,7 +258,7 @@ DecoderProxy *DccLiteProxy::OnIndexByAddress(uint16_t key, sol::this_state L)
 	}
 }
 
-namespace dcclite::broker::shell::ScriptSystem::detail
+namespace dcclite::broker::shell::script::detail
 {
 	void AddTypes(sol::state &state)
 	{

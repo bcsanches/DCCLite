@@ -80,6 +80,11 @@ namespace dcclite::broker
 				return std::make_unique<T>(name, broker, data, this->ResolveRequirement(broker, data));
 			}
 
+			bool HasDependencies() const noexcept override
+			{
+				return true;
+			}
+
 		private:
 			T::Requirement_t &ResolveRequirement(const Broker &broker, const rapidjson::Value &data) const
 			{

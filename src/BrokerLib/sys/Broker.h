@@ -14,6 +14,8 @@
 #include <memory>
 #include <string>
 
+#include <rapidjson/rapidjson.h>
+
 #include <dcclite/FileSystem.h>
 #include <dcclite/Object.h>
 
@@ -26,8 +28,7 @@ namespace dcclite
 
 namespace dcclite::broker
 {
-	class Service;
-	class CmdHost;
+	class Service;	
 
 	class Broker: public FolderObject
 	{
@@ -44,11 +45,6 @@ namespace dcclite::broker
 				m_pServices->VisitChildren(visitor);
 			}			
 
-			CmdHost *GetTerminalCmdHost()
-			{
-				return m_pclTerminalCmdHost;
-			}
-
 			const char *GetTypeName() const noexcept override
 			{
 				return "dcclite::Broker";
@@ -57,14 +53,14 @@ namespace dcclite::broker
 			Service &ResolveRequirement(std::string_view requirement) const;
 
 			void SignalExecutiveChangeStart();
-			void SignalExecutiveChangeEnd();
-
-		private:				
-			dcclite::FolderObject	*m_pServices;
-
-			CmdHost	*m_pclTerminalCmdHost = nullptr;
+			void SignalExecutiveChangeEnd();		
 
 		private:
-			void LoadConfig();	
+			void LoadConfig();
+
+			void LoadServices(const rapidjson::Value &servicesDataArray);
+
+		private:				
+			dcclite::FolderObject	*m_pServices;		
 	};
 }

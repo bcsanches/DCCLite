@@ -114,10 +114,6 @@
 			]
 		},
 		{
-			"class": "Terminal",
-			"name": "terminal"			
-		},
-		{
 			"class": "DccppService",
 			"name": "dccpp",
 			"requires": "$dcc0"
@@ -138,6 +134,6 @@
 		{
 			"class": "ThrottleService",
 			"name": "throttleService"			
-		}
+		}	
 	]
 }

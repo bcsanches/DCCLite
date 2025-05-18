@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include <dcclite/FolderObject.h>
+#include "../sys/Service.h"
 
 namespace dcclite::broker
 {
@@ -22,13 +22,17 @@ namespace dcclite::broker
 		This was created to allow a common cmd repository that any subsystem can access and register its own commands
 
 	*/
-	class CmdHost: public dcclite::FolderObject
+	class CmdHostService: public Service
 	{
 		public:
-			CmdHost();
-			virtual ~CmdHost();
+			static void RegisterFactory();			
+
+			static const char *TYPE_NAME;
+
+			CmdHostService(RName name, Broker &broker, const rapidjson::Value &params);
 
 			IObject *AddChild(std::unique_ptr<Object> obj) override;
+
 			TerminalCmd *AddCmd(std::unique_ptr<TerminalCmd> cmd);
 			void AddAlias(RName name, TerminalCmd &target);
 

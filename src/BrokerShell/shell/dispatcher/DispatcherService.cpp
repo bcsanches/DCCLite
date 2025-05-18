@@ -19,16 +19,16 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/JsonUtils.h>
 
-#include "../../dcc/DccLiteService.h"
-#include "../../dcc/Device.h"
-#include "../../dcc/IResettableObject.h"
-#include "../../dcc/VirtualSensorDecoder.h"
+#include "dcc/DccLiteService.h"
+#include "dcc/Device.h"
+#include "dcc/IResettableObject.h"
+#include "dcc/VirtualSensorDecoder.h"
 
-#include "../../sys/Broker.h"
-#include "../../sys/ServiceFactory.h"
+#include "sys/Broker.h"
+#include "sys/ServiceFactory.h"
 
 namespace dcclite::broker::shell::dispatcher
-{
+{	
 	class BaseSectionWrapper: public Object, public IResettableObject
 	{
 		public:

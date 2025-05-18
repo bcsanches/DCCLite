@@ -64,4 +64,14 @@ namespace dcclite
 
 		return currentNode;
 	}	
+
+	IFolderObject &IFolderObject::GetRoot()
+	{
+		auto parent = this;
+		
+		while (parent->GetParent())
+			parent = parent->GetParent();
+		
+		return *parent;
+	}
 }

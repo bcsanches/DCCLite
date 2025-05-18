@@ -18,7 +18,8 @@ DCCLite
 		- digitalWrite will never affetct externalVoltage
 		- SharpTerminal will be able to set this externalVoltage value
 
-- when a device file changes, reload everything?	
+- when a device file changes, reload everything?
+	- Instead of hardcoding a call do dispacher on VMFinalize, create a lua script for this and call the script first	
 	- Move loconet code to shell
 	- Move terminal code to shell
 	- Create BrokerShellLib ?

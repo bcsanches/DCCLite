@@ -17,7 +17,7 @@ namespace dcclite
 	class IObject;
 }
 
-namespace dcclite::broker::shell::ScriptSystem::detail
+namespace dcclite::broker::shell::script::detail
 {
 	void AddTypes(sol::state &state);
 
