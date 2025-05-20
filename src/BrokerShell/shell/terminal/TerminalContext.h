@@ -17,7 +17,7 @@ namespace dcclite
 	class IFolderObject;
 }
 
-namespace dcclite::broker
+namespace dcclite::broker::shell::terminal
 {	
 	class TerminalCmdFiber;
 	class TaskManager;

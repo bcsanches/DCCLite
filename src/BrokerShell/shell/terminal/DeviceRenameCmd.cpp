@@ -13,16 +13,15 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Util.h>
 
-#include "../dcc/DccLiteService.h"
-#include "../dcc/NetworkDevice.h"
+#include "dcc/DccLiteService.h"
+#include "dcc/NetworkDevice.h"
 
 #include "TerminalClient.h"
 #include "TerminalUtils.h"
 
-namespace dcclite::broker
+namespace dcclite::broker::shell::terminal
 {	
-
-	class DeviceRenameFiber: public TerminalCmdFiber, private NetworkTask::IObserver
+	class DeviceRenameFiber: public TerminalCmdFiber, private dcclite::broker::NetworkTask::IObserver
 	{
 		public:
 			DeviceRenameFiber(const CmdId_t id, TerminalContext &context, NetworkDevice &device, RName newName):

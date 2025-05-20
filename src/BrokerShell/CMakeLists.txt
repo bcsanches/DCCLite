@@ -4,14 +4,19 @@ file(GLOB_RECURSE SRC_SHELL_LN
     "shell/ln/*.h"
 )
 
+file(GLOB_RECURSE SRC_SHELL_DISPATCHER
+    "shell/dispatcher/*.cpp"
+    "shell/dispatcher/*.h"
+)
+
 file(GLOB_RECURSE SRC_SHELL_SCRIPT
     "shell/script/*.cpp"
     "shell/script/*.h"
 )
 
-file(GLOB_RECURSE SRC_SHELL_DISPATCHER
-    "shell/dispatcher/*.cpp"
-    "shell/dispatcher/*.h"
+file(GLOB_RECURSE SRC_SHELL_TERMINAL
+    "shell/terminal/*.cpp"
+    "shell/terminal/*.h"
 )
 
 add_library(
@@ -27,12 +32,33 @@ add_library(
 		shell/script/Proxies.cpp
 		shell/script/Proxies.h
 		shell/script/ScriptService.cpp
-	    shell/script/ScriptService.h        
+	    shell/script/ScriptService.h
+		shell/terminal/CmdHostService.cpp
+		shell/terminal/CmdHostService.h
+        shell/terminal/DeviceClearEEPromCmd.cpp
+        shell/terminal/DeviceClearEEPromCmd.h
+        shell/terminal/DeviceNetworkTestCmds.cpp
+        shell/terminal/DeviceNetworkTestCmds.h      
+        shell/terminal/DeviceRenameCmd.cpp
+        shell/terminal/DeviceRenameCmd.h
+		shell/terminal/ServoProgrammerCmds.cpp
+		shell/terminal/ServoProgrammerCmds.h
+		shell/terminal/TerminalClient.cpp
+        shell/terminal/TerminalClient.h
+        shell/terminal/TerminalCmd.cpp
+        shell/terminal/TerminalCmd.h
+		shell/terminal/TerminalContext.cpp
+		shell/terminal/TerminalContext.h		
+        shell/terminal/TerminalService.cpp
+        shell/terminal/TerminalService.h
+		shell/terminal/TerminalUtils.cpp
+        shell/terminal/TerminalUtils.h      
 )
 
 source_group("dispatcher"   	FILES ${SRC_SHELL_DISPATCHER})
 source_group("ln"				FILES ${SRC_SHELL_LN})
 source_group("script"        	FILES ${SRC_SHELL_SCRIPT})
+source_group("terminal"     	FILES ${SRC_SHELL_TERMINAL})
 
 if(WIN32)
     target_link_libraries(BrokerShellLib        

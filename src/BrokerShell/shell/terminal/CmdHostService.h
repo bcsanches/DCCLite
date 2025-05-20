@@ -10,9 +10,9 @@
 
 #pragma once
 
-#include "../sys/Service.h"
+#include "sys/Service.h"
 
-namespace dcclite::broker
+namespace dcclite::broker::shell::terminal
 {
 	class TerminalCmd;
 

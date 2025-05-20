@@ -20,16 +20,16 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Util.h>
 
-#include "../dcc/IResettableObject.h"
-#include "../dcc/NetworkDevice.h"
-#include "../dcc/OutputDecoder.h"
-#include "../dcc/SignalDecoder.h"
+#include "dcc/IResettableObject.h"
+#include "dcc/NetworkDevice.h"
+#include "dcc/OutputDecoder.h"
+#include "dcc/SignalDecoder.h"
 
-#include "../sys/BonjourService.h"
-#include "../sys/Broker.h"
-#include "../sys/Project.h"
-#include "../sys/ServiceFactory.h"
-#include "../sys/ZeroConfSystem.h"
+#include "sys/BonjourService.h"
+#include "sys/Broker.h"
+#include "sys/Project.h"
+#include "sys/ServiceFactory.h"
+#include "sys/ZeroConfSystem.h"
 
 #include "CmdHostService.h"
 #include "DeviceClearEEPromCmd.h"
@@ -42,7 +42,7 @@
 
 using namespace std::chrono_literals;
 
-namespace dcclite::broker
+namespace dcclite::broker::shell::terminal
 {
 	const char *TerminalService::TYPE_NAME = "TerminalService";	
 

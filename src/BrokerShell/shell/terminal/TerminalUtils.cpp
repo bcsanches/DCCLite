@@ -18,9 +18,9 @@
 
 #include "TerminalClient.h"
 
-#include "../dcc/NetworkDevice.h"
+#include "dcc/NetworkDevice.h"
 
-namespace dcclite::broker::detail
+namespace dcclite::broker::shell::terminal::detail
 {			
 	using namespace dcclite;
 

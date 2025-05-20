@@ -16,10 +16,10 @@
 
 #include <dcclite/Socket.h>
 
-#include "../sys/Service.h"
-#include "../sys/EventHub.h"
+#include "sys/Service.h"
+#include "sys/EventHub.h"
 
-namespace dcclite::broker
+namespace dcclite::broker::shell::terminal
 {
 	class CmdHostService;
 	class TerminalClient;

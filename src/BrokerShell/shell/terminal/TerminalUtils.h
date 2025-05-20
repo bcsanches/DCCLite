@@ -20,7 +20,7 @@ namespace dcclite::broker
 	class NetworkTask;
 }
 
-namespace dcclite::broker::detail
+namespace dcclite::broker::shell::terminal::detail
 {
 	constexpr auto JSONRPC_KEY = "jsonrpc";
 	constexpr auto JSONRPC_VERSION = "2.0";

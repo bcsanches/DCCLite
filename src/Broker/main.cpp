@@ -27,8 +27,8 @@
 #include "shell/ln/LoconetService.h"
 #include "shell/ln/ThrottleService.h"
 
-#include "terminal/CmdHostService.h"
-#include "terminal/TerminalService.h"
+#include "shell/terminal/CmdHostService.h"
+#include "shell/terminal/TerminalService.h"
 
 #include "sys/BonjourService.h"
 #include "sys/Broker.h"
@@ -96,12 +96,14 @@ static void InitServicesFactories()
 	DccppService::RegisterFactory();
 
 	shell::dispatcher::DispatcherService::RegisterFactory();
+
 	shell::ln::LoconetService::RegisterFactory();
 	shell::ln::ThrottleService::RegisterFactory();
+
 	shell::script::ScriptService::RegisterFactory();	
 
-	CmdHostService::RegisterFactory();
-	TerminalService::RegisterFactory();	
+	shell::terminal::CmdHostService::RegisterFactory();
+	shell::terminal::TerminalService::RegisterFactory();
 }
 
 int main(int argc, char **argv)

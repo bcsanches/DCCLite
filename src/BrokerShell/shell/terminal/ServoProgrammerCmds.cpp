@@ -13,13 +13,13 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Util.h>
 
-#include "../dcc/NetworkDevice.h"
-#include "../dcc/TurnoutDecoder.h"
+#include "dcc/NetworkDevice.h"
+#include "dcc/TurnoutDecoder.h"
 
 #include "TerminalClient.h"
 #include "TerminalUtils.h"
 
-namespace dcclite::broker
+namespace dcclite::broker::shell::terminal
 {	
 
 	/////////////////////////////////////////////////////////////////////////////

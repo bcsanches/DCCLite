@@ -16,18 +16,26 @@
 namespace dcclite::broker
 {
 	class NetworkTask;
+}
 
-	class StartNetworkTestCmd: public TerminalCmd
+namespace dcclite::broker::shell::terminal
+{	
+	class StartServoProgrammerCmd: public TerminalCmd
 	{
 		public:
-			/// <summary>
-			/// Start a network test task: Start-NetworkTest <device-path>
-			/// </summary>
-			/// 
-			/// Returns the task id
-			/// 
-			/// <param name="name"></param>
-			explicit StartNetworkTestCmd(RName name = RName{ "Start-NetworkTest" }):
+			explicit StartServoProgrammerCmd(RName name = RName{ "Start-ServoProgrammer" }):
+				TerminalCmd(name)
+			{
+				//empty
+			}
+
+			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override;
+	};	
+
+	class StopServoProgrammerCmd: public TerminalCmd
+	{
+		public:
+			explicit StopServoProgrammerCmd(RName name = RName{ "Stop-ServoProgrammer" }):
 				TerminalCmd(name)
 			{
 				//empty
@@ -36,14 +44,10 @@ namespace dcclite::broker
 			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override;
 	};
 
-	class StopNetworkTestCmd: public TerminalCmd
-	{
+	class EditServoProgrammerCmd: public TerminalCmd
+	{		
 		public:
-			/// <summary>
-			/// Stops a Network test task: Stop-NetworkTest <task-id>
-			/// </summary>
-			/// <param name="name"></param>
-			explicit StopNetworkTestCmd(RName name = RName{ "Stop-NetworkTest" }):
+			explicit EditServoProgrammerCmd(RName name = RName{ "Edit-ServoProgrammer" }):
 				TerminalCmd(name)
 			{
 				//empty
@@ -52,14 +56,12 @@ namespace dcclite::broker
 			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override;
 	};
 
-	class ReceiveNetworkTestDataCmd: public TerminalCmd
+	
+
+	class DeployServoProgrammerCmd: public TerminalCmd
 	{
 		public:
-			/// <summary>
-			/// Grabs the current data from an existing network test: Receive-NetworkTestData <task-id>
-			/// </summary>
-			/// <param name="name"></param>
-			explicit ReceiveNetworkTestDataCmd(RName name = RName{ "Receive-NetworkTestData" }):
+			explicit DeployServoProgrammerCmd(RName name = RName{ "Deploy-ServoProgrammer" }):
 				TerminalCmd(name)
 			{
 				//empty

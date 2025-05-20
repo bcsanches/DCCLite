@@ -13,18 +13,17 @@
 
 #include <magic_enum/magic_enum.hpp>
 
-#include "../dcc/NetworkDeviceTasks.h"
-
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Log.h>
 #include <dcclite/Util.h>
 
-#include "../sys/Broker.h"
+#include "dcc/NetworkDeviceTasks.h"
+#include "sys/Broker.h"
 
 #include "CmdHostService.h"
 #include "TerminalUtils.h"
 
-namespace dcclite::broker
+namespace dcclite::broker::shell::terminal
 {
 	/////////////////////////////////////////////////////////////////////////////
 	//

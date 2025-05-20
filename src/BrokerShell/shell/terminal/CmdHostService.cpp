@@ -15,9 +15,9 @@
 #include <dcclite/FmtUtils.h>
 
 #include "TerminalCmd.h"
-#include "../sys/ServiceFactory.h"
+#include "sys/ServiceFactory.h"
 
-namespace dcclite::broker
+namespace dcclite::broker::shell::terminal
 {
 	CmdHostService::CmdHostService(RName name, Broker &broker, const rapidjson::Value &params):
 		Service(name, broker, params)

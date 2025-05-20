@@ -3,11 +3,6 @@ file(GLOB_RECURSE SRC_DCC
     "dcc/*.h"
 )
 
-file(GLOB_RECURSE SRC_LN
-    "ln/*.cpp"
-    "ln/*.h"
-)
-
 file(GLOB_RECURSE SRC_SYS
     "sys/*.cpp"
     "sys/*.h"
@@ -93,26 +88,6 @@ add_library(
         sys/Timeouts.h
         sys/ZeroConfSystem.cpp
         sys/ZeroConfSystem.h
-		terminal/CmdHostService.cpp
-		terminal/CmdHostService.h
-        terminal/DeviceClearEEPromCmd.cpp
-        terminal/DeviceClearEEPromCmd.h
-        terminal/DeviceNetworkTestCmds.cpp
-        terminal/DeviceNetworkTestCmds.h      
-        terminal/DeviceRenameCmd.cpp
-        terminal/DeviceRenameCmd.h
-		terminal/ServoProgrammerCmds.cpp
-		terminal/ServoProgrammerCmds.h
-		terminal/TerminalClient.cpp
-        terminal/TerminalClient.h
-        terminal/TerminalCmd.cpp
-        terminal/TerminalCmd.h
-		terminal/TerminalContext.cpp
-		terminal/TerminalContext.h		
-        terminal/TerminalService.cpp
-        terminal/TerminalService.h
-		terminal/TerminalUtils.cpp
-        terminal/TerminalUtils.h
 )
 
 source_group("dcc"          		FILES ${SRC_DCC})

@@ -18,9 +18,9 @@
 #include "TerminalClient.h"
 #include "TerminalUtils.h"
 
-#include "../dcc/NetworkDevice.h"
+#include "dcc/NetworkDevice.h"
 
-namespace dcclite::broker
+namespace dcclite::broker::shell::terminal
 {	
 	TerminalCmd::CmdResult_t StartNetworkTestCmd::Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
 	{

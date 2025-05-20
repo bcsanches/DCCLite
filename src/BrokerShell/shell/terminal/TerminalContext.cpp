@@ -12,7 +12,7 @@
 
 #include <dcclite/IFolderObject.h>
 
-namespace dcclite::broker
+namespace dcclite::broker::shell::terminal
 {
 	TerminalContext::TerminalContext(dcclite::IFolderObject &root, ITerminalClient_ContextServices &terminalClientServices):
 		m_pclRoot(&root),

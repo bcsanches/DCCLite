@@ -15,8 +15,8 @@
 
 #include <dcclite/NetMessenger.h>
 
-#include "../sys/EventHub.h"
-#include "../sys/Service.h"
+#include "sys/EventHub.h"
+#include "sys/Service.h"
 
 #include "TerminalCmd.h"
 #include "TerminalContext.h"
@@ -25,6 +25,10 @@
 namespace dcclite::broker
 {
 	class NetworkTask;
+}
+
+namespace dcclite::broker::shell::terminal
+{	
 	class CmdHostService;
 
 	class TaskManager

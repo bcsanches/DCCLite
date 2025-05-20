@@ -20,7 +20,7 @@
 
 #include <dcclite/FolderObject.h>
 
-namespace dcclite::broker
+namespace dcclite::broker::shell::terminal
 { 
 
 	/*

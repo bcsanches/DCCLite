@@ -16,11 +16,14 @@
 namespace dcclite::broker
 {
 	class NetworkTask;
+}
 
-	class RenameItemCmd: public TerminalCmd
+namespace dcclite::broker::shell::terminal
+{
+	class ClearEEPromCmd: public TerminalCmd
 	{
 		public:
-			explicit RenameItemCmd(RName name = RName{ "Rename-Item" }):
+			explicit ClearEEPromCmd(RName name = RName{ "Clear-EEProm" }):
 				TerminalCmd(name)
 			{
 				//empty

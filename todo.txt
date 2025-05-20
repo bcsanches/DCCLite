@@ -18,18 +18,11 @@ DCCLite
 		- digitalWrite will never affetct externalVoltage
 		- SharpTerminal will be able to set this externalVoltage value
 
-- when a device file changes, reload everything?	
-	- Move loconet code to shell
-	- Move terminal code to shell	
+- when a device file changes, reload everything?
 	- second: create a DccSystem class, that manages all DccLiteServices
 	- Organize system in layers or modules
 	- Broker - base layer, if main config changes, restart everything (rarest case)
 	- Dcc - hardware layer, if any device changes, reload the device and reload all the shell layer
-	- Shell layer: systems that rely on before layers, like: 
-		- dispatcher
-		- script
-		- loconet
-		- terminal
 	- Sharp terminal will always reload all when hardware changes
 	- Is it worth to really organize those layers? Perhaps:
 		- system: broker base systems, event system, thinker, etc
