@@ -16,8 +16,7 @@
 namespace SpecialFolders
 {
 	enum class Folders
-	{
-		ServicesId,
+	{		
 		CmdHostId
 	};
 

@@ -136,11 +136,7 @@ namespace dcclite::broker
 				}
 		
 		*/
-
-		m_pServices = static_cast<FolderObject *>(this->AddChild(
-			std::make_unique<FolderObject>(SpecialFolders::GetName(SpecialFolders::Folders::ServicesId)))
-		);
-
+		
 		{
 			BenchmarkLogger benchmark{ "Broker", "Load init services" };
 
@@ -206,7 +202,7 @@ namespace dcclite::broker
 		//cleanup everything while we still have our members live...
 		//Devices may need to still acess m_clProject data during destruction, so make sure they go first
 		//Do this on Services folder instead of destroying it, because some services (Terminal) will try to access Services folder on destruction
-		m_pServices->RemoveAllChildren();
+		this->RemoveAllChildren();
 	}
 
 	void Broker::LoadServices(const rapidjson::Value &servicesDataArray)
@@ -228,7 +224,7 @@ namespace dcclite::broker
 				if (!service)
 					continue;
 
-				m_pServices->AddChild(std::move(service));
+				this->AddChild(std::move(service));
 			}
 		}
 
@@ -239,7 +235,7 @@ namespace dcclite::broker
 			if (!service)
 				continue;
 
-			m_pServices->AddChild(std::move(service));
+			this->AddChild(std::move(service));
 		}
 	}
 
@@ -286,7 +282,7 @@ namespace dcclite::broker
 		);
 	}
 
-	Service &Broker::ResolveRequirement(std::string_view requirement) const
+	Service &Broker::ResolveRequirement(std::string_view requirement)
 	{
 		Parser parser{ StringView{requirement} };
 		
@@ -303,7 +299,7 @@ namespace dcclite::broker
 		else if (token.m_kToken == Tokens::ID)
 		{
 			Service *result = nullptr;
-			m_pServices->VisitChildren([&token, &result](auto &obj)
+			this->VisitChildren([&token, &result](auto &obj)
 				{					
 					if (token.m_svData.Compare(obj.GetTypeName()) == 0)
 					{
@@ -325,9 +321,9 @@ namespace dcclite::broker
 		throw std::invalid_argument(fmt::format("[Broker::ResolveRequirement] Syntax error parsing requirement {} ", requirement));
 	}
 
-	Service *Broker::TryFindService(RName name) const
+	Service *Broker::TryFindService(RName name)
 	{
-		return static_cast<Service *>(m_pServices->TryGetChild(name));
+		return static_cast<Service *>(this->TryGetChild(name));
 	}
 }
 

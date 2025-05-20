@@ -86,7 +86,7 @@ namespace dcclite::broker
 			}
 
 		private:
-			T::Requirement_t &ResolveRequirement(const Broker &broker, const rapidjson::Value &data) const
+			T::Requirement_t &ResolveRequirement(Broker &broker, const rapidjson::Value &data) const
 			{
 				auto requirementId = dcclite::json::TryGetDefaultString(
 					data,

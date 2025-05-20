@@ -9,9 +9,6 @@ namespace SpecialFolders
 
 		switch (id)
 		{
-			case Folders::ServicesId:
-				return services;
-
 			case Folders::CmdHostId:
 				return cmds;
 
@@ -24,9 +21,6 @@ namespace SpecialFolders
 	{
 		switch (id)
 		{
-			case Folders::ServicesId:
-				return "/services";
-
 			case Folders::CmdHostId:
 				return "/cmds";
 

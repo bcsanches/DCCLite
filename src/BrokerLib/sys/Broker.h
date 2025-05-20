@@ -38,11 +38,11 @@ namespace dcclite::broker
 
 			Broker(const Broker &) = delete;
 
-			Service *TryFindService(RName name) const;
+			Service *TryFindService(RName name);
 
-			inline void VisitServices(Visitor_t visitor) const
+			inline void VisitServices(Visitor_t visitor)
 			{
-				m_pServices->VisitChildren(visitor);
+				this->VisitChildren(visitor);
 			}			
 
 			const char *GetTypeName() const noexcept override
@@ -50,7 +50,7 @@ namespace dcclite::broker
 				return "dcclite::Broker";
 			}
 
-			Service &ResolveRequirement(std::string_view requirement) const;
+			Service &ResolveRequirement(std::string_view requirement);
 
 			void SignalExecutiveChangeStart();
 			void SignalExecutiveChangeEnd();		
@@ -58,9 +58,6 @@ namespace dcclite::broker
 		private:
 			void LoadConfig();
 
-			void LoadServices(const rapidjson::Value &servicesDataArray);
-
-		private:				
-			dcclite::FolderObject	*m_pServices;		
+			void LoadServices(const rapidjson::Value &servicesDataArray);		
 	};
 }

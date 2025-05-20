@@ -189,12 +189,8 @@ namespace SharpTerminal
                 brokerNode.Name = "Broker";
                 brokerNode.Tag = rootFolder;
 
-                var children = await rootFolder.LoadChildrenAsync(mRequestManager);
-                if (children != null)
-                    FillTree(brokerNode, children);
-
-                var servicesFolder = (RemoteFolder) rootFolder.TryFindChildByName("services");
-                var services = await servicesFolder.LoadChildrenAsync(mRequestManager);
+                var services = await rootFolder.LoadChildrenAsync(mRequestManager);                
+                FillTree(brokerNode, services);                
 
                 var locationService = services.Where(x => x.Name == "locationManager").FirstOrDefault();
                 if (locationService != null)
