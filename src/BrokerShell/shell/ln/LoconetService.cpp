@@ -26,10 +26,10 @@
 
 #include <magic_enum/magic_enum.hpp>
 
-#include "../sys/Broker.h"
-#include "../sys/ServiceFactory.h"
-#include "../sys/Thinker.h"
-#include "../sys/Timeouts.h"
+#include "sys/Broker.h"
+#include "sys/ServiceFactory.h"
+#include "sys/Thinker.h"
+#include "sys/Timeouts.h"
 
 #include "ThrottleService.h"
 
@@ -105,8 +105,6 @@ static constexpr auto MAX_SLOT_FUNCTIONS = 32;
 
 typedef dcclite::BasePacket<MAX_LN_MESSAGE_LEN> MiniPacket_t;
 
-static dcclite::broker::ThrottleService *g_pclThrottleService = nullptr;
-
 uint8_t DefaultMsgSizes(const Opcodes opcode)
 {
 	switch(opcode)
@@ -181,9 +179,11 @@ class LoconetMessageWriter
 // Loconet Slot
 //
 ///////////////////////////////////////////////////////////////////////////////
-class Slot: public dcclite::broker::ILoconetSlot
+class Slot: public dcclite::broker::shell::ln::ILoconetSlot
 {
 	public:
+		using ThrottleService = dcclite::broker::shell::ln::ThrottleService;
+
 		enum class States
 		{
 			//Those values match the bitmask used by loconet on bits D4 and D5
@@ -209,11 +209,12 @@ class Slot: public dcclite::broker::ILoconetSlot
 		~Slot()
 		{
 			this->ReleaseThrottle();
-		}		
+		}
 
-		void SetId(const uint8_t id) noexcept 
+		void Init(const uint8_t id, ThrottleService &throttleService)
 		{
 			m_uId = id;
+			m_pclThrottleService = &throttleService;
 		}
 
 		//
@@ -278,8 +279,12 @@ class Slot: public dcclite::broker::ILoconetSlot
 				This can be forced rapid clicking on the "loco" button on a loconet throttle, sometimes it fires a "null move" 
 				message before firing a "setStat1" that will set a slot to common state
 			*/
-			if(!m_pclThrottle)
-				m_pclThrottle = &g_pclThrottleService->CreateThrottle(*this);
+			if (!m_pclThrottle)
+			{
+				assert(m_pclThrottleService);
+
+				m_pclThrottle = &m_pclThrottleService->CreateThrottle(*this);
+			}
 		}
 
 		void GotoState_Free() noexcept
@@ -393,8 +398,10 @@ class Slot: public dcclite::broker::ILoconetSlot
 			m_pclThrottle->RemoveSlave(slave);
 
 			assert(slave.m_pclThrottle == nullptr);
+			assert(m_pclThrottleService);
+
 			slave.m_uSpeed = 0;
-			slave.m_pclThrottle = &g_pclThrottleService->CreateThrottle(slave);
+			slave.m_pclThrottle = &m_pclThrottleService->CreateThrottle(slave);
 
 			//All slaves are gone?
 			if (!m_pclThrottle->HasSlaves())
@@ -427,15 +434,18 @@ class Slot: public dcclite::broker::ILoconetSlot
 	private:
 		void ReleaseThrottle()
 		{
-			if ((!g_pclThrottleService) || (!m_pclThrottle))
+			if (!m_pclThrottle)
 				return;
 
-			g_pclThrottleService->ReleaseThrottle(*m_pclThrottle);
+			assert(m_pclThrottleService);
+
+			m_pclThrottleService->ReleaseThrottle(*m_pclThrottle);
 			m_pclThrottle = nullptr;
 		}
 
 	private:		
-		dcclite::broker::IThrottle *m_pclThrottle = nullptr;		
+		dcclite::broker::shell::ln::IThrottle *m_pclThrottle = nullptr;
+		dcclite::broker::shell::ln::ThrottleService *m_pclThrottleService = nullptr;
 
 		States m_eState = States::FREE;		
 
@@ -497,7 +507,7 @@ static std::tuple<Slot::States, Slot::ConsistStates> ParseStatByte(const uint8_t
 class SlotManager
 {
 	public:
-		SlotManager();
+		SlotManager(dcclite::broker::shell::ln::ThrottleService &throttleService);
 
 		std::optional<uint8_t> AcquireLocomotive(const dcclite::broker::DccAddress address, const dcclite::Clock::TimePoint_t ticks);
 
@@ -537,13 +547,13 @@ class SlotManager
 		std::array<dcclite::Clock::TimePoint_t, MAX_SLOTS> m_arSlotsTimeout;
 };
 
-SlotManager::SlotManager()
+SlotManager::SlotManager(dcclite::broker::shell::ln::ThrottleService &throttleService)
 {	
 	//dispatch slot - never use
 	m_arSlots[0].GotoState_Reserved();
 
 	for (int i = 0; i < MAX_SLOTS; ++i)
-		m_arSlots[i].SetId(i);
+		m_arSlots[i].Init(i, throttleService);
 }
 
 std::optional<uint8_t> SlotManager::AcquireLocomotive(const dcclite::broker::DccAddress address, const dcclite::Clock::TimePoint_t ticks)
@@ -882,7 +892,7 @@ bool SlotManager::UnlinkSlots(const uint8_t slaveSlotIndex, const uint8_t master
 }
 
 
-namespace dcclite::broker
+namespace dcclite::broker::shell::ln
 {
 
 	///////////////////////////////////////////////////////////////////////////////
@@ -894,20 +904,20 @@ namespace dcclite::broker
 
 	class MessageDispatcher
 	{
-		public:
-			void Send(const LoconetMessageWriter &msg, SerialPort &port);
+	public:
+		void Send(const LoconetMessageWriter &msg, SerialPort &port);
 
-			void Update(SerialPort &port);
+		void Update(SerialPort &port);
 
-		private:
-			void SendData(const uint8_t *data, const unsigned size, SerialPort &port);
+	private:
+		void SendData(const uint8_t *data, const unsigned size, SerialPort &port);
 
-			void PumpMessages(SerialPort &port);
+		void PumpMessages(SerialPort &port);
 
-		private:
-			SerialPort::DataPacket m_clOutputPacket;
+	private:
+		SerialPort::DataPacket m_clOutputPacket;
 
-			std::deque<LoconetMessageWriter> m_clOutputQueue;
+		std::deque<LoconetMessageWriter> m_clOutputQueue;
 	};
 
 	void MessageDispatcher::Send(const LoconetMessageWriter &msg, SerialPort &port)
@@ -935,7 +945,7 @@ namespace dcclite::broker
 			return;
 
 		if (m_clOutputQueue.empty())
-			return;		
+			return;
 
 		auto msg = m_clOutputQueue.front();
 		m_clOutputQueue.pop_front();
@@ -965,58 +975,59 @@ namespace dcclite::broker
 	//
 	///////////////////////////////////////////////////////////////////////////////
 
-	class LoconetServiceImpl : public LoconetService
+	class LoconetServiceImpl: public dcclite::broker::shell::ln::LoconetService
 	{
-		public:
-			typedef ThrottleService Requirement_t;
+	public:
+		using ThrottleService = dcclite::broker::shell::ln::ThrottleService;
 
-			LoconetServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, ThrottleService &requirement);
-			~LoconetServiceImpl() override;			
+		typedef ThrottleService Requirement_t;
 
-			static std::unique_ptr<Service> Create(RName name, Broker &broker, const rapidjson::Value &params);
+		LoconetServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, ThrottleService &requirement);
+		~LoconetServiceImpl() override;
 
-			void Serialize(JsonOutputStream_t &stream) const override;
+		static std::unique_ptr<Service> Create(RName name, Broker &broker, const rapidjson::Value &params);
 
-		private:
-			void DispatchLnMessage(const LoconetMessageWriter &msg);
-			void DispatchLnLongAckMessage(const Opcodes opcode, const uint8_t responseCode);
+		void Serialize(JsonOutputStream_t &stream) const override;
 
-			void ParseMessage(const uint8_t opcode, MiniPacket_t &payload, const dcclite::Clock::TimePoint_t ticks);
+	private:
+		void DispatchLnMessage(const LoconetMessageWriter &msg);
+		void DispatchLnLongAckMessage(const Opcodes opcode, const uint8_t responseCode);
 
-			void NotifySlotChanged(uint8_t slotIndex);
+		void ParseMessage(const uint8_t opcode, MiniPacket_t &payload, const dcclite::Clock::TimePoint_t ticks);
 
-			void ParseLocomotiveDirf(const uint8_t slot, const uint8_t dirf, const dcclite::Clock::TimePoint_t ticks);
-			void ParseLocomotiveSnd(const uint8_t slot, const uint8_t snd, const dcclite::Clock::TimePoint_t ticks);
+		void NotifySlotChanged(uint8_t slotIndex);
 
-			void ResetPr3();
+		void ParseLocomotiveDirf(const uint8_t slot, const uint8_t dirf, const dcclite::Clock::TimePoint_t ticks);
+		void ParseLocomotiveSnd(const uint8_t slot, const uint8_t snd, const dcclite::Clock::TimePoint_t ticks);
 
-			void Think(const dcclite::Clock::TimePoint_t ticks);
-			void PurgeThink(const dcclite::Clock::TimePoint_t ticks);
+		void ResetPr3();
 
-		private:
-			SlotManager m_clSlotManager;
+		void Think(const dcclite::Clock::TimePoint_t ticks);
+		void PurgeThink(const dcclite::Clock::TimePoint_t ticks);
 
-			SerialPort  m_clSerialPort;		
+	private:
+		SlotManager m_clSlotManager;
 
-			SerialPort::DataPacket m_clInputPacket;			
+		SerialPort  m_clSerialPort;
 
-			MessageDispatcher m_clMessageDispatcher;				
+		SerialPort::DataPacket m_clInputPacket;
 
-			Thinker m_tThinker;
-			Thinker m_tPurgeThinker;
+		MessageDispatcher m_clMessageDispatcher;
 
-			uint8_t m_uErrorCount = 0;
+		Thinker m_tThinker;
+		Thinker m_tPurgeThinker;
+
+		uint8_t m_uErrorCount = 0;
 	};
 
 
 	LoconetServiceImpl::LoconetServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, ThrottleService &requirement):
 		LoconetService(name, broker, params),
-		m_clSerialPort(params["port"].GetString()),
+		m_clSlotManager{ requirement },
+		m_clSerialPort(params["port"].GetString()),		
 		m_tThinker{ {}, THINKER_MF_LAMBDA(Think) },
 		m_tPurgeThinker{ {}, THINKER_MF_LAMBDA(PurgeThink) }
 	{
-		g_pclThrottleService = &requirement;
-
 		dcclite::Log::Info("[LoconetService] Started, listening on port {}", params["port"].GetString());
 
 		this->ResetPr3();
@@ -1102,8 +1113,6 @@ namespace dcclite::broker
 				{
 					payload.ReadByte();	//0x0D
 					payload.ReadByte();	//0x7F
-
-
 				}
 				break;
 
@@ -1454,9 +1463,7 @@ namespace dcclite::broker
 				}				
 			}
 		);
-	}
-
-	static GenericServiceWithDependenciesFactory<LoconetServiceImpl> g_clLoconetServiceFactory;
+	}	
 
 	//
 	//
@@ -1468,7 +1475,7 @@ namespace dcclite::broker
 
 	void LoconetService::RegisterFactory()
 	{
-		//empty
+		static GenericServiceWithDependenciesFactory<LoconetServiceImpl> g_clLoconetServiceFactory;
 	}
 
 	LoconetService::LoconetService(RName name, Broker &broker, const rapidjson::Value &params) :

@@ -1,4 +1,8 @@
 
+file(GLOB_RECURSE SRC_SHELL_LN
+    "shell/ln/*.cpp"
+    "shell/ln/*.h"
+)
 
 file(GLOB_RECURSE SRC_SHELL_SCRIPT
     "shell/script/*.cpp"
@@ -11,20 +15,26 @@ file(GLOB_RECURSE SRC_SHELL_DISPATCHER
 )
 
 add_library(
-    BrokerShellLib	     	   	             
+    BrokerShellLib	   	             
 		shell/dispatcher/DispatcherService.cpp
         shell/dispatcher/DispatcherService.h
 		shell/dispatcher/DispatcherService_detail.h
+		shell/ln/ILoconetSlot.h
+        shell/ln/LoconetService.cpp
+        shell/ln/LoconetService.h
+        shell/ln/ThrottleService.cpp
+        shell/ln/ThrottleService.h
 		shell/script/Proxies.cpp
 		shell/script/Proxies.h
 		shell/script/ScriptService.cpp
 	    shell/script/ScriptService.h        
 )
 
-source_group("shell/dispatcher"   	FILES ${SRC_SHELL_DISPATCHER})
-source_group("shell/script"        	FILES ${SRC_SHELL_SCRIPT})
+source_group("dispatcher"   	FILES ${SRC_SHELL_DISPATCHER})
+source_group("ln"				FILES ${SRC_SHELL_LN})
+source_group("script"        	FILES ${SRC_SHELL_SCRIPT})
 
-if(WIN32)	
+if(WIN32)
     target_link_libraries(BrokerShellLib        
         PRIVATE Common
         PRIVATE fmt

@@ -13,10 +13,9 @@
 
 #include <dcclite_shared/BitPack.h>
 
-#include "../dcc/DccAddress.h"
+#include "dcc/DccAddress.h"
 
-
-namespace dcclite::broker
+namespace dcclite::broker::shell::ln
 {
 	typedef dcclite::BitPack<32> LoconetSlotFunctions_t;
 

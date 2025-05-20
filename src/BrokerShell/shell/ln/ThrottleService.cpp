@@ -22,9 +22,9 @@
 #include <dcclite/Log.h>
 #include <dcclite/NetMessenger.h>
 
-#include "../sys/ServiceFactory.h"
-#include "../sys/Thinker.h"
-#include "../sys/Timeouts.h"
+#include "sys/ServiceFactory.h"
+#include "sys/Thinker.h"
+#include "sys/Timeouts.h"
 
 #include "ILoconetSlot.h"
 
@@ -34,12 +34,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+using ILoconetSlot = dcclite::broker::shell::ln::ILoconetSlot;
 
-class Throttle: public dcclite::Object, public dcclite::broker::IThrottle
+
+class Throttle: public dcclite::Object, public dcclite::broker::shell::ln::IThrottle
 {
 	public:
 #if 1
-		Throttle(const dcclite::NetworkAddress &serverAddress, const dcclite::broker::ILoconetSlot &owner) :
+		Throttle(const dcclite::NetworkAddress &serverAddress, const ILoconetSlot &owner) :
 			Object(dcclite::RName{ fmt::format("slot[{}][{}]", owner.GetId(), owner.GetLocomotiveAddress().GetAddress()) }),			
 			m_vState{ ConnectState {serverAddress} },
 			m_clServerAddress{ serverAddress },
@@ -89,14 +91,14 @@ class Throttle: public dcclite::Object, public dcclite::broker::IThrottle
 			m_pclConnectedState->OnEmergencyStop();
 		}
 
-		void AddSlave(const dcclite::broker::ILoconetSlot &slot) override
-		{
+		void AddSlave(const ILoconetSlot &slot) override
+		{			
 			if (slot.GetLocomotiveAddress() == m_rclOwnerSlot.GetLocomotiveAddress())
 			{
 				throw std::invalid_argument(fmt::format("[Throttle::AddSlave] Loco {} is the throttle owner", m_rclOwnerSlot.GetLocomotiveAddress()));
 			}
 
-			auto it = std::find_if(m_vecSlaves.begin(), m_vecSlaves.end(), [&slot](const dcclite::broker::ILoconetSlot *item) { return slot.GetLocomotiveAddress() == item->GetLocomotiveAddress(); });
+			auto it = std::find_if(m_vecSlaves.begin(), m_vecSlaves.end(), [&slot](const ILoconetSlot *item) { return slot.GetLocomotiveAddress() == item->GetLocomotiveAddress(); });
 			if (it != m_vecSlaves.end())
 			{
 				throw std::invalid_argument(fmt::format("[Throttle::AddSlave] Loco {} is already on slaves list", slot.GetLocomotiveAddress()));
@@ -109,7 +111,7 @@ class Throttle: public dcclite::Object, public dcclite::broker::IThrottle
 			m_pclConnectedState->OnAddSlave(slot);
 		}
 
-		void RemoveSlave(const dcclite::broker::ILoconetSlot &slot) override
+		void RemoveSlave(const ILoconetSlot &slot) override
 		{
 			if (slot.GetLocomotiveAddress() == m_rclOwnerSlot.GetLocomotiveAddress())
 			{
@@ -119,7 +121,7 @@ class Throttle: public dcclite::Object, public dcclite::broker::IThrottle
 			auto removedIt = std::remove_if(
 				m_vecSlaves.begin(),
 				m_vecSlaves.end(),
-				[&slot](const dcclite::broker::ILoconetSlot *item) { return slot.GetLocomotiveAddress() == item->GetLocomotiveAddress(); }
+				[&slot](const ILoconetSlot *item) { return slot.GetLocomotiveAddress() == item->GetLocomotiveAddress(); }
 			);
 
 			if (removedIt == m_vecSlaves.end())
@@ -536,7 +538,7 @@ class Throttle: public dcclite::Object, public dcclite::broker::IThrottle
 				}
 
 
-				void OnFunctionChange(uint8_t beginIndex, uint8_t endIndex, const dcclite::broker::LoconetSlotFunctions_t &functions)
+				void OnFunctionChange(uint8_t beginIndex, uint8_t endIndex, const dcclite::broker::shell::ln::LoconetSlotFunctions_t &functions)
 				{
 					for (; beginIndex != endIndex; ++beginIndex)
 					{
@@ -582,29 +584,29 @@ class Throttle: public dcclite::Object, public dcclite::broker::IThrottle
 					
 				}
 
-				void OnAddSlave(const dcclite::broker::ILoconetSlot &slot)
+				void OnAddSlave(const ILoconetSlot &slot)
 				{
 					this->RegisterLocomotive(slot);
 				}
 
-				void OnRemoveSlave(const dcclite::broker::ILoconetSlot &slot)
+				void OnRemoveSlave(const ILoconetSlot &slot)
 				{
 					this->UnregisterLocomotive(slot);
 				}
 
 			private:
-				static std::string MakeLocoId(const dcclite::broker::ILoconetSlot &slot)
+				static std::string MakeLocoId(const ILoconetSlot &slot)
 				{
 					auto locoAddress = slot.GetLocomotiveAddress().GetAddress();
 					return fmt::format("{}{}", locoAddress < 128 ? 'S' : 'L', locoAddress);
 				}
 
-				void RegisterLocomotive(const dcclite::broker::ILoconetSlot &slot)
+				void RegisterLocomotive(const ILoconetSlot &slot)
 				{				
 					m_clMessenger.Send(fmt::format("MT+{0}<;>{0}", MakeLocoId(slot)));
 				}
 
-				void UnregisterLocomotive(const dcclite::broker::ILoconetSlot &slot)
+				void UnregisterLocomotive(const ILoconetSlot &slot)
 				{
 					m_clMessenger.Send(fmt::format("MT-{}<;>r", MakeLocoId(slot)));
 				}
@@ -618,7 +620,7 @@ class Throttle: public dcclite::Object, public dcclite::broker::IThrottle
 				}
 
 			private:
-				dcclite::broker::LoconetSlotFunctions_t m_tPreviousFunctions;
+				dcclite::broker::shell::ln::LoconetSlotFunctions_t m_tPreviousFunctions;
 		};
 
 		std::variant< ConnectState, HandShakeState, ConfiguringThrottleIdState, ConnectedState, ErrorState> m_vState;
@@ -627,13 +629,13 @@ class Throttle: public dcclite::Object, public dcclite::broker::IThrottle
 
 		const dcclite::NetworkAddress			m_clServerAddress;
 		
-		const dcclite::broker::ILoconetSlot		&m_rclOwnerSlot;		
+		const ILoconetSlot						&m_rclOwnerSlot;		
 
-		std::vector<const dcclite::broker::ILoconetSlot *> m_vecSlaves;
+		std::vector<const ILoconetSlot *> m_vecSlaves;
 };
 
 
-namespace dcclite::broker
+namespace dcclite::broker::shell::ln
 {
 	///////////////////////////////////////////////////////////////////////////////
 	//

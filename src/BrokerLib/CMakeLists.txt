@@ -71,12 +71,7 @@ add_library(
 		dcc/VirtualSensorDecoder.cpp
 		dcc/VirtualSensorDecoder.h
 		dcc/VirtualTurnoutDecoder.cpp
-		dcc/VirtualTurnoutDecoder.h        
-		ln/ILoconetSlot.h
-        ln/LoconetService.cpp
-        ln/LoconetService.h
-        ln/ThrottleService.cpp
-        ln/ThrottleService.h		
+		dcc/VirtualTurnoutDecoder.h		
         sys/BonjourService.cpp
         sys/BonjourService.h        
         sys/Broker.cpp        

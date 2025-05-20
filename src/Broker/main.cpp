@@ -24,8 +24,8 @@
 #include "shell/dispatcher/DispatcherService.h"
 #include "shell/script/ScriptService.h"
 
-#include "ln/LoconetService.h"
-#include "ln/ThrottleService.h"
+#include "shell/ln/LoconetService.h"
+#include "shell/ln/ThrottleService.h"
 
 #include "terminal/CmdHostService.h"
 #include "terminal/TerminalService.h"
@@ -94,12 +94,14 @@ static void InitServicesFactories()
 	BonjourService::RegisterFactory();
 	DccLiteService::RegisterFactory();
 	DccppService::RegisterFactory();
+
 	shell::dispatcher::DispatcherService::RegisterFactory();
-	shell::script::ScriptService::RegisterFactory();
-	LoconetService::RegisterFactory();
+	shell::ln::LoconetService::RegisterFactory();
+	shell::ln::ThrottleService::RegisterFactory();
+	shell::script::ScriptService::RegisterFactory();	
+
 	CmdHostService::RegisterFactory();
-	TerminalService::RegisterFactory();
-	ThrottleService::RegisterFactory();
+	TerminalService::RegisterFactory();	
 }
 
 int main(int argc, char **argv)

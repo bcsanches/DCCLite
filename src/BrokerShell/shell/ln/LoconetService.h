@@ -13,11 +13,11 @@
 
 #include <dcclite_shared/BitPack.h>
 
-#include "../sys/Service.h"
+#include "sys/Service.h"
 
 #include "ILoconetSlot.h"
 
-namespace dcclite::broker
+namespace dcclite::broker::shell::ln
 { 
 	class LoconetService: public Service
 	{	
