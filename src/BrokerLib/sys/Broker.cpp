@@ -325,5 +325,13 @@ namespace dcclite::broker
 	{
 		return static_cast<Service *>(this->TryGetChild(name));
 	}
+
+	IObject *Broker::AddChild(std::unique_ptr<Object> obj)
+	{
+		if (dynamic_cast<Service *>(obj.get()) == nullptr)
+			throw std::runtime_error(fmt::format("[Broker::AddChild] Only services are acceptable, not {} - {}", obj->GetTypeName(), obj->GetName()));
+
+		return FolderObject::AddChild(std::move(obj));
+	}
 }
 

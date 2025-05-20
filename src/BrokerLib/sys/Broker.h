@@ -53,7 +53,9 @@ namespace dcclite::broker
 			Service &ResolveRequirement(std::string_view requirement);
 
 			void SignalExecutiveChangeStart();
-			void SignalExecutiveChangeEnd();		
+			void SignalExecutiveChangeEnd();	
+
+			IObject *AddChild(std::unique_ptr<Object> obj) override;
 
 		private:
 			void LoadConfig();
