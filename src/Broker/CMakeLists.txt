@@ -26,7 +26,7 @@ if(WIN32)
 else(WIN32)
 
 	target_link_libraries(Broker         
-		BrokerLib
+		PRIVATE BrokerLib
 		PRIVATE BrokerShellLib
 	)
 
