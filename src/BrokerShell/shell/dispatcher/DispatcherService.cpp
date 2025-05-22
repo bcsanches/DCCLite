@@ -19,10 +19,10 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/JsonUtils.h>
 
-#include "dcc/DccLiteService.h"
-#include "dcc/Device.h"
-#include "dcc/IResettableObject.h"
-#include "dcc/VirtualSensorDecoder.h"
+#include "exec/dcc/DccLiteService.h"
+#include "exec/dcc/Device.h"
+#include "exec/dcc/IResettableObject.h"
+#include "exec/dcc/VirtualSensorDecoder.h"
 
 #include "sys/Broker.h"
 #include "sys/ServiceFactory.h"
@@ -32,7 +32,7 @@ namespace dcclite::broker::shell::dispatcher
 	class BaseSectionWrapper: public Object, public IResettableObject
 	{
 		public:
-			BaseSectionWrapper(RName name, sol::table obj, VirtualSensorDecoder &sensor):
+			BaseSectionWrapper(RName name, sol::table obj, exec::dcc::VirtualSensorDecoder &sensor):
 				Object(name),
 				m_clObject{ obj },
 				m_rclSensor{ sensor }
@@ -66,14 +66,14 @@ namespace dcclite::broker::shell::dispatcher
 			}
 
 		protected:
-			sol::table				m_clObject;
-			VirtualSensorDecoder	&m_rclSensor;
+			sol::table						m_clObject;
+			exec::dcc::VirtualSensorDecoder	&m_rclSensor;
 	};
 
 	class SectionWrapper: public BaseSectionWrapper
 	{
 		public:
-			SectionWrapper(RName name, sol::table obj, VirtualSensorDecoder &sensor):
+			SectionWrapper(RName name, sol::table obj, exec::dcc::VirtualSensorDecoder &sensor):
 				BaseSectionWrapper(name, obj, sensor)
 			{
 				//empty
@@ -88,7 +88,7 @@ namespace dcclite::broker::shell::dispatcher
 	class TSectionWrapper: public BaseSectionWrapper
 	{
 		public:
-			TSectionWrapper(RName name, sol::table obj, VirtualSensorDecoder &sensor):
+			TSectionWrapper(RName name, sol::table obj, exec::dcc::VirtualSensorDecoder &sensor):
 				BaseSectionWrapper(name, obj, sensor)
 			{
 				//empty
@@ -118,9 +118,9 @@ namespace dcclite::broker::shell::dispatcher
 		friend class DispatcherServiceScripter;
 
 		public:
-			typedef DccLiteService Requirement_t;
+			typedef exec::dcc::DccLiteService Requirement_t;
 
-			DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, DccLiteService &dep);
+			DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, exec::dcc::DccLiteService &dep);
 			~DispatcherServiceImpl() override;
 
 			void Serialize(JsonOutputStream_t &stream) const override;			
@@ -135,7 +135,7 @@ namespace dcclite::broker::shell::dispatcher
 
 			void Panic(sol::table src, const char *reason);
 
-			VirtualSensorDecoder &CreateSectionSensor(sol::table obj);
+			exec::dcc::VirtualSensorDecoder &CreateSectionSensor(sol::table obj);
 
 			void OnVMFinalize();
 
@@ -143,13 +143,13 @@ namespace dcclite::broker::shell::dispatcher
 			sigslot::scoped_connection m_slotScriptVMInit;
 			sigslot::scoped_connection m_slotScriptVMFinalize;
 
-			DccLiteService &m_rclDccLite;
+			exec::dcc::DccLiteService &m_rclDccLite;
 
 			FolderObject *m_pSections;
-			Device *m_pclDevice = nullptr;
+			exec::dcc::Device *m_pclDevice = nullptr;
 	};
 
-	DispatcherServiceImpl::DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, DccLiteService &dep):
+	DispatcherServiceImpl::DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, exec::dcc::DccLiteService &dep):
 		DispatcherServiceScripter(name, broker, params),
 		m_rclDccLite{ dep },
 		m_pSections{ static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{"sections"}))) }
@@ -232,7 +232,7 @@ namespace dcclite::broker::shell::dispatcher
 		dcclite::Log::Error("[DispatcherService::Panic] Fatal error on section [{}]: {}", section->GetName(), reason);
 	}
 
-	VirtualSensorDecoder &DispatcherServiceImpl::CreateSectionSensor(sol::table obj)
+	exec::dcc::VirtualSensorDecoder &DispatcherServiceImpl::CreateSectionSensor(sol::table obj)
 	{
 		rapidjson::Document json;
 
@@ -246,7 +246,7 @@ namespace dcclite::broker::shell::dispatcher
 		if (auto decoder = this->m_rclDccLite.TryFindDecoder(rname))
 		{
 			//Ok, use it... but make sure it is the correct type
-			auto vdecoder = dynamic_cast<VirtualSensorDecoder *>(decoder);
+			auto vdecoder = dynamic_cast<exec::dcc::VirtualSensorDecoder *>(decoder);
 			if(!vdecoder)
 				throw std::invalid_argument(fmt::format("[DispatcherServiceImpl::CreateSectionSensor] Decoder {} is not an virtual sensor, cannot continue. Check names!!!", name));
 
@@ -259,9 +259,14 @@ namespace dcclite::broker::shell::dispatcher
 
 		//
 		//no decoder, so create a new one
-		auto &decoder = m_pclDevice->CreateInternalDecoder(VIRTUAL_SENSOR_DECODER_CLASSNAME, DccAddress{ static_cast<uint16_t>(address) }, rname, params);
+		auto &decoder = m_pclDevice->CreateInternalDecoder(
+			exec::dcc::VIRTUAL_SENSOR_DECODER_CLASSNAME, 
+			exec::dcc::Address{ static_cast<uint16_t>(address) }, 
+			rname, 
+			params
+		);
 
-		return static_cast<VirtualSensorDecoder &>(decoder);
+		return static_cast<exec::dcc::VirtualSensorDecoder &>(decoder);
 	}
 
 	void DispatcherServiceImpl::OnVMFinalize()

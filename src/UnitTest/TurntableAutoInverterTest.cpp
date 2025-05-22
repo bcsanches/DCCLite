@@ -5,15 +5,15 @@
 #include <dcclite_shared/Packet.h>
 
 #include "BrokerMockups.h"
-#include "dcc/SensorDecoder.h"
-#include "dcc/TurntableAutoInverterDecoder.h"
+#include "exec/dcc/SensorDecoder.h"
+#include "exec/dcc/TurntableAutoInverterDecoder.h"
 
 using namespace rapidjson;
 
 static DecoderServicesMockup g_DecoderServices;
 static DeviceDecoderServicesMockup g_DeviceDecoderServices;
 
-using namespace dcclite::broker;
+using namespace dcclite::broker::exec::dcc;
 
 TEST(TurntableAutoInverterDecoderTest, Basic)
 {
@@ -48,7 +48,7 @@ TEST(TurntableAutoInverterDecoderTest, Basic)
 
 	auto ar = d.GetArray();
 
-	TurntableAutoInverterDecoder decoder{ DccAddress{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, ar[2]};
+	TurntableAutoInverterDecoder decoder{ Address{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, ar[2]};
 
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER, decoder.GetType());
 
@@ -58,7 +58,7 @@ TEST(TurntableAutoInverterDecoderTest, Basic)
 
 	packet.Reset();
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER, static_cast<dcclite::DecoderTypes>(packet.Read<uint8_t>()));
-	ASSERT_EQ(DccAddress{ 128 }, DccAddress{ packet });
+	ASSERT_EQ(Address{ 128 }, Address{ packet });
 	ASSERT_EQ(0, packet.Read<uint8_t>());												//reserved - always zero
 	ASSERT_EQ(TURNTABLE_AUTO_INVERTER_DEFAULT_FLIP_INTERVAL, packet.Read<uint8_t>());
 	ASSERT_EQ(0, packet.Read<uint8_t>());	//sensorA Index
@@ -68,8 +68,8 @@ TEST(TurntableAutoInverterDecoderTest, Basic)
 
 	//
 	//Instantiate sensors	
-	SensorDecoder a0{ DccAddress{128}, dcclite::RName{"HLX_DTC00"}, g_DecoderServices, g_DeviceDecoderServices, ar[0] };
-	SensorDecoder a1{ DccAddress{129}, dcclite::RName{"HLX_DTC01"}, g_DecoderServices, g_DeviceDecoderServices, ar[1] };
+	SensorDecoder a0{ Address{128}, dcclite::RName{"HLX_DTC00"}, g_DecoderServices, g_DeviceDecoderServices, ar[0] };
+	SensorDecoder a1{ Address{129}, dcclite::RName{"HLX_DTC01"}, g_DecoderServices, g_DeviceDecoderServices, ar[1] };
 
 	//not necessary to register, but we do to make sure a0 and a1 does not use index 0, to make sure the decoder retrieved the index
 	g_DeviceDecoderServices.RegisterDecoder(decoder);
@@ -86,7 +86,7 @@ TEST(TurntableAutoInverterDecoderTest, Basic)
 
 	packet.Reset();
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER, static_cast<dcclite::DecoderTypes>(packet.Read<uint8_t>()));
-	ASSERT_EQ(DccAddress{ 128 }, DccAddress{ packet });
+	ASSERT_EQ(Address{ 128 }, Address{ packet });
 	ASSERT_EQ(0, packet.Read<uint8_t>());												//reserved - always zero
 	ASSERT_EQ(TURNTABLE_AUTO_INVERTER_DEFAULT_FLIP_INTERVAL, packet.Read<uint8_t>());
 	ASSERT_EQ(1, packet.Read<uint8_t>());	//sensorA Index
@@ -113,7 +113,7 @@ TEST(TurntableAutoInverterDecoderTest, CustomFlipInterval)
 	Document d;
 	d.Parse(json);	
 
-	TurntableAutoInverterDecoder decoder{ DccAddress{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
+	TurntableAutoInverterDecoder decoder{ Address{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
 
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER, decoder.GetType());
 
@@ -123,7 +123,7 @@ TEST(TurntableAutoInverterDecoderTest, CustomFlipInterval)
 
 	packet.Reset();
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER, static_cast<dcclite::DecoderTypes>(packet.Read<uint8_t>()));
-	ASSERT_EQ(DccAddress{ 128 }, DccAddress{ packet });
+	ASSERT_EQ(Address{ 128 }, Address{ packet });
 	ASSERT_EQ(0, packet.Read<uint8_t>());												//reserved - always zero
 	ASSERT_EQ(20, packet.Read<uint8_t>());
 	ASSERT_EQ(0, packet.Read<uint8_t>());	//sensorA Index
@@ -150,5 +150,5 @@ TEST(TurntableAutoInverterDecoderTest, DuplicatedSensorName)
 	Document d;
 	d.Parse(json);	
 
-	ASSERT_THROW(TurntableAutoInverterDecoder( DccAddress { 128 }, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d ), std::invalid_argument);
+	ASSERT_THROW(TurntableAutoInverterDecoder( Address { 128 }, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d ), std::invalid_argument);
 }

@@ -17,6 +17,7 @@ if(${DCCLITE_MSVC})
 endif()
 
 add_subdirectory(Broker)
+add_subdirectory(BrokerExec)
 add_subdirectory(BrokerLib)
 add_subdirectory(BrokerShell)
 add_subdirectory(Common)

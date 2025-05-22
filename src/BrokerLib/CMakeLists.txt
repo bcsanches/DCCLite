@@ -1,72 +1,11 @@
-file(GLOB_RECURSE SRC_DCC
-    "dcc/*.cpp"
-    "dcc/*.h"
-)
 
 file(GLOB_RECURSE SRC_SYS
     "sys/*.cpp"
     "sys/*.h"
 )
 
-file(GLOB_RECURSE SRC_TERMINAL
-    "terminal/*.cpp"
-    "terminal/*.h"
-)
-
-file(GLOB_RECURSE SRC_SHELL_DISPATCHER
-    "shell/dispatcher/*.cpp"
-    "shell/dispatcher/*.h"
-)
-
 add_library(
-    BrokerLib	     	   	     
-        dcc/DccAddress.cpp
-        dcc/DccAddress.h
-        dcc/DccLiteService.cpp        
-        dcc/DccLiteService.h  
-        dcc/DccppService.cpp
-        dcc/DccppService.h
-        dcc/Decoder.cpp
-        dcc/Decoder.h
-        dcc/Device.cpp
-        dcc/Device.h      
-        dcc/IDccLiteService.h  
-        dcc/IDevice.h
-        dcc/IResettableObject.h
-        dcc/LocationManager.cpp
-        dcc/LocationManager.h
-        dcc/NetworkDevice.cpp
-        dcc/NetworkDevice.h
-        dcc/NetworkDeviceTasks.cpp
-        dcc/NetworkDeviceTasks.h
-        dcc/OutputDecoder.cpp
-        dcc/OutputDecoder.h
-        dcc/PinManager.cpp
-        dcc/PinManager.h
-        dcc/QuadInverter.cpp
-        dcc/QuadInverter.h
-        dcc/RemoteDecoder.cpp
-        dcc/RemoteDecoder.h
-        dcc/StateDecoder.cpp
-        dcc/StateDecoder.h
-        dcc/SensorDecoder.cpp
-        dcc/SensorDecoder.h
-        dcc/SignalDecoder.cpp
-        dcc/SignalDecoder.h
-        dcc/SimpleOutputDecoder.cpp
-        dcc/SimpleOutputDecoder.h
-		dcc/StorageManager.cpp
-		dcc/StorageManager.h        
-        dcc/TurnoutDecoder.cpp
-        dcc/TurnoutDecoder.h 
-        dcc/TurntableAutoInverterDecoder.cpp
-        dcc/TurntableAutoInverterDecoder.h       
-        dcc/VirtualDevice.cpp
-        dcc/VirtualDevice.h
-		dcc/VirtualSensorDecoder.cpp
-		dcc/VirtualSensorDecoder.h
-		dcc/VirtualTurnoutDecoder.cpp
-		dcc/VirtualTurnoutDecoder.h		
+    BrokerLib        	
         sys/BonjourService.cpp
         sys/BonjourService.h        
         sys/Broker.cpp        
@@ -90,10 +29,7 @@ add_library(
         sys/ZeroConfSystem.h
 )
 
-source_group("dcc"          		FILES ${SRC_DCC})
-source_group("ln"           		FILES ${SRC_LN})
 source_group("sys"          		FILES ${SRC_SYS})
-source_group("terminal"     		FILES ${SRC_TERMINAL})
 
 if(WIN32)	
     target_link_libraries(BrokerLib         

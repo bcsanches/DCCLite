@@ -18,8 +18,8 @@
 #include <dcclite/Log.h>
 #include <dcclite/PathUtils.h>
 
-#include "dcc/DccLiteService.h"
-#include "dcc/DccppService.h"
+#include "exec/dcc/DccLiteService.h"
+#include "exec/dcc/DccppService.h"
 
 #include "shell/dispatcher/DispatcherService.h"
 #include "shell/script/ScriptService.h"
@@ -92,8 +92,9 @@ static void InitServicesFactories()
 	//just touch all to register the factories
 	//static lib does initialize static variables without this... hack??
 	BonjourService::RegisterFactory();
-	DccLiteService::RegisterFactory();
-	DccppService::RegisterFactory();
+
+	exec::dcc::DccLiteService::RegisterFactory();
+	exec::dcc::DccppService::RegisterFactory();
 
 	shell::dispatcher::DispatcherService::RegisterFactory();
 

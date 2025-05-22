@@ -60,13 +60,14 @@ package_add_test(UnitTest
 )
 
 target_include_directories(UnitTest PRIVATE
-	${DCCLite_SOURCE_DIR}/src/BrokerLib 
+	${DCCLite_SOURCE_DIR}/src/BrokerLib
+	${DCCLite_SOURCE_DIR}/src/BrokerExec
 	${DCCLite_SOURCE_DIR}/src/Common
 	${DCCLite_SOURCE_DIR}/src/LiteDecoder/src     
 	${GTEST_INCLUDE_DIRS}
 	${GMOCK_INCLUDE_DIRS})  
 
-target_link_libraries(UnitTest BrokerLib Common SharedLib LiteDecoderLib gtest gtest_main gmock)
+target_link_libraries(UnitTest BrokerLib BrokerExecLib Common SharedLib LiteDecoderLib gtest gtest_main gmock)
 
 
 #target_include_directories(MainTest PRIVATE ${PROJECT_SOURCE_DIR}/include/)

@@ -6,7 +6,7 @@
 
 #include <dcclite/Log.h>
 
-#include "dcc/SignalDecoder.h"
+#include "exec/dcc/SignalDecoder.h"
 
 
 using testing::HasSubstr;
@@ -18,11 +18,11 @@ using namespace rapidjson;
 static DecoderServicesMockup g_DecoderServices;
 static DeviceDecoderServicesMockup g_DeviceDecoderServices;
 
-using namespace dcclite::broker;
+using namespace dcclite::broker::exec::dcc;
 
 std::unique_ptr<SignalDecoder> CreateSignal(const char *json)
 {
-	DccAddress					address{ 1024 };
+	Address					address{ 1024 };
 	
 	Document d;
 	d.Parse(json);

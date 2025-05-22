@@ -17,7 +17,7 @@
 #include <dcclite/Log.h>
 #include <dcclite/Util.h>
 
-#include "dcc/NetworkDeviceTasks.h"
+#include "exec/dcc/NetworkDeviceTasks.h"
 #include "sys/Broker.h"
 
 #include "CmdHostService.h"
@@ -31,12 +31,12 @@ namespace dcclite::broker::shell::terminal
 	//
 	/////////////////////////////////////////////////////////////////////////////
 
-	void TaskManager::AddTask(std::shared_ptr<NetworkTask> task)
+	void TaskManager::AddTask(std::shared_ptr<exec::dcc::NetworkTask> task)
 	{
 		m_mapNetworkTasks.insert(std::make_pair(task->GetTaskId(), task));
 	}
 
-	NetworkTask *TaskManager::TryFindTask(uint32_t taskId) const noexcept
+	exec::dcc::NetworkTask *TaskManager::TryFindTask(uint32_t taskId) const noexcept
 	{
 		auto it = m_mapNetworkTasks.find(taskId);
 

@@ -18,7 +18,7 @@
 #include "TerminalClient.h"
 #include "TerminalUtils.h"
 
-#include "dcc/NetworkDevice.h"
+#include "exec/dcc/NetworkDevice.h"
 
 namespace dcclite::broker::shell::terminal
 {	
@@ -72,7 +72,7 @@ namespace dcclite::broker::shell::terminal
 
 		auto task = detail::GetValidTask(context, this->GetName(), id, paramsIt->value[0]);
 
-		auto netTestTask = dynamic_cast<INetworkDeviceTestTask *>(task);
+		auto netTestTask = dynamic_cast<exec::dcc::INetworkDeviceTestTask *>(task);
 		if (!netTestTask)
 		{
 			throw TerminalCmdException(fmt::format("Task id {} is not a valid NetworkTestTask", paramsIt->value[0].GetInt()), id);

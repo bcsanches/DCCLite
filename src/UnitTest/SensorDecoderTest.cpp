@@ -5,14 +5,14 @@
 #include <dcclite_shared/Packet.h>
 
 #include "BrokerMockups.h"
-#include "dcc/SensorDecoder.h"
+#include "exec/dcc/SensorDecoder.h"
 
 using namespace rapidjson;
 
 static DecoderServicesMockup g_DecoderServices;
 static DeviceDecoderServicesMockup g_DeviceDecoderServices;
 
-using namespace dcclite::broker;
+using namespace dcclite::broker::exec::dcc;
 
 TEST(SensorDecoderTest, Basic)
 {
@@ -34,7 +34,7 @@ TEST(SensorDecoderTest, Basic)
 	Document d;
 	d.Parse(json);
 
-	SensorDecoder sensor{ DccAddress{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
+	SensorDecoder sensor{ Address{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
 
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_SENSOR, sensor.GetType());
 
@@ -44,7 +44,7 @@ TEST(SensorDecoderTest, Basic)
 
 	packet.Reset();
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_SENSOR, static_cast<dcclite::DecoderTypes>(packet.Read<uint8_t>()));
-	ASSERT_EQ(DccAddress{ 128 }, DccAddress{ packet });
+	ASSERT_EQ(Address{ 128 }, Address{ packet });
 	ASSERT_EQ(63, packet.Read< dcclite::PinType_t>());
 
 	auto flags = packet.Read<uint8_t>();
@@ -77,7 +77,7 @@ TEST(SensorDecoderTest, PullUpFlag)
 	Document d;
 	d.Parse(json);
 
-	SensorDecoder sensor{ DccAddress{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
+	SensorDecoder sensor{ Address{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
 
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_SENSOR, sensor.GetType());
 
@@ -87,7 +87,7 @@ TEST(SensorDecoderTest, PullUpFlag)
 
 	packet.Reset();
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_SENSOR, static_cast<dcclite::DecoderTypes>(packet.Read<uint8_t>()));
-	ASSERT_EQ(DccAddress{ 128 }, DccAddress{ packet });
+	ASSERT_EQ(Address{ 128 }, Address{ packet });
 	ASSERT_EQ(63, packet.Read< dcclite::PinType_t>());
 
 	auto flags = packet.Read<uint8_t>();
@@ -120,7 +120,7 @@ TEST(SensorDecoderTest, PullUpAndInvertedFlag)
 	Document d;
 	d.Parse(json);
 
-	SensorDecoder sensor{ DccAddress{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
+	SensorDecoder sensor{ Address{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
 
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_SENSOR, sensor.GetType());
 
@@ -130,7 +130,7 @@ TEST(SensorDecoderTest, PullUpAndInvertedFlag)
 
 	packet.Reset();
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_SENSOR, static_cast<dcclite::DecoderTypes>(packet.Read<uint8_t>()));
-	ASSERT_EQ(DccAddress{ 128 }, DccAddress{ packet });
+	ASSERT_EQ(Address{ 128 }, Address{ packet });
 	ASSERT_EQ(63, packet.Read< dcclite::PinType_t>());
 
 	auto flags = packet.Read<uint8_t>();
@@ -163,7 +163,7 @@ TEST(SensorDecoderTest, ActivateDelay)
 	Document d;
 	d.Parse(json);
 
-	SensorDecoder sensor{ DccAddress{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
+	SensorDecoder sensor{ Address{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
 
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_SENSOR, sensor.GetType());
 
@@ -173,7 +173,7 @@ TEST(SensorDecoderTest, ActivateDelay)
 
 	packet.Reset();
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_SENSOR, static_cast<dcclite::DecoderTypes>(packet.Read<uint8_t>()));
-	ASSERT_EQ(DccAddress{ 128 }, DccAddress{ packet });
+	ASSERT_EQ(Address{ 128 }, Address{ packet });
 	ASSERT_EQ(63, packet.Read< dcclite::PinType_t>());
 
 	auto flags = packet.Read<uint8_t>();
@@ -206,7 +206,7 @@ TEST(SensorDecoderTest, DeactivateDelay)
 	Document d;
 	d.Parse(json);
 
-	SensorDecoder sensor{ DccAddress{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
+	SensorDecoder sensor{ Address{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
 
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_SENSOR, sensor.GetType());
 
@@ -216,7 +216,7 @@ TEST(SensorDecoderTest, DeactivateDelay)
 
 	packet.Reset();
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_SENSOR, static_cast<dcclite::DecoderTypes>(packet.Read<uint8_t>()));
-	ASSERT_EQ(DccAddress{ 128 }, DccAddress{ packet });
+	ASSERT_EQ(Address{ 128 }, Address{ packet });
 	ASSERT_EQ(63, packet.Read< dcclite::PinType_t>());
 
 	auto flags = packet.Read<uint8_t>();
@@ -249,7 +249,7 @@ TEST(SensorDecoderTest, DelayMs)
 	Document d;
 	d.Parse(json);
 
-	SensorDecoder sensor{ DccAddress{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
+	SensorDecoder sensor{ Address{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
 
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_SENSOR, sensor.GetType());
 
@@ -259,7 +259,7 @@ TEST(SensorDecoderTest, DelayMs)
 
 	packet.Reset();
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_SENSOR, static_cast<dcclite::DecoderTypes>(packet.Read<uint8_t>()));
-	ASSERT_EQ(DccAddress{ 128 }, DccAddress{ packet });
+	ASSERT_EQ(Address{ 128 }, Address{ packet });
 	ASSERT_EQ(63, packet.Read< dcclite::PinType_t>());
 
 	auto flags = packet.Read<uint8_t>();

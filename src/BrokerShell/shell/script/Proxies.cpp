@@ -17,12 +17,12 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Log.h>
 
-#include "dcc/DccLiteService.h"
-#include "dcc/Decoder.h"
-#include "dcc/OutputDecoder.h"
-#include "dcc/StateDecoder.h"
+#include "exec/dcc/DccLiteService.h"
+#include "exec/dcc/Decoder.h"
+#include "exec/dcc/OutputDecoder.h"
+#include "exec/dcc/StateDecoder.h"
 
-#include "dcc/SignalDecoder.h"
+#include "exec/dcc/SignalDecoder.h"
 
 #include "../dispatcher/DispatcherService_detail.h"
 
@@ -44,7 +44,7 @@ using Dispatcher = dcclite::broker::shell::dispatcher::detail::DispatcherService
 class DecoderProxy
 {
 	public:
-		DecoderProxy(dcclite::broker::Decoder &decoder):
+		DecoderProxy(dcclite::broker::exec::dcc::Decoder &decoder):
 			m_rclDecoder{ decoder }
 		{
 			dcclite::Log::Trace("[ScriptService] [DecoderProxy] [{}]: Created.", decoder.GetName());
@@ -67,14 +67,14 @@ class DecoderProxy
 
 		inline bool IsActive() const
 		{
-			auto turnout = DynamicDecoderCast<dcclite::broker::StateDecoder>();
+			auto turnout = DynamicDecoderCast<dcclite::broker::exec::dcc::StateDecoder>();
 
 			return turnout->GetState() == dcclite::DecoderStates::ACTIVE;
 		}
 
 		void SetState(bool active)
 		{
-			auto decoder = DynamicDecoderCast<dcclite::broker::OutputDecoder>();
+			auto decoder = DynamicDecoderCast<dcclite::broker::exec::dcc::OutputDecoder>();
 
 			decoder->SetState(active ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE, "DecoderProxy");
 		}
@@ -102,14 +102,14 @@ class DecoderProxy
 
 		void SetAspect(dcclite::SignalAspects aspect, std::string requester, std::string reason)
 		{
-			auto decoder = DynamicDecoderCast<dcclite::broker::SignalDecoder>();
+			auto decoder = DynamicDecoderCast<dcclite::broker::exec::dcc::SignalDecoder>();
 
 			decoder->SetAspect(aspect, std::move(requester), std::move(reason));
 		}
 
 		dcclite::SignalAspects GetAspect()
 		{
-			auto decoder = DynamicDecoderCast<dcclite::broker::SignalDecoder>();
+			auto decoder = DynamicDecoderCast<dcclite::broker::exec::dcc::SignalDecoder>();
 
 			return decoder->GetAspect();
 		}
@@ -139,7 +139,7 @@ class DecoderProxy
 			return decoder;
 		}
 
-		void OnRemoteDecoderStateSync(dcclite::broker::RemoteDecoder &decoder)
+		void OnRemoteDecoderStateSync(dcclite::broker::exec::dcc::RemoteDecoder &decoder)
 		{
 			for (auto f : m_vStateChangeCallbacks)
 			{
@@ -156,12 +156,12 @@ class DecoderProxy
 
 		void RegisterStateSyncCallback()
 		{
-			auto remoteDecoder = this->DynamicDecoderCast<dcclite::broker::RemoteDecoder>();
+			auto remoteDecoder = this->DynamicDecoderCast<dcclite::broker::exec::dcc::RemoteDecoder>();
 
 			m_slotRemoteDecoderStateSyncConnection = remoteDecoder->m_sigRemoteStateSync.connect(&DecoderProxy::OnRemoteDecoderStateSync, this);
 		}
 
-		dcclite::broker::Decoder &m_rclDecoder;
+		dcclite::broker::exec::dcc::Decoder &m_rclDecoder;
 
 		sigslot::scoped_connection	m_slotRemoteDecoderStateSyncConnection;
 
@@ -179,7 +179,7 @@ class DecoderProxy
 class DccLiteProxy
 {
 	public:
-		DccLiteProxy(dcclite::broker::DccLiteService &service):
+		DccLiteProxy(dcclite::broker::exec::dcc::DccLiteService &service):
 			m_rclService{ service }
 		{
 			dcclite::Log::Trace("[ScriptService] [DccLiteProxy] [{}]: Created.", service.GetName());
@@ -199,9 +199,9 @@ class DccLiteProxy
 		DecoderProxy *OnIndexByAddress(uint16_t key, sol::this_state L);
 
 	private:
-		dcclite::broker::DccLiteService &m_rclService;
+		dcclite::broker::exec::dcc::DccLiteService &m_rclService;
 
-		std::map<dcclite::broker::DccAddress, std::unique_ptr<DecoderProxy>> m_mapKnowDecoders;
+		std::map<dcclite::broker::exec::dcc::Address, std::unique_ptr<DecoderProxy>> m_mapKnowDecoders;
 };
 
 DecoderProxy *DccLiteProxy::OnIndexByName(std::string_view key, sol::this_state L)
@@ -232,7 +232,7 @@ DecoderProxy *DccLiteProxy::OnIndexByName(std::string_view key, sol::this_state 
 
 DecoderProxy *DccLiteProxy::OnIndexByAddress(uint16_t key, sol::this_state L)
 {
-	const auto decAddress = dcclite::broker::DccAddress{ key };
+	const auto decAddress = dcclite::broker::exec::dcc::Address{ key };
 
 	auto it = m_mapKnowDecoders.lower_bound(decAddress);
 
@@ -320,7 +320,7 @@ namespace dcclite::broker::shell::script::detail
 	void TryCreateProxy(sol::state &state, sol::table &table, IObject &object)
 	{
 		{
-			auto *dccLite = dynamic_cast<dcclite::broker::DccLiteService *>(&object);
+			auto *dccLite = dynamic_cast<dcclite::broker::exec::dcc::DccLiteService *>(&object);
 			if (dccLite)
 			{
 				auto name = dccLite->GetName();

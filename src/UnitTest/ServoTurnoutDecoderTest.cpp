@@ -5,14 +5,14 @@
 #include <dcclite_shared/Packet.h>
 
 #include "BrokerMockups.h"
-#include "dcc/TurnoutDecoder.h"
+#include "exec/dcc/TurnoutDecoder.h"
 
 using namespace rapidjson;
 
 static DecoderServicesMockup g_DecoderServices;
 static DeviceDecoderServicesMockup g_DeviceDecoderServices;
 
-using namespace dcclite::broker;
+using namespace dcclite::broker::exec::dcc;
 
 TEST(ServoTurnoutDecoderTest, Basic)
 {
@@ -34,7 +34,7 @@ TEST(ServoTurnoutDecoderTest, Basic)
 	Document d;
 	d.Parse(json);
 
-	ServoTurnoutDecoder turnout{ DccAddress{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
+	ServoTurnoutDecoder turnout{ Address{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
 
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_SERVO_TURNOUT, turnout.GetType());
 
@@ -44,7 +44,7 @@ TEST(ServoTurnoutDecoderTest, Basic)
 
 	packet.Reset();
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_SERVO_TURNOUT, static_cast<dcclite::DecoderTypes>(packet.Read<uint8_t>()));
-	ASSERT_EQ(DccAddress{ 128 }, DccAddress{ packet });
+	ASSERT_EQ(Address{ 128 }, Address{ packet });
 	ASSERT_EQ(3, packet.Read< dcclite::PinType_t>());
 
 	auto flags = packet.Read<uint8_t>();
@@ -87,7 +87,7 @@ TEST(ServoTurnoutDecoderTest, StartAndEndPos)
 	Document d;
 	d.Parse(json);
 
-	ServoTurnoutDecoder turnout{ DccAddress{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
+	ServoTurnoutDecoder turnout{ Address{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
 
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_SERVO_TURNOUT, turnout.GetType());
 
@@ -97,7 +97,7 @@ TEST(ServoTurnoutDecoderTest, StartAndEndPos)
 
 	packet.Reset();
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_SERVO_TURNOUT, static_cast<dcclite::DecoderTypes>(packet.Read<uint8_t>()));
-	ASSERT_EQ(DccAddress{ 128 }, DccAddress{ packet });
+	ASSERT_EQ(Address{ 128 }, Address{ packet });
 	ASSERT_EQ(3, packet.Read< dcclite::PinType_t>());
 
 	auto flags = packet.Read<uint8_t>();
@@ -124,7 +124,7 @@ void CheckTurnoutFlags(const char *json, uint8_t flags)
 	Document d;
 	d.Parse(json);
 
-	ServoTurnoutDecoder turnout{ DccAddress{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
+	ServoTurnoutDecoder turnout{ Address{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
 
 	dcclite::Packet packet;
 
@@ -132,7 +132,7 @@ void CheckTurnoutFlags(const char *json, uint8_t flags)
 
 	packet.Reset();
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_SERVO_TURNOUT, static_cast<dcclite::DecoderTypes>(packet.Read<uint8_t>()));
-	ASSERT_EQ(DccAddress{ 128 }, DccAddress{ packet });
+	ASSERT_EQ(Address{ 128 }, Address{ packet });
 	ASSERT_EQ(3, packet.Read< dcclite::PinType_t>());	
 
 	ASSERT_EQ(packet.Read<uint8_t>(), flags);
@@ -255,7 +255,7 @@ TEST(ServoTurnoutDecoderTest, RemoteDecoder)
 	Document d;
 	d.Parse(json);
 
-	ServoTurnoutDecoder turnout{ DccAddress{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
+	ServoTurnoutDecoder turnout{ Address{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
 
 	dcclite::Packet packet;
 

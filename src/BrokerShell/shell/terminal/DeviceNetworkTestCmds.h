@@ -13,7 +13,7 @@
 
 #include "TerminalCmd.h"
 
-namespace dcclite::broker
+namespace dcclite::broker::exec::dcc
 {
 	class NetworkTask;
 }

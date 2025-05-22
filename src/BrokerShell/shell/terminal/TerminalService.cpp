@@ -20,10 +20,10 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Util.h>
 
-#include "dcc/IResettableObject.h"
-#include "dcc/NetworkDevice.h"
-#include "dcc/OutputDecoder.h"
-#include "dcc/SignalDecoder.h"
+#include "exec/dcc/IResettableObject.h"
+#include "exec/dcc/NetworkDevice.h"
+#include "exec/dcc/OutputDecoder.h"
+#include "exec/dcc/SignalDecoder.h"
 
 #include "sys/BonjourService.h"
 #include "sys/Broker.h"
@@ -338,7 +338,7 @@ namespace dcclite::broker::shell::terminal
 				//empty
 			}
 
-			Decoder &FindDecoder(const TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
+			exec::dcc::Decoder &FindDecoder(const TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
 			{
 				auto paramsIt = request.FindMember("params");
 				if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() < 1))
@@ -360,7 +360,7 @@ namespace dcclite::broker::shell::terminal
 					throw TerminalCmdException(fmt::format("Decoder not found: {}", path.string()), id);
 				}				
 
-				auto decoder = dynamic_cast<Decoder *>(obj);
+				auto decoder = dynamic_cast<exec::dcc::Decoder *>(obj);
 				if (decoder == nullptr)
 				{
 					throw TerminalCmdException(fmt::format("Path does not lead to a decoder: {}", path.string()), id);
@@ -369,11 +369,11 @@ namespace dcclite::broker::shell::terminal
 				return *decoder;
 			}
 
-			OutputDecoder *FindOutputDecoder(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
+			exec::dcc::OutputDecoder *FindOutputDecoder(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
 			{
 				auto &decoder = this->FindDecoder(context, id, request);
 
-				auto outputDecoder = dynamic_cast<OutputDecoder *>(&decoder);
+				auto outputDecoder = dynamic_cast<exec::dcc::OutputDecoder *>(&decoder);
 				if (outputDecoder == nullptr)
 				{
 					throw TerminalCmdException(fmt::format("Decoder {} on DCC System is not an output type", decoder.GetName()), id);
@@ -488,7 +488,7 @@ namespace dcclite::broker::shell::terminal
 			{
 				auto &decoder = this->FindDecoder(context, id, request);
 
-				auto signalDecoder = dynamic_cast<SignalDecoder *>(&decoder);
+				auto signalDecoder = dynamic_cast<exec::dcc::SignalDecoder *>(&decoder);
 				if (signalDecoder == nullptr)
 				{
 					throw TerminalCmdException(fmt::format("Decoder {} on DCC System is not an Signal type", decoder.GetName()), id);
@@ -523,10 +523,10 @@ namespace dcclite::broker::shell::terminal
 	// ReadEEPromCmd
 	//
 	/////////////////////////////////////////////////////////////////////////////
-	class ReadEEPromFiber : public TerminalCmdFiber, private NetworkTask::IObserver, public EventHub::IEventTarget
+	class ReadEEPromFiber : public TerminalCmdFiber, private exec::dcc::NetworkTask::IObserver, public EventHub::IEventTarget
 	{
 		public:
-			ReadEEPromFiber(const CmdId_t id, TerminalContext &context, NetworkDevice &device):
+			ReadEEPromFiber(const CmdId_t id, TerminalContext &context, exec::dcc::NetworkDevice &device):
 				TerminalCmdFiber(id, context),
 				m_spTask{ device.StartDownloadEEPromTask(this, m_vecEEPromData)}				
 			{
@@ -550,7 +550,7 @@ namespace dcclite::broker::shell::terminal
 			}
 
 		private:
-			void OnNetworkTaskStateChanged(NetworkTask &task) override
+			void OnNetworkTaskStateChanged(exec::dcc::NetworkTask &task) override
 			{				
 				assert(&task == m_spTask.get());
 
@@ -606,7 +606,7 @@ namespace dcclite::broker::shell::terminal
 				m_rclContext.DestroyFiber(*this);
 			}
 
-			static void SaveEEprom(ReadEEPromFiber &fiber, const DownloadEEPromTaskResult_t &data, const dcclite::fs::path &fileName)
+			static void SaveEEprom(ReadEEPromFiber &fiber, const exec::dcc::DownloadEEPromTaskResult_t &data, const dcclite::fs::path &fileName)
 			{
 				dcclite::Log::Info("[ReadEEPromFiber::SaveEEprom] Saving EEPROM at {}", fileName.string());
 
@@ -627,9 +627,9 @@ namespace dcclite::broker::shell::terminal
 			}
 
 		private:			
-			DownloadEEPromTaskResult_t m_vecEEPromData;
+			exec::dcc::DownloadEEPromTaskResult_t m_vecEEPromData;
 
-			std::shared_ptr<NetworkTask> m_spTask;
+			std::shared_ptr<exec::dcc::NetworkTask> m_spTask;
 
 			dcclite::fs::path m_pathRomFileName;
 

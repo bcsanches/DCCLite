@@ -15,6 +15,7 @@ target_include_directories(Broker
 if(WIN32)
     target_link_libraries(Broker   
         PRIVATE BrokerLib
+		PRIVATE BrokerExecLib
 		PRIVATE BrokerShellLib
 	)
 
@@ -27,6 +28,7 @@ else(WIN32)
 
 	target_link_libraries(Broker         
 		PRIVATE BrokerLib
+		PRIVATE BrokerExecLib
 		PRIVATE BrokerShellLib
 	)
 

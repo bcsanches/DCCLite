@@ -13,18 +13,18 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Util.h>
 
-#include "dcc/DccLiteService.h"
-#include "dcc/NetworkDevice.h"
+#include "exec/dcc/DccLiteService.h"
+#include "exec/dcc/NetworkDevice.h"
 
 #include "TerminalClient.h"
 #include "TerminalUtils.h"
 
 namespace dcclite::broker::shell::terminal
 {	
-	class DeviceClearEEPromFiber: public TerminalCmdFiber, private NetworkTask::IObserver
+	class DeviceClearEEPromFiber: public TerminalCmdFiber, private exec::dcc::NetworkTask::IObserver
 	{
 		public:
-			DeviceClearEEPromFiber(const CmdId_t id, TerminalContext &context, NetworkDevice &device):
+			DeviceClearEEPromFiber(const CmdId_t id, TerminalContext &context, exec::dcc::NetworkDevice &device):
 				TerminalCmdFiber(id, context),
 				m_spTask{ device.StartDeviceClearEEPromTask(this) }
 			{
@@ -35,7 +35,7 @@ namespace dcclite::broker::shell::terminal
 			~DeviceClearEEPromFiber() = default;
 
 		private:
-			void OnNetworkTaskStateChanged(NetworkTask &task) override
+			void OnNetworkTaskStateChanged(exec::dcc::NetworkTask &task) override
 			{
 				assert(&task == m_spTask.get());
 
@@ -67,7 +67,7 @@ namespace dcclite::broker::shell::terminal
 			}			
 
 		private:			
-			std::shared_ptr<NetworkTask> m_spTask;
+			std::shared_ptr<exec::dcc::NetworkTask> m_spTask;
 	};
 
 	/////////////////////////////////////////////////////////////////////////////

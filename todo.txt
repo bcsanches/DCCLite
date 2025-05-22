@@ -1,6 +1,17 @@
 DCCLite
 -------
+
+- Add Disconnect command to test if arduinos can reconnect after timeout
 - Implement reboot on emulator
+- When hadesEntA resets, sensors go crazy
+	- add a delay for sensor to send state after turn on?
+
+
+- Store time device connected and disconnected
+	- Send this to sharp terminal
+	- session history?
+		- with connects and disconnected
+		- number of packets?
 
 - Better emulator:
 	- Make sharpConsole able to start emulator as is
@@ -18,9 +29,9 @@ DCCLite
 		- digitalWrite will never affetct externalVoltage
 		- SharpTerminal will be able to set this externalVoltage value
 
-- when a device file changes, reload everything?
-	- second: create a DccSystem class, that manages all DccLiteServices
+- when a device file changes, reload everything?	
 	- Organize system in layers or modules
+	- BrokerLib -> BrokerSysLib
 	- Broker - base layer, if main config changes, restart everything (rarest case)
 	- Dcc - hardware layer, if any device changes, reload the device and reload all the shell layer
 	- Sharp terminal will always reload all when hardware changes

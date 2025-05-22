@@ -5,14 +5,14 @@
 #include <dcclite_shared/Packet.h>
 
 #include "BrokerMockups.h"
-#include "dcc/SimpleOutputDecoder.h"
+#include "exec/dcc/SimpleOutputDecoder.h"
 
 using namespace rapidjson;
 
 static DecoderServicesMockup g_DecoderServices;
 static DeviceDecoderServicesMockup g_DeviceDecoderServices;
 
-using namespace dcclite::broker;
+using namespace dcclite::broker::exec::dcc;
 
 TEST(SimpleOutputDecoderTest, Basic)
 {
@@ -30,7 +30,7 @@ TEST(SimpleOutputDecoderTest, Basic)
 	Document d;
 	d.Parse(json);
 
-	SimpleOutputDecoder decoder{ DccAddress{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
+	SimpleOutputDecoder decoder{ Address{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
 
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_OUTPUT, decoder.GetType());
 
@@ -40,7 +40,7 @@ TEST(SimpleOutputDecoderTest, Basic)
 
 	packet.Reset();
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_OUTPUT, static_cast<dcclite::DecoderTypes>(packet.Read<uint8_t>()));
-	ASSERT_EQ(DccAddress{ 128 }, DccAddress{ packet });
+	ASSERT_EQ(Address{ 128 }, Address{ packet });
 	ASSERT_EQ(64, packet.Read< dcclite::PinType_t>());
 
 	auto flags = packet.Read<uint8_t>();
@@ -52,7 +52,7 @@ static void CheckFlags(const char *json, uint8_t flags)
 	Document d;
 	d.Parse(json);
 
-	SimpleOutputDecoder decoder{ DccAddress{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
+	SimpleOutputDecoder decoder{ Address{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
 
 	dcclite::Packet packet;
 
@@ -75,7 +75,7 @@ static void CheckFlags(const char *json, uint8_t flags)
 
 	packet.Reset();
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_OUTPUT, static_cast<dcclite::DecoderTypes>(packet.Read<uint8_t>()));
-	ASSERT_EQ(DccAddress{ 128 }, DccAddress{ packet });
+	ASSERT_EQ(Address{ 128 }, Address{ packet });
 	ASSERT_EQ(64, packet.Read< dcclite::PinType_t>());
 
 	ASSERT_EQ(packet.Read<uint8_t>(), flags);	

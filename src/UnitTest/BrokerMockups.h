@@ -13,36 +13,36 @@
 #include <map>
 #include <vector>
 
-#include "dcc/Decoder.h"
-#include "dcc/IDccLiteService.h"
-#include "dcc/IDevice.h"
+#include "exec/dcc/Decoder.h"
+#include "exec/dcc/IDccLiteService.h"
+#include "exec/dcc/IDevice.h"
 
 #include <dcclite/RName.h>
 
-namespace dcclite::broker
+namespace dcclite::broker::exec::dcc
 {
 	class Decoder;
 }
 
 
-class NetworkDeviceDecoderServicesMockup: public dcclite::broker::INetworkDevice_DecoderServices
+class NetworkDeviceDecoderServicesMockup: public dcclite::broker::exec::dcc::INetworkDevice_DecoderServices
 {
 	private:
-		std::map<dcclite::RName, dcclite::broker::Decoder *> m_mapDecoders;
-		std::vector< dcclite::broker::Decoder *> m_vecDecoders;
+		std::map<dcclite::RName, dcclite::broker::exec::dcc::Decoder *> m_mapDecoders;
+		std::vector< dcclite::broker::exec::dcc::Decoder *> m_vecDecoders;
 
 	public:
-		void Decoder_RegisterPin(const dcclite::broker::RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage) override
+		void Decoder_RegisterPin(const dcclite::broker::exec::dcc::RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage) override
 		{
 			//empty
 		}
 
-		void Decoder_UnregisterPin(const dcclite::broker::RemoteDecoder &decoder, dcclite::BasicPin pin) override
+		void Decoder_UnregisterPin(const dcclite::broker::exec::dcc::RemoteDecoder &decoder, dcclite::BasicPin pin) override
 		{
 			//empty
 		}
 
-		[[nodiscard]] dcclite::broker::Decoder &FindDecoder(const dcclite::RName name) const override
+		[[nodiscard]] dcclite::broker::exec::dcc::Decoder &FindDecoder(const dcclite::RName name) const override
 		{
 			auto it = m_mapDecoders.find(name);
 			if (it == m_mapDecoders.end())
@@ -53,7 +53,7 @@ class NetworkDeviceDecoderServicesMockup: public dcclite::broker::INetworkDevice
 			return *(it->second);
 		}
 
-		[[nodiscard]] uint8_t FindDecoderIndex(const dcclite::broker::Decoder &decoder) const override
+		[[nodiscard]] uint8_t FindDecoderIndex(const dcclite::broker::exec::dcc::Decoder &decoder) const override
 		{
 			auto it = std::find(m_vecDecoders.begin(), m_vecDecoders.end(), &decoder);
 			if (it == m_vecDecoders.end())
@@ -70,7 +70,7 @@ class NetworkDeviceDecoderServicesMockup: public dcclite::broker::INetworkDevice
 			return 0;
 		}
 
-		void RegisterDecoder(dcclite::broker::Decoder &decoder)
+		void RegisterDecoder(dcclite::broker::exec::dcc::Decoder &decoder)
 		{
 			if (m_mapDecoders.find(decoder.GetName()) != m_mapDecoders.end())
 			{
@@ -87,7 +87,7 @@ namespace dcclite::broker
 	class Decoder;
 }
 
-class DeviceDecoderServicesMockup : public dcclite::broker::IDevice_DecoderServices
+class DeviceDecoderServicesMockup : public dcclite::broker::exec::dcc::IDevice_DecoderServices
 {
 	public:
 		dcclite::RName GetDeviceName() const noexcept override
@@ -95,17 +95,17 @@ class DeviceDecoderServicesMockup : public dcclite::broker::IDevice_DecoderServi
 			return dcclite::RName("mockup");
 		}
 
-		dcclite::broker::INetworkDevice_DecoderServices *TryGetINetworkDevice() noexcept override
+		dcclite::broker::exec::dcc::INetworkDevice_DecoderServices *TryGetINetworkDevice() noexcept override
 		{
 			return &m_DecoderServices;
 		}
 
-		void Decoder_OnChangeStateRequest(const dcclite::broker::Decoder &decoder) noexcept override
+		void Decoder_OnChangeStateRequest(const dcclite::broker::exec::dcc::Decoder &decoder) noexcept override
 		{
 			//empty
 		}
 
-		void RegisterDecoder(dcclite::broker::Decoder &decoder)
+		void RegisterDecoder(dcclite::broker::exec::dcc::Decoder &decoder)
 		{
 			m_DecoderServices.RegisterDecoder(decoder);			
 		}
@@ -114,15 +114,15 @@ class DeviceDecoderServicesMockup : public dcclite::broker::IDevice_DecoderServi
 		NetworkDeviceDecoderServicesMockup m_DecoderServices;
 };
 
-class DecoderServicesMockup : public dcclite::broker::IDccLite_DecoderServices
+class DecoderServicesMockup : public dcclite::broker::exec::dcc::IDccLite_DecoderServices
 {
 	public:
-		void Decoder_OnStateChanged(dcclite::broker::Decoder &decoder) override
+		void Decoder_OnStateChanged(dcclite::broker::exec::dcc::Decoder &decoder) override
 		{
 			//empty
 		}
 
-		dcclite::broker::Decoder *TryFindDecoder(dcclite::RName id) const override
+		dcclite::broker::exec::dcc::Decoder *TryFindDecoder(dcclite::RName id) const override
 		{
 			return nullptr;
 		}

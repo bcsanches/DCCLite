@@ -105,6 +105,7 @@ target_include_directories(BrokerShellLib
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/sol2/include
     PUBLIC ${DCCLite_SOURCE_DIR}/src/Common
     PUBLIC ${DCCLite_SOURCE_DIR}/src/BrokerLib
+    PUBLIC ${DCCLite_SOURCE_DIR}/src/BrokerExec
     PUBLIC ${DCCLite_SOURCE_DIR}/src/Embedded/lib/Shared
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/fmt/include
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/spdlog/include

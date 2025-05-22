@@ -22,7 +22,7 @@
 #include "TerminalContext.h"
 #include "TerminalService.h"
 
-namespace dcclite::broker
+namespace dcclite::broker::exec::dcc
 {
 	class NetworkTask;
 }
@@ -40,14 +40,14 @@ namespace dcclite::broker::shell::terminal
 
 			TaskManager &operator=(TaskManager &&other) = default;
 
-			void AddTask(std::shared_ptr<NetworkTask> task);
+			void AddTask(std::shared_ptr<exec::dcc::NetworkTask> task);
 
-			NetworkTask *TryFindTask(uint32_t taskId) const noexcept;
+			exec::dcc::NetworkTask *TryFindTask(uint32_t taskId) const noexcept;
 
 			void RemoveTask(uint32_t taskId) noexcept;
 
 		private:
-			std::map<uint32_t, std::shared_ptr<NetworkTask>>	m_mapNetworkTasks;
+			std::map<uint32_t, std::shared_ptr<exec::dcc::NetworkTask>>	m_mapNetworkTasks;
 	};
 
 	class TerminalClient: private IObjectManagerListener, ITerminalClient_ContextServices, EventHub::IEventTarget

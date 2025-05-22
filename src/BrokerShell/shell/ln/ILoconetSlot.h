@@ -13,7 +13,7 @@
 
 #include <dcclite_shared/BitPack.h>
 
-#include "dcc/DccAddress.h"
+#include "exec/dcc/Address.h"
 
 namespace dcclite::broker::shell::ln
 {
@@ -35,7 +35,7 @@ namespace dcclite::broker::shell::ln
 				return m_uId;
 			}
 
-			const dcclite::broker::DccAddress &GetLocomotiveAddress() const noexcept
+			const exec::dcc::Address &GetLocomotiveAddress() const noexcept
 			{
 				return m_tLocomotiveAddress;
 			}
@@ -61,7 +61,7 @@ namespace dcclite::broker::shell::ln
 		protected:
 			LoconetSlotFunctions_t m_arFunctions;
 
-			dcclite::broker::DccAddress m_tLocomotiveAddress;
+			exec::dcc::Address m_tLocomotiveAddress;
 
 			//the id is useful for logging and debugging
 			uint8_t m_uId = { 0 };

@@ -244,7 +244,7 @@ class Slot: public dcclite::broker::shell::ln::ILoconetSlot
 			this->ReleaseThrottle();
 		}
 
-		void GotoState_Common(const dcclite::broker::DccAddress addr) noexcept
+		void GotoState_Common(const dcclite::broker::exec::dcc::Address addr) noexcept
 		{
 			assert(!this->IsSlave());
 
@@ -509,7 +509,7 @@ class SlotManager
 	public:
 		SlotManager(dcclite::broker::shell::ln::ThrottleService &throttleService);
 
-		std::optional<uint8_t> AcquireLocomotive(const dcclite::broker::DccAddress address, const dcclite::Clock::TimePoint_t ticks);
+		std::optional<uint8_t> AcquireLocomotive(const dcclite::broker::exec::dcc::Address address, const dcclite::Clock::TimePoint_t ticks);
 
 		void SetSlotToInUse(uint8_t slot, const dcclite::Clock::TimePoint_t ticks);
 		void SetSlotFree(uint8_t slot);
@@ -556,7 +556,7 @@ SlotManager::SlotManager(dcclite::broker::shell::ln::ThrottleService &throttleSe
 		m_arSlots[i].Init(i, throttleService);
 }
 
-std::optional<uint8_t> SlotManager::AcquireLocomotive(const dcclite::broker::DccAddress address, const dcclite::Clock::TimePoint_t ticks)
+std::optional<uint8_t> SlotManager::AcquireLocomotive(const dcclite::broker::exec::dcc::Address address, const dcclite::Clock::TimePoint_t ticks)
 {
 	auto it = std::find_if(m_arSlots.begin(), m_arSlots.end(), [address](const Slot &slot)
 		{			
@@ -1300,7 +1300,7 @@ namespace dcclite::broker::shell::ln
 
 					uint16_t address = (high << 7) + low;
 
-					auto slot = m_clSlotManager.AcquireLocomotive(DccAddress{ address }, ticks);
+					auto slot = m_clSlotManager.AcquireLocomotive(dcclite::broker::exec::dcc::Address{ address }, ticks);
 					if (!slot)
 					{
 						Log::Error("[LoconetServiceImpl::ParseMessage] OPC_LOCO_ADR: No free slot for address {}", address);

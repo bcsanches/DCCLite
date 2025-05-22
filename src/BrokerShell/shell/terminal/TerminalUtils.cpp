@@ -18,7 +18,7 @@
 
 #include "TerminalClient.h"
 
-#include "dcc/NetworkDevice.h"
+#include "exec/dcc/NetworkDevice.h"
 
 namespace dcclite::broker::shell::terminal::detail
 {			
@@ -63,7 +63,7 @@ namespace dcclite::broker::shell::terminal::detail
 		return static_cast<IFolderObject &>(*item);
 	}
 
-	NetworkDevice &GetNetworkDevice(const dcclite::Path_t &path, const TerminalContext &context, const CmdId_t id)
+	exec::dcc::NetworkDevice &GetNetworkDevice(const dcclite::Path_t &path, const TerminalContext &context, const CmdId_t id)
 	{
 		auto &folder = GetCurrentFolder(context, id);
 
@@ -73,7 +73,7 @@ namespace dcclite::broker::shell::terminal::detail
 			throw TerminalCmdException(fmt::format("Invalid path {}", path.string()), id);
 		}
 
-		auto dev = dynamic_cast<NetworkDevice *>(item);
+		auto dev = dynamic_cast<exec::dcc::NetworkDevice *>(item);
 		if (dev == nullptr)
 		{
 			throw TerminalCmdException(fmt::format("Path does lead to a NetworkDevice: {}", path.string()), id);
@@ -82,7 +82,7 @@ namespace dcclite::broker::shell::terminal::detail
 		return *dev;
 	}
 
-	dcclite::broker::NetworkTask *GetValidTask(TerminalContext &context, RName cmdName, const CmdId_t id, const rapidjson::Value &taskIdData)
+	exec::dcc::NetworkTask *GetValidTask(TerminalContext &context, RName cmdName, const CmdId_t id, const rapidjson::Value &taskIdData)
 	{
 		auto taskId = taskIdData.IsString() ? dcclite::ParseNumber(taskIdData.GetString()) : taskIdData.GetInt();
 

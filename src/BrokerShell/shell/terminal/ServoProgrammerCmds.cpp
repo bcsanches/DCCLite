@@ -13,8 +13,8 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Util.h>
 
-#include "dcc/NetworkDevice.h"
-#include "dcc/TurnoutDecoder.h"
+#include "exec/dcc/NetworkDevice.h"
+#include "exec/dcc/TurnoutDecoder.h"
 
 #include "TerminalClient.h"
 #include "TerminalUtils.h"
@@ -43,7 +43,7 @@ namespace dcclite::broker::shell::terminal
 			throw TerminalCmdException("Terminal path is invalid! No folder found!", id);
 		}
 
-		auto decoder = dynamic_cast<Decoder *>(obj->TryNavigate(dcclite::Path_t{ path }));
+		auto decoder = dynamic_cast<exec::dcc::Decoder *>(obj->TryNavigate(dcclite::Path_t{ path }));
 		if (!decoder)
 		{
 			throw TerminalCmdException(fmt::format("Path {} does not result on a Decoder", path), id);
@@ -93,9 +93,9 @@ namespace dcclite::broker::shell::terminal
 	//
 	/////////////////////////////////////////////////////////////////////////////
 
-	typedef void (*EditProc_t)(dcclite::broker::IServoProgrammerTask &task, const rapidjson::Value &params);
+	typedef void (*EditProc_t)(dcclite::broker::exec::dcc::IServoProgrammerTask &task, const rapidjson::Value &params);
 
-	static void HandleMoveAction(dcclite::broker::IServoProgrammerTask &task, const rapidjson::Value &params)
+	static void HandleMoveAction(dcclite::broker::exec::dcc::IServoProgrammerTask &task, const rapidjson::Value &params)
 	{
 		task.SetPosition(static_cast<uint8_t>(ParseNumParam(params[2])));
 	}
@@ -122,7 +122,7 @@ namespace dcclite::broker::shell::terminal
 
 		auto task = detail::GetValidTask(context, this->GetName(), id, paramsIt->value[0]);
 
-		auto programmerTask = dynamic_cast<dcclite::broker::IServoProgrammerTask *>(task);
+		auto programmerTask = dynamic_cast<dcclite::broker::exec::dcc::IServoProgrammerTask *>(task);
 		if (!programmerTask)
 		{
 			throw TerminalCmdException(fmt::format("{}: task {} is not a programmer task", this->GetName(), task->GetTaskId()), id);
@@ -165,17 +165,17 @@ namespace dcclite::broker::shell::terminal
 	*
 	*
 	*/
-	class ServoProgrammerDeployMonitorFiber: public TerminalCmdFiber, private NetworkTask::IObserver
+	class ServoProgrammerDeployMonitorFiber: public TerminalCmdFiber, private exec::dcc::NetworkTask::IObserver
 	{
 		public:
-			ServoProgrammerDeployMonitorFiber(const CmdId_t id, TerminalContext &context, NetworkTask &task):
+			ServoProgrammerDeployMonitorFiber(const CmdId_t id, TerminalContext &context, exec::dcc::NetworkTask &task):
 				TerminalCmdFiber(id, context)
 			{
 				task.SetObserver(this);
 			}
 
 		private:
-			void OnNetworkTaskStateChanged(NetworkTask &task) override
+			void OnNetworkTaskStateChanged(exec::dcc::NetworkTask &task) override
 			{
 				//Ignore us from now...
 				task.SetObserver(nullptr);
@@ -212,7 +212,7 @@ namespace dcclite::broker::shell::terminal
 
 		auto task = detail::GetValidTask(context, this->GetName(), id, paramsIt->value[0]);
 
-		auto programmerTask = dynamic_cast<dcclite::broker::IServoProgrammerTask *>(task);
+		auto programmerTask = dynamic_cast<dcclite::broker::exec::dcc::IServoProgrammerTask *>(task);
 		if (!programmerTask)
 		{
 			throw TerminalCmdException(fmt::format("{}: task {} is not a programmer task", this->GetName(), task->GetTaskId()), id);

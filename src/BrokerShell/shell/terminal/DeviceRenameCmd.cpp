@@ -13,18 +13,18 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Util.h>
 
-#include "dcc/DccLiteService.h"
-#include "dcc/NetworkDevice.h"
+#include "exec/dcc/DccLiteService.h"
+#include "exec/dcc/NetworkDevice.h"
 
 #include "TerminalClient.h"
 #include "TerminalUtils.h"
 
 namespace dcclite::broker::shell::terminal
 {	
-	class DeviceRenameFiber: public TerminalCmdFiber, private dcclite::broker::NetworkTask::IObserver
+	class DeviceRenameFiber: public TerminalCmdFiber, private exec::dcc::NetworkTask::IObserver
 	{
 		public:
-			DeviceRenameFiber(const CmdId_t id, TerminalContext &context, NetworkDevice &device, RName newName):
+			DeviceRenameFiber(const CmdId_t id, TerminalContext &context, exec::dcc::NetworkDevice &device, RName newName):
 				TerminalCmdFiber(id, context),
 				m_spTask{ device.StartDeviceRenameTask(this, newName) }
 			{
@@ -35,7 +35,7 @@ namespace dcclite::broker::shell::terminal
 			~DeviceRenameFiber() = default;
 
 		private:
-			void OnNetworkTaskStateChanged(NetworkTask &task) override
+			void OnNetworkTaskStateChanged(exec::dcc::NetworkTask &task) override
 			{
 				assert(&task == m_spTask.get());
 
@@ -67,7 +67,7 @@ namespace dcclite::broker::shell::terminal
 			}			
 
 		private:			
-			std::shared_ptr<NetworkTask> m_spTask;
+			std::shared_ptr<exec::dcc::NetworkTask> m_spTask;
 	};
 
 	/////////////////////////////////////////////////////////////////////////////
@@ -92,7 +92,7 @@ namespace dcclite::broker::shell::terminal
 		const auto otherItem = networkDevice.GetParent()->TryGetChild(newName);
 		if (otherItem)
 		{
-			const auto otherDevice = dynamic_cast<NetworkDevice *>(otherItem);
+			const auto otherDevice = dynamic_cast<exec::dcc::NetworkDevice *>(otherItem);
 			if (otherDevice && otherDevice->IsConnectionStable())
 			{
 				throw TerminalCmdException(fmt::format("Cannot set name to a connected device: {}", newName), id);
