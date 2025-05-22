@@ -61,8 +61,7 @@ else(WIN32)
         pthread	
         sigslot
 		SharedLib
-		stdc++fs 		
-		uuid 		                        
+		stdc++fs		 		                        
 	)
 
 endif(WIN32)
