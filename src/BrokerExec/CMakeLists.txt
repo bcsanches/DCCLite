@@ -71,7 +71,7 @@ else(WIN32)
 
 	find_package(OpenSSL REQUIRED)
 
-	target_link_libraries(BrokerShellLib        
+	target_link_libraries(BrokerExecLib        
         Common 
         dl
         fmt 
