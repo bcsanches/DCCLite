@@ -20,8 +20,6 @@ add_library(
         sys/Service.h
 		sys/ServiceFactory.cpp
         sys/ServiceFactory.h
-        sys/SpecialFolders.cpp
-        sys/SpecialFolders.h
         sys/Thinker.cpp
         sys/Thinker.h
         sys/Timeouts.h

@@ -37,7 +37,6 @@
 #include "Project.h"
 #include "ServiceFactory.h"
 #include "Thinker.h"
-#include "SpecialFolders.h"
 #include "ZeroConfSystem.h"
 
 //win32 header leak
