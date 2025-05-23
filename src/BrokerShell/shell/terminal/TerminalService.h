@@ -30,7 +30,7 @@ namespace dcclite::broker::shell::terminal
 			virtual void Async_DisconnectClient(TerminalClient &client) = 0;
 	};
 
-	class TerminalService : public Service, EventHub::IEventTarget, ITerminalServiceClientProxy
+	class TerminalService : public sys::Service, sys::EventHub::IEventTarget, ITerminalServiceClientProxy
 	{
 		private:		
 			dcclite::Socket m_clSocket;
@@ -46,7 +46,7 @@ namespace dcclite::broker::shell::terminal
 
 			static void RegisterFactory();
 
-			TerminalService(RName name, Broker &broker, const rapidjson::Value &params, CmdHostService &cmdHost);
+			TerminalService(RName name, sys::Broker &broker, const rapidjson::Value &params, CmdHostService &cmdHost);
 
 			virtual ~TerminalService();			
 

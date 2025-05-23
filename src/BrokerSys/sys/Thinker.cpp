@@ -14,7 +14,7 @@
 
 #include <dcclite/Log.h>
 
-namespace dcclite::broker
+namespace dcclite::broker::sys
 {
 #if 0
 	inline bool ThinkerPointerComparer(const Thinker *a, const Thinker *b) noexcept

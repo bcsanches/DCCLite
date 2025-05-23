@@ -655,7 +655,7 @@ namespace dcclite::broker::shell::ln
 	class ThrottleServiceImpl : public ThrottleService
 	{
 		public:
-			ThrottleServiceImpl(RName name, Broker &broker, const rapidjson::Value &params);
+			ThrottleServiceImpl(RName name, sys::Broker &broker, const rapidjson::Value &params);
 			~ThrottleServiceImpl() override;			
 
 			void Serialize(JsonOutputStream_t &stream) const override;	
@@ -667,14 +667,14 @@ namespace dcclite::broker::shell::ln
 			void Think(const dcclite::Clock::TimePoint_t ticks);
 
 		private:
-			Thinker m_tThinker;
+			sys::Thinker m_tThinker;
 
 			dcclite::NetworkAddress m_clServerAddress;
 			unsigned int			m_uThrottleCount = 0;
 	};
 
 
-	ThrottleServiceImpl::ThrottleServiceImpl(RName name, Broker &broker, const rapidjson::Value& params):
+	ThrottleServiceImpl::ThrottleServiceImpl(RName name, sys::Broker &broker, const rapidjson::Value& params):
 		ThrottleService(name, broker, params),		
 		m_tThinker{"ThrottleServiceImpl::Thinker", THINKER_MF_LAMBDA(Think)},
 		m_clServerAddress{ dcclite::NetworkAddress::ParseAddress(DetermineServerAddress(params)) }
@@ -695,7 +695,7 @@ namespace dcclite::broker::shell::ln
 
 	void ThrottleServiceImpl::Think(const dcclite::Clock::TimePoint_t ticks)
 	{	
-		m_tThinker.Schedule(ticks + THROTTLE_SERVICE_THINK_TIME);
+		m_tThinker.Schedule(ticks + sys::THROTTLE_SERVICE_THINK_TIME);
 
 		this->VisitChildren([ticks](auto &item)
 			{
@@ -708,7 +708,7 @@ namespace dcclite::broker::shell::ln
 		);		
 	}	
 
-	static GenericServiceFactory<ThrottleServiceImpl> g_clThrottleServiceFactory;
+	static sys::GenericServiceFactory<ThrottleServiceImpl> g_clThrottleServiceFactory;
 	
 	IThrottle &ThrottleServiceImpl::CreateThrottle(const ILoconetSlot &owner)
 	{
@@ -748,7 +748,7 @@ namespace dcclite::broker::shell::ln
 		//empty
 	}
 
-	ThrottleService::ThrottleService(RName name, Broker &broker, const rapidjson::Value &params):
+	ThrottleService::ThrottleService(RName name, sys::Broker &broker, const rapidjson::Value &params):
 		Service(name, broker, params)
 	{
 		//empty

@@ -14,7 +14,7 @@
 
 namespace dcclite::broker::shell::dispatcher
 { 
-	class DispatcherService: public Service
+	class DispatcherService: public sys::Service
 	{	
 		public:
 			static void RegisterFactory();
@@ -33,6 +33,6 @@ namespace dcclite::broker::shell::dispatcher
 			}
 
 		protected:
-			DispatcherService(RName name, Broker &broker, const rapidjson::Value &params);
+			DispatcherService(RName name, sys::Broker &broker, const rapidjson::Value &params);
 	};	
 }

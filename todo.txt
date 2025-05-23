@@ -30,16 +30,9 @@ DCCLite
 		- SharpTerminal will be able to set this externalVoltage value
 
 - when a device file changes, reload everything?	
-	- Organize system in layers or modules
-	- BrokerLib -> BrokerSysLib
-	- Broker - base layer, if main config changes, restart everything (rarest case)
-	- Dcc - hardware layer, if any device changes, reload the device and reload all the shell layer
-	- Sharp terminal will always reload all when hardware changes
-	- Is it worth to really organize those layers? Perhaps:
-		- system: broker base systems, event system, thinker, etc
-		- exec: hardware stuff, basically DccLite and arduinos management
-		- shell: terminal, script system, dispatcher
-	- What for a future gui system with editing functionality? Only for signals and "logical" objects?
+	- BonjourService access with find service with hardcode name, best way?
+	- ZeroConfSystem make a true service?
+	- Create a CoreLib, split Broker on interface to remove directly dependencies?
 	
 - Move Signal to dispatcher?
 	- creata a decoder to bridge the signa on dispatcher do jmri?

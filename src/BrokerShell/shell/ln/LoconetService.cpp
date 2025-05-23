@@ -735,7 +735,7 @@ void SlotManager::ForceSlotState(const uint8_t slot, const Slot::States state, c
 
 void SlotManager::RefreshSlotTimeout(const uint8_t slot, const dcclite::Clock::TimePoint_t ticks) noexcept
 {
-	m_arSlotsTimeout[slot] = ticks + dcclite::broker::LOCONET_PURGE_TIMEOUT;
+	m_arSlotsTimeout[slot] = ticks + dcclite::broker::sys::LOCONET_PURGE_TIMEOUT;
 }
 
 void SlotManager::SerializeSlot(const uint8_t slotIndex, dcclite::JsonOutputStream_t &stream) const
@@ -982,10 +982,10 @@ namespace dcclite::broker::shell::ln
 
 		typedef ThrottleService Requirement_t;
 
-		LoconetServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, ThrottleService &requirement);
+		LoconetServiceImpl(RName name, sys::Broker &broker, const rapidjson::Value &params, ThrottleService &requirement);
 		~LoconetServiceImpl() override;
 
-		static std::unique_ptr<Service> Create(RName name, Broker &broker, const rapidjson::Value &params);
+		static std::unique_ptr<sys::Service> Create(RName name, sys::Broker &broker, const rapidjson::Value &params);
 
 		void Serialize(JsonOutputStream_t &stream) const override;
 
@@ -1014,14 +1014,14 @@ namespace dcclite::broker::shell::ln
 
 		MessageDispatcher m_clMessageDispatcher;
 
-		Thinker m_tThinker;
-		Thinker m_tPurgeThinker;
+		sys::Thinker m_tThinker;
+		sys::Thinker m_tPurgeThinker;
 
 		uint8_t m_uErrorCount = 0;
 	};
 
 
-	LoconetServiceImpl::LoconetServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, ThrottleService &requirement):
+	LoconetServiceImpl::LoconetServiceImpl(RName name, sys::Broker &broker, const rapidjson::Value &params, ThrottleService &requirement):
 		LoconetService(name, broker, params),
 		m_clSlotManager{ requirement },
 		m_clSerialPort(params["port"].GetString()),		
@@ -1360,12 +1360,12 @@ namespace dcclite::broker::shell::ln
 			}
 		);
 
-		m_tPurgeThinker.Schedule(ticks + dcclite::broker::LOCONET_PURGE_INTERVAL);
+		m_tPurgeThinker.Schedule(ticks + dcclite::broker::sys::LOCONET_PURGE_INTERVAL);
 	}
 
 	void LoconetServiceImpl::Think(const dcclite::Clock::TimePoint_t ticks)
 	{			
-		m_tThinker.Schedule(ticks + LOCONET_THINK_TIME);
+		m_tThinker.Schedule(ticks + sys::LOCONET_THINK_TIME);
 				
 		//pump outgoing messages
 		m_clMessageDispatcher.Update(m_clSerialPort);
@@ -1475,10 +1475,10 @@ namespace dcclite::broker::shell::ln
 
 	void LoconetService::RegisterFactory()
 	{
-		static GenericServiceWithDependenciesFactory<LoconetServiceImpl> g_clLoconetServiceFactory;
+		static sys::GenericServiceWithDependenciesFactory<LoconetServiceImpl> g_clLoconetServiceFactory;
 	}
 
-	LoconetService::LoconetService(RName name, Broker &broker, const rapidjson::Value &params) :
+	LoconetService::LoconetService(RName name, sys::Broker &broker, const rapidjson::Value &params) :
 		Service(name, broker, params)
 	{
 		//empty

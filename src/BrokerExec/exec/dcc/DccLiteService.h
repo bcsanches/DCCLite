@@ -37,12 +37,12 @@ namespace dcclite::broker::exec::dcc
 	class StateDecoder;
 	class TurnoutDecoder;	
 
-	class DccLiteService : public Service, private IDccLite_DeviceServices, private IDccLite_DecoderServices, public EventHub::IEventTarget
+	class DccLiteService: public sys::Service, private IDccLite_DeviceServices, private IDccLite_DecoderServices, public sys::EventHub::IEventTarget
 	{
 		public:
 			static const char *TYPE_NAME;
 
-			DccLiteService(RName name, Broker &broker, const rapidjson::Value &params);
+			DccLiteService(RName name, sys::Broker &broker, const rapidjson::Value &params);
 
 			~DccLiteService() override;			
 

@@ -523,7 +523,7 @@ namespace dcclite::broker::shell::terminal
 	// ReadEEPromCmd
 	//
 	/////////////////////////////////////////////////////////////////////////////
-	class ReadEEPromFiber : public TerminalCmdFiber, private exec::dcc::NetworkTask::IObserver, public EventHub::IEventTarget
+	class ReadEEPromFiber : public TerminalCmdFiber, private exec::dcc::NetworkTask::IObserver, public sys::EventHub::IEventTarget
 	{
 		public:
 			ReadEEPromFiber(const CmdId_t id, TerminalContext &context, exec::dcc::NetworkDevice &device):
@@ -536,7 +536,7 @@ namespace dcclite::broker::shell::terminal
 				std::string fileName{ device.GetName().GetData() };
 				fileName.append(".rom");
 				
-				m_pathRomFileName = Project::GetAppFilePath(fileName);
+				m_pathRomFileName = sys::Project::GetAppFilePath(fileName);
 			}	
 
 			~ReadEEPromFiber()
@@ -546,7 +546,7 @@ namespace dcclite::broker::shell::terminal
 				if(m_Future.valid())
 					m_Future.wait();
 
-				EventHub::CancelEvents(*this);
+				sys::EventHub::CancelEvents(*this);
 			}
 
 		private:
@@ -576,7 +576,7 @@ namespace dcclite::broker::shell::terminal
 				}								
 			}
 
-			class DiskWriteFinishedEvent: public EventHub::IEvent
+			class DiskWriteFinishedEvent: public sys::EventHub::IEvent
 			{
 				public:
 					explicit DiskWriteFinishedEvent(ReadEEPromFiber &target):
@@ -623,7 +623,7 @@ namespace dcclite::broker::shell::terminal
 
 				//
 				//Send results.. but we need to do this on main thread
-				EventHub::PostEvent< DiskWriteFinishedEvent>(std::ref(fiber));
+				sys::EventHub::PostEvent< DiskWriteFinishedEvent>(std::ref(fiber));
 			}
 
 		private:			
@@ -704,7 +704,7 @@ namespace dcclite::broker::shell::terminal
 	// TerminalService Events
 	//
 	/////////////////////////////////////////////////////////////////////////////
-	class TerminalServiceAcceptConnectionEvent: public EventHub::IEvent
+	class TerminalServiceAcceptConnectionEvent: public sys::EventHub::IEvent
 	{
 		public:
 			TerminalServiceAcceptConnectionEvent(TerminalService &target, const dcclite::NetworkAddress &address, Socket s):
@@ -726,7 +726,7 @@ namespace dcclite::broker::shell::terminal
 			dcclite::NetworkAddress m_clAddress;
 	};
 
-	class TerminalServiceClientDisconnectedEvent: public EventHub::IEvent
+	class TerminalServiceClientDisconnectedEvent: public sys::EventHub::IEvent
 	{
 		public:
 			TerminalServiceClientDisconnectedEvent(TerminalService &target, TerminalClient &client):
@@ -752,10 +752,10 @@ namespace dcclite::broker::shell::terminal
 	/////////////////////////////////////////////////////////////////////////////
 	void TerminalService::RegisterFactory()
 	{
-		static GenericServiceWithDependenciesFactory<TerminalService> g_clTerminalServiceFactory;
+		static sys::GenericServiceWithDependenciesFactory<TerminalService> g_clTerminalServiceFactory;
 	}
 
-	TerminalService::TerminalService(RName name, Broker &broker, const rapidjson::Value &params, CmdHostService &cmdHost) :
+	TerminalService::TerminalService(RName name, sys::Broker &broker, const rapidjson::Value &params, CmdHostService &cmdHost) :
 		Service(name, broker, params),
 		m_rclCmdHost{cmdHost}
 	{					
@@ -839,10 +839,10 @@ namespace dcclite::broker::shell::terminal
 		m_thListenThread = std::thread{ [port, this] {this->ListenThreadProc(port); } };		
 		dcclite::SetThreadName(m_thListenThread, "TerminalService::ListenThread");
 
-		if (auto bonjourService = static_cast<BonjourService *>(m_rclBroker.TryFindService(RName{ BONJOUR_SERVICE_NAME })))
-			bonjourService->Register("terminal", "dcclite", NetworkProtocol::TCP, port, 36);
+		if (auto bonjourService = static_cast<sys::BonjourService *>(m_rclBroker.TryFindService(RName{ sys::BONJOUR_SERVICE_NAME })))
+			bonjourService->Register("terminal", "dcclite", sys::NetworkProtocol::TCP, port, 36);
 
-		ZeroConfSystem::Register(this->GetTypeName(), port);
+		sys::ZeroConfSystem::Register(this->GetTypeName(), port);
 	}
 
 	TerminalService::~TerminalService()
@@ -857,7 +857,7 @@ namespace dcclite::broker::shell::terminal
 		m_thListenThread.join();
 
 		//Cancel any events, because no one will be able to handle those
-		EventHub::CancelEvents(*this);
+		sys::EventHub::CancelEvents(*this);
 	}	
 
 	void TerminalService::OnClientDisconnect(TerminalClient &client)
@@ -877,7 +877,7 @@ namespace dcclite::broker::shell::terminal
 
 	void TerminalService::Async_DisconnectClient(TerminalClient &client)
 	{
-		EventHub::PostEvent< TerminalServiceClientDisconnectedEvent>(std::ref(*this), std::ref(client));
+		sys::EventHub::PostEvent< TerminalServiceClientDisconnectedEvent>(std::ref(*this), std::ref(client));
 	}
 
 	void TerminalService::OnAcceptConnection(const dcclite::NetworkAddress &address, dcclite::Socket &&s)
@@ -919,7 +919,7 @@ namespace dcclite::broker::shell::terminal
 			if (status != Socket::Status::OK)
 				break;			
 			
-			EventHub::PostEvent<TerminalServiceAcceptConnectionEvent>(
+			sys::EventHub::PostEvent<TerminalServiceAcceptConnectionEvent>(
 				std::ref(*this), 
 				address, 
 				std::move(socket)				

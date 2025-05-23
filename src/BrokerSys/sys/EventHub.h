@@ -20,7 +20,7 @@
 
 #define DCCLITE_EVENT_HUB_INTERNAL_POOL
 
-namespace dcclite::broker
+namespace dcclite::broker::sys
 {
 	namespace EventHub
 	{

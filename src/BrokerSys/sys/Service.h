@@ -23,7 +23,7 @@ namespace dcclite
 	class Clock;
 }
 
-namespace dcclite::broker
+namespace dcclite::broker::sys
 {
 	class Broker;	
 	class Service;

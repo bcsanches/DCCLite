@@ -79,7 +79,7 @@ namespace dcclite::broker::exec::dcc
 	//
 
 	const char *DccLiteService::TYPE_NAME = "DccLiteService";	
-	static GenericServiceFactory<DccLiteService> g_DccLiteServiceFactory;
+	static sys::GenericServiceFactory<DccLiteService> g_DccLiteServiceFactory;
 
 	void DccLiteService::RegisterFactory()
 	{
@@ -87,7 +87,7 @@ namespace dcclite::broker::exec::dcc
 	}
 
 
-	DccLiteService::DccLiteService(RName name, Broker &broker, const rapidjson::Value &params) :
+	DccLiteService::DccLiteService(RName name, sys::Broker &broker, const rapidjson::Value &params) :
 		Service(name, broker, params)		
 	{
 		BenchmarkLogger benchmark{ "DccLiteService", name.GetData() };
@@ -306,7 +306,7 @@ namespace dcclite::broker::exec::dcc
 		this->NotifyItemDestroyed(*session);
 	}
 
-	class DestroyUnregisteredDeviceEvent: public dcclite::broker::EventHub::IEvent
+	class DestroyUnregisteredDeviceEvent: public dcclite::broker::sys::EventHub::IEvent
 	{
 		public:
 			DestroyUnregisteredDeviceEvent(DccLiteService &target, RName deviceName):
@@ -361,7 +361,7 @@ namespace dcclite::broker::exec::dcc
 
 		dcclite::Log::Info("[DccLiteService::Device_DestroyUnregistered] Requested to destroy {} device", name);
 		//fire a event to later destroy the device... to avoid functions touching a dead device under the callstack
-		EventHub::PostEvent<DestroyUnregisteredDeviceEvent>(std::ref(*this), name);
+		sys::EventHub::PostEvent<DestroyUnregisteredDeviceEvent>(std::ref(*this), name);
 	}
 
 	Decoder* DccLiteService::TryFindDecoder(const Address address) const
@@ -436,7 +436,7 @@ namespace dcclite::broker::exec::dcc
 		this->Device_SendPacket(senderAddress, pkt);
 	}
 
-	class NetworkHelloEvent: public dcclite::broker::EventHub::IEvent
+	class NetworkHelloEvent: public sys::EventHub::IEvent
 	{
 		public:
 			NetworkHelloEvent(DccLiteService &target, dcclite::NetworkAddress address, RName deviceName, const dcclite::Guid remoteSessionToken, const dcclite::Guid remoteConfigToken, uint16_t protocolVersion):
@@ -505,7 +505,7 @@ namespace dcclite::broker::exec::dcc
 
 		dcclite::Log::Info("[DccLiteService::{}] [OnNet_Hello] received hello from {}, starting handshake", this->GetName(), name);
 
-		EventHub::PostEvent<NetworkHelloEvent>(std::ref(*this), senderAddress, RName{ name }, remoteSessionToken, remoteConfigToken, procotolVersion);
+		sys::EventHub::PostEvent<NetworkHelloEvent>(std::ref(*this), senderAddress, RName{ name }, remoteSessionToken, remoteConfigToken, procotolVersion);
 	}
 
 	void DccLiteService::OnNetEvent_Hello(
@@ -547,7 +547,7 @@ namespace dcclite::broker::exec::dcc
 		netDevice->AcceptConnection(dcclite::Clock::DefaultClock_t::now(), senderAddress, remoteSessionToken, remoteConfigToken, protocolVersion);
 	}
 
-	class GenericNetworkEvent: public dcclite::broker::EventHub::IEvent
+	class GenericNetworkEvent: public sys::EventHub::IEvent
 	{
 		public:
 			GenericNetworkEvent(DccLiteService &target, dcclite::NetworkAddress address, const dcclite::Packet &packet, dcclite::MsgTypes msgType):
@@ -641,7 +641,7 @@ namespace dcclite::broker::exec::dcc
 
 				[[likely]]
 				default:
-					dcclite::broker::EventHub::PostEvent<GenericNetworkEvent>(std::ref(*this), sender, pkt, msgType);
+					sys::EventHub::PostEvent<GenericNetworkEvent>(std::ref(*this), sender, pkt, msgType);
 					break;
 			}
 		}

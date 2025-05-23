@@ -6,6 +6,7 @@ add_executable(Broker
 target_include_directories(Broker 
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/BrokerLib
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/BrokerShell
+	PRIVATE ${DCCLite_SOURCE_DIR}/src/BrokerSys
     PRIVATE ${DCCLite_SOURCE_DIR}/contrib/spdlog/include
     PRIVATE ${DCCLite_SOURCE_DIR}/contrib/fmt/include
 )
@@ -14,7 +15,7 @@ target_include_directories(Broker
 
 if(WIN32)
     target_link_libraries(Broker   
-        PRIVATE BrokerLib
+        PRIVATE BrokerSysLib
 		PRIVATE BrokerExecLib
 		PRIVATE BrokerShellLib
 	)
@@ -27,7 +28,7 @@ if(WIN32)
 else(WIN32)
 
 	target_link_libraries(Broker         
-		PRIVATE BrokerLib
+		PRIVATE BrokerSysLib
 		PRIVATE BrokerExecLib
 		PRIVATE BrokerShellLib
 		PRIVATE uuid

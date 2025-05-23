@@ -45,7 +45,7 @@ namespace dcclite::broker::exec::dcc
 			virtual void Async_ClientDisconnected(DccppClient &client) = 0;
 	};
 
-	class DccppClient: private IObjectManagerListener, public EventHub::IEventTarget
+	class DccppClient: private sys::IObjectManagerListener, public sys::EventHub::IEventTarget
 	{
 		public:
 			DccppClient(DccppServiceImplClientProxy &owner, DccLiteService &dccLite, const NetworkAddress address, Socket&& socket);
@@ -66,7 +66,7 @@ namespace dcclite::broker::exec::dcc
 			}			
 
 		private:			
-			void OnObjectManagerEvent(const ObjectManagerEvent &event) override;
+			void OnObjectManagerEvent(const sys::ObjectManagerEvent &event) override;
 
 			void ParseStatusCommand(dcclite::Parser &parser, const std::string &msg);
 			bool ParseSensorCommand(dcclite::Parser &parser, const std::string &msg);
@@ -82,7 +82,7 @@ namespace dcclite::broker::exec::dcc
 
 			void ThreadProc();		
 
-			class ClientEvent: public EventHub::IEvent
+			class ClientEvent: public sys::EventHub::IEvent
 			{
 				public:
 					ClientEvent(DccppClient &target, std::string msg):
@@ -113,12 +113,12 @@ namespace dcclite::broker::exec::dcc
 			std::thread				m_clReceiveThread;
 	};		
 
-	class DccppServiceImpl: public DccppService, public EventHub::IEventTarget, DccppServiceImplClientProxy
+	class DccppServiceImpl: public DccppService, public sys::EventHub::IEventTarget, DccppServiceImplClientProxy
 	{
 		public:
 			typedef DccLiteService Requirement_t;
 
-			DccppServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, DccLiteService &dependency);
+			DccppServiceImpl(RName name, sys::Broker &broker, const rapidjson::Value &params, DccLiteService &dependency);
 			~DccppServiceImpl() override;				
 
 		private:			
@@ -132,7 +132,7 @@ namespace dcclite::broker::exec::dcc
 
 		private:
 			
-			class ClientDisconnectedEvent: public EventHub::IEvent
+			class ClientDisconnectedEvent: public sys::EventHub::IEvent
 			{
 				public:
 					ClientDisconnectedEvent(DccppServiceImpl &target, DccppClient &client):
@@ -151,7 +151,7 @@ namespace dcclite::broker::exec::dcc
 					DccppClient &m_rclClient;
 			};
 
-			class AcceptConnectionEvent: public EventHub::IEvent
+			class AcceptConnectionEvent: public sys::EventHub::IEvent
 			{
 				public:
 					AcceptConnectionEvent(DccppServiceImpl &target, const dcclite::NetworkAddress address, dcclite::Socket socket):
@@ -500,9 +500,9 @@ namespace dcclite::broker::exec::dcc
 	}
 
 
-	void DccppClient::OnObjectManagerEvent(const ObjectManagerEvent &event)
+	void DccppClient::OnObjectManagerEvent(const sys::ObjectManagerEvent &event)
 	{		
-		if (event.m_kType != ObjectManagerEvent::ITEM_CHANGED)
+		if (event.m_kType != sys::ObjectManagerEvent::ITEM_CHANGED)
 			return;
 	
 		if(auto decoder = dynamic_cast<const StateDecoder *>(event.m_pclItem))
@@ -711,7 +711,7 @@ ERROR_RESPONSE:
 			if (status != Socket::Status::OK)
 				break;
 			
-			EventHub::PostEvent<ClientEvent>(std::ref(*this), std::move(msg));
+			sys::EventHub::PostEvent<ClientEvent>(std::ref(*this), std::move(msg));
 		}
 
 		m_rclOwner.Async_ClientDisconnected(*this);		
@@ -725,7 +725,7 @@ ERROR_RESPONSE:
 	//
 
 
-	DccppServiceImpl::DccppServiceImpl(RName name, Broker &broker, const rapidjson::Value& params, DccLiteService &dependency):
+	DccppServiceImpl::DccppServiceImpl(RName name, sys::Broker &broker, const rapidjson::Value& params, DccLiteService &dependency):
 		DccppService(name, broker, params),		
 		m_rclDccService{ dependency }
 	{		
@@ -742,10 +742,10 @@ ERROR_RESPONSE:
 		m_thListenThread = std::thread{ [this, port]() {this->ListenThreadProc(port); } };
 		dcclite::SetThreadName(m_thListenThread, "DccppServiceImpl::ListenThread");
 		
-		if (auto bonjourService = static_cast<BonjourService *>(m_rclBroker.TryFindService(RName{ BONJOUR_SERVICE_NAME })))
-			bonjourService->Register(this->GetName().GetData(), "dccpp", NetworkProtocol::TCP, port, 36);
+		if (auto bonjourService = static_cast<sys::BonjourService *>(m_rclBroker.TryFindService(RName{ sys::BONJOUR_SERVICE_NAME })))
+			bonjourService->Register(this->GetName().GetData(), "dccpp", sys::NetworkProtocol::TCP, port, 36);
 
-		ZeroConfSystem::Register(this->GetTypeName(), port);
+		sys::ZeroConfSystem::Register(this->GetTypeName(), port);
 	}
 
 	DccppServiceImpl::~DccppServiceImpl()
@@ -760,7 +760,7 @@ ERROR_RESPONSE:
 		m_vecClients.clear();
 
 		//cancel any pending events, includings clients telling us that they disconnected
-		EventHub::CancelEvents(*this);
+		sys::EventHub::CancelEvents(*this);
 	}
 
 	void DccppServiceImpl::OnAcceptConnection(const dcclite::NetworkAddress &address, Socket s)
@@ -789,7 +789,7 @@ ERROR_RESPONSE:
 			{
 				dcclite::Log::Info("[DccppService] Client connected {}", address.GetIpString());								
 				
-				EventHub::PostEvent<AcceptConnectionEvent>(std::ref(*this), address, std::move(socket));
+				sys::EventHub::PostEvent<AcceptConnectionEvent>(std::ref(*this), address, std::move(socket));
 			}
 			else if (status != Socket::Status::WOULD_BLOCK)
 				break;
@@ -798,7 +798,7 @@ ERROR_RESPONSE:
 
 	void DccppServiceImpl::Async_ClientDisconnected(DccppClient &client)
 	{
-		EventHub::PostEvent<ClientDisconnectedEvent>(std::ref(*this), std::ref(client));
+		sys::EventHub::PostEvent<ClientDisconnectedEvent>(std::ref(*this), std::ref(client));
 	}
 
 	void DccppServiceImpl::OnClientDisconnected(DccppClient &client)
@@ -815,16 +815,14 @@ ERROR_RESPONSE:
 
 	void DccppService::RegisterFactory()
 	{
-		//empty
+		static sys::GenericServiceWithDependenciesFactory< DccppServiceImpl> g_ServiceFactory;
 	}
 
-	DccppService::DccppService(RName name, Broker &broker, const rapidjson::Value &params) :
+	DccppService::DccppService(RName name, sys::Broker &broker, const rapidjson::Value &params) :
 		Service{ name, broker, params }
 	{
 		//empty
 	}
 
-	const char *DccppService::TYPE_NAME = "DccppService";
-
-	static GenericServiceWithDependenciesFactory< DccppServiceImpl> g_ServiceFactory;	
+	const char *DccppService::TYPE_NAME = "DccppService";	
 }

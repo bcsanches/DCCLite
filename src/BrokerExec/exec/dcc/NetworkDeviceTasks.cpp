@@ -99,7 +99,7 @@ namespace dcclite::broker::exec::dcc::detail
 
 			friend class NetworkDevice;
 
-			Thinker						m_clThinker;
+			sys::Thinker				m_clThinker;
 			
 			DownloadEEPromTaskResult_t	&m_vecResults;		
 			std::vector<bool>			m_vecSlicesAck;			
@@ -185,7 +185,7 @@ namespace dcclite::broker::exec::dcc::detail
 					this->ReadSlice(packet, sliceSize, sequence);					
 
 					//force restart ... but wait a bit, so more packets may arrive
-					m_clThinker.Schedule(time + TASK_DOWNLOAD_EEPROM_DOWNLOAD_WAIT);
+					m_clThinker.Schedule(time + sys::TASK_DOWNLOAD_EEPROM_DOWNLOAD_WAIT);
 				}
 				break;
 		}
@@ -216,7 +216,7 @@ namespace dcclite::broker::exec::dcc::detail
 				//Wait for a stable connection (after config, sync, etc)
 				if (!m_rclOwner.IsConnectionStable())
 				{
-					m_clThinker.Schedule(time + TASK_DOWNLOAD_EEPROM_WAIT_CONNECTION);
+					m_clThinker.Schedule(time + sys::TASK_DOWNLOAD_EEPROM_WAIT_CONNECTION);
 
 					return;
 				}
@@ -229,7 +229,7 @@ namespace dcclite::broker::exec::dcc::detail
 				//slice number, request 0... always valid
 				this->RequestSlice(m_rclOwner, 0);
 
-				m_clThinker.Schedule(time + TASK_DOWNLOAD_EEPROM_RETRY_TIMEOUT);
+				m_clThinker.Schedule(time + sys::TASK_DOWNLOAD_EEPROM_RETRY_TIMEOUT);
 				break;
 
 			case States::DOWNLOADING:
@@ -252,7 +252,7 @@ namespace dcclite::broker::exec::dcc::detail
 					//Do we still have work to do?
 					if (packetCount)
 					{
-						m_clThinker.Schedule(time + TASK_DOWNLOAD_EEPROM_RETRY_TIMEOUT);
+						m_clThinker.Schedule(time + sys::TASK_DOWNLOAD_EEPROM_RETRY_TIMEOUT);
 
 						return;
 					}						
@@ -327,8 +327,8 @@ namespace dcclite::broker::exec::dcc::detail
 			void OnThink(const dcclite::Clock::TimePoint_t time);
 
 		private:			
-			Thinker	m_clThinker;
-			RName   m_rnNewName;
+			sys::Thinker	m_clThinker;
+			RName			m_rnNewName;
 
 			bool m_fWaitingNameAck = true;
 
@@ -414,7 +414,7 @@ namespace dcclite::broker::exec::dcc::detail
 		packet.Write8('\0');
 
 		m_rclOwner.TaskServices_SendPacket(packet);
-		m_clThinker.Schedule(time + TASK_RENAME_DEVICE_TIMEOUT);
+		m_clThinker.Schedule(time + sys::TASK_RENAME_DEVICE_TIMEOUT);
 
 		++m_iCount;
 	}
@@ -463,7 +463,7 @@ namespace dcclite::broker::exec::dcc::detail
 			void OnThink(const dcclite::Clock::TimePoint_t time);
 
 		private:
-			Thinker	m_clThinker;			
+			sys::Thinker	m_clThinker;
 
 			bool m_fWaitingAck = true;
 
@@ -532,7 +532,7 @@ namespace dcclite::broker::exec::dcc::detail
 		m_rclOwner.TaskServices_FillPacketHeader(packet, m_u32TaskId, NetworkTaskTypes::TASK_CLEAR_EEPROM);
 
 		m_rclOwner.TaskServices_SendPacket(packet);
-		m_clThinker.Schedule(time + TASK_CLEAR_EEPROM_TIMEOUT);
+		m_clThinker.Schedule(time + sys:: TASK_CLEAR_EEPROM_TIMEOUT);
 
 		++m_iCount;
 	}
@@ -625,7 +625,7 @@ namespace dcclite::broker::exec::dcc::detail
 					void SendStartPacket(const dcclite::Clock::TimePoint_t time);
 
 				private:
-					Thinker	m_clThinker;
+					sys::Thinker m_clThinker;
 			};
 
 			struct RunningState: State
@@ -640,7 +640,7 @@ namespace dcclite::broker::exec::dcc::detail
 					void OnThink(const dcclite::Clock::TimePoint_t time);
 
 				private:
-					Thinker	m_clThinker;
+					sys::Thinker m_clThinker;
 
 					uint32_t	m_u32Sequence = 0;
 					uint32_t	m_u32AckSequence = 0;
@@ -666,7 +666,7 @@ namespace dcclite::broker::exec::dcc::detail
 					void SendDeployPacket(const dcclite::Clock::TimePoint_t time);
 
 				private:
-					Thinker	m_clThinker;
+					sys::Thinker m_clThinker;
 			};
 
 			struct StoppingState: TerminalState
@@ -679,7 +679,7 @@ namespace dcclite::broker::exec::dcc::detail
 					void SendStopPacket(const dcclite::Clock::TimePoint_t time);
 
 				private:
-					Thinker	m_clThinker;
+					sys::Thinker m_clThinker;
 			};
 
 			struct FailureState: TerminalState
@@ -915,7 +915,7 @@ namespace dcclite::broker::exec::dcc::detail
 	{
 		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StartingState::SendStartPacket] Sent start packet - {}", m_rclSelf.m_u32TaskId);
 
-		m_clThinker.Schedule(time + TASK_SERVO_PROGRAMMER_TIMEOUT);
+		m_clThinker.Schedule(time + sys::TASK_SERVO_PROGRAMMER_TIMEOUT);
 
 		//
 		// Start it
@@ -1020,7 +1020,7 @@ namespace dcclite::broker::exec::dcc::detail
 
 		m_rclSelf.m_rclOwner.TaskServices_SendPacket(packet);
 
-		m_clThinker.Schedule(dcclite::Clock::DefaultClock_t::now() + TASK_SERVO_PROGRAMMER_TIMEOUT);
+		m_clThinker.Schedule(dcclite::Clock::DefaultClock_t::now() + sys::TASK_SERVO_PROGRAMMER_TIMEOUT);
 	}
 
 	void ServoTurnoutProgrammerTask::RunningState::OnThink(const dcclite::Clock::TimePoint_t time)
@@ -1091,7 +1091,7 @@ namespace dcclite::broker::exec::dcc::detail
 	{
 		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::DeployState::SendDeployPacket] Sending Deploy packet {} {}", m_rclSelf.m_u32TaskId, time.time_since_epoch().count());
 
-		m_clThinker.Schedule(time + TASK_SERVO_PROGRAMMER_TIMEOUT);
+		m_clThinker.Schedule(time + sys::TASK_SERVO_PROGRAMMER_TIMEOUT);
 
 		//
 		// Deploy it
@@ -1156,7 +1156,7 @@ namespace dcclite::broker::exec::dcc::detail
 	{
 		dcclite::Log::Trace("[ServoTurnoutProgrammerTask::StoppingState::SendStopPacket] Sending stop packet {} {}", m_rclSelf.m_u32TaskId, time.time_since_epoch().count());
 
-		m_clThinker.Schedule(time + TASK_SERVO_PROGRAMMER_TIMEOUT);
+		m_clThinker.Schedule(time + sys::TASK_SERVO_PROGRAMMER_TIMEOUT);
 
 		//
 		// Stop it
@@ -1217,7 +1217,7 @@ namespace dcclite::broker::exec::dcc::detail
 				if (!m_rclOwner.IsConnectionStable())
 					throw std::runtime_error(fmt::format("[NetworkTestTask] Cannot start a network test without a valid connection"));				
 
-				m_tTimeout = std::max(TASK_NETWORK_TEST_DEFAULT_TIMEOUT, m_tTimeout);
+				m_tTimeout = std::max(sys::TASK_NETWORK_TEST_DEFAULT_TIMEOUT, m_tTimeout);
 				
 				this->SendPacket(dcclite::Clock::DefaultClock_t::now());
 			}
@@ -1237,7 +1237,7 @@ namespace dcclite::broker::exec::dcc::detail
 			void SendPacket(const dcclite::Clock::TimePoint_t time);
 
 		private:
-			Thinker	m_clThinker;			
+			sys::Thinker m_clThinker;
 
 			NetworkTestTaskResults m_tResults = {};
 

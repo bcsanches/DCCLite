@@ -191,7 +191,7 @@ namespace dcclite::broker::exec::dcc
 			[[nodiscard]] virtual std::shared_ptr<NetworkTask> StartServoTurnoutProgrammerTask(NetworkTask::IObserver *observer, Decoder &decoder) = 0;
 			[[nodiscard]] virtual std::shared_ptr<NetworkTask> StartDeviceRenameTask(NetworkTask::IObserver *observer, RName newName) = 0;
 			[[nodiscard]] virtual std::shared_ptr<NetworkTask> StartDeviceClearEEPromTask(NetworkTask::IObserver *observer) = 0;
-			[[nodiscard]] virtual std::shared_ptr<NetworkTask> StartDeviceNetworkTestTask(NetworkTask::IObserver *observer, std::chrono::milliseconds timeout = TASK_NETWORK_TEST_DEFAULT_TIMEOUT) = 0;
+			[[nodiscard]] virtual std::shared_ptr<NetworkTask> StartDeviceNetworkTestTask(NetworkTask::IObserver *observer, std::chrono::milliseconds timeout = sys::TASK_NETWORK_TEST_DEFAULT_TIMEOUT) = 0;
 	};
 
 	namespace detail

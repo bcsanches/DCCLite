@@ -28,8 +28,8 @@ namespace dcclite::broker::shell::script
 {
 	const char *ScriptService::TYPE_NAME = "ScriptService";
 
-	ScriptService::ScriptService(RName name, Broker &broker, const rapidjson::Value &params):
-		Service(name, broker, params)
+	ScriptService::ScriptService(RName name, sys::Broker &broker, const rapidjson::Value &params):
+		sys::Service(name, broker, params)
 	{
 		//empty
 	}
@@ -38,13 +38,13 @@ namespace dcclite::broker::shell::script
 	{
 		for (const auto &it : m_setScripts)
 		{
-			FileWatcher::UnwatchFile(it);
+			sys::FileWatcher::UnwatchFile(it);
 		}
 	}
 	
 	void ScriptService::ConfigureLua()
 	{
-		auto path{ Project::GetFilePath("scripts") };
+		auto path{ sys::Project::GetFilePath("scripts") };
 		path.append("autoexec.lua");
 
 		if (!dcclite::fs::exists(path))
@@ -94,7 +94,7 @@ namespace dcclite::broker::shell::script
 			"run_script", 
 			[this](const char *fileName)
 			{
-				auto path = Project::GetFilePath("scripts");
+				auto path = sys::Project::GetFilePath("scripts");
 				path.append(fileName);				
 
 				m_clLua.script_file(path.string());
@@ -170,7 +170,7 @@ namespace dcclite::broker::shell::script
 	void ScriptService::WatchFile(const dcclite::fs::path &fileName)
 	{
 #if 1
-		FileWatcher::TryWatchFile(fileName, [this](dcclite::fs::path path, std::string fileName)
+		sys::FileWatcher::TryWatchFile(fileName, [this](dcclite::fs::path path, std::string fileName)
 			{
 				dcclite::Log::Info("[ScriptService] [FileWatcher::Reload] Attempting to reload config: {}", fileName);
 
@@ -242,5 +242,5 @@ namespace dcclite::broker::shell::script
 		//useless empty
 	}
 
-	static GenericServiceFactory<ScriptService> g_ServiceFactory;
+	static sys::GenericServiceFactory<ScriptService> g_ServiceFactory;
 }

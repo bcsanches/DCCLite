@@ -19,19 +19,19 @@
 
 #include "sys/Service.h"
 
-namespace dcclite::broker
+namespace dcclite::broker::sys
 {	
 	class Broker;
 }
 
 namespace dcclite::broker::shell::script
 {
-	class ScriptService: public Service, public IPostLoadService, public IExecutiveClientService
+	class ScriptService: public sys::Service, public sys::IPostLoadService, public sys::IExecutiveClientService
 	{
 		public:
 			static void RegisterFactory();
 
-			ScriptService(RName name, Broker &broker, const rapidjson::Value &params);
+			ScriptService(RName name, sys::Broker &broker, const rapidjson::Value &params);
 			~ScriptService() override;
 
 			void OnLoadFinished() override;

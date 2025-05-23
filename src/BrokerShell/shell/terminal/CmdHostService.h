@@ -22,14 +22,14 @@ namespace dcclite::broker::shell::terminal
 		This was created to allow a common cmd repository that any subsystem can access and register its own commands
 
 	*/
-	class CmdHostService: public Service
+	class CmdHostService: public sys::Service
 	{
 		public:
 			static void RegisterFactory();			
 
 			static const char *TYPE_NAME;
 
-			CmdHostService(RName name, Broker &broker, const rapidjson::Value &params);
+			CmdHostService(RName name, sys::Broker &broker, const rapidjson::Value &params);
 
 			IObject *AddChild(std::unique_ptr<Object> obj) override;
 

@@ -40,7 +40,7 @@ https://datatracker.ietf.org/doc/html/rfc6335 -> Internet Assigned Numbers Autho
 
 //#define NO_ENDIANNESS
 
-namespace dcclite::broker
+namespace dcclite::broker::sys
 {
 	static const NetworkAddress g_clDnsAddress{ 224, 0, 0, 251, 5353 };
 
@@ -238,32 +238,32 @@ namespace dcclite::broker
 namespace fmt
 {
 	template <>
-	struct formatter<dcclite::broker::QSection>
+	struct formatter<dcclite::broker::sys::QSection>
 	{
 		template <typename ParseContext>
 		constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
 
 		template <typename FormatContext>
-		auto format(const dcclite::broker::QSection &q, FormatContext &ctx) const
+		auto format(const dcclite::broker::sys::QSection &q, FormatContext &ctx) const
 		{		
-			return fmt::format_to(ctx.out(), "{}", dcclite::broker::LabelsVector2String(q.m_vecLabels));
+			return fmt::format_to(ctx.out(), "{}", dcclite::broker::sys::LabelsVector2String(q.m_vecLabels));
 		}
 	};
 
 	template <>
-	struct formatter<dcclite::broker::ResourceRecord>
+	struct formatter<dcclite::broker::sys::ResourceRecord>
 	{
 		template <typename ParseContext>
 		constexpr auto parse(ParseContext &ctx) { return ctx.begin(); }
 
 		template <typename FormatContext>
-		auto format(const dcclite::broker::ResourceRecord &rr, FormatContext &ctx) const
+		auto format(const dcclite::broker::sys::ResourceRecord &rr, FormatContext &ctx) const
 		{
-			return fmt::format_to(ctx.out(), "{}", dcclite::broker::LabelsVector2String(rr.m_vecLabels));
+			return fmt::format_to(ctx.out(), "{}", dcclite::broker::sys::LabelsVector2String(rr.m_vecLabels));
 		}
 	};
 }
-namespace dcclite::broker
+namespace dcclite::broker::sys
 {
 	///////////////////////////////////////////////////////////////////////////////
 	//

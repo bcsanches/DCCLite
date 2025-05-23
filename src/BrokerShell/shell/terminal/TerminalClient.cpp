@@ -58,7 +58,7 @@ namespace dcclite::broker::shell::terminal
 	TerminalClient::TerminalClient(
 		ITerminalServiceClientProxy &owner, 
 		CmdHostService &cmdHost,
-		Broker &broker,
+		sys::Broker &broker,
 		const dcclite::IFolderObject &currentLocation, 
 		const NetworkAddress address, 
 		Socket &&socket
@@ -87,7 +87,7 @@ namespace dcclite::broker::shell::terminal
 		m_rclBroker.VisitServices(
 			[this](auto &item)
 			{
-				auto *service = dynamic_cast<Service *>(&item);
+				auto *service = dynamic_cast<sys::Service *>(&item);
 				if (service != nullptr)
 					service->m_sigEvent.disconnect(this);
 
@@ -95,7 +95,7 @@ namespace dcclite::broker::shell::terminal
 			}
 		);
 
-		EventHub::CancelEvents(*this);
+		sys::EventHub::CancelEvents(*this);
 	}	
 
 	void TerminalClient::RegisterListeners()
@@ -103,7 +103,7 @@ namespace dcclite::broker::shell::terminal
 		m_rclBroker.VisitServices(
 			[this](auto &item)
 			{
-				auto *service = dynamic_cast<Service *>(&item);
+				auto *service = dynamic_cast<sys::Service *>(&item);
 
 				if (service != nullptr)
 				{
@@ -119,7 +119,7 @@ namespace dcclite::broker::shell::terminal
 		);
 	}
 
-	void TerminalClient::SendItemPropertyValueChangedNotification(const ObjectManagerEvent &event)
+	void TerminalClient::SendItemPropertyValueChangedNotification(const sys::ObjectManagerEvent &event)
 	{
 		m_clMessenger.Send(
 			m_clAddress,
@@ -134,15 +134,15 @@ namespace dcclite::broker::shell::terminal
 		);
 	}
 
-	void TerminalClient::OnObjectManagerEvent(const ObjectManagerEvent &event)
+	void TerminalClient::OnObjectManagerEvent(const sys::ObjectManagerEvent &event)
 	{
 		switch (event.m_kType)
 		{
-			case ObjectManagerEvent::ITEM_CHANGED:
+			case sys::ObjectManagerEvent::ITEM_CHANGED:
 				SendItemPropertyValueChangedNotification(event);
 				break;
 
-			case ObjectManagerEvent::ITEM_CREATED:
+			case sys::ObjectManagerEvent::ITEM_CREATED:
 				m_clMessenger.Send(
 					m_clAddress,
 					detail::MakeRpcNotificationMessage(
@@ -156,7 +156,7 @@ namespace dcclite::broker::shell::terminal
 				);
 				break;
 
-			case ObjectManagerEvent::ITEM_DESTROYED:
+			case sys::ObjectManagerEvent::ITEM_DESTROYED:
 				m_clMessenger.Send(
 					m_clAddress,
 					detail::MakeRpcNotificationMessage(
@@ -301,7 +301,7 @@ namespace dcclite::broker::shell::terminal
 				throw std::logic_error(fmt::format("[TerminalClient::ReceiveDataThreadProc] Unexpected socket error: {}", magic_enum::enum_name(status)));
 
 			//dcclite::Log::Trace("[TerminalClient::ReceiveDataThreadProc] Got data");
-			EventHub::PostEvent<TerminalClient::MsgArrivedEvent>(std::ref(*this), std::move(msg));
+			sys::EventHub::PostEvent<TerminalClient::MsgArrivedEvent>(std::ref(*this), std::move(msg));
 		}
 
 		m_rclOwner.Async_DisconnectClient(*this);

@@ -26,7 +26,7 @@ namespace dcclite
 	class Clock;
 }
 
-namespace dcclite::broker
+namespace dcclite::broker::sys
 {
 	class Service;	
 
@@ -56,6 +56,7 @@ namespace dcclite::broker
 			void SignalExecutiveChangeEnd();	
 
 			IObject *AddChild(std::unique_ptr<Object> obj) override;
+			void AddService(std::unique_ptr<Service> service);
 
 		private:
 			void LoadConfig();

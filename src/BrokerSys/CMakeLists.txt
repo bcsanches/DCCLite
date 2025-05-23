@@ -5,7 +5,7 @@ file(GLOB_RECURSE SRC_SYS
 )
 
 add_library(
-    BrokerLib        	
+    BrokerSysLib       	
         sys/BonjourService.cpp
         sys/BonjourService.h        
         sys/Broker.cpp        
@@ -32,7 +32,7 @@ add_library(
 source_group("sys"          		FILES ${SRC_SYS})
 
 if(WIN32)	
-    target_link_libraries(BrokerLib         
+    target_link_libraries(BrokerSysLib      
         PRIVATE bcrypt.lib
         PRIVATE CityHash
         PRIVATE Common
@@ -49,7 +49,7 @@ else(WIN32)
 
 	find_package(OpenSSL REQUIRED)
 
-	target_link_libraries(BrokerLib 		
+	target_link_libraries(BrokerSysLib	
         CityHash
         Common 
         dl
@@ -66,13 +66,13 @@ else(WIN32)
 
 endif(WIN32)
 
-target_compile_definitions(BrokerLib 
+target_compile_definitions(BrokerSysLib
     PRIVATE
         # If the debug configuration pass the DEBUG define to the compiler 
         DEBUG
 )
 
-target_include_directories(BrokerLib 	
+target_include_directories(BrokerSysLib	
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/JsonCreator/include    
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/ldmonitor/include    
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/rapidjson/include

@@ -8,23 +8,17 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-
 #pragma once
 
-#include <dcclite/Socket.h>
+#include <functional>
 
-#include "Service.h"
+#include <dcclite/FileSystem.h>
 
-namespace dcclite::broker::ZeroConfSystem
-{ 		
-	extern void Start(std::string_view projectName);
+namespace dcclite::broker::sys::FileWatcher
+{	
+	typedef std::function<void(dcclite::fs::path path, std::string fileName)> Callback_t;
 
-	extern void Stop();
-		
-	//
-	// Register a name to be published 
-	//
-	// It is safe to call this without a call to Start, but publishing service only happens after start is called
-	//
-	extern void Register(const std::string_view serviceName, const uint16_t port);				
+	bool TryWatchFile(const dcclite::fs::path &fileName, const Callback_t &callback);
+
+	void UnwatchFile(const dcclite::fs::path &fileName);
 }

@@ -22,7 +22,7 @@
 
 #include "Timeouts.h"
 
-namespace dcclite::broker::ZeroConfSystem
+namespace dcclite::broker::sys::ZeroConfSystem
 {		
 	static std::map<std::string_view, uint16_t> g_mapServices;
 	static dcclite::Socket						g_clSocket;	

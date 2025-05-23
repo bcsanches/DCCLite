@@ -31,13 +31,13 @@
 
 namespace dcclite::broker::exec::dcc
 {
-	Device::Device(RName name, Broker &broker, IDccLite_DeviceServices &dccService, const rapidjson::Value &params):
+	Device::Device(RName name, sys::Broker &broker, IDccLite_DeviceServices &dccService, const rapidjson::Value &params):
 		FolderObject{ name },
 		m_clDccService{ dccService },
 		m_strConfigFileName{ std::string(this->GetName().GetData()) + ".decoders.json" },
-		m_pathConfigFile{ Project::GetFilePath(m_strConfigFileName) }
+		m_pathConfigFile{ sys::Project::GetFilePath(m_strConfigFileName) }
 	{
-		FileWatcher::TryWatchFile(m_pathConfigFile, [this, &broker](const dcclite::fs::path path, std::string fileName)
+		sys::FileWatcher::TryWatchFile(m_pathConfigFile, [this, &broker](const dcclite::fs::path path, std::string fileName)
 			{
 				dcclite::Log::Info("[Device::{}] [FileWatcher::Reload] Attempting to reload config: {}", this->GetName(), fileName);
 				
@@ -58,7 +58,7 @@ namespace dcclite::broker::exec::dcc
 	Device::Device(RName name, IDccLite_DeviceServices &dccService):
 		FolderObject{ name },
 		m_clDccService{ dccService },		
-		m_pathConfigFile{ Project::GetFilePath(m_strConfigFileName) }
+		m_pathConfigFile{ sys::Project::GetFilePath(m_strConfigFileName) }
 	{
 		//emtpy
 	}
@@ -66,7 +66,7 @@ namespace dcclite::broker::exec::dcc
 	Device::~Device()
 	{
 		if (!m_pathConfigFile.empty())
-			FileWatcher::UnwatchFile(m_pathConfigFile);		
+			sys::FileWatcher::UnwatchFile(m_pathConfigFile);
 	}
 
 	void Device::OnUnload()

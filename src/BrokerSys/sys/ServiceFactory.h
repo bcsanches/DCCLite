@@ -20,7 +20,7 @@
 
 #include "Broker.h"
 
-namespace dcclite::broker
+namespace dcclite::broker::sys
 {
 	class Service;	
 

@@ -19,7 +19,7 @@
 #include <dcclite/Clock.h>
 #include <dcclite/Log.h>
 
-namespace dcclite::broker
+namespace dcclite::broker::sys
 {
 	class ObjectPool
 	{

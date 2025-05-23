@@ -19,14 +19,14 @@
 
 namespace dcclite::broker::shell::ln
 { 
-	class LoconetService: public Service
+	class LoconetService: public sys::Service
 	{	
 		public:
 			static const char *TYPE_NAME;
 
 			static void RegisterFactory();
 
-			LoconetService(RName name, Broker &broker, const rapidjson::Value& params);
+			LoconetService(RName name, sys::Broker &broker, const rapidjson::Value& params);
 		
 			~LoconetService() override
 			{

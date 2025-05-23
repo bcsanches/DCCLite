@@ -18,7 +18,7 @@
 
 #define THINKER_MF_LAMBDA(proc) ([this](const dcclite::Clock::TimePoint_t &tp) {this->proc(tp); })
 
-namespace dcclite::broker
+namespace dcclite::broker::sys
 {
 	class Thinker
 	{

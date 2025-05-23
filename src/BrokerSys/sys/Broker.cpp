@@ -43,7 +43,7 @@
 //win32 header leak
 #undef GetObject
 
-namespace dcclite::broker
+namespace dcclite::broker::sys
 {
 	static inline bool CheckIfServiceIsIgnorable(const rapidjson::Value &data) noexcept
 	{
@@ -224,7 +224,7 @@ namespace dcclite::broker
 				if (!service)
 					continue;
 
-				this->AddChild(std::move(service));
+				this->AddService(std::move(service));
 			}
 		}
 
@@ -235,7 +235,7 @@ namespace dcclite::broker
 			if (!service)
 				continue;
 
-			this->AddChild(std::move(service));
+			this->AddService(std::move(service));
 		}
 	}
 
@@ -327,11 +327,13 @@ namespace dcclite::broker
 	}
 
 	IObject *Broker::AddChild(std::unique_ptr<Object> obj)
-	{
-		if (dynamic_cast<Service *>(obj.get()) == nullptr)
-			throw std::runtime_error(fmt::format("[Broker::AddChild] Only services are acceptable, not {} - {}", obj->GetTypeName(), obj->GetName()));
+	{		
+		throw std::runtime_error(fmt::format("[Broker::AddChild] Only services are acceptable, not {} - {}", obj->GetTypeName(), obj->GetName()));		
+	}
 
-		return FolderObject::AddChild(std::move(obj));
+	void Broker::AddService(std::unique_ptr<Service> service)
+	{	
+		FolderObject::AddChild(std::move(service));
 	}
 }
 

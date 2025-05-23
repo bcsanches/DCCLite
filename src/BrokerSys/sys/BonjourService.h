@@ -13,7 +13,7 @@
 
 #include "Service.h"
 
-namespace dcclite::broker
+namespace dcclite::broker::sys
 { 
 	enum class NetworkProtocol
 	{

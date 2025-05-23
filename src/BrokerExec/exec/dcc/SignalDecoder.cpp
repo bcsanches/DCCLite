@@ -279,7 +279,7 @@ namespace dcclite::broker::exec::dcc
 
 		//do we have to wait for any heads to turn off?
 		if(m_uWaitListSize)
-			m_clTimeoutThinker.Schedule(dcclite::Clock::DefaultClock_t::now() + SIGNAL_WAIT_STATE_TIMEOUT);
+			m_clTimeoutThinker.Schedule(dcclite::Clock::DefaultClock_t::now() + sys::SIGNAL_WAIT_STATE_TIMEOUT);
 	}
 
 	void SignalDecoder::State_WaitTurnOff::Init()
@@ -326,7 +326,7 @@ namespace dcclite::broker::exec::dcc
 			return;
 		}
 
-		m_clTimeoutThinker.Schedule(time + SIGNAL_WAIT_STATE_TIMEOUT);
+		m_clTimeoutThinker.Schedule(time + sys::SIGNAL_WAIT_STATE_TIMEOUT);
 	}
 
 	void SignalDecoder::State_WaitTurnOff::OnDecoderStateSync(RemoteDecoder &decoder)
@@ -388,6 +388,6 @@ namespace dcclite::broker::exec::dcc
 			}
 		);
 
-		m_clThinker.Schedule(time + SIGNAL_FLASH_INTERVAL);
+		m_clThinker.Schedule(time + sys::SIGNAL_FLASH_INTERVAL);
 	}		
 }

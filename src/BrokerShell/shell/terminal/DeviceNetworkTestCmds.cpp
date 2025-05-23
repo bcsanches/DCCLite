@@ -10,6 +10,8 @@
 
 #include "DeviceNetworkTestCmds.h"
 
+#include <chrono>
+
 #include <fmt/format.h>
 #include <fmt/chrono.h>
 
@@ -24,6 +26,8 @@ namespace dcclite::broker::shell::terminal
 {	
 	TerminalCmd::CmdResult_t StartNetworkTestCmd::Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request)
 	{
+		using namespace std::chrono_literals;
+
 		auto paramsIt = request.FindMember("params");
 		if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() < 1))
 		{
@@ -34,7 +38,7 @@ namespace dcclite::broker::shell::terminal
 
 		auto &device = detail::GetNetworkDevice(dcclite::Path_t{ path }, context, id);
 
-		std::chrono::milliseconds timeout = TASK_NETWORK_TEST_DEFAULT_TIMEOUT;
+		std::chrono::milliseconds timeout = sys::TASK_NETWORK_TEST_DEFAULT_TIMEOUT;
 		if (paramsIt->value.Size() == 2)
 		{
 			timeout = std::chrono::milliseconds{ paramsIt->value[1].GetInt() };

@@ -10,7 +10,7 @@
 
 #include "Service.h"
 
-namespace dcclite::broker
+namespace dcclite::broker::sys
 {	
 	void Service::NotifyItemCreated(dcclite::IItem &item) const
 	{

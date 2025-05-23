@@ -23,7 +23,7 @@
 
 #include <rapidjson/document.h>
 
-namespace dcclite::broker
+namespace dcclite::broker::sys
 {
 	class Broker;
 }
@@ -36,7 +36,7 @@ namespace dcclite::broker::exec::dcc
 	class Device : public dcclite::FolderObject, IDevice_DecoderServices
 	{
 		public:
-			Device(RName name, Broker &broker, IDccLite_DeviceServices &dccService, const rapidjson::Value &params);
+			Device(RName name, sys::Broker &broker, IDccLite_DeviceServices &dccService, const rapidjson::Value &params);
 			Device(RName name, IDccLite_DeviceServices &dccService);
 
 			virtual ~Device();			

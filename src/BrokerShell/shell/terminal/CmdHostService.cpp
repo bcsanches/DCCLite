@@ -19,7 +19,7 @@
 
 namespace dcclite::broker::shell::terminal
 {
-	CmdHostService::CmdHostService(RName name, Broker &broker, const rapidjson::Value &params):
+	CmdHostService::CmdHostService(RName name, sys::Broker &broker, const rapidjson::Value &params):
 		Service(name, broker, params)
 	{
 		//empty
@@ -56,7 +56,7 @@ namespace dcclite::broker::shell::terminal
 
 	void CmdHostService::RegisterFactory()
 	{
-		static GenericServiceFactory<CmdHostService> g_clFactory;
+		static sys::GenericServiceFactory<CmdHostService> g_clFactory;
 	}
 
 	const char *CmdHostService::TYPE_NAME = "CmdHostService";

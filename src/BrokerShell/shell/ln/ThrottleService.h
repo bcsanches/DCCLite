@@ -38,14 +38,14 @@ namespace dcclite::broker::shell::ln
 	};
 
 
-	class ThrottleService: public Service
+	class ThrottleService: public sys::Service
 	{	
 		public:
 			static const char *TYPE_NAME;
 
 			static void RegisterFactory();
 
-			ThrottleService(RName name, Broker &broker, const rapidjson::Value& params);
+			ThrottleService(RName name, sys::Broker &broker, const rapidjson::Value& params);
 		
 			~ThrottleService() override = default;
 

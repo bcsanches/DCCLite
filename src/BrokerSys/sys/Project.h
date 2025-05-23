@@ -13,7 +13,7 @@
 #include <dcclite/FileSystem.h>
 #include <dcclite/Sha1.h>
 
-namespace dcclite::broker
+namespace dcclite::broker::sys
 {
 	namespace Project
 	{

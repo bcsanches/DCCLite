@@ -50,9 +50,9 @@ TEST(Thinker, RunTest)
 {
 	g_iCounter = 0;
 
-	dcclite::broker::Thinker ta{ "ta", ProcA};
-	dcclite::broker::Thinker tb{ "tb", ProcB };
-	dcclite::broker::Thinker tc{ "tc", ProcC };
+	dcclite::broker::sys::Thinker ta{ "ta", ProcA};
+	dcclite::broker::sys::Thinker tb{ "tb", ProcB };
+	dcclite::broker::sys::Thinker tc{ "tc", ProcC };
 
 	dcclite::Clock ck;
 
@@ -66,19 +66,19 @@ TEST(Thinker, RunTest)
 	ta.Schedule(tp + 50ms);
 	tb.Schedule(tp + 100ms);
 
-	dcclite::broker::Thinker::UpdateThinkers(tp + 10ms);
+	dcclite::broker::sys::Thinker::UpdateThinkers(tp + 10ms);
 	ASSERT_EQ(g_iCounter, 0);
 
-	dcclite::broker::Thinker::UpdateThinkers(tp + 50ms);
+	dcclite::broker::sys::Thinker::UpdateThinkers(tp + 50ms);
 	ASSERT_EQ(g_iCounter, 1);
 
-	dcclite::broker::Thinker::UpdateThinkers(tp + 110ms);
+	dcclite::broker::sys::Thinker::UpdateThinkers(tp + 110ms);
 	ASSERT_EQ(g_iCounter, 2);
 
-	dcclite::broker::Thinker::UpdateThinkers(tp + 150ms);
+	dcclite::broker::sys::Thinker::UpdateThinkers(tp + 150ms);
 	ASSERT_EQ(g_iCounter, 3);
 
-	dcclite::broker::Thinker::UpdateThinkers(tp + 300ms);
+	dcclite::broker::sys::Thinker::UpdateThinkers(tp + 300ms);
 	ASSERT_EQ(g_iCounter, 3);
 
 	g_iCounter = 0;
@@ -86,7 +86,7 @@ TEST(Thinker, RunTest)
 	ta.Schedule(tp + 50ms);
 	tb.Schedule(tp + 100ms);
 
-	dcclite::broker::Thinker::UpdateThinkers(tp + 300ms);
+	dcclite::broker::sys::Thinker::UpdateThinkers(tp + 300ms);
 	ASSERT_EQ(g_iCounter, 3);
 
 	//
@@ -96,7 +96,7 @@ TEST(Thinker, RunTest)
 	tc.Schedule(tp + 150ms);
 	tb.Schedule(tp + 100ms);
 
-	dcclite::broker::Thinker::UpdateThinkers(tp + 100ms);
+	dcclite::broker::sys::Thinker::UpdateThinkers(tp + 100ms);
 	ASSERT_EQ(g_iCounter, 2);	
 }
 
@@ -104,11 +104,11 @@ TEST(Thinker, SameTime)
 {
 	g_iCounter = 0;
 
-	dcclite::broker::Thinker ta{ "ta", ProcA };
-	dcclite::broker::Thinker tb{ "tb", ProcB };
-	dcclite::broker::Thinker tc{ "tc", ProcC };
+	dcclite::broker::sys::Thinker ta{ "ta", ProcA };
+	dcclite::broker::sys::Thinker tb{ "tb", ProcB };
+	dcclite::broker::sys::Thinker tc{ "tc", ProcC };
 
-	dcclite::broker::Thinker taa{ "taa", ProcAA };
+	dcclite::broker::sys::Thinker taa{ "taa", ProcAA };
 
 	dcclite::Clock ck;
 
@@ -125,7 +125,7 @@ TEST(Thinker, SameTime)
 
 	taa.Schedule(tp + 10ms);
 
-	dcclite::broker::Thinker::UpdateThinkers(tp + 50ms);
+	dcclite::broker::sys::Thinker::UpdateThinkers(tp + 50ms);
 
 	ASSERT_EQ(g_iCounter, 1);
 	ASSERT_TRUE(g_fAACalled);
@@ -135,9 +135,9 @@ TEST(Thinker, CancelTest)
 {
 	g_iCounter = 0;
 
-	dcclite::broker::Thinker ta{ "ta", ProcA };
-	dcclite::broker::Thinker tb{ "tb", ProcB };
-	dcclite::broker::Thinker tc{ "tc", ProcC };
+	dcclite::broker::sys::Thinker ta{ "ta", ProcA };
+	dcclite::broker::sys::Thinker tb{ "tb", ProcB };
+	dcclite::broker::sys::Thinker tc{ "tc", ProcC };
 
 	dcclite::Clock ck;
 
@@ -153,7 +153,7 @@ TEST(Thinker, CancelTest)
 	tb.Schedule(tp + 100ms);	
 	tb.Cancel();
 
-	dcclite::broker::Thinker::UpdateThinkers(tp + 300ms);
+	dcclite::broker::sys::Thinker::UpdateThinkers(tp + 300ms);
 	ASSERT_EQ(g_iCounter, 1);
 
 	g_iCounter = 0;
@@ -163,7 +163,7 @@ TEST(Thinker, CancelTest)
 
 	tc.Cancel();
 
-	dcclite::broker::Thinker::UpdateThinkers(tp + 300ms);
+	dcclite::broker::sys::Thinker::UpdateThinkers(tp + 300ms);
 	ASSERT_EQ(g_iCounter, 2);
 
 	g_iCounter = 0;
@@ -173,6 +173,6 @@ TEST(Thinker, CancelTest)
 
 	ta.Cancel();
 
-	dcclite::broker::Thinker::UpdateThinkers(tp + 50ms);
+	dcclite::broker::sys::Thinker::UpdateThinkers(tp + 50ms);
 	ASSERT_EQ(g_iCounter, 0);
 }

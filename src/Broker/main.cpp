@@ -41,10 +41,10 @@ constexpr auto BUILD_NUM = DCCLITE_VERSION;
 
 static std::atomic_flag g_fExitRequested;
 
-class QuitEvent: public dcclite::broker::EventHub::IEvent
+class QuitEvent: public dcclite::broker::sys::EventHub::IEvent
 {
 	private:
-		class NullEventTarget: public dcclite::broker::EventHub::IEventTarget
+		class NullEventTarget: public dcclite::broker::sys::EventHub::IEventTarget
 		{
 			//empty
 		};
@@ -71,7 +71,7 @@ static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 	g_fExitRequested.test_and_set(std::memory_order_relaxed);
 
 	//wake up main thread if it is sitting waiting for events...
-	dcclite::broker::EventHub::PostEvent<QuitEvent>();
+	dcclite::broker::sys::EventHub::PostEvent<QuitEvent>();
 
 	dcclite::Log::Info("[Main] CTRL+C detected, exiting...");
 
@@ -91,7 +91,7 @@ static void InitServicesFactories()
 
 	//just touch all to register the factories
 	//static lib does initialize static variables without this... hack??
-	BonjourService::RegisterFactory();
+	sys::BonjourService::RegisterFactory();
 
 	exec::dcc::DccLiteService::RegisterFactory();
 	exec::dcc::DccppService::RegisterFactory();
@@ -111,8 +111,10 @@ int main(int argc, char **argv)
 {			
 	using namespace std::chrono_literals;
 
+	g_fExitRequested.clear(std::memory_order_relaxed);
+
 	try
-	{ 
+	{		
 		dcclite::Init("Broker", "DccLiteBroker.log");		
 
 #ifndef DEBUG
@@ -130,7 +132,7 @@ int main(int argc, char **argv)
 
 		InitServicesFactories();
 
-		dcclite::broker::Broker broker{ (argc == 1) ? "MyRailroad" : argv[1] };		
+		dcclite::broker::sys::Broker broker{ (argc == 1) ? "MyRailroad" : argv[1] };
 		
 		dcclite::Log::Info("Ready, main loop...");		
 		
@@ -138,9 +140,9 @@ int main(int argc, char **argv)
 		{			
 			auto now = dcclite::Clock::DefaultClock_t::now();
 						
-			auto timeout = dcclite::broker::Thinker::UpdateThinkers(now);
+			auto timeout = dcclite::broker::sys::Thinker::UpdateThinkers(now);
 			
-			dcclite::broker::EventHub::PumpEvents(timeout);
+			dcclite::broker::sys::EventHub::PumpEvents(timeout);
 		}
 	}	
 	catch (std::exception &ex)

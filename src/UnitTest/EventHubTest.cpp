@@ -14,7 +14,7 @@
 
 #include "sys/EventHub.h"
 
-class EventTargetMockup : public dcclite::broker::EventHub::IEventTarget
+class EventTargetMockup : public dcclite::broker::sys::EventHub::IEventTarget
 {
 	public:
 		explicit EventTargetMockup(std::string_view name):
@@ -27,10 +27,10 @@ class EventTargetMockup : public dcclite::broker::EventHub::IEventTarget
 		std::string_view m_svDebugName;
 };
 
-class MyTestEvent : public dcclite::broker::EventHub::IEvent
+class MyTestEvent : public dcclite::broker::sys::EventHub::IEvent
 {
 	public:
-		MyTestEvent(dcclite::broker::EventHub::IEventTarget &target, std::function<void()> lambda) :
+		MyTestEvent(dcclite::broker::sys::EventHub::IEventTarget &target, std::function<void()> lambda) :
 			IEvent{ target },
 			m_pfnLambda{ lambda }
 		{
@@ -67,12 +67,12 @@ TEST(EventHub, Basic)
 	ASSERT_EQ(MyTestEvent::GetObjectCount(), 0);
 
 	EventTargetMockup t1{"t1"};
-	dcclite::broker::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { called = true; });
+	dcclite::broker::sys::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { called = true; });
 
 	ASSERT_EQ(MyTestEvent::GetObjectCount(), 1);
 	ASSERT_FALSE(called);
 	
-	dcclite::broker::EventHub::PumpEvents(dcclite::Clock::DefaultClock_t::now());
+	dcclite::broker::sys::EventHub::PumpEvents(dcclite::Clock::DefaultClock_t::now());
 
 	ASSERT_EQ(MyTestEvent::GetObjectCount(), 0);
 	ASSERT_TRUE(called);
@@ -84,23 +84,23 @@ TEST(EventHub, CancelEvent)
 	ASSERT_EQ(MyTestEvent::GetObjectCount(), 0);	
 
 	EventTargetMockup t1{"t1"};
-	dcclite::broker::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { ++called;  });
+	dcclite::broker::sys::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { ++called;  });
 
 	EventTargetMockup t2{"t2"};
-	dcclite::broker::EventHub::PostEvent<MyTestEvent>(std::ref(t2), [&called] { ++called;  });
+	dcclite::broker::sys::EventHub::PostEvent<MyTestEvent>(std::ref(t2), [&called] { ++called;  });
 
 	EventTargetMockup t3{"t3"};
-	dcclite::broker::EventHub::PostEvent<MyTestEvent>(std::ref(t3), [&called] { ++called; });
+	dcclite::broker::sys::EventHub::PostEvent<MyTestEvent>(std::ref(t3), [&called] { ++called; });
 
 
 	ASSERT_EQ(MyTestEvent::GetObjectCount(), 3);	
 
-	dcclite::broker::EventHub::CancelEvents(t2);
+	dcclite::broker::sys::EventHub::CancelEvents(t2);
 
 	ASSERT_EQ(MyTestEvent::GetObjectCount(), 2);	
 	ASSERT_EQ(called, 0);
 
-	dcclite::broker::EventHub::PumpEvents(dcclite::Clock::DefaultClock_t::now());
+	dcclite::broker::sys::EventHub::PumpEvents(dcclite::Clock::DefaultClock_t::now());
 
 	ASSERT_EQ(MyTestEvent::GetObjectCount(), 0);
 	ASSERT_EQ(called, 2);
@@ -112,29 +112,29 @@ TEST(EventHub, TestInternalList)
 	ASSERT_EQ(MyTestEvent::GetObjectCount(), 0);
 
 	EventTargetMockup t1{ "t1" };
-	dcclite::broker::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { ++called;  });
+	dcclite::broker::sys::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { ++called;  });
 
 	EventTargetMockup t2{ "t2" };
-	dcclite::broker::EventHub::PostEvent<MyTestEvent>(std::ref(t2), [&called] { ++called;  });
+	dcclite::broker::sys::EventHub::PostEvent<MyTestEvent>(std::ref(t2), [&called] { ++called;  });
 
 	EventTargetMockup t3{ "t3" };
-	dcclite::broker::EventHub::PostEvent<MyTestEvent>(std::ref(t3), [&called] { ++called; });
+	dcclite::broker::sys::EventHub::PostEvent<MyTestEvent>(std::ref(t3), [&called] { ++called; });
 
 
 	ASSERT_EQ(MyTestEvent::GetObjectCount(), 3);
 
-	dcclite::broker::EventHub::CancelEvents(t2);
+	dcclite::broker::sys::EventHub::CancelEvents(t2);
 
 	ASSERT_EQ(MyTestEvent::GetObjectCount(), 2);
 	ASSERT_EQ(called, 0);
 	
-	dcclite::broker::EventHub::CancelEvents(t1);
+	dcclite::broker::sys::EventHub::CancelEvents(t1);
 	ASSERT_EQ(MyTestEvent::GetObjectCount(), 1);
 	
-	dcclite::broker::EventHub::CancelEvents(t3);
+	dcclite::broker::sys::EventHub::CancelEvents(t3);
 	ASSERT_EQ(MyTestEvent::GetObjectCount(), 0);
 
-	dcclite::broker::EventHub::PumpEvents(dcclite::Clock::DefaultClock_t::now());
+	dcclite::broker::sys::EventHub::PumpEvents(dcclite::Clock::DefaultClock_t::now());
 
 	ASSERT_EQ(MyTestEvent::GetObjectCount(), 0);
 	ASSERT_EQ(called, 0);
@@ -146,25 +146,25 @@ TEST(EventHub, CancelMultipleTargets)
 	ASSERT_EQ(MyTestEvent::GetObjectCount(), 0);
 
 	EventTargetMockup t1{ "t1" };
-	dcclite::broker::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { ++called;  });
+	dcclite::broker::sys::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { ++called;  });
 
 	EventTargetMockup t2{ "t2" };
-	dcclite::broker::EventHub::PostEvent<MyTestEvent>(std::ref(t2), [&called] { ++called;  });
+	dcclite::broker::sys::EventHub::PostEvent<MyTestEvent>(std::ref(t2), [&called] { ++called;  });
 
 	EventTargetMockup t3{ "t3" };
-	dcclite::broker::EventHub::PostEvent<MyTestEvent>(std::ref(t3), [&called] { ++called; });
+	dcclite::broker::sys::EventHub::PostEvent<MyTestEvent>(std::ref(t3), [&called] { ++called; });
 	
-	dcclite::broker::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { ++called; });
+	dcclite::broker::sys::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { ++called; });
 
 
 	ASSERT_EQ(MyTestEvent::GetObjectCount(), 4);
 
-	dcclite::broker::EventHub::CancelEvents(t1);
+	dcclite::broker::sys::EventHub::CancelEvents(t1);
 
 	ASSERT_EQ(MyTestEvent::GetObjectCount(), 2);
 	ASSERT_EQ(called, 0);
 
-	dcclite::broker::EventHub::PumpEvents(dcclite::Clock::DefaultClock_t::now());
+	dcclite::broker::sys::EventHub::PumpEvents(dcclite::Clock::DefaultClock_t::now());
 
 	ASSERT_EQ(MyTestEvent::GetObjectCount(), 0);
 	ASSERT_EQ(called, 2);
@@ -180,7 +180,7 @@ TEST(EventHub, BadAlloc)
 	try
 	{
 		for (int i = 0;i < 1024; ++i)
-			dcclite::broker::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { ++called;  });
+			dcclite::broker::sys::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { ++called;  });
 
 		//fail
 		ASSERT_TRUE(false);
@@ -188,13 +188,13 @@ TEST(EventHub, BadAlloc)
 	catch (std::bad_alloc &)
 	{
 		//test passed
-		dcclite::broker::EventHub::CancelEvents(t1);
+		dcclite::broker::sys::EventHub::CancelEvents(t1);
 
 		ASSERT_EQ(MyTestEvent::GetObjectCount(), 0);
-		dcclite::broker::EventHub::PumpEvents(dcclite::Clock::DefaultClock_t::now());
+		dcclite::broker::sys::EventHub::PumpEvents(dcclite::Clock::DefaultClock_t::now());
 
 		//memory is free
-		dcclite::broker::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { ++called;  });		
+		dcclite::broker::sys::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { ++called;  });
 
 		return;
 	}

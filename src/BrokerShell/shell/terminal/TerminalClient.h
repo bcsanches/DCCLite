@@ -50,13 +50,13 @@ namespace dcclite::broker::shell::terminal
 			std::map<uint32_t, std::shared_ptr<exec::dcc::NetworkTask>>	m_mapNetworkTasks;
 	};
 
-	class TerminalClient: private IObjectManagerListener, ITerminalClient_ContextServices, EventHub::IEventTarget
+	class TerminalClient: private sys::IObjectManagerListener, ITerminalClient_ContextServices, sys::EventHub::IEventTarget
 	{
 		public:
 			TerminalClient(
 				ITerminalServiceClientProxy &owner, 
 				CmdHostService &cmdHost,
-				Broker &broker, 
+				sys::Broker &broker,
 				const dcclite::IFolderObject &currentLocation, 
 				const NetworkAddress address, 
 				Socket &&socket
@@ -67,11 +67,11 @@ namespace dcclite::broker::shell::terminal
 			virtual ~TerminalClient();
 
 		private:
-			void OnObjectManagerEvent(const ObjectManagerEvent &event) override;
+			void OnObjectManagerEvent(const sys::ObjectManagerEvent &event) override;
 
 			void RegisterListeners();
 
-			void SendItemPropertyValueChangedNotification(const ObjectManagerEvent &event);			
+			void SendItemPropertyValueChangedNotification(const sys::ObjectManagerEvent &event);
 
 			void ReceiveDataThreadProc();
 
@@ -86,7 +86,7 @@ namespace dcclite::broker::shell::terminal
 			TaskManager &GetTaskManager() override;
 			void SendClientNotification(const std::string_view msg) override;
 
-			class MsgArrivedEvent: public EventHub::IEvent
+			class MsgArrivedEvent: public sys::EventHub::IEvent
 			{
 				public:
 					MsgArrivedEvent(TerminalClient &target, std::string &&msg):
@@ -111,7 +111,7 @@ namespace dcclite::broker::shell::terminal
 
 			ITerminalServiceClientProxy &m_rclOwner;
 			CmdHostService				&m_rclCmdHost;
-			Broker						&m_rclBroker;
+			sys::Broker					&m_rclBroker;
 
 			std::list<std::unique_ptr<TerminalCmdFiber>>	m_lstFibers;
 

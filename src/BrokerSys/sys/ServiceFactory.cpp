@@ -12,7 +12,7 @@
 
 #include <stdexcept>
 
-namespace dcclite::broker
+namespace dcclite::broker::sys
 {
 	//avoid static initialization hell...
 	static ServiceFactory **GetHead()

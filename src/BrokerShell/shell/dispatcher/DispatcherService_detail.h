@@ -21,7 +21,7 @@ namespace dcclite::broker::shell::dispatcher::detail
 	class DispatcherServiceScripter: public DispatcherService
 	{
 		protected:
-			inline DispatcherServiceScripter(RName name, Broker &broker, const rapidjson::Value &params):
+			inline DispatcherServiceScripter(RName name, sys::Broker &broker, const rapidjson::Value &params):
 				DispatcherService(name, broker, params)
 			{
 				//empty

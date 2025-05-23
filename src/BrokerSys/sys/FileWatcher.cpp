@@ -22,9 +22,9 @@
 #include "Timeouts.h"
 #include "Thinker.h"
 
-namespace FileWatcher
+namespace dcclite::broker::sys::FileWatcher
 {			
-	class EventTarget : public dcclite::broker::EventHub::IEventTarget
+	class EventTarget : public dcclite::broker::sys::EventHub::IEventTarget
 	{
 		public:
 			EventTarget()
@@ -84,7 +84,7 @@ namespace FileWatcher
 					return;
 
 				//too fast? Probably filesystem noise...
-				if ((time - it->second.m_tLastTime) < dcclite::broker::FILE_WATCHER_IGNORE_TIME)
+				if ((time - it->second.m_tLastTime) < dcclite::broker::sys::FILE_WATCHER_IGNORE_TIME)
 				{
 					dcclite::Log::Trace("[FileWatcher::DirectoryWatcher::TryFireEvent] Ignoring event for {}, too soon", fileName);
 
@@ -105,7 +105,7 @@ namespace FileWatcher
 			std::map<std::string, Handle> m_mapHandles;
 	};	
 
-	class FileWatcherEvent : public dcclite::broker::EventHub::IEvent
+	class FileWatcherEvent : public EventHub::IEvent
 	{
 		public:
 			FileWatcherEvent(EventTarget &target, const ldmonitor::fs::path &path, std::string fileName, std::chrono::milliseconds time) :
@@ -150,7 +150,7 @@ namespace FileWatcher
 			//
 			ldmonitor::Watch(filePath.string(), [](const ldmonitor::fs::path &path, std::string fileName, const uint32_t action, std::chrono::milliseconds time)
 				{
-					dcclite::broker::EventHub::PostEvent<FileWatcherEvent>(std::ref(g_clSentinel), path, std::move(fileName), time);
+					EventHub::PostEvent<FileWatcherEvent>(std::ref(g_clSentinel), path, std::move(fileName), time);
 				}, 
 				ldmonitor::MONITOR_ACTION_FILE_MODIFY
 			);

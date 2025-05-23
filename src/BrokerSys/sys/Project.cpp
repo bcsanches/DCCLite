@@ -12,7 +12,7 @@
 
 #include <dcclite/PathUtils.h>
 
-namespace dcclite::broker::Project
+namespace dcclite::broker::sys::Project
 {
 	static dcclite::fs::path g_pthRoot;
 	static std::string g_strName;

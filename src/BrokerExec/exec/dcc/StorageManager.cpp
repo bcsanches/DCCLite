@@ -56,7 +56,7 @@ namespace dcclite::broker::exec::dcc::StorageManager
 
 	static dcclite::fs::path GenerateBaseDeviceStateFileName(RName deviceName)
 	{
-		return Project::GetAppFilePath(fmt::format("{}.state", deviceName.GetData()));
+		return sys::Project::GetAppFilePath(fmt::format("{}.state", deviceName.GetData()));
 	}
 
 	DecodersMap_t LoadState(RName deviceName, const dcclite::Guid expectedToken)
@@ -223,7 +223,7 @@ namespace dcclite::broker::exec::dcc::StorageManager
 		{
 			BenchmarkLogger benchmark{ "StorageManager::GetFileToken::Hash", fileName };
 
-			currentFileHash.ComputeForFile(Project::GetFilePath(fileName));			
+			currentFileHash.ComputeForFile(sys::Project::GetFilePath(fileName));
 		}
 
 		dcclite::Log::Trace("[StorageManager::GetFileToken] {} hash is {}", fileName, currentFileHash.ToString());
@@ -234,7 +234,7 @@ namespace dcclite::broker::exec::dcc::StorageManager
 		dcclite::fs::path stateFileName(fileName);
 		stateFileName.replace_extension(".token.json");				
 
-		auto stateFilePath = Project::GetAppFilePath(stateFileName.string());
+		auto stateFilePath = sys::Project::GetAppFilePath(stateFileName.string());
 
 		{
 			std::ifstream stateFile(stateFilePath);

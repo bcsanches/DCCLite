@@ -16,14 +16,14 @@
 namespace dcclite::broker::exec::dcc
 { 
 
-	class DccppService: public Service
+	class DccppService: public sys::Service
 	{	
 		public:
 			static void RegisterFactory();
 
 			static const char *TYPE_NAME;
 
-			DccppService(RName name, Broker &broker, const rapidjson::Value& params);
+			DccppService(RName name, sys::Broker &broker, const rapidjson::Value& params);
 		
 			~DccppService() override = default;
 	};

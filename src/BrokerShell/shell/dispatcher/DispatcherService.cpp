@@ -120,7 +120,7 @@ namespace dcclite::broker::shell::dispatcher
 		public:
 			typedef exec::dcc::DccLiteService Requirement_t;
 
-			DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, exec::dcc::DccLiteService &dep);
+			DispatcherServiceImpl(RName name, sys::Broker &broker, const rapidjson::Value &params, exec::dcc::DccLiteService &dep);
 			~DispatcherServiceImpl() override;
 
 			void Serialize(JsonOutputStream_t &stream) const override;			
@@ -149,7 +149,7 @@ namespace dcclite::broker::shell::dispatcher
 			exec::dcc::Device *m_pclDevice = nullptr;
 	};
 
-	DispatcherServiceImpl::DispatcherServiceImpl(RName name, Broker &broker, const rapidjson::Value &params, exec::dcc::DccLiteService &dep):
+	DispatcherServiceImpl::DispatcherServiceImpl(RName name, sys::Broker &broker, const rapidjson::Value &params, exec::dcc::DccLiteService &dep):
 		DispatcherServiceScripter(name, broker, params),
 		m_rclDccLite{ dep },
 		m_pSections{ static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{"sections"}))) }
@@ -341,12 +341,12 @@ namespace dcclite::broker::shell::dispatcher
 		//empty
 	}
 
-	DispatcherService::DispatcherService(RName name, Broker &broker, const rapidjson::Value &params):
+	DispatcherService::DispatcherService(RName name, sys::Broker &broker, const rapidjson::Value &params):
 		Service(name, broker, params)
 	{
 		//empty
 	}
 
-	static GenericServiceWithDependenciesFactory<DispatcherServiceImpl> g_ServiceFactory;
+	static sys::GenericServiceWithDependenciesFactory<DispatcherServiceImpl> g_ServiceFactory;
 }
 

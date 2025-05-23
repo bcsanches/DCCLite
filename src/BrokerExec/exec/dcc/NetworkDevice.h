@@ -46,7 +46,7 @@ namespace dcclite::broker::exec::dcc
 			};		
 
 		public:
-			NetworkDevice(RName name, Broker &broker, IDccLite_DeviceServices &dccService, const rapidjson::Value &params);
+			NetworkDevice(RName name, sys::Broker &broker, IDccLite_DeviceServices &dccService, const rapidjson::Value &params);
 			NetworkDevice(RName name, IDccLite_DeviceServices &dccService);
 
 			NetworkDevice(const NetworkDevice &) = delete;
@@ -116,7 +116,7 @@ namespace dcclite::broker::exec::dcc
 			[[nodiscard]] std::shared_ptr<NetworkTask> StartServoTurnoutProgrammerTask(NetworkTask::IObserver *observer, Decoder &decoder) override;
 			[[nodiscard]] std::shared_ptr<NetworkTask> StartDeviceRenameTask(NetworkTask::IObserver *observer, RName newName) override;
 			[[nodiscard]] std::shared_ptr<NetworkTask> StartDeviceClearEEPromTask(NetworkTask::IObserver *observer) override;
-			[[nodiscard]] std::shared_ptr<NetworkTask> StartDeviceNetworkTestTask(NetworkTask::IObserver *observer, std::chrono::milliseconds timeout = TASK_NETWORK_TEST_DEFAULT_TIMEOUT) override;
+			[[nodiscard]] std::shared_ptr<NetworkTask> StartDeviceNetworkTestTask(NetworkTask::IObserver *observer, std::chrono::milliseconds timeout = sys::TASK_NETWORK_TEST_DEFAULT_TIMEOUT) override;
 
 		protected:
 			void OnUnload() override;
@@ -233,7 +233,7 @@ namespace dcclite::broker::exec::dcc
 				uint8_t				m_uSeqCount = { 0 };
 				bool				m_fAckReceived = { false };
 
-				Thinker				m_clTimeoutThinker;
+				sys::Thinker		m_clTimeoutThinker;
 
 				BenchmarkLogger		m_clBenchmark;
 
@@ -291,7 +291,7 @@ namespace dcclite::broker::exec::dcc
 				private:
 					void OnTimeout(const dcclite::Clock::TimePoint_t time);
 
-					Thinker				m_clTimeoutThinker;
+					sys::Thinker		m_clTimeoutThinker;
 
 					BenchmarkLogger		m_clBenchmark;
 			};
@@ -322,8 +322,8 @@ namespace dcclite::broker::exec::dcc
 
 					uint64_t			m_uOutgoingStatePacketId = 0;
 
-					Thinker				m_clPingThinker;
-					Thinker				m_clSendStateDeltaThinker;
+					sys::Thinker		m_clPingThinker;
+					sys::Thinker		m_clSendStateDeltaThinker;
 
 					BenchmarkLogger		m_clBenchmark;
 			};
@@ -341,9 +341,9 @@ namespace dcclite::broker::exec::dcc
 					void OnThink(const dcclite::Clock::TimePoint_t time);
 
 				private:
-					Thinker	m_clThinker;
+					sys::Thinker	m_clThinker;
 
-					NetworkDevice &m_rclOwner;
+					NetworkDevice	&m_rclOwner;
 			};
 
 
