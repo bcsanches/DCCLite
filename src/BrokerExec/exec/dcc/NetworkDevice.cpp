@@ -560,6 +560,12 @@ namespace dcclite::broker::exec::dcc
 			//m_rclSelf.PostponeTimeout(time);
 
 			//dcclite::Log::Debug("[{}::Device::OnPacket] pong", m_rclSelf.GetName());
+			m_fPendingPong = false;
+			if (m_fLostPingPacket)
+			{
+				dcclite::Log::Warn("[{}::Device::OnPacket] Connection is stable - got pong", m_rclSelf.GetName());
+				m_fLostPingPacket = false;
+			}
 
 			return;
 		}
@@ -672,10 +678,20 @@ namespace dcclite::broker::exec::dcc
 
 	void NetworkDevice::OnlineState::OnPingThink(const dcclite::Clock::TimePoint_t time)
 	{
-		m_clPingThinker.Schedule(time + sys::NETWORK_DEVICE_PING_TIMEOUT);
+		auto nextPing = sys::NETWORK_DEVICE_PING_TIMEOUT;
+		if (m_fPendingPong)
+		{
+			dcclite::Log::Warn("[{}::OnlineState::OnPingThink] Missed pong", m_rclSelf.GetName());
+			m_fLostPingPacket = true;
+
+			nextPing /= 2;
+		}
+		
+		m_clPingThinker.Schedule(time + nextPing);
 
 		DevicePacket pkt{ dcclite::MsgTypes::MSG_PING, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
-		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);		
+		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);	
+		m_fPendingPong = true;
 	}
 
 	void NetworkDevice::OnlineState::OnChangeStateRequest(const Decoder &decoder)

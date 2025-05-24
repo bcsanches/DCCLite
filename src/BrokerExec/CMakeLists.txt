@@ -72,7 +72,8 @@ else(WIN32)
 	find_package(OpenSSL REQUIRED)
 
 	target_link_libraries(BrokerExecLib        
-        Common 
+        Common
+        BrokerSysLib
         dl
         fmt 
         spdlog

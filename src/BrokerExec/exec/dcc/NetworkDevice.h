@@ -326,6 +326,9 @@ namespace dcclite::broker::exec::dcc
 					sys::Thinker		m_clSendStateDeltaThinker;
 
 					BenchmarkLogger		m_clBenchmark;
+
+					bool				m_fPendingPong = false;
+					bool				m_fLostPingPacket = false;
 			};
 
 			class TimeoutController

@@ -22,7 +22,7 @@ namespace dcclite::broker::sys
 
 	auto constexpr NETWORK_DEVICE_SYNC_TIMEOUT = 100ms;
 
-	auto constexpr NETWORK_DEVICE_PING_TIMEOUT = 4s;
+	auto constexpr NETWORK_DEVICE_PING_TIMEOUT = 2s;
 
 	auto constexpr TASK_DOWNLOAD_EEPROM_RETRY_TIMEOUT = 100ms;
 	auto constexpr TASK_DOWNLOAD_EEPROM_DOWNLOAD_WAIT = 25ms;

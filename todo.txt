@@ -4,17 +4,6 @@ DCCLite
 - code organization	
 	- BonjourService access with find service with hardcode name, best way?
 	- ZeroConfSystem make a true service?
-	- BrokerCoreLib
-		- Only broker implementation?
-	- Create a BrokerSysLib, split Broker on interface to remove directly dependencies?
-		- put on core what everyone uses:
-			- EventHub
-			- Service
-			- Thinker
-			- ZeroConfSystem
-			- BonjourService
-			- FileWatcher
-			- Project
 
 - Add Disconnect command to test if arduinos can reconnect after timeout
 - Implement reboot on emulator
