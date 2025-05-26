@@ -51,13 +51,18 @@ if(WIN32)
 
 	target_compile_definitions(Common PRIVATE _CRT_SECURE_NO_WARNINGS)
 		
-		target_sources(Common PRIVATE
-			dcclite/Console_win.cpp
-			dcclite/Guid_win.cpp
-			dcclite/SerialPort_win.cpp
-			dcclite/SerialPort_win.h
-			dcclite/Sha1_win.cpp
-		)
+	target_sources(Common PRIVATE
+		dcclite/Console_win.cpp
+		dcclite/Guid_win.cpp
+		dcclite/SerialPort_win.cpp
+		dcclite/SerialPort_win.h
+		dcclite/Sha1_win.cpp
+	)
+
+	target_link_libraries(Common PUBLIC 
+		CityHash 
+		SharedLib
+	)
 
 else(WIN32)
 
@@ -69,14 +74,14 @@ else(WIN32)
 		dcclite/SerialPort_linux.h
 	)   
 
-endif(WIN32)
+	target_link_libraries(Common PUBLIC 
+		CityHash 
+		SharedLib
+		OpenSSL::Crypto
+		OpenSSL::SSL
+	)
 
-target_link_libraries(Common PUBLIC 
-	CityHash 
-	SharedLib
-	OpenSSL::Crypto
-	OpenSSL::SSL
-)
+endif(WIN32)
 
 target_include_directories(Common
 	PUBLIC  ${DCCLite_SOURCE_DIR}/contrib/cityhash/
