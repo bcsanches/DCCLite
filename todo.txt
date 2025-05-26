@@ -1,8 +1,7 @@
 DCCLite
 -------
 
-- code organization	
-	- BonjourService access with find service with hardcode name, best way?
+- code organization		
 	- ZeroConfSystem make a true service?
 
 - Add Disconnect command to test if arduinos can reconnect after timeout

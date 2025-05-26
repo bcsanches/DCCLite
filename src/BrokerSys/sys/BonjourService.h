@@ -19,9 +19,7 @@ namespace dcclite::broker::sys
 	{
 		TCP,
 		UDP
-	};
-
-	constexpr auto BONJOUR_SERVICE_NAME = "bonjour";
+	};	
 
 	class BonjourService: public Service
 	{	

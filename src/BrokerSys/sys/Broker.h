@@ -52,6 +52,26 @@ namespace dcclite::broker::sys
 
 			Service &ResolveRequirement(std::string_view requirement);
 
+			template <typename T>
+			inline T *TryFindServiceByType()
+			{
+				T *output = nullptr;
+				this->VisitServices([&output](IObject &s)
+					{
+						auto rs = dynamic_cast<T *>(&s);
+						if (rs != nullptr)
+						{
+							output = rs;
+							return false;
+						}
+
+						return true;
+					}
+				);
+
+				return output;
+			}
+
 			void SignalExecutiveChangeStart();
 			void SignalExecutiveChangeEnd();	
 

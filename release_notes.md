@@ -23,6 +23,8 @@
 
 - Fix bug on ReadEEPromCmd that causes uncaught exception if operation is aborted
 - ReadEEPromCmd now uses device path instead of system and device name
+- Massive code organization
+- Improved ping and connection management to devices
 
 # Version 0.10.0
 

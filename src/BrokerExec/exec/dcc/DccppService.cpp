@@ -742,8 +742,8 @@ ERROR_RESPONSE:
 		m_thListenThread = std::thread{ [this, port]() {this->ListenThreadProc(port); } };
 		dcclite::SetThreadName(m_thListenThread, "DccppServiceImpl::ListenThread");
 		
-		if (auto bonjourService = static_cast<sys::BonjourService *>(m_rclBroker.TryFindService(RName{ sys::BONJOUR_SERVICE_NAME })))
-			bonjourService->Register(this->GetName().GetData(), "dccpp", sys::NetworkProtocol::TCP, port, 36);
+		if (auto bonjourService = m_rclBroker.TryFindServiceByType<sys::BonjourService>())
+			bonjourService->Register(this->GetName().GetData(), "dccpp", sys::NetworkProtocol::TCP, port, 36);					
 
 		sys::ZeroConfSystem::Register(this->GetTypeName(), port);
 	}

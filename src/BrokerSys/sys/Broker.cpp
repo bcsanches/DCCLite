@@ -21,22 +21,16 @@
 
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
-#include <rapidjson/schema.h>
-
-#include <spdlog/logger.h>
 
 #include <dcclite_shared/Parser.h>
 
 #include <dcclite/Benchmark.h>
 #include <dcclite/FmtUtils.h>
-#include <dcclite/JsonUtils.h>
 #include <dcclite/Log.h>
 #include <dcclite/Util.h>
 
-#include "BonjourService.h"
 #include "Project.h"
 #include "ServiceFactory.h"
-#include "Thinker.h"
 #include "ZeroConfSystem.h"
 
 //win32 header leak

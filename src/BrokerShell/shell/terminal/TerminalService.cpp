@@ -839,7 +839,7 @@ namespace dcclite::broker::shell::terminal
 		m_thListenThread = std::thread{ [port, this] {this->ListenThreadProc(port); } };		
 		dcclite::SetThreadName(m_thListenThread, "TerminalService::ListenThread");
 
-		if (auto bonjourService = static_cast<sys::BonjourService *>(m_rclBroker.TryFindService(RName{ sys::BONJOUR_SERVICE_NAME })))
+		if(auto bonjourService = m_rclBroker.TryFindServiceByType<sys::BonjourService>())		
 			bonjourService->Register("terminal", "dcclite", sys::NetworkProtocol::TCP, port, 36);
 
 		sys::ZeroConfSystem::Register(this->GetTypeName(), port);
