@@ -63,7 +63,9 @@ namespace dcclite::broker::exec::dcc
 				Service::Serialize(stream);
 
 				//nothing
-			}			
+			}
+
+			void ClearBlockList();
 
 			//
 			//DECODERS Management
@@ -119,6 +121,15 @@ namespace dcclite::broker::exec::dcc
 			friend class GenericNetworkEvent;
 			friend class NetworkHelloEvent;
 
+			//
+			//
+			// Block List Management
+			//
+			//			
+
+			[[nodiscard]]
+			bool IsDeviceBlocked(const dcclite::NetworkAddress &address) const noexcept;
+
 		private:
 			//
 			// To be used only by Devices
@@ -147,6 +158,8 @@ namespace dcclite::broker::exec::dcc
 			void Device_NotifyInternalItemDestroyed(dcclite::IObject &item) const override;
 			void Device_NotifyStateChange(NetworkDevice &device) const override;
 
+			void Device_Block(NetworkDevice &dev) override;
+
 			//
 			//
 			// To be used only by Decoders
@@ -163,6 +176,7 @@ namespace dcclite::broker::exec::dcc
 			FolderObject *m_pDecoders;			
 			FolderObject *m_pDevices;
 			FolderObject *m_pSessions;
+			FolderObject *m_pBlockedDevices = nullptr;
 
 			/// <summary>
 			/// Keep track of existing addresses. No pratical use, just to track and avoid duplicate addresses

@@ -182,6 +182,7 @@ namespace SharpTerminal
             m_btnBlock.TabIndex = 6;
             m_btnBlock.Text = "Block";
             m_btnBlock.UseVisualStyleBackColor = true;
+            m_btnBlock.Click += m_btnBlock_Click;
             // 
             // m_btnReboot
             // 

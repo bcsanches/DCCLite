@@ -7,7 +7,7 @@ namespace SharpTerminal.Forms
 	[SupportedOSPlatform("windows")]
 	public partial class NetworkTestForm : Form
 	{
-		readonly RemoteDevice mDevice;
+		readonly RemoteNetworkDevice mDevice;
 		readonly IConsole mConsole;
 
 		int m_iTaskId = -1;
@@ -17,7 +17,7 @@ namespace SharpTerminal.Forms
 			InitializeComponent();
 		}
 
-		public NetworkTestForm(RemoteDevice device, IConsole console) :
+		public NetworkTestForm(RemoteNetworkDevice device, IConsole console) :
 			this()
 		{
 			mDevice = device ?? throw new ArgumentNullException(nameof(device));

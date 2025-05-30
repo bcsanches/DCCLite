@@ -20,6 +20,7 @@
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Util.h>
 
+#include "exec/dcc/DccLiteService.h"
 #include "exec/dcc/IResettableObject.h"
 #include "exec/dcc/NetworkDevice.h"
 #include "exec/dcc/OutputDecoder.h"
@@ -363,6 +364,92 @@ namespace dcclite::broker::shell::terminal
 
 	/////////////////////////////////////////////////////////////////////////////
 	//
+	// BlockDeviceCmd
+	//
+	/////////////////////////////////////////////////////////////////////////////
+	class BlockDeviceCmd: public TerminalCmd
+	{
+		public:
+			explicit BlockDeviceCmd(RName name = RName{ "Block-Device" }):
+				TerminalCmd(name)
+			{
+				//empty
+			}
+
+			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
+			{
+				auto paramsIt = request.FindMember("params");
+				if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() < 1))
+				{
+					throw TerminalCmdException(fmt::format("Usage: {} <NetworkDevicePath>", this->GetName()), id);
+				}
+
+				auto path = paramsIt->value[0].GetString();
+
+				auto &device = detail::GetNetworkDevice(dcclite::Path_t{ path }, context, id);
+				
+				device.Block();								
+
+				return detail::MakeRpcResultMessage(id, [](Result_t &results)
+					{
+						results.AddStringValue("classname", "string");
+						results.AddStringValue("msg", "OK");
+					}
+				);
+			}
+	};
+
+	/////////////////////////////////////////////////////////////////////////////
+	//
+	// ClearDccLiteBlockList
+	//
+	/////////////////////////////////////////////////////////////////////////////
+	class ClearDccLiteBlockListCmd: public TerminalCmd
+	{
+		public:
+			explicit ClearDccLiteBlockListCmd(RName name = RName{ "Clear-DccLiteBlockList" }):
+				TerminalCmd(name)
+			{
+				//empty
+			}
+
+			CmdResult_t Run(TerminalContext &context, const CmdId_t id, const rapidjson::Document &request) override
+			{
+				auto paramsIt = request.FindMember("params");
+				if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() < 1))
+				{
+					throw TerminalCmdException(fmt::format("Usage: {} <DccLiteService>", this->GetName()), id);
+				}
+
+				auto path = paramsIt->value[0].GetString();
+
+				auto &folder = detail::GetCurrentFolder(context, id);
+
+				auto obj = folder.TryNavigate(Path_t{ path });
+				if (obj == nullptr)
+				{
+					throw TerminalCmdException(fmt::format("Object {} not found", path), id);
+				}
+
+				auto dccLiteService = dynamic_cast<exec::dcc::DccLiteService *>(obj);
+				if(dccLiteService == nullptr)
+				{
+					throw TerminalCmdException(fmt::format("Object {} is not an DccLiteService", path), id);
+				}
+
+				dccLiteService->ClearBlockList();
+
+				return detail::MakeRpcResultMessage(id, [](Result_t &results)
+					{
+						results.AddStringValue("classname", "string");
+						results.AddStringValue("msg", "OK");
+					}
+				);
+			}
+	};
+
+	/////////////////////////////////////////////////////////////////////////////
+	//
 	// DecoderCmdBase
 	//
 	/////////////////////////////////////////////////////////////////////////////
@@ -413,7 +500,7 @@ namespace dcclite::broker::shell::terminal
 				auto outputDecoder = dynamic_cast<exec::dcc::OutputDecoder *>(&decoder);
 				if (outputDecoder == nullptr)
 				{
-					throw TerminalCmdException(fmt::format("Decoder {} on DCC System is not an output type", decoder.GetName()), id);
+					throw TerminalCmdException(fmt::format("Decoder {} is not an output type", decoder.GetName()), id);
 				}
 
 				return outputDecoder;
@@ -845,6 +932,14 @@ namespace dcclite::broker::shell::terminal
 
 		{
 			cmdHost.AddCmd(std::make_unique<ResetItemCmd>());
+		}
+
+		{
+			cmdHost.AddCmd(std::make_unique<BlockDeviceCmd>());
+		}
+		
+		{
+			cmdHost.AddCmd(std::make_unique<ClearDccLiteBlockListCmd>());
 		}
 
 		{

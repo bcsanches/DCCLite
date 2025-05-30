@@ -75,7 +75,7 @@ namespace dcclite::broker::exec::dcc
 		protected:
 			std::vector<Decoder *>	m_vecDecoders;
 
-			IDccLite_DeviceServices &m_clDccService;
+			IDccLite_DeviceServices &m_rclDccService;
 	
 			//
 			//

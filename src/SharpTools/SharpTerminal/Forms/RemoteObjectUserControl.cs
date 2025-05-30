@@ -45,7 +45,8 @@ namespace SharpTerminal
                     var button = new Button
                     {
                         Text = action.GetLabel(),
-                        Tag = action
+                        Tag = action,
+                        AutoSize = true
                     };
 
                     button.Click += pnlButtons_ButtonClick; 

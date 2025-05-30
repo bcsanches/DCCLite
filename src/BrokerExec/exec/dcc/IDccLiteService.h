@@ -86,7 +86,7 @@ namespace dcclite::broker::exec::dcc
 	class IDccLite_DecoderServices
 	{
 		public:
-			virtual void Decoder_OnStateChanged(Decoder& decoder) = 0;
+			virtual void Decoder_OnStateChanged(Decoder &decoder) = 0;
 
 			virtual Decoder *TryFindDecoder(RName id) const = 0;					
 	};
@@ -113,5 +113,7 @@ namespace dcclite::broker::exec::dcc
 			virtual void Device_NotifyInternalItemCreated(dcclite::IObject &item) const = 0;
 			virtual void Device_NotifyInternalItemDestroyed(dcclite::IObject &item) const = 0;
 			virtual void Device_NotifyStateChange(NetworkDevice &device) const = 0;
+
+			virtual void Device_Block(NetworkDevice &device) = 0;
 	};
 }

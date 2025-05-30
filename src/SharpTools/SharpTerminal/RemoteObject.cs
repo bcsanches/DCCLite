@@ -487,7 +487,11 @@ namespace SharpTerminal
 					obj = new RemoteShortcut(name, className, path, id, objectDef["target"], parent);
 					break;
 
-				case "Decoder":
+				case "DccLiteService":
+					obj = new RemoteDccLiteService(name, className, path, id, parent);
+					break;
+
+                case "Decoder":
 				case "TurntableAutoInverterDecoder":
 					obj = new RemoteDecoder(name, className, path, id, objectDef, parent);
 					break;
@@ -514,7 +518,7 @@ namespace SharpTerminal
 					break;
 
 				case "NetworkDevice":
-					obj = new RemoteDevice(name, className, path, id, objectDef, parent);
+					obj = new RemoteNetworkDevice(name, className, path, id, objectDef, parent);
 					break;
 
 				case "SensorDecoder":

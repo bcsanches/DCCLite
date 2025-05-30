@@ -122,7 +122,7 @@ namespace dcclite::broker::exec::dcc
 
 		DevicePacket pkt{ dcclite::MsgTypes::DISCONNECT, m_SessionToken, m_ConfigToken };
 
-		m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
+		m_rclDccService.Device_SendPacket(m_RemoteAddress, pkt);
 
 		dcclite::Log::Warn("[Device::{}] [Disconnect] Sent disconnect packet", this->GetName());
 
@@ -183,7 +183,7 @@ namespace dcclite::broker::exec::dcc
 	{
 		DevicePacket pkt{ dcclite::MsgTypes::CONFIG_START, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
 
-		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
+		m_rclSelf.m_rclDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
 	}
 
 	void NetworkDevice::ConfigState::SendDecoderConfigPacket(const size_t index) const
@@ -193,7 +193,7 @@ namespace dcclite::broker::exec::dcc
 
 		static_cast<RemoteDecoder *>(m_rclSelf.m_vecDecoders[index])->WriteConfig(pkt);
 
-		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
+		m_rclSelf.m_rclDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
 	}
 
 	void NetworkDevice::ConfigState::SendConfigFinishedPacket() const
@@ -202,7 +202,7 @@ namespace dcclite::broker::exec::dcc
 
 		pkt.Write8(static_cast<uint8_t>(m_rclSelf.m_vecDecoders.size()));
 
-		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
+		m_rclSelf.m_rclDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
 	}	
 
 	void NetworkDevice::ConfigState::OnPacket_ConfigAck(
@@ -423,7 +423,7 @@ namespace dcclite::broker::exec::dcc
 
 		DevicePacket pkt{ dcclite::MsgTypes::SYNC, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
 
-		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
+		m_rclSelf.m_rclDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
 
 		m_clTimeoutThinker.Schedule(time + sys::NETWORK_DEVICE_SYNC_TIMEOUT);
 	}
@@ -533,7 +533,7 @@ namespace dcclite::broker::exec::dcc
 		pkt.Write(changedStates);
 		pkt.Write(states);
 
-		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);		
+		m_rclSelf.m_rclDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);		
 
 		return true;		
 	}
@@ -598,10 +598,10 @@ namespace dcclite::broker::exec::dcc
 			pkt.Write16(m_rclSelf.m_uRemoteFreeRam);			
 
 			//dispatch packet
-			m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
+			m_rclSelf.m_rclDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
 
 			//let other systems know that our internal state changed...
-			m_rclSelf.m_clDccService.Device_NotifyStateChange(m_rclSelf);
+			m_rclSelf.m_rclDccService.Device_NotifyStateChange(m_rclSelf);
 
 			return;
 		}
@@ -689,7 +689,7 @@ namespace dcclite::broker::exec::dcc
 		m_clPingThinker.Schedule(time + nextPing);
 
 		DevicePacket pkt{ dcclite::MsgTypes::MSG_PING, m_rclSelf.m_SessionToken, m_rclSelf.m_ConfigToken };
-		m_rclSelf.m_clDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);	
+		m_rclSelf.m_rclDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);	
 		m_fPendingPong = true;
 	}
 
@@ -751,7 +751,7 @@ namespace dcclite::broker::exec::dcc
 
 		m_kStatus = Status::OFFLINE;
 
-		m_clDccService.Device_UnregisterSession(*this, m_SessionToken);
+		m_rclDccService.Device_UnregisterSession(*this, m_SessionToken);
 		m_SessionToken = dcclite::Guid{};
 
 		this->ClearState();
@@ -760,13 +760,13 @@ namespace dcclite::broker::exec::dcc
 		m_clTimeoutController.Disable();
 
 		dcclite::Log::Warn("[Device::{}] [GoOffline] Is OFFLINE", this->GetName());
-		m_clDccService.Device_NotifyStateChange(*this);
+		m_rclDccService.Device_NotifyStateChange(*this);
 
 		if (m_fRegistered)
 			return;
 		
 		//kill ourselves...
-		m_clDccService.Device_DestroyUnregistered(*this);
+		m_rclDccService.Device_DestroyUnregistered(*this);
 	}
 
 
@@ -791,7 +791,7 @@ namespace dcclite::broker::exec::dcc
 
 		m_kStatus = Status::CONNECTING;
 
-		m_clDccService.Device_RegisterSession(*this, m_SessionToken);
+		m_rclDccService.Device_RegisterSession(*this, m_SessionToken);
 
 		m_clTimeoutController.Enable(time);
 
@@ -815,13 +815,13 @@ namespace dcclite::broker::exec::dcc
 
 			//tell device that connection was accepted
 			DevicePacket pkt{ dcclite::MsgTypes::ACCEPTED, m_SessionToken, m_ConfigToken };
-			m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
+			m_rclDccService.Device_SendPacket(m_RemoteAddress, pkt);
 
 			//now sync it
 			this->GotoSyncState();
 		}
 
-		m_clDccService.Device_NotifyStateChange(*this);
+		m_rclDccService.Device_NotifyStateChange(*this);
 	}
 
 	bool NetworkDevice::CheckSessionConfig(dcclite::Guid remoteConfigToken, dcclite::NetworkAddress remoteAddress)
@@ -910,7 +910,7 @@ namespace dcclite::broker::exec::dcc
 		this->SetState<OnlineState>(time);
 
 		dcclite::Log::Trace("[Device::{}] [GotoOnlineState] Entered", this->GetName());
-		m_clDccService.Device_NotifyStateChange(*this);
+		m_rclDccService.Device_NotifyStateChange(*this);
 	}
 
 	void NetworkDevice::GotoConfigState(const dcclite::Clock::TimePoint_t time)
@@ -961,7 +961,7 @@ namespace dcclite::broker::exec::dcc
 
 	void NetworkDevice::TaskServices_SendPacket(dcclite::Packet &packet)
 	{
-		m_clDccService.Device_SendPacket(m_RemoteAddress, packet);
+		m_rclDccService.Device_SendPacket(m_RemoteAddress, packet);
 	}
 
 	void NetworkDevice::TaskServices_ForgetTask(NetworkTask &task)
@@ -1059,6 +1059,6 @@ namespace dcclite::broker::exec::dcc
 
 		Log::Warn("[NetworkDevice::{}] [ResetRemoteDevice] Sending a RESET_BOARD msg", this->GetName());
 		DevicePacket pkt{ dcclite::MsgTypes::RESET_BOARD, m_SessionToken, m_ConfigToken };
-		m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
+		m_rclDccService.Device_SendPacket(m_RemoteAddress, pkt);
 	}
 }

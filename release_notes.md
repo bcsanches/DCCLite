@@ -13,6 +13,8 @@
 
 - Added button to read EEPROM from device panel
 - Fixed a bug on servo programming that caused infinite loop when device was disconnected while starting the programmer
+- Added Block button on NetworkDevice
+- Added Clear Block list on DccLiteService
 
 ## SharpEEPromViewer
 
@@ -25,6 +27,7 @@
 - ReadEEPromCmd now uses device path instead of system and device name
 - Massive code organization
 - Improved ping and connection management to devices
+- Block list support on DccLiteService
 
 # Version 0.10.0
 

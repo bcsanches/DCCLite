@@ -1,7 +1,6 @@
 DCCLite
 -------
 
-- Add Disconnect command to test if arduinos can reconnect after timeout
 - Implement reboot on emulator
 - When hadesEntA resets, sensors go crazy
 	- add a delay for sensor to send state after turn on?
@@ -22,8 +21,7 @@ DCCLite
 		- Do a Pin "click", so voltage invert for a short time (put a time config, like 10ms)
 	- On device on sharp console, put a button "emulate":
 		- Will run emulator with the correctly EEPROM
-		- Generate blank EEPROM if does not exists?
-	- On device on sharp console, put a button "block", so Broke drops connection to device and ignore its ip...
+		- Generate blank EEPROM if does not exists?	
 	- put a emulator hints field on device config? So initial voltage for pins can be set, like a grounded pin or a pin connected to 5v
 		- pin on emulator must have a "externalVoltage" field, a tri state field and when reading, check if the externalVoltage is set, if yes, consider it, otherwise, the internal voltage
 		- digitalWrite will never affetct externalVoltage

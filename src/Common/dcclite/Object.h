@@ -273,6 +273,11 @@ namespace dcclite
 				return m_pParent;
 			}
 
+			const char *GetTypeName() const noexcept override
+			{
+				return "Object";
+			}
+
 		private:
 			IFolderObject *m_pParent = nullptr;
 	};	

@@ -21,7 +21,7 @@ namespace SharpTerminal
     [SupportedOSPlatform("windows")]
     public partial class RemoteDeviceUserControl : UserControl
     {
-        private readonly RemoteDevice mRemoteDevice;
+        private readonly RemoteNetworkDevice mRemoteDevice;
         private readonly IConsole mConsole;
 
         public RemoteDeviceUserControl()
@@ -29,7 +29,7 @@ namespace SharpTerminal
             InitializeComponent();
         }
 
-        public RemoteDeviceUserControl(IConsole console, RemoteDevice remoteDevice, RemotePin[] pins) :
+        public RemoteDeviceUserControl(IConsole console, RemoteNetworkDevice remoteDevice, RemotePin[] pins) :
             this()
         {
             mRemoteDevice = remoteDevice ?? throw new ArgumentNullException(nameof(remoteDevice));
@@ -69,14 +69,14 @@ namespace SharpTerminal
 
         private void RefreshButtonsState()
         {
-            bool onlineDevice = mRemoteDevice.ConnectionStatus == RemoteDevice.Status.ONLINE;
+            bool onlineDevice = mRemoteDevice.ConnectionStatus == RemoteNetworkDevice.Status.ONLINE;
 
             m_btnBlock.Enabled = onlineDevice;
             m_btnClear.Enabled = onlineDevice;
             m_btnDisconnect.Enabled = onlineDevice;
             m_btnNetworkTest.Enabled = onlineDevice;
             m_btnReadEEPROM.Enabled = onlineDevice;
-            m_btnReboot.Enabled = onlineDevice;                                    
+            m_btnReboot.Enabled = onlineDevice;
 
             m_btnEmulate.Enabled = !onlineDevice;
         }
@@ -102,7 +102,7 @@ namespace SharpTerminal
         {
             var parent = mRemoteDevice.Parent;
 
-            var possibleNames = parent.GetChildren().Where(x => (x != mRemoteDevice) && ((x is RemoteDevice device) && (device.ConnectionStatus == RemoteDevice.Status.OFFLINE) && device.Registered)).Select(x => x.Name);
+            var possibleNames = parent.GetChildren().Where(x => (x != mRemoteDevice) && ((x is RemoteNetworkDevice device) && (device.ConnectionStatus == RemoteNetworkDevice.Status.OFFLINE) && device.Registered)).Select(x => x.Name);
 
             using var form = new RemoteDeviceRenameForm(possibleNames);
             form.ShowDialog();
@@ -181,6 +181,18 @@ namespace SharpTerminal
             try
             {
                 await mConsole.RequestAsync(["Disconnect-Device", mRemoteDevice.Path]);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: " + ex.Message, "Operation failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private async void m_btnBlock_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                await mConsole.RequestAsync(["Block-Device", mRemoteDevice.Path]);
             }
             catch (Exception ex)
             {

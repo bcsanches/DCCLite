@@ -146,14 +146,9 @@ namespace SharpTerminal
     }	
 
 	[SupportedOSPlatform("windows")]
-	public class VirtualSensorDecoder : RemoteDecoder
-    {       
-        public VirtualSensorDecoder(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) :
-            base(name, className, path, internalId, objectDef, parent)
-        {
-            //empty
-        }
-
+	public class VirtualSensorDecoder(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) : 
+        RemoteDecoder(name, className, path, internalId, objectDef, parent)
+    {
         public override string TryGetIconName()
         {
             return RemoteState ? DefaultIcons.SENSOR_ON_ICON : DefaultIcons.SENSOR_OFF_ICON;
@@ -225,14 +220,8 @@ namespace SharpTerminal
     }
 
 	[SupportedOSPlatform("windows")]
-	public class RemoteOutputDecoder : RemoteDecoder
-    {        
-        public RemoteOutputDecoder(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) :
-            base(name, className, path, internalId, objectDef, parent)
-        {
-
-        }
-
+	public class RemoteOutputDecoder(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) : RemoteDecoder(name, className, path, internalId, objectDef, parent)
+    {
         public override string TryGetIconName()
         {
             return RemoteState ? DefaultIcons.LAMP_ON_ICON : DefaultIcons.LAMP_OFF_ICON;
@@ -240,7 +229,7 @@ namespace SharpTerminal
 
         public override IRemoteObjectAction[] GetActions()
         {
-            return new IRemoteObjectAction[1]{ g_FlipAction };
+            return [g_FlipAction];
         }
     }
 
@@ -260,7 +249,7 @@ namespace SharpTerminal
 
         public override IRemoteObjectAction[] GetActions()
         {
-            return new IRemoteObjectAction[1] { g_FlipAction };
+            return [g_FlipAction];
         }
     }
 

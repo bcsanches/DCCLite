@@ -35,7 +35,7 @@ namespace SharpTerminal
     }
 
 	[SupportedOSPlatform("windows")]
-	public class RemoteDevice: RemoteFolder
+	public class RemoteNetworkDevice: RemoteFolder
     {           
         public enum Status
         {
@@ -63,7 +63,7 @@ namespace SharpTerminal
 
         public RemotePin[] Pins;
 
-        public RemoteDevice(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent):
+        public RemoteNetworkDevice(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent):
             base(name, className, path, internalId, parent)
         {
             this.UpdateState(objectDef);

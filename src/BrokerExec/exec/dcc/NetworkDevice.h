@@ -79,6 +79,16 @@ namespace dcclite::broker::exec::dcc
 
 			void DisconnectDevice();
 
+			inline void Block()
+			{
+				m_rclDccService.Device_Block(*this);
+			}
+
+			inline NetworkAddress GetRemoteAddress() const noexcept
+			{
+				return m_RemoteAddress;
+			}
+
 			//
 			//IObject
 			//
@@ -374,7 +384,7 @@ namespace dcclite::broker::exec::dcc
 			Devices that contact the Broker, but are not in the config files, are marked as unregistered
 
 			*/				
-			bool					m_fRegistered;
+			bool				m_fRegistered;
 	};
 
 }

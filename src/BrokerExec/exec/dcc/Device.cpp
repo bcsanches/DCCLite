@@ -33,7 +33,7 @@ namespace dcclite::broker::exec::dcc
 {
 	Device::Device(RName name, sys::Broker &broker, IDccLite_DeviceServices &dccService, const rapidjson::Value &params):
 		FolderObject{ name },
-		m_clDccService{ dccService },
+		m_rclDccService{ dccService },
 		m_strConfigFileName{ std::string(this->GetName().GetData()) + ".decoders.json" },
 		m_pathConfigFile{ sys::Project::GetFilePath(m_strConfigFileName) }
 	{
@@ -57,7 +57,7 @@ namespace dcclite::broker::exec::dcc
 
 	Device::Device(RName name, IDccLite_DeviceServices &dccService):
 		FolderObject{ name },
-		m_clDccService{ dccService },		
+		m_rclDccService{ dccService },
 		m_pathConfigFile{ sys::Project::GetFilePath(m_strConfigFileName) }
 	{
 		//emtpy
@@ -90,11 +90,11 @@ namespace dcclite::broker::exec::dcc
 			if (!dec)
 				continue;
 
-			m_clDccService.Device_NotifyInternalItemDestroyed(*(this->TryGetChild(dec->GetName())));
+			m_rclDccService.Device_NotifyInternalItemDestroyed(*(this->TryGetChild(dec->GetName())));
 
 			auto shortcut = this->RemoveChild(dec->GetName());
 
-			m_clDccService.Device_DestroyDecoder(*dec);
+			m_rclDccService.Device_DestroyDecoder(*dec);
 		}
 
 		m_vecDecoders.clear();
@@ -105,7 +105,7 @@ namespace dcclite::broker::exec::dcc
 		if (!this->IsInternalDecoderAllowed())
 			throw std::logic_error(fmt::format("[Device::CreateInternalDecoder] Not supported by {}", this->GetName()));
 
-		auto &decoder = m_clDccService.Device_CreateDecoder(*this, className, address, name, params);
+		auto &decoder = m_rclDccService.Device_CreateDecoder(*this, className, address, name, params);
 
 		this->RegisterDecoder(decoder);
 
@@ -130,8 +130,8 @@ namespace dcclite::broker::exec::dcc
 			throw;
 		}		
 
-		m_clDccService.Device_NotifyInternalItemCreated(decoder);
-		m_clDccService.Device_NotifyInternalItemCreated(*decShortcut);
+		m_rclDccService.Device_NotifyInternalItemCreated(decoder);
+		m_rclDccService.Device_NotifyInternalItemCreated(*decShortcut);
 	}
 
 	void Device::Load()
@@ -191,7 +191,7 @@ namespace dcclite::broker::exec::dcc
 				auto decoderName = RName{ json::GetString(element, "name", "Device") };
 				Address address{ json::GetValue(element, "address", "Device") };
 
-				auto &decoder = m_clDccService.Device_CreateDecoder(*this, className, address, decoderName, element);
+				auto &decoder = m_rclDccService.Device_CreateDecoder(*this, className, address, decoderName, element);
 
 				this->RegisterDecoder(decoder);				
 			}

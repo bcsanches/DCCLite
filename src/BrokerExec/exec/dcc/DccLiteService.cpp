@@ -466,6 +466,11 @@ namespace dcclite::broker::exec::dcc
 			RName m_rnDeviceName;
 	};
 
+	static std::string MakeIpName(const dcclite::NetworkAddress& address)
+	{
+		return fmt::format("IP_{}_{}", address, address.GetPort());
+	}
+
 	void DccLiteService::NetworkThread_OnNetHello(const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet)
 	{
 		auto remoteSessionToken = packet.ReadGuid();
@@ -499,7 +504,7 @@ namespace dcclite::broker::exec::dcc
 				senderAddress
 			);
 
-			auto newName = fmt::format("IP_{}_{}", senderAddress, senderAddress.GetPort());
+			auto newName = MakeIpName(senderAddress);
 			strcpy(name, newName.c_str());
 		}
 
@@ -515,7 +520,14 @@ namespace dcclite::broker::exec::dcc
 		const dcclite::Guid remoteConfigToken,
 		const std::uint16_t protocolVersion
 	)
-	{		
+	{
+		if (this->IsDeviceBlocked(senderAddress))
+		{
+			dcclite::Log::Warn("[DccLiteService::{}] [OnNetEvent_Hello] {} - {} is blocked, ignoring hello request", this->GetName(), deviceName, senderAddress);
+
+			return;
+		}
+
 		//lookup device
 		auto dev = this->TryFindDeviceByName(deviceName);
 		NetworkDevice *netDevice;
@@ -646,5 +658,78 @@ namespace dcclite::broker::exec::dcc
 			}
 		}
 	}	
+
+	//
+	//
+	// Block List Management
+	//
+	//
+
+	void DccLiteService::Device_Block(NetworkDevice &dev)
+	{
+		if(!dev.IsConnectionStable())
+			throw std::runtime_error(fmt::format("[{}::BlockDevice] Device {} is not connected", this->GetName(), dev.GetName()));
+
+		//created blocked devices list on demand...
+		bool create = m_pBlockedDevices == nullptr;
+		if (create)
+		{
+			m_pBlockedDevices = static_cast<FolderObject *>(this->AddChild(std::make_unique<dcclite::FolderObject>(RName{ "blockedDevices" })));			
+		}
+
+		try
+		{
+			auto block = m_pBlockedDevices->AddChild(std::make_unique<Object>(RName{ MakeIpName(dev.GetRemoteAddress()) }));
+
+			//Was list created now? Notify it...
+			if (create)
+			{				
+				this->NotifyItemCreated(*m_pBlockedDevices);
+			}
+
+			//Notify new item
+			this->NotifyItemCreated(*block);
+
+			//Drop connection
+			dev.DisconnectDevice();
+		}		
+		catch (...)
+		{
+			if (create)
+			{
+				//cleanup
+				this->RemoveChild(m_pBlockedDevices->GetName());
+				m_pBlockedDevices = nullptr;
+			}
+		}
+	}	
+
+	[[nodiscard]]
+	bool DccLiteService::IsDeviceBlocked(const dcclite::NetworkAddress& address) const noexcept
+	{
+		if (!m_pBlockedDevices)
+			return false;
+
+		return m_pBlockedDevices->TryGetChild(RName{ MakeIpName(address) });
+	}
+
+	void DccLiteService::ClearBlockList()
+	{
+		if (!m_pBlockedDevices)
+			return;
+
+		m_pBlockedDevices->VisitChildren([this](IObject &item)
+			{
+				this->NotifyItemDestroyed(item);
+
+				return true;
+			}
+		);
+
+		this->NotifyItemDestroyed(*m_pBlockedDevices);
+		this->RemoveChild(m_pBlockedDevices->GetName());
+
+		m_pBlockedDevices = nullptr;
+	}
 }
 
