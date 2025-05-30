@@ -117,6 +117,9 @@ namespace dcclite::broker::exec::dcc
 
 	void NetworkDevice::DisconnectDevice()
 	{
+		if (m_kStatus == Status::OFFLINE)
+			return;
+
 		DevicePacket pkt{ dcclite::MsgTypes::DISCONNECT, m_SessionToken, m_ConfigToken };
 
 		m_clDccService.Device_SendPacket(m_RemoteAddress, pkt);
@@ -133,10 +136,6 @@ namespace dcclite::broker::exec::dcc
 		//
 		//During unload we go to a inconsistent state, so we force a disconnect so we ignore all remote device data
 		//We will need to go throught all the reconnect process
-
-		if (m_kStatus == Status::OFFLINE)
-			return;
-
 		this->DisconnectDevice();		
 	}
 

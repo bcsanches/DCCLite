@@ -77,6 +77,8 @@ namespace dcclite::broker::exec::dcc
 
 			bool IsConnectionStable() const noexcept override;
 
+			void DisconnectDevice();
+
 			//
 			//IObject
 			//
@@ -164,9 +166,7 @@ namespace dcclite::broker::exec::dcc
 			void GotoOnlineState(const dcclite::Clock::TimePoint_t time);
 			void GotoConfigState(const dcclite::Clock::TimePoint_t time);		
 
-			void AbortPendingTasks();
-
-			void DisconnectDevice();
+			void AbortPendingTasks();			
 
 			//
 			//INetworkDevice_DecoderServices

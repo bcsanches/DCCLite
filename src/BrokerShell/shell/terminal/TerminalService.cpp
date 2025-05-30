@@ -326,6 +326,43 @@ namespace dcclite::broker::shell::terminal
 
 	/////////////////////////////////////////////////////////////////////////////
 	//
+	// DisconnectDeviceCmd
+	//
+	/////////////////////////////////////////////////////////////////////////////
+	class DisconnectDeviceCmd : public TerminalCmd
+	{
+		public:
+			explicit DisconnectDeviceCmd(RName name = RName{ "Disconnect-Device" }) :
+				TerminalCmd(name)
+			{
+				//empty
+			}
+
+			CmdResult_t Run(TerminalContext& context, const CmdId_t id, const rapidjson::Document& request) override
+			{
+				auto paramsIt = request.FindMember("params");
+				if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() < 1))
+				{
+					throw TerminalCmdException(fmt::format("Usage: {} <NetworkDevicePath>", this->GetName()), id);
+				}
+
+				auto path = paramsIt->value[0].GetString();
+
+				auto& device = detail::GetNetworkDevice(dcclite::Path_t{ path }, context, id);
+
+				device.DisconnectDevice();
+
+				return detail::MakeRpcResultMessage(id, [](Result_t& results)
+					{
+						results.AddStringValue("classname", "string");
+						results.AddStringValue("msg", "OK");
+					}
+				);
+			}
+	};
+
+	/////////////////////////////////////////////////////////////////////////////
+	//
 	// DecoderCmdBase
 	//
 	/////////////////////////////////////////////////////////////////////////////
@@ -808,6 +845,10 @@ namespace dcclite::broker::shell::terminal
 
 		{
 			cmdHost.AddCmd(std::make_unique<ResetItemCmd>());
+		}
+
+		{
+			cmdHost.AddCmd(std::make_unique<DisconnectDeviceCmd>());
 		}
 
 		{
