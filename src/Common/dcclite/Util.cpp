@@ -197,3 +197,20 @@ void dcclite::SetThreadName(std::thread &thread, const char *threadName)
 }
 
 #endif
+
+static std::thread::id g_tMainThreadId;
+
+void dcclite::SetMainThread()
+{
+	g_tMainThreadId = std::this_thread::get_id();
+}
+
+void dcclite::ClearMainThread()
+{
+	g_tMainThreadId = {};
+}
+
+bool dcclite::IsMainThread()
+{
+	return g_tMainThreadId == std::this_thread::get_id();
+}

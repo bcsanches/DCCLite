@@ -108,9 +108,9 @@ namespace dcclite::broker::exec::dcc
 
 			sigslot::scoped_connection	m_slotSystemConnection;
 
-			const NetworkAddress	m_clAddress;
+			const NetworkAddress		m_clAddress;
 
-			std::thread				m_clReceiveThread;
+			std::thread					m_clReceiveThread;
 	};		
 
 	class DccppServiceImpl: public DccppService, public sys::EventHub::IEventTarget, DccppServiceImplClientProxy
@@ -181,8 +181,7 @@ namespace dcclite::broker::exec::dcc
 			dcclite::Socket								m_clSocket;
 
 			std::thread									m_thListenThread;
-
-			std::mutex									m_mtxClientsLock;
+			
 			std::vector<std::unique_ptr<DccppClient>>	m_vecClients;
 	};
 
@@ -714,6 +713,7 @@ ERROR_RESPONSE:
 			sys::EventHub::PostEvent<ClientEvent>(std::ref(*this), std::move(msg));
 		}
 
+		dcclite::Log::Info("[DccppClient::ThreadProc] Client {} disconnected", m_clAddress);
 		m_rclOwner.Async_ClientDisconnected(*this);		
 	}
 
@@ -764,10 +764,15 @@ ERROR_RESPONSE:
 	}
 
 	void DccppServiceImpl::OnAcceptConnection(const dcclite::NetworkAddress &address, Socket s)
-	{		
-		std::unique_lock<std::mutex> guard{ m_mtxClientsLock };
+	{
+		assert(dcclite::IsMainThread());
 
-		auto client = std::unique_ptr<DccppClient>{ new DccppClient(*this, m_rclDccService, address, std::move(s)) };
+		auto client = std::make_unique<DccppClient>(
+			*static_cast<DccppServiceImplClientProxy *>(this), 
+			m_rclDccService, 
+			address, 
+			std::move(s)
+		);
 
 		m_vecClients.push_back(std::move(client));
 	}
@@ -787,7 +792,7 @@ ERROR_RESPONSE:
 
 			if (status == Socket::Status::OK)
 			{
-				dcclite::Log::Info("[DccppService] Client connected {}", address.GetIpString());								
+				dcclite::Log::Info("[DccppService] Client connected {}", address.GetIpString());
 				
 				sys::EventHub::PostEvent<AcceptConnectionEvent>(std::ref(*this), address, std::move(socket));
 			}
@@ -803,7 +808,7 @@ ERROR_RESPONSE:
 
 	void DccppServiceImpl::OnClientDisconnected(DccppClient &client)
 	{
-		std::unique_lock<std::mutex> guard{ m_mtxClientsLock };
+		assert(dcclite::IsMainThread());
 
 		auto it = std::find_if(m_vecClients.begin(), m_vecClients.end(), [&client](auto &c) { return c.get() == &client; });
 

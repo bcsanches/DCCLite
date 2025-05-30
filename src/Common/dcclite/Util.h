@@ -66,4 +66,9 @@ namespace dcclite
 	// 
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	void SetThreadName(std::thread &thread, const char *threadName);
+
+	void SetMainThread();
+	void ClearMainThread();
+
+	bool IsMainThread();
 }

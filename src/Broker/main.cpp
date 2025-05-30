@@ -115,7 +115,7 @@ int main(int argc, char **argv)
 
 	try
 	{		
-		dcclite::Init("Broker", "DccLiteBroker.log");		
+		dcclite::Init("Broker", "DccLiteBroker.log");	
 
 #ifndef DEBUG
 		dcclite::Log::GetDefault()->set_level(spdlog::level::trace);

@@ -213,7 +213,7 @@ namespace SharpTerminal
                     
                     TreeNode node = brokerNode;
 
-                    //index 0 is a empty string (root)
+                    //index 0 is an empty string (root)
                     for(int i = 1; i < pathNodes.Length; i++)
                     {
                         await TryToLoadNodeChildrenAsync(node);                        

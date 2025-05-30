@@ -11,11 +11,14 @@
 
 #include "Log.h"
 #include "PathUtils.h"
+#include "Util.h"
 
 namespace dcclite
 {
 	void Init(std::string_view appFolderName, const char *logFile)
 	{
+		SetMainThread();
+
 		Log::detail::Init(logFile);
 
 		PathUtils::detail::Init(appFolderName);		
@@ -26,5 +29,7 @@ namespace dcclite
 		PathUtils::detail::Finalize();
 
 		Log::detail::Finalize();
+
+		ClearMainThread();
 	}
 }
