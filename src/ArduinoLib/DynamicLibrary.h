@@ -22,6 +22,7 @@ class DynamicLibrary
 		~DynamicLibrary();
 
 		void Load(const std::string_view name);
+		void Unload();
 
 		void *TryGetSymbol(const char *name);
 		void *GetSymbol(const char *name);

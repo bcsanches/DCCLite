@@ -80,7 +80,7 @@ void DynamicLibrary::Load(const std::string_view name)
 
 	dcclite::fs::path path(name);	
 
-#ifdef PH_LINUX
+#ifndef WIN32
 	Path path(tmp);
 	path.SetExtension(".so");
 	tmp = path.GetStr();
@@ -92,6 +92,13 @@ void DynamicLibrary::Load(const std::string_view name)
 	{
 		this->RaiseException("DynamicLibrary::Load", m_strName.c_str());
 	}
+}
+
+void DynamicLibrary::Unload()
+{
+	m_strName.clear();
+
+	m_upHandle.reset();
 }
 
 void *DynamicLibrary::TryGetSymbol(const char *name)

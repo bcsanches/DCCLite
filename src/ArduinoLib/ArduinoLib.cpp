@@ -28,6 +28,7 @@ namespace ArduinoLib
 
 	static DynamicLibrary g_ModuleLib;
 	static std::string g_strModuleName;
+	static std::string g_strDeviceName;
 
 	static ArduinoProc_t g_pfnSetup;
 	static ArduinoProc_t g_pfnLoop;
@@ -39,13 +40,14 @@ namespace ArduinoLib
 		g_ModuleLib.Load(moduleName);
 
 		g_strModuleName = std::move(moduleName);
+		g_strDeviceName = deviceName ? deviceName : "";
 
 		g_pfnSetup = reinterpret_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("setup"));
 		g_pfnLoop = reinterpret_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("loop"));
 
 		detail::BoardInit();
 
-		bool romResult = detail::RomSetupModule(deviceName ? deviceName : g_strModuleName);
+		bool romResult = detail::RomSetupModule(!g_strDeviceName.empty() ? g_strDeviceName : g_strModuleName);
 
 		//initialize client
 		g_pfnSetup();
@@ -59,6 +61,11 @@ namespace ArduinoLib
 
 		//hack to reset ehtercard lib
 		ether.udpServerPauseListenOnPort(0);
+
+		g_pfnLoop = nullptr;
+		g_pfnSetup = nullptr;
+
+		g_ModuleLib.Unload();
 	}
 
 	void Tick()

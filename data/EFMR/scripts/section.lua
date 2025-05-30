@@ -294,6 +294,9 @@ function Section:new(o)
 
     log_trace("[Section:new] acessing dispatcher and registering")
 
+    -- Init state, because register may acess it...
+    o.state = SECTION_STATES.clear
+
     o.dispatcher = dcclite.dispatcher
     o.dispatcher:register_section(o.name, o)
 

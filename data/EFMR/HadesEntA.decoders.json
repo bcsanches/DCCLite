@@ -7,7 +7,7 @@
     "inverted": true,
     "powerPin":22,
     "operationTime": 3000,
-    "range":38,
+    "range":20,
     "location":"Helix",
     "comment": "AMV 06 - ponta triângulo - Soledade x Barra do Piraí"    
   },
