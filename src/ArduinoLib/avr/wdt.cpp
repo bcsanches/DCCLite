@@ -8,19 +8,33 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#pragma once
+#include "wdt.h"
 
-#include <stdint.h>
+#include <exception>
 
-#include "../ArduinoLibDefs.h"
+#include "../Arduino.h"
 
-#define WDTO_120MS  3
+static bool				m_fWdtEnabled = false;
+static unsigned long	m_lThinkTime = 0;
 
-ARDUINO_API extern void wdt_enable(const uint8_t value);
-ARDUINO_API extern void wdt_disable();
+void wdt_enable(const uint8_t value)
+{
+	if (value != WDTO_120MS)
+		throw std::exception("Unknow value for wdt_enable");
+	
+	m_lThinkTime = millis() + 120;
+	m_fWdtEnabled = true;
+}
+
+void wdt_disable()
+{	
+	m_fWdtEnabled = false;
+}
 
 namespace ArduinoLib::detail
 {
-	bool WdtExpired();
+	bool WdtExpired()
+	{
+		return m_fWdtEnabled && (millis() > m_lThinkTime);
+	}
 }
-

@@ -29,6 +29,10 @@
 - Improved ping and connection management to devices
 - Block list support on DccLiteService
 
+## Emulator
+
+- Reboot support (watch dog)
+
 # Version 0.10.0
 
 ## General Features

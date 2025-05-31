@@ -12,6 +12,7 @@
 
 #include <dcclite/Log.h>
 
+#include "avr/wdt.h"
 #include "DynamicLibrary.h"
 #include "EEPROMLib.h"
 #include "Ethercard.h"
@@ -33,14 +34,10 @@ namespace ArduinoLib
 	static ArduinoProc_t g_pfnSetup;
 	static ArduinoProc_t g_pfnLoop;
 
-	bool Setup(std::string moduleName, dcclite::Logger_t log, const char *deviceName)
+
+	static bool ReSetup()
 	{
-		dcclite::Log::Replace(log);
-
-		g_ModuleLib.Load(moduleName);
-
-		g_strModuleName = std::move(moduleName);
-		g_strDeviceName = deviceName ? deviceName : "";
+		g_ModuleLib.Load(g_strModuleName);
 
 		g_pfnSetup = reinterpret_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("setup"));
 		g_pfnLoop = reinterpret_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("loop"));
@@ -49,10 +46,22 @@ namespace ArduinoLib
 
 		bool romResult = detail::RomSetupModule(!g_strDeviceName.empty() ? g_strDeviceName : g_strModuleName);
 
+		wdt_disable();
+
 		//initialize client
 		g_pfnSetup();
 
 		return romResult;
+	}
+
+	bool Setup(std::string moduleName, dcclite::Logger_t log, const char *deviceName)
+	{
+		dcclite::Log::Replace(log);		
+
+		g_strModuleName = std::move(moduleName);
+		g_strDeviceName = deviceName ? deviceName : "";		
+
+		return ReSetup();
 	}
 
 	void Finalize()
@@ -71,6 +80,14 @@ namespace ArduinoLib
 	void Tick()
 	{
 		detail::BoardTick();
+
+		if (detail::WdtExpired())
+		{
+			//Watch dog fired, restart board...
+			Finalize();
+
+			ReSetup();
+		}
 
 		//run client loop
 		g_pfnLoop();

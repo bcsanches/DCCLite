@@ -2,11 +2,12 @@
 set(ArduinoLib_SRCS
 	Arduino.cpp
 	ArduinoLib.cpp
+	avr/wdt.cpp
 	DynamicLibrary.cpp
 	EEPROM.cpp
 	Ethercard.cpp
 	Serial.cpp
-	Servo.cpp
+	Servo.cpp	
 )
 
 set(ArduinoLib_HDRS
@@ -14,15 +15,15 @@ set(ArduinoLib_HDRS
 	ArduinoDefs.h
 	ArduinoLib.h
 	ArduinoLibDefs.h
+	avr/boot.h
+	avr/pgmspace.h
+	avr/wdt.h
 	DynamicLibrary.h
 	EEPROM.h
 	EEPROMLib.h
 	Ethercard.h
 	Serial.h
-	Servo.h
-	avr/boot.h
-	avr/pgmspace.h
-	avr/wdt.h
+	Servo.h	
 	WString.h
 )
 

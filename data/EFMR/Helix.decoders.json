@@ -170,6 +170,7 @@
 		"name": "INV_HELIX_TC_SOL",
 		"class": "QuadInverter",
 		"address": 1890,
+		"flipInterval":5,
 		"trackPowerAPins": [
 			9,
 			10

@@ -115,7 +115,7 @@ namespace ArduinoLib
 
 		void BoardInit()
 		{
-			g_Clock = dcclite::Clock();
+			g_Clock = dcclite::Clock();			
 		}
 
 		void BoardTick()

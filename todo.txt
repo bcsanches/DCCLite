@@ -1,9 +1,11 @@
 DCCLite
 -------
 
-- Implement reboot on emulator
+- Fix QuadInverterDecoder
 - When hadesEntA resets, sensors go crazy
 	- add a delay for sensor to send state after turn on?
+	- startDelayMs
+	- Update procotol number
 
 - Store time device connected and disconnected
 	- Send this to sharp terminal
@@ -28,7 +30,7 @@ DCCLite
 		- SharpTerminal will be able to set this externalVoltage value
 	
 - Move Signal to dispatcher?
-	- creata a decoder to bridge the signa on dispatcher do jmri?
+	- create a decoder to bridge the signal on dispatcher to jmri?
 
 - SharpTerminal
 	- Dashboard
@@ -50,14 +52,14 @@ DCCLite
 		- When an aspect is set, the signal locks its turnouts and monitor sensors / rouse_sections
 			- hint route_section of the expected direction
 
-- TrackSection
+- Dispatcher
 	- BlockSection: a block with an entry and exit sensor, no turnouts, simple block for stopping a train	
+	- Abandon TrackSection on dispatcher
+	- TBlockSection?
+	- update route section to know next section and avoid re-ocupying the block
+	- it may have a direction set (will be used by signal logic)
 
-- Why lua scripts are not notified when devices gets online and state changes during sync? Check routes
 - Implement coroutine support on lua scripts?
-
-- update route section to know next section and avoid re-ocupying the block
-- it may have a direction set (will be used by signal logic)
 
 - Make a EngineDriver Server, redirect to DCCex Directly and goodbye JMRI
 
