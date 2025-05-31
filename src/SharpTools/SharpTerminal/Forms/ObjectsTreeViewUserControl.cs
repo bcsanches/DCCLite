@@ -9,295 +9,287 @@ namespace SharpTerminal
 {
 	[SupportedOSPlatform("windows")]
 	public partial class ObjectsTreeViewUserControl : UserControl
-    {
-        RequestManager                              mRequestManager;
-        IConsole                                    mConsole;
-        readonly Dictionary<ulong, List<TreeNode>>  mObjectsNodes = [];
+	{
+		RequestManager                              mRequestManager;
+		IConsole                                    mConsole;
+		readonly Dictionary<ulong, List<TreeNode>>  mObjectsNodes = [];
 
-        RemoteObject    mPreviousSelectedObject;        
+		RemoteObject    mPreviousSelectedObject;        
 
-        public Panel MainDisplayPanel
-        {
-            get;
-            set;
-        }
-                
-        internal RequestManager RequestManager
-        {
-            set
-            {
-                if (value == mRequestManager)
-                    return;
+		public Panel MainDisplayPanel
+		{
+			get;
+			set;
+		}
+				
+		internal RequestManager RequestManager
+		{
+			set
+			{
+				if (value == mRequestManager)
+					return;
 
-                if(mRequestManager != null)
-                {
-                    mRequestManager.ConnectionStateChanged -= mRequestManager_ConnectionStateChanged;
-                }
+				if(mRequestManager != null)
+				{
+					mRequestManager.ConnectionStateChanged -= mRequestManager_ConnectionStateChanged;
+				}
 
-                mRequestManager = value;
+				mRequestManager = value;
 
-                if(mRequestManager != null)
-                {
-                    mRequestManager.ConnectionStateChanged += mRequestManager_ConnectionStateChanged;
-                }
-            }
-        }
+				if(mRequestManager != null)
+				{
+					mRequestManager.ConnectionStateChanged += mRequestManager_ConnectionStateChanged;
+				}
+			}
+		}
 
-        internal IConsole Console
-        {
-            set
-            {
-                mConsole = value;
-            }
-        }
+		internal IConsole Console
+		{
+			set
+			{
+				mConsole = value;
+			}
+		}
 
-        private void RegisterNode(RemoteObject obj, TreeNode node)
-        {
-            if (this.InvokeRequired)
-                throw new InvalidOperationException("InvokeRequired");
+		private void RegisterNode(RemoteObject obj, TreeNode node)
+		{
+			if (this.InvokeRequired)
+				throw new InvalidOperationException("InvokeRequired");
 
-            if (!mObjectsNodes.TryGetValue(obj.InternalId, out var nodes))
-            {
-                nodes = [];
-                mObjectsNodes.Add(obj.InternalId, nodes);
+			if (!mObjectsNodes.TryGetValue(obj.InternalId, out var nodes))
+			{
+				nodes = [];
+				mObjectsNodes.Add(obj.InternalId, nodes);
 
-                obj.StateChanged += RemoteObject_StateChanged;
+				obj.StateChanged += RemoteObject_StateChanged;
 
-                if (obj is RemoteFolder folder)
-                {
-                    folder.ChildAdded += RemoteFolder_ChildAdded;
-                    folder.ChildRemoved += RemoteFolder_ChildRemoved;
-                }
-            }
+				if (obj is RemoteFolder folder)
+				{
+					folder.ChildAdded += RemoteFolder_ChildAdded;
+					folder.ChildRemoved += RemoteFolder_ChildRemoved;
+				}
+			}
 
-            nodes.Add(node);            
-        }
+			nodes.Add(node);            
+		}
 
-        private void DeleteTreeNodes_r(TreeNode node)
-        {
-            foreach(TreeNode subNode in node.Nodes)
-            {
-                DeleteTreeNodes_r(subNode);
-            }                       
+		private void DeleteTreeNodes_r(TreeNode node)
+		{
+			foreach(TreeNode subNode in node.Nodes)
+			{
+				DeleteTreeNodes_r(subNode);
+			}                       
 
-            node.Parent.Nodes.Remove(node);
+			node.Parent.Nodes.Remove(node);
 
-            if (node.Tag is not RemoteObject remoteObject)
+			if (node.Tag is not RemoteObject remoteObject)
 				return;
 
 			var nodes = mObjectsNodes[remoteObject.InternalId];
 
-            nodes.Remove(node);
+			nodes.Remove(node);
 
-            if(nodes.Count == 0)
-            {
-                remoteObject.StateChanged -= RemoteObject_StateChanged;
-                if (remoteObject is RemoteFolder folder)
-                {
-                    folder.ChildAdded -= RemoteFolder_ChildAdded;
-                    folder.ChildRemoved -= RemoteFolder_ChildRemoved;
-                }
+			if(nodes.Count == 0)
+			{
+				remoteObject.StateChanged -= RemoteObject_StateChanged;
+				if (remoteObject is RemoteFolder folder)
+				{
+					folder.ChildAdded -= RemoteFolder_ChildAdded;
+					folder.ChildRemoved -= RemoteFolder_ChildRemoved;
+				}
 
-                mObjectsNodes.Remove(remoteObject.InternalId);
-            }                       
-        }
+				mObjectsNodes.Remove(remoteObject.InternalId);
+			}                       
+		}
 
-        private void RemoteFolder_ChildRemoved(RemoteObject sender, RemoteFolderChildEventArgs args)
-        {
-            if(this.InvokeRequired)
-            {
-                this.Invoke(new MethodInvoker(delegate { this.RemoteFolder_ChildRemoved(sender, args); }));
+		private void RemoteFolder_ChildRemoved(RemoteObject sender, RemoteFolderChildEventArgs args)
+		{
+			if(this.InvokeRequired)
+			{
+				this.Invoke(new MethodInvoker(delegate { this.RemoteFolder_ChildRemoved(sender, args); }));
 
-                return;
-            }
+				return;
+			}
 
-            var removedItem = args.Target;
+			var removedItem = args.Target;
 
-            if (!mObjectsNodes.TryGetValue(removedItem.InternalId, out var nodes))
-            {
-                return;
-            }
+			if (!mObjectsNodes.TryGetValue(removedItem.InternalId, out var nodes))
+			{
+				return;
+			}
 
-            //copy it, as the DeleteTreeNodes_r will change it
-            var nodesArray = nodes.ToArray();
+			//copy it, as the DeleteTreeNodes_r will change it
+			var nodesArray = nodes.ToArray();
 
-            foreach (var node in nodesArray)
-                DeleteTreeNodes_r(node);
-        }
+			foreach (var node in nodesArray)
+				DeleteTreeNodes_r(node);
+		}
 
-        private void RemoteFolder_ChildAdded(RemoteObject sender, RemoteFolderChildEventArgs args)
-        {
-            if (this.InvokeRequired)
-            {
-                this.Invoke(new MethodInvoker(delegate { this.RemoteFolder_ChildAdded(sender, args); }));
-            }
-            else
-            {
-                var addedItem = args.Target;
+		private void RemoteFolder_ChildAdded(RemoteObject sender, RemoteFolderChildEventArgs args)
+		{
+			if (this.InvokeRequired)
+			{
+				this.Invoke(new MethodInvoker(delegate { this.RemoteFolder_ChildAdded(sender, args); }));
+			}
+			else
+			{
+				var addedItem = args.Target;
 
-                if (!mObjectsNodes.TryGetValue(addedItem.ParentInternalId, out var nodes))
-                    return;
+				if (!mObjectsNodes.TryGetValue(addedItem.ParentInternalId, out var nodes))
+					return;
 
-                foreach(var node in nodes)
-                {
-                    AddNewNode(addedItem, node);
-                }
-            }
-        }
+				foreach(var node in nodes)
+				{
+					AddNewNode(addedItem, node);
+				}
+			}
+		}
 
-        private void UpdateNodesData(RemoteObject remoteObject)
-        {
-            if (!mObjectsNodes.TryGetValue(remoteObject.InternalId, out var nodes))
-                return;
+		private void UpdateNodesData(RemoteObject remoteObject)
+		{
+			if (!mObjectsNodes.TryGetValue(remoteObject.InternalId, out var nodes))
+				return;
 
-            var customIcon = remoteObject.TryGetIconName();
+			var customIcon = remoteObject.TryGetIconName();
 
-            var name = GenerateObjectName(remoteObject);
-            foreach (var node in nodes)
-            {
-                node.ImageKey = customIcon;
-                node.SelectedImageKey = customIcon;
+			var name = GenerateObjectName(remoteObject);
+			foreach (var node in nodes)
+			{
+				node.ImageKey = customIcon;
+				node.SelectedImageKey = customIcon;
 
-                node.Text = name;
-            }            
-        }
+				node.Text = name;
+			}            
+		}
 
-        private string GenerateObjectName(RemoteObject remoteObject)
-        {
-            return remoteObject.Name + remoteObject.GetNameSuffix();
-        }
+		private string GenerateObjectName(RemoteObject remoteObject)
+		{
+			return remoteObject.Name + remoteObject.GetNameSuffix();
+		}
 
-        private void RemoteObject_StateChanged(RemoteObject sender, EventArgs args)
-        {            
-            if (sender.TryGetIconName() == null)
-                return;
+		private void RemoteObject_StateChanged(RemoteObject sender, EventArgs args)
+		{            
+			if (sender.TryGetIconName() == null)
+				return;
 
-            UpdateNodesData(sender);                        
-        }
+			UpdateNodesData(sender);                        
+		}
 
-        private async void mRequestManager_ConnectionStateChanged(RequestManager sender, ConnectionStateEventArgs args)
-        {            
-            if (args.State == ConnectionState.OK)
-            {
-                mTreeView.Nodes.Clear();
-                RemoteObjectManager.Clear();
+		private async void mRequestManager_ConnectionStateChanged(RequestManager sender, ConnectionStateEventArgs args)
+		{            
+			if (args.State == ConnectionState.OK)
+			{
+				mTreeView.Nodes.Clear();
+				RemoteObjectManager.Clear();
+				ClearMainDisplayPanel();
 
 				var rootFolder = await RemoteObjectManager.LoadRoot();
 
-                var brokerNode = mTreeView.Nodes.Add("Broker");
-                brokerNode.Name = "Broker";
-                brokerNode.Tag = rootFolder;
+				var brokerNode = mTreeView.Nodes.Add("Broker");
+				brokerNode.Name = "Broker";
+				brokerNode.Tag = rootFolder;
 
-                var services = await rootFolder.LoadChildrenAsync(mRequestManager);                
-                FillTree(brokerNode, services);                
+				var services = await rootFolder.LoadChildrenAsync(mRequestManager);                
+				FillTree(brokerNode, services);
 
-                var locationService = services.Where(x => x.Name == "locationManager").FirstOrDefault();
-                if (locationService != null)
-                {                                        
-                    var locationNode = mTreeView.Nodes.Add("locations");
-                    locationNode.Tag = locationService;
+				var emulatorNode = mTreeView.Nodes.Add("Emulator");
+				emulatorNode.Name = "Emulator";
+				emulatorNode.Tag = new EmulatorManagerProxy();
 
-                    RegisterNode(locationService, locationNode);                        
-                }
+				if(mPreviousSelectedObject != null)
+				{
+					//try to reload previous object
+					var path = mPreviousSelectedObject.Path;
+					var pathNodes = path.Split("/");
+					
+					TreeNode node = brokerNode;
 
-                var emulatorNode = mTreeView.Nodes.Add("Emulator");
-                emulatorNode.Name = "Emulator";
-                emulatorNode.Tag = new EmulatorManagerProxy();
-
-                if(mPreviousSelectedObject != null)
-                {
-                    //try to reload previous object
-                    var path = mPreviousSelectedObject.Path;
-                    var pathNodes = path.Split("/");
-                    
-                    TreeNode node = brokerNode;
-
-                    //index 0 is an empty string (root)
-                    for(int i = 1; i < pathNodes.Length; i++)
-                    {
-                        await TryToLoadNodeChildrenAsync(node);                        
+					//index 0 is an empty string (root)
+					for(int i = 1; i < pathNodes.Length; i++)
+					{
+						await TryToLoadNodeChildrenAsync(node);                        
 
 						var result = node.Nodes.Find(pathNodes[i], false);
-                        if ((result == null) || (result.Length == 0))
-                            break;
+						if ((result == null) || (result.Length == 0))
+							break;
 
 						node = result[0];                        
 					}
 
-                    mTreeView.SelectedNode = node;
-                }
-            }
-            else if ((args.State == ConnectionState.DISCONNECTED) || (args.State == ConnectionState.ERROR))
-            {
-                var node = mTreeView.SelectedNode;
-                if (node == null)
-                    return;
+					mTreeView.SelectedNode = node;
+				}
+			}
+			else if ((args.State == ConnectionState.DISCONNECTED) || (args.State == ConnectionState.ERROR))
+			{
+				var node = mTreeView.SelectedNode;
+				if (node == null)
+					return;
 
-                var remoteObj = (RemoteObject)node.Tag;
-                if (remoteObj == null)                
-                    return;
+				var remoteObj = (RemoteObject)node.Tag;
+				if (remoteObj == null)                
+					return;
 
-                mPreviousSelectedObject = remoteObj;
+				mPreviousSelectedObject = remoteObj;
 			}                        
-        }        
+		}        
 
-        private void AddNewNode(RemoteObject remoteObject, TreeNode parent)
-        {
-            TreeNode newNode = parent.Nodes.Add(GenerateObjectName(remoteObject));
-            newNode.Name = newNode.Text;
-            newNode.Tag = remoteObject;
+		private void AddNewNode(RemoteObject remoteObject, TreeNode parent)
+		{
+			TreeNode newNode = parent.Nodes.Add(GenerateObjectName(remoteObject));
+			newNode.Name = newNode.Text;
+			newNode.Tag = remoteObject;
 
-            var iconKey = remoteObject.TryGetIconName();
+			var iconKey = remoteObject.TryGetIconName();
 
-            if (iconKey != null)
-            {
-                newNode.ImageKey = iconKey;
-                newNode.SelectedImageKey = iconKey;
-            }
+			if (iconKey != null)
+			{
+				newNode.ImageKey = iconKey;
+				newNode.SelectedImageKey = iconKey;
+			}
 
-            if (remoteObject is RemoteFolder)
-            {
-                var subNode = newNode.Nodes.Add("dummy");
-                subNode.Tag = this;
-            }
-            else if (iconKey == null)
-            {
-                newNode.ImageKey = DefaultIcons.FILE_GEAR_ICON;
-                newNode.SelectedImageKey = DefaultIcons.FILE_GEAR_ICON;
-            }
+			if (remoteObject is RemoteFolder)
+			{
+				var subNode = newNode.Nodes.Add("dummy");
+				subNode.Tag = this;
+			}
+			else if (iconKey == null)
+			{
+				newNode.ImageKey = DefaultIcons.FILE_GEAR_ICON;
+				newNode.SelectedImageKey = DefaultIcons.FILE_GEAR_ICON;
+			}
 
-            RegisterNode(remoteObject, newNode);
-        }
+			RegisterNode(remoteObject, newNode);
+		}
 
-        private void FillTree(TreeNode node, System.Collections.Generic.IEnumerable<RemoteObject> objects)
-        {           
-            mTreeView.SuspendLayout();
+		private void FillTree(TreeNode node, System.Collections.Generic.IEnumerable<RemoteObject> objects)
+		{           
+			mTreeView.SuspendLayout();
 
-            try
-            {
-                foreach (var remoteObject in objects)
-                {
-                    AddNewNode(remoteObject, node);                    
-                }
+			try
+			{
+				foreach (var remoteObject in objects)
+				{
+					AddNewNode(remoteObject, node);                    
+				}
 
-                node.Expand();
-            }
-            finally
-            {
-                mTreeView.ResumeLayout();
-            }                            
-        }
+				node.Expand();
+			}
+			finally
+			{
+				mTreeView.ResumeLayout();
+			}                            
+		}
 
-        public ObjectsTreeViewUserControl()
-        {
-            InitializeComponent();
+		public ObjectsTreeViewUserControl()
+		{
+			InitializeComponent();
 
-            DefaultIcons.LoadIcons(mImageList);
-            mTreeView.ImageList = mImageList;            
-        }
+			DefaultIcons.LoadIcons(mImageList);
+			mTreeView.ImageList = mImageList;            
+		}
 
-        private async Task<bool> TryToLoadNodeChildrenAsync(TreeNode node)
-        {
+		private async Task<bool> TryToLoadNodeChildrenAsync(TreeNode node)
+		{
 			if ((node.Nodes.Count > 0) && (node.Nodes[0].Tag == this))
 			{
 				var remoteFolder = (RemoteFolder)node.Tag;
@@ -308,47 +300,47 @@ namespace SharpTerminal
 				if (children != null)
 					FillTree(node, children);
 
-                return true;
+				return true;
 			}
 
-            return false;
+			return false;
 		}
 
-        private async void mTreeView_BeforeExpand(object sender, TreeViewCancelEventArgs e)
-        {
-            e.Cancel = await TryToLoadNodeChildrenAsync(e.Node);			
-        }
+		private async void mTreeView_BeforeExpand(object sender, TreeViewCancelEventArgs e)
+		{
+			e.Cancel = await TryToLoadNodeChildrenAsync(e.Node);			
+		}
 
-        private void ClearMainDisplayPanel()
-        {
-            if (MainDisplayPanel.Controls.Count == 0)
-                return;
-            
-            var control = MainDisplayPanel.Controls[0];
-            MainDisplayPanel.Controls.Remove(control);
+		private void ClearMainDisplayPanel()
+		{
+			if (MainDisplayPanel.Controls.Count == 0)
+				return;
+			
+			var control = MainDisplayPanel.Controls[0];
+			MainDisplayPanel.Controls.Remove(control);
 
-            control.Dispose();            
-        }
+			control.Dispose();            
+		}
 
-        private void FillMainDisplay(IControlProvider controlProvider)
-        {
-            var newControl = controlProvider.CreateControl(mConsole);
+		private void FillMainDisplay(IControlProvider controlProvider)
+		{
+			var newControl = controlProvider.CreateControl(mConsole);
 
-            MainDisplayPanel.Controls.Add(newControl);
-            newControl.Dock = DockStyle.Fill;
-        }
+			MainDisplayPanel.Controls.Add(newControl);
+			newControl.Dock = DockStyle.Fill;
+		}
 
-        private void mTreeView_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-            if (MainDisplayPanel == null)
-                return;
-            
-            this.ClearMainDisplayPanel();
+		private void mTreeView_AfterSelect(object sender, TreeViewEventArgs e)
+		{
+			if (MainDisplayPanel == null)
+				return;
+			
+			this.ClearMainDisplayPanel();
 
-            if (e.Node.Tag is not IControlProvider controlProvider)
-                return;
+			if (e.Node.Tag is not IControlProvider controlProvider)
+				return;
 
-            this.FillMainDisplay(controlProvider);            
-        }
-    }
+			this.FillMainDisplay(controlProvider);            
+		}
+	}
 }
