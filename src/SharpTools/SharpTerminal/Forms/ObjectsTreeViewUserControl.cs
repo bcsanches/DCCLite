@@ -10,11 +10,11 @@ namespace SharpTerminal
 	[SupportedOSPlatform("windows")]
 	public partial class ObjectsTreeViewUserControl : UserControl
     {
-        RequestManager mRequestManager;
-        IConsole mConsole;
-        readonly Dictionary<ulong, List<TreeNode>> mObjectsNodes = new Dictionary<ulong, List<TreeNode>>();
+        RequestManager                              mRequestManager;
+        IConsole                                    mConsole;
+        readonly Dictionary<ulong, List<TreeNode>>  mObjectsNodes = [];
 
-        RemoteObject mPreviousSelectedObject;
+        RemoteObject    mPreviousSelectedObject;        
 
         public Panel MainDisplayPanel
         {
@@ -58,7 +58,7 @@ namespace SharpTerminal
 
             if (!mObjectsNodes.TryGetValue(obj.InternalId, out var nodes))
             {
-                nodes = new List<TreeNode>();
+                nodes = [];
                 mObjectsNodes.Add(obj.InternalId, nodes);
 
                 obj.StateChanged += RemoteObject_StateChanged;
@@ -78,9 +78,11 @@ namespace SharpTerminal
             foreach(TreeNode subNode in node.Nodes)
             {
                 DeleteTreeNodes_r(subNode);
-            }
+            }                       
 
-			if (node.Tag is not RemoteObject remoteObject)
+            node.Parent.Nodes.Remove(node);
+
+            if (node.Tag is not RemoteObject remoteObject)
 				return;
 
 			var nodes = mObjectsNodes[remoteObject.InternalId];
@@ -97,9 +99,7 @@ namespace SharpTerminal
                 }
 
                 mObjectsNodes.Remove(remoteObject.InternalId);
-            }
-            
-            node.Parent.Nodes.Remove(node);
+            }                       
         }
 
         private void RemoteFolder_ChildRemoved(RemoteObject sender, RemoteFolderChildEventArgs args)
@@ -110,7 +110,6 @@ namespace SharpTerminal
 
                 return;
             }
-
 
             var removedItem = args.Target;
 
@@ -320,26 +319,36 @@ namespace SharpTerminal
             e.Cancel = await TryToLoadNodeChildrenAsync(e.Node);			
         }
 
+        private void ClearMainDisplayPanel()
+        {
+            if (MainDisplayPanel.Controls.Count == 0)
+                return;
+            
+            var control = MainDisplayPanel.Controls[0];
+            MainDisplayPanel.Controls.Remove(control);
+
+            control.Dispose();            
+        }
+
+        private void FillMainDisplay(IControlProvider controlProvider)
+        {
+            var newControl = controlProvider.CreateControl(mConsole);
+
+            MainDisplayPanel.Controls.Add(newControl);
+            newControl.Dock = DockStyle.Fill;
+        }
+
         private void mTreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
             if (MainDisplayPanel == null)
                 return;
-
-            if (MainDisplayPanel.Controls.Count > 0)
-            {
-                var control = MainDisplayPanel.Controls[0];
-                MainDisplayPanel.Controls.Remove(control);
-
-                control.Dispose();
-            }
+            
+            this.ClearMainDisplayPanel();
 
             if (e.Node.Tag is not IControlProvider controlProvider)
                 return;
 
-            var newControl = controlProvider.CreateControl(mConsole);            
-
-            MainDisplayPanel.Controls.Add(newControl);
-            newControl.Dock = DockStyle.Fill;
+            this.FillMainDisplay(controlProvider);            
         }
     }
 }

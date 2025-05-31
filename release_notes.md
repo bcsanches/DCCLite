@@ -15,6 +15,7 @@
 - Fixed a bug on servo programming that caused infinite loop when device was disconnected while starting the programmer
 - Added Block button on NetworkDevice
 - Added Clear Block list on DccLiteService
+- Fixed a bug when some remote objects are removed, main display and tree view continues showing it
 
 ## SharpEEPromViewer
 
