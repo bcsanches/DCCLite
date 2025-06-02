@@ -163,6 +163,7 @@ namespace SharpTerminal
 
         private uint mActivateDelay;
         private uint mDeactivateDelay;
+        private uint mStartDelay;
 
         private uint mPin;
 
@@ -176,6 +177,12 @@ namespace SharpTerminal
         public uint DeactivateDelay
         {
             get { return mDeactivateDelay; }
+        }
+
+        [Category("Sensor")]
+        public uint StartDelay
+        {
+            get { return mStartDelay; }
         }
 
         [Category("Sensor")]
@@ -213,6 +220,7 @@ namespace SharpTerminal
 
             mActivateDelay = (uint)objectDef["activateDelay"];
             mDeactivateDelay = (uint)objectDef["deactivateDelay"];
+            mStartDelay = (uint)objectDef["startDelay"];
 
             mfPullUp = (bool)objectDef["pullUp"];
             mfInverted = (bool)objectDef["inverted"];

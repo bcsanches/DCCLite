@@ -59,7 +59,7 @@ TEST(TurntableAutoInverterDecoderTest, Basic)
 	packet.Reset();
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER, static_cast<dcclite::DecoderTypes>(packet.Read<uint8_t>()));
 	ASSERT_EQ(Address{ 128 }, Address{ packet });
-	ASSERT_EQ(0, packet.Read<uint8_t>());												//reserved - always zero
+	ASSERT_EQ(0, packet.Read<uint8_t>());												//flags
 	ASSERT_EQ(TURNTABLE_AUTO_INVERTER_DEFAULT_FLIP_INTERVAL, packet.Read<uint8_t>());
 	ASSERT_EQ(0, packet.Read<uint8_t>());	//sensorA Index
 	ASSERT_EQ(0, packet.Read<uint8_t>());	//sensorB Index
@@ -87,7 +87,7 @@ TEST(TurntableAutoInverterDecoderTest, Basic)
 	packet.Reset();
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER, static_cast<dcclite::DecoderTypes>(packet.Read<uint8_t>()));
 	ASSERT_EQ(Address{ 128 }, Address{ packet });
-	ASSERT_EQ(0, packet.Read<uint8_t>());												//reserved - always zero
+	ASSERT_EQ(0, packet.Read<uint8_t>());												//flags
 	ASSERT_EQ(TURNTABLE_AUTO_INVERTER_DEFAULT_FLIP_INTERVAL, packet.Read<uint8_t>());
 	ASSERT_EQ(1, packet.Read<uint8_t>());	//sensorA Index
 	ASSERT_EQ(2, packet.Read<uint8_t>());	//sensorB Index
@@ -124,8 +124,84 @@ TEST(TurntableAutoInverterDecoderTest, CustomFlipInterval)
 	packet.Reset();
 	ASSERT_EQ(dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER, static_cast<dcclite::DecoderTypes>(packet.Read<uint8_t>()));
 	ASSERT_EQ(Address{ 128 }, Address{ packet });
-	ASSERT_EQ(0, packet.Read<uint8_t>());												//reserved - always zero
+	ASSERT_EQ(0, packet.Read<uint8_t>());												//flags
 	ASSERT_EQ(20, packet.Read<uint8_t>());
+	ASSERT_EQ(0, packet.Read<uint8_t>());	//sensorA Index
+	ASSERT_EQ(0, packet.Read<uint8_t>());	//sensorB Index
+	ASSERT_EQ(10, packet.Read<dcclite::PinType_t>());
+	ASSERT_EQ(11, packet.Read<dcclite::PinType_t>());
+}
+
+TEST(TurntableAutoInverterDecoderTest, InvertedFlagOn)
+{
+	const char *json = R"JSON(				
+			{
+				"name": "ST_TURNTABLE",
+				"class": "TurntableAutoInverter",
+				"inverted" : true,
+				"address": "4467",
+				"sensorA": "HLX_DTC00",			
+				"sensorB": "HLX_DTC01",
+				"trackPowerAPin":10,			
+				"trackPowerBPin":11,
+				"flipInterval":20
+			}		
+	)JSON";
+
+	Document d;
+	d.Parse(json);
+
+	TurntableAutoInverterDecoder decoder{ Address{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
+
+	ASSERT_EQ(dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER, decoder.GetType());
+
+	dcclite::Packet packet;
+
+	decoder.WriteConfig(packet);
+
+	packet.Reset();
+	ASSERT_EQ(dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER, static_cast<dcclite::DecoderTypes>(packet.Read<uint8_t>()));
+	ASSERT_EQ(Address{ 128 }, Address{ packet });
+	ASSERT_EQ(dcclite::TRTD_INVERTED, packet.Read<uint8_t>());
+	ASSERT_EQ(20, packet.Read<uint8_t>());
+	ASSERT_EQ(0, packet.Read<uint8_t>());	//sensorA Index
+	ASSERT_EQ(0, packet.Read<uint8_t>());	//sensorB Index
+	ASSERT_EQ(10, packet.Read<dcclite::PinType_t>());
+	ASSERT_EQ(11, packet.Read<dcclite::PinType_t>());
+}
+
+TEST(TurntableAutoInverterDecoderTest, InvertedFlagExplicitOff)
+{
+	const char *json = R"JSON(				
+			{
+				"name": "ST_TURNTABLE",
+				"class": "TurntableAutoInverter",
+				"inverted" : false,
+				"address": "4467",
+				"sensorA": "HLX_DTC00",			
+				"sensorB": "HLX_DTC01",
+				"trackPowerAPin":10,			
+				"trackPowerBPin":11,
+				"flipInterval":20
+			}		
+	)JSON";
+
+	Document d;
+	d.Parse(json);
+
+	TurntableAutoInverterDecoder decoder{ Address{128}, dcclite::RName{"test"}, g_DecoderServices, g_DeviceDecoderServices, d };
+
+	ASSERT_EQ(dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER, decoder.GetType());
+
+	dcclite::Packet packet;
+
+	decoder.WriteConfig(packet);
+
+	packet.Reset();
+	ASSERT_EQ(dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER, static_cast<dcclite::DecoderTypes>(packet.Read<uint8_t>()));
+	ASSERT_EQ(Address{ 128 }, Address{ packet });
+	ASSERT_EQ(0, packet.Read<uint8_t>());	//flags
+	ASSERT_EQ(20, packet.Read<uint8_t>());	//flip Interval
 	ASSERT_EQ(0, packet.Read<uint8_t>());	//sensorA Index
 	ASSERT_EQ(0, packet.Read<uint8_t>());	//sensorB Index
 	ASSERT_EQ(10, packet.Read<dcclite::PinType_t>());

@@ -21,11 +21,14 @@
 
 #define MODULE_NAME F("QuadAID")
 
+constexpr Pin::Voltage POWER_ON_VALUES[2] = {Pin::VHIGH, Pin::VLOW};
+constexpr Pin::Voltage POWER_OFF_VALUES[2] = {Pin::VLOW, Pin::VHIGH};
+
 QuadInverterDecoder::QuadInverterDecoder(dcclite::Packet& packet) noexcept:
 	Decoder::Decoder(packet)	
 {
 	//consider only configurable flags
-	m_fFlags = packet.Read<uint8_t>() & (dcclite::QUAD_IGNORE_SAVED_STATE | dcclite::QUAD_ACTIVATE_ON_POWER_UP);
+	m_fFlags = packet.Read<uint8_t>() & (dcclite::QUAD_IGNORE_SAVED_STATE | dcclite::QUAD_ACTIVATE_ON_POWER_UP | dcclite::QUAD_INVERTED);
 
 	m_u8FlipInterval = packet.Read<uint8_t>();
 
@@ -82,7 +85,7 @@ void QuadInverterDecoder::Init(const dcclite::PinType_t trackPins[4]) noexcept
 	for (int i = 0; i < 4; ++i)
 	{
 		m_arTrackPins[i].Attach(trackPins[i], Pin::MODE_OUTPUT);
-		m_arTrackPins[i].DigitalWrite(Pin::VLOW);
+		m_arTrackPins[i].DigitalWrite(POWER_OFF_VALUES[m_fFlags & QUAD_INVERTED]);
 	}		
 
 	if (m_fFlags & dcclite::QUAD_IGNORE_SAVED_STATE)
@@ -104,16 +107,16 @@ void QuadInverterDecoder::Init(const dcclite::PinType_t trackPins[4]) noexcept
 	m_uWaitingTrackTurnOff = 5000;
 }
 
-inline void TurnTrackOn(Pin track[2])
+inline void TurnTrackOn(Pin track[2], const uint8_t flags)
 {
-	track[0].DigitalWrite(Pin::VHIGH);
-	track[1].DigitalWrite(Pin::VHIGH);
+	track[0].DigitalWrite(POWER_ON_VALUES[flags & dcclite::QUAD_INVERTED]);
+	track[1].DigitalWrite(POWER_ON_VALUES[flags & dcclite::QUAD_INVERTED]);
 }
 
-inline void TurnTrackOff(Pin track[2])
+inline void TurnTrackOff(Pin track[2], const uint8_t flags)
 {
-	track[0].DigitalWrite(Pin::VLOW);
-	track[1].DigitalWrite(Pin::VLOW);
+	track[0].DigitalWrite(POWER_OFF_VALUES[flags & dcclite::QUAD_INVERTED]);
+	track[1].DigitalWrite(POWER_OFF_VALUES[flags & dcclite::QUAD_INVERTED]);
 }
 
 void QuadInverterDecoder::TurnOnTrackPower() noexcept
@@ -123,14 +126,14 @@ void QuadInverterDecoder::TurnOnTrackPower() noexcept
 		//Console::SendLogEx(MODULE_NAME, F("TurnOnTrackPower TrackB"));
 		DCCLITE_LOG_MODULE_LN(F("TurnOnTrackPower Track") << 'B');
 
-		TurnTrackOn(m_arTrackPins + 2);
+		TurnTrackOn(m_arTrackPins + 2, m_fFlags);
 	}
 	else
 	{
 		//Console::SendLogEx(MODULE_NAME, F("TurnOnTrackPower TrackA"));
 		DCCLITE_LOG_MODULE_LN(F("TurnOnTrackPower Track") << 'A');
 
-		TurnTrackOn(m_arTrackPins);
+		TurnTrackOn(m_arTrackPins, m_fFlags);
 	}
 }
 
@@ -147,13 +150,13 @@ bool QuadInverterDecoder::AcceptServerState(dcclite::DecoderStates state, const 
 
 	if (remoteState)
 	{
-		TurnTrackOff(m_arTrackPins);
+		TurnTrackOff(m_arTrackPins, m_fFlags);
 
 		m_fFlags |= dcclite::QUAD_ACTIVE;
 	}
 	else
 	{
-		TurnTrackOff(m_arTrackPins + 2);
+		TurnTrackOff(m_arTrackPins + 2, m_fFlags);
 
 		m_fFlags &= ~dcclite::QUAD_ACTIVE;
 	}

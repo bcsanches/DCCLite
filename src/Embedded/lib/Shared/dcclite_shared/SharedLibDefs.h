@@ -113,14 +113,17 @@ namespace dcclite
 
 	enum TurntableAutoInverterDecoderFlags: uint8_t
 	{
+		TRTD_INVERTED = 0x01,
 		TRTD_REMOTE_ACTIVE = 0x40,
 		TRTD_ACTIVE = 0x80
 	};
 
-	enum QuadInverterDecodrFlags : uint8_t
+	enum QuadInverterDecoderFlags : uint8_t
 	{		
+		QUAD_INVERTED = 0x01,
 		QUAD_IGNORE_SAVED_STATE = 0x02,
-		QUAD_ACTIVATE_ON_POWER_UP = 0x04,
+		QUAD_ACTIVATE_ON_POWER_UP = 0x04,		
 		QUAD_ACTIVE = 0x80
-	};
+	};	
+
 } //end of namespace dcclite

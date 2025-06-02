@@ -21,10 +21,13 @@
 
 #define MODULE_NAME F("TurntableAID")
 
-TurntableAutoInverterDecoder::TurntableAutoInverterDecoder(dcclite::Packet& packet) noexcept:
+constexpr Pin::Voltage POWER_ON_VALUES[2] = { Pin::VHIGH, Pin::VLOW };
+constexpr Pin::Voltage POWER_OFF_VALUES[2] = { Pin::VLOW, Pin::VHIGH };
+
+TurntableAutoInverterDecoder::TurntableAutoInverterDecoder(dcclite::Packet &packet) noexcept:
 	Decoder::Decoder(packet)	
 {
-	m_fFlags = packet.Read<uint8_t>() & dcclite::TRTD_ACTIVE;
+	m_fFlags = packet.Read<uint8_t>() & (dcclite::TRTD_ACTIVE | dcclite::TRTD_INVERTED);
 	m_u8FlipInterval = packet.Read<uint8_t>();
 	
 	m_uSensorAIndex = packet.Read<uint8_t>();
@@ -38,16 +41,15 @@ TurntableAutoInverterDecoder::TurntableAutoInverterDecoder(dcclite::Packet& pack
 	this->Init(trackPins);
 }
 
-TurntableAutoInverterDecoder::TurntableAutoInverterDecoder(Storage::EpromStream& stream) noexcept:
+TurntableAutoInverterDecoder::TurntableAutoInverterDecoder(Storage::EpromStream &stream) noexcept:
 	Decoder::Decoder(stream)
 {	
 	m_uFlagsStorageIndex = stream.GetIndex();
 
 	stream.Get(m_fFlags);
 	stream.Get(m_u8FlipInterval);
-
-	//Consider only active flag
-	m_fFlags = m_fFlags & dcclite::TRTD_ACTIVE;
+	
+	m_fFlags = m_fFlags & (dcclite::TRTD_ACTIVE | dcclite::TRTD_INVERTED);
 
 	stream.Get(m_uSensorAIndex);
 	stream.Get(m_uSensorBIndex);
@@ -77,14 +79,14 @@ void TurntableAutoInverterDecoder::SaveConfig(Storage::EpromStream& stream) noex
 		stream.Put(m_arTrackPins[i].Raw());	
 }
 
-inline static void TurnTrackOn(Pin &track)
+inline static void TurnTrackOn(Pin &track, const uint8_t flags)
 {
-	track.DigitalWrite(Pin::VHIGH);	
+	track.DigitalWrite(POWER_ON_VALUES[flags & dcclite::TRTD_INVERTED]);
 }
 
-inline static void TurnTrackOff(Pin &track)
+inline static void TurnTrackOff(Pin &track, const uint8_t flags)
 {
-	track.DigitalWrite(Pin::VLOW);	
+	track.DigitalWrite(POWER_OFF_VALUES[flags & dcclite::TRTD_INVERTED]);
 }
 
 void TurntableAutoInverterDecoder::TurnOnTrackPower() noexcept
@@ -94,14 +96,14 @@ void TurntableAutoInverterDecoder::TurnOnTrackPower() noexcept
 		//Console::SendLogEx(MODULE_NAME, F("TurnOnTrackPower TrackB"));
 		DCCLITE_LOG_MODULE_LN(F("TurnOnTrackPower Track") << 'B');
 
-		TurnTrackOn(m_arTrackPins[1]);
+		TurnTrackOn(m_arTrackPins[1], m_fFlags);
 	}
 	else
 	{
 		//Console::SendLogEx(MODULE_NAME, F("TurnOnTrackPower TrackA"));
 		DCCLITE_LOG_MODULE_LN(F("TurnOnTrackPower Track") << 'A');
 
-		TurnTrackOn(m_arTrackPins[0]);
+		TurnTrackOn(m_arTrackPins[0], m_fFlags);
 	}
 }
 
@@ -112,7 +114,7 @@ void TurntableAutoInverterDecoder::Init(const dcclite::PinType_t trackPins[4]) n
 	for (int i = 0; i < TURNTABLE_AID_MAX_PINS; ++i)
 	{
 		m_arTrackPins[i].Attach(trackPins[i], Pin::MODE_OUTPUT);
-		m_arTrackPins[i].DigitalWrite(Pin::VLOW);
+		TurnTrackOff(m_arTrackPins[i], m_fFlags);		
 	}		
 
 	//Console::SendLogEx(MODULE_NAME, F("Init"));
@@ -170,7 +172,7 @@ bool TurntableAutoInverterDecoder::Update(const unsigned long ticks) noexcept
 		
 		//Console::SendLogEx(MODULE_NAME, F("Update m_pclSensorB"));
 		DCCLITE_LOG_MODULE_LN(F("Update m_pclSensorB"));
-		TurnTrackOff(m_arTrackPins[1]);
+		TurnTrackOff(m_arTrackPins[1], m_fFlags);
 
 		m_fFlags = m_fFlags & ~dcclite::TRTD_ACTIVE;		
 	}
@@ -187,7 +189,7 @@ bool TurntableAutoInverterDecoder::Update(const unsigned long ticks) noexcept
 		//Console::SendLogEx(MODULE_NAME, F("Update m_pclSensorA"));
 		DCCLITE_LOG_MODULE_LN(F("Update m_pclSensorA"));
 
-		TurnTrackOff(m_arTrackPins[0]);
+		TurnTrackOff(m_arTrackPins[0], m_fFlags);
 
 		m_fFlags = m_fFlags | dcclite::TRTD_ACTIVE;		
 	}

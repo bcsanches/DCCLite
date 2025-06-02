@@ -1,3 +1,4 @@
 Necessary:
 apt-get install uuid-dev
 apt-get install libssl-dev
+sudo apt install pkg-config

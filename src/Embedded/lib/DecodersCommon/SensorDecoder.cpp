@@ -18,15 +18,15 @@
 #include "Console.h"
 #include "Storage.h"
 
-const char SensorModuleName[] PROGMEM = {"SensorDecoder"} ;
-#define MODULE_NAME Console::FlashStr(SensorModuleName)
+#define MODULE_NAME F("SensorDecoder")
 
 //#define DCCLITE_DBG
 
-SensorDecoder::SensorDecoder(uint8_t flags, dcclite::PinType_t pin, uint16_t activateDelay, uint16_t deactivateDelay) noexcept:
-	m_fFlags{flags},
+SensorDecoder::SensorDecoder(uint8_t flags, dcclite::PinType_t pin, uint16_t activateDelay, uint16_t deactivateDelay, uint16_t startDelay) noexcept:	
 	m_uActivateDelay{ activateDelay },
-	m_uDeactivateDelay{deactivateDelay}
+	m_uDeactivateDelay{deactivateDelay},
+	m_uStartDelay{ startDelay },
+	m_fFlags{ flags }
 {
 #ifdef DCCLITE_DBG
 	Console::SendLogEx("[SENSOR_DECODER]", "constructor");
@@ -44,6 +44,7 @@ SensorDecoder::SensorDecoder(dcclite::Packet &packet) noexcept:
 	m_fFlags = packet.Read<uint8_t>() & (dcclite::SNRD_PULL_UP | dcclite::SNRD_INVERTED);
 	m_uActivateDelay = packet.Read<uint16_t>();
 	m_uDeactivateDelay = packet.Read<uint16_t>();
+	m_uStartDelay = packet.Read<uint16_t>();
 
 	using namespace dcclite;
 
@@ -59,6 +60,7 @@ SensorDecoder::SensorDecoder(Storage::EpromStream &stream) noexcept:
 	stream.Get(m_fFlags);
 	stream.Get(m_uActivateDelay);
 	stream.Get(m_uDeactivateDelay);
+	stream.Get(m_uStartDelay);
 
 	//only read pull up and inverted flag, the others are internal
 	m_fFlags = m_fFlags & (dcclite::SNRD_PULL_UP | dcclite::SNRD_INVERTED);
@@ -75,13 +77,22 @@ void SensorDecoder::SaveConfig(Storage::EpromStream& stream) noexcept
 	stream.Put(m_fFlags);
 	stream.Put(m_uActivateDelay);
 	stream.Put(m_uDeactivateDelay);
+	stream.Put(m_uStartDelay);
 }
 
 void SensorDecoder::Init(const dcclite::PinType_t pin) noexcept
 {
 	using namespace dcclite;	
 
-	m_clPin.Attach(pin, (m_fFlags & SNRD_PULL_UP) ? Pin::MODE_INPUT_PULLUP : Pin::MODE_INPUT);	
+	m_clPin.Attach(pin, (m_fFlags & SNRD_PULL_UP) ? Pin::MODE_INPUT_PULLUP : Pin::MODE_INPUT);
+
+	if (m_uStartDelay)
+	{
+		m_fFlags |= SNRD_DELAY;
+		m_uCoolDownTicks = millis() + m_uStartDelay;
+
+		DCCLITE_LOG_MODULE_LN(F("Start") << ' ' << F("delay") << ' ' << m_uStartDelay);
+	}
 }
 
 bool SensorDecoder::AcceptServerState(dcclite::DecoderStates state, const unsigned long ticks) noexcept

@@ -4,10 +4,16 @@
 
 - Turntable auto inverter now use a single output for each track
 - Broker commands now rely on full path, not on device name and item name
+- QuadInverter Inverted flag
+- TurntableAutoInverter Inverter flag
+- SensorDecoder startDelay timer
 
 ## LiteDecoder
 
-- Decoders storage version bumped to 19
+- Decoders storage version bumped to 20
+- QuadInverter Inverted flag
+- TurntableAutoInverter Inverter flag
+- SensorDecoder startDelay timer
 
 ## SharpTerminal
 
@@ -16,10 +22,12 @@
 - Added Block button on NetworkDevice
 - Added Clear Block list on DccLiteService
 - Fixed a bug when some remote objects are removed, main display and tree view continues showing it
+- Added support to types change on QuadInverter, TurntableAutoInverter and SensorDecoder
 
 ## SharpEEPromViewer
 
 - Update to recognize new decoders storage format
+- Added support to types change on QuadInverter, TurntableAutoInverter and SensorDecoder
 - Make CTRL+O works
 
 ## Broker
@@ -29,6 +37,7 @@
 - Massive code organization
 - Improved ping and connection management to devices
 - Block list support on DccLiteService
+- Added support to types change on QuadInverter, TurntableAutoInverter and SensorDecoder
 
 ## Emulator
 

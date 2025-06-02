@@ -75,6 +75,8 @@ namespace dcclite::broker::exec::dcc
 			uint8_t		m_u8SensorBIndex = 0;		
 
 			uint8_t		m_u8FlipInterval = TURNTABLE_AUTO_INVERTER_DEFAULT_FLIP_INTERVAL;
+
+			bool		m_fInverted = false;
 	};
 
 }

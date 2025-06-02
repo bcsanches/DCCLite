@@ -13,6 +13,7 @@
 #include <dcclite_shared/Packet.h>
 
 #include <dcclite/FmtUtils.h>
+#include <dcclite/JsonUtils.h>
 
 #include "IDevice.h"
 #include "SensorDecoder.h"
@@ -35,6 +36,8 @@ namespace dcclite::broker::exec::dcc
 		{
 			throw std::invalid_argument(fmt::format("[TurntableAutoInverterDecoder::{}] Sensors cannot be the same: {}", this->GetName(), m_rnSensorAName));
 		}
+
+		m_fInverted = dcclite::json::TryGetDefaultBool(params, "inverted", false);
 
 		const auto &trackAPin = params["trackPowerAPin"];
 		const auto &trackBPin = params["trackPowerBPin"];
@@ -82,9 +85,8 @@ namespace dcclite::broker::exec::dcc
 	void TurntableAutoInverterDecoder::WriteConfig(dcclite::Packet &packet) const
 	{
 		RemoteDecoder::WriteConfig(packet);
-
-		//unused flags (send it, so in future less changes and no protocol change)
-		packet.Write8(0);
+		
+		packet.Write8(m_fInverted ? TRTD_INVERTED : 0);
 		packet.Write8(m_u8FlipInterval);
 
 		packet.Write8(m_u8SensorAIndex);
@@ -97,6 +99,8 @@ namespace dcclite::broker::exec::dcc
 	void TurntableAutoInverterDecoder::Serialize(dcclite::JsonOutputStream_t &stream) const
 	{
 		RemoteDecoder::Serialize(stream);
+
+		stream.AddBool("inverted", m_fInverted);
 
 		stream.AddIntValue("flipInterval", m_u8FlipInterval);
 

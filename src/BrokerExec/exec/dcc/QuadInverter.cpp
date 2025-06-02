@@ -63,7 +63,10 @@ namespace dcclite::broker::exec::dcc
 	{
 		OutputDecoder::WriteConfig(packet);
 
-		const uint8_t flags = (this->IgnoreSavedState() ? dcclite::QUAD_IGNORE_SAVED_STATE : 0) | (this->ActivateOnPowerUp() ? dcclite::QUAD_ACTIVATE_ON_POWER_UP : 0);
+		const uint8_t flags = 
+			(this->InvertedOperation() ? dcclite::QUAD_INVERTED : 0) |
+			(this->IgnoreSavedState() ? dcclite::QUAD_IGNORE_SAVED_STATE : 0) | 
+			(this->ActivateOnPowerUp() ? dcclite::QUAD_ACTIVATE_ON_POWER_UP : 0);
 		
 		packet.Write8(flags);	
 		packet.Write8(m_u8FlipInterval);

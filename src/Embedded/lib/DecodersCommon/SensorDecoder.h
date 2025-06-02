@@ -18,15 +18,17 @@
 class SensorDecoder : public Decoder
 {
 	private:		
+		unsigned long m_uCoolDownTicks = 0;
+		
+		uint16_t		m_uActivateDelay = 0;
+		uint16_t		m_uDeactivateDelay = 0;		
+		uint16_t		m_uStartDelay = 0;
+
 		Pin				m_clPin;
 		uint8_t			m_fFlags = 0;
-		uint16_t		m_uActivateDelay = 0;
-		uint16_t		m_uDeactivateDelay = 0;
-
-		unsigned long m_uCoolDownTicks = 0;
 
 	public:
-		explicit SensorDecoder(uint8_t flags, dcclite::PinType_t pin, uint16_t activateDelay = 0, uint16_t deactivateDelay = 0) noexcept;
+		explicit SensorDecoder(uint8_t flags, dcclite::PinType_t pin, uint16_t activateDelay = 0, uint16_t deactivateDelay = 0, uint16_t startDelay = 0) noexcept;
 		explicit SensorDecoder(dcclite::Packet& packet) noexcept;
 		explicit SensorDecoder(Storage::EpromStream& stream) noexcept;
 

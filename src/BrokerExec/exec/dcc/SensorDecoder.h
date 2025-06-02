@@ -69,11 +69,12 @@ namespace dcclite::broker::exec::dcc
 
 			void Serialize(dcclite::JsonOutputStream_t &stream) const override;
 
-		private:
-			dcclite::BasicPin m_clPin;
-
+		private:			
 			uint16_t m_uActivateDelay;
 			uint16_t m_uDeactivateDelay;
+			uint16_t m_uStartDelay;
+
+			dcclite::BasicPin m_clPin;
 
 			bool m_fPullUp = false;		
 			bool m_fInverted = false;		

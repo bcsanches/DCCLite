@@ -96,7 +96,7 @@ namespace dcclite
 
 	constexpr uint8_t MAX_DECODERS_STATES_PER_PACKET = 64;
 	
-	constexpr uint16_t PROTOCOL_VERSION = 11;
+	constexpr uint16_t PROTOCOL_VERSION = 12;
 
 	constexpr uint8_t MAX_NODE_NAME = 16;
 

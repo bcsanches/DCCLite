@@ -34,7 +34,7 @@ namespace dcclite::broker::exec::dcc
 	{
 		m_rclDevice.TryGetINetworkDevice()->Decoder_RegisterPin(*this, m_clPin, "pin");
 
-		m_fPullUp = dcclite::json::TryGetDefaultBool(params, "pullup", false);		
+		m_fPullUp = dcclite::json::TryGetDefaultBool(params, "pullup", false);
 		m_fInverted = dcclite::json::TryGetDefaultBool(params, "inverted", false);
 
 		if (params.HasMember("activateDelay") && params.HasMember("activateDelayMs"))
@@ -47,11 +47,18 @@ namespace dcclite::broker::exec::dcc
 			dcclite::Log::Warn("[SensorDecoder::SensorDecoder] Decoder {} contains both deactivateDelay and deactivateDelayMs", this->GetName());
 		}
 
+		if (params.HasMember("startDelay") && params.HasMember("startDelayMs"))
+		{
+			dcclite::Log::Warn("[SensorDecoder::SensorDecoder] Decoder {} contains both startDelay and startDelayMs", this->GetName());
+		}
+
 		m_uActivateDelay = dcclite::json::TryGetDefaultInt(params, "activateDelay", 0) * 1000;
 		m_uDeactivateDelay = dcclite::json::TryGetDefaultInt(params, "deactivateDelay", 0) * 1000;
+		m_uStartDelay = dcclite::json::TryGetDefaultInt(params, "startDelay", 0) * 1000;
 
 		m_uActivateDelay = dcclite::json::TryGetDefaultInt(params, "activateDelayMs", m_uActivateDelay);
 		m_uDeactivateDelay = dcclite::json::TryGetDefaultInt(params, "deactivateDelayMs", m_uDeactivateDelay);
+		m_uStartDelay = dcclite::json::TryGetDefaultInt(params, "startDelayMs", m_uStartDelay);
 	}
 
 	SensorDecoder::~SensorDecoder()
@@ -70,7 +77,8 @@ namespace dcclite::broker::exec::dcc
 		);
 		
 		packet.Write16(m_uActivateDelay);
-		packet.Write16(m_uDeactivateDelay);		
+		packet.Write16(m_uDeactivateDelay);
+		packet.Write16(m_uStartDelay);
 	}
 
 	void SensorDecoder::Serialize(dcclite::JsonOutputStream_t &stream) const
@@ -82,5 +90,6 @@ namespace dcclite::broker::exec::dcc
 		stream.AddBool("inverted", m_fInverted);
 		stream.AddIntValue("activateDelay", m_uActivateDelay);
 		stream.AddIntValue("deactivateDelay", m_uDeactivateDelay);
+		stream.AddIntValue("startDelay", m_uStartDelay);
 	}
 }

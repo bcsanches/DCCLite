@@ -34,7 +34,7 @@ class TurntableAutoInverterDecoder : public Decoder
 
 		uint8_t			m_u8FlipInterval = 5;
 
-	public:		
+	public:
 		explicit TurntableAutoInverterDecoder(dcclite::Packet& packet) noexcept;
 		explicit TurntableAutoInverterDecoder(Storage::EpromStream& stream) noexcept;		
 

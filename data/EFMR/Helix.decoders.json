@@ -171,13 +171,14 @@
 		"class": "QuadInverter",
 		"address": 1890,
 		"flipInterval":5,
+		"inverted":true,
 		"trackPowerAPins": [
-			9,
-			10
-		],
-		"trackPowerBPins": [
 			11,
 			12
+		],
+		"trackPowerBPins": [
+			9,
+			10
 		]
 	}
 ]
