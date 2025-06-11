@@ -33,7 +33,7 @@ namespace ArduinoLib
 		//
 		dcclite::Clock g_Clock;
 
-		static unsigned long g_Millis;
+		static unsigned long g_Millis = 0;
 
 		//
 		//
@@ -82,7 +82,7 @@ namespace ArduinoLib
 
 				void setDigitalVoltage(VoltageModes mode)
 				{
-					this->digitalWrite(mode);
+					m_eVoltage = mode;
 				}
 
 			private:
@@ -115,7 +115,8 @@ namespace ArduinoLib
 
 		void BoardInit()
 		{
-			g_Clock = dcclite::Clock();			
+			g_Clock = dcclite::Clock();
+			g_Millis = 0;
 		}
 
 		void BoardTick()
@@ -125,9 +126,14 @@ namespace ArduinoLib
 			g_Millis = static_cast<unsigned long>(g_Clock.Total().count());
 		}
 
+		void BoardFixedTick(unsigned long ms)
+		{
+			g_Millis += ms;
+		}
+
 		void BoardFinalize()
 		{
-
+			//empty
 		}
 	}		
 }

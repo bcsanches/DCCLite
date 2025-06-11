@@ -25,6 +25,7 @@ namespace ArduinoLib
 		void BoardInit();
 		void BoardFinalize();
 		void BoardTick();
+		void BoardFixedTick(unsigned long msstep);
 	}
 
 	static DynamicLibrary g_ModuleLib;
@@ -37,10 +38,13 @@ namespace ArduinoLib
 
 	static bool ReSetup()
 	{
-		g_ModuleLib.Load(g_strModuleName);
+		if (!g_strModuleName.empty())
+		{
+			g_ModuleLib.Load(g_strModuleName);
 
-		g_pfnSetup = reinterpret_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("setup"));
-		g_pfnLoop = reinterpret_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("loop"));
+			g_pfnSetup = reinterpret_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("setup"));
+			g_pfnLoop = reinterpret_cast<ArduinoProc_t>(g_ModuleLib.GetSymbol("loop"));
+		}
 
 		detail::BoardInit();
 
@@ -52,6 +56,24 @@ namespace ArduinoLib
 		g_pfnSetup();
 
 		return romResult;
+	}
+
+	bool Setup(void (*setupProc)(), void (*loopProc)(), const char *deviceName)
+	{
+		if (!setupProc)
+			throw std::invalid_argument("setup proc cannot be null");
+
+		if(!loopProc)
+			throw std::invalid_argument("loop proc cannot be null");
+
+		g_strModuleName.clear();
+
+		g_strDeviceName = deviceName;
+
+		g_pfnSetup = setupProc;
+		g_pfnLoop = loopProc;
+
+		return ReSetup();		
 	}
 
 	bool Setup(std::string moduleName, dcclite::Logger_t log, const char *deviceName)
@@ -77,10 +99,8 @@ namespace ArduinoLib
 		g_ModuleLib.Unload();
 	}
 
-	void Tick()
+	static void CommonTick()
 	{
-		detail::BoardTick();
-
 		if (detail::WdtExpired())
 		{
 			//Watch dog fired, restart board...
@@ -93,6 +113,20 @@ namespace ArduinoLib
 		g_pfnLoop();
 
 		detail::RomAfterLoop();
+	}
+
+	void FixedTick(unsigned long ms)
+	{		
+		detail::BoardFixedTick(ms);
+
+		CommonTick();
+	}
+
+	void Tick()
+	{
+		detail::BoardTick();
+
+		CommonTick();
 	}
 
 	void SetSerialInput(const char *data)

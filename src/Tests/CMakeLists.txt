@@ -1,9 +1,6 @@
 enable_testing()
 include(GoogleTest)
 
-#add_compile_definitions(ARDUINOLIB_EXPORTS)
-#add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-
 add_subdirectory("${PROJECT_SOURCE_DIR}/contrib/googletest" "contrib/googletest")
 
 # The next line is optional, but keeps your CACHE cleaner:
@@ -35,40 +32,5 @@ macro(package_add_test TESTNAME)
 	set_target_properties(${TESTNAME} PROPERTIES FOLDER utests)
 endmacro()
 
-package_add_test(UnitTest
-	BitPackUnitTest.cpp
-	EventHubTest.cpp
-	FolderObjectTest.cpp
-	GuidTest.cpp
-	NetMessengerTest.cpp
-	NmraUtilUnitTest.cpp
-	ObjectPathUnitTest.cpp
-	PacketTest.cpp
-	ParserUnitTest.cpp
-	PrintfUnitTest.cpp
-	ProjectUnitTest.cpp
-	RNameTest.cpp
-	SensorDecoderTest.cpp
-	ServoTurnoutDecoderTest.cpp
-	SignalDecoderTest.cpp
-	SimpleOutputDecoderTest.cpp
-	SocketTest.cpp
-	StringViewTest.cpp
-	ThinkerTest.cpp
-	TurntableAutoInverterTest.cpp
-	UtilUnitTest.cpp
-)
-
-target_include_directories(UnitTest PRIVATE
-	${DCCLite_SOURCE_DIR}/src/BrokerSys
-	${DCCLite_SOURCE_DIR}/src/BrokerExec
-	${DCCLite_SOURCE_DIR}/src/Common
-	${DCCLite_SOURCE_DIR}/src/LiteDecoder/src     
-	${GTEST_INCLUDE_DIRS}
-	${GMOCK_INCLUDE_DIRS})  
-
-target_link_libraries(UnitTest BrokerSysLib BrokerExecLib Common SharedLib LiteDecoderLib gtest gtest_main gmock)
-
-
-#target_include_directories(MainTest PRIVATE ${PROJECT_SOURCE_DIR}/include/)
-
+add_subdirectory(BrokerUnitTest)
+add_subdirectory(LiteDecoderUnitTest)

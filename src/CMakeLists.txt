@@ -36,5 +36,5 @@ if (${DCCLITE_MSVC})
 		add_subdirectory(SharpTools/SharpDude)
 	endif()	
 
-	add_subdirectory(UnitTest)
+	add_subdirectory(Tests)
 endif()

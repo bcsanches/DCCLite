@@ -13,7 +13,7 @@ using testing::HasSubstr;
 
 using namespace rapidjson;
 
-#include "BrokerMockups.h"
+#include "../TestsCommon/BrokerMockups.h"
 
 static DecoderServicesMockup g_DecoderServices;
 static DeviceDecoderServicesMockup g_DeviceDecoderServices;

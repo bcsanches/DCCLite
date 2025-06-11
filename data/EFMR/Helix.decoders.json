@@ -111,7 +111,7 @@
 		"address": "1899",
 		"pullup": false,
 		"inverted": false,
-		"activateDelay": 2,
+		"activateDelay": 1,
 		"deactivateDelay": 5
 	},
 	{
@@ -121,7 +121,7 @@
 		"address": "1897",
 		"pullup": false,
 		"inverted": false,
-		"activateDelay": 2,
+		"activateDelay": 1,
 		"deactivateDelay": 5,
 		"comment": "Junction turnout"
 	},

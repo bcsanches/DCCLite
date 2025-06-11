@@ -29,8 +29,8 @@ class SensorDecoder : public Decoder
 
 	public:
 		explicit SensorDecoder(uint8_t flags, dcclite::PinType_t pin, uint16_t activateDelay = 0, uint16_t deactivateDelay = 0, uint16_t startDelay = 0) noexcept;
-		explicit SensorDecoder(dcclite::Packet& packet) noexcept;
-		explicit SensorDecoder(Storage::EpromStream& stream) noexcept;
+		explicit SensorDecoder(dcclite::Packet &packet) noexcept;
+		explicit SensorDecoder(Storage::EpromStream &stream) noexcept;
 
 		bool Update(const unsigned long ticks) noexcept override;
 
@@ -51,6 +51,16 @@ class SensorDecoder : public Decoder
 		bool IsActive() const noexcept override
 		{
 			return m_fFlags & dcclite::SNRD_ACTIVE;
+		}
+
+		inline bool IsCoolDownActive() const noexcept
+		{
+			return m_fFlags & dcclite::SNRD_COOLDOWN;
+		}
+
+		inline bool IsDelayActive() const noexcept
+		{
+			return m_fFlags & dcclite::SNRD_DELAY;
 		}
 
 		bool IsSyncRequired() const noexcept override

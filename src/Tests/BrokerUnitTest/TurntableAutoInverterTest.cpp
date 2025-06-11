@@ -4,7 +4,7 @@
 
 #include <dcclite_shared/Packet.h>
 
-#include "BrokerMockups.h"
+#include "../TestsCommon/BrokerMockups.h"
 #include "exec/dcc/SensorDecoder.h"
 #include "exec/dcc/TurntableAutoInverterDecoder.h"
 

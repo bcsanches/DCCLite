@@ -32,11 +32,14 @@ namespace ArduinoLib
 {
 	typedef void(*ArduinoProc_t)();
 
-	ARDUINO_API bool Setup(std::string moduleName, dcclite::Logger_t log, const char *projectPath);
+	ARDUINO_API bool Setup(std::string moduleName, dcclite::Logger_t log, const char *deviceName);
+	ARDUINO_API bool Setup(void (*setupProc)(), void (*loopProc)(), const char *deviceName);
 
 	ARDUINO_API void Finalize();
 
 	ARDUINO_API void Tick();
+
+	ARDUINO_API void FixedTick(unsigned long ms);
 
 	ARDUINO_API void SetSerialInput(const char *data);
 

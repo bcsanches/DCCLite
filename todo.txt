@@ -1,12 +1,6 @@
 DCCLite
 -------
 
-- Fix QuadInverterDecoder
-- When hadesEntA resets, sensors go crazy
-	- add a delay for sensor to send state after turn on?
-	- startDelayMs
-	- Update procotol number
-
 - Store time device connected and disconnected
 	- Send this to sharp terminal
 	- session history?
@@ -31,6 +25,7 @@ DCCLite
 	
 - Move Signal to dispatcher?
 	- create a decoder to bridge the signal on dispatcher to jmri?
+	- Create a SignalManager?
 
 - SharpTerminal
 	- Dashboard
@@ -53,9 +48,12 @@ DCCLite
 			- hint route_section of the expected direction
 
 - Dispatcher
-	- BlockSection: a block with an entry and exit sensor, no turnouts, simple block for stopping a train	
+	- SectionManager: manages all sections? 
+	- Section: the base with two sensors?
+	- BlockSection: a block with an entry and exit sensor, no turnouts, simple block for stopping a train
+	- TrackSection: is it necessary? Consider as main line?
 	- Abandon TrackSection on dispatcher
-	- TBlockSection?
+	- TripleTrackSection: the same as track section, but with two sections and only one active at time
 	- update route section to know next section and avoid re-ocupying the block
 	- it may have a direction set (will be used by signal logic)
 
