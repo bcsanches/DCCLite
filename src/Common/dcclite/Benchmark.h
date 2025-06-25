@@ -8,14 +8,14 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-export module dcclite;
+#pragma once
 
-import <chrono>;
-import <string_view>;
+#include <chrono>
+#include <string_view>
 
 namespace dcclite
 {
-	export class Benchmark
+	class Benchmark
 	{
 		public:
 			typedef long double us_t;
@@ -55,7 +55,7 @@ namespace dcclite
 
 	};
 
-	export class BenchmarkLogger
+	class BenchmarkLogger
 	{
 		public:
 			inline BenchmarkLogger(std::string_view moduleName, std::string_view message):

@@ -8,7 +8,7 @@ file(GLOB_RECURSE SRC_DCCLITE
 add_library(	
 	Common
 	dcclite/Benchmark.cpp
-	dcclite/Benchmark.ixx
+	dcclite/Benchmark.h
 	dcclite/Clock.cpp
 	dcclite/Clock.h
 	dcclite/Console.h

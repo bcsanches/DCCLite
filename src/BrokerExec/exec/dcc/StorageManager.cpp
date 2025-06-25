@@ -20,6 +20,7 @@
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
 
+#include <dcclite/Benchmark.h>
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Guid.h>
 #include <dcclite/Log.h>
@@ -29,8 +30,6 @@
 #include "OutputDecoder.h"
 
 #include "sys/Project.h"
-
-import dcclite;
 
 //Win32 headers leak...
 #undef GetObject
