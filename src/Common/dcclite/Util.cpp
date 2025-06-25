@@ -13,6 +13,8 @@
 #include <dcclite_shared/Misc.h>
 #include <dcclite_shared/Parser.h>
 
+#include <fmt/format.h>
+
 #include <algorithm>
 
 #ifndef WIN32
@@ -27,22 +29,14 @@
 
 #endif
 
-#include <stdexcept>
-#include <sstream>
-
-
 int dcclite::ParseNumber(std::string_view str)
 {
 	dcclite::Parser parser{ StringView{str} };
 
 	int adr;
 	if (parser.GetNumber(adr) != dcclite::Tokens::NUMBER)
-	{
-		std::stringstream stream;
-
-		stream << "[dcclite::ParseNumber] String " << str << " does not contains a valid number";
-
-		throw std::runtime_error(stream.str());
+	{				
+		throw std::runtime_error(fmt::format("[dcclite::ParseNumber] String {} does not contain a valid number", str));
 	}
 
 	return adr;

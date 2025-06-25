@@ -1,13 +1,14 @@
 
 file(GLOB_RECURSE SRC_DCCLITE
     "dcclite/*.cpp"
+	"dcclite/*.ixx"
     "dcclite/*.h"
 )
 
 add_library(	
 	Common
 	dcclite/Benchmark.cpp
-	dcclite/Benchmark.h
+	dcclite/Benchmark.ixx
 	dcclite/Clock.cpp
 	dcclite/Clock.h
 	dcclite/Console.h

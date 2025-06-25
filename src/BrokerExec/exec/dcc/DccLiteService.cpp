@@ -12,7 +12,6 @@
 
 #include <exception>
 
-#include <dcclite/Benchmark.h>
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Guid.h>
 #include <dcclite/JsonUtils.h>

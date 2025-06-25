@@ -24,7 +24,6 @@
 
 #include <dcclite_shared/Parser.h>
 
-#include <dcclite/Benchmark.h>
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Log.h>
 #include <dcclite/Util.h>
@@ -32,6 +31,8 @@
 #include "Project.h"
 #include "ServiceFactory.h"
 #include "ZeroConfSystem.h"
+
+import dcclite;
 
 //win32 header leak
 #undef GetObject

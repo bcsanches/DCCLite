@@ -15,9 +15,10 @@
 #include <string>
 #include <variant>
 
+#include <rapidjson/document.h>
+
 #include <dcclite_shared/Packet.h>
 
-#include <dcclite/Benchmark.h>
 #include <dcclite/Socket.h>
 
 #include "IDccLiteService.h"
@@ -29,7 +30,7 @@
 #include "sys/Thinker.h"
 #include "sys/Timeouts.h"
 
-#include <rapidjson/document.h>
+import dcclite;
 
 namespace dcclite::broker::exec::dcc
 { 	

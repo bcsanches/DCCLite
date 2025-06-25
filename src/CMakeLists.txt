@@ -1,5 +1,7 @@
 add_compile_definitions(SPDLOG_FMT_EXTERNAL)
 
+set(CMAKE_CXX_SCAN_FOR_MODULES ON)
+
 set(MY_DEFINITION 
 	$<$<CONFIG:Debug>:DCCLITE_DEBUG>
 	$<$<CONFIG:RelWithDebInfo>:DCCLITE_DEBUG>

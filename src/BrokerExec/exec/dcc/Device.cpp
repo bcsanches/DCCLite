@@ -14,7 +14,6 @@
 
 #include <rapidjson/istreamwrapper.h>
 
-#include <dcclite/Benchmark.h>
 #include <dcclite/FmtUtils.h>
 #include <dcclite/JsonUtils.h>
 #include <dcclite/Log.h>
@@ -28,6 +27,8 @@
 #include "IDccLiteService.h"
 #include "OutputDecoder.h"
 #include "StorageManager.h"
+
+import dcclite;
 
 namespace dcclite::broker::exec::dcc
 {

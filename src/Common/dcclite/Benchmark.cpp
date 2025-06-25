@@ -7,14 +7,15 @@
 // 
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
-
-#include "Benchmark.h"
+module;
 
 #include "Log.h"
 
+module dcclite;
+
 namespace dcclite
 {
-	Benchmark::Benchmark()		
+	Benchmark::Benchmark()
 	{
 		this->Start();
 	}
@@ -29,7 +30,7 @@ namespace dcclite
 		m_tEnd = std::chrono::high_resolution_clock::now();
 	}
 
-	BenchmarkLogger::~BenchmarkLogger()		
+	BenchmarkLogger::~BenchmarkLogger()
 	{
 		m_clBenchmark.Stop();
 
