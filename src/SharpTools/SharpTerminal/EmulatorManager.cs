@@ -1,12 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Versioning;
 using System.Windows.Forms;
 
 namespace SharpTerminal
 {
-	class Emulator
+	public class Emulator
 	{
-		string m_strDeviceName;
+		readonly string m_strDeviceName;
+
+		public string DeviceName
+		{
+			get { return m_strDeviceName; }
+		}
 
 		public Emulator(string deviceName)
 		{
@@ -39,10 +46,16 @@ namespace SharpTerminal
 			var emulator = new Emulator(deviceName);
 			g_mapEmulators[deviceName] = emulator;
 		}
-	}
+
+		internal static IEnumerable<Emulator> GetEmulators()
+		{
+			return g_mapEmulators.Select(x => x.Value);
+		}
+	}	
 
 	internal class EmulatorManagerProxy: IControlProvider
 	{
+		[SupportedOSPlatform("windows")]
 		Control IControlProvider.CreateControl(IConsole console)
 		{
 			return new Forms.EmulatorDashboardUserControl();

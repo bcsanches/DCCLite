@@ -28,12 +28,15 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			components = new System.ComponentModel.Container();
 			System.Windows.Forms.Label m_lbTitle;
 			System.Windows.Forms.GroupBox groupBox1;
 			m_lvEmulators = new System.Windows.Forms.ListView();
+			emulatorBindingSource = new System.Windows.Forms.BindingSource(components);
 			m_lbTitle = new System.Windows.Forms.Label();
 			groupBox1 = new System.Windows.Forms.GroupBox();
 			groupBox1.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)emulatorBindingSource).BeginInit();
 			SuspendLayout();
 			// 
 			// m_lbTitle
@@ -70,6 +73,10 @@
 			m_lvEmulators.UseCompatibleStateImageBehavior = false;
 			m_lvEmulators.View = System.Windows.Forms.View.Details;
 			// 
+			// emulatorBindingSource
+			// 
+			emulatorBindingSource.DataSource = typeof(Emulator);
+			// 
 			// EmulatorDashboardUserControl
 			// 
 			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -79,6 +86,7 @@
 			Name = "EmulatorDashboardUserControl";
 			Size = new System.Drawing.Size(473, 467);
 			groupBox1.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)emulatorBindingSource).EndInit();
 			ResumeLayout(false);
 			PerformLayout();
 		}
@@ -86,5 +94,6 @@
 		#endregion
 
 		private System.Windows.Forms.ListView m_lvEmulators;
+		private System.Windows.Forms.BindingSource emulatorBindingSource;
 	}
 }
