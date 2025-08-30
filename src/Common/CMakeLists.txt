@@ -67,6 +67,8 @@ if(WIN32)
 
 else(WIN32)
 
+	find_package(OpenSSL REQUIRED)
+
 	target_sources(Common PRIVATE
 		dcclite/Console_linux.cpp
 		dcclite/Guid_linux.cpp
