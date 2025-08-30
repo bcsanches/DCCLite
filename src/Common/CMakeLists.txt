@@ -82,6 +82,7 @@ else(WIN32)
 		SharedLib
 		OpenSSL::Crypto
 		OpenSSL::SSL
+		uuid
 	)
 
 endif(WIN32)

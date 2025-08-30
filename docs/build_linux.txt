@@ -2,3 +2,12 @@ Necessary:
 apt-get install uuid-dev
 apt-get install libssl-dev
 sudo apt install pkg-config
+
+Problems with operation not permitted (WSL):
+To enable metadata on your /mnt/c add this to /etc/wsl.conf.
+
+[automount]
+enabled = true
+options = "metadata"
+
+Restart WSL
