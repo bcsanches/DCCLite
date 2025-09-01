@@ -36,7 +36,6 @@ else(WIN32)
 		PRIVATE BrokerSysLib
 		PRIVATE BrokerExecLib
 		PRIVATE BrokerShellLib
-		PRIVATE uuid
 	)
 
 endif(WIN32)
