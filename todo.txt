@@ -25,7 +25,7 @@ DCCLite
 	
 - Move Signal to dispatcher?
 	- create a decoder to bridge the signal on dispatcher to jmri?
-	- Create a SignalManager?
+	- Create a SignalManager?k
 
 - SharpTerminal
 	- Dashboard

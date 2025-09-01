@@ -30,7 +30,17 @@ target_include_directories(BrokerUnitTest PRIVATE
 	${GTEST_INCLUDE_DIRS}
 	${GMOCK_INCLUDE_DIRS})  
 
-target_link_libraries(BrokerUnitTest BrokerSysLib BrokerExecLib Common SharedLib gtest gtest_main gmock)
+target_link_libraries(BrokerUnitTest 
+	BrokerSysLib 
+	BrokerExecLib 
+	Common 
+	SharedLib 
+	gtest 
+	gtest_main 
+	gmock
+	fmt
+    spdlog
+)
 
 
 #target_include_directories(MainTest PRIVATE ${PROJECT_SOURCE_DIR}/include/)

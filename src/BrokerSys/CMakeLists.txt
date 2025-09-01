@@ -31,14 +31,7 @@ source_group("sys"          		FILES ${SRC_SYS})
 
 if(WIN32)	
     target_link_libraries(BrokerSysLib      
-        PRIVATE bcrypt.lib
-        PRIVATE CityHash
-        PRIVATE Common
-        PRIVATE fmt
-        PRIVATE spdlog
-        PRIVATE ldmonitor	    
-		PRIVATE SharedLib		        
-        PRIVATE sigslot
+
 	)
 
 	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)       

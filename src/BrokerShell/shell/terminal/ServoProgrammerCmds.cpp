@@ -19,6 +19,9 @@
 #include "TerminalClient.h"
 #include "TerminalUtils.h"
 
+//win32 header leak...
+#undef GetMessage
+
 namespace dcclite::broker::shell::terminal
 {	
 
