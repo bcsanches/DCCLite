@@ -33,6 +33,7 @@ target_include_directories(BrokerUnitTest PRIVATE
 target_link_libraries(BrokerUnitTest 
 	BrokerSysLib 
 	BrokerExecLib 
+	CityHash
 	Common 
 	SharedLib 
 	gtest 

@@ -19,6 +19,7 @@ if(WIN32)
         PRIVATE BrokerSysLib
 		PRIVATE BrokerExecLib
 		PRIVATE BrokerShellLib		
+		PRIVATE CityHash
 		PRIVATE Common
 		PRIVATE fmt
 		PRIVATE ldmonitor

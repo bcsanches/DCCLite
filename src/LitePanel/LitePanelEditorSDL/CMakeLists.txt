@@ -48,10 +48,12 @@ if(WIN32)
 	target_sources(LitePanelEditorSDL PRIVATE SystemTools_win.cpp SystemTools_win.h)
 
     target_link_libraries(LitePanelEditorSDL
+		PRIVATE CityHash
 		PRIVATE Common	
+		PRIVATE IMGUI
 		PRIVATE LitePanelLib
 		PRIVATE SDL3-shared
-		PRIVATE IMGUI		
+		PRIVATE SharedLib				
     )
 
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)

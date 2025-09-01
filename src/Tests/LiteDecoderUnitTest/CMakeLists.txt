@@ -21,6 +21,7 @@ target_link_libraries(
 	ArduinoLib
 	BrokerSysLib 
 	BrokerExecLib 
+	CityHash
 	Common
 	DecodersCommonLib	
 	SharedLib 
