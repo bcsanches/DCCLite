@@ -66,7 +66,8 @@ SIGNAL_STATES = {
 	helix_path_exiting = 4,
 	soledade_path_clear = 8,
 	soledade_path_busy = 16,
-	soledade_path_exiting = 32 
+	soledade_path_exiting = 32,
+	helix_up_path = 64
 }
 
 local signal_state = SIGNAL_STATES.automatic
@@ -84,6 +85,14 @@ function set_helix_down_aspect()
 
 	signal_state = SIGNAL_STATES.helix_path_clear
 end
+
+function set_helix_up_aspect()
+	log_info("TC_SIGNAL_D06 Route to helix UP RESTRICTED")
+	signal_d06:set_aspect(SignalAspects.Restricted, "TC_SIGNAL_D06_SCRIPT", "Path to helix UP is set")
+
+	signal_state = SIGNAL_STATES.helix_up_path
+end
+
 
 function set_soledade_branch_aspect()
 	log_info("[TC_SIGNAL_D06] Soledade path CLEAR")
@@ -217,7 +226,8 @@ function on_device_change(device)
 
 			-- Going up... give a restricted, as line is incomplete
 			log_info("[TC_SIGNAL_D06] hlx_t07 thrown - going up the helix - RESTRICTED")
-			signal_d06:set_aspect(SignalAspects.Restricted, "TC_SIGNAL_D06_SCRIPT", "Path to Helix UP is set")
+			set_helix_up_aspect("[TC_SIGNAL_D06] Route to helix UP RESTRICTED")
+			--signal_d06:set_aspect(SignalAspects.Restricted, "TC_SIGNAL_D06_SCRIPT", "Path to Helix UP is set")
 			return
 		end
 
