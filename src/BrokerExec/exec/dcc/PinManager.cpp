@@ -119,7 +119,7 @@ namespace dcclite::broker::exec::dcc
 		}
 	}
 
-	PinManager::PinManager(ArduinoBoards board):
+	PinManager::PinManager(const ArduinoBoards board):
 		m_kBoard{board}
 	{
 		switch (board)
@@ -158,6 +158,16 @@ namespace dcclite::broker::exec::dcc
 				usage,
 				info.m_pclUser->GetName(),
 				info.m_pszUsage
+			));
+		}
+
+		if(info.m_fBad)
+		{
+			throw std::invalid_argument(fmt::format(
+				"[PinManager::RegisterPin] Decoder {} requested pin {} for {}, but it is marked as bad",
+				decoder.GetName(),
+				pin.Raw(),
+				usage
 			));
 		}
 
@@ -219,5 +229,17 @@ namespace dcclite::broker::exec::dcc
 			if (pinInfo.m_pszSpecialName)
 				pinObj.AddStringValue("specialName", pinInfo.m_pszSpecialName);			
 		}
+	}
+
+	void PinManager::MarkBadPin(const dcclite::BasicPin pin)
+	{
+		if (!pin)
+			throw std::invalid_argument("[PinManager::MarkBadPin] Tried to mark a null pin as bad");
+
+		if (pin.Raw() >= m_vecPins.size())
+			throw std::out_of_range(fmt::format("[PinManager::MarkBadPin] Tried to mark pin {} as bad, but it is out of range", pin.Raw()));
+
+		auto &info = m_vecPins[pin.Raw()];
+		info.m_fBad = true;
 	}
 }

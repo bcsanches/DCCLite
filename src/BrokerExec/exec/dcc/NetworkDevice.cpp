@@ -16,6 +16,7 @@
 
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Guid.h>
+#include <dcclite/JsonUtils.h>
 #include <dcclite/Log.h>
 
 #include "sys/Project.h"
@@ -86,6 +87,12 @@ namespace dcclite::broker::exec::dcc
 		m_clTimeoutController{ *this },
 		m_fRegistered{ true }
 	{
+		auto bad = dcclite::json::TryGetInt(params, "badPin");
+		if (bad.has_value())
+		{
+			m_clPinManager.MarkBadPin(dcclite::BasicPin{ static_cast<uint8_t>(*bad) });
+		}		
+
 		this->Load();
 	}
 

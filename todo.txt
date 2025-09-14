@@ -1,6 +1,6 @@
 DCCLite
 -------
-
+- use std view on methods that filter data and return a std::vector with 
 - Store time device connected and disconnected
 	- Send this to sharp terminal
 	- session history?

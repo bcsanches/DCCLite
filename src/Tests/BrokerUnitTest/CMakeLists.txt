@@ -9,6 +9,7 @@ package_add_test(BrokerUnitTest
 	ObjectPathUnitTest.cpp
 	PacketTest.cpp
 	ParserUnitTest.cpp
+	PinManagerTest.cpp
 	PrintfUnitTest.cpp
 	ProjectUnitTest.cpp
 	RNameTest.cpp

@@ -12,21 +12,25 @@
 
 #include <rapidjson/document.h>
 
+#include <optional>
 #include <string_view>
 
 namespace dcclite::json
 {
+	const rapidjson::Value *TryGetValue(const rapidjson::Value &data, const char *fieldName);
+
 	bool TryGetDefaultBool(const rapidjson::Value &data, const char *fieldName, const bool defaultValue);
 
+	std::optional<int> TryGetInt(const rapidjson::Value &data, const char *fieldName);
 	int TryGetDefaultInt(const rapidjson::Value &data, const char *fieldName, const int defaultValue);
 
 	const rapidjson::Value &GetValue(const rapidjson::Value &data, const char *fieldName, const char *context);
 
 	std::string_view GetString(const rapidjson::Value &data, const char *fieldName, const char *context = nullptr);
 	std::string_view TryGetDefaultString(const rapidjson::Value &data, const char *fieldName, std::string_view defaultValue);
-
+	std::optional<std::string_view> TryGetString(const rapidjson::Value &data, const char* fieldName);	
 
 	int GetInt(const rapidjson::Value &data, const char *fieldName, const char *context = nullptr);
-
+	
 	const rapidjson::Value::ConstArray GetArray(const rapidjson::Value &data, const char *fieldName, const char *context = nullptr);
 }

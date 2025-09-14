@@ -8,6 +8,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
+#include <dcclite/JsonUtils.h>
 #include <dcclite/Log.h>
 
 #include "Decoder.h"
@@ -23,9 +24,8 @@ namespace dcclite::broker::exec::dcc
 		m_rclManager(owner),
 		m_rclDevice(dev)
 	{
-		auto it = params.FindMember("location");
-		if (it != params.MemberEnd())
-			m_rnLocationHint = RName{ it->value.GetString() };
+		if(auto v = dcclite::json::TryGetString(params, "location"))		
+			m_rnLocationHint = RName{ *v };			
 	}
 
 	void Decoder::Serialize(dcclite::JsonOutputStream_t &stream) const

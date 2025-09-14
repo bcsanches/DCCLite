@@ -49,6 +49,8 @@ namespace dcclite::broker::exec::dcc
 				const char *m_pszUsage;
 
 				const char *m_pszSpecialName;
+
+				bool		m_fBad = false;
 			};
 
 		private:	
@@ -56,10 +58,12 @@ namespace dcclite::broker::exec::dcc
 			ArduinoBoards			m_kBoard;
 
 		public:
-			explicit PinManager(ArduinoBoards board);
+			explicit PinManager(const ArduinoBoards board);
 
 			void RegisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin, const char *usage);
 			void UnregisterPin(const RemoteDecoder &decoder, dcclite::BasicPin pin);
+
+			void MarkBadPin(const dcclite::BasicPin pin);
 
 			void Serialize(dcclite::JsonOutputStream_t &stream) const;
 	};
