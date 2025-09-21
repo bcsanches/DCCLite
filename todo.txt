@@ -1,6 +1,5 @@
 DCCLite
 -------
-- use std view on methods that filter data and return a std::vector with 
 - Store time device connected and disconnected
 	- Send this to sharp terminal
 	- session history?
@@ -33,6 +32,7 @@ DCCLite
 		- Detect arduino on USB and offer to burn it
 
 - Create SignalLogic
+	- where it will be stored? SignalLogicManager on BrokerShellLib?
 	- new entity, used to control signals.
 	- It will refer to a Signal and set its aspects
 	- states:
@@ -99,6 +99,7 @@ LitePanelWx
 -----------
 
 - fix rendering errors
+- render using DBI? abandon OpenGL?
 
 To Explore
 ----------
