@@ -1,5 +1,23 @@
 [
 	{
+		"name": "TC_SIG_11D_HG",
+		"class": "Output",
+		"address": 1301,
+		"pin": 45,
+		"inverted": true,
+		"ignoreSavedState": true,
+		"location": "TC"
+	},
+	{
+		"name": "TC_SIG_11D_HR",
+		"class": "Output",
+		"address": 1302,
+		"pin": 44,
+		"inverted": true,
+		"ignoreSavedState": true,
+		"location": "TC"
+	},
+	{
 		"name":"TC_TurntableSensorA",
 		"class":"Sensor",
 		"pin":49,

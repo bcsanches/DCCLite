@@ -1,5 +1,17 @@
 DCCLite
 -------
+
+- Flashing output, how to avoid all messages?
+	- put a flash flag on output
+		- Create a FlashOutput, when on, will turn on the flash flag on output
+		- output when on will flash (or not) according to the flag
+
+	- Create a FlashOutput, use same pin and does the flashing logic
+		- dcclite will complain due to pin conflict
+
+	- FlashOutput will turn on / off the output
+		- more logical, but again, dcclite will go crazy trying to turn it off and not syncing state, will mess up the net protocol
+
 - Store time device connected and disconnected
 	- Send this to sharp terminal
 	- session history?
