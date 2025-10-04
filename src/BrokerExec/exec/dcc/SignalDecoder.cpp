@@ -249,6 +249,7 @@ namespace dcclite::broker::exec::dcc
 		this->ApplyAspect(aspect, index);
 			
 		m_rclManager.Decoder_OnStateChanged(*this);
+		m_sigAspectChanged(*this);
 	}
 
 	void SignalDecoder::ApplyAspect(const dcclite::SignalAspects aspect, const unsigned aspectIndex)
