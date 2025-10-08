@@ -1,4 +1,4 @@
-﻿namespace SharpTerminal.Forms
+namespace SharpTerminal.Forms
 {
 	partial class EmulatorDashboardUserControl
 	{
@@ -31,10 +31,14 @@
 			components = new System.ComponentModel.Container();
 			System.Windows.Forms.Label m_lbTitle;
 			System.Windows.Forms.GroupBox groupBox1;
+			System.Windows.Forms.ColumnHeader columnHeader1;
+			System.Windows.Forms.ColumnHeader columnHeader2;
 			m_lvEmulators = new System.Windows.Forms.ListView();
 			emulatorBindingSource = new System.Windows.Forms.BindingSource(components);
 			m_lbTitle = new System.Windows.Forms.Label();
 			groupBox1 = new System.Windows.Forms.GroupBox();
+			columnHeader1 = new System.Windows.Forms.ColumnHeader();
+			columnHeader2 = new System.Windows.Forms.ColumnHeader();
 			groupBox1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)emulatorBindingSource).BeginInit();
 			SuspendLayout();
@@ -64,6 +68,7 @@
 			// m_lvEmulators
 			// 
 			m_lvEmulators.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+			m_lvEmulators.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] { columnHeader1, columnHeader2 });
 			m_lvEmulators.FullRowSelect = true;
 			m_lvEmulators.GridLines = true;
 			m_lvEmulators.Location = new System.Drawing.Point(6, 22);
@@ -76,6 +81,16 @@
 			// emulatorBindingSource
 			// 
 			emulatorBindingSource.DataSource = typeof(Emulator);
+			// 
+			// columnHeader1
+			// 
+			columnHeader1.Text = "Name";
+			columnHeader1.Width = 180;
+			// 
+			// columnHeader2
+			// 
+			columnHeader2.Text = "Status";
+			columnHeader2.Width = 80;
 			// 
 			// EmulatorDashboardUserControl
 			// 

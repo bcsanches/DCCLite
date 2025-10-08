@@ -166,7 +166,7 @@ HELP:
 
 	dcclite::Log::Info("[main] Setup complete, starting main loop");
 
-	TerminalService terminalService;
+	//TerminalService terminalService;
 
 	//ArduinoLib::SetSerialInput("/cfg NoName;sv;");	
 

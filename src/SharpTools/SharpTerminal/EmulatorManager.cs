@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -28,11 +28,12 @@ namespace SharpTerminal
 			}
 
 			m_Process = new();
-			m_Process.StartInfo.UseShellExecute = true;
+			m_Process.StartInfo.UseShellExecute = false;
 			m_Process.StartInfo.Arguments = "-d " + deviceName;
-			m_Process.StartInfo.FileName = FindEmulatorExecutable();
+			m_Process.EnableRaisingEvents = true;
+			m_Process.StartInfo.FileName = FindEmulatorExecutable();			
 
-			m_Process.Start();
+			m_Process.Start();			
 		}
 
 		private static string FindEmulatorExecutable()
@@ -47,6 +48,38 @@ namespace SharpTerminal
 
 			return "Emulator.exe";
 		}
+
+		public bool HasExited
+		{
+			get 
+			{
+				return m_Process.HasExited;
+			}	
+		}
+
+		private event EventHandler mExitHandler;
+		private bool mExitHandlerAdded = false;
+
+		public void AddExitHandler(EventHandler handler)
+		{
+			mExitHandler += handler;
+
+			if(!mExitHandlerAdded)
+			{
+				mExitHandlerAdded = true;
+				m_Process.Exited += Process_OnExited;
+			}			
+		}
+
+		public void RemoveExitHandler(EventHandler handler)
+		{
+			mExitHandler -= handler;
+		}
+
+		private void Process_OnExited(object sender, EventArgs e)
+		{
+			mExitHandler?.Invoke(this, EventArgs.Empty);
+		}
 	}
 
 	internal static class EmulatorManager
@@ -60,10 +93,13 @@ namespace SharpTerminal
 				throw new ArgumentException(null, nameof(deviceName));
 			}
 
-			if (g_mapEmulators.ContainsKey(deviceName))
+			if(g_mapEmulators.TryGetValue(deviceName, out var existingEmulator))			
 			{
-				//nothing to do
-				return;
+				if (!existingEmulator.HasExited)
+					return;
+
+				//It is dead... start a new one
+				g_mapEmulators.Remove(deviceName);
 			}
 
 			var emulator = new Emulator(deviceName);

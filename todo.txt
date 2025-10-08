@@ -4,13 +4,21 @@ DCCLite
 - Flashing output, how to avoid all messages?
 	- put a flash flag on output
 		- Create a FlashOutput, when on, will turn on the flash flag on output
-		- output when on will flash (or not) according to the flag
+		- output will flash (or not) according to the flag
+			- OutputDecoder - the existing output
+			- FlashOutputDecoder - new decoder with flashing capability
+			- FlashOutputDecoderController - turns on / off the flag on above
 
 	- Create a FlashOutput, use same pin and does the flashing logic
 		- dcclite will complain due to pin conflict
 
 	- FlashOutput will turn on / off the output
 		- more logical, but again, dcclite will go crazy trying to turn it off and not syncing state, will mess up the net protocol
+
+- SharpConsole runs Broker locally directly?
+	- Starts it
+	- monitors log
+	- capability to filter log output
 
 - Store time device connected and disconnected
 	- Send this to sharp terminal
@@ -20,15 +28,12 @@ DCCLite
 		- Button on sharp terminal to open session history
 
 - Better emulator:
-	- Make sharpConsole able to start emulator as is
-	- Make sharpconsole start emulator using a existing device name (auto generate eprom?)
-	- Show it on SharpConsole and remote connect to it.
+	- Allow SharpConsole do kill it
+	- Display emulator outputs on SharpConsole and hide console windows
+	- Remote connect to emulators
 	- Allow pin states to be set:
 		- Set voltage level: LOW or HIGH
-		- Do a Pin "click", so voltage invert for a short time (put a time config, like 10ms)
-	- On device on sharp console, put a button "emulate":
-		- Will run emulator with the correctly EEPROM
-		- Generate blank EEPROM if does not exists?	
+		- Do a Pin "click", so voltage invert for a short time (put a time config, like 10ms)	
 	- put a emulator hints field on device config? So initial voltage for pins can be set, like a grounded pin or a pin connected to 5v
 		- pin on emulator must have a "externalVoltage" field, a tri state field and when reading, check if the externalVoltage is set, if yes, consider it, otherwise, the internal voltage
 		- digitalWrite will never affetct externalVoltage
