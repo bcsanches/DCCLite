@@ -7,6 +7,8 @@ namespace SharpTerminal.Forms
 	[SupportedOSPlatform("windows")]
 	public partial class EmulatorDashboardUserControl : UserControl
 	{
+		private Emulator mLastSelected;
+
 		public EmulatorDashboardUserControl()
 		{
 			InitializeComponent();
@@ -68,6 +70,13 @@ namespace SharpTerminal.Forms
 
 		private void m_lvEmulators_SelectedIndexChanged(object sender, EventArgs e)
 		{
+			if (mLastSelected != null)
+			{
+				mLastSelected.AppendOutput -= OnEmulatorOutputAppended;				
+			}
+
+			m_tbEmulatorOutput.Clear();
+
 			var emulator = this.SelectedEmulator;
 			if (emulator == null)
 			{
@@ -80,8 +89,43 @@ namespace SharpTerminal.Forms
 
 				m_btnKill.Enabled = !exited;
 				m_btnRestart.Enabled = exited;
+
+				m_tbEmulatorOutput.Text = emulator.GetOutput();
+				emulator.AppendOutput += OnEmulatorOutputAppended;
+
+				this.ScrollToOutputTextBoxEnd();
 			}
 
+			mLastSelected = emulator;
+		}
+
+		private void ScrollToOutputTextBoxEnd()
+		{
+			m_tbEmulatorOutput.SelectionStart = m_tbEmulatorOutput.Text.Length;
+			m_tbEmulatorOutput.SelectionLength = 0;
+			m_tbEmulatorOutput.ScrollToCaret();
+		}
+
+		private void OnEmulatorOutputAppended(object sender, string line, int lineCount)
+		{
+			if (this.InvokeRequired)
+			{
+				this.Invoke(() =>
+				{
+					this.OnEmulatorOutputAppended(sender, line, lineCount);
+				});
+
+				return;
+			}
+
+			var emulator = sender as Emulator;
+			if (emulator == this.SelectedEmulator)
+			{
+				m_tbEmulatorOutput.AppendText(Environment.NewLine);
+				m_tbEmulatorOutput.AppendText(emulator.GetOutput());
+
+				this.ScrollToOutputTextBoxEnd();
+			}
 		}
 
 		private void m_btnKill_Click(object sender, EventArgs e)

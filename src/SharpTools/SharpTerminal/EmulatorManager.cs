@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
+using System.Text;
 using System.Windows.Forms;
 
 namespace SharpTerminal
@@ -12,6 +13,13 @@ namespace SharpTerminal
 	{
 		readonly string m_strDeviceName;
 		readonly Process m_Process;
+
+		private StringBuilder m_sbOutput = new ();
+		private int m_iLineCount = 0;
+
+		public delegate void AppendOutputDelegate(object sender, string strLine, int lineCount);
+
+		public AppendOutputDelegate AppendOutput;
 
 		public string DeviceName
 		{
@@ -27,13 +35,32 @@ namespace SharpTerminal
 				throw new ArgumentNullException(nameof(deviceName));
 			}
 
-			m_Process = new();
-			m_Process.StartInfo.UseShellExecute = false;
-			m_Process.StartInfo.Arguments = "-d " + deviceName;
-			m_Process.EnableRaisingEvents = true;
-			m_Process.StartInfo.FileName = FindEmulatorExecutable();			
+			var psi = new ProcessStartInfo
+			{
+				FileName = FindEmulatorExecutable(),
+				Arguments = "-d " + deviceName,
+				UseShellExecute = false,           // required for redirection
+				RedirectStandardOutput = true,     // capture stdout
+				RedirectStandardError = true,      // capture stderr (optional)
+				CreateNoWindow = true              // hide console window				
+			};
 
-			m_Process.Start();			
+			m_Process = new();
+			m_Process.StartInfo = psi;
+			m_Process.EnableRaisingEvents = true;
+			m_Process.OutputDataReceived += (sender, args) =>
+			{
+				if (args.Data != null)
+				{
+					m_sbOutput.AppendLine(args.Data);
+					++m_iLineCount;
+
+					AppendOutput?.Invoke(this, args.Data, m_iLineCount);
+				}
+			};
+
+			m_Process.Start();
+			m_Process.BeginOutputReadLine(); // start async read of stdout
 		}
 
 		private static string FindEmulatorExecutable()
@@ -95,6 +122,11 @@ namespace SharpTerminal
 		{
 			mExitHandler?.Invoke(this, EventArgs.Empty);
 		}
+
+		public string GetOutput()
+		{
+			return m_sbOutput.ToString();
+		}
 	}
 
 	internal static class EmulatorManager
@@ -119,6 +151,17 @@ namespace SharpTerminal
 
 			var emulator = new Emulator(deviceName);
 			g_mapEmulators[deviceName] = emulator;
+		}
+
+		public static void KillAll()
+		{
+			foreach(var emulator in g_mapEmulators.Values)
+			{
+				if (!emulator.HasExited)
+				{
+					emulator.Kill();
+				}
+			}
 		}
 
 		internal static IEnumerable<Emulator> GetEmulators()
