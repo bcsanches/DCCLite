@@ -9,12 +9,12 @@ namespace SharpTerminal.Forms
 	{
 		public EmulatorDashboardUserControl()
 		{
-			InitializeComponent();			
+			InitializeComponent();
 		}
-		
+
 		protected override void OnLoad(EventArgs e)
 		{
-			base.OnLoad(e);			
+			base.OnLoad(e);
 
 			var emulators = EmulatorManager.GetEmulators();
 
@@ -29,9 +29,21 @@ namespace SharpTerminal.Forms
 			}
 		}
 
+		private void RefreshEmulatorStatus(Emulator emulator)
+		{
+			foreach (ListViewItem item in m_lvEmulators.Items)
+			{
+				if (item.Tag == emulator)
+				{
+					item.SubItems[1].Text = emulator.HasExited ? "Exited" : "Running";
+					break;
+				}
+			}
+		}
+
 		private void OnEmulatorExited(object sender, EventArgs e)
 		{
-			if(this.InvokeRequired)
+			if (this.InvokeRequired)
 			{
 				this.Invoke(() =>
 				{
@@ -39,16 +51,51 @@ namespace SharpTerminal.Forms
 				});
 
 				return;
-			}			
-
-			foreach (ListViewItem item in m_lvEmulators.Items)
-			{
-				if (item.Tag == sender)
-				{
-					item.SubItems[1].Text = "Exited";
-					break;
-				}
 			}
+
+			RefreshEmulatorStatus(sender as Emulator);			
+
+			m_lvEmulators_SelectedIndexChanged(sender, e);
+		}
+
+		private Emulator SelectedEmulator
+		{
+			get
+			{
+				return m_lvEmulators.SelectedItems.Count > 0 ? m_lvEmulators.SelectedItems[0].Tag as Emulator : null;
+			}
+		}
+
+		private void m_lvEmulators_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			var emulator = this.SelectedEmulator;
+			if (emulator == null)
+			{
+				m_btnKill.Enabled = false;
+				m_btnRestart.Enabled = false;
+			}
+			else
+			{
+				var exited = emulator.HasExited;
+
+				m_btnKill.Enabled = !exited;
+				m_btnRestart.Enabled = exited;
+			}
+
+		}
+
+		private void m_btnKill_Click(object sender, EventArgs e)
+		{
+			var emulator = this.SelectedEmulator;
+			emulator.Kill();
+		}
+
+		private void m_btnRestart_Click(object sender, EventArgs e)
+		{
+			var emulator = this.SelectedEmulator;
+			emulator.Restart();
+
+			this.RefreshEmulatorStatus(emulator);
 		}
 	}
 }

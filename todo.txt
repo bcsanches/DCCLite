@@ -27,8 +27,7 @@ DCCLite
 		- number of packets?
 		- Button on sharp terminal to open session history
 
-- Better emulator:
-	- Allow SharpConsole do kill it
+- Better emulator:	
 	- Display emulator outputs on SharpConsole and hide console windows
 	- Remote connect to emulators
 	- Allow pin states to be set:

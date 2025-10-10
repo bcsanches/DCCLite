@@ -57,6 +57,21 @@ namespace SharpTerminal
 			}	
 		}
 
+		public void Kill()
+		{
+			m_Process.Kill();
+		}
+
+		public void Restart()
+		{
+			if(!m_Process.HasExited)
+			{
+				throw new InvalidOperationException("Process is running.");
+			}
+
+			m_Process.Start();
+		}
+
 		private event EventHandler mExitHandler;
 		private bool mExitHandlerAdded = false;
 

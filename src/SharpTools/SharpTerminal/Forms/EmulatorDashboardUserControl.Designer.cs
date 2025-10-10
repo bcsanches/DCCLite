@@ -35,6 +35,8 @@ namespace SharpTerminal.Forms
 			System.Windows.Forms.ColumnHeader columnHeader2;
 			m_lvEmulators = new System.Windows.Forms.ListView();
 			emulatorBindingSource = new System.Windows.Forms.BindingSource(components);
+			m_btnKill = new System.Windows.Forms.Button();
+			m_btnRestart = new System.Windows.Forms.Button();
 			m_lbTitle = new System.Windows.Forms.Label();
 			groupBox1 = new System.Windows.Forms.GroupBox();
 			columnHeader1 = new System.Windows.Forms.ColumnHeader();
@@ -60,7 +62,7 @@ namespace SharpTerminal.Forms
 			groupBox1.Controls.Add(m_lvEmulators);
 			groupBox1.Location = new System.Drawing.Point(4, 27);
 			groupBox1.Name = "groupBox1";
-			groupBox1.Size = new System.Drawing.Size(466, 437);
+			groupBox1.Size = new System.Drawing.Size(466, 408);
 			groupBox1.TabIndex = 4;
 			groupBox1.TabStop = false;
 			groupBox1.Text = "Running";
@@ -72,15 +74,13 @@ namespace SharpTerminal.Forms
 			m_lvEmulators.FullRowSelect = true;
 			m_lvEmulators.GridLines = true;
 			m_lvEmulators.Location = new System.Drawing.Point(6, 22);
+			m_lvEmulators.MultiSelect = false;
 			m_lvEmulators.Name = "m_lvEmulators";
-			m_lvEmulators.Size = new System.Drawing.Size(454, 409);
+			m_lvEmulators.Size = new System.Drawing.Size(454, 380);
 			m_lvEmulators.TabIndex = 3;
 			m_lvEmulators.UseCompatibleStateImageBehavior = false;
 			m_lvEmulators.View = System.Windows.Forms.View.Details;
-			// 
-			// emulatorBindingSource
-			// 
-			emulatorBindingSource.DataSource = typeof(Emulator);
+			m_lvEmulators.SelectedIndexChanged += m_lvEmulators_SelectedIndexChanged;
 			// 
 			// columnHeader1
 			// 
@@ -92,10 +92,41 @@ namespace SharpTerminal.Forms
 			columnHeader2.Text = "Status";
 			columnHeader2.Width = 80;
 			// 
+			// emulatorBindingSource
+			// 
+			emulatorBindingSource.DataSource = typeof(Emulator);
+			// 
+			// m_btnKill
+			// 
+			m_btnKill.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+			m_btnKill.Enabled = false;
+			m_btnKill.Location = new System.Drawing.Point(3, 441);
+			m_btnKill.Name = "m_btnKill";
+			m_btnKill.RightToLeft = System.Windows.Forms.RightToLeft.No;
+			m_btnKill.Size = new System.Drawing.Size(75, 23);
+			m_btnKill.TabIndex = 5;
+			m_btnKill.Text = "&Kill";
+			m_btnKill.UseVisualStyleBackColor = true;
+			m_btnKill.Click += m_btnKill_Click;
+			// 
+			// m_btnRestart
+			// 
+			m_btnRestart.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+			m_btnRestart.Enabled = false;
+			m_btnRestart.Location = new System.Drawing.Point(84, 441);
+			m_btnRestart.Name = "m_btnRestart";
+			m_btnRestart.Size = new System.Drawing.Size(75, 23);
+			m_btnRestart.TabIndex = 6;
+			m_btnRestart.Text = "&Restart";
+			m_btnRestart.UseVisualStyleBackColor = true;
+			m_btnRestart.Click += m_btnRestart_Click;
+			// 
 			// EmulatorDashboardUserControl
 			// 
 			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			Controls.Add(m_btnRestart);
+			Controls.Add(m_btnKill);
 			Controls.Add(groupBox1);
 			Controls.Add(m_lbTitle);
 			Name = "EmulatorDashboardUserControl";
@@ -110,5 +141,7 @@ namespace SharpTerminal.Forms
 
 		private System.Windows.Forms.ListView m_lvEmulators;
 		private System.Windows.Forms.BindingSource emulatorBindingSource;
+		private System.Windows.Forms.Button m_btnKill;
+		private System.Windows.Forms.Button m_btnRestart;
 	}
 }
