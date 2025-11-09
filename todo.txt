@@ -1,7 +1,6 @@
 DCCLite
 -------
 
-- Arduinos: auto reboot when connection fails and hello fails?
 - Flashing output, how to avoid all messages?
 	- put a flash flag on output
 		- Create a FlashOutput, when on, will turn on the flash flag on output
