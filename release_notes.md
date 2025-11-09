@@ -1,4 +1,4 @@
-# Version ???
+# Version 0.11.0
 
 ## General Features
 
@@ -10,6 +10,7 @@
 
 ## LiteDecoder
 
+- Reboot boards when connection goes down and hello fails more than once
 - Decoders storage version bumped to 20
 - QuadInverter Inverted flag
 - TurntableAutoInverter Inverter flag

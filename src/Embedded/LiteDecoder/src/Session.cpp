@@ -22,9 +22,13 @@
 #include "Decoder.h"
 #include "DecoderManager.h"
 #include "NetUdp.h"
-#include "ServoProgrammer.h"
 #include "Storage.h"
 #include "Strings.h"
+
+#ifdef ARDUINO_AVR_MEGA2560
+#include "ServoProgrammer.h"
+#endif
+
 
 //testar: https://github.com/ntruchsess/arduino_uip
 
@@ -56,10 +60,13 @@ If my numbers are correct, we can send 1000 packets per second (each ms) and it 
 static uint64_t g_uLastReceivedDecodersStatePacket = 0;
 static uint64_t g_uDecodersStateSequence = 0;
 
-static bool g_fRefreshServerAboutOutputDecoders = false;
-
 static uint16_t g_uRemoteRamValue = UINT16_MAX;
 static uint16_t g_uFreeRam = UINT16_MAX;
+
+static uint8_t g_u8HelloRetryCount = 0;
+
+static bool g_fRefreshServerAboutOutputDecoders = false;
+static bool g_fHasConnection = false;
 
 //
 //
@@ -208,24 +215,34 @@ void Session::ReplaceConfigToken(const dcclite::Guid &configToken)
 	g_ConfigToken = configToken;
 }
 
-//
+static void Reboot()
+{
+	//why????
+	wdt_enable( WDTO_120MS);
+	delay(2500);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // OFFLINE STATE
 //
-//
+///////////////////////////////////////////////////////////////////////////////
 
 static void GotoOfflineState()
 {
+
+#ifdef ARDUINO_AVR_MEGA2560
 	ServoProgrammer::Stop();
+#endif
 
 	ConnectionStateManager::Set(ConnectionStates::OFFLINE);
 
-	Blinker::SetState(Blinker::State::SLOW_FLASH);
+	Blinker::SetState(Blinker::State::SLOW_FLASH);	
 }
 
 static void OfflineTick(const unsigned long ticks)
 {	
-	DCCLITE_LOG_MODULE_LN(FSTR_BROADCAST << ':' << g_uSrvPort);
+	DCCLITE_LOG_MODULE_LN(FSTR_BROADCAST << ':' << g_uSrvPort << ' ' << g_u8HelloRetryCount);
 
 	//
 	//Just send a broadcast DISCOVERY packet
@@ -242,13 +259,20 @@ static void OfflineTick(const unsigned long ticks)
 	PingManager::Reset(ticks);
 	
 	ConnectionStateManager::Set(ConnectionStates::SEARCHING_SERVER);
+
+	++g_u8HelloRetryCount;
+	if(g_fHasConnection && (g_u8HelloRetryCount > 1))
+	{
+		//HACK: connection went down due to stupid network hardware? reboot to see if it works again...
+		Reboot();
+	}	
 }
 
-//
+///////////////////////////////////////////////////////////////////////////////
 //
 // CONFIGURING STATE
 //
-//
+///////////////////////////////////////////////////////////////////////////////
 
 static void ConfiguringTick(const unsigned long ticks)
 {
@@ -295,11 +319,11 @@ void OnConfiguringPacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 	}
 }
 
-//
+///////////////////////////////////////////////////////////////////////////////
 //
 // SEARCHING SERVER AND ARP STATE
 //
-//
+///////////////////////////////////////////////////////////////////////////////
 
 
 static void SearchingServerTick(const unsigned long ticks)
@@ -365,6 +389,9 @@ static void GotoOnlineState(const unsigned long ticks, int callerLine)
 	g_uDecodersStateSequence = 0;	
 
 	g_uRemoteRamValue = UINT16_MAX;
+
+	g_fHasConnection = true;
+	g_u8HelloRetryCount = 0;
 
 	//
 	//Force a full state refresh
@@ -438,11 +465,11 @@ static void OnSearchingServerPacket(uint8_t src_ip[4], uint16_t src_port, dcclit
 	}		
 }
 
-//
+///////////////////////////////////////////////////////////////////////////////
 //
 // ONLINE STATE
 //
-//
+///////////////////////////////////////////////////////////////////////////////
 
 /**
  * Here we have two purposes:
@@ -475,7 +502,9 @@ static void OnlineTick(const unsigned long ticks, const bool stateChangeDetected
 
 	using namespace dcclite;	
 
+#ifdef ARDUINO_AVR_MEGA2560
 	ServoProgrammer::Update(ticks);
+#endif
 
 	const bool stateTimeout = (g_uNextStateThink <= ticks);	
 	const bool sendSensors = stateTimeout || stateChangeDetectedHint;
@@ -721,9 +750,11 @@ static void OnTaskRequestPacket(dcclite::Packet &packet)
 			DownloadEpromTaskHandler(packet);
 			break;
 
+#ifdef ARDUINO_AVR_MEGA2560		
 		case NetworkTaskTypes::TASK_SERVO_PROGRAMMER:
 			ServoProgrammer::ParsePacket(packet);
 			break;
+#endif
 
 		case NetworkTaskTypes::TASK_RENAME_DEVICE:
 			RenameTaskHandler(packet);
@@ -747,9 +778,7 @@ static void OnTaskRequestPacket(dcclite::Packet &packet)
 static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 {			
 	const auto time = millis();
-	PingManager::Reset(time);
-
-	//Blinker::Pulse(3);
+	PingManager::Reset(time);	
 
 	switch (type)
 	{
@@ -797,9 +826,7 @@ static void OnOnlinePacket(dcclite::MsgTypes type, dcclite::Packet &packet)
 				NetUdp::SendPacket(pkt.GetData(), pkt.GetSize(), g_u8ServerIp, g_uSrvPort);
 				#endif
 
-				//why????
-				wdt_enable( WDTO_120MS);
-				delay(250);				
+				Reboot();
 			}
 
 		case dcclite::MsgTypes::TASK_REQUEST:			
