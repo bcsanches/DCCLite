@@ -423,7 +423,7 @@ namespace dcclite::broker::exec::dcc
 	//
 	//
 
-	void DccLiteService::NetworkThread_OnDiscovery(const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet)
+	void DccLiteService::NetworkThread_OnDiscovery(const dcclite::NetworkAddress &senderAddress, const dcclite::Packet &packet)
 	{
 		dcclite::Log::Info("[DccLiteService::{}] [OnNet_Hello] received discovery from {}, sending reply", this->GetName(), senderAddress);
 
