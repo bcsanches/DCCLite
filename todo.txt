@@ -1,6 +1,7 @@
 DCCLite
 -------
 
+- Arduinos: auto reboot when connection fails and hello fails?
 - Flashing output, how to avoid all messages?
 	- put a flash flag on output
 		- Create a FlashOutput, when on, will turn on the flash flag on output
@@ -8,6 +9,7 @@ DCCLite
 			- OutputDecoder - the existing output
 			- FlashOutputDecoder - new decoder with flashing capability
 			- FlashOutputDecoderController - turns on / off the flag on above
+	- Update signals to use it
 
 	- Create a FlashOutput, use same pin and does the flashing logic
 		- dcclite will complain due to pin conflict
@@ -28,7 +30,6 @@ DCCLite
 		- Button on sharp terminal to open session history
 
 - Better emulator:	
-	- Display emulator outputs on SharpConsole and hide console windows
 	- Remote connect to emulators
 	- Allow pin states to be set:
 		- Set voltage level: LOW or HIGH
@@ -37,18 +38,18 @@ DCCLite
 		- pin on emulator must have a "externalVoltage" field, a tri state field and when reading, check if the externalVoltage is set, if yes, consider it, otherwise, the internal voltage
 		- digitalWrite will never affetct externalVoltage
 		- SharpTerminal will be able to set this externalVoltage value
-	
-- Move Signal to dispatcher?
-	- create a decoder to bridge the signal on dispatcher to jmri?
-	- Create a SignalManager?k
 
 - SharpTerminal
 	- Dashboard
 		- Display unregistered arduinos
 		- Detect arduino on USB and offer to burn it
 
-- Create SignalLogic
-	- where it will be stored? SignalLogicManager on BrokerShellLib?
+- Create SignalInterlock
+	- where it will be stored? SignalLogicManager on BrokerShellLib? Dispatcher?
+		Dispatcher
+			- interlocks
+			- controllers
+			- sections
 	- new entity, used to control signals.
 	- It will refer to a Signal and set its aspects
 	- states:
@@ -63,9 +64,17 @@ DCCLite
 		- When an aspect is set, the signal locks its turnouts and monitor sensors / rouse_sections
 			- hint route_section of the expected direction
 
+- SignalController
+	- Managers a SignalInterlock
+	- AutoSignalController
+		- monitors the signal inputs, if route is clear, sets the signal do clear
+	- ManualSignalController
+		- Accepts user input and set a signal to clear if possible
+
 - Dispatcher
 	- SectionManager: manages all sections? 
 	- Section: the base with two sensors?
+		- when on sensor gets hit, defines the direction		
 	- BlockSection: a block with an entry and exit sensor, no turnouts, simple block for stopping a train
 	- TrackSection: is it necessary? Consider as main line?
 	- Abandon TrackSection on dispatcher
@@ -76,6 +85,10 @@ DCCLite
 - Implement coroutine support on lua scripts?
 
 - Make a EngineDriver Server, redirect to DCCex Directly and goodbye JMRI
+	- Reads locomotive data from DecoderPro
+	- Allows input redirection, ie:
+		- On european engines, sets F1 (sound on / off) to F8 (NMRA default)
+		- call lua scripts on buttons?
 
 LitePanelSDL
 ------------
