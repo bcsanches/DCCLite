@@ -95,7 +95,7 @@ namespace dcclite::broker::exec::dcc
 				IFolderObject *GetParent() const noexcept override;				
 
 			private:
-				inline size_t GetDecoderIndex(const Decoder &dec) const;
+				size_t GetDecoderIndex(const Decoder &dec) const;
 
 			private:
 				RName		m_rnPrefix;

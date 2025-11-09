@@ -63,10 +63,8 @@ source_group("terminal"     	FILES ${SRC_SHELL_TERMINAL})
 if(WIN32)
     target_link_libraries(BrokerShellLib        
         PRIVATE Common
-        PRIVATE fmt
-        PRIVATE spdlog        
 	    PRIVATE LuaLib
-		PRIVATE SharedLib        
+		PRIVATE SharedLib
 	)
 
 	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)       

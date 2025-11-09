@@ -1,6 +1,32 @@
 DCCLite
 -------
 
+- Ethernet issues
+ - auto Reboot
+ - test capacitor
+ - check link status before init
+ - replace library
+
+- Flashing output, how to avoid all messages?
+	- put a flash flag on output
+		- Create a FlashOutput, when on, will turn on the flash flag on output
+		- output will flash (or not) according to the flag
+			- OutputDecoder - the existing output
+			- FlashOutputDecoder - new decoder with flashing capability
+			- FlashOutputDecoderController - turns on / off the flag on above
+	- Update signals to use it
+
+	- Create a FlashOutput, use same pin and does the flashing logic
+		- dcclite will complain due to pin conflict
+
+	- FlashOutput will turn on / off the output
+		- more logical, but again, dcclite will go crazy trying to turn it off and not syncing state, will mess up the net protocol
+
+- SharpConsole runs Broker locally directly?
+	- Starts it
+	- monitors log
+	- capability to filter log output
+
 - Store time device connected and disconnected
 	- Send this to sharp terminal
 	- session history?
@@ -8,31 +34,27 @@ DCCLite
 		- number of packets?
 		- Button on sharp terminal to open session history
 
-- Better emulator:
-	- Make sharpConsole able to start emulator as is
-	- Make sharpconsole start emulator using a existing device name (auto generate eprom?)
-	- Show it on SharpConsole and remote connect to it.
+- Better emulator:	
+	- Remote connect to emulators
 	- Allow pin states to be set:
 		- Set voltage level: LOW or HIGH
-		- Do a Pin "click", so voltage invert for a short time (put a time config, like 10ms)
-	- On device on sharp console, put a button "emulate":
-		- Will run emulator with the correctly EEPROM
-		- Generate blank EEPROM if does not exists?	
+		- Do a Pin "click", so voltage invert for a short time (put a time config, like 10ms)	
 	- put a emulator hints field on device config? So initial voltage for pins can be set, like a grounded pin or a pin connected to 5v
 		- pin on emulator must have a "externalVoltage" field, a tri state field and when reading, check if the externalVoltage is set, if yes, consider it, otherwise, the internal voltage
 		- digitalWrite will never affetct externalVoltage
 		- SharpTerminal will be able to set this externalVoltage value
-	
-- Move Signal to dispatcher?
-	- create a decoder to bridge the signal on dispatcher to jmri?
-	- Create a SignalManager?
 
 - SharpTerminal
 	- Dashboard
 		- Display unregistered arduinos
 		- Detect arduino on USB and offer to burn it
 
-- Create SignalLogic
+- Create SignalInterlock
+	- where it will be stored? SignalLogicManager on BrokerShellLib? Dispatcher?
+		Dispatcher
+			- interlocks
+			- controllers
+			- sections
 	- new entity, used to control signals.
 	- It will refer to a Signal and set its aspects
 	- states:
@@ -47,9 +69,17 @@ DCCLite
 		- When an aspect is set, the signal locks its turnouts and monitor sensors / rouse_sections
 			- hint route_section of the expected direction
 
+- SignalController
+	- Managers a SignalInterlock
+	- AutoSignalController
+		- monitors the signal inputs, if route is clear, sets the signal do clear
+	- ManualSignalController
+		- Accepts user input and set a signal to clear if possible
+
 - Dispatcher
 	- SectionManager: manages all sections? 
 	- Section: the base with two sensors?
+		- when on sensor gets hit, defines the direction		
 	- BlockSection: a block with an entry and exit sensor, no turnouts, simple block for stopping a train
 	- TrackSection: is it necessary? Consider as main line?
 	- Abandon TrackSection on dispatcher
@@ -60,6 +90,10 @@ DCCLite
 - Implement coroutine support on lua scripts?
 
 - Make a EngineDriver Server, redirect to DCCex Directly and goodbye JMRI
+	- Reads locomotive data from DecoderPro
+	- Allows input redirection, ie:
+		- On european engines, sets F1 (sound on / off) to F8 (NMRA default)
+		- call lua scripts on buttons?
 
 LitePanelSDL
 ------------
@@ -99,6 +133,7 @@ LitePanelWx
 -----------
 
 - fix rendering errors
+- render using DBI? abandon OpenGL?
 
 To Explore
 ----------

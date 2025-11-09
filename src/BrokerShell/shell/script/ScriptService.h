@@ -37,8 +37,8 @@ namespace dcclite::broker::shell::script
 			void OnLoadFinished() override;
 			void OnUnload() override;
 
-			void OnExecutiveChangeStart();
-			void OnExecutiveChangeEnd();
+			void OnExecutiveChangeStart() override;
+			void OnExecutiveChangeEnd() override;
 
 			static const char *TYPE_NAME;		
 

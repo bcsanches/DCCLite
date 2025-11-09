@@ -59,10 +59,8 @@ source_group("dcc" FILES ${SRC_DCC})
 
 if(WIN32)
     target_link_libraries(BrokerExecLib        
-        PRIVATE Common
-        PRIVATE fmt
-        PRIVATE spdlog	    
-		PRIVATE SharedLib        
+        PRIVATE Common        
+		PRIVATE SharedLib
 	)
 
 	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)       

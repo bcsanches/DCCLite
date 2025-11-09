@@ -118,9 +118,28 @@ int main(int argc, char **argv)
 	dcclite::ConsoleTryMakeNice();
 
 	dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
-	
 
-	const char *deviceName =  argc > 1 ? argv[1] : nullptr;
+	const char *deviceName = nullptr;
+	for (int i = 1; i < argc; ++i)
+	{
+		if ((strcmp(argv[i], "-h") == 0) || (strcmp(argv[i], "--help") == 0))
+		{
+HELP:
+			printf("Usage: emulator [-h] [--help] [-d <deviceName>]\n");
+
+			return 0;
+		}
+		else if (strcmp(argv[i], "-d") == 0)
+		{
+			if (i + 1 == argc)
+			{
+				goto HELP;
+			}
+
+			deviceName = argv[++i];
+		}
+	}
+	
 	if (!ArduinoLib::Setup("LiteDecoderLib.dll", dcclite::Log::GetDefault(), deviceName) && deviceName)
 	{
 		//If setup returned false, rom failed to load, also if we have a device name, we need to configure it....
@@ -147,7 +166,7 @@ int main(int argc, char **argv)
 
 	dcclite::Log::Info("[main] Setup complete, starting main loop");
 
-	TerminalService terminalService;		
+	//TerminalService terminalService;
 
 	//ArduinoLib::SetSerialInput("/cfg NoName;sv;");	
 

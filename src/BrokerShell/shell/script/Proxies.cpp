@@ -86,18 +86,24 @@ class DecoderProxy
 
 		void OnStateChange(sol::function callBack)
 		{
-			auto it = std::find(m_vStateChangeCallbacks.begin(), m_vStateChangeCallbacks.end(), callBack);
-			if (it != m_vStateChangeCallbacks.end())
-			{
-				dcclite::Log::Warn("[ScriptService] [DecoderProxy::OnStateChange] [{}] Callback already registered", this->GetName());
-
-				return;
-			}
-
-			m_vStateChangeCallbacks.push_back(callBack);
+			this->RegisterCallback(callBack);
 
 			if (!m_slotRemoteDecoderStateSyncConnection.connected())
-				this->RegisterStateSyncCallback();
+			{
+				auto remoteDecoder = this->DynamicDecoderCast<dcclite::broker::exec::dcc::RemoteDecoder>();					
+				m_slotRemoteDecoderStateSyncConnection = remoteDecoder->m_sigRemoteStateSync.connect(&DecoderProxy::OnRemoteDecoderStateSync, this);
+			}				
+		}
+
+		void OnAspectChange(sol::function callBack)
+		{
+			this->RegisterCallback(callBack);
+
+			if (!m_slotRemoteDecoderStateSyncConnection.connected())
+			{
+				auto signal = this->DynamicDecoderCast<dcclite::broker::exec::dcc::SignalDecoder>();
+				m_slotRemoteDecoderStateSyncConnection = signal->m_sigAspectChanged.connect(&DecoderProxy::OnRemoteDecoderStateSync, this);
+			}
 		}
 
 		void SetAspect(dcclite::SignalAspects aspect, std::string requester, std::string reason)
@@ -115,6 +121,19 @@ class DecoderProxy
 		}
 
 	private:
+		void RegisterCallback(sol::function callBack)
+		{
+			auto it = std::find(m_vStateChangeCallbacks.begin(), m_vStateChangeCallbacks.end(), callBack);
+			if (it != m_vStateChangeCallbacks.end())
+			{
+				dcclite::Log::Warn("[ScriptService] [DecoderProxy::OnStateChange] [{}] Callback already registered", this->GetName());
+
+				return;
+			}
+
+			m_vStateChangeCallbacks.push_back(callBack);
+		}
+
 		template <typename T>
 		inline T *DynamicDecoderCast()
 		{
@@ -139,7 +158,7 @@ class DecoderProxy
 			return decoder;
 		}
 
-		void OnRemoteDecoderStateSync(dcclite::broker::exec::dcc::RemoteDecoder &decoder)
+		void OnRemoteDecoderStateSync(dcclite::broker::exec::dcc::Decoder &decoder)
 		{
 			for (auto f : m_vStateChangeCallbacks)
 			{
@@ -152,13 +171,6 @@ class DecoderProxy
 					dcclite::Log::Error("[ScriptService] [DecoderProxy::OnRemoteDecoderStateSync] Call failed with result: {} - {}", magic_enum::enum_name(r.status()), err.what());
 				}
 			}
-		}
-
-		void RegisterStateSyncCallback()
-		{
-			auto remoteDecoder = this->DynamicDecoderCast<dcclite::broker::exec::dcc::RemoteDecoder>();
-
-			m_slotRemoteDecoderStateSyncConnection = remoteDecoder->m_sigRemoteStateSync.connect(&DecoderProxy::OnRemoteDecoderStateSync, this);
 		}
 
 		dcclite::broker::exec::dcc::Decoder &m_rclDecoder;
@@ -278,6 +290,7 @@ namespace dcclite::broker::shell::script::detail
 			"state", sol::property(&DecoderProxy::IsActive),
 			"set_state", &DecoderProxy::SetState,
 			"on_state_change", &DecoderProxy::OnStateChange,
+			"on_aspect_change", &DecoderProxy::OnAspectChange,
 			"set_aspect", &DecoderProxy::SetAspect,
 			"aspect", sol::property(&DecoderProxy::GetAspect)
 		);

@@ -33,7 +33,7 @@
     "frogPin":61,
     "invertedFrog":true,
     "operationTime":1000,
-    "range":20    
+    "range":20
   },
   {
     "name":"STA_T14",
@@ -43,7 +43,8 @@
     "inverted": true,
     "powerPin":59,
     "frogPin":58,    
-    "operationTime":1000
+    "operationTime":1000,
+    "range":30
   },
   {
     "name":"STA_T15",

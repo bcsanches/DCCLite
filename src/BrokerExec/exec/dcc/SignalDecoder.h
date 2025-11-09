@@ -18,10 +18,10 @@
 #include <variant>
 #include <vector>
 
+#include <sigslot/signal.hpp>
+
 #include <dcclite/Clock.h>
 #include <dcclite/Nmra.h>
-
-#include "sigslot/signal.hpp"
 
 #include "sys/Thinker.h"
 
@@ -84,6 +84,8 @@ namespace dcclite::broker::exec::dcc
 			{
 				return m_eCurrentAspect;
 			}
+
+			sigslot::signal<SignalDecoder &> m_sigAspectChanged;
 
 		private:
 			void ForEachHead(const std::vector<RName> &heads, const dcclite::SignalAspects aspect, std::function<bool(OutputDecoder &)> proc) const;

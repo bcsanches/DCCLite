@@ -15,9 +15,14 @@ target_include_directories(Broker
 
 if(WIN32)
     target_link_libraries(Broker   
+		PRIVATE bcrypt.lib
         PRIVATE BrokerSysLib
 		PRIVATE BrokerExecLib
-		PRIVATE BrokerShellLib
+		PRIVATE BrokerShellLib		
+		PRIVATE CityHash
+		PRIVATE Common
+		PRIVATE fmt
+		PRIVATE ldmonitor        
 	)
 
 	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)

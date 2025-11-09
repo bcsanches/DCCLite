@@ -60,9 +60,8 @@ if(WIN32)
 		dcclite/Sha1_win.cpp
 	)
 
-	target_link_libraries(Common PUBLIC 
-		CityHash 
-		SharedLib
+	target_link_libraries(Common
+		PUBLIC spdlog
 	)
 
 else(WIN32)

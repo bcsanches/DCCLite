@@ -16,25 +16,44 @@
 
 namespace dcclite::json
 {
-	bool TryGetDefaultBool(const rapidjson::Value &data, const char *fieldName, const bool defaultValue)
+	const rapidjson::Value *TryGetValue(const rapidjson::Value &data, const char *fieldName)
 	{
 		const auto &field = data.FindMember(fieldName);
+		if (field == data.MemberEnd())
+			return nullptr;
 
-		return ((field == data.MemberEnd()) ? defaultValue : field->value.GetBool());
+		return &field->value;
+	}
+
+	bool TryGetDefaultBool(const rapidjson::Value &data, const char *fieldName, const bool defaultValue)
+	{
+		auto field = TryGetValue(data, fieldName);
+
+		return ((field == nullptr) ? defaultValue : field->GetBool());
+	}
+
+	std::optional<int> TryGetInt(const rapidjson::Value &data, const char *fieldName)
+	{
+		auto field = TryGetValue(data, fieldName);
+
+		if (field)
+			return field->GetInt();
+		else
+			return std::nullopt;		
 	}
 
 	int TryGetDefaultInt(const rapidjson::Value &data, const char *fieldName, const int defaultValue)
 	{
-		const auto &field = data.FindMember(fieldName);
+		auto field = TryGetValue(data, fieldName);
 
-		return ((field == data.MemberEnd()) ? defaultValue : field->value.GetInt());
+		return (field == nullptr) ? defaultValue : field->GetInt();
 	}
 
 	const rapidjson::Value &GetValue(const rapidjson::Value &data, const char *fieldName, const char *context)
 	{
-		const auto &field = data.FindMember(fieldName);
+		auto field = TryGetValue(data, fieldName);
 
-		if (field == data.MemberEnd())
+		if (!field)
 		{
 			if (context)
 				throw std::runtime_error(fmt::format("[dcclite::json::GetMember] Required field {} not found on {}", fieldName, context));
@@ -42,21 +61,31 @@ namespace dcclite::json
 				throw std::runtime_error(fmt::format("[dcclite::json::GetMember] Required field {} not found", fieldName));
 		}
 
-		return field->value;
+		return *field;
+	}
+
+	std::optional<std::string_view> TryGetString(const rapidjson::Value &data, const char *fieldName)
+	{
+		auto field = TryGetValue(data, fieldName);
+		if (!field)
+			return std::nullopt;
+
+		return std::string_view{ field->GetString(), field->GetStringLength() };
 	}
 
 	std::string_view TryGetDefaultString(const rapidjson::Value &data, const char *fieldName, std::string_view defaultValue)
 	{
-		const auto &field = data.FindMember(fieldName);
+		auto str = TryGetString(data, fieldName);		
 
-		return ((field == data.MemberEnd()) ? defaultValue : std::string_view{field->value.GetString(), field->value.GetStringLength()});
+		return str.has_value() ? *str : defaultValue;		
 	}
 
 	std::string_view GetString(const rapidjson::Value &data, const char *fieldName, const char *context)
 	{
-		const auto &field = GetValue(data, fieldName, context);
-		
-		if (!field.IsString())
+		auto str = TryGetString(data, fieldName);
+
+		[[unlikely]]
+		if(!str)		
 		{
 			if (context)
 				throw std::runtime_error(fmt::format("[dcclite::json::GetString] Required field {} on {} must be a string", fieldName, context));
@@ -64,7 +93,7 @@ namespace dcclite::json
 				throw std::runtime_error(fmt::format("[dcclite::json::GetString] Required field {} must be a string", fieldName));
 		}
 
-		return std::string_view{ field.GetString(), field.GetStringLength() };
+		return str.value();
 	}
 
 	int GetInt(const rapidjson::Value &data, const char *fieldName, const char *context)
@@ -81,7 +110,7 @@ namespace dcclite::json
 
 		return field.GetInt();
 
-	}
+	}	
 
 	const rapidjson::Value::ConstArray GetArray(const rapidjson::Value &data, const char *fieldName, const char *context)
 	{

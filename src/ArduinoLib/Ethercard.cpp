@@ -99,13 +99,15 @@ void EtherCard::udpServerListenOnPort(UdpServerCallback callback, uint16_t port)
 	if (g_Socket.IsOpen())
 		throw std::logic_error("EtherCard::udpServerListenOnPort -> Only one port supported, sorry");
 
-	if (!g_Socket.Open(port, dcclite::Socket::Type::DATAGRAM, dcclite::Socket::FLAG_BROADCAST_MODE))
+	//we do not care about ports, so we can rum multiple emulator instances
+	if (!g_Socket.Open(0 /* ignore port number on emulator */, dcclite::Socket::Type::DATAGRAM, dcclite::Socket::FLAG_BROADCAST_MODE))
 		throw std::runtime_error(fmt::format("EtherCard::udpServerListenOnPort: Cannot open datagram socket on port {}", port));
 
-	UdpServerListener listener;
-
-	listener.callback = callback;
-	listener.port = port;
+	UdpServerListener listener =
+	{
+		.callback = callback,
+		.port = port
+	};
 
 	g_vecListeners.push_back(listener);	
 }
@@ -145,7 +147,7 @@ uint16_t EtherCard::packetLoop(uint16_t plen)
 		if (status != dcclite::Socket::Status::OK)
 			break;
 
-#ifdef DROPR
+#ifdef DROP
 		if (ShouldDrop())
 			continue;
 #endif

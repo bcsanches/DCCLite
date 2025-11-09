@@ -35,7 +35,8 @@
 				},
 				{
 					"name": "Helix",
-					"class": "ArduinoMega"
+					"class": "ArduinoMega",
+					"badPin": 45
 				},
 				{
 					"name": "SignalController",
