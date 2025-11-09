@@ -1,6 +1,12 @@
 DCCLite
 -------
 
+- Ethernet issues
+ - auto Reboot
+ - test capacitor
+ - check link status before init
+ - replace library
+
 - Flashing output, how to avoid all messages?
 	- put a flash flag on output
 		- Create a FlashOutput, when on, will turn on the flash flag on output
