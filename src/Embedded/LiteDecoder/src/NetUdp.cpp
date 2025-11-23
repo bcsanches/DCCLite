@@ -117,8 +117,7 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 #else
 		if (ether.begin(BUFFER_SIZE, mac, 10) == 0)
 #endif	
-		{
-			//Console::SendLogEx(MODULE_NAME, F("ether"), '.', F("begin"), ' ', FSTR_NOK);
+		{			
 			DCCLITE_LOG_MODULE_LN(F("ether begin") << FSTR_NOK);
 
 			if(i == 5)
@@ -129,23 +128,19 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 
 		break;
 	}
-
-	//Console::SendLogEx(MODULE_NAME, F("net"), ' ', F("begin"), ' ', FSTR_OK);
+	
 	DCCLITE_LOG_MODULE_LN(F("ether begin ") << FSTR_OK);
 
 #if 1
 	for(int i = 0; !ether.dhcpSetup(g_szNodeName[0] ? g_szNodeName : nullptr, true); ++i)
-	{
-		//Console::SendLogEx(MODULE_NAME, F("dhcp"), ' ', FSTR_NOK," ", g_szNodeName);
-		DCCLITE_LOG << MODULE_NAME << F("dhcp ") << FSTR_NOK << g_szNodeName << DCCLITE_ENDL;
-
-		//return false;
+	{		
+		DCCLITE_LOG_MODULE_LN(F("dhcp NOK") << ' ' << g_szNodeName);
+		
 		if(i == 10)
 			return false;
 	}		
-
-	//Console::SendLogEx(MODULE_NAME, F("dhcp"), ' ', FSTR_OK);
-	DCCLITE_LOG_MODULE_LN(F("dhcp ") << FSTR_OK);	
+	
+	DCCLITE_LOG_MODULE_LN(F("dhcp OK"));	
 #else
 
 	uint8_t ip[] = {192,168,0,180};
@@ -164,14 +159,8 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 	ether.printIp("GW IP: ", ether.gwip);
  	ether.printIp("DNS IP: ", ether.dnsip);
 	ether.printIp("IP:  ", ether.myip);	
-
-	//Console::SendLogEx(MODULE_NAME, FSTR_PORT, ':', ' ', g_iSrcPort);
-	DCCLITE_LOG_MODULE_LN(FSTR_PORT << F(": ") << SRC_PORT);
-	//ether.printIp("DNS: ", ether.dnsip);    
-
-	//ether.parseIp(destip, "192.168.1.101");	
-
-	//Console::SendLogEx(MODULE_NAME, FSTR_SETUP, ' ', FSTR_OK);
+	
+	DCCLITE_LOG_MODULE_LN(FSTR_PORT << F(": ") << SRC_PORT);	
 	DCCLITE_LOG_MODULE_LN(FSTR_OK);	
 
 	ether.udpServerListenOnPort(callback, SRC_PORT);
@@ -198,13 +187,11 @@ bool NetUdp::IsIpCached(const uint8_t *ip)
 void NetUdp::SendPacket(const uint8_t *data, uint8_t length, const uint8_t *destIp, uint16_t destPort)
 {	
 	if((destIp[0] != 255) && (destIp[1] != 255) && (destIp[2] != 255) && (destIp[3] != 255) && ether.clientWaitIp(destIp))	
-	{
-		//Console::SendLogEx(MODULE_NAME, FSTR_ARP, ' ', FSTR_NOK, ' ', Console::IpPrinter(destIp), FSTR_INVALID);
+	{		
 		Console::OutputStream stream;
 
 		DCCLITE_LOG_MODULE_EX(stream) << FSTR_ARP << ' ' << FSTR_NOK << ' ';
-		stream.IpNumber(destIp) << FSTR_INVALID << DCCLITE_ENDL;
-		//DCCLITE_LOG << MODULE_NAME << FSTR_ARP << ' ' << FSTR_NOK << ' ' << Console::IpPrinter(destIp) << FSTR_INVALID << DCCLITE_ENDL;
+		stream.IpNumber(destIp) << FSTR_INVALID << DCCLITE_ENDL;		
 	}
 
 	ether.sendUdp(reinterpret_cast<const char *>(data), length, SRC_PORT, destIp, destPort );   

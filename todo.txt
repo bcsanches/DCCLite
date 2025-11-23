@@ -27,13 +27,6 @@ DCCLite
 	- monitors log
 	- capability to filter log output
 
-- Store time device connected and disconnected
-	- Send this to sharp terminal
-	- session history?
-		- with connects and disconnected
-		- number of packets?
-		- Button on sharp terminal to open session history
-
 - Better emulator:	
 	- Remote connect to emulators
 	- Allow pin states to be set:
@@ -94,6 +87,13 @@ DCCLite
 	- Allows input redirection, ie:
 		- On european engines, sets F1 (sound on / off) to F8 (NMRA default)
 		- call lua scripts on buttons?
+	- ThrottleService
+		- Act as the client to DCCex
+		- Connects to DCCex using native protocol
+		- Create locomotive slots and holds locomotive state
+	- WiThrottleServer
+		- allow mobiles to connect
+		- Talks with ThrottleService
 
 LitePanelSDL
 ------------

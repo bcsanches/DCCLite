@@ -23,6 +23,8 @@ add_library(
         exec/dcc/LocationManager.h
         exec/dcc/NetworkDevice.cpp
         exec/dcc/NetworkDevice.h
+        exec/dcc/NetworkDeviceEventLog.cpp
+        exec/dcc/NetworkDeviceEventLog.h
         exec/dcc/NetworkDeviceTasks.cpp
         exec/dcc/NetworkDeviceTasks.h
         exec/dcc/OutputDecoder.cpp

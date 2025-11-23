@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
+// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
 // file at the top-level directory of this distribution.
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,6 +9,7 @@
 // defined by the Mozilla Public License, v. 2.0.
 
 using System;
+using System.Collections.Generic;
 using System.Json;
 using System.Runtime.Versioning;
 using System.Windows.Forms;
@@ -33,6 +34,14 @@ namespace SharpTerminal
             SpecialName = specialName;
         }
     }
+
+    public class EventLog
+    {
+        public string EventType { get; set; }
+        public DateTime DateTime { get; set; }
+
+        public string Message { get; set; }
+	}
 
 	[SupportedOSPlatform("windows")]
 	public class RemoteNetworkDevice: RemoteFolder
@@ -63,57 +72,104 @@ namespace SharpTerminal
 
         public RemotePin[] Pins;
 
+        public List<EventLog> EventsLog = [];
+
         public RemoteNetworkDevice(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent):
             base(name, className, path, internalId, parent)
         {
-            this.UpdateState(objectDef);
+            this.LoadState(objectDef);
         }
 
-        protected override void OnUpdateState(JsonValue objectDef)
+        private void LoadPinsData(JsonValue pinsData)
+        {			
+			if (Pins == null)
+			{
+				Pins = new RemotePin[pinsData.Count];
+			}
+			else if (Pins.Length < pinsData.Count)
+			{
+				Pins = new RemotePin[pinsData.Count];
+			}
+
+			for (int i = 0; i < pinsData.Count; ++i)
+			{
+				var pinDef = pinsData[i];
+
+				string decoder = null;
+				int? decoderAddress = null;
+				bool? decoderBroken = null;
+				string usage = null;
+
+				if (pinDef.ContainsKey("decoder"))
+				{
+					decoder = pinDef["decoder"];
+					decoderAddress = pinDef["decoderAddress"];
+					usage = pinDef["usage"];
+					decoderBroken = pinDef["decoderBroken"];
+				}
+
+				string specialName = pinDef.ContainsKey("specialName") ? pinDef["specialName"] : null;
+
+				Pins[i] = new RemotePin(decoder, decoderAddress, decoderBroken, usage, specialName);
+			}
+		}
+
+        private void LoadEventsLog(JsonValue eventsLogData)
+        {
+            for (int i = 0; i < eventsLogData.Count; ++i)
+            {
+                var eventDef = eventsLogData[i];
+                string eventType = eventDef["type"];
+                DateTime dateTime = DateTime.Parse(eventDef["time"]);
+
+                //stupid chrono on CPP side uses UTC.... fix it
+                dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc).ToLocalTime();
+
+				string message = eventDef["info"];
+
+                EventsLog.Add(new EventLog()
+                {
+                    EventType = eventType,
+                    DateTime = dateTime,
+                    Message = message
+                });
+            }
+
+            if(eventsLogData.Count > 0)
+            {
+				OnPropertyUpdated(nameof(EventsLog));
+			}
+		}
+
+        private void LoadState(JsonValue objectDef)
+        {
+            //those fields are not expected to change...
+			Registered = (bool)objectDef["registered"];
+			ProtocolVersion = (uint)objectDef["protocolVersion"];
+
+            this.OnUpdateState(objectDef);
+		}
+
+		protected override void OnUpdateState(JsonValue objectDef)
         {
             base.OnUpdateState(objectDef);
 
-            ConnectionStatus = (Status)(int)objectDef["connectionStatus"];
-            FreeRam = (int)objectDef["freeRam"];
-            Registered = (bool)objectDef["registered"];
-            ProtocolVersion = (uint)objectDef["protocolVersion"];
+            if (objectDef.ContainsKey("connectionStatus"))
+				ConnectionStatus = (Status)(int)objectDef["connectionStatus"];
 
-            if (!objectDef.ContainsKey("pins"))
-                return;
+            if(objectDef.ContainsKey("freeRam"))
+				FreeRam = (int)objectDef["freeRam"];            
 
-            var pinsData = objectDef["pins"];            
-
-            if(Pins == null)
+            if (objectDef.ContainsKey("pins"))
             {
-                Pins = new RemotePin[pinsData.Count];
-            }
-            else if(Pins.Length < pinsData.Count)
-            {                
-                Pins = new RemotePin[pinsData.Count];
-            }
+                this.LoadPinsData(objectDef["pins"]);
+			}
 
-            for(int i = 0;i < pinsData.Count; ++i)
+            if(objectDef.ContainsKey("eventsLog"))
             {
-                var pinDef = pinsData[i];
-
-                string decoder = null;
-                int? decoderAddress = null;
-                bool? decoderBroken = null;
-                string usage = null;
-
-                if(pinDef.ContainsKey("decoder"))
-                {
-                    decoder = pinDef["decoder"];
-                    decoderAddress = pinDef["decoderAddress"];
-                    usage = pinDef["usage"];
-                    decoderBroken = pinDef["decoderBroken"];
-                }
-                
-                string specialName = pinDef.ContainsKey("specialName") ? pinDef["specialName"] : null;
-
-                Pins[i] = new RemotePin(decoder, decoderAddress, decoderBroken, usage, specialName);
-            }
-        }
+                this.LoadEventsLog(objectDef["eventsLog"]);
+			}
+		}
 
         public override string TryGetIconName()
         {

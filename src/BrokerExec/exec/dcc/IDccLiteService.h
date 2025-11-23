@@ -17,6 +17,8 @@
 #include <dcclite/Object.h>
 #include <dcclite/RName.h>
 
+#include "sys/Service.h"
+
 namespace dcclite
 {
 	class Guid;
@@ -112,7 +114,7 @@ namespace dcclite::broker::exec::dcc
 
 			virtual void Device_NotifyInternalItemCreated(dcclite::IObject &item) const = 0;
 			virtual void Device_NotifyInternalItemDestroyed(dcclite::IObject &item) const = 0;
-			virtual void Device_NotifyStateChange(NetworkDevice &device) const = 0;
+			virtual void Device_NotifyStateChange(NetworkDevice &device, dcclite::broker::sys::ObjectManagerEvent::SerializeDeltaProc_t proc) const = 0;
 
 			virtual void Device_Block(NetworkDevice &device) = 0;
 	};

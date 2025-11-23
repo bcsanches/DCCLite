@@ -7,6 +7,7 @@
 - QuadInverter Inverted flag
 - TurntableAutoInverter Inverter flag
 - SensorDecoder startDelay timer
+- Broker now stores network devices events log and shares with SharpTerminal
 
 ## LiteDecoder
 
@@ -24,6 +25,7 @@
 - Added Clear Block list on DccLiteService
 - Fixed a bug when some remote objects are removed, main display and tree view continues showing it
 - Added support to types change on QuadInverter, TurntableAutoInverter and SensorDecoder
+- SharpTerminal displays network devices events log
 
 ## SharpEEPromViewer
 
@@ -39,6 +41,7 @@
 - Improved ping and connection management to devices
 - Block list support on DccLiteService
 - Added support to types change on QuadInverter, TurntableAutoInverter and SensorDecoder
+- Storing NetworkDevice network events on a log
 
 ## Emulator
 

@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
+// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
 // file at the top-level directory of this distribution.
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public
@@ -409,9 +409,7 @@ namespace SharpTerminal
 
 					parentFolder.OnChildDestroyed(remoteObject);
 				}
-			}
-
-			
+			}			
 		}
 
 		private static void HandleRpcItemCreated(JsonValue parameters)

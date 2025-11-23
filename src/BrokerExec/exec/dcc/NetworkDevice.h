@@ -25,6 +25,7 @@
 #include "IDccLiteService.h"
 #include "Device.h"
 #include "IDevice.h"
+#include "NetworkDeviceEventLog.h"
 #include "NetworkDeviceTasks.h"
 #include "PinManager.h"
 
@@ -43,7 +44,7 @@ namespace dcclite::broker::exec::dcc
 				OFFLINE,
 				CONNECTING,
 				ONLINE			
-			};		
+			};
 
 		public:
 			NetworkDevice(RName name, sys::Broker &broker, IDccLite_DeviceServices &dccService, const rapidjson::Value &params);
@@ -62,12 +63,18 @@ namespace dcclite::broker::exec::dcc
 				const std::uint16_t			protocolVersion
 			);
 
-			void OnPacket(dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time, const dcclite::MsgTypes msgType, const dcclite::NetworkAddress remoteAddress, const dcclite::Guid remoteConfigToken);		
+			void OnPacket(
+				dcclite::Packet						&packet, 
+				const dcclite::Clock::TimePoint_t	time, 
+				const dcclite::MsgTypes				msgType, 
+				const dcclite::NetworkAddress		remoteAddress, 
+				const dcclite::Guid					remoteConfigToken
+			);
 					
 			[[nodiscard]] inline const dcclite::Guid &GetConfigToken() noexcept
 			{
 				return m_ConfigToken;
-			}				
+			}
 
 			[[nodiscard]] uint8_t FindDecoderIndex(const Decoder &decoder) const override;
 
@@ -194,6 +201,15 @@ namespace dcclite::broker::exec::dcc
 			}
 
 			void Decoder_OnChangeStateRequest(const Decoder &decoder) noexcept override;
+
+			//
+			//
+			//
+			//
+			//
+
+			void SerializeFreeRam(dcclite::JsonOutputStream_t &stream) const;
+			void SerializeConnectionStatus(dcclite::JsonOutputStream_t &stream) const;
 
 		private:						
 			PinManager				m_clPinManager;		
@@ -376,7 +392,9 @@ namespace dcclite::broker::exec::dcc
 			//
 			//
 			//						
-			std::list<std::shared_ptr<detail::NetworkTaskImpl>> m_lstTasks;				
+			std::list<std::shared_ptr<detail::NetworkTaskImpl>> m_lstTasks;
+
+			NetworkDeviceEventLog	m_clEventLog;
 
 			/**
 			Registered is a device that is stored on config.

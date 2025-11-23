@@ -571,6 +571,8 @@ namespace dcclite::broker::exec::dcc
 			{
 				dcclite::Log::Warn("[{}::Device::OnPacket] Connection is stable - got pong", m_rclSelf.GetName());
 				m_fLostPingPacket = false;
+				
+				m_rclSelf.m_clEventLog.PushEvent(NetworkDeviceEventLog::EventType::GOT_PONG, "Connection is stable - got pong");
 			}
 
 			return;
@@ -608,7 +610,12 @@ namespace dcclite::broker::exec::dcc
 			m_rclSelf.m_rclDccService.Device_SendPacket(m_rclSelf.m_RemoteAddress, pkt);
 
 			//let other systems know that our internal state changed...
-			m_rclSelf.m_rclDccService.Device_NotifyStateChange(m_rclSelf);
+			m_rclSelf.m_rclDccService.Device_NotifyStateChange(m_rclSelf, [this](JsonOutputStream_t &stream)
+				{
+					m_rclSelf.SerializeIdentification(stream);
+					m_rclSelf.SerializeFreeRam(stream);
+				}
+			);
 
 			return;
 		}
@@ -691,6 +698,16 @@ namespace dcclite::broker::exec::dcc
 			m_fLostPingPacket = true;
 
 			nextPing /= 2;
+			
+			const auto newEventId = m_rclSelf.m_clEventLog.PushEvent(NetworkDeviceEventLog::EventType::MISSED_PONG, "Missed pong from device");
+
+			m_rclSelf.m_rclDccService.Device_NotifyStateChange(m_rclSelf, [this, newEventId](JsonOutputStream_t &stream)
+				{
+					this->m_rclSelf.SerializeIdentification(stream);
+					
+					this->m_rclSelf.m_clEventLog.SerializeEvent(stream, newEventId);
+				}
+			);
 		}
 		
 		m_clPingThinker.Schedule(time + nextPing);
@@ -736,19 +753,31 @@ namespace dcclite::broker::exec::dcc
 			onlineState->OnChangeStateRequest(decoder);
 	}
 
+	void NetworkDevice::SerializeFreeRam(dcclite::JsonOutputStream_t &stream) const
+	{
+		stream.AddIntValue("freeRam", m_uRemoteFreeRam);
+	}
+
+	void NetworkDevice::SerializeConnectionStatus(dcclite::JsonOutputStream_t &stream) const
+	{
+		stream.AddIntValue("connectionStatus", static_cast<int>(m_kStatus));
+		stream.AddStringValue("sessionToken", dcclite::GuidToString(m_SessionToken));
+		stream.AddStringValue("remoteAddress", m_RemoteAddress.GetIpString());
+	}
+
 	void NetworkDevice::Serialize(dcclite::JsonOutputStream_t &stream) const
 	{
 		Device::Serialize(stream);
 
 		stream.AddBool("registered", m_fRegistered);
 		stream.AddStringValue("configToken", dcclite::GuidToString(m_ConfigToken));
-		stream.AddStringValue("sessionToken", dcclite::GuidToString(m_SessionToken));
-		stream.AddStringValue("remoteAddress", m_RemoteAddress.GetIpString());
-		stream.AddIntValue("connectionStatus", static_cast<int>(m_kStatus));
 		stream.AddIntValue("protocolVersion", m_uProtocolVersion);
-		stream.AddIntValue("freeRam", m_uRemoteFreeRam);
+
+		this->SerializeConnectionStatus(stream);
+		this->SerializeFreeRam(stream);
 
 		m_clPinManager.Serialize(stream);
+		m_clEventLog.Serialize(stream);
 	}
 
 	void NetworkDevice::GoOffline()
@@ -757,6 +786,8 @@ namespace dcclite::broker::exec::dcc
 			return;
 
 		m_kStatus = Status::OFFLINE;
+		
+		const auto newEventPos = m_clEventLog.PushEvent(NetworkDeviceEventLog::EventType::DISCONNECTED, "Device went offline");
 
 		m_rclDccService.Device_UnregisterSession(*this, m_SessionToken);
 		m_SessionToken = dcclite::Guid{};
@@ -767,7 +798,17 @@ namespace dcclite::broker::exec::dcc
 		m_clTimeoutController.Disable();
 
 		dcclite::Log::Warn("[Device::{}] [GoOffline] Is OFFLINE", this->GetName());
-		m_rclDccService.Device_NotifyStateChange(*this);
+
+		//Send state change notification
+		m_rclDccService.Device_NotifyStateChange(*this, 
+			[this, newEventPos](JsonOutputStream_t &stream)
+			{
+				this->SerializeIdentification(stream);
+				this->SerializeConnectionStatus(stream);
+
+				this->m_clEventLog.SerializeEvent(stream, newEventPos);
+			}
+		);
 
 		if (m_fRegistered)
 			return;
@@ -828,7 +869,14 @@ namespace dcclite::broker::exec::dcc
 			this->GotoSyncState();
 		}
 
-		m_rclDccService.Device_NotifyStateChange(*this);
+		m_rclDccService.Device_NotifyStateChange(
+			*this, 
+			[this](dcclite::JsonOutputStream_t &stream)
+			{
+				this->SerializeIdentification(stream);
+				this->SerializeConnectionStatus(stream);
+			}
+		);
 	}
 
 	bool NetworkDevice::CheckSessionConfig(dcclite::Guid remoteConfigToken, dcclite::NetworkAddress remoteAddress)
@@ -917,7 +965,19 @@ namespace dcclite::broker::exec::dcc
 		this->SetState<OnlineState>(time);
 
 		dcclite::Log::Trace("[Device::{}] [GotoOnlineState] Entered", this->GetName());
-		m_rclDccService.Device_NotifyStateChange(*this);
+		
+		const auto newEventPos = m_clEventLog.PushEvent(NetworkDeviceEventLog::EventType::CONNECTED, "Device is online");
+
+		m_rclDccService.Device_NotifyStateChange(
+			*this,
+			[this, newEventPos](dcclite::JsonOutputStream_t &stream)
+			{
+				this->SerializeIdentification(stream);
+				this->SerializeConnectionStatus(stream);
+
+				this->m_clEventLog.SerializeEvent(stream, newEventPos);
+			}
+		);
 	}
 
 	void NetworkDevice::GotoConfigState(const dcclite::Clock::TimePoint_t time)
@@ -1062,7 +1122,6 @@ namespace dcclite::broker::exec::dcc
 	{
 		if (!this->IsConnectionStable())
 			throw std::logic_error(fmt::format("[NetworkDevice::{}] [ResetRemoteDevice] Device is not connected", this->GetName()));
-
 
 		Log::Warn("[NetworkDevice::{}] [ResetRemoteDevice] Sending a RESET_BOARD msg", this->GetName());
 		DevicePacket pkt{ dcclite::MsgTypes::RESET_BOARD, m_SessionToken, m_ConfigToken };

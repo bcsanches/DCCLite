@@ -156,7 +156,7 @@ namespace dcclite::broker::exec::dcc
 
 			void Device_NotifyInternalItemCreated(dcclite::IObject &item) const override;
 			void Device_NotifyInternalItemDestroyed(dcclite::IObject &item) const override;
-			void Device_NotifyStateChange(NetworkDevice &device) const override;
+			void Device_NotifyStateChange(NetworkDevice &device, dcclite::broker::sys::ObjectManagerEvent::SerializeDeltaProc_t proc) const override;
 
 			void Device_Block(NetworkDevice &dev) override;
 

@@ -250,9 +250,9 @@ namespace dcclite::broker::exec::dcc
 		this->NotifyItemDestroyed(item);
 	}
 
-	void DccLiteService::Device_NotifyStateChange(NetworkDevice &device) const
+	void DccLiteService::Device_NotifyStateChange(NetworkDevice &device, dcclite::broker::sys::ObjectManagerEvent::SerializeDeltaProc_t proc) const
 	{
-		this->NotifyItemChanged(device);
+		this->NotifyItemChanged(device, proc);
 	}
 
 	Device *DccLiteService::TryFindDeviceByName(RName name)
