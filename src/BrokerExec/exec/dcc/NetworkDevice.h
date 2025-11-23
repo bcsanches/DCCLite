@@ -53,7 +53,7 @@ namespace dcclite::broker::exec::dcc
 			NetworkDevice(const NetworkDevice &) = delete;
 			NetworkDevice(NetworkDevice &&) = delete;
 
-			~NetworkDevice();			
+			~NetworkDevice() override;			
 
 			void AcceptConnection(
 				dcclite::Clock::TimePoint_t	time, 

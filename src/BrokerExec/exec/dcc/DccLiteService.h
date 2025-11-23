@@ -115,7 +115,7 @@ namespace dcclite::broker::exec::dcc
 
 			void NetworkThreadProc();
 
-			void NetworkThread_OnDiscovery(const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet);
+			void NetworkThread_OnDiscovery(const dcclite::NetworkAddress &senderAddress, const dcclite::Packet &packet);
 			void NetworkThread_OnNetHello(const dcclite::NetworkAddress &senderAddress, dcclite::Packet &packet);
 
 			friend class GenericNetworkEvent;
