@@ -343,19 +343,19 @@ TEST(LiteDecoder, SensorTest_StartDelay)
 
 	dcclite::Packet packet;
 
-	sensor.WriteConfig(packet);
+	sensor.WriteConfig(packet);	
 
 	packet.Reset();
 
 	//read decoder type...
 	packet.Read<uint8_t>();
 
-	SensorDecoder remoteDecoder{ packet };
-
-	ASSERT_FALSE(remoteDecoder.IsActive());
-
 	{
-		MiniDuino board;
+		MiniDuino board;			
+
+		SensorDecoder remoteDecoder{ packet };
+
+		ASSERT_FALSE(remoteDecoder.IsActive());
 
 		board.AddDecoder(remoteDecoder);
 

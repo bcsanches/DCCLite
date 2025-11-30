@@ -75,7 +75,7 @@ namespace ArduinoLib
 					}
 				}
 
-				int digitalRead()
+				int digitalRead() const
 				{
 					return m_eMode == INPUT_PULLUP ? (m_eVoltage == HIGH ? LOW : HIGH) : m_eVoltage;
 				}
@@ -83,6 +83,12 @@ namespace ArduinoLib
 				void setDigitalVoltage(VoltageModes mode)
 				{
 					m_eVoltage = mode;
+				}
+
+				void reset()
+				{
+					m_eMode = INPUT;
+					m_eVoltage = LOW;
 				}
 
 			private:
@@ -117,6 +123,13 @@ namespace ArduinoLib
 		{
 			g_Clock = dcclite::Clock();
 			g_Millis = 0;
+
+			//
+			//Make sure we are on initial state
+			for (auto &it : g_Pins)
+			{
+				it.reset();
+			}
 		}
 
 		void BoardTick()
