@@ -44,20 +44,8 @@ namespace dcclite
 		{			
 			NameIndexType_t m_uIndex = 0;
 
-			inline bool operator ==(const NameIndex &index) const
-			{
-				return (m_uIndex == index.m_uIndex);
-			}
-
-			inline bool operator !=(const NameIndex &index) const
-			{
-				return (m_uIndex != index.m_uIndex);
-			}
-
-			inline bool operator <(const NameIndex &index) const
-			{
-				return (m_uIndex < index.m_uIndex);
-			}
+			constexpr auto operator<=>(const NameIndex &) const noexcept = default;
+			constexpr bool operator==(const NameIndex &other) const noexcept = default;
 
 			explicit operator bool() const
 			{
@@ -111,20 +99,14 @@ namespace dcclite
 			RName &operator=(const RName &rhs) = default;
 			RName &operator=(RName &&rhs) = default;
 
-			inline bool operator==(const RName &rhs) const
+			constexpr auto operator<=>(const RName &rhs) const noexcept
+			{
+				return m_stIndex <=> rhs.m_stIndex;
+			}
+
+			constexpr bool operator==(const RName &rhs) const
 			{
 				return m_stIndex == rhs.m_stIndex;
-			}
-
-			inline bool operator!=(const RName &rhs) const
-			{
-				return m_stIndex != rhs.m_stIndex;
-			}
-
-			//This is not lexicographic, just for comparing indices....
-			inline bool operator<(const RName &rhs) const
-			{
-				return m_stIndex < rhs.m_stIndex;
 			}
 
 			explicit operator bool() const

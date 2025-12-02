@@ -7,6 +7,7 @@ target_include_directories(Broker
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/BrokerLib
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/BrokerShell
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/BrokerSys
+	PRIVATE ${DCCLite_SOURCE_DIR}/src/BrokerTycoon
     PRIVATE ${DCCLite_SOURCE_DIR}/contrib/spdlog/include
     PRIVATE ${DCCLite_SOURCE_DIR}/contrib/fmt/include
 )
@@ -18,7 +19,8 @@ if(WIN32)
 		PRIVATE bcrypt.lib
         PRIVATE BrokerSysLib
 		PRIVATE BrokerExecLib
-		PRIVATE BrokerShellLib		
+		PRIVATE BrokerShellLib
+		PRIVATE BrokerTycoonLib
 		PRIVATE CityHash
 		PRIVATE Common
 		PRIVATE fmt
@@ -36,6 +38,7 @@ else(WIN32)
 		PRIVATE BrokerSysLib
 		PRIVATE BrokerExecLib
 		PRIVATE BrokerShellLib
+		PRIVATE BrokerTycoonLib
 	)
 
 endif(WIN32)

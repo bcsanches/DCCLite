@@ -1,0 +1,50 @@
+{
+	"fastClockRate":4,
+	"cargos":[
+		{
+			"name":"Produtos",
+			"carType":"Fechado"
+		},
+		{
+			"name":"Gado",
+			"carType":"Gaiola"
+		}
+	],
+	"locations":[
+		{
+			"name":"Três Corações",
+			"prefix":"TC",
+			"industries":		
+			[			
+				{
+					"name":"Entreposto SPR",					
+					"spots":"Portão 01",
+					"produces": {
+						"name":"goods",
+						"destination":[
+							"Varginha",
+							"Lavras"
+						],
+						"dailyProduction":1,
+						"maximumStorage":2,
+						"transferTimeHours":4
+					}
+				},
+				{
+					"name":"Carregamento de Gado",
+					"spots":[
+						"Portão 01",
+						"Portão 02"						
+					],
+					"produces":{
+						"name":"livestock",
+						"dailyProduction":1,
+						"maximumStorage":6,
+						"transferTimeHours":2,
+						"destination":"Cruzeiro"								
+					}
+				}
+			]
+		}
+	]
+}

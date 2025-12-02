@@ -1,0 +1,141 @@
+- Tycoon system
+	- generate car requests for industries
+	- store industries:
+		- location
+		- production rate
+	- web server?
+		- allow to check industries status on each location
+		- input car
+
+	- Structure
+		- Tycoon lib
+		- Tycoon service, manages industries
+			- folder for locations
+				LocationFolder
+				- add industry as shortcut for each location, custom folder?
+			- folder for industries
+				industries
+			- folder for cargos
+			- folder for carTypes
+		- Connected to fast clock
+
+
+
+		- Location
+			- Name
+			- Description
+		- Industry
+			- Name
+			- Type?
+			- Accepts
+			- Produces
+			- ConsumeRate (units min?)
+			- ProduceRate
+
+		- Cargo Types
+			- Goods
+			- Livestock
+			- Fruits			
+
+		- Car Types
+			- flat
+			- gondola
+			- boxcar
+			- reefer
+				- mechanical
+				- insulated
+			- tank
+
+			* each car has a cargo type associated with it
+				- multiple cargos?
+
+			ie:
+				Warehouse
+				Consumes: goods
+
+- Sample config
+
+{
+	"cargos":[
+		{
+			"name":"Produtos",
+			"carType":"Fechado"
+		},
+		{
+			"name":"Gado",
+			"carType":"Gaiola"
+		}
+	],
+	"locations":[
+		{
+			"name":"Três Corações",
+			"prefix":"TC",
+			"industries":		
+			[			
+				{
+					"name":"Entreposto SPR",					
+					"spots":"Portão 01",
+					"produces": {
+						"name":"goods",
+						"destination":[
+							"Varginha",
+							"Lavras"
+						]
+						"dailyProduction":1,
+						"maximumStorage":2,
+						"transferTimeHours:4
+					}					
+				},
+				{
+					"name":"Carregamento de Gado",
+					"spots":[
+						"Portão 01",
+						"Portão 02"						
+					],
+					"produces":{
+						"name":"livestock",
+						"dailyProduction":1,
+						"maximumStorage:2,
+						"transferTimeHours":2,
+						"destination":"Cruzeiro"								
+					}
+				}
+			]
+		}
+	]
+}
+
+Use case
+
+1 - Trem chega no pátio
+2 - Usuário solicita ao sistema status das industrias
+3 - Sistema gera um relatorio:
+	- Entreposto SPR:
+		- Requer um vagão fechado
+		- Requer um vagão isotermico
+	- Galpão Fundo:
+		- Requer dois vagões fechados
+	- Linha do gado:
+		- Requer um vagão gaiola baia 1
+		- Requer um vagão gaiola baia 2
+4 - Usuario faz as manobras
+5 - Quando encostar o vagão adequado, registra no sistema:
+	- Entregue vagão gaiola baia 1
+	- Entregue vagão fechado entreposto SPR
+6 - Sistema calcula tempo para fazer a operação
+
+------------
+1 - Chega novo trem
+2 - Usuario solicita status das industrias, sistema:
+	Vagões prontos:
+		Linha do gado:
+			- vagão gaiola baia 1 - destino Cruzeiro
+
+	- Entreposto SPR:
+		- Requer um vagão isotermico
+	- Galpão Fundo:
+		- Requer dois vagões fechados
+	- Linha do gado:
+		- Requer um vagão gaiola baia 2
+
+	

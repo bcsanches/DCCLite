@@ -14,6 +14,11 @@ DCCLite
 			- OutputDecoder - the existing output
 			- FlashOutputDecoder - new decoder with flashing capability
 			- FlashOutputDecoderController - turns on / off the flag on above
+				- When active, sets the flag state on FlashOutputDecoder 
+				- FlashOutputDecoder does not change state, just the flag value
+					- if already active, starts flashing
+					- if inactive, statys inactive
+
 	- Update signals to use it
 
 	- Create a FlashOutput, use same pin and does the flashing logic
@@ -21,11 +26,6 @@ DCCLite
 
 	- FlashOutput will turn on / off the output
 		- more logical, but again, dcclite will go crazy trying to turn it off and not syncing state, will mess up the net protocol
-
-- SharpConsole runs Broker locally directly?
-	- Starts it
-	- monitors log
-	- capability to filter log output
 
 - Better emulator:	
 	- Remote connect to emulators
@@ -37,10 +37,28 @@ DCCLite
 		- digitalWrite will never affetct externalVoltage
 		- SharpTerminal will be able to set this externalVoltage value
 
+	
+- SharpConsole runs Broker locally directly?
+	- Display emulator log first
+	- Starts it
+	- monitors log
+	- capability to filter log output
+
 - SharpTerminal
 	- Dashboard
 		- Display unregistered arduinos
 		- Detect arduino on USB and offer to burn it
+
+- Dispatcher
+	- SectionManager: manages all sections? 
+	- Section: the base with two sensors?
+		- when on sensor gets hit, defines the direction
+	- StorageSection: a block with an entry and exit sensor, no turnouts, simple block for stopping a train
+	- TrackSection: is it necessary? Consider as main line?
+	- Abandon TrackSection on dispatcher
+	- TripleTrackSection: the same as track section, but with two sections and only one active at time
+	- update route section to know next section and avoid re-ocupying the block
+	- it may have a direction set (will be used by signal logic)
 
 - Create SignalInterlock
 	- where it will be stored? SignalLogicManager on BrokerShellLib? Dispatcher?
@@ -69,20 +87,7 @@ DCCLite
 	- ManualSignalController
 		- Accepts user input and set a signal to clear if possible
 
-- Dispatcher
-	- SectionManager: manages all sections? 
-	- Section: the base with two sensors?
-		- when on sensor gets hit, defines the direction		
-	- BlockSection: a block with an entry and exit sensor, no turnouts, simple block for stopping a train
-	- TrackSection: is it necessary? Consider as main line?
-	- Abandon TrackSection on dispatcher
-	- TripleTrackSection: the same as track section, but with two sections and only one active at time
-	- update route section to know next section and avoid re-ocupying the block
-	- it may have a direction set (will be used by signal logic)
-
-- Implement coroutine support on lua scripts?
-
-- Make a EngineDriver Server, redirect to DCCex Directly and goodbye JMRI
+- Make an EngineDriver Server, redirect to DCCex Directly and goodbye JMRI
 	- Reads locomotive data from DecoderPro
 	- Allows input redirection, ie:
 		- On european engines, sets F1 (sound on / off) to F8 (NMRA default)

@@ -135,6 +135,10 @@
 		{
 			"class": "ThrottleService",
 			"name": "throttleService"			
-		}	
+		},
+		{
+			"class":"TycoonService",
+			"name":"tycoon"
+		}
 	]
 }

@@ -30,6 +30,8 @@
 #include "shell/terminal/CmdHostService.h"
 #include "shell/terminal/TerminalService.h"
 
+#include "tycoon/TycoonService.h"
+
 #include "sys/BonjourService.h"
 #include "sys/Broker.h"
 #include "sys/EventHub.h"
@@ -105,6 +107,8 @@ static void InitServicesFactories()
 
 	shell::terminal::CmdHostService::RegisterFactory();
 	shell::terminal::TerminalService::RegisterFactory();
+
+	tycoon::TycoonService::RegisterFactory();
 }
 
 int main(int argc, char **argv)

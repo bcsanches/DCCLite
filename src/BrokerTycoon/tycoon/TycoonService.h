@@ -12,27 +12,16 @@
 
 #include "sys/Service.h"
 
-namespace dcclite::broker::shell::dispatcher
-{ 
-	class DispatcherService: public sys::Service
-	{	
+namespace dcclite::broker::tycoon
+{
+	class TycoonService : public sys::Service
+	{
 		public:
 			static void RegisterFactory();
 
 			static const char *TYPE_NAME;
-		
-			~DispatcherService() override = default;
-			
-			//
-			// Main interface
-			//			
-
-			const char *GetTypeName() const noexcept override
-			{
-				return TYPE_NAME;
-			}
 
 		protected:
-			DispatcherService(RName name, sys::Broker &broker, const rapidjson::Value &params);
-	};	
+			TycoonService(RName name, sys::Broker &broker, const rapidjson::Value &params);		
+	};
 }
