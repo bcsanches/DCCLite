@@ -2,12 +2,40 @@
 	"fastClockRate":4,
 	"cargos":[
 		{
-			"name":"Produtos",
-			"carType":"Fechado"
+			"name":"Produtos"			
 		},
 		{
-			"name":"Gado",
-			"carType":"Gaiola"
+			"name":"Gado"			
+		},
+		{
+			"name":"Conteiner"
+		},
+		{
+			"name":"Bobinas"
+		}
+	],
+	"carTypes":[
+		{
+			"name":"Fechado",
+			"code":"FR",
+			"description":"Vagão Fechado convencional caixa metálica com revestimento",
+			"cargo":"Produtos"
+		},
+		{
+			"name":"Gaiola",
+			"code":"AC",
+			"description":"Vagão gaiola coberta com estrado e estrutura metálica (inclui réguas de madeira)",
+			"cargo":"Gado"
+		},
+		{
+			"name":"Plataforma",
+			"code":"PE",
+			"description":"Vagão plataforma convencional com piso metálico",
+			"cargos":
+			[
+				"Conteiner",
+				"Bobinas"
+			]
 		}
 	],
 	"locations":[
@@ -20,7 +48,7 @@
 					"name":"Entreposto SPR",					
 					"spots":"Portão 01",
 					"produces": {
-						"name":"goods",
+						"cargo":"Produtos",
 						"destination":[
 							"Varginha",
 							"Lavras"
@@ -37,7 +65,7 @@
 						"Portão 02"						
 					],
 					"produces":{
-						"name":"livestock",
+						"cargo":"Gado",
 						"dailyProduction":1,
 						"maximumStorage":6,
 						"transferTimeHours":2,

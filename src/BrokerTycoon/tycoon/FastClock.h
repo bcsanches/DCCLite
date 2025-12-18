@@ -21,6 +21,7 @@ namespace dcclite::broker::tycoon
 	{
 		public:
 			FastClock(RName name, uint8_t rate);
+			FastClock(const FastClock &) = delete;
 
 			virtual const char *GetTypeName() const noexcept override
 			{
@@ -44,6 +45,8 @@ namespace dcclite::broker::tycoon
 
 			void Start();
 			void Stop();
+
+			void SetRate(uint8_t rate);
 
 		private:
 			void OnTick(const dcclite::Clock::TimePoint_t tp);
