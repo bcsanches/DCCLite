@@ -157,16 +157,34 @@ namespace dcclite
 			virtual void Serialize(JsonOutputStream_t &stream) const = 0;
 	};
 
-	class IObject: public IItem
-	{		
+	class INamedItem: public IItem
+	{
 		public:
-			explicit IObject(RName name) :
-				m_rnName{ name }				
+			explicit inline INamedItem(RName name) :
+				m_rnName{ name }
 			{
 				if (!name)
 				{
 					throw std::invalid_argument("RName cannot be null");
 				}
+			}
+
+			inline RName GetName() const noexcept { return m_rnName; }
+			inline std::string_view GetNameData() const noexcept { return m_rnName.GetData(); }
+			
+			void Serialize(JsonOutputStream_t &stream) const override;
+
+		private:
+			RName m_rnName;
+	};
+
+	class IObject: public INamedItem
+	{		
+		public:
+			explicit IObject(RName name) :
+				INamedItem{ name }
+			{
+				//empty
 			}
 
 			virtual ~IObject() = default;
@@ -175,10 +193,7 @@ namespace dcclite
 			IObject(IObject &&rhs) = default;
 
 			inline IObject &operator=(IObject &&) = default;			
-			IObject &operator=(const IObject &) = default;
-
-			inline RName GetName() const noexcept { return m_rnName; }
-			inline std::string_view GetNameData() const noexcept { return m_rnName.GetData(); }
+			IObject &operator=(const IObject &) = default;			
 
 			virtual bool IsShortcut() const noexcept { return false; }
 			virtual bool IsFolder() const noexcept { return false; }
@@ -194,9 +209,7 @@ namespace dcclite
 
 			virtual IFolderObject *GetParent() const noexcept = 0;
 
-		private:
-			RName m_rnName;
-
+		private:			
 			void GetPath_r(Path_t &path) const;		
 	};
 

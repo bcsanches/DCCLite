@@ -95,7 +95,7 @@
 					"produces":{
 						"name":"livestock",
 						"dailyProduction":1,
-						"maximumStorage:2,
+						"maximumStorage:6,
 						"transferTimeHours":2,
 						"destination":"Cruzeiro"								
 					}
@@ -138,4 +138,3 @@ Use case
 	- Linha do gado:
 		- Requer um vagão gaiola baia 2
 
-	

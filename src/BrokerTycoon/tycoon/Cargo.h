@@ -8,20 +8,22 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#pragma once
-
-#include "sys/Service.h"
+#include <dcclite/Object.h>
 
 namespace dcclite::broker::tycoon
 {
-	class TycoonService : public sys::Service
+	class Cargo : public INamedItem
 	{
 		public:
-			static void RegisterFactory();
+			Cargo(RName name) :
+				INamedItem{ name }
+			{
+				//empty
+			}
 
-			static const char *TYPE_NAME;
+			Cargo(Cargo &&rhs) noexcept = default;
+			Cargo &operator=(Cargo &&rhs) noexcept = default;
 
-		protected:
-			TycoonService(RName name, sys::Broker &broker, const rapidjson::Value &params);
+		private:
 	};
 }

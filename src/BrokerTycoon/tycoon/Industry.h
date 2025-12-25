@@ -12,16 +12,7 @@
 
 namespace dcclite::broker::tycoon
 {
-	class Cargo: public IObject
-	{
-		public:
-			Cargo(RName name) :
-				IObject{ name }
-			{
-				//empty
-			}
-		private:
-	};
+	class Cargo;
 
 	class CargoHolder
 	{		

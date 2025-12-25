@@ -6,6 +6,8 @@ file(GLOB_RECURSE SRC_TYCOON
 
 add_library(
     BrokerTycoonLib
+        tycoon/Cargo.cpp
+        tycoon/Cargo.h
         tycoon/FastClock.cpp
         tycoon/FastClock.h
         tycoon/Industry.cpp

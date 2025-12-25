@@ -46,6 +46,12 @@ namespace dcclite
 		return m_strPath.empty() ? false : m_strPath[0] == '/';
 	}
 
+	void INamedItem::Serialize(JsonOutputStream_t &stream) const
+	{
+		stream.AddStringValue("name", this->GetNameData());
+		stream.AddPointerValue("internalId", this);
+	}
+
 	Path_t IObject::GetPath() const
 	{
 		Path_t path;
@@ -84,9 +90,8 @@ namespace dcclite
 	}
 
 	void IObject::SerializeIdentification(JsonOutputStream_t &stream) const
-	{
-		stream.AddStringValue("name", this->GetNameData());
-		stream.AddPointerValue("internalId", this);
+	{			
+		INamedItem::Serialize(stream);
 		stream.AddStringValue("path", this->GetPath().string());
 	}
 

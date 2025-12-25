@@ -39,7 +39,7 @@ namespace dcclite::json
 		if (field)
 			return field->GetInt();
 		else
-			return std::nullopt;		
+			return std::nullopt;
 	}
 
 	int TryGetDefaultInt(const rapidjson::Value &data, const char *fieldName, const int defaultValue)
