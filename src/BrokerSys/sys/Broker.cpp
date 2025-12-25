@@ -11,16 +11,12 @@
 #include "Broker.h"
 
 #include <iostream>
-#include <fstream>
 #include <stdexcept>
 #include <string>
 
 #include <fmt/format.h>
 
 #include <magic_enum/magic_enum.hpp>
-
-#include <rapidjson/document.h>
-#include <rapidjson/istreamwrapper.h>
 
 #include <dcclite_shared/Parser.h>
 
@@ -239,21 +235,14 @@ namespace dcclite::broker::sys
 
 		dcclite::Log::Info("[Broker] [LoadConfig] Trying to open {}", configFileNameStr);
 
-		std::ifstream configFile(configFileName);
+		dcclite::json::FileDocument fileDocument;
 
-		if (!configFile)
+		if (!fileDocument.Load(configFileName))
 		{
-			throw std::runtime_error(fmt::format("[Broker] [LoadConfig] error: cannot open config file {}", configFileNameStr));
+			throw std::runtime_error(fmt::format("[Broker] [LoadConfig] error: cannot open or parse config file {}", configFileNameStr));
 		}
 
-		dcclite::Log::Info("[Broker] [LoadConfig] Opened {}, starting parser", configFileNameStr);
-
-		rapidjson::IStreamWrapper isw(configFile);
-		rapidjson::Document data;
-		if (data.ParseStream(isw).HasParseError())
-		{
-			throw std::runtime_error(fmt::format("[Broker] [LoadConfig] {} is not a valid json", configFileNameStr));
-		}		
+		auto data = fileDocument.GetObject();
 		
 		Project::SetName(dcclite::json::GetString(data, "name", "broker"));
 

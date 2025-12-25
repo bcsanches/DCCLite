@@ -10,9 +10,16 @@
 
 #include "JsonUtils.h"
 
+#include <fstream>
 #include <stdexcept>
 
 #include <fmt/format.h>
+
+#include <rapidjson/istreamwrapper.h>
+
+#include <magic_enum/magic_enum.hpp>
+
+#include "Log.h"
 
 namespace dcclite::json
 {
@@ -126,4 +133,32 @@ namespace dcclite::json
 
 		return field.GetArray();
 	}
+	
+	[[nodiscard]] bool FileDocument::Load(const dcclite::fs::path &path)
+	{
+		std::ifstream configFile(path);
+
+		if (!configFile)
+		{
+			dcclite::Log::Warn("[json::FileDocument::Load] cannot find {}", path.string());
+
+			return false;
+		}
+
+		rapidjson::IStreamWrapper isw(configFile);
+
+		m_docJson.ParseStream(isw);
+		if (m_docJson.HasParseError())
+		{
+			throw std::runtime_error(
+				fmt::format(
+					"[json::FileDocument::Load] error parsing JSON file {}: {}",
+					path.string(),
+					magic_enum::enum_name(m_docJson.GetParseError())
+				)
+			);
+		}
+
+		return true;
+	}	
 }

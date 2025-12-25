@@ -10,10 +10,6 @@
 
 #include "Device.h"
 
-#include <fstream>
-
-#include <rapidjson/istreamwrapper.h>
-
 #include <dcclite/Benchmark.h>
 #include <dcclite/FmtUtils.h>
 #include <dcclite/JsonUtils.h>
@@ -139,13 +135,6 @@ namespace dcclite::broker::exec::dcc
 		BenchmarkLogger benchmark{ "Device::Load", this->GetNameData() };
 
 		dcclite::Log::Info("[Device::{}] [Load] Loading {}", this->GetName(), m_pathConfigFile.string());
-		std::ifstream configFile(m_pathConfigFile);
-		if (!configFile)
-		{
-			dcclite::Log::Error("[Device::{} [Load] cannot find {}", this->GetName(), m_pathConfigFile.string());
-
-			return;
-		}
 
 		auto storedConfigToken = StorageManager::GetFileToken(m_strConfigFileName);
 
@@ -160,11 +149,16 @@ namespace dcclite::broker::exec::dcc
 		dcclite::Log::Trace("[Device::{}] [Load] currently config token {}", this->GetName(), m_ConfigToken);
 		dcclite::Log::Trace("[Device::{}] [Load] reading config {}", this->GetName(), m_pathConfigFile.string());
 
-		rapidjson::IStreamWrapper isw(configFile);
-		rapidjson::Document decodersData;
-		decodersData.ParseStream(isw);
+		json::FileDocument fileDocument;
 
-		if (!decodersData.IsArray())
+		if(!fileDocument.Load(m_pathConfigFile))
+		{
+			dcclite::Log::Error("[Device::{} [Load] cannot open or parse {}", this->GetName(), m_pathConfigFile.string());
+
+			return;
+		}		
+
+		if (!fileDocument.IsArray())
 			throw std::runtime_error(fmt::format("[Device::{}] [Load] error: invalid config, expected decoders array inside Node", this->GetName()));
 
 		//
@@ -180,7 +174,7 @@ namespace dcclite::broker::exec::dcc
 
 		try
 		{
-			for (auto &element : decodersData.GetArray())
+			for (auto &element : fileDocument.GetArray())
 			{
 				auto className = json::GetString(element, "class", "Device");
 

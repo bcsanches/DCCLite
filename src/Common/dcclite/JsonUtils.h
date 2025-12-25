@@ -15,6 +15,8 @@
 #include <optional>
 #include <string_view>
 
+#include "FileSystem.h"
+
 namespace dcclite::json
 {
 	const rapidjson::Value *TryGetValue(const rapidjson::Value &data, const char *fieldName);
@@ -33,4 +35,33 @@ namespace dcclite::json
 	int GetInt(const rapidjson::Value &data, const char *fieldName, const char *context = nullptr);
 	
 	const rapidjson::Value::ConstArray GetArray(const rapidjson::Value &data, const char *fieldName, const char *context = nullptr);
+
+	class FileDocument
+	{
+		public:
+			[[nodiscard]] bool Load(const dcclite::fs::path &path);
+
+			[[nodiscard]] inline bool IsObject() const noexcept
+			{
+				return m_docJson.IsObject();
+			}
+
+			[[nodiscard]] rapidjson::Document::ConstObject GetObject() const noexcept
+			{
+				return m_docJson.GetObject();
+			}
+
+			[[nodiscard]] inline bool IsArray() const noexcept
+			{
+				return m_docJson.IsArray();
+			}
+
+			[[nodiscard]] rapidjson::Document::ConstArray GetArray() const noexcept
+			{
+				return m_docJson.GetArray();
+			}
+
+		private:
+			rapidjson::Document m_docJson;
+	};
 }

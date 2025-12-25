@@ -12,11 +12,6 @@
 
 #include <fstream>
 
-#include <rapidjson/document.h>
-#include <rapidjson/istreamwrapper.h>
-
-#include <magic_enum/magic_enum.hpp>
-
 #include <dcclite/Benchmark.h>
 #include <dcclite/FmtUtils.h>
 #include <dcclite/JsonUtils.h>
@@ -37,57 +32,15 @@ namespace dcclite::broker::tycoon
 			TycoonServiceImpl(RName name, sys::Broker &broker, const rapidjson::Value &params);
 
 		private:
+			void Load(const rapidjson::Value &params);
+
+		private:
 			FastClock			m_clFastClock;
 
 			std::vector<Cargo>	m_vecCargos;
 
 			dcclite::fs::path	m_pathDataFileName;
-	};
-
-	class JsonFileDocument
-	{
-		public:
-			[[nodiscard]] bool Load(const dcclite::fs::path &path)
-			{
-				std::ifstream configFile(path);
-
-				if (!configFile)
-				{
-					dcclite::Log::Warn("[JsonFileDocument::Load] cannot find {}", path.string());
-
-					return false;
-				}
-
-				rapidjson::IStreamWrapper isw(configFile);
-				
-				m_docJson.ParseStream(isw);
-				if(m_docJson.HasParseError())
-				{
-					throw std::runtime_error(
-						fmt::format(
-							"[JsonFileDocument::Load] error parsing JSON file {}: {}", 
-							path.string(), 
-							magic_enum::enum_name(m_docJson.GetParseError())
-						)
-					);
-				}
-
-				return true;
-			}
-
-			[[nodiscard]] inline bool IsObject() const noexcept
-			{
-				return m_docJson.IsObject();
-			}			
-
-			[[nodiscard]] const rapidjson::Value &GetObject() const noexcept
-			{
-				return m_docJson.GetObject();
-			}
-
-		private:			
-			rapidjson::Document m_docJson;
-	};
+	};	
 
 	TycoonServiceImpl::TycoonServiceImpl(RName name, sys::Broker &broker, const rapidjson::Value &params) :
 		TycoonService(name, broker, params),
@@ -97,22 +50,30 @@ namespace dcclite::broker::tycoon
 		BenchmarkLogger benchmark{ "TycoonServiceImpl::TycoonServiceImpl", this->GetNameData() };
 		m_pathDataFileName.concat(".config.json");
 
-		dcclite::Log::Info("[TycoonServiceImpl::{}] [Load] Trying to load {}", this->GetName(), m_pathDataFileName.string());
+		dcclite::Log::Info("[TycoonServiceImpl::{}] [Load] Trying to load {}", this->GetName(), m_pathDataFileName.string());		
 
-		const rapidjson::Value *configData = &params;
-
-		JsonFileDocument fileDocument;
+		dcclite::json::FileDocument fileDocument;
 		if (fileDocument.Load(m_pathDataFileName))
 		{
 			if (!fileDocument.IsObject())
 				throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: invalid config, expected object definition inside config", this->GetName()));
 
 			dcclite::Log::Info("[TycoonServiceImpl::{}] [Load] Loaded {}, using it instead of inline definition", this->GetName(), m_pathDataFileName.string());
-			configData = &fileDocument.GetObject();
-		}			
-		
-		auto clockRate = dcclite::json::TryGetDefaultInt(*configData, "fastClockRate", 4);
-		if(clockRate <= 0)
+			
+			this->Load(fileDocument.GetObject());
+		}
+		else
+		{
+			this->Load(params);
+		}
+				
+		m_clFastClock.Start();
+	}
+
+	void TycoonServiceImpl::Load(const rapidjson::Value &params)
+	{
+		auto clockRate = dcclite::json::TryGetDefaultInt(params, "fastClockRate", 4);
+		if (clockRate <= 0)
 		{
 			throw std::invalid_argument(fmt::format("[TycoonServiceImpl::{}] [Load] fastClockRate must be greater than zero", this->GetName()));
 		}
@@ -124,7 +85,7 @@ namespace dcclite::broker::tycoon
 
 		m_clFastClock.SetRate(clockRate);
 
-		auto cargosArray = dcclite::json::TryGetValue(*configData, "cargos");
+		auto cargosArray = dcclite::json::TryGetValue(params, "cargos");
 		if (cargosArray)
 		{
 			if (!cargosArray->IsArray())
@@ -145,9 +106,9 @@ namespace dcclite::broker::tycoon
 					throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: cargo missing name property", this->GetName()));
 				}
 
-				RName rname{ name.value() };				
+				RName rname{ name.value() };
 				auto it = std::ranges::find_if(m_vecCargos, [rname](const Cargo &c) { return c.GetName() == rname; });
-				if(it != m_vecCargos.end())
+				if (it != m_vecCargos.end())
 				{
 					throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: duplicate cargo name '{}'", this->GetName(), name.value()));
 				}
@@ -155,8 +116,6 @@ namespace dcclite::broker::tycoon
 				m_vecCargos.emplace_back(rname);
 			}
 		}
-
-		m_clFastClock.Start();
 	}
 
 	//
