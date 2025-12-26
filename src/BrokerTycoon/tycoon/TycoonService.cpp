@@ -23,6 +23,7 @@
 #include "FastClock.h"
 
 #include "Cargo.h"
+#include "CarType.h"
 
 namespace dcclite::broker::tycoon
 {
@@ -33,13 +34,20 @@ namespace dcclite::broker::tycoon
 
 		private:
 			void Load(const rapidjson::Value &params);
+			void LoadCargos(const rapidjson::Value &params);
+			void LoadCarTypes(const rapidjson::Value &params);
+
+			const Cargo *TryFindCargoByName(RName name) const noexcept;
+
+			void AddCargoToCarType(CarType &carType, std::string_view cargoName);
 
 		private:
-			FastClock			m_clFastClock;
+			FastClock				m_clFastClock;
 
-			std::vector<Cargo>	m_vecCargos;
+			std::vector<Cargo>		m_vecCargos;
+			std::vector<CarType>	m_vecCarTypes;
 
-			dcclite::fs::path	m_pathDataFileName;
+			dcclite::fs::path		m_pathDataFileName;
 	};	
 
 	TycoonServiceImpl::TycoonServiceImpl(RName name, sys::Broker &broker, const rapidjson::Value &params) :
@@ -70,6 +78,155 @@ namespace dcclite::broker::tycoon
 		m_clFastClock.Start();
 	}
 
+	const Cargo *TycoonServiceImpl::TryFindCargoByName(RName name) const noexcept
+	{
+		auto it = std::ranges::find_if(m_vecCargos, [name](const Cargo &c) { return c.GetName() == name; });
+		if (it != m_vecCargos.end())
+		{
+			return &*it;
+		}
+
+		return nullptr;
+	}
+
+	void TycoonServiceImpl::LoadCargos(const rapidjson::Value &params)
+	{
+		auto cargosArray = dcclite::json::TryGetValue(params, "cargos");
+		if (!cargosArray)
+			return;
+
+		if (!cargosArray->IsArray())
+		{
+			throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: invalid cargos definition, expected array", this->GetName()));
+		}
+
+		for (const auto &cargoValue : cargosArray->GetArray())
+		{
+			if (!cargoValue.IsObject())
+			{
+				throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: invalid cargo definition, expected object", this->GetName()));
+			}
+
+			auto name = dcclite::json::TryGetString(cargoValue, "name");
+			if (!name)
+			{
+				throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: cargo missing name property", this->GetName()));
+			}
+
+			RName rname{ name.value() };
+
+			if(this->TryFindCargoByName(rname))
+			{
+				throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: duplicate cargo name '{}'", this->GetName(), name.value()));
+			}			
+
+			m_vecCargos.emplace_back(rname);
+		}	
+	}
+
+	void TycoonServiceImpl::AddCargoToCarType(CarType &carType, std::string_view cargoName)
+	{		
+		auto rcargoName{ RName::Get(cargoName) };
+		if(!rcargoName)
+		{
+			//if not on rname registry, it is invalid
+			throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [AddCargoToCarType] error: invalid cargo name '{}'", this->GetName(), cargoName));
+		}
+
+		const Cargo *cargo = this->TryFindCargoByName(rcargoName);
+		if (!cargo)
+		{
+			throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [AddCargoToCarType] error: carType '{}' references unknown cargo '{}'", this->GetName(), carType.GetName().GetData(), cargoName));
+		}
+
+		carType.AddCargo(*cargo);
+	}
+
+	void TycoonServiceImpl::LoadCarTypes(const rapidjson::Value &params)
+	{
+		auto carTypesArray = dcclite::json::TryGetValue(params, "carTypes");
+		if (!carTypesArray)
+			return;
+
+		if (!carTypesArray->IsArray())
+		{
+			throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: invalid carTypes definition, expected array", this->GetName()));
+		}
+
+		for (const auto &carTypeValue : carTypesArray->GetArray())
+		{
+			if (!carTypeValue.IsObject())
+			{
+				throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: invalid carType definition, expected object", this->GetName()));
+			}
+
+			auto name = dcclite::json::TryGetString(carTypeValue, "name");
+			if (!name)
+			{
+				throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: carType missing name property", this->GetName()));
+			}
+
+			RName rname{ name.value() };
+			auto it = std::ranges::find_if(m_vecCarTypes, [rname](const CarType &c) { return c.GetName() == rname; });
+			if (it != m_vecCarTypes.end())
+			{
+				throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: duplicate carType name '{}'", this->GetName(), name.value()));
+			}
+
+			auto carType = dcclite::json::TryGetString(carTypeValue, "ABNT");
+			if (!carType)
+			{
+				carType = dcclite::json::TryGetString(carTypeValue, "AAR");
+				if(!carType)
+					throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: carType missing type property, must be ABNT or AAR", this->GetName()));
+			}
+			RName rcarType{ carType.value() };
+
+			std::string description{ dcclite::json::TryGetDefaultString(carTypeValue, "description", "") };
+
+			m_vecCarTypes.emplace_back(rname, rcarType, std::move(description));
+			auto &newCarType = m_vecCarTypes.back();
+			
+			try
+			{
+				if (auto cargoName = dcclite::json::TryGetString(carTypeValue, "cargo"))
+				{
+					this->AddCargoToCarType(newCarType, cargoName.value());
+				}
+
+				auto cargosArray = dcclite::json::TryGetValue(carTypeValue, "cargos");
+				if (cargosArray)
+				{
+					if (!cargosArray->IsArray())
+						throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: invalid cargos definition inside carType '{}', expected array", this->GetName(), name.value()));
+
+					for (const auto &cargoValue : cargosArray->GetArray())
+					{
+						this->AddCargoToCarType(newCarType, cargoValue.GetString());
+					}
+				}
+
+				if (!newCarType.HasAnyCargo())
+				{
+					throw std::invalid_argument(
+						fmt::format(
+							"[TycoonServiceImpl::{}] [Load] error: carType '{}' has no cargos assigned",
+							this->GetName(),
+							newCarType.GetName().GetData()
+						)
+					);
+				}
+			}	
+			catch(...)
+			{
+				//remove the newly created car type on error
+				m_vecCarTypes.pop_back();
+
+				throw;
+			}
+		}
+	}
+
 	void TycoonServiceImpl::Load(const rapidjson::Value &params)
 	{
 		auto clockRate = dcclite::json::TryGetDefaultInt(params, "fastClockRate", 4);
@@ -85,37 +242,8 @@ namespace dcclite::broker::tycoon
 
 		m_clFastClock.SetRate(clockRate);
 
-		auto cargosArray = dcclite::json::TryGetValue(params, "cargos");
-		if (cargosArray)
-		{
-			if (!cargosArray->IsArray())
-			{
-				throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: invalid cargos definition, expected array", this->GetName()));
-			}
-
-			for (const auto &cargoValue : cargosArray->GetArray())
-			{
-				if (!cargoValue.IsObject())
-				{
-					throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: invalid cargo definition, expected object", this->GetName()));
-				}
-
-				auto name = dcclite::json::TryGetString(cargoValue, "name");
-				if (!name)
-				{
-					throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: cargo missing name property", this->GetName()));
-				}
-
-				RName rname{ name.value() };
-				auto it = std::ranges::find_if(m_vecCargos, [rname](const Cargo &c) { return c.GetName() == rname; });
-				if (it != m_vecCargos.end())
-				{
-					throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: duplicate cargo name '{}'", this->GetName(), name.value()));
-				}
-
-				m_vecCargos.emplace_back(rname);
-			}
-		}
+		this->LoadCargos(params);
+		this->LoadCarTypes(params);
 	}
 
 	//

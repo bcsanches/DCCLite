@@ -8,6 +8,8 @@ add_library(
     BrokerTycoonLib
         tycoon/Cargo.cpp
         tycoon/Cargo.h
+        tycoon/CarType.cpp
+        tycoon/CarType.h
         tycoon/FastClock.cpp
         tycoon/FastClock.h
         tycoon/Industry.cpp

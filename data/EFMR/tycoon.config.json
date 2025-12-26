@@ -17,19 +17,19 @@
 	"carTypes":[
 		{
 			"name":"Fechado",
-			"code":"FR",
+			"ABNT":"FR",
 			"description":"Vagão Fechado convencional caixa metálica com revestimento",
 			"cargo":"Produtos"
 		},
 		{
 			"name":"Gaiola",
-			"code":"AC",
+			"ABNT":"AC",
 			"description":"Vagão gaiola coberta com estrado e estrutura metálica (inclui réguas de madeira)",
 			"cargo":"Gado"
 		},
 		{
 			"name":"Plataforma",
-			"code":"PE",
+			"ABNT":"PE",
 			"description":"Vagão plataforma convencional com piso metálico",
 			"cargos":
 			[
@@ -62,7 +62,7 @@
 					"name":"Carregamento de Gado",
 					"spots":[
 						"Portão 01",
-						"Portão 02"						
+						"Portão 02"
 					],
 					"produces":{
 						"cargo":"Gado",
