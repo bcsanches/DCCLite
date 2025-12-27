@@ -22,6 +22,40 @@ using namespace dcclite::broker::tycoon;
 using namespace dcclite::broker::sys;
 using namespace rapidjson;
 
+static std::unique_ptr<TycoonService> LoadTycoon(const char *json)
+{
+	Document d;
+	d.Parse(json);
+	auto obj = d.GetObject();
+
+	TycoonService::RegisterFactory();
+
+	auto ptr = ServiceFactory::TryFindFactory(RName{ "TycoonService" })->Create(
+		RName{ "tycoon" },
+		*static_cast<Broker *>(nullptr),
+		obj
+	);
+
+	return std::unique_ptr<TycoonService>{ static_cast<TycoonService *>(ptr.release()) };
+}
+
+static void CheckLoadException(const char *json, const char *expectedMessage)
+{	
+	try
+	{
+		LoadTycoon(json);
+		
+		FAIL() << "Expected exception!!";
+	}
+	catch (std::exception &ex)
+	{
+		EXPECT_STREQ(
+			ex.what(),
+			expectedMessage
+		);
+	}
+}
+
 TEST(TycoonServiceTest, Basic)
 {
 	const char *json = R"JSON(
@@ -46,43 +80,7 @@ TEST(TycoonServiceTest, Basic)
 		}	
 	)JSON";
 
-	Document d;
-	d.Parse(json);
-
-	auto obj = d.GetObject();
-
-	TycoonService::RegisterFactory();
-
-	ServiceFactory::TryFindFactory(RName{ "TycoonService" })->Create(
-		RName{ "tycoon" },
-		*static_cast<Broker *>(nullptr),
-		obj
-	);
-}
-
-static void CheckLoadException(const char *json, const char *expectedMessage)
-{
-	Document d;
-	d.Parse(json);
-	auto obj = d.GetObject();
-
-	TycoonService::RegisterFactory();
-	try
-	{
-		ServiceFactory::TryFindFactory(RName{ "TycoonService" })->Create(
-			RName{ "tycoon" },
-			*static_cast<Broker *>(nullptr),
-			obj
-		);
-		FAIL() << "Expected exception!!";
-	}
-	catch (std::exception &ex)
-	{
-		EXPECT_STREQ(
-			ex.what(),
-			expectedMessage
-		);
-	}
+	LoadTycoon(json);
 }
 
 TEST(TycoonServiceTest, InvalidClockRate0)
@@ -206,4 +204,348 @@ TEST(TycoonServiceTest, CargoArrayWithDuplicates)
 	)JSON";
 
 	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: duplicate cargo name 'Gado'");
+}
+
+TEST(TycoonServiceTest, CarTypeWithInvalidType)
+{
+	const char *json = R"JSON(
+		{
+			"class":"TycoonService",
+			"name":"tycoon",
+			"fastClockRate":4,
+			"cargos":[
+				{
+					"name":"Produtos"			
+				},
+				{
+					"name":"Gado"			
+				},
+				{
+					"name":"Conteiner"
+				}
+			],
+			"carTypes":"test"
+		}
+	)JSON";
+
+	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: invalid carTypes definition, expected array");
+}
+
+TEST(TycoonServiceTest, CarTypeWithEmptyArray)
+{
+	const char *json = R"JSON(
+		{
+			"class":"TycoonService",
+			"name":"tycoon",
+			"fastClockRate":4,
+			"cargos":[
+				{
+					"name":"Produtos"			
+				},
+				{
+					"name":"Gado"			
+				},
+				{
+					"name":"Conteiner"
+				}
+			],
+			"carTypes":[]
+		}
+	)JSON";
+
+	LoadTycoon(json);	
+}
+
+TEST(TycoonServiceTest, CarTypeWithInvalidCarTypeEntry)
+{
+	const char *json = R"JSON(
+		{
+			"class":"TycoonService",
+			"name":"tycoon",
+			"fastClockRate":4,
+			"cargos":[
+				{
+					"name":"Produtos"			
+				},
+				{
+					"name":"Gado"			
+				},
+				{
+					"name":"Conteiner"
+				}
+			],
+			"carTypes":[
+				{
+					"name":"Fechado",
+					"ABNT":"FR",
+					"description":"Vagão Fechado convencional caixa metálica com revestimento",
+					"cargo":"Produtos"
+				},
+				"invalid entry"
+			]
+		}
+	)JSON";
+
+	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: invalid carType definition, expected object");
+}
+
+TEST(TycoonServiceTest, CarTypeWithoutName)
+{
+	const char *json = R"JSON(
+		{
+			"class":"TycoonService",
+			"name":"tycoon",
+			"fastClockRate":4,
+			"cargos":[
+				{
+					"name":"Produtos"			
+				}
+			],
+			"carTypes":[
+				{
+					"ABNT":"FR",
+					"description":"Vagão Fechado convencional caixa metálica com revestimento",
+					"cargo":"Produtos"
+				}
+			]
+		}
+	)JSON";
+
+	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: carType missing name property");
+}
+
+TEST(TycoonServiceTest, CarTypeDuplicated)
+{
+	const char *json = R"JSON(
+		{
+			"class":"TycoonService",
+			"name":"tycoon",
+			"fastClockRate":4,
+			"cargos":[
+				{
+					"name":"Produtos"			
+				}
+			],
+			"carTypes":[
+				{
+					"name":"Fechado",
+					"ABNT":"FR",
+					"description":"Vagão Fechado convencional caixa metálica com revestimento",
+					"cargo":"Produtos"
+				},
+				{
+					"name":"Fechado",
+					"ABNT":"FR",
+					"description":"Vagão Fechado convencional caixa metálica com revestimento",
+					"cargo":"Produtos"
+				}
+			]
+		}
+	)JSON";
+
+	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: duplicate carType name 'Fechado'");
+}
+
+TEST(TycoonServiceTest, CarTypeWithoutCode1)
+{
+	const char *json = R"JSON(
+		{
+			"class":"TycoonService",
+			"name":"tycoon",
+			"fastClockRate":4,
+			"cargos":[
+				{
+					"name":"Produtos"			
+				}
+			],
+			"carTypes":[
+				{
+					"name":"Fechado",
+					"ABNT_INVALID":"FR",
+					"description":"Vagão Fechado convencional caixa metálica com revestimento",
+					"cargo":"Produtos"
+				}
+			]
+		}
+	)JSON";
+
+	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: carType 'Fechado' missing type property, must be ABNT or AAR");
+}
+
+TEST(TycoonServiceTest, CarTypeWithAAR)
+{
+	const char *json = R"JSON(
+		{
+			"class":"TycoonService",
+			"name":"tycoon",
+			"fastClockRate":4,
+			"cargos":[
+				{
+					"name":"Produtos"			
+				}
+			],
+			"carTypes":[
+				{
+					"name":"Fechado",
+					"AAR":"FR",
+					"cargo":"Produtos"
+				}
+			]
+		}
+	)JSON";
+
+	LoadTycoon(json);
+}
+
+TEST(TycoonServiceTest, CarTypeWithoutCargo1)
+{
+	const char *json = R"JSON(
+		{
+			"class":"TycoonService",
+			"name":"tycoon",
+			"fastClockRate":4,
+			"cargos":[
+				{
+					"name":"Produtos"			
+				}
+			],
+			"carTypes":[
+				{
+					"name":"Fechado",
+					"AAR":"FR"					
+				}
+			]
+		}
+	)JSON";
+
+	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: carType 'Fechado' has no cargos assigned");
+}
+
+TEST(TycoonServiceTest, CarTypeWithoutCargo2)
+{
+	const char *json = R"JSON(
+		{
+			"class":"TycoonService",
+			"name":"tycoon",
+			"fastClockRate":4,
+			"cargos":[
+				{
+					"name":"Produtos"			
+				}
+			],
+			"carTypes":[
+				{
+					"name":"Fechado",
+					"AAR":"FR",
+					"cargos":[]
+				}
+			]
+		}
+	)JSON";
+
+	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: carType 'Fechado' has no cargos assigned");
+}
+
+TEST(TycoonServiceTest, CarTypeWithInvalidCargosData)
+{
+	const char *json = R"JSON(
+		{
+			"class":"TycoonService",
+			"name":"tycoon",
+			"fastClockRate":4,
+			"cargos":[
+				{
+					"name":"Produtos"			
+				}
+			],
+			"carTypes":[
+				{
+					"name":"Fechado",
+					"AAR":"FR",
+					"cargos":"should be an array"			
+				}
+			]
+		}
+	)JSON";
+
+	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: carType 'Fechado' has invalid cargos definition, expected array");
+}
+
+TEST(TycoonServiceTest, CarTypeWithInvalidCargoName1)
+{
+	const char *json = R"JSON(
+		{
+			"class":"TycoonService",
+			"name":"tycoon",
+			"fastClockRate":4,
+			"cargos":[
+				{
+					"name":"Produtos"			
+				}
+			],
+			"carTypes":[
+				{
+					"name":"Fechado",
+					"AAR":"FR",
+					"cargo":"I DO NOT EXIST"
+				}
+			]
+		}
+	)JSON";
+
+	//blow up as RNAME is not registered
+	CheckLoadException(json, "[RName::GetName] Name \"I DO NOT EXIST\" is not registered");
+}
+
+TEST(TycoonServiceTest, CarTypeWithInvalidCargoName2)
+{
+	const char *json = R"JSON(
+		{
+			"class":"TycoonService",
+			"name":"tycoon",
+			"fastClockRate":4,
+			"cargos":[
+				{
+					"name":"Produtos"			
+				}
+			],
+			"carTypes":[
+				{
+					"name":"Fechado",
+					"AAR":"FR",
+					"cargo":"Fechado"
+				}
+			]
+		}
+	)JSON";
+
+	//blow up as RNAME is exists, but no cargo
+	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [AddCargoToCarType] error: carType 'Fechado' references unknown cargo 'Fechado'");
+}
+
+
+TEST(TycoonServiceTest, CarTypeWithDuplicatedCargo)
+{
+	const char *json = R"JSON(
+		{
+			"class":"TycoonService",
+			"name":"tycoon",
+			"fastClockRate":4,
+			"cargos":[
+				{
+					"name":"Produtos"			
+				}
+			],
+			"carTypes":[
+				{
+					"name":"Fechado",
+					"AAR":"FR",
+					"cargos":["Produtos", "Produtos"]
+				}
+			]
+		}
+	)JSON";
+
+	//blow up as RNAME is exists, but no cargo
+	CheckLoadException(json, "[CarType::Fechado] Cargo 'Produtos' is already added to car type");
 }

@@ -127,11 +127,6 @@ namespace dcclite::broker::tycoon
 	void TycoonServiceImpl::AddCargoToCarType(CarType &carType, std::string_view cargoName)
 	{		
 		auto rcargoName{ RName::Get(cargoName) };
-		if(!rcargoName)
-		{
-			//if not on rname registry, it is invalid
-			throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [AddCargoToCarType] error: invalid cargo name '{}'", this->GetName(), cargoName));
-		}
 
 		const Cargo *cargo = this->TryFindCargoByName(rcargoName);
 		if (!cargo)
@@ -178,7 +173,7 @@ namespace dcclite::broker::tycoon
 			{
 				carType = dcclite::json::TryGetString(carTypeValue, "AAR");
 				if(!carType)
-					throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: carType missing type property, must be ABNT or AAR", this->GetName()));
+					throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: carType '{}' missing type property, must be ABNT or AAR", this->GetName(), name.value()));
 			}
 			RName rcarType{ carType.value() };
 
@@ -198,7 +193,7 @@ namespace dcclite::broker::tycoon
 				if (cargosArray)
 				{
 					if (!cargosArray->IsArray())
-						throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: invalid cargos definition inside carType '{}', expected array", this->GetName(), name.value()));
+						throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: carType '{}' has invalid cargos definition, expected array", this->GetName(), name.value()));
 
 					for (const auto &cargoValue : cargosArray->GetArray())
 					{
