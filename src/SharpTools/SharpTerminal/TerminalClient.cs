@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
+// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
 // file at the top-level directory of this distribution.
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,6 +11,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 
 namespace SharpTerminal
@@ -92,8 +93,7 @@ namespace SharpTerminal
 			var token = mCancellationTokenSource.Token;
 
 			var stream = mClient.GetStream();
-			var bytes = new byte[1];
-			var stringBuilder = new System.Text.StringBuilder(128);
+			var memStream = new System.IO.MemoryStream(256);			
 
 			bool lastCharWasCarriageReturn = false;
 
@@ -121,18 +121,16 @@ namespace SharpTerminal
 					break;
 				}
 
-				bytes[0] = (byte)data;
-				var ch = System.Text.Encoding.ASCII.GetChars(bytes);
-				stringBuilder.Append(ch);
+				memStream.WriteByte((byte)data);				
 
-				if (ch[0] == '\r')
+				if (data == '\r')
 					lastCharWasCarriageReturn = true;
-				else if ((ch[0] == '\n') && (lastCharWasCarriageReturn))
+				else if ((data == '\n') && (lastCharWasCarriageReturn))
 				{
 					lastCharWasCarriageReturn = false;
 
-					var msg = stringBuilder.ToString();
-					stringBuilder.Clear();
+					var msg = System.Text.Encoding.UTF8.GetString(memStream.GetBuffer(), 0, (int)memStream.Length);
+					memStream.SetLength(0);
 
 					//empty msg?
 					if (msg == "\r\n")
@@ -188,7 +186,7 @@ namespace SharpTerminal
 					if (!str.EndsWith("\r\n"))
 						str += "\r\n";
 
-					var data = System.Text.Encoding.ASCII.GetBytes(str);
+					var data = System.Text.Encoding.UTF8.GetBytes(str);
 					stream.Write(data, 0, data.Length);
 				}
 			}

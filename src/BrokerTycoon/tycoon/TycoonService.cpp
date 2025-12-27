@@ -24,6 +24,7 @@
 
 #include "Cargo.h"
 #include "CarType.h"
+#include "Location.h"
 
 namespace dcclite::broker::tycoon
 {
@@ -36,6 +37,7 @@ namespace dcclite::broker::tycoon
 			void Load(const rapidjson::Value &params);
 			void LoadCargos(const rapidjson::Value &params);
 			void LoadCarTypes(const rapidjson::Value &params);
+			void LoadLocations(const rapidjson::Value &params);
 
 			const Cargo *TryFindCargoByName(RName name) const noexcept;
 
@@ -48,6 +50,8 @@ namespace dcclite::broker::tycoon
 			std::vector<CarType>	m_vecCarTypes;
 
 			dcclite::fs::path		m_pathDataFileName;
+
+			FolderObject			*m_pLocations;
 	};	
 
 	TycoonServiceImpl::TycoonServiceImpl(RName name, sys::Broker &broker, const rapidjson::Value &params) :
@@ -56,6 +60,9 @@ namespace dcclite::broker::tycoon
 		m_pathDataFileName{ sys::Project::GetFilePath(name.GetData()) }
 	{
 		BenchmarkLogger benchmark{ "TycoonServiceImpl::TycoonServiceImpl", this->GetNameData() };
+
+		m_pLocations = static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{ "locations" })));
+
 		m_pathDataFileName.concat(".config.json");
 
 		dcclite::Log::Info("[TycoonServiceImpl::{}] [Load] Trying to load {}", this->GetName(), m_pathDataFileName.string());		
@@ -222,8 +229,36 @@ namespace dcclite::broker::tycoon
 		}
 	}
 
-	void TycoonServiceImpl::Load(const rapidjson::Value &params)
+	void TycoonServiceImpl::LoadLocations(const rapidjson::Value &params)
 	{
+		auto locationsArray = dcclite::json::TryGetValue(params, "locations");
+		if (!locationsArray)
+			return;				
+
+		if (!locationsArray->IsArray())
+		{
+			throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [LoadLocations] error: invalid locations definition, expected array", this->GetName()));
+		}
+
+		for (const auto &locationValue : locationsArray->GetArray())
+		{
+			if (!locationValue.IsObject())
+			{
+				throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [LoadLocations] error: location invalid definition, expected object", this->GetName()));
+			}
+			
+			auto name = dcclite::json::TryGetString(locationValue, "name");
+			if (!name)
+			{
+				throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [LoadLocations] error: location missing name property", this->GetName()));
+			}
+
+			m_pLocations->AddChild(std::make_unique<Location>(RName{ name.value() }, locationValue));
+		}
+	}
+
+	void TycoonServiceImpl::Load(const rapidjson::Value &params)
+	{		
 		auto clockRate = dcclite::json::TryGetDefaultInt(params, "fastClockRate", 4);
 		if (clockRate <= 0)
 		{
@@ -239,6 +274,7 @@ namespace dcclite::broker::tycoon
 
 		this->LoadCargos(params);
 		this->LoadCarTypes(params);
+		this->LoadLocations(params);
 	}
 
 	//

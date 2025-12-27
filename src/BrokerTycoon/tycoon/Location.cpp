@@ -7,3 +7,15 @@
 // 
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
+
+#include "Location.h"
+
+namespace dcclite::broker::tycoon
+{
+	Location::Location(RName name, const rapidjson::Value &params):
+		FolderObject{name}
+	{
+
+	}
+}
+

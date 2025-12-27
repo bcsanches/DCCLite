@@ -173,7 +173,7 @@ namespace dcclite::broker::exec::dcc
 
 			std::thread		m_clNetworkThread;
 
-			FolderObject *m_pDecoders;			
+			FolderObject *m_pDecoders;
 			FolderObject *m_pDevices;
 			FolderObject *m_pSessions;
 			FolderObject *m_pBlockedDevices = nullptr;

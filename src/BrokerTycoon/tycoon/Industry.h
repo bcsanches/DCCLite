@@ -54,11 +54,11 @@ namespace dcclite::broker::tycoon
 			uint8_t		m_uCurrentQuantity = 0;
 	};
 
-	class Spot: public IObject
+	class Spot: public INamedItem
 	{
 		public:
 			Spot(RName name) :
-				IObject{ name }
+				INamedItem{ name }
 			{
 				//empty
 			}
@@ -67,11 +67,11 @@ namespace dcclite::broker::tycoon
 
 	};
 
-	class Industry : public IFolderObject
+	class Industry : public Object
 	{
 		public:
 			Industry(RName name) :
-				IFolderObject{ name }
+				Object{ name }
 			{
 				//empty
 			}

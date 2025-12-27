@@ -1,3 +1,9 @@
+# Version ???
+
+## SharpTerminal
+
+- Correctly handle UTF8 messages on RPC system
+
 # Version 0.11.0
 
 ## General Features

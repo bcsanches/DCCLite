@@ -46,10 +46,10 @@
 			[			
 				{
 					"name":"Entreposto SPR",					
-					"spots":"Portão 01",
+					"spot":"Portão 01",
 					"produces": {
 						"cargo":"Produtos",
-						"destination":[
+						"destinations":[
 							"Varginha",
 							"Lavras"
 						],
