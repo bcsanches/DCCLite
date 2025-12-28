@@ -29,7 +29,7 @@ namespace SharpTerminal
 			get { return m_strDeviceName; }
 		}
 
-		public Emulator(string deviceName)
+		public Emulator(string deviceName, IntPtr job)
 		{
 			m_strDeviceName = deviceName;
 
@@ -81,6 +81,9 @@ namespace SharpTerminal
 
 			m_Process.Start();
 			m_Process.BeginOutputReadLine(); // start async read of stdout
+
+			//Add to job, so whatever happens to us, the emulator gets killed...
+			JobObject.AddProcess(job, m_Process);
 		}
 
 		private static string FindEmulatorExecutable()
@@ -155,7 +158,8 @@ namespace SharpTerminal
 
 	internal static class EmulatorManager
 	{
-		static readonly Dictionary<string, Emulator> g_mapEmulators = [];
+		static readonly Dictionary<string, Emulator>	g_mapEmulators = [];
+		static IntPtr									g_hJobObject = JobObject.CreateKillOnCloseJob();
 
 		public static void StartEmulator(string deviceName)
 		{
@@ -173,7 +177,7 @@ namespace SharpTerminal
 				g_mapEmulators.Remove(deviceName);
 			}
 
-			var emulator = new Emulator(deviceName);
+			var emulator = new Emulator(deviceName, g_hJobObject);
 			g_mapEmulators[deviceName] = emulator;
 		}
 
