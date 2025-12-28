@@ -47,10 +47,13 @@ add_library(
         shell/terminal/TerminalClient.h
         shell/terminal/TerminalCmd.cpp
         shell/terminal/TerminalCmd.h
+        shell/terminal/TerminalCmdProvider.h
 		shell/terminal/TerminalContext.cpp
 		shell/terminal/TerminalContext.h		
         shell/terminal/TerminalService.cpp
         shell/terminal/TerminalService.h
+        shell/terminal/TerminalServiceCmds.cpp
+        shell/terminal/TerminalServiceCmds.h
 		shell/terminal/TerminalUtils.cpp
         shell/terminal/TerminalUtils.h      
 )

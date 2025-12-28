@@ -13,9 +13,12 @@
 #include <fmt/format.h>
 
 #include <dcclite/FmtUtils.h>
+#include <dcclite/Log.h>
+
+#include "sys/ServiceFactory.h"
 
 #include "TerminalCmd.h"
-#include "sys/ServiceFactory.h"
+#include "TerminalCmdProvider.h"
 
 namespace dcclite::broker::shell::terminal
 {
@@ -52,6 +55,34 @@ namespace dcclite::broker::shell::terminal
 	TerminalCmd *CmdHostService::TryFindCmd(RName name)
 	{
 		return static_cast<TerminalCmd *>(this->TryResolveChild(name));
+	}
+
+
+	void CmdHostService::OnLoadFinished()
+	{
+		dcclite::Log::Trace("[CmdHostService::OnLoadFinished] Registering terminal commands from providers");
+
+		m_rclBroker.VisitServices([this](IObject &svc)
+			{
+				auto *cmdProvider = dynamic_cast<ITerminalCmdProvider *>(&svc);
+
+				if (cmdProvider != nullptr)
+				{
+					dcclite::Log::Trace("[CmdHostService::OnLoadFinished] Registering terminal commands for {}", svc.GetName());
+
+					cmdProvider->ITerminalCmdProvider_RegisterLocalCmds(*this);
+				}
+
+				return true;
+			}
+		);
+
+		dcclite::Log::Trace("[CmdHostService::OnLoadFinished] done - commands registered");
+	}
+
+	void CmdHostService::OnUnload()
+	{
+		//nothing todo
 	}
 
 	void CmdHostService::RegisterFactory()

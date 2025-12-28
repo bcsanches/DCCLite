@@ -248,12 +248,15 @@ namespace dcclite::broker::sys
 
 		const auto &services = dcclite::json::GetArray(data, "services", "broker");		
 
-		dcclite::Log::Info("[Broker] [LoadConfig] Loaded config {}", configFileNameStr);		
+		dcclite::Log::Info("[Broker] [LoadConfig] Loaded config {}", configFileNameStr);
 
 		dcclite::Log::Debug("[Broker] [LoadConfig] Processing config services array entries: {}", services.Size());				
 
 		this->LoadServices(services);
 
+		dcclite::Log::Info("[Broker] [LoadConfig] Config load finished", configFileNameStr);
+
+		dcclite::Log::Info("[Broker] [LoadConfig] Calling services OnLoadFinished", configFileNameStr);
 		this->VisitServices([this](auto &item)
 			{
 				if (auto *s = dynamic_cast<IPostLoadService *>(&item))
@@ -262,6 +265,8 @@ namespace dcclite::broker::sys
 				return true;
 			}
 		);
+
+		dcclite::Log::Info("[Broker] [LoadConfig] OnLoadFinished ok", configFileNameStr);
 	}
 
 	Service &Broker::ResolveRequirement(std::string_view requirement)

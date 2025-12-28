@@ -22,7 +22,7 @@ namespace dcclite::broker::shell::terminal
 		This was created to allow a common cmd repository that any subsystem can access and register its own commands
 
 	*/
-	class CmdHostService: public sys::Service
+	class CmdHostService: public sys::Service, public sys::IPostLoadService
 	{
 		public:
 			static void RegisterFactory();			
@@ -42,5 +42,9 @@ namespace dcclite::broker::shell::terminal
 			{
 				return "TerminalCmdHost";
 			}
+
+			void OnLoadFinished() override;
+
+			void OnUnload() override;
 	};
 }

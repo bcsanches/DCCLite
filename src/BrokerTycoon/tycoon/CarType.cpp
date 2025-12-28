@@ -12,6 +12,8 @@
 
 #include <fmt/format.h>
 
+#include <dcclite/FmtUtils.h>
+
 #include "Cargo.h"
 
 namespace dcclite::broker::tycoon
@@ -23,8 +25,8 @@ namespace dcclite::broker::tycoon
 			throw std::invalid_argument(
 				fmt::format(
 					"[CarType::{}] Cargo '{}' is already added to car type", 
-					this->GetName().GetData(),
-					cargo.GetName().GetData()
+					this->GetName(),
+					cargo.GetName()
 				)
 			);
 		}

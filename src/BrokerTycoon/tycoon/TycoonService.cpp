@@ -138,7 +138,7 @@ namespace dcclite::broker::tycoon
 		const Cargo *cargo = this->TryFindCargoByName(rcargoName);
 		if (!cargo)
 		{
-			throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [AddCargoToCarType] error: carType '{}' references unknown cargo '{}'", this->GetName(), carType.GetName().GetData(), cargoName));
+			throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [AddCargoToCarType] error: carType '{}' references unknown cargo '{}'", this->GetName(), carType.GetName(), cargoName));
 		}
 
 		carType.AddCargo(*cargo);
@@ -214,7 +214,7 @@ namespace dcclite::broker::tycoon
 						fmt::format(
 							"[TycoonServiceImpl::{}] [Load] error: carType '{}' has no cargos assigned",
 							this->GetName(),
-							newCarType.GetName().GetData()
+							newCarType.GetName()
 						)
 					);
 				}

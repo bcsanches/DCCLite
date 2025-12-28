@@ -71,7 +71,7 @@ namespace dcclite::broker::shell::terminal
 
 	typedef int CmdId_t;
 
-	class TerminalContext;
+	class TerminalContext;	
 
 	class TerminalCmdException: public std::exception
 	{

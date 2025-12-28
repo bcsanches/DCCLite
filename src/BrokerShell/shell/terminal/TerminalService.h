@@ -19,6 +19,8 @@
 #include "sys/Service.h"
 #include "sys/EventHub.h"
 
+#include "TerminalCmdProvider.h"
+
 namespace dcclite::broker::shell::terminal
 {
 	class CmdHostService;
@@ -30,7 +32,7 @@ namespace dcclite::broker::shell::terminal
 			virtual void Async_DisconnectClient(TerminalClient &client) = 0;
 	};
 
-	class TerminalService : public sys::Service, sys::EventHub::IEventTarget, ITerminalServiceClientProxy
+	class TerminalService : public sys::Service, public ITerminalCmdProvider, sys::EventHub::IEventTarget, ITerminalServiceClientProxy
 	{
 		private:		
 			dcclite::Socket m_clSocket;
@@ -53,6 +55,9 @@ namespace dcclite::broker::shell::terminal
 			const char *GetTypeName() const noexcept override { return TYPE_NAME; }
 
 			typedef CmdHostService Requirement_t;
+
+		protected:
+			void ITerminalCmdProvider_RegisterLocalCmds(CmdHostService &cmdHostService) override;
 
 		private:
 			void ListenThreadProc(const int port);
