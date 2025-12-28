@@ -14,6 +14,11 @@ namespace SharpTerminal.Forms
 			InitializeComponent();
 		}
 
+		static string GetEmulatorStatusText(Emulator emulator)
+		{
+			return emulator.HasExited ? "Exited" : "Running";
+		}
+
 		protected override void OnLoad(EventArgs e)
 		{
 			base.OnLoad(e);
@@ -23,7 +28,7 @@ namespace SharpTerminal.Forms
 			foreach (var emulator in emulators)
 			{
 				var item = m_lvEmulators.Items.Add(emulator.DeviceName);
-				item.SubItems.Add(emulator.HasExited ? "Exited" : "Running");
+				item.SubItems.Add(GetEmulatorStatusText(emulator));
 
 				item.Tag = emulator;
 
@@ -37,7 +42,7 @@ namespace SharpTerminal.Forms
 			{
 				if (item.Tag == emulator)
 				{
-					item.SubItems[1].Text = emulator.HasExited ? "Exited" : "Running";
+					item.SubItems[1].Text = GetEmulatorStatusText(emulator);
 					break;
 				}
 			}
@@ -140,6 +145,9 @@ namespace SharpTerminal.Forms
 			emulator.Restart();
 
 			this.RefreshEmulatorStatus(emulator);
+
+			//we must force it, because when the emulator starts, the Exited event is not fired (for obvious reasons)
+			m_lvEmulators_SelectedIndexChanged(sender, e);
 		}
 	}
 }

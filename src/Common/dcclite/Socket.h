@@ -12,6 +12,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <tuple>
@@ -193,9 +194,9 @@ namespace dcclite
 			bool StartConnection(const NetworkAddress &server);
 			bool StartConnection(Port_t port, Type type, const NetworkAddress &server);
 
-			Status GetConnectionProgress();
+			Status GetConnectionProgress() const;
 
-			std::tuple<Status, Socket, NetworkAddress> TryAccept();
+			[[nodiscard]] std::tuple<Status, Socket, NetworkAddress> TryAccept();
 
 			void Close();
 
@@ -210,6 +211,8 @@ namespace dcclite
 			bool JoinMulticastGroup(const IpAddress &address);		
 
 			Status WaitData();
+
+			[[nodiscard]] std::optional<Port_t> GetPort() const;
 
 		private:
 			Handler_t m_hHandle;

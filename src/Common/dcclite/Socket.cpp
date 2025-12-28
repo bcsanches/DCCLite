@@ -351,7 +351,7 @@ namespace dcclite
 		return true;
 	}
 
-	Socket::Status Socket::GetConnectionProgress()
+	Socket::Status Socket::GetConnectionProgress() const
 	{		
 		fd_set set;
 
@@ -395,7 +395,7 @@ namespace dcclite
 		return Status::WOULD_BLOCK;
 	}
 
-	std::tuple<Socket::Status, Socket, NetworkAddress> Socket::TryAccept()
+	[[nodiscard]] std::tuple<Socket::Status, Socket, NetworkAddress> Socket::TryAccept()
 	{
 		sockaddr_in addr;
 
@@ -702,4 +702,20 @@ namespace dcclite
 		return Socket::Status::OK;			
 	}
 
+	[[nodiscard]] std::optional<Port_t> Socket::GetPort() const
+	{
+		assert(m_hHandle != NULL_SOCKET);
+
+		sockaddr_in addr;
+		int addrlen = sizeof(addr);
+
+		if (getsockname(m_hHandle, (sockaddr *)&addr, &addrlen) == SOCKET_ERROR)
+		{
+			spdlog::error("[Socket::GetPort] getsockname failed.");
+			
+			return std::nullopt;
+		}
+
+		return ntohs(addr.sin_port);
+	}
 }

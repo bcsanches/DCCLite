@@ -17,6 +17,9 @@ namespace SharpTerminal
 		private StringBuilder m_sbOutput = new ();
 		private int m_iLineCount = 0;
 
+		private bool m_fFoundTerminalPortNumber = false;
+		private UInt16 m_uTerminalPortNumber = 0;
+
 		public delegate void AppendOutputDelegate(object sender, string strLine, int lineCount);
 
 		public AppendOutputDelegate AppendOutput;
@@ -38,7 +41,7 @@ namespace SharpTerminal
 			var psi = new ProcessStartInfo
 			{
 				FileName = FindEmulatorExecutable(),
-				Arguments = "-d " + deviceName,
+				Arguments = "-t -d " + deviceName,
 				UseShellExecute = false,           // required for redirection
 				RedirectStandardOutput = true,     // capture stdout
 				RedirectStandardError = true,      // capture stderr (optional)
@@ -54,6 +57,23 @@ namespace SharpTerminal
 				{
 					m_sbOutput.AppendLine(args.Data);
 					++m_iLineCount;
+
+					if(!m_fFoundTerminalPortNumber)
+					{
+						var strCheck = "Terminal service started on port: ";
+
+						var str = args.Data.Trim();
+						int index = str.LastIndexOf(strCheck);
+						if (index >= 0)
+						{
+							var strPort = str.Substring(strCheck.Length + index);
+							if (UInt16.TryParse(strPort, out var portNumber))
+							{
+								m_uTerminalPortNumber = portNumber;
+								m_fFoundTerminalPortNumber = true;
+							}
+						}
+					}
 
 					AppendOutput?.Invoke(this, args.Data, m_iLineCount);
 				}
@@ -95,6 +115,10 @@ namespace SharpTerminal
 			{
 				throw new InvalidOperationException("Process is running.");
 			}
+
+
+			m_fFoundTerminalPortNumber = false;
+			m_uTerminalPortNumber = 0;
 
 			m_Process.Start();
 		}

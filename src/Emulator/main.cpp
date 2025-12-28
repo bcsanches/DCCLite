@@ -87,11 +87,16 @@ class TerminalService
 
 	public:
 		TerminalService();
+
+		inline std::optional<Port_t> GetPort() const
+		{
+			return m_clSocket.GetPort();
+		}
 };
 
 TerminalService::TerminalService()
 {
-	if (!m_clSocket.Open(5256, Socket::Type::STREAM))
+	if (!m_clSocket.Open(0, Socket::Type::STREAM))
 	{
 		throw std::runtime_error("[TerminalService] Cannot open socket");
 	}
@@ -118,6 +123,8 @@ int main(int argc, char **argv)
 	dcclite::ConsoleTryMakeNice();
 
 	dcclite::ConsoleInstallEventHandler(ConsoleCtrlHandler);
+	
+	std::unique_ptr<TerminalService> terminalService;
 
 	const char *deviceName = nullptr;
 	for (int i = 1; i < argc; ++i)
@@ -125,7 +132,10 @@ int main(int argc, char **argv)
 		if ((strcmp(argv[i], "-h") == 0) || (strcmp(argv[i], "--help") == 0))
 		{
 HELP:
-			printf("Usage: emulator [-h] [--help] [-d <deviceName>]\n");
+			printf("Usage: emulator [-h] [--help] [-t] [-d <deviceName>]\n");
+			printf("\t-h, --help\tShow this help message\n");
+			printf("\t-t\t\tStart terminal service\n");
+			printf("\t-d <deviceName>\tSpecify device name to use\n");
 
 			return 0;
 		}
@@ -137,6 +147,20 @@ HELP:
 			}
 
 			deviceName = argv[++i];
+		}
+		else if(strcmp(argv[i], "-t") == 0)
+		{
+			terminalService = std::make_unique<TerminalService>();
+
+			auto portInfo = terminalService->GetPort();
+			if (!portInfo)
+			{
+				dcclite::Log::Error("[main] Failed to get terminal service port");
+			}
+			else
+			{
+				dcclite::Log::Info("[main] Terminal service started on port: {}", portInfo.value());
+			}			
 		}
 	}
 	
