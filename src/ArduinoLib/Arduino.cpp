@@ -57,9 +57,15 @@ namespace ArduinoLib
 					m_eMode = mode;
 
 					if (mode == INPUT_PULLUP)
+					{
 						m_eVoltage = HIGH;
+						m_fPullUp = true;
+					}
 					else if (mode == INPUT)
+					{
 						m_eVoltage = LOW;
+						m_fPullUp = false;
+					}
 				}
 
 				void digitalWrite(VoltageModes voltage)
@@ -67,17 +73,20 @@ namespace ArduinoLib
 					if (m_eMode != OUTPUT)
 					{
 						//writing HIGH to input pin turn on PULLUP
-						setPinMode(voltage == HIGH ? INPUT_PULLUP : INPUT);
+						m_fPullUp = true;
 					}
 					else
 					{
 						m_eVoltage = voltage;
+
+						if (voltage == HIGH)
+							m_fPullUp = false;
 					}
 				}
 
 				int digitalRead() const
 				{
-					return m_eMode == INPUT_PULLUP ? (m_eVoltage == HIGH ? LOW : HIGH) : m_eVoltage;
+					return m_eVoltage;
 				}
 
 				void setDigitalVoltage(VoltageModes mode)
@@ -94,6 +103,8 @@ namespace ArduinoLib
 			private:
 				PinModes m_eMode;
 				VoltageModes m_eVoltage;
+
+				bool		m_fPullUp = false;
 		};
 
 		static array<ArduinoPin, MAX_PINS> g_Pins;

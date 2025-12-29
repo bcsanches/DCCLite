@@ -1,8 +1,22 @@
-# Version ???
+# Version 0.11.1
+
+## LiteDecoder
+
+- avoid auto reboot when disconnection is intentional
+
+## Emulator
+
+- fix input pin pull up behavior
 
 ## SharpTerminal
 
 - Correctly handle UTF8 messages on RPC system
+- Keep last used tab selected on NetworkDevice user control
+
+## Code
+
+- Improvements to emulator
+- Decoupling Terminal funcionalities for better code reuse on Emulator
 
 # Version 0.11.0
 

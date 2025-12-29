@@ -109,7 +109,7 @@ void TurntableAutoInverterDecoder::TurnOnTrackPower() noexcept
 
 void TurntableAutoInverterDecoder::Init(const dcclite::PinType_t trackPins[4]) noexcept
 {
-	using namespace dcclite;	
+	using namespace dcclite;
 
 	for (int i = 0; i < TURNTABLE_AID_MAX_PINS; ++i)
 	{
@@ -166,7 +166,7 @@ bool TurntableAutoInverterDecoder::Update(const unsigned long ticks) noexcept
 
 		if(!DecoderManager::GetDecoderActiveStatus(m_uSensorBIndex, sensorState))
 			return false;		
-
+		
 		if (!sensorState)
 			return false;
 		
@@ -182,7 +182,7 @@ bool TurntableAutoInverterDecoder::Update(const unsigned long ticks) noexcept
 
 		if(!DecoderManager::GetDecoderActiveStatus(m_uSensorAIndex, sensorState))
 			return false;		
-
+		
 		if (!sensorState)
 			return false;
 

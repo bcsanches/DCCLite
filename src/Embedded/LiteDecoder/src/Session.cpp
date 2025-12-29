@@ -934,6 +934,10 @@ static void ReceiveCallback(
 		//Console::SendLogEx(MODULE_NAME, FSTR_DISCONNECT, ' ', FSTR_OFFLINE);
 		DCCLITE_LOG_MODULE_LN(FSTR_DISCONNECT << ' ' << FSTR_OFFLINE);
 
+		//
+		//no autoreboot if we had a graceful disconnect
+		g_fHasConnection = false;
+
 		GotoOfflineState();		
 		return;
 	}

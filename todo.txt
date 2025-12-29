@@ -4,7 +4,7 @@ DCCLite
 - auto reboot on devices: when receiving a disconnect msg, supress it
 
 Ethernet issues:
-	- change to W550 shield
+	- change to W5500 shield
 
  - Create new library for DccTerminalCmds?
 	- BrokerDccShell ?

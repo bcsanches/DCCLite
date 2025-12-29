@@ -96,6 +96,8 @@ namespace dcclite::broker::shell::terminal
 			bonjourService->Register("terminal", "dcclite", sys::NetworkProtocol::TCP, port, 36);
 
 		sys::ZeroConfSystem::Register(this->GetTypeName(), port);
+
+		RegisterBaseTerminalCmds(cmdHost);
 	}
 
 	TerminalService::~TerminalService()
@@ -111,11 +113,6 @@ namespace dcclite::broker::shell::terminal
 
 		//Cancel any events, because no one will be able to handle those
 		sys::EventHub::CancelEvents(*this);
-	}
-
-	void TerminalService::ITerminalCmdProvider_RegisterLocalCmds(CmdHostService &cmdHostService)
-	{
-		RegisterBaseTerminalCmds(cmdHostService);
 	}
 
 	void TerminalService::OnClientDisconnect(TerminalClient &client)
