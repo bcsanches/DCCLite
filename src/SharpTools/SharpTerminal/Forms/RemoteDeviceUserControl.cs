@@ -21,6 +21,8 @@ namespace SharpTerminal
 	[SupportedOSPlatform("windows")]
 	public partial class RemoteDeviceUserControl : UserControl
 	{
+		static private int g_iLastTabIndex = 0;
+
 		private readonly RemoteNetworkDevice mRemoteDevice;
 		private readonly IConsole mConsole;
 
@@ -67,6 +69,8 @@ namespace SharpTerminal
 			}
 
 			this.RefreshEventsLog();
+
+			m_tabControl.SelectedIndex = g_iLastTabIndex;
 		}
 
 		void RefreshEventsLog()
@@ -88,11 +92,11 @@ namespace SharpTerminal
 				var item = new ListViewItem(log.DateTime.ToString("yyyy-MM-dd HH:mm:ss"));
 				item.SubItems.Add(log.EventType);
 				item.SubItems.Add(log.Message);
-				m_lvEventsLog.Items.Add(item);				
+				m_lvEventsLog.Items.Add(item);
 			}
 
 			m_lvEventsLog.EnsureVisible(m_lvEventsLog.Items.Count - 1);
-			m_lvEventsLog.ResumeLayout();			
+			m_lvEventsLog.ResumeLayout();
 		}
 
 		private void RefreshButtonsState()
@@ -122,7 +126,7 @@ namespace SharpTerminal
 
 		private void RemoteDevice_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			switch(e.PropertyName)
+			switch (e.PropertyName)
 			{
 				case nameof(RemoteNetworkDevice.FreeRam):
 					this.UpdateLabel();
@@ -131,7 +135,7 @@ namespace SharpTerminal
 				case nameof(RemoteNetworkDevice.EventsLog):
 					this.RefreshEventsLog();
 					break;
-			}			
+			}
 		}
 
 		private async void m_btnRename_Click(object sender, EventArgs e)
@@ -234,6 +238,11 @@ namespace SharpTerminal
 			{
 				MessageBox.Show("Error: " + ex.Message, "Operation failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
+		}
+
+		private void tabControl_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			g_iLastTabIndex = m_tabControl.SelectedIndex;
 		}
 	}
 }

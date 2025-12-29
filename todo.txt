@@ -1,10 +1,10 @@
 DCCLite
 -------
 
-- Ethernet issues
- - test capacitor
- - check link status before init
- - replace library
+- auto reboot on devices: when receiving a disconnect msg, supress it
+
+Ethernet issues:
+	- change to W550 shield
 
  - Create new library for DccTerminalCmds?
 	- BrokerDccShell ?

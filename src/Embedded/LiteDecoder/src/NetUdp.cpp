@@ -13,7 +13,11 @@
 #include <dcclite_shared/Misc.h>
 #include <dcclite_shared/Packet.h>
 
+#ifdef NET_W5500
+#error "test"
+#else
 #include "Ethercard.h"
+#endif
 
 #include "Console.h"
 #include "Storage.h"

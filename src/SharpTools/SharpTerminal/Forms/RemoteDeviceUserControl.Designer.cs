@@ -35,11 +35,11 @@ namespace SharpTerminal
 		/// </summary>
 		private void InitializeComponent()
 		{
-			System.Windows.Forms.TabControl tabControl1;
 			System.Windows.Forms.TabPage tabPage1;
 			System.Windows.Forms.ColumnHeader Time;
 			System.Windows.Forms.ColumnHeader Type;
 			System.Windows.Forms.ColumnHeader Info;
+			m_tabControl = new System.Windows.Forms.TabControl();
 			m_gridMain = new System.Windows.Forms.DataGridView();
 			Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -58,28 +58,28 @@ namespace SharpTerminal
 			m_btnReadEEPROM = new System.Windows.Forms.Button();
 			flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
 			m_btnDisconnect = new System.Windows.Forms.Button();
-			tabControl1 = new System.Windows.Forms.TabControl();
 			tabPage1 = new System.Windows.Forms.TabPage();
 			Time = new System.Windows.Forms.ColumnHeader();
 			Type = new System.Windows.Forms.ColumnHeader();
 			Info = new System.Windows.Forms.ColumnHeader();
-			tabControl1.SuspendLayout();
+			m_tabControl.SuspendLayout();
 			tabPage1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)m_gridMain).BeginInit();
 			tabPage2.SuspendLayout();
 			flowLayoutPanel1.SuspendLayout();
 			SuspendLayout();
 			// 
-			// tabControl1
+			// m_tabControl
 			// 
-			tabControl1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			tabControl1.Controls.Add(tabPage1);
-			tabControl1.Controls.Add(tabPage2);
-			tabControl1.Location = new System.Drawing.Point(115, 42);
-			tabControl1.Name = "tabControl1";
-			tabControl1.SelectedIndex = 0;
-			tabControl1.Size = new System.Drawing.Size(511, 352);
-			tabControl1.TabIndex = 11;
+			m_tabControl.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+			m_tabControl.Controls.Add(tabPage1);
+			m_tabControl.Controls.Add(tabPage2);
+			m_tabControl.Location = new System.Drawing.Point(115, 42);
+			m_tabControl.Name = "m_tabControl";
+			m_tabControl.SelectedIndex = 0;
+			m_tabControl.Size = new System.Drawing.Size(511, 352);
+			m_tabControl.TabIndex = 11;
+			m_tabControl.SelectedIndexChanged += tabControl_SelectedIndexChanged;
 			// 
 			// tabPage1
 			// 
@@ -310,13 +310,13 @@ namespace SharpTerminal
 			// 
 			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			Controls.Add(tabControl1);
+			Controls.Add(m_tabControl);
 			Controls.Add(flowLayoutPanel1);
 			Controls.Add(m_lbTitle);
 			Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			Name = "RemoteDeviceUserControl";
 			Size = new System.Drawing.Size(629, 397);
-			tabControl1.ResumeLayout(false);
+			m_tabControl.ResumeLayout(false);
 			tabPage1.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)m_gridMain).EndInit();
 			tabPage2.ResumeLayout(false);
@@ -348,5 +348,6 @@ namespace SharpTerminal
 		private System.Windows.Forms.ColumnHeader Time;
 		private System.Windows.Forms.ColumnHeader Type;
 		private System.Windows.Forms.ColumnHeader Info;
+		private System.Windows.Forms.TabControl m_tabControl;
 	}
 }
