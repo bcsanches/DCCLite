@@ -40,7 +40,7 @@ namespace dcclite::broker::shell::terminal
 
 			const char *GetTypeName() const noexcept override
 			{
-				return "TerminalCmdHost";
+				return "CmdHostService";
 			}
 
 			void OnLoadFinished() override;

@@ -25,6 +25,7 @@
 #include <dcclite/Log.h>
 #include <dcclite/Util.h>
 
+#include "InitService.h"
 #include "Project.h"
 #include "ServiceFactory.h"
 #include "ZeroConfSystem.h"
@@ -148,6 +149,22 @@ namespace dcclite::broker::sys
 
 		//Start after load, so project name is already loaded
 		ZeroConfSystem::Start(Project::GetName());
+
+		//
+		//clean up init services that are not needed anymore
+		this->KillerVisitChildren([this](auto &svc)
+			{
+				auto initService = dynamic_cast<InitService *>(&svc);
+				if (initService)
+				{
+					dcclite::Log::Info("[Broker] Removing init service {}", initService->GetName());
+					
+					return true;
+				}
+
+				return false;
+			}
+		);
 	}
 
 	void Broker::SignalExecutiveChangeStart()

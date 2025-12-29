@@ -139,6 +139,11 @@
 		{
 			"class":"TycoonService",
 			"name":"tycoon"
+		},
+		{
+			"class":"DccTerminalCmdsInitService",
+			"name":"dccTerminalCmdsInit",
+			"comment":"Make DCC Terminal commands available on terminal"
 		}
 	]
 }

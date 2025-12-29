@@ -10,10 +10,12 @@ add_library(
 		sys/BonjourService.h        
 		sys/Broker.cpp        
 		sys/Broker.h
-		sys/FileWatcher.cpp
-		sys/FileWatcher.h
 		sys/EventHub.cpp
 		sys/EventHub.h
+		sys/FileWatcher.cpp
+		sys/FileWatcher.h
+		sys/InitService.cpp
+		sys/InitService.h			
 		sys/Project.cpp
 		sys/Project.h
 		sys/Service.cpp

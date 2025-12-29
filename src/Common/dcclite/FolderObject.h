@@ -33,6 +33,8 @@ namespace dcclite
 
 			void ConstVisitChildren(ConstVisitor_t visitor) const override;
 			void VisitChildren(Visitor_t visitor) override;
+
+			void KillerVisitChildren(Visitor_t visitor);
 			
 			const char *GetTypeName() const noexcept override
 			{

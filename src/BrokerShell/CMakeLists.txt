@@ -35,6 +35,8 @@ add_library(
 	    shell/script/ScriptService.h
 		shell/terminal/CmdHostService.cpp
 		shell/terminal/CmdHostService.h
+        shell/terminal/DccTerminalCmds.cpp
+        shell/terminal/DccTerminalCmds.h
         shell/terminal/DeviceClearEEPromCmd.cpp
         shell/terminal/DeviceClearEEPromCmd.h
         shell/terminal/DeviceNetworkTestCmds.cpp

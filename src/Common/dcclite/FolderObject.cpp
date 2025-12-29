@@ -85,4 +85,13 @@ namespace dcclite
 				break;
 		}
 	}
+
+	void FolderObject::KillerVisitChildren(Visitor_t visitor)
+	{
+		std::erase_if(m_mapObjects, [&visitor](auto &pair)
+			{
+				return visitor(*pair.second.get());
+			}
+		);
+	}
 }

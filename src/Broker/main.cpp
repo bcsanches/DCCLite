@@ -28,6 +28,7 @@
 #include "shell/ln/ThrottleService.h"
 
 #include "shell/terminal/CmdHostService.h"
+#include "shell/terminal/DccTerminalCmds.h"
 #include "shell/terminal/TerminalService.h"
 
 #include "tycoon/TycoonService.h"
@@ -107,6 +108,8 @@ static void InitServicesFactories()
 
 	shell::terminal::CmdHostService::RegisterFactory();
 	shell::terminal::TerminalService::RegisterFactory();
+
+	shell::terminal::DccTerminalCmdsInitService::RegisterFactory();
 
 	tycoon::TycoonService::RegisterFactory();
 }
