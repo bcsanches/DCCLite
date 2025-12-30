@@ -14,7 +14,8 @@
 #include <dcclite_shared/Packet.h>
 
 #ifdef NET_W5500
-#error "test"
+#include <Ethernet.h>
+#include <EthernetUdp.h>
 #else
 #include "Ethercard.h"
 #endif
@@ -25,13 +26,32 @@
 
 #include <avr/boot.h>
 
+#define BUFFER_SIZE (256+96)
+
+#ifdef NET_W5500
+
+static EthernetUDP g_Udp;
+static NetUdp::ReceiveCallback_t g_pfnCallback = nullptr;
+
+static uint8_t g_u8Buffer[BUFFER_SIZE];
+
+#define IP_LEN 4
+
+static void printIp (const __FlashStringHelper *ifsh, const IPAddress &ip) 
+{
+    Serial.print(ifsh);
+    Serial.println(ip);    
+}
+
+#else
+
 #define ARP_PATCH 1
+
+#endif
 
 #define MODULE_NAME F("NetUdp")
 
-#define BUFFER_SIZE (256+96)
-
-#ifndef BCS_ARDUINO_EMULATOR
+#if (!defined BCS_ARDUINO_EMULATOR) && (!defined NET_W5500)
 uint8_t Ethernet::buffer[BUFFER_SIZE];
 #endif
 
@@ -112,15 +132,54 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 		stream << DCCLITE_ENDL;
 	}	
 
+#ifdef NET_W5500
 	for(int i = 1;; ++i)
 	{
 		DCCLITE_LOG_MODULE_LN(F("ether begin try ") << i);
 
-#ifdef ARDUINO_AVR_MEGA2560	
-		if (ether.begin(BUFFER_SIZE, mac, 53) == 0)
+		#ifdef ARDUINO_AVR_MEGA2560	
+			Ethernet.init(53); // CS pin
+		#else
+			Ethernet.init(10); // CS pin
+		#endif	
+
+		if (!Ethernet.begin(mac))
+		{			
+			DCCLITE_LOG_MODULE_LN(F("Ethernet begin") << FSTR_NOK);
+
+			if(i == 5)
+				return false;
+
+			continue;
+		}
+		break;
+	}
+
+	DCCLITE_LOG_MODULE_LN(F("ether begin ") << FSTR_OK);
+	DCCLITE_LOG_MODULE_LN(F("dhcp OK"));
+
+	g_pfnCallback = callback;
+
+	printIp(F("mask : "), Ethernet.subnetMask());
+	printIp(F("GW IP: "), Ethernet.gatewayIP());
+	printIp(F("DNS IP: "), Ethernet.dnsServerIP());
+	printIp(F("IP:  "), Ethernet.localIP());
+
+	DCCLITE_LOG_MODULE_LN(FSTR_PORT << F(": ") << SRC_PORT);	
+	DCCLITE_LOG_MODULE_LN(FSTR_OK);	
+
+	g_Udp.begin(SRC_PORT);
+
 #else
+	for(int i = 1;; ++i)
+	{
+		DCCLITE_LOG_MODULE_LN(F("ether begin try ") << i);
+
+	#ifdef ARDUINO_AVR_MEGA2560	
+		if (ether.begin(BUFFER_SIZE, mac, 53) == 0)
+	#else
 		if (ether.begin(BUFFER_SIZE, mac, 10) == 0)
-#endif	
+	#endif	
 		{			
 			DCCLITE_LOG_MODULE_LN(F("ether begin") << FSTR_NOK);
 
@@ -132,42 +191,44 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 
 		break;
 	}
-	
+
 	DCCLITE_LOG_MODULE_LN(F("ether begin ") << FSTR_OK);
 
-#if 1
-	for(int i = 0; !ether.dhcpSetup(g_szNodeName[0] ? g_szNodeName : nullptr, true); ++i)
-	{		
-		DCCLITE_LOG_MODULE_LN(F("dhcp NOK") << ' ' << g_szNodeName);
+	#if 1
+		for(int i = 0; !ether.dhcpSetup(g_szNodeName[0] ? g_szNodeName : nullptr, true); ++i)
+		{		
+			DCCLITE_LOG_MODULE_LN(F("dhcp NOK") << ' ' << g_szNodeName);
+			
+			if(i == 10)
+				return false;
+		}		
 		
-		if(i == 10)
-			return false;
-	}		
-	
-	DCCLITE_LOG_MODULE_LN(F("dhcp OK"));	
-#else
+		DCCLITE_LOG_MODULE_LN(F("dhcp OK"));
+	#else
 
-	uint8_t ip[] = {192,168,0,180};
-	uint8_t gw[] = {192,168,0,1};
-	uint8_t dns[] = {0,0,0,0};
-	uint8_t mask[] = {255, 255, 255, 0};
-	if(!ether.staticSetup(ip, gw, dns, mask))
-	{
-		Serial.println("static setup failed");
-	}  
-	Serial.println("static setup ok");
-#endif
+		uint8_t ip[] = {192,168,0,180};
+		uint8_t gw[] = {192,168,0,1};
+		uint8_t dns[] = {0,0,0,0};
+		uint8_t mask[] = {255, 255, 255, 0};
+		if(!ether.staticSetup(ip, gw, dns, mask))
+		{
+			Serial.println("static setup failed");
+		}  
+		Serial.println("static setup ok");
 
+	#endif
 
-	ether.printIp("mask : ", ether.netmask);
-	ether.printIp("GW IP: ", ether.gwip);
- 	ether.printIp("DNS IP: ", ether.dnsip);
-	ether.printIp("IP:  ", ether.myip);	
-	
+	ether.printIp(F("mask : "), ether.netmask);
+	ether.printIp(F("GW IP: "), ether.gwip);
+ 	ether.printIp(F("DNS IP: "), ether.dnsip);
+	ether.printIp(F("IP:  "), ether.myip);
+
+	ether.udpServerListenOnPort(callback, SRC_PORT);
+
 	DCCLITE_LOG_MODULE_LN(FSTR_PORT << F(": ") << SRC_PORT);	
 	DCCLITE_LOG_MODULE_LN(FSTR_OK);	
 
-	ether.udpServerListenOnPort(callback, SRC_PORT);
+#endif		
 
 	return true;
 }
@@ -189,7 +250,14 @@ bool NetUdp::IsIpCached(const uint8_t *ip)
 }
 
 void NetUdp::SendPacket(const uint8_t *data, uint8_t length, const uint8_t *destIp, uint16_t destPort)
-{	
+{		
+#ifdef NET_W5500
+
+	g_Udp.beginPacket(IPAddress(destIp[0], destIp[1], destIp[2], destIp[3]), destPort);
+	g_Udp.write(data, length);
+	g_Udp.endPacket();	
+
+#else
 	if((destIp[0] != 255) && (destIp[1] != 255) && (destIp[2] != 255) && (destIp[3] != 255) && ether.clientWaitIp(destIp))	
 	{		
 		Console::OutputStream stream;
@@ -199,25 +267,44 @@ void NetUdp::SendPacket(const uint8_t *data, uint8_t length, const uint8_t *dest
 	}
 
 	ether.sendUdp(reinterpret_cast<const char *>(data), length, SRC_PORT, destIp, destPort );   
+#endif
 }
 
 void NetUdp::Update()
 {
+#ifdef NET_W5500
+	Ethernet.maintain();
+
+	auto packetSize = g_Udp.parsePacket();
+	if(!packetSize)
+		return;
+
+	g_Udp.read(g_u8Buffer, sizeof(g_u8Buffer));
+
+	uint8_t rawIp[IP_LEN];
+	IPAddress remoteIp = g_Udp.remoteIP();
+	rawIp[0] = remoteIp[0];
+	rawIp[1] = remoteIp[1];
+	rawIp[2] = remoteIp[2];
+	rawIp[3] = remoteIp[3];
+
+	g_pfnCallback(
+		g_Udp.localPort(),
+		rawIp,
+		g_Udp.remotePort(),		
+		g_u8Buffer,
+		packetSize
+	);
+
+#else
 	ether.packetLoop(ether.packetReceive());
+#endif
 }
 
 //const char STATUS_STR[] = {"Name: %s, Mac: %X-%X-%X-%X-%X-%X, Port: %d"}; 
 
 void NetUdp::LogStatus()
 {
-#if 0
-	Console::SendLogEx(MODULE_NAME, FSTR_NAME, ':', ' ', 
-		g_szNodeName, ' ',
-		Console::Hex(g_u8Mac[0]), '-', Console::Hex(g_u8Mac[1]), '-', Console::Hex(g_u8Mac[2]), '-', Console::Hex(g_u8Mac[3]), '-', Console::Hex(g_u8Mac[4]), '-', Console::Hex(g_u8Mac[5]), ',', ' ',
-		FSTR_PORT, ':', ' ', g_iSrcPort
-	);
-
-#else
 	Console::OutputStream output;
 
 	DCCLITE_LOG_MODULE_EX(output) << FSTR_NAME << ": " << g_szNodeName << ' ';
@@ -233,7 +320,6 @@ void NetUdp::LogStatus()
 	}
 
 	output << ' ' << FSTR_PORT << F(": ") << SRC_PORT << DCCLITE_ENDL;
-#endif
 }
 
 const char *NetUdp::GetNodeName() noexcept

@@ -16,6 +16,8 @@
 
 #define IP_LEN 4
 
+class __FlashStringHelper;
+
 class ARDUINO_API Ethernet
 {
 	public:
@@ -55,6 +57,7 @@ class ARDUINO_API EtherCard : public Ethernet
 
 		static void printIp(const uint8_t *buf);
 		static void printIp(const char* msg, const uint8_t *buf);
+		static void printIp(const __FlashStringHelper *msg, const uint8_t *buf);
 
 		static void clientResolveIp(const uint8_t *ip);
 		static bool clientWaitIp(const uint8_t *ip);

@@ -49,6 +49,13 @@ uint16_t Ethernet::packetReceive()
 	return 0;
 }
 
+void EtherCard::printIp(const __FlashStringHelper *msg, const uint8_t *buf)
+{
+	Serial.print(msg);
+	EtherCard::printIp(buf);
+	Serial.println("");
+}
+
 //direct from: https://github.com/njh/EtherCard/blob/master/src/webutil.cpp
 void EtherCard::printIp(const char* msg, const uint8_t *buf) 
 {

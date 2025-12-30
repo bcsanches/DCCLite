@@ -635,7 +635,7 @@ namespace dcclite::broker::exec::dcc
 			{
 				dcclite::Log::Warn("[DccLiteService] [NetworkThreadProc::Update] Invalid packet id");
 
-				return;
+				continue;
 			}
 
 			auto msgType = static_cast<dcclite::MsgTypes>(pkt.Read<uint8_t>());
