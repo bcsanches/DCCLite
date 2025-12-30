@@ -46,6 +46,10 @@ void Console::Init()
     Serial.print(ARDUINO_TYPE);
     Serial.print(F(" / "));    
     Serial.print(F(DCCLITE_VERSION));
+#ifdef NET_W5500
+    Serial.print(F(" / "));
+    Serial.print(F("W5500"));
+#endif
     Serial.print(F(" / "));
     Serial.print(__DATE__);
     Serial.print(" ");

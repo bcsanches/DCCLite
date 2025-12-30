@@ -3,6 +3,7 @@
 ## LiteDecoder
 
 - avoid auto reboot when disconnection is intentional
+- support to W5500 shield
 
 ## Emulator
 
