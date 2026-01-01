@@ -10,18 +10,50 @@
 
 #pragma once
 
-#include "sys/Service.h"
+#include <dcclite/FileSystem.h>
+
+#include <sys/Service.h>
+
+#include "FastClock.h"
 
 namespace dcclite::broker::tycoon
 {
+	class Cargo;
+	class CarType;
+
 	class TycoonService : public sys::Service
 	{
 		public:
 			static void RegisterFactory();
 
 			static const char *TYPE_NAME;
-
-		protected:
+	
 			TycoonService(RName name, sys::Broker &broker, const rapidjson::Value &params);
+
+			const Cargo *TryFindCargoByName(RName name) const noexcept;
+			const Cargo &FindCargoByName(RName name) const;
+
+			const FastClock &GetFastClock() const noexcept
+			{
+				return m_clFastClock;
+			}
+
+		private:	
+			void Load(const rapidjson::Value &params);
+			void LoadCargos(const rapidjson::Value &params);
+			void LoadCarTypes(const rapidjson::Value &params);
+			void LoadLocations(const rapidjson::Value &params);			
+
+			void AddCargoToCarType(CarType &carType, std::string_view cargoName);
+
+		private:
+			FastClock				m_clFastClock;
+
+			std::vector<Cargo>		m_vecCargos;
+			std::vector<CarType>	m_vecCarTypes;
+
+			dcclite::fs::path		m_pathDataFileName;
+
+			FolderObject			*m_pLocations;
 	};
 }

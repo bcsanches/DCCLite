@@ -12,6 +12,12 @@
 		},
 		{
 			"name":"Bobinas"
+		},
+		{
+			"name":"Carne"
+		},
+		{
+			"name":"Grãos"
 		}
 	],
 	"carTypes":[
@@ -36,6 +42,36 @@
 				"Conteiner",
 				"Bobinas"
 			]
+		},
+		{
+			"name":"Hopper Fechado Convencional",
+			"ABNT":"HF",
+			"description":"Vagão Hopper fechado convencional",
+			"cargo":"Grãos"
+		},
+		{
+			"name":"Hopper Fechado com proteção anti-corrosiva",
+			"ABNT":"HP",
+			"description":"Vagão Hopper fechado  com proteção anti-corrosiva",
+			"cargo":"Grãos"
+		},
+		{
+			"name":"Isotérmico convencional",
+			"ABNT":"IC",
+			"description":"Vagão Isotérmico convencional",
+			"cargo":"Carne"
+		},
+		{
+			"name":"Isotérmico frigorífico",
+			"ABNT":"IF",
+			"description":"Vagão Isotérmico frigorífico",
+			"cargo":"Carne"
+		},
+		{
+			"name":"Isotérmico - Outros tipos",
+			"ABNT":"IQ",
+			"description":"Vagão Isotérmico - outros tipos",
+			"cargo":"Carne"
 		}
 	],
 	"locations":[
@@ -47,15 +83,24 @@
 				{
 					"name":"Entreposto SPR",					
 					"spot":"Portão 01",
-					"produces": {
+					"produce": {
 						"cargo":"Produtos",
 						"destinations":[
 							"Varginha",
-							"Lavras"
+							"Lavras",
+							"Barra do Piraí",
+							"Sapucaí"
 						],
 						"dailyProduction":1,
 						"maximumStorage":2,
 						"transferTimeHours":4
+					},
+					"consumes":{
+						"cargo":"Carne",
+						"dailyConsumption":1,
+						"maximumStorage":1,
+						"transferTimeHours":4,
+						"source":"Cruzeiro"
 					}
 				},
 				{
@@ -64,7 +109,7 @@
 						"Portão 01",
 						"Portão 02"
 					],
-					"produces":{
+					"produce":{
 						"cargo":"Gado",
 						"dailyProduction":1,
 						"maximumStorage":6,

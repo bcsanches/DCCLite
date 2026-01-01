@@ -10,48 +10,56 @@
 
 #include <dcclite/IFolderObject.h>
 
+#include <rapidjson/document.h>
+
+#include "FastClock.h"
+
 namespace dcclite::broker::tycoon
 {
 	class Cargo;
+	class TycoonService;
 
 	class CargoHolder
 	{		
 		public:
+			CargoHolder(TycoonService &tycoon, const rapidjson::Value &params);			
+
+			void Consume(const FastClock &fastClock);
+
+			void Update(const FastClock &fastClock);
+
+		private:
 			CargoHolder(const Cargo &cargo, float dailyRate, uint8_t maxQuantity) :
 				m_rclCargo{ cargo },
 				m_fDailyRate{ dailyRate },
-				m_uMaxQuantity{ maxQuantity }
-				
+				m_uMaxQuantity{ maxQuantity },
+				m_fProducing{ true }
 			{
-				if(dailyRate <= 0.0f)
+				if (dailyRate <= 0.0f)
 				{
 					throw std::invalid_argument("[CargoHolder::CargoHolder] dailyRate must be greater than zero");
 				}
 
-				if(maxQuantity == 0)
+				if (maxQuantity == 0)
 				{
 					throw std::invalid_argument("[CargoHolder::CargoHolder] maxQuantity must be greater than zero");
 				}
 			}
 
-			void Consume()
-			{
-				if(m_uCurrentQuantity == 0)
-				{
-					throw std::runtime_error("[CargoHolder::Consume] No cargo available to consume");
-				}
-
-				--m_uCurrentQuantity;
-
-				//FIXME: start production if not producing...
-			}
+			void ScheduleProduction(const FastClock &fastClock);
 			
 		private:
+			std::vector<std::string> m_vecDestinations;
+
+			FastClock::time_point m_tNextProduction;
+
 			const Cargo &m_rclCargo;
 			float		m_fDailyRate;
 			uint8_t		m_uMaxQuantity;
 
 			uint8_t		m_uCurrentQuantity = 0;
+
+			bool		m_fProducing = false;
 	};
 
 	class Spot: public INamedItem
@@ -70,10 +78,18 @@ namespace dcclite::broker::tycoon
 	class Industry : public Object
 	{
 		public:
-			Industry(RName name) :
-				Object{ name }
+			static const char *TYPE_NAME;
+
+			Industry(RName name, TycoonService &tycoon, const rapidjson::Value &params);
+
+			const char *GetTypeName() const noexcept override
 			{
-				//empty
+				return TYPE_NAME;
 			}
+
+			~Industry() override = default;
+
+		private:
+			CargoHolder m_clCargoHolder;
 	};
 }

@@ -117,7 +117,25 @@ namespace dcclite::json
 
 		return field.GetInt();
 
-	}	
+	}
+
+	float GetFloat(const rapidjson::Value &data, const char *fieldName, const char *context)
+	{
+		const auto &field = GetValue(data, fieldName, context);
+
+		if (field.IsInt())
+			return static_cast<float>(field.GetInt());
+
+		if (!field.IsFloat())
+		{
+			if (context)
+				throw std::runtime_error(fmt::format("[dcclite::json::GetString] Required field {} on {} must be a float", fieldName, context));
+			else
+				throw std::runtime_error(fmt::format("[dcclite::json::GetString] Required field {} must be a float", fieldName));
+		}
+
+		return field.GetFloat();
+	}
 
 	const rapidjson::Value::ConstArray GetArray(const rapidjson::Value &data, const char *fieldName, const char *context)
 	{

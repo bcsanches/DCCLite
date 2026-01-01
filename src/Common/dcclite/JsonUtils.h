@@ -33,6 +33,7 @@ namespace dcclite::json
 	std::optional<std::string_view> TryGetString(const rapidjson::Value &data, const char* fieldName);	
 
 	int GetInt(const rapidjson::Value &data, const char *fieldName, const char *context = nullptr);
+	float GetFloat(const rapidjson::Value &data, const char *fieldName, const char *context = nullptr);
 	
 	const rapidjson::Value::ConstArray GetArray(const rapidjson::Value &data, const char *fieldName, const char *context = nullptr);
 

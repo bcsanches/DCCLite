@@ -20,42 +20,14 @@
 #include "sys/Project.h"
 #include "sys/ServiceFactory.h"
 
-#include "FastClock.h"
-
 #include "Cargo.h"
 #include "CarType.h"
 #include "Location.h"
 
 namespace dcclite::broker::tycoon
 {
-	class TycoonServiceImpl : public TycoonService
-	{
-		public:
-			TycoonServiceImpl(RName name, sys::Broker &broker, const rapidjson::Value &params);
-
-		private:
-			void Load(const rapidjson::Value &params);
-			void LoadCargos(const rapidjson::Value &params);
-			void LoadCarTypes(const rapidjson::Value &params);
-			void LoadLocations(const rapidjson::Value &params);
-
-			const Cargo *TryFindCargoByName(RName name) const noexcept;
-
-			void AddCargoToCarType(CarType &carType, std::string_view cargoName);
-
-		private:
-			FastClock				m_clFastClock;
-
-			std::vector<Cargo>		m_vecCargos;
-			std::vector<CarType>	m_vecCarTypes;
-
-			dcclite::fs::path		m_pathDataFileName;
-
-			FolderObject			*m_pLocations;
-	};	
-
-	TycoonServiceImpl::TycoonServiceImpl(RName name, sys::Broker &broker, const rapidjson::Value &params) :
-		TycoonService(name, broker, params),
+	TycoonService::TycoonService(RName name, sys::Broker &broker, const rapidjson::Value &params) :
+		Service(name, broker, params),
 		m_clFastClock{ RName{"FastClock"}, 1 },
 		m_pathDataFileName{ sys::Project::GetFilePath(name.GetData()) }
 	{
@@ -85,7 +57,7 @@ namespace dcclite::broker::tycoon
 		m_clFastClock.Start();
 	}
 
-	const Cargo *TycoonServiceImpl::TryFindCargoByName(RName name) const noexcept
+	const Cargo *TycoonService::TryFindCargoByName(RName name) const noexcept
 	{
 		auto it = std::ranges::find_if(m_vecCargos, [name](const Cargo &c) { return c.GetName() == name; });
 		if (it != m_vecCargos.end())
@@ -96,7 +68,24 @@ namespace dcclite::broker::tycoon
 		return nullptr;
 	}
 
-	void TycoonServiceImpl::LoadCargos(const rapidjson::Value &params)
+	const Cargo &TycoonService::FindCargoByName(RName name) const
+	{
+		auto cargo = this->TryFindCargoByName(name);
+		if (!cargo)
+		{
+			throw std::invalid_argument(
+				fmt::format(
+					"[TycoonServiceImpl::{}] [FindCargoByName] error: unknown cargo name '{}'",
+					this->GetName(),
+					name
+				)
+			);
+		}
+
+		return *cargo;
+	}
+
+	void TycoonService::LoadCargos(const rapidjson::Value &params)
 	{
 		auto cargosArray = dcclite::json::TryGetValue(params, "cargos");
 		if (!cargosArray)
@@ -131,7 +120,7 @@ namespace dcclite::broker::tycoon
 		}	
 	}
 
-	void TycoonServiceImpl::AddCargoToCarType(CarType &carType, std::string_view cargoName)
+	void TycoonService::AddCargoToCarType(CarType &carType, std::string_view cargoName)
 	{		
 		auto rcargoName{ RName::Get(cargoName) };
 
@@ -144,7 +133,7 @@ namespace dcclite::broker::tycoon
 		carType.AddCargo(*cargo);
 	}
 
-	void TycoonServiceImpl::LoadCarTypes(const rapidjson::Value &params)
+	void TycoonService::LoadCarTypes(const rapidjson::Value &params)
 	{
 		auto carTypesArray = dcclite::json::TryGetValue(params, "carTypes");
 		if (!carTypesArray)
@@ -229,11 +218,11 @@ namespace dcclite::broker::tycoon
 		}
 	}
 
-	void TycoonServiceImpl::LoadLocations(const rapidjson::Value &params)
+	void TycoonService::LoadLocations(const rapidjson::Value &params)
 	{
 		auto locationsArray = dcclite::json::TryGetValue(params, "locations");
 		if (!locationsArray)
-			return;				
+			return;
 
 		if (!locationsArray->IsArray())
 		{
@@ -253,11 +242,11 @@ namespace dcclite::broker::tycoon
 				throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [LoadLocations] error: location missing name property", this->GetName()));
 			}
 
-			m_pLocations->AddChild(std::make_unique<Location>(RName{ name.value() }, locationValue));
+			m_pLocations->AddChild(std::make_unique<Location>(RName{ name.value() }, *this, locationValue));
 		}
 	}
 
-	void TycoonServiceImpl::Load(const rapidjson::Value &params)
+	void TycoonService::Load(const rapidjson::Value &params)
 	{		
 		auto clockRate = dcclite::json::TryGetDefaultInt(params, "fastClockRate", 4);
 		if (clockRate <= 0)
@@ -290,11 +279,5 @@ namespace dcclite::broker::tycoon
 		//empty
 	}
 
-	TycoonService::TycoonService(RName name, sys::Broker &broker, const rapidjson::Value &params) :
-		Service(name, broker, params)		
-	{
-		//empty
-	}
-
-	static sys::GenericServiceFactory<TycoonServiceImpl> g_ServiceFactory;
+	static sys::GenericServiceFactory<TycoonService> g_ServiceFactory;
 }
