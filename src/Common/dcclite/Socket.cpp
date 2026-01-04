@@ -707,9 +707,9 @@ namespace dcclite
 		assert(m_hHandle != NULL_SOCKET);
 
 		sockaddr_in addr;
-		int addrlen = sizeof(addr);
+		socklen_t addrlen = sizeof(addr);
 
-		if (getsockname(m_hHandle, (sockaddr *)&addr, &addrlen) == SOCKET_ERROR)
+		if (getsockname(m_hHandle, (sockaddr *)&addr, &addrlen))
 		{
 			spdlog::error("[Socket::GetPort] getsockname failed.");
 			
