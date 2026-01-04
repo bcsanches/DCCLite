@@ -16,110 +16,7 @@
 
 namespace Console
 {
-	typedef __FlashStringHelper ConsoleFlashStringHelper_t;
-
-	class EndLineMarkerTag
-	{
-
-	};
-
-	class OutputStream
-	{
-		public:
-			OutputStream() = default;
-
-			OutputStream &operator<<(const char *str)
-			{
-				Serial.print(str);
-
-				return *this;
-			}		
-
-			OutputStream &operator<<(const ConsoleFlashStringHelper_t *fstr)
-			{
-				Serial.print(fstr);
-
-				return *this;
-			}
-
-			OutputStream &operator<<(dcclite::StringView sv)
-			{
-				for (size_t i = 0, sz = sv.GetSize(); i < sz; ++i)
-					Serial.print(sv[i]);
-
-				return *this;
-			}
-
-			OutputStream &operator<<(char value)
-			{
-				Serial.print(value);
-
-				return *this;
-			}
-
-			OutputStream &operator<<(unsigned char value)
-			{
-				Serial.print(value);
-
-				return *this;
-			}
-
-			OutputStream &operator<<(int value)
-			{
-				Serial.print(value);
-
-				return *this;
-			}
-
-			OutputStream &operator<<(unsigned int value)
-			{
-				Serial.print(value);
-
-				return *this;
-			}
-
-			OutputStream &operator<<(unsigned long int value)
-			{
-				Serial.print(value);
-
-				return *this;
-			}
-			
-			OutputStream &HexNumber(int value)
-			{
-				Serial.print(value, HEX);
-
-				return *this;
-			}
-
-			OutputStream &HexNumber(unsigned int value)
-			{
-				Serial.print(value, HEX);
-
-				return *this;
-			}
-
-			OutputStream &HexNumber(unsigned long int value)			
-			{
-				Serial.print(value, HEX);
-
-				return *this;
-			}			
-
-			OutputStream &operator<<(const EndLineMarkerTag &tag)
-			{
-				Serial.println();
-
-				return *this;
-			}
-
-			OutputStream &IpNumber(const unsigned char src_ip[4])
-			{
-				*this << src_ip[0] << '.' << src_ip[1] << '.' << src_ip[2] << '.' << src_ip[3];
-
-				return *this;
-			}
-	};	
+	typedef __FlashStringHelper ConsoleFlashStringHelper_t;	
 
 	extern void Printf(const ConsoleFlashStringHelper_t *format, ...);
 	
@@ -129,23 +26,5 @@ namespace Console
 
 	extern bool Custom_ParseCommand(dcclite::StringView command);
 };
-
-#define DCCLITE_LOG Console::OutputStream{}
-
-#define DCCLITE_ENDL Console::EndLineMarkerTag{}
-
-//#define DCCLITE_LOG_MODULE_EX(MC_stream) MC_stream << '[' << MODULE_NAME << F("] ")
-
-//#define DCCLITE_LOG_MODULE_EX(MC_stream) MC_stream << MODULE_NAME << ']' << ' '
-
-#define DCCLITE_LOG_MODULE_EX(MC_stream) MC_stream << '[' << MODULE_NAME << ']'
-
-//#define DCCLITE_LOG_MODULE_EX(MC_stream) MC_stream << MODULE_NAME
-
-#define DCCLITE_LOG_MODULE_LN_EX(MC_stream, x) DCCLITE_LOG_MODULE_EX(MC_stream) << x << DCCLITE_ENDL
-
-#define DCCLITE_LOG_MODULE_LN(x) DCCLITE_LOG_MODULE_LN_EX(Console::OutputStream{} , x)
-
-
 
 #endif

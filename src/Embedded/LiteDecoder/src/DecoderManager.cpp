@@ -56,7 +56,8 @@ static Decoder *Create(const dcclite::DecoderTypes type, dcclite::Packet &packet
 
 		default:
 			//Console::SendLogEx(MODULE_NAME, FSTR_INVALID_DECODER_TYPE, static_cast<int>(type));
-			DCCLITE_LOG_MODULE_LN(FSTR_INVALID_DECODER_TYPE << ' ' << static_cast<int>(type));
+			//DCCLITE_LOG_MODULE_LN(FSTR_INVALID_DECODER_TYPE << ' ' << static_cast<int>(type));
+			Console::Printf(F("[%z] %z %d\n"), MODULE_NAME, FSTR_INVALID_DECODER_TYPE, static_cast<int>(type));
 
 			return nullptr;
 	}
@@ -67,7 +68,8 @@ Decoder *DecoderManager::Create(const uint8_t slot, dcclite::Packet &packet)
 	if (slot >= MAX_DECODERS)
 	{
 		//Console::SendLogEx(MODULE_NAME, FSTR_SLOT_OUT_OF_RANGE, ' ', slot);
-		DCCLITE_LOG_MODULE_LN(FSTR_SLOT_OUT_OF_RANGE << ' ' << slot);		
+		//DCCLITE_LOG_MODULE_LN(FSTR_SLOT_OUT_OF_RANGE << ' ' << slot);
+		Console::Printf(F("[%z] %z %d\n"), MODULE_NAME, FSTR_SLOT_OUT_OF_RANGE, slot);
 
 		return nullptr;
 	}
@@ -75,7 +77,8 @@ Decoder *DecoderManager::Create(const uint8_t slot, dcclite::Packet &packet)
 	if (g_pDecoders[slot])
 	{
 		//Console::SendLogEx(MODULE_NAME, FSTR_SLOT_IN_USE, slot);
-		DCCLITE_LOG_MODULE_LN(FSTR_SLOT_IN_USE << ' ' << slot);
+		//DCCLITE_LOG_MODULE_LN(FSTR_SLOT_IN_USE << ' ' << slot);
+		Console::Printf(F("[%z] %z %d\n"), MODULE_NAME, FSTR_SLOT_IN_USE, slot);
 
 		return nullptr;
 	}		
@@ -94,7 +97,8 @@ void DecoderManager::Destroy(const uint8_t slot)
 	if (slot >= MAX_DECODERS)
 	{
 		//Console::SendLogEx(MODULE_NAME, FSTR_SLOT_OUT_OF_RANGE, ' ', slot);
-		DCCLITE_LOG << MODULE_NAME << FSTR_SLOT_OUT_OF_RANGE << ' ' << slot << DCCLITE_ENDL;
+		//DCCLITE_LOG << MODULE_NAME << FSTR_SLOT_OUT_OF_RANGE << ' ' << slot << DCCLITE_ENDL;
+		Console::Printf(F("[%z] %z %d\n"), MODULE_NAME, FSTR_SLOT_OUT_OF_RANGE, slot);
 
 		return;
 	}
@@ -204,7 +208,8 @@ void DecoderManager::LoadConfig(Storage::EpromStream &stream)
 	}
 
 	//Console::SendLogEx(MODULE_NAME, 'O', ' ', (int)sizeof(OutputDecoder), ' ', 'S', ' ', (int)sizeof(SensorDecoder), ' ', 'T', ' ', (int)sizeof(ServoTurnoutDecoder));
-	DCCLITE_LOG << MODULE_NAME << F("O ") << (int)sizeof(OutputDecoder) << F(" S ") << (int)sizeof(SensorDecoder) << F(" T ") << (int)sizeof(ServoTurnoutDecoder) << DCCLITE_ENDL;
+	//DCCLITE_LOG << MODULE_NAME << F("O ") << (int)sizeof(OutputDecoder) << F(" S ") << (int)sizeof(SensorDecoder) << F(" T ") << (int)sizeof(ServoTurnoutDecoder) << DCCLITE_ENDL;
+	Console::Printf(F("[%z] O %d S %d T %d\n"), MODULE_NAME, (int)sizeof(OutputDecoder), (int)sizeof(SensorDecoder), (int)sizeof(ServoTurnoutDecoder));
 
 	uint16_t usedMem = 0;
 	for (;;)
@@ -243,7 +248,8 @@ void DecoderManager::LoadConfig(Storage::EpromStream &stream)
 					usedMem += sizeof(OutputDecoder);
 
 					//Console::Send('O');
-					DCCLITE_LOG << 'O';
+					//DCCLITE_LOG << 'O';
+					Console::Printf(F("O"));
 					break;				
 
 				case dcclite::DecoderTypes::DEC_SENSOR:
@@ -252,7 +258,8 @@ void DecoderManager::LoadConfig(Storage::EpromStream &stream)
 					usedMem += sizeof(SensorDecoder);
 
 					//Console::Send('S');
-					DCCLITE_LOG << 'S';
+					//DCCLITE_LOG << 'S';
+					Console::Printf(F("S"));
 					break;
 
 				case dcclite::DecoderTypes::DEC_SERVO_TURNOUT:
@@ -261,7 +268,8 @@ void DecoderManager::LoadConfig(Storage::EpromStream &stream)
 					usedMem += sizeof(ServoTurnoutDecoder);
 
 					//Console::Send('T');
-					DCCLITE_LOG << 'T';
+					//DCCLITE_LOG << 'T';
+					Console::Printf(F("T"));
 					break;
 
 				case dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER:
@@ -270,7 +278,8 @@ void DecoderManager::LoadConfig(Storage::EpromStream &stream)
 					usedMem += sizeof(TurntableAutoInverterDecoder);
 
 					//Console::Send('U');
-					DCCLITE_LOG << 'U';
+					//DCCLITE_LOG << 'U';
+					Console::Printf(F("U"));
 					break;
 
 				case dcclite::DecoderTypes::DEC_QUAD_INVERTER:
@@ -278,7 +287,8 @@ void DecoderManager::LoadConfig(Storage::EpromStream &stream)
 
 					usedMem += sizeof(QuadInverterDecoder);
 
-					DCCLITE_LOG << 'Q';
+					//DCCLITE_LOG << 'Q';
+					Console::Printf(F("Q"));
 					break;
 
 				default:
@@ -293,10 +303,8 @@ void DecoderManager::LoadConfig(Storage::EpromStream &stream)
 	//loaded all decoders, set config token
 	Session::ReplaceConfigToken(configToken);
 	
-	//Console::SendLn("");
-	//Console::SendLogEx(MODULE_NAME, usedMem);	
-	DCCLITE_LOG << DCCLITE_ENDL;
-	DCCLITE_LOG_MODULE_LN(usedMem);
+	Console::Printf(F("\n"));
+	Console::Printf(F("[%z] %z %d\n"), MODULE_NAME, F("used mem"), usedMem);
 }
 
 bool DecoderManager::ReceiveServerStates(const dcclite::StatesBitPack_t &changedStates, const dcclite::StatesBitPack_t &states, const unsigned long time)
@@ -400,7 +408,8 @@ Decoder *DecoderManager::TryPopDecoder(const uint8_t slot) noexcept
 	if (slot >= MAX_DECODERS)
 	{
 		//Console::SendLogEx(MODULE_NAME, F("TryPopDecoder:"), FSTR_SLOT_OUT_OF_RANGE, ' ', slot);
-		DCCLITE_LOG_MODULE_LN(F("TryPopDecoder:") << FSTR_SLOT_OUT_OF_RANGE << ' ' << slot);		
+		//DCCLITE_LOG_MODULE_LN(F("TryPopDecoder:") << FSTR_SLOT_OUT_OF_RANGE << ' ' << slot);
+		Console::Printf(F("[%z]:TryPopDecoder: %z %d\n"), MODULE_NAME, FSTR_SLOT_OUT_OF_RANGE, slot);
 
 		return nullptr;
 	}
@@ -416,7 +425,8 @@ bool DecoderManager::PushDecoder(Decoder *decoder, const uint8_t slot) noexcept
 	if (slot >= MAX_DECODERS)
 	{
 		//Console::SendLogEx(MODULE_NAME, F("PushDecoder:"), FSTR_SLOT_OUT_OF_RANGE, ' ', slot);		
-		DCCLITE_LOG_MODULE_LN(F("PushDecoder:") << FSTR_SLOT_OUT_OF_RANGE << ' ' << slot);
+		//DCCLITE_LOG_MODULE_LN(F("PushDecoder:") << FSTR_SLOT_OUT_OF_RANGE << ' ' << slot);
+		Console::Printf(F("[%z]:PushDecoder: %z %d\n"), MODULE_NAME, FSTR_SLOT_OUT_OF_RANGE, slot);
 
 		return false;
 	}
@@ -424,7 +434,8 @@ bool DecoderManager::PushDecoder(Decoder *decoder, const uint8_t slot) noexcept
 	if (g_pDecoders[slot])
 	{
 		//Console::SendLogEx(MODULE_NAME, FSTR_SLOT_IN_USE, slot);		
-		DCCLITE_LOG_MODULE_LN(F("PushDecoder:") << FSTR_SLOT_IN_USE << ' ' << slot);
+		//DCCLITE_LOG_MODULE_LN(F("PushDecoder:") << FSTR_SLOT_IN_USE << ' ' << slot);
+		Console::Printf(F("[%z]:PushDecoder: %z %d\n"), MODULE_NAME, FSTR_SLOT_IN_USE, slot);
 
 		return false;
 	}
@@ -439,7 +450,8 @@ Decoder *DecoderManager::TryGetDecoder(const uint8_t slot) noexcept
 	if (slot >= MAX_DECODERS)
 	{
 		//Console::SendLogEx(MODULE_NAME, F("TryGetDecoder:"), FSTR_SLOT_OUT_OF_RANGE, ' ', slot);
-		DCCLITE_LOG_MODULE_LN(F("TryGetDecoder:") << FSTR_SLOT_OUT_OF_RANGE << ' ' << slot);		
+		//DCCLITE_LOG_MODULE_LN(F("TryGetDecoder:") << FSTR_SLOT_OUT_OF_RANGE << ' ' << slot);		
+		Console::Printf(F("[%z]:TryGetDecoder: %z %d\n"), MODULE_NAME, FSTR_SLOT_OUT_OF_RANGE, slot);
 
 		return nullptr;
 	}
@@ -452,7 +464,8 @@ bool DecoderManager::GetDecoderActiveStatus(const uint8_t slot, bool &result) no
 	if (slot >= MAX_DECODERS)
 	{
 		//Console::SendLogEx(MODULE_NAME, F("IsDecoderActive:"), FSTR_SLOT_OUT_OF_RANGE, ' ', slot);
-		DCCLITE_LOG_MODULE_LN(F("IsDecoderActive:") << FSTR_SLOT_OUT_OF_RANGE << ' ' << slot);
+		//DCCLITE_LOG_MODULE_LN(F("IsDecoderActive:") << FSTR_SLOT_OUT_OF_RANGE << ' ' << slot);
+		Console::Printf(F("[%z]:IsDecoderActive: %z %d\n"), MODULE_NAME, FSTR_SLOT_OUT_OF_RANGE, slot);
 
 		return false;
 	}
@@ -460,7 +473,8 @@ bool DecoderManager::GetDecoderActiveStatus(const uint8_t slot, bool &result) no
 	if (!g_pDecoders[slot])
 	{
 		//Console::SendLogEx(MODULE_NAME, F("IsDecoderActive:"), F(" slot is empty"), ' ', slot);
-		DCCLITE_LOG_MODULE_LN(F("IsDecoderActive: slot is empty") << ' ' << slot);		
+		//DCCLITE_LOG_MODULE_LN(F("IsDecoderActive: slot is empty") << ' ' << slot);		
+		Console::Printf(F("[%z]:IsDecoderActive: %z %d\n"), MODULE_NAME, F("slot is empty"), slot);
 
 		return false;
 	}

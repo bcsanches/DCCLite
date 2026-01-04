@@ -28,29 +28,35 @@
 
 void Storage::Dump()
 {
-	Console::OutputStream stream;
+	//Console::OutputStream stream;
 
-	stream << DCCLITE_ENDL;	
+	//stream << DCCLITE_ENDL;	
+	Console::Printf(F("\n"));
 
 	for(unsigned int i = 0;i < EEPROM.length(); ++i)
-	{		
-		stream << EEPROM.read(i) << ' ';
+	{
+		//stream << EEPROM.read(i) << ' ';
+		Console::Printf(F("%d "), EEPROM.read(i));
 	}
 
-	stream << DCCLITE_ENDL << DCCLITE_ENDL;	
+	//stream << DCCLITE_ENDL << DCCLITE_ENDL;	
+	Console::Printf(F("\n\n"));
 }
 
 void Storage::DumpHex()
 {
-	DCCLITE_LOG << DCCLITE_ENDL;
+	//DCCLITE_LOG << DCCLITE_ENDL;
+	Console::Printf(F("\n"));
 
 	for(unsigned int i = 0;i < EEPROM.length(); ++i)
 	{
-		unsigned char ch = EEPROM.read(i);
-		Serial.write(ch);
+		//unsigned char ch = EEPROM.read(i);
+		//Serial.write(ch);
+		Console::Printf(F("%x "), EEPROM.read(i));
 	}
 
-	DCCLITE_LOG << DCCLITE_ENDL << DCCLITE_ENDL;		
+	//DCCLITE_LOG << DCCLITE_ENDL << DCCLITE_ENDL;
+	Console::Printf(F("\n\n"));
 }
 
 void Storage::Clear()
@@ -69,7 +75,8 @@ extern size_t Storage::Length() noexcept
 
 bool Storage::LoadConfig()
 {	    
-	DCCLITE_LOG_MODULE_LN(FSTR_INIT << ' ' << static_cast<unsigned>(FStrLen(STORAGE_MAGIC)));
+	//DCCLITE_LOG_MODULE_LN(FSTR_INIT << ' ' << static_cast<unsigned>(FStrLen(STORAGE_MAGIC)));
+	Console::Printf(F("[%z] %z %d\n"), MODULE_NAME, FSTR_INIT, static_cast<unsigned>(FStrLen(STORAGE_MAGIC)));
 
 	Lump header;
 
@@ -87,7 +94,8 @@ bool Storage::LoadConfig()
 		memcpy(name, header.m_archName, LUMP_NAME_SIZE);
 
 		//dump rom first 8 bytes to check what is in        
-		DCCLITE_LOG_MODULE_LN(FSTR_NO << ' ' << FSTR_ROM << ' ' << name);
+		//DCCLITE_LOG_MODULE_LN(FSTR_NO << ' ' << FSTR_ROM << ' ' << name);
+		Console::Printf(F("[%z] %z %z %s\n"), MODULE_NAME, FSTR_NO, FSTR_ROM, name);
 
         return false;
     }
@@ -111,7 +119,8 @@ bool Storage::LoadConfig()
 				break;
 			}			
 						
-			DCCLITE_LOG << MODULE_NAME << ' ' << FSTR_UNKNOWN << ' ' << FSTR_LUMP << ' ' << lump.m_archName << DCCLITE_ENDL;
+			//DCCLITE_LOG << MODULE_NAME << ' ' << FSTR_UNKNOWN << ' ' << FSTR_LUMP << ' ' << lump.m_archName << DCCLITE_ENDL;
+			Console::Printf(F("[%z] %z %z %s\n"), MODULE_NAME, FSTR_UNKNOWN, FSTR_LUMP, lump.m_archName);
 
 			stream.Skip(lump.m_uLength);
 
@@ -120,7 +129,8 @@ bool Storage::LoadConfig()
 		}
     }
     
-	DCCLITE_LOG_MODULE_LN(FSTR_OK);
+	//DCCLITE_LOG_MODULE_LN(FSTR_OK);
+	Console::Printf(F("[%z] %z\n"), MODULE_NAME, FSTR_OK);
 
     return true;
 }
@@ -145,7 +155,8 @@ void Storage::SaveConfig()
 	}
 
     //Console::SendLogEx(MODULE_NAME, "sv", ' ', FSTR_OK);
-	DCCLITE_LOG_MODULE_LN(F("sv") << ' ' << FSTR_OK);	
+	//DCCLITE_LOG_MODULE_LN(F("sv") << ' ' << FSTR_OK);
+	Console::Printf(F("[%z] %z %z\n"), MODULE_NAME, F("sv"), FSTR_OK);
 }
 
 void Storage::UpdateField(unsigned int index, unsigned char byte)

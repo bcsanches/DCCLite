@@ -124,14 +124,16 @@ void QuadInverterDecoder::TurnOnTrackPower() noexcept
 	if (m_fFlags & dcclite::QUAD_ACTIVE)
 	{
 		//Console::SendLogEx(MODULE_NAME, F("TurnOnTrackPower TrackB"));
-		DCCLITE_LOG_MODULE_LN(F("TurnOnTrackPower Track") << 'B');
+		//DCCLITE_LOG_MODULE_LN(F("TurnOnTrackPower Track") << 'B');
+		Console::Printf(F("[%z] %z %z\n"), MODULE_NAME, F("TurnOnTrackPower Track"), F("B"));
 
 		TurnTrackOn(m_arTrackPins + 2, m_fFlags);
 	}
 	else
 	{
 		//Console::SendLogEx(MODULE_NAME, F("TurnOnTrackPower TrackA"));
-		DCCLITE_LOG_MODULE_LN(F("TurnOnTrackPower Track") << 'A');
+		//DCCLITE_LOG_MODULE_LN(F("TurnOnTrackPower Track") << 'A');
+		Console::Printf(F("[%z] %z %z\n"), MODULE_NAME, F("TurnOnTrackPower Track"), F("A"));
 
 		TurnTrackOn(m_arTrackPins, m_fFlags);
 	}

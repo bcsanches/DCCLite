@@ -310,7 +310,8 @@ static void ParseMoveServo(dcclite::Packet &packet, const uint32_t packetTaskId)
 	const auto position = packet.ReadByte();
 
 	//Console::SendLogEx(F("[ParseMoveServo]"), ' ', position);
-	DCCLITE_LOG << F("[ParseMoveServo] ") << position;
+	//DCCLITE_LOG << F("[ParseMoveServo] ") << position;
+	Console::Printf(F("[ParseMoveServo]: %d\n"), position);
 
 	task->MoveServo(position);
 
@@ -401,7 +402,8 @@ static void ParseDeployFinishedAck(dcclite::Packet &packet, const uint32_t packe
 		//Wtf? The task should be in zombie mode ... ignore
 
 		//Console::SendLogEx(F("ParseDeployFinishedAck"), F("Expected task in Zombie mode"), ' ', packetTaskId);
-		DCCLITE_LOG << F("[ParseDeployFinishedAck] Expected task in Zombie mode ") << packetTaskId << DCCLITE_ENDL;
+		//DCCLITE_LOG << F("[ParseDeployFinishedAck] Expected task in Zombie mode ") << packetTaskId << DCCLITE_ENDL;
+		Console::Printf(F("[ParseDeployFinishedAck] Expected task in Zombie mode %d\n"), packetTaskId);
 
 		return;
 	}

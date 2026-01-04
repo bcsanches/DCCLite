@@ -84,7 +84,8 @@ void Button::Update(const unsigned long ticks)
 	if (buttonPreviousState)
 	{
 		//Console::SendLn("Button released");
-		DCCLITE_LOG_MODULE_LN(F("Button released"));
+		//DCCLITE_LOG_MODULE_LN(F("Button released"));
+		Console::Printf(F("[%z] %z\n"), MODULE_NAME, F("Button released"));
 		return;
 	}	
 
@@ -93,13 +94,15 @@ void Button::Update(const unsigned long ticks)
 	if (m_kAction == LocalDecoderManager::kTHROW)
 	{	
 		//Console::Send("Button pressed - Throw");
-		DCCLITE_LOG_MODULE_LN(F("Button pressed - Throw"));
+		//DCCLITE_LOG_MODULE_LN(F("Button pressed - Throw"));
+		Console::Printf(F("[%z] %z\n"), MODULE_NAME, F("Button pressed - Throw"));
 		m_rclTarget.AcceptServerState(dcclite::DecoderStates::ACTIVE, ticks);
 	}
 	else if (m_kAction == LocalDecoderManager::kCLOSE)
 	{
 		//Console::Send("Button pressed - Close");
-		DCCLITE_LOG_MODULE_LN(F("Button pressed - Close"));
+		//DCCLITE_LOG_MODULE_LN(F("Button pressed - Close"));
+		Console::Printf(F("[%z] %z\n"), MODULE_NAME, F("Button pressed - Close"));
 		m_rclTarget.AcceptServerState(dcclite::DecoderStates::INACTIVE, ticks);
 	}		
 	else
@@ -108,7 +111,8 @@ void Button::Update(const unsigned long ticks)
 		state = !state;
 
 		//Console::Send("Button pressed - Toggle");
-		DCCLITE_LOG_MODULE_LN(F("Button pressed - Toggle"));
+		//DCCLITE_LOG_MODULE_LN(F("Button pressed - Toggle"));
+		Console::Printf(F("[%z] %z\n"), MODULE_NAME, F("Button pressed - Toggle"));
 
 		m_rclTarget.AcceptServerState(state, ticks);
 	}
@@ -136,7 +140,8 @@ ServoTurnoutDecoder *LocalDecoderManager::CreateServoTurnout(
 	if (g_iNextSlot >= MAX_DECODERS)
 	{
 		//Console::SendLogEx(MODULE_NAME, FSTR_NO_SLOTS);
-		DCCLITE_LOG_MODULE_LN(FSTR_NO_SLOTS);
+		//DCCLITE_LOG_MODULE_LN(FSTR_NO_SLOTS);
+		Console::Printf(F("[%z] %z\n"), MODULE_NAME, FSTR_NO_SLOTS);
 
 		return nullptr;
 	}
@@ -159,7 +164,8 @@ SensorDecoder *LocalDecoderManager::CreateSensor(
 	if (g_iNextSlot >= MAX_DECODERS)
 	{
 		//Console::SendLogEx(MODULE_NAME, FSTR_NO_SLOTS);
-		DCCLITE_LOG_MODULE_LN(FSTR_NO_SLOTS);
+		//DCCLITE_LOG_MODULE_LN(FSTR_NO_SLOTS);
+		Console::Printf(F("[%z] %z\n"), MODULE_NAME, FSTR_NO_SLOTS);
 
 		return nullptr;
 	}
@@ -176,13 +182,15 @@ void LocalDecoderManager::CreateButton(SensorDecoder &sensor, ServoTurnoutDecode
 	if (g_iNextButton >= MAX_BUTTONS)
 	{
 		//Console::SendLogEx(MODULE_NAME, FSTR_NO_BUTTONS);
-		DCCLITE_LOG_MODULE_LN(FSTR_NO_BUTTONS);
+		//DCCLITE_LOG_MODULE_LN(FSTR_NO_BUTTONS);
+		Console::Printf(F("[%z] %z\n"), MODULE_NAME, FSTR_NO_BUTTONS);
 
 		return;
 	}
 
 	//Console::SendLogEx(MODULE_NAME, "Added button", ' ', g_iNextButton);
-	DCCLITE_LOG_MODULE_LN(F("Added button ") << g_iNextButton);
+	//DCCLITE_LOG_MODULE_LN(F("Added button ") << g_iNextButton);
+	Console::Printf(F("[%z] %z %d\n"), MODULE_NAME, F("Added button"), g_iNextButton);
 
 	g_pButtons[g_iNextButton++] = new Button(sensor, target, actions);
 }
@@ -243,15 +251,18 @@ void LocalDecoderManager::Init(const char *time, const char *date)
 	if (memcmp(storageData.m_u8Buffer, header.m_u8Buffer, sizeof(storageData.m_u8Buffer)) == 0)
 	{
 		//Console::SendLogEx(MODULE_NAME, "Found valid eprom data");		
-		DCCLITE_LOG_MODULE_LN(F("Found valid eprom data"));
+		//DCCLITE_LOG_MODULE_LN(F("Found valid eprom data"));
+		Console::Printf(F("[%z] %z\n"), MODULE_NAME, F("Found valid eprom data"));
 	}
 	else
 	{
 		//Console::SendLogEx(MODULE_NAME, "NO eprom data");
 		//Console::SendLogEx(MODULE_NAME, storageData.m_u8Buffer, storageData.m_u8Buffer+16);
 
-		DCCLITE_LOG_MODULE_LN(F("NO eprom data"));
-		DCCLITE_LOG_MODULE_LN(storageData.m_u8Buffer << (storageData.m_u8Buffer+16));
+		//DCCLITE_LOG_MODULE_LN(F("NO eprom data"));
+		//DCCLITE_LOG_MODULE_LN(storageData.m_u8Buffer << (storageData.m_u8Buffer+16));
+		Console::Printf(F("[%z] %z\n"), MODULE_NAME, F("NO eprom data"));
+		Console::Printf(F("[%z] %s %s\n"), MODULE_NAME, storageData.m_u8Buffer, storageData.m_u8Buffer+16);
 
 		delete g_pLoadStream;
 		g_pLoadStream = nullptr;
@@ -268,12 +279,14 @@ void LocalDecoderManager::PostInit()
 		g_pLoadStream = nullptr;
 
 		//Console::SendLogEx(MODULE_NAME, "Post Init OK");
-		DCCLITE_LOG_MODULE_LN(F("Post Init OK"));
+		//DCCLITE_LOG_MODULE_LN(F("Post Init OK"));
+		Console::Printf(F("[%z] %z\n"), MODULE_NAME, F("Post Init OK"));
 		return;
 	}
 
 	//Console::SendLogEx(MODULE_NAME, "Initializing eprom");
-	DCCLITE_LOG_MODULE_LN(F("Initializing eprom"));
+	//DCCLITE_LOG_MODULE_LN(F("Initializing eprom"));
+	Console::Printf(F("[%z] %z\n"), MODULE_NAME, F("Initializing eprom"));
 
 	Header header;	
 	InitHeader(header);	
@@ -283,7 +296,8 @@ void LocalDecoderManager::PostInit()
 	stream.PutRawData(reinterpret_cast<uint8_t *>(header.m_u8Buffer), sizeof(header));
 
 	//Console::SendLogEx(MODULE_NAME, header.m_u8Buffer, header.m_u8Buffer+16);	
-	DCCLITE_LOG_MODULE_LN(header.m_u8Buffer << (header.m_u8Buffer+16));
+	//DCCLITE_LOG_MODULE_LN(header.m_u8Buffer << (header.m_u8Buffer+16));
+	Console::Printf(F("[%z] %s %s\n"), MODULE_NAME, header.m_u8Buffer, header.m_u8Buffer+16);
 
 	for (int i = 0; i < g_iNextSlot; ++i)
 	{
@@ -291,5 +305,6 @@ void LocalDecoderManager::PostInit()
 	}
 
 	//Console::SendLogEx(MODULE_NAME, "Saved ", g_iNextSlot, " decoders ", (int)stream.GetIndex());	
-	DCCLITE_LOG_MODULE_LN(F("Saved ") << g_iNextSlot << F(" decoders ") << (int)stream.GetIndex());
+	//DCCLITE_LOG_MODULE_LN(F("Saved ") << g_iNextSlot << F(" decoders ") << (int)stream.GetIndex());
+	Console::Printf(F("[%z] %z %d %z %d\n"), MODULE_NAME, F("Saved"), g_iNextSlot, F("decoders"), (int)stream.GetIndex());
 }

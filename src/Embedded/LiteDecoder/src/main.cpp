@@ -53,7 +53,8 @@ bool Console::Custom_ParseCommand(dcclite::StringView command)
 		if (token.m_kToken != dcclite::Tokens::ID)
 		{
 			//Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_NODE, " ", FSTR_NAME);
-			DCCLITE_LOG_MODULE_LN(FSTR_NOK << ' ' << FSTR_NODE << ' ' << FSTR_NAME);
+			//DCCLITE_LOG_MODULE_LN(FSTR_NOK << ' ' << FSTR_NODE << ' ' << FSTR_NAME);
+			Console::Printf(F("[%z] %z %z %z\n"), MODULE_NAME, FSTR_NOK, FSTR_NODE, FSTR_NAME);
 
 			return true;
 		}
@@ -69,16 +70,19 @@ bool Console::Custom_ParseCommand(dcclite::StringView command)
 		else if(tokenType != dcclite::Tokens::END_OF_BUFFER)
 		{
 			//Console::SendLogEx(MODULE_NAME, FSTR_NOK, " ", FSTR_SRVPORT);
-			DCCLITE_LOG << MODULE_NAME << FSTR_NOK << ' ' << FSTR_SRVPORT << DCCLITE_ENDL;
+			//DCCLITE_LOG << MODULE_NAME << FSTR_NOK << ' ' << FSTR_SRVPORT << DCCLITE_ENDL;
+			Console::Printf(F("[%z] %z %z\n"), MODULE_NAME, FSTR_NOK, FSTR_SRVPORT);
 
 			return true;
 		}				
 		
-		DCCLITE_LOG_MODULE_LN(FSTR_OK);
+		//DCCLITE_LOG_MODULE_LN(FSTR_OK);
+		Console::Printf(F("[%z] %z\n"), MODULE_NAME, FSTR_OK);
 
 		Storage::SaveConfig();
 		
-		DCCLITE_LOG_MODULE_LN(FSTR_OK);
+		//DCCLITE_LOG_MODULE_LN(FSTR_OK);
+		Console::Printf(F("[%z] %z\n"), MODULE_NAME, FSTR_OK);
 
 		return true;
 	}
@@ -87,7 +91,8 @@ bool Console::Custom_ParseCommand(dcclite::StringView command)
 		Storage::Dump();
 
 		//Console::SendLogEx(MODULE_NAME, FSTR_OK);
-		DCCLITE_LOG_MODULE_LN(FSTR_OK);
+		//DCCLITE_LOG_MODULE_LN(FSTR_OK);
+		Console::Printf(F("[%z] %z\n"), MODULE_NAME, FSTR_OK);
 
 		return true;
 	}
@@ -96,7 +101,8 @@ bool Console::Custom_ParseCommand(dcclite::StringView command)
 		Storage::DumpHex();
 
 		//Console::SendLogEx(MODULE_NAME, FSTR_OK);
-		DCCLITE_LOG_MODULE_LN(FSTR_OK);
+		//DCCLITE_LOG_MODULE_LN(FSTR_OK);
+		Console::Printf(F("[%z] %z\n"), MODULE_NAME, FSTR_OK);
 
 		return true;
 	}
@@ -104,7 +110,8 @@ bool Console::Custom_ParseCommand(dcclite::StringView command)
 	{
 		Storage::Clear();
 
-		DCCLITE_LOG_MODULE_LN(FSTR_OK);
+		//DCCLITE_LOG_MODULE_LN(FSTR_OK);
+		Console::Printf(F("[%z] %z\n"), MODULE_NAME, FSTR_OK);
 
 		return true;
 	}
@@ -130,14 +137,16 @@ bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream
 		stream.Skip(lump.m_uLength);
 
 		//Console::SendLogEx(MODULE_NAME, FSTR_DECODERS, ' ', "cfg", ' ', g_uDecodersPosition);
-		DCCLITE_LOG_MODULE_LN(FSTR_DECODERS << F(" cfg ") << g_uDecodersPosition);
+		//DCCLITE_LOG_MODULE_LN(FSTR_DECODERS << F(" cfg ") << g_uDecodersPosition);
+		Console::Printf(F("[%z] %z %z %d\n"), MODULE_NAME, FSTR_DECODERS, F("cfg"), g_uDecodersPosition);
 
 		return true;
 	}
 
 	if (FStrNCmp(lump.m_archName, NET_UDP_OLD_STORAGE_ID, FStrLen(NET_UDP_OLD_STORAGE_ID)) == 0)
 	{		
-		DCCLITE_LOG_MODULE_LN(MODULE_NAME << F(" net udp OLD OLD OLD cfg"));
+		//DCCLITE_LOG_MODULE_LN(MODULE_NAME << F(" net udp OLD OLD OLD cfg"));
+		Console::Printf(F("[%z] %z %z %z\n"), MODULE_NAME, F("net udp"), F("OLD OLD OLD"), F("cfg"));
 
 		NetUdp::LoadConfig(stream, true);
 
@@ -146,7 +155,8 @@ bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream
 
 	if (FStrNCmp(lump.m_archName, NET_UDP_STORAGE_ID, FStrLen(NET_UDP_STORAGE_ID)) == 0)
 	{		
-		DCCLITE_LOG_MODULE_LN(MODULE_NAME << F(" net udp cfg"));
+		//DCCLITE_LOG_MODULE_LN(MODULE_NAME << F(" net udp cfg"));
+		Console::Printf(F("[%z] %z %z\n"), MODULE_NAME, F("net udp"), F("cfg"));
 
 		NetUdp::LoadConfig(stream);
 
@@ -155,7 +165,8 @@ bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream
 
 	if (FStrNCmp(lump.m_archName, SESSION_STORAGE_ID, FStrLen(SESSION_STORAGE_ID)) == 0)
 	{		
-		DCCLITE_LOG_MODULE_LN(FSTR_SESSION << F(" cfg"));
+		//DCCLITE_LOG_MODULE_LN(FSTR_SESSION << F(" cfg"));
+		Console::Printf(F("[%z] %z %z\n"), MODULE_NAME, FSTR_SESSION, F("cfg"));
 
 		Session::LoadConfig(stream);
 
@@ -197,12 +208,14 @@ void Storage_LoadDecoders(uint32_t position)
 
 	if (FStrNCmp(lump.m_archName, DECODERS_STORAGE_ID, FStrLen(DECODERS_STORAGE_ID)) != 0)
 	{		
-		DCCLITE_LOG << MODULE_NAME << FSTR_UNKNOWN << ' ' << FSTR_LUMP << ' ' << lump.m_archName << DCCLITE_ENDL;
+		//DCCLITE_LOG << MODULE_NAME << FSTR_UNKNOWN << ' ' << FSTR_LUMP << ' ' << lump.m_archName << DCCLITE_ENDL;
+		Console::Printf(F("[%z] %z %z %s\n"), MODULE_NAME, FSTR_UNKNOWN, FSTR_LUMP, lump.m_archName);
 
 		return;
 	}
 	
-	DCCLITE_LOG_MODULE_LN(F("Loading config"));	
+	//DCCLITE_LOG_MODULE_LN(F("Loading config"));
+	Console::Printf(F("[%z] %z\n"), MODULE_NAME, F("Loading config"));
 
 	DecoderManager::LoadConfig(stream);
 }
@@ -227,7 +240,8 @@ void setup()
 		Storage_LoadDecoders(g_uDecodersPosition);
 	}
 		
-	DCCLITE_LOG_MODULE_LN(FSTR_SETUP << ' ' << FSTR_OK);
+	//DCCLITE_LOG_MODULE_LN(FSTR_SETUP << ' ' << FSTR_OK);
+	Console::Printf(F("[%z] %z %z\n"), MODULE_NAME, FSTR_SETUP, FSTR_OK);
 }
 
 static int g_iMinHeapSpace = INT_MAX;
@@ -259,7 +273,8 @@ void loop()
 			Session::UpdateFreeRam(g_iMinHeapSpace);
 
 			//Console::SendLogEx(MODULE_NAME, F("ram "), g_iMinHeapSpace, F(" | fps "), (int)g_uFps);			
-			DCCLITE_LOG << MODULE_NAME << F("ram ") << g_iMinHeapSpace << F(" | fps ") << (int)g_uFps << DCCLITE_ENDL;
+			//DCCLITE_LOG << MODULE_NAME << F("ram ") << g_iMinHeapSpace << F(" | fps ") << (int)g_uFps << DCCLITE_ENDL;
+			Console::Printf(F("[%z] %z %d %z %d\n"), MODULE_NAME, F("ram"), g_iMinHeapSpace, F("fps"), (int)g_uFps);
 		}
 	}
 

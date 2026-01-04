@@ -64,6 +64,13 @@ namespace dcclite
 							break;
 						}
 
+						case 'x':
+						{
+							unsigned n = va_arg(args, unsigned);
+							stream.PrintHex(n);
+							break;
+						}						
+
 						case 'u':
 						{
 							unsigned n = va_arg(args, unsigned);

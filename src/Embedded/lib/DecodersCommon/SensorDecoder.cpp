@@ -91,7 +91,8 @@ void SensorDecoder::Init(const dcclite::PinType_t pin) noexcept
 		m_fFlags |= SNRD_DELAY;
 		m_uCoolDownTicks = millis() + m_uStartDelay;
 
-		DCCLITE_LOG_MODULE_LN(F("Start") << ' ' << F("delay") << ' ' << m_uStartDelay);
+		//DCCLITE_LOG_MODULE_LN(F("Start") << ' ' << F("delay") << ' ' << m_uStartDelay);
+		Console::Printf(F("[%z] %z %z %d\n"), MODULE_NAME, F("Start"), F("delay"), m_uStartDelay);
 	}
 }
 

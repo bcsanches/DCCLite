@@ -58,31 +58,22 @@ void Console::Init()
 
 static void Parse(dcclite::StringView command)
 {
-	//Console::SendLogEx(MODULE_NAME, "in:", " ", command);
-    //DCCLITE_LOG << MODULE_NAME << "in: " << command << DCCLITE_ENDL;        
-    //Console::Printf(F("%z: in %s\n"), MODULE_NAME, command);
-
 	if(FStrNCmp(command, F("mem"), 3) == 0)
 	{
-		//based on https://github.com/DccPlusPlus/BaseStation/blob/master/DCCpp_Uno/SerialCommand.cpp
-
 #if (!defined BCS_ARDUINO_EMULATOR)
 		int v; 
-		//Console::SendLogEx(MODULE_NAME, (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));		
-        DCCLITE_LOG_MODULE_LN((int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));
-        //Console::Printf(F("%z: %d\n"), MODULE_NAME, (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));
+		//Console::SendLogEx(MODULE_NAME, (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));		        
+        Console::Printf(F("[%z] %d\n"), MODULE_NAME, (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval));
         
 #else
 		//Console::SendLogEx(MODULE_NAME, "LOTS LOTS LOTS");
-        DCCLITE_LOG_MODULE_LN("LOTS LOTS LOTS");
+        Console::Printf(F("[%z] %d\n"), MODULE_NAME, 65535);
 #endif
 
 	}
     else if(!Console::Custom_ParseCommand(command))
-	{
-		//Console::SendLogEx(MODULE_NAME, FSTR_NOK, ' ', command);
-        DCCLITE_LOG_MODULE_LN(FSTR_NOK << ' ' << command);
-        //Console::Printf(F("%z: %z %s"), FSTR_NOK, command);
+	{		
+        Console::Printf(F("[%z] %z %s"), FSTR_NOK, command);
 	}
 }
 
@@ -128,6 +119,11 @@ class SerialWrapper
         void Print(int n)
         {
             Serial.print(n);
+        }
+
+        void PrintHex(unsigned n)
+        {
+            Serial.print(n, HEX);
         }
 
         void Print(unsigned n)

@@ -60,8 +60,6 @@ TurntableAutoInverterDecoder::TurntableAutoInverterDecoder(Storage::EpromStream 
 		stream.Get(trackPins[i]);	
 
 	this->Init(trackPins);
-
-	//Console::SendLogEx(MODULE_NAME, F("Stream"));
 }
 
 void TurntableAutoInverterDecoder::SaveConfig(Storage::EpromStream& stream) noexcept
@@ -94,14 +92,16 @@ void TurntableAutoInverterDecoder::TurnOnTrackPower() noexcept
 	if (m_fFlags & dcclite::TRTD_ACTIVE)
 	{
 		//Console::SendLogEx(MODULE_NAME, F("TurnOnTrackPower TrackB"));
-		DCCLITE_LOG_MODULE_LN(F("TurnOnTrackPower Track") << 'B');
+		//DCCLITE_LOG_MODULE_LN(F("TurnOnTrackPower Track") << 'B');
+		Console::Printf(F("[%z] %z %c\n"), MODULE_NAME, F("TurnOnTrackPower Track"), 'B');
 
 		TurnTrackOn(m_arTrackPins[1], m_fFlags);
 	}
 	else
 	{
 		//Console::SendLogEx(MODULE_NAME, F("TurnOnTrackPower TrackA"));
-		DCCLITE_LOG_MODULE_LN(F("TurnOnTrackPower Track") << 'A');
+		//DCCLITE_LOG_MODULE_LN(F("TurnOnTrackPower Track") << 'A');
+		Console::Printf(F("[%z] %z %c\n"), MODULE_NAME, F("TurnOnTrackPower Track"), 'A');
 
 		TurnTrackOn(m_arTrackPins[0], m_fFlags);
 	}
@@ -171,7 +171,9 @@ bool TurntableAutoInverterDecoder::Update(const unsigned long ticks) noexcept
 			return false;
 		
 		//Console::SendLogEx(MODULE_NAME, F("Update m_pclSensorB"));
-		DCCLITE_LOG_MODULE_LN(F("Update m_pclSensorB"));
+		//DCCLITE_LOG_MODULE_LN(F("Update m_pclSensorB"));
+		Console::Printf(F("[%z] %z%c\n"), MODULE_NAME, F("Update Sensor"), 'B');
+
 		TurnTrackOff(m_arTrackPins[1], m_fFlags);
 
 		m_fFlags = m_fFlags & ~dcclite::TRTD_ACTIVE;		
@@ -187,7 +189,8 @@ bool TurntableAutoInverterDecoder::Update(const unsigned long ticks) noexcept
 			return false;
 
 		//Console::SendLogEx(MODULE_NAME, F("Update m_pclSensorA"));
-		DCCLITE_LOG_MODULE_LN(F("Update m_pclSensorA"));
+		//DCCLITE_LOG_MODULE_LN(F("Update m_pclSensorA"));
+		Console::Printf(F("[%z] %z%c\n"), MODULE_NAME, F("Update Sensor"), 'A');
 
 		TurnTrackOff(m_arTrackPins[0], m_fFlags);
 
@@ -198,7 +201,8 @@ bool TurntableAutoInverterDecoder::Update(const unsigned long ticks) noexcept
 		Storage::UpdateField(m_uFlagsStorageIndex, m_fFlags);
 
 	//Console::SendLogEx(MODULE_NAME, F("Update waiting"));
-	DCCLITE_LOG_MODULE_LN(F("Update waiting"));
+	//DCCLITE_LOG_MODULE_LN(F("Update waiting"));
+	Console::Printf(F("[%z] %z\n"), MODULE_NAME, F("Update waiting"));
 
 	m_uWaitingTrackTurnOff = ticks + m_u8FlipInterval;
 	return true;		

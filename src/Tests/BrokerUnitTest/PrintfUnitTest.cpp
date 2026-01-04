@@ -31,6 +31,11 @@ class TestStream
 			m_strStream << n;
 		}
 
+		void PrintHex(unsigned n)
+		{
+			m_strStream << std::hex << n << std::dec;
+		}
+
 		void Print(unsigned n)
 		{
 			m_strStream << n;
@@ -94,6 +99,14 @@ TEST(Printf, UnsignedData)
 	EXPECT_TRUE(stream.IsEqual("Unsigned 7 1234"));
 }
 
+TEST(Printf, HexData)
+{
+	TestStream stream;
+
+	dcclite::Printf(stream, dcclite::StringWrapper{ "Hex %x %x%x" }, 7, 12, 34);
+
+	EXPECT_TRUE(stream.IsEqual("Hex 7 c22"));
+}
 
 TEST(Printf, StrData)
 {
