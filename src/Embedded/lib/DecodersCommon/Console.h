@@ -19,6 +19,7 @@ namespace Console
 	typedef __FlashStringHelper ConsoleFlashStringHelper_t;	
 
 	extern void Printf(const ConsoleFlashStringHelper_t *format, ...);
+	extern void PutChar(char ch);
 	
 	extern void Init();		
 

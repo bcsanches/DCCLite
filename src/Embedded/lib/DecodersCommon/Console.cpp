@@ -148,6 +148,11 @@ void Console::Printf(const ConsoleFlashStringHelper_t *format, ...)
     va_end(args);
 }
 
+void Console::PutChar(char ch)
+{
+    Serial.write(ch);
+}
+
 constexpr auto MAX_COMMAND_LENGTH = 65;
 
 void Console::Update()

@@ -10,6 +10,9 @@
 
 #include "ArduinoLib.h"
 
+#include <exception>
+#include <stdexcept>
+
 #include <dcclite/Log.h>
 
 #include "avr/wdt.h"
@@ -54,6 +57,7 @@ namespace ArduinoLib
 
 		//initialize client
 		g_pfnSetup();
+		Serial.internalFlushBufferRemaining();
 
 		return romResult;
 	}
@@ -113,6 +117,7 @@ namespace ArduinoLib
 		g_pfnLoop();
 
 		detail::RomAfterLoop();
+		Serial.internalFlushBufferRemaining();
 	}
 
 	void FixedTick(unsigned long ms)

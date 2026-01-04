@@ -104,13 +104,13 @@ void ServoTurnoutDecoder::SaveConfig(Storage::EpromStream& stream)
 
 void ServoTurnoutDecoder::TurnOnPower(const unsigned long time) noexcept
 {
-	SERVO_WRITE(m_clServo, m_uServoPos);
-	m_clServo.attach(m_clPin.Raw());	
-
 	if (m_clPowerPin)		
 	{
 		m_clPowerPin.DigitalWrite((m_fFlags & dcclite::ServoTurnoutDecoderFlags::SRVT_INVERTED_POWER) ? Pin::VHIGH : Pin::VLOW);
 	}	
+
+	m_clServo.attach(m_clPin.Raw());
+	SERVO_WRITE(m_clServo, m_uServoPos);
 		
 	m_fFlags |= dcclite::SRVT_POWER_ON;
 	m_uNextThink = time + POWER_WAIT_TICKS;

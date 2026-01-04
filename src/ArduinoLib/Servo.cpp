@@ -34,6 +34,10 @@ int Servo::read() const
 
 void Servo::detach()
 {
+	//already detached? Ignore...
+	if(m_iPin < 0)
+		return;
+
 	dcclite::Log::Trace("[Servo::detach] Pin {}", m_iPin);
 
 	m_iPin = -1;

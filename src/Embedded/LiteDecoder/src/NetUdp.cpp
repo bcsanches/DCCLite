@@ -263,10 +263,6 @@ void NetUdp::SendPacket(const uint8_t *data, uint8_t length, const uint8_t *dest
 #else
 	if((destIp[0] != 255) && (destIp[1] != 255) && (destIp[2] != 255) && (destIp[3] != 255) && ether.clientWaitIp(destIp))	
 	{		
-		//Console::OutputStream stream;
-
-		//DCCLITE_LOG_MODULE_EX(stream) << FSTR_ARP << ' ' << FSTR_NOK << ' ';
-		//stream.IpNumber(destIp) << FSTR_INVALID << DCCLITE_ENDL;		
 		Console::Printf(F("[%z] %z %z %z\n"), MODULE_NAME, FSTR_ARP, FSTR_NOK, FSTR_INVALID);
 		ether.printIp(F("Dest IP: "), destIp);
 
@@ -312,7 +308,8 @@ void NetUdp::Update()
 
 void NetUdp::LogStatus()
 {	
-	Console::Printf(F("[%z] %z: %s "), MODULE_NAME, FSTR_NAME, g_szNodeName);	
+	Console::Printf(F("[%z] %z: %s %z"), MODULE_NAME, FSTR_NAME, g_szNodeName, F("mac"));
+	Console::PutChar(' ');
 
 	uint8_t mac[6];
 

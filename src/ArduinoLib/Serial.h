@@ -53,6 +53,8 @@ struct ARDUINO_API SerialImpl
 		m_strData = std::move(str);
 	}
 
+	void internalFlushBufferRemaining();
+
 	private:
 #pragma warning(disable:4251)
 		std::string m_strData;
