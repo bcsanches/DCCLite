@@ -40,9 +40,9 @@ namespace dcclite::broker::exec::dcc
 			size_t PushEvent(EventType type, std::string_view info);
 
 			void Serialize(dcclite::JsonOutputStream_t &stream) const;
-			void SerializeEvent(dcclite::JsonOutputStream_t &stream, const size_t pos) const;
+			void SerializeEvent(dcclite::JsonOutputStream_t &stream, const size_t pos) const;			
 
 		private:
-			std::vector<Event>	m_vecEvents;		
+			std::vector<Event>	m_vecEvents;
 	};
 }

@@ -53,7 +53,7 @@ namespace dcclite::broker::exec::dcc
 	void NetworkDeviceEventLog::Serialize(dcclite::JsonOutputStream_t &stream) const
 	{	
 		if(m_vecEvents.empty())
-			return;
+			return;		
 
 		auto logArray = stream.AddArray("eventsLog");
 

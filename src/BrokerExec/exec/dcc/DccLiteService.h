@@ -31,13 +31,12 @@ namespace dcclite::broker::exec::dcc
 {
 	class Device;
 	class NetworkDevice;
-	class LocationManager;
-	class OutputDecoder;
+	class LocationManager;	
 	class SimpleOutputDecoder;	
 	class StateDecoder;
 	class TurnoutDecoder;	
 
-	class DccLiteService: public sys::Service, private IDccLite_DeviceServices, private IDccLite_DecoderServices, public sys::EventHub::IEventTarget
+	class DccLiteService: public sys::Service, private IDccLite_NetworkDeviceServices, private IDccLite_DecoderServices, public sys::EventHub::IEventTarget
 	{
 		public:
 			static const char *TYPE_NAME;
@@ -135,12 +134,16 @@ namespace dcclite::broker::exec::dcc
 			// To be used only by Devices
 			//
 			//		
-			void Device_SendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet& packet) override;
+			void NetworkDevice_SendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet& packet) override;
 
-			void Device_RegisterSession(NetworkDevice &dev, const dcclite::Guid& configToken) override;
-			void Device_UnregisterSession(NetworkDevice &dev, const dcclite::Guid& sessionToken) override;
+			void NetworkDevice_RegisterSession(NetworkDevice &dev, const dcclite::Guid& configToken) override;
+			void NetworkDevice_UnregisterSession(NetworkDevice &dev, const dcclite::Guid& sessionToken) override;
 
-			void Device_DestroyUnregistered(NetworkDevice &dev) override;
+			void NetworkDevice_DestroyUnregistered(NetworkDevice &dev) override;
+
+			void NetworkDevice_NotifyStateChange(NetworkDevice &device, dcclite::broker::sys::ObjectManagerEvent::SerializeDeltaProc_t proc) const override;
+
+			void NetworkDevice_Block(NetworkDevice &dev) override;
 
 			friend class DestroyUnregisteredDeviceEvent;
 
@@ -155,10 +158,7 @@ namespace dcclite::broker::exec::dcc
 			void Device_DestroyDecoder(Decoder &dec) override;
 
 			void Device_NotifyInternalItemCreated(dcclite::IObject &item) const override;
-			void Device_NotifyInternalItemDestroyed(dcclite::IObject &item) const override;
-			void Device_NotifyStateChange(NetworkDevice &device, dcclite::broker::sys::ObjectManagerEvent::SerializeDeltaProc_t proc) const override;
-
-			void Device_Block(NetworkDevice &dev) override;
+			void Device_NotifyInternalItemDestroyed(dcclite::IObject &item) const override;			
 
 			//
 			//

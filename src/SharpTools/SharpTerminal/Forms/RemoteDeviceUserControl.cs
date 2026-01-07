@@ -69,6 +69,7 @@ namespace SharpTerminal
 			}
 
 			this.RefreshEventsLog();
+			this.RefreshNetworkCounters();
 
 			m_tabControl.SelectedIndex = g_iLastTabIndex;
 		}
@@ -124,6 +125,12 @@ namespace SharpTerminal
 			m_lbTitle.Text = mRemoteDevice.Registered ? name : name + " - Unregistered";
 		}
 
+		private void RefreshNetworkCounters()
+		{
+			m_lblSentBytes.Text = "Sent: " + mRemoteDevice.SentBytes.ToString() + "b";
+			m_lblReceivedBytes.Text = "Rcv: " + mRemoteDevice.ReceivedBytes.ToString() + "b";
+		}
+
 		private void RemoteDevice_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			switch (e.PropertyName)
@@ -134,6 +141,14 @@ namespace SharpTerminal
 
 				case nameof(RemoteNetworkDevice.EventsLog):
 					this.RefreshEventsLog();
+					break;
+
+				case nameof(RemoteNetworkDevice.SentBytes):
+					this.RefreshNetworkCounters();
+					break;
+
+				case nameof(RemoteNetworkDevice.ReceivedBytes):
+					this.RefreshNetworkCounters();
 					break;
 			}
 		}

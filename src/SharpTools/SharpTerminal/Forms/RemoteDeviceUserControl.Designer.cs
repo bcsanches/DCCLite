@@ -2,30 +2,30 @@
 
 namespace SharpTerminal
 {
-    partial class RemoteDeviceUserControl
-    {
-        /// <summary> 
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
+	partial class RemoteDeviceUserControl
+	{
+		/// <summary> 
+		/// Required designer variable.
+		/// </summary>
+		private System.ComponentModel.IContainer components = null;
 
-        /// <summary> 
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                components?.Dispose();
+		/// <summary> 
+		/// Clean up any resources being used.
+		/// </summary>
+		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				components?.Dispose();
 
-                if(mRemoteDevice != null)
-                {
-                    mRemoteDevice.PropertyChanged -= RemoteDevice_PropertyChanged;                    
-                }                    
-            }
-            base.Dispose(disposing);
-        }
+				if(mRemoteDevice != null)
+				{
+					mRemoteDevice.PropertyChanged -= RemoteDevice_PropertyChanged;                    
+				}                    
+			}
+			base.Dispose(disposing);
+		}
 
 		#region Component Designer generated code
 
@@ -39,13 +39,15 @@ namespace SharpTerminal
 			System.Windows.Forms.ColumnHeader Time;
 			System.Windows.Forms.ColumnHeader Type;
 			System.Windows.Forms.ColumnHeader Info;
-			m_tabControl = new System.Windows.Forms.TabControl();
+			System.Windows.Forms.GroupBox groupBox1;
+			System.Windows.Forms.FlowLayoutPanel flowLayoutPanel2;
 			m_gridMain = new System.Windows.Forms.DataGridView();
 			Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			Column4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			Column3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			Column5 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			m_tabControl = new System.Windows.Forms.TabControl();
 			tabPage2 = new System.Windows.Forms.TabPage();
 			m_lvEventsLog = new System.Windows.Forms.ListView();
 			m_lbTitle = new System.Windows.Forms.Label();
@@ -58,28 +60,22 @@ namespace SharpTerminal
 			m_btnReadEEPROM = new System.Windows.Forms.Button();
 			flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
 			m_btnDisconnect = new System.Windows.Forms.Button();
+			m_lblSentBytes = new System.Windows.Forms.Label();
+			m_lblReceivedBytes = new System.Windows.Forms.Label();
 			tabPage1 = new System.Windows.Forms.TabPage();
 			Time = new System.Windows.Forms.ColumnHeader();
 			Type = new System.Windows.Forms.ColumnHeader();
 			Info = new System.Windows.Forms.ColumnHeader();
-			m_tabControl.SuspendLayout();
+			groupBox1 = new System.Windows.Forms.GroupBox();
+			flowLayoutPanel2 = new System.Windows.Forms.FlowLayoutPanel();
 			tabPage1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)m_gridMain).BeginInit();
+			m_tabControl.SuspendLayout();
 			tabPage2.SuspendLayout();
 			flowLayoutPanel1.SuspendLayout();
+			groupBox1.SuspendLayout();
+			flowLayoutPanel2.SuspendLayout();
 			SuspendLayout();
-			// 
-			// m_tabControl
-			// 
-			m_tabControl.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			m_tabControl.Controls.Add(tabPage1);
-			m_tabControl.Controls.Add(tabPage2);
-			m_tabControl.Location = new System.Drawing.Point(115, 42);
-			m_tabControl.Name = "m_tabControl";
-			m_tabControl.SelectedIndex = 0;
-			m_tabControl.Size = new System.Drawing.Size(511, 352);
-			m_tabControl.TabIndex = 11;
-			m_tabControl.SelectedIndexChanged += tabControl_SelectedIndexChanged;
 			// 
 			// tabPage1
 			// 
@@ -148,6 +144,33 @@ namespace SharpTerminal
 			Column5.ReadOnly = true;
 			Column5.Width = 64;
 			// 
+			// Time
+			// 
+			Time.Text = "Time";
+			Time.Width = 120;
+			// 
+			// Type
+			// 
+			Type.Text = "Type";
+			Type.Width = 100;
+			// 
+			// Info
+			// 
+			Info.Text = "Information";
+			Info.Width = 200;
+			// 
+			// m_tabControl
+			// 
+			m_tabControl.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+			m_tabControl.Controls.Add(tabPage1);
+			m_tabControl.Controls.Add(tabPage2);
+			m_tabControl.Location = new System.Drawing.Point(115, 42);
+			m_tabControl.Name = "m_tabControl";
+			m_tabControl.SelectedIndex = 0;
+			m_tabControl.Size = new System.Drawing.Size(511, 352);
+			m_tabControl.TabIndex = 11;
+			m_tabControl.SelectedIndexChanged += tabControl_SelectedIndexChanged;
+			// 
 			// tabPage2
 			// 
 			tabPage2.Controls.Add(m_lvEventsLog);
@@ -172,21 +195,6 @@ namespace SharpTerminal
 			m_lvEventsLog.TabIndex = 0;
 			m_lvEventsLog.UseCompatibleStateImageBehavior = false;
 			m_lvEventsLog.View = System.Windows.Forms.View.Details;
-			// 
-			// Time
-			// 
-			Time.Text = "Time";
-			Time.Width = 120;
-			// 
-			// Type
-			// 
-			Type.Text = "Type";
-			Type.Width = 100;
-			// 
-			// Info
-			// 
-			Info.Text = "Information";
-			Info.Width = 200;
 			// 
 			// m_lbTitle
 			// 
@@ -292,7 +300,7 @@ namespace SharpTerminal
 			flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
 			flowLayoutPanel1.Location = new System.Drawing.Point(4, 42);
 			flowLayoutPanel1.Name = "flowLayoutPanel1";
-			flowLayoutPanel1.Size = new System.Drawing.Size(105, 352);
+			flowLayoutPanel1.Size = new System.Drawing.Size(105, 284);
 			flowLayoutPanel1.TabIndex = 10;
 			// 
 			// m_btnDisconnect
@@ -306,21 +314,65 @@ namespace SharpTerminal
 			m_btnDisconnect.UseVisualStyleBackColor = true;
 			m_btnDisconnect.Click += m_btnDisconnect_Click;
 			// 
+			// groupBox1
+			// 
+			groupBox1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+			groupBox1.Controls.Add(flowLayoutPanel2);
+			groupBox1.Location = new System.Drawing.Point(4, 332);
+			groupBox1.Name = "groupBox1";
+			groupBox1.Size = new System.Drawing.Size(105, 53);
+			groupBox1.TabIndex = 12;
+			groupBox1.TabStop = false;
+			groupBox1.Text = "Data Flow";
+			// 
+			// flowLayoutPanel2
+			// 
+			flowLayoutPanel2.Controls.Add(m_lblSentBytes);
+			flowLayoutPanel2.Controls.Add(m_lblReceivedBytes);
+			flowLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
+			flowLayoutPanel2.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+			flowLayoutPanel2.Location = new System.Drawing.Point(3, 19);
+			flowLayoutPanel2.Name = "flowLayoutPanel2";
+			flowLayoutPanel2.Size = new System.Drawing.Size(99, 31);
+			flowLayoutPanel2.TabIndex = 0;
+			// 
+			// m_lblSentBytes
+			// 
+			m_lblSentBytes.AutoSize = true;
+			m_lblSentBytes.Location = new System.Drawing.Point(3, 0);
+			m_lblSentBytes.Name = "m_lblSentBytes";
+			m_lblSentBytes.Size = new System.Drawing.Size(73, 15);
+			m_lblSentBytes.TabIndex = 0;
+			m_lblSentBytes.Text = "Sent: 0 bytes";
+			// 
+			// m_lblReceivedBytes
+			// 
+			m_lblReceivedBytes.AutoSize = true;
+			m_lblReceivedBytes.Location = new System.Drawing.Point(3, 15);
+			m_lblReceivedBytes.Name = "m_lblReceivedBytes";
+			m_lblReceivedBytes.Size = new System.Drawing.Size(69, 15);
+			m_lblReceivedBytes.TabIndex = 1;
+			m_lblReceivedBytes.Text = "Rcv: 0 bytes";
+			// 
 			// RemoteDeviceUserControl
 			// 
 			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			Controls.Add(groupBox1);
 			Controls.Add(m_tabControl);
 			Controls.Add(flowLayoutPanel1);
 			Controls.Add(m_lbTitle);
 			Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
 			Name = "RemoteDeviceUserControl";
 			Size = new System.Drawing.Size(629, 397);
-			m_tabControl.ResumeLayout(false);
 			tabPage1.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)m_gridMain).EndInit();
+			m_tabControl.ResumeLayout(false);
 			tabPage2.ResumeLayout(false);
 			flowLayoutPanel1.ResumeLayout(false);
+			groupBox1.ResumeLayout(false);
+			flowLayoutPanel2.ResumeLayout(false);
+			flowLayoutPanel2.PerformLayout();
 			ResumeLayout(false);
 			PerformLayout();
 		}
@@ -328,12 +380,12 @@ namespace SharpTerminal
 		#endregion
 
 		private System.Windows.Forms.DataGridView m_gridMain;
-        private System.Windows.Forms.Label m_lbTitle;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column4;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column3;
-        private System.Windows.Forms.DataGridViewTextBoxColumn Column5;
+		private System.Windows.Forms.Label m_lbTitle;
+		private System.Windows.Forms.DataGridViewTextBoxColumn Column1;
+		private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
+		private System.Windows.Forms.DataGridViewTextBoxColumn Column4;
+		private System.Windows.Forms.DataGridViewTextBoxColumn Column3;
+		private System.Windows.Forms.DataGridViewTextBoxColumn Column5;
 		private System.Windows.Forms.Button m_btnRename;
 		private System.Windows.Forms.Button m_btnClear;
 		private System.Windows.Forms.Button m_btnEmulate;
@@ -342,12 +394,11 @@ namespace SharpTerminal
 		private System.Windows.Forms.Button m_btnNetworkTest;
 		private System.Windows.Forms.Button m_btnReadEEPROM;
 		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
-        private System.Windows.Forms.Button m_btnDisconnect;
+		private System.Windows.Forms.Button m_btnDisconnect;
 		private System.Windows.Forms.TabPage tabPage2;
 		private System.Windows.Forms.ListView m_lvEventsLog;
-		private System.Windows.Forms.ColumnHeader Time;
-		private System.Windows.Forms.ColumnHeader Type;
-		private System.Windows.Forms.ColumnHeader Info;
 		private System.Windows.Forms.TabControl m_tabControl;
+		private System.Windows.Forms.Label m_lblSentBytes;
+		private System.Windows.Forms.Label m_lblReceivedBytes;
 	}
 }

@@ -78,7 +78,7 @@ namespace dcclite::broker::exec::dcc
 			StorageManager::SaveState(*this);
 
 		//clear the token
-		m_ConfigToken = {};
+		m_guidConfigToken = {};
 
 		for (auto dec : m_vecDecoders)
 		{
@@ -138,7 +138,7 @@ namespace dcclite::broker::exec::dcc
 
 		auto storedConfigToken = StorageManager::GetFileToken(m_strConfigFileName);
 
-		if (storedConfigToken == m_ConfigToken)
+		if (storedConfigToken == m_guidConfigToken)
 		{
 			dcclite::Log::Info("[Device::{}] [Load] Stored config token is the same loaded token, ignoring load request", this->GetName());
 
@@ -146,7 +146,7 @@ namespace dcclite::broker::exec::dcc
 		}
 
 		dcclite::Log::Trace("[Device::{}] [Load] stored config token {}", this->GetName(), storedConfigToken);
-		dcclite::Log::Trace("[Device::{}] [Load] currently config token {}", this->GetName(), m_ConfigToken);
+		dcclite::Log::Trace("[Device::{}] [Load] currently config token {}", this->GetName(), m_guidConfigToken);
 		dcclite::Log::Trace("[Device::{}] [Load] reading config {}", this->GetName(), m_pathConfigFile.string());
 
 		json::FileDocument fileDocument;
@@ -242,8 +242,8 @@ namespace dcclite::broker::exec::dcc
 
 
 		//if this point is reached, data is loaded, so store new token
-		m_ConfigToken = storedConfigToken;
-		dcclite::Log::Info("[Device::{}] [Load] loaded {}.", this->GetName(), m_ConfigToken);
+		m_guidConfigToken = storedConfigToken;
+		dcclite::Log::Info("[Device::{}] [Load] loaded {}.", this->GetName(), m_guidConfigToken);
 	}
 
 	void Device::ConstVisitDecoders(ConstVisitor_t visitor) const

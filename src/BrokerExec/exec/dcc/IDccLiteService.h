@@ -104,18 +104,23 @@ namespace dcclite::broker::exec::dcc
 				const rapidjson::Value &params
 			) = 0;
 
-			virtual void Device_DestroyDecoder(Decoder &) = 0;
-		
-			virtual void Device_SendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet& packet) = 0;
-
-			virtual void Device_RegisterSession(NetworkDevice &dev, const dcclite::Guid &configToken) = 0;
-			virtual void Device_UnregisterSession(NetworkDevice &dev, const dcclite::Guid &sessionToken) = 0;
-			virtual void Device_DestroyUnregistered(NetworkDevice &dev) = 0;
+			virtual void Device_DestroyDecoder(Decoder &) = 0;							
 
 			virtual void Device_NotifyInternalItemCreated(dcclite::IObject &item) const = 0;
-			virtual void Device_NotifyInternalItemDestroyed(dcclite::IObject &item) const = 0;
-			virtual void Device_NotifyStateChange(NetworkDevice &device, dcclite::broker::sys::ObjectManagerEvent::SerializeDeltaProc_t proc) const = 0;
+			virtual void Device_NotifyInternalItemDestroyed(dcclite::IObject &item) const = 0;			
+	};
 
-			virtual void Device_Block(NetworkDevice &device) = 0;
+	class IDccLite_NetworkDeviceServices : public IDccLite_DeviceServices
+	{
+		public:
+			virtual void NetworkDevice_SendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet &packet) = 0;
+
+			virtual void NetworkDevice_RegisterSession(NetworkDevice &dev, const dcclite::Guid &configToken) = 0;
+			virtual void NetworkDevice_UnregisterSession(NetworkDevice &dev, const dcclite::Guid &sessionToken) = 0;
+			virtual void NetworkDevice_DestroyUnregistered(NetworkDevice &dev) = 0;
+
+			virtual void NetworkDevice_Block(NetworkDevice &device) = 0;
+
+			virtual void NetworkDevice_NotifyStateChange(NetworkDevice &device, dcclite::broker::sys::ObjectManagerEvent::SerializeDeltaProc_t proc) const = 0;
 	};
 }

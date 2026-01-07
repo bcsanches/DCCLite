@@ -13,6 +13,11 @@
 
 - Correctly handle UTF8 messages on RPC system
 - Keep last used tab selected on NetworkDevice user control
+- Display how many bytes has been sent between devices and broker
+
+## Broker
+
+- Tracks data flow between devices
 
 ## Code
 

@@ -119,7 +119,7 @@ namespace dcclite::broker::exec::dcc
 				auto className = json::GetString(device, "class", "device data for DccLiteService");
 
 				if (className.compare("Virtual"))
-					m_pDevices->AddChild(std::make_unique<NetworkDevice>(nodeName, broker, *static_cast<IDccLite_DeviceServices *>(this), device));
+					m_pDevices->AddChild(std::make_unique<NetworkDevice>(nodeName, broker, *static_cast<IDccLite_NetworkDeviceServices *>(this), device));
 				else
 					m_pDevices->AddChild(std::make_unique<VirtualDevice>(nodeName, broker, *static_cast<IDccLite_DeviceServices *>(this), device));
 			}
@@ -250,11 +250,6 @@ namespace dcclite::broker::exec::dcc
 		this->NotifyItemDestroyed(item);
 	}
 
-	void DccLiteService::Device_NotifyStateChange(NetworkDevice &device, dcclite::broker::sys::ObjectManagerEvent::SerializeDeltaProc_t proc) const
-	{
-		this->NotifyItemChanged(device, proc);
-	}
-
 	Device *DccLiteService::TryFindDeviceByName(RName name)
 	{	
 		return static_cast<Device *>(m_pDevices->TryGetChild(name));
@@ -282,27 +277,32 @@ namespace dcclite::broker::exec::dcc
 		return dev;
 	}
 
-	void DccLiteService::Device_SendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet &packet)
+	void DccLiteService::NetworkDevice_SendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet &packet)
 	{
 		[[unlikely]]
 		if (!m_clSocket.Send(destination, packet.GetData(), packet.GetSize()))
 		{
-			dcclite::Log::Error("[DccLiteService::{}] [Device_SendPacket] Failed to send packet to {}", this->GetName(), destination);
+			dcclite::Log::Error("[DccLiteService::{}] [NetworkDevice_SendPacket] Failed to send packet to {}", this->GetName(), destination);
 		}
 	}
 
-	void DccLiteService::Device_RegisterSession(NetworkDevice &dev, const dcclite::Guid &sessionToken)
+	void DccLiteService::NetworkDevice_RegisterSession(NetworkDevice &dev, const dcclite::Guid &sessionToken)
 	{
 		auto session = m_pSessions->AddChild(std::make_unique<dcclite::Shortcut>(RName{ dcclite::GuidToString(sessionToken) }, dev));
 
-		this->NotifyItemCreated(*session);		
+		this->NotifyItemCreated(*session);
 	}
 
-	void DccLiteService::Device_UnregisterSession(NetworkDevice& dev, const dcclite::Guid &sessionToken)
+	void DccLiteService::NetworkDevice_UnregisterSession(NetworkDevice& dev, const dcclite::Guid &sessionToken)
 	{	
 		auto session = m_pSessions->RemoveChild(RName{ dcclite::GuidToString(sessionToken) });
 					
 		this->NotifyItemDestroyed(*session);
+	}
+
+	void DccLiteService::NetworkDevice_NotifyStateChange(NetworkDevice &device, dcclite::broker::sys::ObjectManagerEvent::SerializeDeltaProc_t proc) const
+	{
+		this->NotifyItemChanged(device, proc);
 	}
 
 	class DestroyUnregisteredDeviceEvent: public dcclite::broker::sys::EventHub::IEvent
@@ -351,7 +351,7 @@ namespace dcclite::broker::exec::dcc
 			RName m_rnDeviceName;
 	};
 
-	void DccLiteService::Device_DestroyUnregistered(NetworkDevice &dev)
+	void DccLiteService::NetworkDevice_DestroyUnregistered(NetworkDevice &dev)
 	{
 		const auto name = dev.GetName();
 
@@ -359,6 +359,7 @@ namespace dcclite::broker::exec::dcc
 			throw std::runtime_error(fmt::format("[DccLiteService::Device_DestroyUnregistered] Cannot destroy connected device {}", name));
 
 		dcclite::Log::Info("[DccLiteService::Device_DestroyUnregistered] Requested to destroy {} device", name);
+
 		//fire a event to later destroy the device... to avoid functions touching a dead device under the callstack
 		sys::EventHub::PostEvent<DestroyUnregisteredDeviceEvent>(std::ref(*this), name);
 	}
@@ -432,7 +433,7 @@ namespace dcclite::broker::exec::dcc
 		//just send a blank packet, so they know we are here
 		dcclite::PacketBuilder builder{ pkt, dcclite::MsgTypes::DISCOVERY, dcclite::Guid{}, dcclite::Guid{} };
 
-		this->Device_SendPacket(senderAddress, pkt);
+		this->NetworkDevice_SendPacket(senderAddress, pkt);
 	}
 
 	class NetworkHelloEvent: public sys::EventHub::IEvent
@@ -538,7 +539,7 @@ namespace dcclite::broker::exec::dcc
 			netDevice = static_cast<NetworkDevice *>(m_pDevices->AddChild(
 				std::make_unique<NetworkDevice>(
 					deviceName,
-					*static_cast<IDccLite_DeviceServices *>(this)					
+					*static_cast<IDccLite_NetworkDeviceServices *>(this)					
 				)
 			));
 
@@ -664,7 +665,7 @@ namespace dcclite::broker::exec::dcc
 	//
 	//
 
-	void DccLiteService::Device_Block(NetworkDevice &dev)
+	void DccLiteService::NetworkDevice_Block(NetworkDevice &dev)
 	{
 		if(!dev.IsConnectionStable())
 			throw std::runtime_error(fmt::format("[{}::BlockDevice] Device {} is not connected", this->GetName(), dev.GetName()));

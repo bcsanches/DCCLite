@@ -66,7 +66,28 @@ namespace SharpTerminal
             }
         }
 
-        public uint ProtocolVersion { get; set; }
+        private int mReceivedBytes;
+        private int mSentBytes;
+
+        public int ReceivedBytes
+        {
+            get { return mReceivedBytes; }
+            set
+            {
+                this.UpdateProperty(ref mReceivedBytes, value);
+            }
+		}
+
+        public int SentBytes
+        {
+            get { return mSentBytes; }
+            set
+            {
+                this.UpdateProperty(ref mSentBytes, value);
+            }
+        }
+
+		public uint ProtocolVersion { get; set; }
 
         public bool Registered { get; set; }
 
@@ -160,7 +181,13 @@ namespace SharpTerminal
             if(objectDef.ContainsKey("freeRam"))
 				FreeRam = (int)objectDef["freeRam"];            
 
-            if (objectDef.ContainsKey("pins"))
+            if(objectDef.ContainsKey("bytesReceivedCount"))
+                ReceivedBytes = (int)objectDef["bytesReceivedCount"];
+
+            if(objectDef.ContainsKey("bytesSentCount"))
+                SentBytes = (int)objectDef["bytesSentCount"];
+
+			if (objectDef.ContainsKey("pins"))
             {
                 this.LoadPinsData(objectDef["pins"]);
 			}

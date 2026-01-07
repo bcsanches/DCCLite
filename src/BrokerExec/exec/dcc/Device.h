@@ -55,7 +55,7 @@ namespace dcclite::broker::exec::dcc
 
 			inline dcclite::Guid GetConfigToken() const noexcept
 			{
-				return m_ConfigToken;
+				return m_guidConfigToken;
 			}
 
 			void ConstVisitDecoders(ConstVisitor_t visitor) const;
@@ -67,15 +67,16 @@ namespace dcclite::broker::exec::dcc
 			virtual void OnUnload();
 
 			virtual void CheckIfDecoderTypeIsAllowed(Decoder &decoder) = 0;	
-			[[nodiscard]] virtual bool IsInternalDecoderAllowed() const noexcept = 0;
+			[[nodiscard]] virtual bool IsInternalDecoderAllowed() const noexcept = 0;			
 
 		private:
 			void RegisterDecoder(Decoder &decoder);
 
-		protected:
-			std::vector<Decoder *>	m_vecDecoders;
-
+		private:
 			IDccLite_DeviceServices &m_rclDccService;
+
+		protected:
+			std::vector<Decoder *>	m_vecDecoders;			
 	
 			//
 			//
@@ -83,7 +84,7 @@ namespace dcclite::broker::exec::dcc
 			const std::string		m_strConfigFileName;
 			const dcclite::fs::path m_pathConfigFile;
 
-			dcclite::Guid			m_ConfigToken;
+			dcclite::Guid			m_guidConfigToken;
 	};
 
 }

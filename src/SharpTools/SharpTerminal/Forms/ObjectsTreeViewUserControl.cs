@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Versioning;
@@ -155,10 +155,14 @@ namespace SharpTerminal
 			var name = GenerateObjectName(remoteObject);
 			foreach (var node in nodes)
 			{
-				node.ImageKey = customIcon;
-				node.SelectedImageKey = customIcon;
+				if(node.ImageKey != customIcon)
+					node.ImageKey = customIcon;
 
-				node.Text = name;
+				if(node.SelectedImageKey != customIcon)
+					node.SelectedImageKey = customIcon;
+
+				if(node.Text != name)
+					node.Text = name;
 			}            
 		}
 

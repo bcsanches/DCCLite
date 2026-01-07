@@ -39,16 +39,135 @@ namespace dcclite::broker::exec::dcc
 	class NetworkDevice: public Device, private INetworkDevice_DecoderServices, private detail::INetworkDevice_TaskServices, private INetworkDevice_TaskProvider
 	{
 		public:
-			enum class Status
+			enum class Status: uint8_t
 			{
 				OFFLINE,
 				CONNECTING,
 				ONLINE			
 			};
 
+		private:
+			class FlowRateManager
+			{
+				public:
+					inline void OnPacketReceived(const dcclite::Packet &packet) noexcept
+					{
+						m_uBytesReceivedCount += packet.GetSize();
+					}
+
+					inline void OnPacketSent(const dcclite::Packet &packet) noexcept
+					{
+						m_uBytesSentCount += packet.GetSize();
+					}
+
+					inline void Serialize(dcclite::JsonOutputStream_t &stream)
+					{
+						stream.AddIntValue("bytesReceivedCount", m_uBytesReceivedCount);
+						stream.AddIntValue("bytesSentCount", m_uBytesSentCount);
+					}
+
+				private:
+					unsigned			m_uBytesReceivedCount = 0;
+					unsigned			m_uBytesSentCount = 0;					
+			};
+
+			class NetworkDeviceServiceWrapper
+			{
+				public:
+					inline NetworkDeviceServiceWrapper(IDccLite_NetworkDeviceServices &dccService) :
+						m_rclDccService{ dccService },						
+						m_clFlowRateNotifyThinker{"NetworkDeviceServiceWrapper::FlowRateNotify", THINKER_MF_LAMBDA(OnFlowRateNotifyThink)}
+					{
+						//empty
+					}
+
+					inline void SendPacket(NetworkDevice &owner, const dcclite::Packet &packet)
+					{
+						this->DoSendPacket(owner.GetRemoteAddress(), packet);
+
+						this->NotifyFlowRateChange(owner, std::nullopt);
+					}
+
+					inline void SendPacket(NetworkDevice &owner, const dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time)
+					{
+						this->DoSendPacket(owner.GetRemoteAddress(), packet);
+
+						this->NotifyFlowRateChange(owner, time);
+					}
+
+					inline void Block(NetworkDevice &owner)
+					{
+						m_rclDccService.NetworkDevice_Block(owner);
+					}
+
+					inline void UnregisterSession(NetworkDevice &owner, const dcclite::Guid &sessionToken)
+					{
+						m_rclDccService.NetworkDevice_UnregisterSession(owner, sessionToken);
+					}
+
+					inline void RegisterSession(NetworkDevice &owner, const dcclite::Guid &configToken)
+					{
+						m_rclDccService.NetworkDevice_RegisterSession(owner, configToken);
+					}
+
+					inline void DestroyUnregistered(NetworkDevice &owner)
+					{
+						m_rclDccService.NetworkDevice_DestroyUnregistered(owner);
+					}
+
+					inline void NotifyStateChange(NetworkDevice &owner, dcclite::broker::sys::ObjectManagerEvent::SerializeDeltaProc_t proc)
+					{
+						if(!m_fFlowRateChangePending)
+							m_rclDccService.NetworkDevice_NotifyStateChange(owner, proc);
+						else
+						{
+							//inject on the notify packet on the data...
+							m_rclDccService.NetworkDevice_NotifyStateChange(owner, [this, proc](JsonOutputStream_t &stream)
+								{
+									proc(stream);
+									this->m_clFlowRateManager.Serialize(stream);
+								}
+							);
+
+							m_clFlowRateNotifyThinker.Cancel();
+							m_fFlowRateChangePending = false;
+						}
+					}
+
+					inline void NotifyReceivedPacket(NetworkDevice &owner, const dcclite::Packet &packet, const dcclite::Clock::TimePoint_t time)
+					{
+						m_clFlowRateManager.OnPacketReceived(packet);
+						this->NotifyFlowRateChange(owner, time);
+					}
+
+				private:
+					inline void DoSendPacket(const dcclite::NetworkAddress destination, const dcclite::Packet &packet)
+					{
+						m_rclDccService.NetworkDevice_SendPacket(destination, packet);
+						m_clFlowRateManager.OnPacketSent(packet);
+					}
+
+					void DispatchFlowRateChangeNotify(NetworkDevice &owner, const dcclite::Clock::TimePoint_t time);
+
+					void OnFlowRateNotifyThink(const dcclite::Clock::TimePoint_t time);
+
+					void NotifyFlowRateChange(NetworkDevice &owner, std::optional<const dcclite::Clock::TimePoint_t> time);
+
+				private:
+					IDccLite_NetworkDeviceServices	&m_rclDccService;					
+
+					sys::Thinker					m_clFlowRateNotifyThinker;
+
+					FlowRateManager					m_clFlowRateManager;
+
+					NetworkDevice					*m_pclThinkerDeviceOwner = nullptr;
+
+					bool							m_fFlowRateChangePending = false;
+			};
+
 		public:
-			NetworkDevice(RName name, sys::Broker &broker, IDccLite_DeviceServices &dccService, const rapidjson::Value &params);
-			NetworkDevice(RName name, IDccLite_DeviceServices &dccService);
+			NetworkDevice(RName name, sys::Broker &broker, IDccLite_NetworkDeviceServices &dccService, const rapidjson::Value &params);
+			NetworkDevice(RName name, IDccLite_NetworkDeviceServices &dccService);
 
 			NetworkDevice(const NetworkDevice &) = delete;
 			NetworkDevice(NetworkDevice &&) = delete;
@@ -73,7 +192,7 @@ namespace dcclite::broker::exec::dcc
 					
 			[[nodiscard]] inline const dcclite::Guid &GetConfigToken() noexcept
 			{
-				return m_ConfigToken;
+				return m_guidConfigToken;
 			}
 
 			[[nodiscard]] uint8_t FindDecoderIndex(const Decoder &decoder) const override;
@@ -88,12 +207,12 @@ namespace dcclite::broker::exec::dcc
 
 			inline void Block()
 			{
-				m_rclDccService.Device_Block(*this);
+				m_clNetService.Block(*this);	
 			}
 
 			inline NetworkAddress GetRemoteAddress() const noexcept
 			{
-				return m_RemoteAddress;
+				return m_clRemoteAddress;
 			}
 
 			//
@@ -217,16 +336,16 @@ namespace dcclite::broker::exec::dcc
 			//
 			//
 			//Remote Device Info				
-			dcclite::Guid		m_SessionToken;
+			dcclite::Guid			m_guidSessionToken;
 
-			dcclite::NetworkAddress	m_RemoteAddress;			
+			dcclite::NetworkAddress	m_clRemoteAddress;
 
 			//
 			//
-			//Connection status
-			Status				m_kStatus = Status::OFFLINE;
+			//
+			NetworkDeviceServiceWrapper m_clNetService;	
 
-			friend struct OnPacketImpl;
+			friend struct OnPacketImpl;			
 
 			struct State
 			{
@@ -277,9 +396,9 @@ namespace dcclite::broker::exec::dcc
 				const char *GetName() const override { return "ConfigState"; }
 
 				private:				
-					void SendDecoderConfigPacket(const size_t index) const;
-					void SendConfigStartPacket() const;
-					void SendConfigFinishedPacket() const;
+					void SendDecoderConfigPacket(const size_t index, const dcclite::Clock::TimePoint_t time) const;
+					void SendConfigStartPacket(const dcclite::Clock::TimePoint_t time) const;
+					void SendConfigFinishedPacket(const dcclite::Clock::TimePoint_t time) const;
 
 					void OnTimeout(const dcclite::Clock::TimePoint_t time);
 
@@ -386,6 +505,16 @@ namespace dcclite::broker::exec::dcc
 
 			std::uint16_t		m_uRemoteFreeRam = UINT16_MAX;
 			std::uint16_t		m_uProtocolVersion = 0;
+			
+			Status				m_kStatus = Status::OFFLINE;
+
+			/**
+			Registered is a device that is stored on config.
+
+			Devices that contact the Broker, but are not in the config files, are marked as unregistered
+
+			*/
+			bool				m_fRegistered;
 
 			//
 			//
@@ -394,15 +523,6 @@ namespace dcclite::broker::exec::dcc
 			//						
 			std::list<std::shared_ptr<detail::NetworkTaskImpl>> m_lstTasks;
 
-			NetworkDeviceEventLog	m_clEventLog;
-
-			/**
-			Registered is a device that is stored on config.
-
-			Devices that contact the Broker, but are not in the config files, are marked as unregistered
-
-			*/				
-			bool				m_fRegistered;
+			NetworkDeviceEventLog	m_clEventLog;			
 	};
-
 }
