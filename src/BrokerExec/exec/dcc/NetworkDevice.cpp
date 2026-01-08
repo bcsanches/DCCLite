@@ -47,7 +47,7 @@ namespace dcclite::broker::exec::dcc
 	//
 	//
 
-	NetworkDevice::TimeoutController::TimeoutController(NetworkDevice &owner):
+	NetworkDevice::TimeoutController::TimeoutController(NetworkDevice &owner):		
 		m_clThinker{ "NetworkDevice::TimeoutController", THINKER_MF_LAMBDA(OnThink)},
 		m_rclOwner(owner)
 	{

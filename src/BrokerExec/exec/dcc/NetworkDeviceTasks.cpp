@@ -99,7 +99,7 @@ namespace dcclite::broker::exec::dcc::detail
 
 			friend class NetworkDevice;
 
-			sys::Thinker				m_clThinker;
+			sys::Thinker_t				m_clThinker;
 			
 			DownloadEEPromTaskResult_t	&m_vecResults;		
 			std::vector<bool>			m_vecSlicesAck;			
@@ -327,7 +327,7 @@ namespace dcclite::broker::exec::dcc::detail
 			void OnThink(const dcclite::Clock::TimePoint_t time);
 
 		private:			
-			sys::Thinker	m_clThinker;
+			sys::Thinker_t	m_clThinker;
 			RName			m_rnNewName;
 
 			bool m_fWaitingNameAck = true;
@@ -463,7 +463,7 @@ namespace dcclite::broker::exec::dcc::detail
 			void OnThink(const dcclite::Clock::TimePoint_t time);
 
 		private:
-			sys::Thinker	m_clThinker;
+			sys::Thinker_t	m_clThinker;
 
 			bool m_fWaitingAck = true;
 
@@ -625,7 +625,7 @@ namespace dcclite::broker::exec::dcc::detail
 					void SendStartPacket(const dcclite::Clock::TimePoint_t time);
 
 				private:
-					sys::Thinker m_clThinker;
+					sys::Thinker_t m_clThinker;
 			};
 
 			struct RunningState: State
@@ -640,7 +640,7 @@ namespace dcclite::broker::exec::dcc::detail
 					void OnThink(const dcclite::Clock::TimePoint_t time);
 
 				private:
-					sys::Thinker m_clThinker;
+					sys::Thinker_t m_clThinker;
 
 					uint32_t	m_u32Sequence = 0;
 					uint32_t	m_u32AckSequence = 0;
@@ -666,7 +666,7 @@ namespace dcclite::broker::exec::dcc::detail
 					void SendDeployPacket(const dcclite::Clock::TimePoint_t time);
 
 				private:
-					sys::Thinker m_clThinker;
+					sys::Thinker_t m_clThinker;
 			};
 
 			struct StoppingState: TerminalState
@@ -679,7 +679,7 @@ namespace dcclite::broker::exec::dcc::detail
 					void SendStopPacket(const dcclite::Clock::TimePoint_t time);
 
 				private:
-					sys::Thinker m_clThinker;
+					sys::Thinker_t m_clThinker;
 			};
 
 			struct FailureState: TerminalState
@@ -1237,7 +1237,7 @@ namespace dcclite::broker::exec::dcc::detail
 			void SendPacket(const dcclite::Clock::TimePoint_t time);
 
 		private:
-			sys::Thinker m_clThinker;
+			sys::Thinker_t m_clThinker;
 
 			NetworkTestTaskResults m_tResults = {};
 

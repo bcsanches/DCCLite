@@ -40,6 +40,10 @@ namespace dcclite::broker::tycoon
 			typedef std::chrono::time_point<FastClock>	time_point;
 			static const bool is_steady = true;
 
+			//
+			//For thinkers
+			typedef time_point TimePoint_t;
+
 			inline time_point Now() const noexcept
 			{
 				return m_tElapsed;
@@ -54,7 +58,7 @@ namespace dcclite::broker::tycoon
 			void OnTick(const dcclite::Clock::TimePoint_t tp);
 
 		private:			
-			dcclite::broker::sys::Thinker m_clThinker;
+			dcclite::broker::sys::Thinker_t m_clThinker;
 
 			time_point m_tElapsed;
 

@@ -147,7 +147,7 @@ int main(int argc, char **argv)
 		{			
 			auto now = dcclite::Clock::DefaultClock_t::now();
 						
-			auto timeout = dcclite::broker::sys::Thinker::UpdateThinkers(now);
+			auto timeout = dcclite::broker::sys::Thinker_t::UpdateThinkers(now);
 			
 			dcclite::broker::sys::EventHub::PumpEvents(timeout);
 		}

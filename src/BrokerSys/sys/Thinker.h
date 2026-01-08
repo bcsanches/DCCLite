@@ -10,58 +10,13 @@
 
 #pragma once
 
-#include <functional>
-#include <optional>
-#include <string_view>
+#include <dcclite/GenericThinker.h>
 
 #include <dcclite/Clock.h>
 
-#define THINKER_MF_LAMBDA(proc) ([this](const dcclite::Clock::TimePoint_t &tp) {this->proc(tp); })
+#define THINKER_MF_LAMBDA(proc) ([this](const dcclite::broker::sys::Thinker_t::TimePoint_t &tp) { this->proc(tp); })
 
 namespace dcclite::broker::sys
 {
-	class Thinker
-	{
-		typedef std::function<void(const dcclite::Clock::TimePoint_t)> Proc_t;
-
-		public:
-			Thinker(const std::string_view name, Proc_t proc) noexcept;
-			Thinker(const dcclite::Clock::TimePoint_t tp, const std::string_view name, Proc_t proc) noexcept;
-
-			Thinker(Thinker &&) = delete;
-			Thinker(const Thinker &) = delete;
-
-			Thinker &operator=(const Thinker &) = delete;
-			Thinker &operator=(Thinker &&) = delete;
-			
-			~Thinker() noexcept;
-
-			void Schedule(const dcclite::Clock::TimePoint_t tp) noexcept;
-			void Cancel() noexcept;
-
-			inline bool IsScheduled() const noexcept
-			{
-				return m_fScheduled;
-			}
-			
-			static std::optional<dcclite::Clock::TimePoint_t> UpdateThinkers(const dcclite::Clock::TimePoint_t tp);
-
-		private:
-			static void RegisterThinker(Thinker &thinker) noexcept;
-			static void UnregisterThinker(Thinker &thinker) noexcept;
-
-			friend bool ThinkerPointerComparer(const Thinker *a, const Thinker *b) noexcept;
-
-		private:
-			Proc_t m_pfnCallback;
-
-			dcclite::Clock::TimePoint_t m_tTimePoint;
-
-			const std::string_view m_strvName;
-
-			Thinker *m_pclNext = nullptr;
-			Thinker *m_pclPrev = nullptr;
-
-			bool m_fScheduled = false;
-	};
+	typedef dcclite::Thinker<dcclite::Clock> Thinker_t;
 }

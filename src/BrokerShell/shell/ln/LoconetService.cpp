@@ -1014,8 +1014,8 @@ namespace dcclite::broker::shell::ln
 
 		MessageDispatcher m_clMessageDispatcher;
 
-		sys::Thinker m_tThinker;
-		sys::Thinker m_tPurgeThinker;
+		sys::Thinker_t m_tThinker;
+		sys::Thinker_t m_tPurgeThinker;
 
 		uint8_t m_uErrorCount = 0;
 	};

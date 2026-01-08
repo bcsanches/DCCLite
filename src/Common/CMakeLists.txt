@@ -19,6 +19,7 @@ add_library(
 	dcclite/FolderObject.cpp
 	dcclite/FolderObject.h
 	dcclite/FmtUtils.h
+	dcclite/GenericThinker.h
 	dcclite/Guid.cpp
 	dcclite/Guid.h
 	dcclite/IFolderObject.cpp
