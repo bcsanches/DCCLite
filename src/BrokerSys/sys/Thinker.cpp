@@ -10,3 +10,8 @@
 
 #include "Thinker.h"
 
+namespace dcclite::broker::sys
+{
+	Thinker::Base_t *Thinker::g_pclThinkers = nullptr;
+
+}

@@ -12,12 +12,15 @@
 
 #include <functional>
 #include <optional>
+#include <stdexcept>
 #include <string_view>
+
+#include "Log.h"
 
 namespace dcclite
 {
 	template <typename CLOCK>
-	class Thinker
+	class BaseThinker
 	{
 		public:
 			typedef std::function<void(const typename CLOCK::TimePoint_t)> Proc_t;
@@ -35,55 +38,26 @@ namespace dcclite
 			}
 
 		public:
-			Thinker(const std::string_view name, Proc_t proc) noexcept :
+			BaseThinker(const std::string_view name, Proc_t proc) noexcept :
 				m_pfnCallback{ proc },
 				m_strvName{ name }
 			{
 				//empty
 			}
 
-			Thinker(const CLOCK::TimePoint_t tp, const std::string_view name, Proc_t proc) noexcept :
-				m_pfnCallback{ proc },
-				m_strvName{ name }
+			BaseThinker(BaseThinker &&) = delete;
+			BaseThinker(const BaseThinker &) = delete;
+
+			BaseThinker &operator=(const BaseThinker &) = delete;
+			BaseThinker &operator=(BaseThinker &&) = delete;
+
+			virtual ~BaseThinker()
 			{
-				this->Schedule(tp);
-			}
-
-			Thinker(Thinker &&) = delete;
-			Thinker(const Thinker &) = delete;
-
-			Thinker &operator=(const Thinker &) = delete;
-			Thinker &operator=(Thinker &&) = delete;
-
-			~Thinker() noexcept
-			{
-				this->Cancel();
-			}
-
-			void Schedule(const CLOCK::TimePoint_t tp) noexcept
-			{
-				//
-				//Sometimes they get scheduled multiple times...
-				if ((m_fScheduled) && (tp == m_tTimePoint))
-					return;
-
-				this->Cancel();
-
-				m_tTimePoint = tp;
-
-				RegisterThinker(*this);
-
-				m_fScheduled = true;
-			}
-
-			void Cancel() noexcept
-			{
-				if (!m_fScheduled)
-					return;
-
-				UnregisterThinker(*this);
-
-				m_fScheduled = false;
+				if (this->IsScheduled())
+				{
+					dcclite::Log::Critical("[BaseThinker] Destroying a scheduled thinker is not allowed, cancel it first. Thinker Name: {}", m_strvName);
+					std::terminate();
+				}
 			}
 
 			inline bool IsScheduled() const noexcept
@@ -91,17 +65,51 @@ namespace dcclite
 				return m_fScheduled;
 			}
 
-			static std::optional<typename CLOCK::TimePoint_t> UpdateThinkers(const CLOCK::TimePoint_t tp)
+		protected:
+			BaseThinker(BaseThinker **phead, const CLOCK::TimePoint_t tp, const std::string_view name, Proc_t proc) noexcept :
+				m_pfnCallback{ proc },
+				m_strvName{ name }
 			{
-				while (g_pclThinkers)
+				this->Schedule(phead, tp);
+			}
+
+			void Cancel(BaseThinker **phead) noexcept
+			{
+				if (!m_fScheduled)
+					return;
+
+				UnregisterThinker(phead, *this);
+
+				m_fScheduled = false;
+			}
+
+			void Schedule(BaseThinker **phead, const CLOCK::TimePoint_t tp) noexcept
+			{
+				//
+				//Sometimes they get scheduled multiple times...
+				if ((m_fScheduled) && (tp == m_tTimePoint))
+					return;
+
+				this->Cancel(phead);
+
+				m_tTimePoint = tp;
+
+				RegisterThinker(phead, *this);
+
+				m_fScheduled = true;
+			}
+
+			static std::optional<typename CLOCK::TimePoint_t> UpdateThinkers(BaseThinker **phead, const CLOCK::TimePoint_t tp)
+			{
+				while (*phead)
 				{
-					if (g_pclThinkers->m_tTimePoint > tp)
+					if ((*phead)->m_tTimePoint > tp)
 					{
-						return g_pclThinkers->m_tTimePoint;
+						return (*phead)->m_tTimePoint;
 					}
 
-					auto thinker = g_pclThinkers;
-					g_pclThinkers = thinker->m_pclNext;
+					auto thinker = *phead;
+					*phead = thinker->m_pclNext;
 
 					//
 					//We could do this in the loop before updating the pointers and avoid an if
@@ -109,8 +117,8 @@ namespace dcclite
 					//
 					//If the callback throws we expect to abend, but, perhaps we change this someday  and to avoid a
 					//painful time chasing a dangling pointer, lets play safe....
-					if (g_pclThinkers)
-						g_pclThinkers->m_pclPrev = nullptr;
+					if (*phead)
+						(*phead)->m_pclPrev = nullptr;
 
 					thinker->m_pclNext = nullptr;
 					thinker->m_fScheduled = false;
@@ -127,10 +135,10 @@ namespace dcclite
 			}
 
 		private:
-			static void RegisterThinker(Thinker &thinker) noexcept
+			static void RegisterThinker(BaseThinker **phead, BaseThinker &thinker) noexcept
 			{
-				auto **p = &g_pclThinkers;
-				Thinker *previous = nullptr;
+				auto **p = phead;
+				BaseThinker *previous = nullptr;
 
 				for (; (*p) && ((*p)->m_tTimePoint < thinker.m_tTimePoint); p = &(*p)->m_pclNext)
 				{
@@ -147,11 +155,11 @@ namespace dcclite
 				thinker.m_pclPrev = previous;			
 			}
 
-			static void UnregisterThinker(Thinker &thinker) noexcept
+			static void UnregisterThinker(BaseThinker **phead, BaseThinker &thinker) noexcept
 			{
 				if (thinker.m_pclPrev == nullptr)
 				{
-					g_pclThinkers = thinker.m_pclNext;
+					*phead = thinker.m_pclNext;
 				}
 				else
 				{
@@ -174,14 +182,9 @@ namespace dcclite
 
 			const std::string_view m_strvName;
 
-			Thinker *m_pclNext = nullptr;
-			Thinker *m_pclPrev = nullptr;
+			BaseThinker *m_pclNext = nullptr;
+			BaseThinker *m_pclPrev = nullptr;
 
-			bool m_fScheduled = false;
-
-			static Thinker *g_pclThinkers;
-	};
-
-	template <typename CLOCK>
-	Thinker<CLOCK> *Thinker<CLOCK>::g_pclThinkers = nullptr;
+			bool m_fScheduled = false;			
+	};	
 }

@@ -10,13 +10,54 @@
 
 #pragma once
 
-#include <dcclite/GenericThinker.h>
+#include <dcclite/BaseThinker.h>
 
 #include <dcclite/Clock.h>
 
-#define THINKER_MF_LAMBDA(proc) ([this](const dcclite::broker::sys::Thinker_t::TimePoint_t &tp) { this->proc(tp); })
+#define THINKER_MF_LAMBDA(proc) ([this](const dcclite::broker::sys::Thinker::TimePoint_t &tp) { this->proc(tp); })
 
 namespace dcclite::broker::sys
-{
-	typedef dcclite::Thinker<dcclite::Clock> Thinker_t;
+{	
+	class Thinker : public dcclite::BaseThinker<dcclite::Clock>
+	{
+		public:
+			typedef dcclite::Clock::TimePoint_t TimePoint_t;
+			typedef dcclite::BaseThinker<dcclite::Clock> Base_t;
+
+			inline Thinker(const std::string_view name, Proc_t proc) noexcept :
+				Base_t{ name, proc }
+			{
+				//empty
+			}
+
+			inline Thinker(const TimePoint_t tp, const std::string_view name, Proc_t proc) noexcept :
+				Base_t{ &g_pclThinkers, tp, name, proc }
+			{
+				//empty
+			}
+
+			~Thinker() override
+			{
+				//make sure we are unregistered
+				this->Cancel();
+			}
+
+			inline void Schedule(const TimePoint_t tp) noexcept 
+			{
+				Base_t::Schedule(&g_pclThinkers, tp);
+			}
+
+			inline void Cancel() noexcept
+			{
+				Base_t::Cancel(&g_pclThinkers);
+			}
+
+			inline static std::optional<TimePoint_t> UpdateThinkers(const TimePoint_t tp)
+			{
+				return Base_t::UpdateThinkers(&g_pclThinkers, tp);
+			}
+
+		private:
+			static Base_t *g_pclThinkers;
+	};
 }

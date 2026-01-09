@@ -138,7 +138,7 @@ namespace dcclite::broker::exec::dcc
 					std::list<sigslot::scoped_connection> m_lstConnections;
 					unsigned m_uWaitListSize = 0;
 
-					sys::Thinker_t m_clTimeoutThinker;
+					sys::Thinker m_clTimeoutThinker;
 			};
 
 			struct State_Flash: State
@@ -149,7 +149,7 @@ namespace dcclite::broker::exec::dcc
 
 				bool m_fOn = true;				
 
-				sys::Thinker_t m_clThinker;
+				sys::Thinker m_clThinker;
 			};
 
 		private:

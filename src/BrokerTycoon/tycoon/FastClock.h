@@ -58,7 +58,7 @@ namespace dcclite::broker::tycoon
 			void OnTick(const dcclite::Clock::TimePoint_t tp);
 
 		private:			
-			dcclite::broker::sys::Thinker_t m_clThinker;
+			dcclite::broker::sys::Thinker m_clThinker;
 
 			time_point m_tElapsed;
 

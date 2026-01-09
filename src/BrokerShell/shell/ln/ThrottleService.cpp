@@ -667,7 +667,7 @@ namespace dcclite::broker::shell::ln
 			void Think(const dcclite::Clock::TimePoint_t ticks);
 
 		private:
-			sys::Thinker_t m_tThinker;
+			sys::Thinker m_tThinker;
 
 			dcclite::NetworkAddress m_clServerAddress;
 			unsigned int			m_uThrottleCount = 0;

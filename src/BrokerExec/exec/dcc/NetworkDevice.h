@@ -156,7 +156,7 @@ namespace dcclite::broker::exec::dcc
 				private:
 					IDccLite_NetworkDeviceServices	&m_rclDccService;					
 
-					sys::Thinker_t					m_clFlowRateNotifyThinker;
+					sys::Thinker					m_clFlowRateNotifyThinker;
 
 					FlowRateManager					m_clFlowRateManager;
 
@@ -378,7 +378,7 @@ namespace dcclite::broker::exec::dcc
 				uint8_t				m_uSeqCount = { 0 };
 				bool				m_fAckReceived = { false };
 
-				sys::Thinker_t		m_clTimeoutThinker;
+				sys::Thinker		m_clTimeoutThinker;
 
 				BenchmarkLogger		m_clBenchmark;
 
@@ -436,7 +436,7 @@ namespace dcclite::broker::exec::dcc
 				private:
 					void OnTimeout(const dcclite::Clock::TimePoint_t time);
 
-					sys::Thinker_t		m_clTimeoutThinker;
+					sys::Thinker		m_clTimeoutThinker;
 
 					BenchmarkLogger		m_clBenchmark;
 			};
@@ -467,8 +467,8 @@ namespace dcclite::broker::exec::dcc
 
 					uint64_t			m_uOutgoingStatePacketId = 0;
 
-					sys::Thinker_t		m_clPingThinker;
-					sys::Thinker_t		m_clSendStateDeltaThinker;
+					sys::Thinker		m_clPingThinker;
+					sys::Thinker		m_clSendStateDeltaThinker;
 
 					BenchmarkLogger		m_clBenchmark;
 
@@ -489,7 +489,7 @@ namespace dcclite::broker::exec::dcc
 					void OnThink(const dcclite::Clock::TimePoint_t time);
 
 				private:
-					sys::Thinker_t	m_clThinker;
+					sys::Thinker	m_clThinker;
 
 					NetworkDevice	&m_rclOwner;
 			};

@@ -7,6 +7,7 @@ file(GLOB_RECURSE SRC_DCCLITE
 
 add_library(	
 	Common
+	dcclite/BaseThinker.h
 	dcclite/Benchmark.cpp
 	dcclite/Benchmark.h
 	dcclite/Clock.cpp
@@ -18,8 +19,7 @@ add_library(
 	dcclite/FileSystem.h
 	dcclite/FolderObject.cpp
 	dcclite/FolderObject.h
-	dcclite/FmtUtils.h
-	dcclite/GenericThinker.h
+	dcclite/FmtUtils.h	
 	dcclite/Guid.cpp
 	dcclite/Guid.h
 	dcclite/IFolderObject.cpp
