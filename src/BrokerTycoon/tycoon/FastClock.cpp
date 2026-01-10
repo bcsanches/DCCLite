@@ -61,5 +61,6 @@ namespace dcclite::broker::tycoon
 		m_tElapsed += 1min;
 
 		//dcclite::Log::Trace("[FastClock::OnTick] Tick. Elapsed time: {}s", std::chrono::duration_cast<std::chrono::seconds>(m_tElapsed.time_since_epoch()).count());
+		m_clThinkerManager.UpdateThinkers(m_tElapsed);
 	}
 }

@@ -12,37 +12,29 @@
 
 #include <chrono>
 
+#include <dcclite/BaseThinker.h>
 #include <dcclite/Clock.h>
 #include <dcclite/Object.h>
 
-#include "sys/Thinker.h"
+#include <sys/Thinker.h>
+
+#include "FastClockDefs.h"
+#include "FastClockThinker.h"
 
 namespace dcclite::broker::tycoon
 {
 	class FastClock : public Object
 	{
 		public:
+			typedef FastClockDef::time_point time_point;
+
 			FastClock(RName name, uint8_t rate);
 			FastClock(const FastClock &) = delete;
 
 			virtual const char *GetTypeName() const noexcept override
 			{
 				return "FastClock";
-			}
-
-			//
-			//
-			//chrono "interface"
-
-			typedef std::chrono::seconds				duration;
-			typedef duration::rep						rep;
-			typedef duration::period					period;
-			typedef std::chrono::time_point<FastClock>	time_point;
-			static const bool is_steady = true;
-
-			//
-			//For thinkers
-			typedef time_point TimePoint_t;
+			}			
 
 			inline time_point Now() const noexcept
 			{
@@ -54,16 +46,28 @@ namespace dcclite::broker::tycoon
 
 			void SetRate(uint8_t rate);
 
+			inline FastClockThinker MakeThinker(const std::string_view name, FastClockThinker::Proc_t proc)
+			{
+				return FastClockThinker{ m_clThinkerManager, {}, name, proc };
+			}
+
+			inline FastClockThinker MakeThinker(time_point tp, const std::string_view name, FastClockThinker::Proc_t proc)
+			{
+				return FastClockThinker{ m_clThinkerManager, tp, name, proc };				
+			}
+
 		private:
 			void OnTick(const dcclite::Clock::TimePoint_t tp);
 
 		private:			
 			dcclite::broker::sys::Thinker m_clThinker;
 
+			ThinkerManager m_clThinkerManager;
+
 			time_point m_tElapsed;
 
 			std::chrono::milliseconds m_tTickRate;
 
 			uint8_t m_uRate;
-	};
+	};	
 }

@@ -12,6 +12,9 @@ add_library(
         tycoon/CarType.h
         tycoon/FastClock.cpp
         tycoon/FastClock.h
+        tycoon/FastClockDefs.h
+        tycoon/FastClockThinker.cpp
+        tycoon/FastClockThinker.h
         tycoon/Industry.cpp
         tycoon/Industry.h
         tycoon/Location.cpp

@@ -46,7 +46,7 @@ namespace dcclite
 			}
 
 			BaseThinker(BaseThinker &&) = delete;
-			BaseThinker(const BaseThinker &) = delete;
+			BaseThinker(const BaseThinker &) = delete;			
 
 			BaseThinker &operator=(const BaseThinker &) = delete;
 			BaseThinker &operator=(BaseThinker &&) = delete;
@@ -71,6 +71,31 @@ namespace dcclite
 				m_strvName{ name }
 			{
 				this->Schedule(phead, tp);
+			}
+
+			//This seems to be evil.... or UB?
+			BaseThinker(BaseThinker **phead, BaseThinker &&rhs) :
+				m_pfnCallback{ rhs.m_pfnCallback },
+				m_strvName{ rhs.m_strvName },
+				m_tTimePoint{ rhs.m_tTimePoint },
+				m_fScheduled{ rhs.m_fScheduled }
+			{
+				if (!m_fScheduled)
+					return;
+
+				m_pclNext = rhs.m_pclNext;
+				m_pclPrev = rhs.m_pclPrev;
+
+				if(m_pclNext)
+					m_pclNext->m_pclPrev = this;
+
+				if(m_pclPrev)
+					m_pclPrev->m_pclNext = this;
+				else
+					*phead = this;
+
+				rhs.m_fScheduled = false;
+				rhs.m_pclNext = rhs.m_pclPrev = nullptr;
 			}
 
 			void Cancel(BaseThinker **phead) noexcept
