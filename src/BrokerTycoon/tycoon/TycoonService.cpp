@@ -31,21 +31,21 @@ namespace dcclite::broker::tycoon
 		m_clFastClock{ RName{"FastClock"}, 1 },
 		m_pathDataFileName{ sys::Project::GetFilePath(name.GetData()) }
 	{
-		BenchmarkLogger benchmark{ "TycoonServiceImpl::TycoonServiceImpl", this->GetNameData() };
+		BenchmarkLogger benchmark{ "TycoonService::TycoonService", this->GetNameData() };
 
 		m_pLocations = static_cast<FolderObject *>(this->AddChild(std::make_unique<FolderObject>(RName{ "locations" })));
 
 		m_pathDataFileName.concat(".config.json");
 
-		dcclite::Log::Info("[TycoonServiceImpl::{}] [Load] Trying to load {}", this->GetName(), m_pathDataFileName.string());		
+		dcclite::Log::Info("[TycoonService::{}] [Load] Trying to load {}", this->GetName(), m_pathDataFileName.string());		
 
 		dcclite::json::FileDocument fileDocument;
 		if (fileDocument.Load(m_pathDataFileName))
 		{
 			if (!fileDocument.IsObject())
-				throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: invalid config, expected object definition inside config", this->GetName()));
+				throw std::runtime_error(fmt::format("[TycoonService::{}] [Load] error: invalid config, expected object definition inside config", this->GetName()));
 
-			dcclite::Log::Info("[TycoonServiceImpl::{}] [Load] Loaded {}, using it instead of inline definition", this->GetName(), m_pathDataFileName.string());
+			dcclite::Log::Info("[TycoonService::{}] [Load] Loaded {}, using it instead of inline definition", this->GetName(), m_pathDataFileName.string());
 			
 			this->Load(fileDocument.GetObject());
 		}
@@ -75,7 +75,7 @@ namespace dcclite::broker::tycoon
 		{
 			throw std::invalid_argument(
 				fmt::format(
-					"[TycoonServiceImpl::{}] [FindCargoByName] error: unknown cargo name '{}'",
+					"[TycoonService::{}] [FindCargoByName] error: unknown cargo name '{}'",
 					this->GetName(),
 					name
 				)
@@ -93,27 +93,27 @@ namespace dcclite::broker::tycoon
 
 		if (!cargosArray->IsArray())
 		{
-			throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: invalid cargos definition, expected array", this->GetName()));
+			throw std::runtime_error(fmt::format("[TycoonService::{}] [Load] error: invalid cargos definition, expected array", this->GetName()));
 		}
 
 		for (const auto &cargoValue : cargosArray->GetArray())
 		{
 			if (!cargoValue.IsObject())
 			{
-				throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: invalid cargo definition, expected object", this->GetName()));
+				throw std::runtime_error(fmt::format("[TycoonService::{}] [Load] error: invalid cargo definition, expected object", this->GetName()));
 			}
 
 			auto name = dcclite::json::TryGetString(cargoValue, "name");
 			if (!name)
 			{
-				throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: cargo missing name property", this->GetName()));
+				throw std::runtime_error(fmt::format("[TycoonService::{}] [Load] error: cargo missing name property", this->GetName()));
 			}
 
 			RName rname{ name.value() };
 
 			if(this->TryFindCargoByName(rname))
 			{
-				throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: duplicate cargo name '{}'", this->GetName(), name.value()));
+				throw std::runtime_error(fmt::format("[TycoonService::{}] [Load] error: duplicate cargo name '{}'", this->GetName(), name.value()));
 			}			
 
 			m_vecCargos.emplace_back(rname);
@@ -127,7 +127,7 @@ namespace dcclite::broker::tycoon
 		const Cargo *cargo = this->TryFindCargoByName(rcargoName);
 		if (!cargo)
 		{
-			throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [AddCargoToCarType] error: carType '{}' references unknown cargo '{}'", this->GetName(), carType.GetName(), cargoName));
+			throw std::runtime_error(fmt::format("[TycoonService::{}] [AddCargoToCarType] error: carType '{}' references unknown cargo '{}'", this->GetName(), carType.GetName(), cargoName));
 		}
 
 		carType.AddCargo(*cargo);
@@ -141,27 +141,27 @@ namespace dcclite::broker::tycoon
 
 		if (!carTypesArray->IsArray())
 		{
-			throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: invalid carTypes definition, expected array", this->GetName()));
+			throw std::runtime_error(fmt::format("[TycoonService::{}] [Load] error: invalid carTypes definition, expected array", this->GetName()));
 		}
 
 		for (const auto &carTypeValue : carTypesArray->GetArray())
 		{
 			if (!carTypeValue.IsObject())
 			{
-				throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: invalid carType definition, expected object", this->GetName()));
+				throw std::runtime_error(fmt::format("[TycoonService::{}] [Load] error: invalid carType definition, expected object", this->GetName()));
 			}
 
 			auto name = dcclite::json::TryGetString(carTypeValue, "name");
 			if (!name)
 			{
-				throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: carType missing name property", this->GetName()));
+				throw std::runtime_error(fmt::format("[TycoonService::{}] [Load] error: carType missing name property", this->GetName()));
 			}
 
 			RName rname{ name.value() };
 			auto it = std::ranges::find_if(m_vecCarTypes, [rname](const CarType &c) { return c.GetName() == rname; });
 			if (it != m_vecCarTypes.end())
 			{
-				throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: duplicate carType name '{}'", this->GetName(), name.value()));
+				throw std::runtime_error(fmt::format("[TycoonService::{}] [Load] error: duplicate carType name '{}'", this->GetName(), name.value()));
 			}
 
 			auto carType = dcclite::json::TryGetString(carTypeValue, "ABNT");
@@ -169,7 +169,7 @@ namespace dcclite::broker::tycoon
 			{
 				carType = dcclite::json::TryGetString(carTypeValue, "AAR");
 				if(!carType)
-					throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: carType '{}' missing type property, must be ABNT or AAR", this->GetName(), name.value()));
+					throw std::runtime_error(fmt::format("[TycoonService::{}] [Load] error: carType '{}' missing type property, must be ABNT or AAR", this->GetName(), name.value()));
 			}
 			RName rcarType{ carType.value() };
 
@@ -189,7 +189,7 @@ namespace dcclite::broker::tycoon
 				if (cargosArray)
 				{
 					if (!cargosArray->IsArray())
-						throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [Load] error: carType '{}' has invalid cargos definition, expected array", this->GetName(), name.value()));
+						throw std::runtime_error(fmt::format("[TycoonService::{}] [Load] error: carType '{}' has invalid cargos definition, expected array", this->GetName(), name.value()));
 
 					for (const auto &cargoValue : cargosArray->GetArray())
 					{
@@ -201,7 +201,7 @@ namespace dcclite::broker::tycoon
 				{
 					throw std::invalid_argument(
 						fmt::format(
-							"[TycoonServiceImpl::{}] [Load] error: carType '{}' has no cargos assigned",
+							"[TycoonService::{}] [Load] error: carType '{}' has no cargos assigned",
 							this->GetName(),
 							newCarType.GetName()
 						)
@@ -226,20 +226,20 @@ namespace dcclite::broker::tycoon
 
 		if (!locationsArray->IsArray())
 		{
-			throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [LoadLocations] error: invalid locations definition, expected array", this->GetName()));
+			throw std::runtime_error(fmt::format("[TycoonService::{}] [LoadLocations] error: invalid locations definition, expected array", this->GetName()));
 		}
 
 		for (const auto &locationValue : locationsArray->GetArray())
 		{
 			if (!locationValue.IsObject())
 			{
-				throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [LoadLocations] error: location invalid definition, expected object", this->GetName()));
+				throw std::runtime_error(fmt::format("[TycoonService::{}] [LoadLocations] error: location invalid definition, expected object", this->GetName()));
 			}
 			
 			auto name = dcclite::json::TryGetString(locationValue, "name");
 			if (!name)
 			{
-				throw std::runtime_error(fmt::format("[TycoonServiceImpl::{}] [LoadLocations] error: location missing name property", this->GetName()));
+				throw std::runtime_error(fmt::format("[TycoonService::{}] [LoadLocations] error: location missing name property", this->GetName()));
 			}
 
 			m_pLocations->AddChild(std::make_unique<Location>(RName{ name.value() }, *this, locationValue));
@@ -251,12 +251,12 @@ namespace dcclite::broker::tycoon
 		auto clockRate = dcclite::json::TryGetDefaultInt(params, "fastClockRate", 4);
 		if (clockRate <= 0)
 		{
-			throw std::invalid_argument(fmt::format("[TycoonServiceImpl::{}] [Load] fastClockRate must be greater than zero", this->GetName()));
+			throw std::invalid_argument(fmt::format("[TycoonService::{}] [Load] fastClockRate must be greater than zero", this->GetName()));
 		}
 
-		if (clockRate > std::numeric_limits<uint8_t>::max())
+		if (clockRate > std::numeric_limits<FastClock::Rate_t>::max())
 		{
-			throw std::invalid_argument(fmt::format("[TycoonServiceImpl::{}] [Load] fastClockRate must be less or equal than {}", this->GetName(), std::numeric_limits<uint8_t>::max()));
+			throw std::invalid_argument(fmt::format("[TycoonService::{}] [Load] fastClockRate must be less or equal than {}", this->GetName(), std::numeric_limits<FastClock::Rate_t>::max()));
 		}
 
 		m_clFastClock.SetRate(clockRate);

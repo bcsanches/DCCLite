@@ -13,6 +13,7 @@
 #include <rapidjson/document.h>
 
 #include "FastClock.h"
+#include "FastClockThinker.h"
 
 namespace dcclite::broker::tycoon
 {
@@ -24,12 +25,12 @@ namespace dcclite::broker::tycoon
 		public:
 			CargoHolder(TycoonService &tycoon, const rapidjson::Value &params);			
 
-			void Consume(const FastClock &fastClock);
-
-			void Update(const FastClock &fastClock);
+			void Consume(const FastClock &fastClock);		
 
 		private:
-			CargoHolder(const Cargo &cargo, float dailyRate, uint8_t maxQuantity) :
+			CargoHolder(const Cargo &cargo, float dailyRate, uint8_t maxQuantity, FastClock &fastClock) :
+				m_clProductionThinker{ fastClock.MakeThinker("CargoHolder::ProductionThinker", FAST_CLOCK_THINKER_LAMBDA(ProduceThinker)) },
+				m_rclFastClock{ fastClock },
 				m_rclCargo{ cargo },
 				m_fDailyRate{ dailyRate },
 				m_uMaxQuantity{ maxQuantity },
@@ -46,12 +47,16 @@ namespace dcclite::broker::tycoon
 				}
 			}
 
-			void ScheduleProduction(const FastClock &fastClock);
+			void ProduceThinker(FastClockDef::TimePoint_t tp);
+
+			void ScheduleProduction();			
 			
 		private:
-			std::vector<std::string> m_vecDestinations;
+			std::vector<std::string>	m_vecDestinations;
 
-			FastClock::time_point m_tNextProduction;
+			FastClockThinker			m_clProductionThinker;
+
+			FastClock					&m_rclFastClock;
 
 			const Cargo &m_rclCargo;
 			float		m_fDailyRate;

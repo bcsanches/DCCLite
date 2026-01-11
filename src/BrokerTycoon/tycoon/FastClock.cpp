@@ -14,30 +14,31 @@
 
 namespace dcclite::broker::tycoon
 {
-	FastClock::FastClock(RName name, uint8_t rate) :
+	FastClock::FastClock(RName name, Rate_t rate) :
 		Object{ name },
 		m_clThinker{ "FastClock::OnTick", THINKER_MF_LAMBDA(OnTick) }
 	{
 		this->SetRate(rate);
 	}
 
-	void FastClock::SetRate(uint8_t rate)
+	void FastClock::SetRate(Rate_t rate)
 	{
 		if (rate == 0)
 		{
-			throw std::invalid_argument("[FastClock::FastClock] rate must be greater than zero");
+			throw std::invalid_argument("[Tycoon::FastClock::FastClock] rate must be greater than zero");
 		}
 
 		if (60 % rate)
 		{
 			//we will have a small error accumulation over time if certain cases, but for our purposes it is acceptable, but warn user
-			dcclite::Log::Warn("[FastClock::FastClock] rate {} does not divide evenly into 60, small timing errors may accumulate over time", rate);
+			dcclite::Log::Warn("[Tycoon::FastClock::FastClock] rate {} does not divide evenly into 60, small timing errors may accumulate over time", rate);
 		}
 
 		using namespace std::chrono;
 		using namespace std::chrono_literals;
 
 		m_tTickRate = 60000ms / rate;
+		m_uRate = rate;
 	}
 
 	void FastClock::Start()

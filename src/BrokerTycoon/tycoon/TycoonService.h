@@ -38,6 +38,11 @@ namespace dcclite::broker::tycoon
 				return m_clFastClock;
 			}
 
+			FastClock &GetFastClock() noexcept
+			{
+				return m_clFastClock;
+			}
+
 		private:	
 			void Load(const rapidjson::Value &params);
 			void LoadCargos(const rapidjson::Value &params);

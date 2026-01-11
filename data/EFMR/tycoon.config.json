@@ -1,5 +1,5 @@
 {
-	"fastClockRate":4,
+	"fastClockRate":3600,
 	"cargos":[
 		{
 			"name":"Produtos"			
@@ -91,7 +91,7 @@
 							"Barra do Piraí",
 							"Sapucaí"
 						],
-						"dailyProduction":1,
+						"dailyProduction":4,
 						"maximumStorage":2,
 						"transferTimeHours":4
 					},
@@ -111,7 +111,7 @@
 					],
 					"produce":{
 						"cargo":"Gado",
-						"dailyProduction":1,
+						"dailyProduction":4,
 						"maximumStorage":6,
 						"transferTimeHours":2,
 						"destination":"Cruzeiro"								

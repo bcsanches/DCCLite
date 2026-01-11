@@ -24,7 +24,7 @@ namespace dcclite::broker::tycoon
 		{
 			throw std::invalid_argument(
 				fmt::format(
-					"[CarType::{}] Cargo '{}' is already added to car type", 
+					"[Tycoon::CarType::{}] Cargo '{}' is already added to car type", 
 					this->GetName(),
 					cargo.GetName()
 				)

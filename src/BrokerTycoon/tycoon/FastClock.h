@@ -27,8 +27,9 @@ namespace dcclite::broker::tycoon
 	{
 		public:
 			typedef FastClockDef::time_point time_point;
+			typedef uint16_t Rate_t;
 
-			FastClock(RName name, uint8_t rate);
+			FastClock(RName name, Rate_t rate);
 			FastClock(const FastClock &) = delete;
 
 			virtual const char *GetTypeName() const noexcept override
@@ -44,7 +45,7 @@ namespace dcclite::broker::tycoon
 			void Start();
 			void Stop();
 
-			void SetRate(uint8_t rate);
+			void SetRate(Rate_t rate);
 
 			inline FastClockThinker MakeThinker(const std::string_view name, FastClockThinker::Proc_t proc)
 			{
@@ -54,6 +55,11 @@ namespace dcclite::broker::tycoon
 			inline FastClockThinker MakeThinker(time_point tp, const std::string_view name, FastClockThinker::Proc_t proc)
 			{
 				return FastClockThinker{ m_clThinkerManager, tp, name, proc };				
+			}
+
+			inline std::chrono::seconds ConvertToRealTime(std::chrono::seconds seconds) const noexcept
+			{
+				return seconds / m_uRate;
 			}
 
 		private:
@@ -68,6 +74,6 @@ namespace dcclite::broker::tycoon
 
 			std::chrono::milliseconds m_tTickRate;
 
-			uint8_t m_uRate;
+			Rate_t m_uRate;
 	};	
 }

@@ -14,6 +14,8 @@
 
 #include <dcclite/BaseThinker.h>
 
+#define FAST_CLOCK_THINKER_LAMBDA(proc) ([this](const dcclite::broker::tycoon::FastClockDef::TimePoint_t &tp) { this->proc(tp); })
+
 namespace dcclite::broker::tycoon
 {	
 	class FastClockThinker;

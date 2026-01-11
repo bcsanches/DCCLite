@@ -29,14 +29,14 @@ namespace dcclite::broker::tycoon
 			return;
 
 		if (!industriesArray->IsArray())
-			throw std::runtime_error(fmt::format("[Location::{}] [constructor] error: invalid industries definition, expected array", this->GetName()));
+			throw std::runtime_error(fmt::format("[Tycoon::Location::{}] [constructor] error: invalid industries definition, expected array", this->GetName()));
 
 		for (const auto &industryValue : industriesArray->GetArray())
 		{
 			auto industryName = dcclite::json::TryGetString(industryValue, "name");
 			if (!industryName)
 			{
-				throw std::runtime_error(fmt::format("[Location::{}] [constructor] error: industry without a name", this->GetName()));
+				throw std::runtime_error(fmt::format("[Tycoon::Location::{}] [constructor] error: industry without a name", this->GetName()));
 			}
 
 			this->AddChild(std::make_unique<Industry>(RName{ industryName.value() }, tycoon, industryValue));
@@ -50,7 +50,7 @@ namespace dcclite::broker::tycoon
 		{
 			throw std::invalid_argument(
 				fmt::format(
-					"[Location::{}] [AddChild] error: only Industry objects are allowed as children, got '{}'",
+					"[Tycoon::Location::{}] [AddChild] error: only Industry objects are allowed as children, got '{}'",
 					this->GetName(),
 					obj->GetTypeName()
 				)
