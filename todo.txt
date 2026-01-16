@@ -1,12 +1,7 @@
 DCCLite
 -------
 
-- auto reboot on devices: when receiving a disconnect msg, supress it
-
-Ethernet issues:
-	- change to W5500 shield
-
- - Create new library for DccTerminalCmds?
+- Create new library for DccTerminalCmds?
 	- BrokerDccShell ?
 
 - Flashing output, how to avoid all messages?
@@ -39,7 +34,6 @@ Ethernet issues:
 		- digitalWrite will never affetct externalVoltage
 		- SharpTerminal will be able to set this externalVoltage value
 
-	
 - SharpConsole runs Broker locally directly?
 	- Display emulator log first
 	- Starts it
