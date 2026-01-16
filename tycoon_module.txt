@@ -1,3 +1,12 @@
+- TODO:
+	- display all tycoon info on SharpTerminal
+	- Show a list view with all industries status?
+		- Name
+		- Cargo type
+		- Quantity
+		- Next production
+		- Max Stock
+
 - Tycoon system
 	- generate car requests for industries
 	- store industries:
