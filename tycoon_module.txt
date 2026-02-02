@@ -1,7 +1,4 @@
 - TODO:
-
-	Terminalclient: acabar com m_pfnSerializeDeltaProc e criar o SerializeDelta na interface?
-
 	- On SharpTerminal industry tab:		
 		- update production status and info			 
 		- Add a button to consume cargo
