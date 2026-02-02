@@ -21,6 +21,8 @@
 
 namespace dcclite::broker::tycoon
 {
+	const char *Location::TYPE_NAME = "dcclite::broker::tycoon::Location";
+
 	Location::Location(RName name, TycoonService &tycoon, const rapidjson::Value &params):
 		FolderObject{name}
 	{

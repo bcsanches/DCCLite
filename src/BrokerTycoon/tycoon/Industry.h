@@ -20,19 +20,33 @@ namespace dcclite::broker::tycoon
 	class Cargo;
 	class TycoonService;
 
+	class IndustryToken
+	{
+		private:
+			friend class Industry;
+			friend class CargoHolder;
+
+			IndustryToken() = default;
+	};
+
 	class CargoHolder
 	{		
 		public:
-			CargoHolder(TycoonService &tycoon, const rapidjson::Value &params);			
+			CargoHolder(TycoonService &tycoon, const Industry &industry, const rapidjson::Value &params);
 
-			void Consume(const FastClock &fastClock);		
+			void Consume(const FastClock &fastClock);
+
+			void Serialize(dcclite::JsonOutputStream_t &stream) const;
+			void SerializeDelta(dcclite::JsonOutputStream_t &stream) const;
 
 		private:
-			CargoHolder(const Cargo &cargo, float dailyRate, uint8_t maxQuantity, FastClock &fastClock) :
+			CargoHolder(const Cargo &cargo, float dailyRate, uint8_t maxQuantity, TycoonService &tycoon, FastClock &fastClock, const Industry &industry) :
 				m_clProductionThinker{ fastClock.MakeThinker("CargoHolder::ProductionThinker", FAST_CLOCK_THINKER_LAMBDA(ProduceThinker)) },
+				m_rclTycoon{ tycoon },
 				m_rclFastClock{ fastClock },
+				m_rclIndustry{ industry },
 				m_rclCargo{ cargo },
-				m_fDailyRate{ dailyRate },
+				m_fpDailyRate{ dailyRate },
 				m_uMaxQuantity{ maxQuantity },
 				m_fProducing{ true }
 			{
@@ -49,17 +63,19 @@ namespace dcclite::broker::tycoon
 
 			void ProduceThinker(FastClockDef::TimePoint_t tp);
 
-			void ScheduleProduction();			
+			void ScheduleProduction();
 			
 		private:
 			std::vector<std::string>	m_vecDestinations;
 
 			FastClockThinker			m_clProductionThinker;
 
+			TycoonService				&m_rclTycoon;
 			FastClock					&m_rclFastClock;
+			const Industry				&m_rclIndustry;
 
 			const Cargo &m_rclCargo;
-			float		m_fDailyRate;
+			float		m_fpDailyRate;
 			uint8_t		m_uMaxQuantity;
 
 			uint8_t		m_uCurrentQuantity = 0;
@@ -93,6 +109,8 @@ namespace dcclite::broker::tycoon
 			}
 
 			~Industry() override = default;
+
+			void Serialize(dcclite::JsonOutputStream_t &stream) const;
 
 		private:
 			CargoHolder m_clCargoHolder;

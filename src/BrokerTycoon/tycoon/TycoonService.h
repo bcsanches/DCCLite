@@ -20,6 +20,8 @@ namespace dcclite::broker::tycoon
 {
 	class Cargo;
 	class CarType;
+	class Industry;
+	class IndustryToken;
 
 	class TycoonService : public sys::Service
 	{
@@ -43,13 +45,22 @@ namespace dcclite::broker::tycoon
 				return m_clFastClock;
 			}
 
+			void Serialize(dcclite::JsonOutputStream_t &stream) const override;
+
+			const char *GetTypeName() const noexcept override
+			{
+				return TYPE_NAME;
+			}
+
+			void OnObjectStateChanged(const IndustryToken &token, const Industry &industry);
+
 		private:	
 			void Load(const rapidjson::Value &params);
 			void LoadCargos(const rapidjson::Value &params);
 			void LoadCarTypes(const rapidjson::Value &params);
 			void LoadLocations(const rapidjson::Value &params);			
 
-			void AddCargoToCarType(CarType &carType, std::string_view cargoName);
+			void AddCargoToCarType(CarType &carType, std::string_view cargoName);			
 
 		private:
 			FastClock				m_clFastClock;

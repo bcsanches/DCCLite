@@ -128,7 +128,7 @@ namespace dcclite::broker::shell::terminal
 				"On-ItemPropertyValueChanged",
 				[&event](JsonOutputStream_t &params)
 				{
-					event.m_pfnSerializeDeltaProc ? event.m_pfnSerializeDeltaProc(params) : event.m_pclItem->Serialize(params);
+					event.m_pfnSerializeDeltaProc ? event.m_pfnSerializeDeltaProc(params) : event.m_rclItem.Serialize(params);
 				}
 			)
 		);
@@ -150,7 +150,7 @@ namespace dcclite::broker::shell::terminal
 						"On-ItemCreated",
 						[&event](JsonOutputStream_t &params)
 						{
-							event.m_pclItem->Serialize(params);
+							event.m_rclItem.Serialize(params);
 						}
 					)
 				);
@@ -164,7 +164,7 @@ namespace dcclite::broker::shell::terminal
 						"On-ItemDestroyed",
 						[&event](JsonOutputStream_t &params)
 						{
-							event.m_pclItem->Serialize(params);
+							event.m_rclItem.Serialize(params);
 						}
 					)
 				);

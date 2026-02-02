@@ -36,6 +36,8 @@ namespace dcclite::broker::tycoon
 			{
 				return !m_vecCargos.empty();
 			}
+		
+			void Serialize(dcclite::JsonOutputStream_t &stream) const override;
 
 		private:
 			RName		m_nModel;

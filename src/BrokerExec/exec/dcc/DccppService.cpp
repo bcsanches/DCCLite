@@ -504,7 +504,7 @@ namespace dcclite::broker::exec::dcc
 		if (event.m_kType != sys::ObjectManagerEvent::ITEM_CHANGED)
 			return;
 	
-		if(auto decoder = dynamic_cast<const StateDecoder *>(event.m_pclItem))
+		if(auto decoder = dynamic_cast<const StateDecoder *>(&event.m_rclItem))
 			m_clMessenger.Send(m_clAddress, CreateDecoderStateResponse(*decoder));					
 	}
 

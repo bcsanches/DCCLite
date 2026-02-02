@@ -11,6 +11,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Json;
 using System.Linq;
 using System.Runtime.Versioning;
@@ -199,7 +200,7 @@ namespace SharpTerminal
 				if (children.Count == 0)
 					return null;
 
-				mChildren = new();
+				mChildren = [];
 
 				foreach (var item in children)
 				{
@@ -539,7 +540,19 @@ namespace SharpTerminal
 				case "OutputDecoder":
 				case "QuadInverterDecoder":
 					obj = new RemoteOutputDecoder(name, className, path, id, objectDef, parent);
-					break;                
+					break;
+
+				case "TycoonService":
+					obj = new Tycoon.RemoteTycoonService(name, className, path, id, objectDef, parent);
+					break;
+
+				case "dcclite::broker::tycoon::Industry":
+					obj = new Tycoon.RemoteIndustry(name, className, path, id, objectDef, parent);
+					break;
+
+				case "dcclite::broker::tycoon::Location":
+					obj = new Tycoon.RemoteLocation(name, className, path, id, objectDef, parent);
+					break;
 
 				case "TurnoutDecoder":
 				case "VirtualTurnoutDecoder":

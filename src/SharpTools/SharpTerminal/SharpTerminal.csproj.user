@@ -44,6 +44,9 @@
     <Compile Update="Forms\RemoteShortcutUserControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="Tycoon\RemoteTycoonUserControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="Forms\ServerSelectionForm.cs">
       <SubType>Form</SubType>
     </Compile>

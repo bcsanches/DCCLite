@@ -33,7 +33,6 @@ namespace SharpTerminal
             {
                 EmulatorManager.KillAll();
             }
-
         }
     }
 }

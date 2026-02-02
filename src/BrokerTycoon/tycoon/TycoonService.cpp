@@ -22,6 +22,7 @@
 
 #include "Cargo.h"
 #include "CarType.h"
+#include "Industry.h"
 #include "Location.h"
 
 namespace dcclite::broker::tycoon
@@ -264,6 +265,37 @@ namespace dcclite::broker::tycoon
 		this->LoadCargos(params);
 		this->LoadCarTypes(params);
 		this->LoadLocations(params);
+	}
+
+	void TycoonService::Serialize(dcclite::JsonOutputStream_t &stream) const
+	{
+		sys::Service::Serialize(stream);
+
+		if (!m_vecCargos.empty())
+		{
+			auto cargosData = stream.AddArray("cargos");
+
+			for (const auto &c : m_vecCargos)
+			{
+				cargosData.AddString(c.GetNameData());
+			}
+		}
+
+		if (!m_vecCarTypes.empty())
+		{
+			auto carTypesData = stream.AddArray("carTypes");
+
+			for (const auto &c : m_vecCarTypes)
+			{
+				auto carTypeData = carTypesData.AddObject();
+				c.Serialize(carTypeData);
+			}
+		}
+	}
+	
+	void TycoonService::OnObjectStateChanged([[maybe_unused]] const IndustryToken &token, const Industry &industry)
+	{
+		this->NotifyItemChanged(industry);
 	}
 
 	//

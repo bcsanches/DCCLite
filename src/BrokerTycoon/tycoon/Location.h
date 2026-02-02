@@ -21,9 +21,16 @@ namespace dcclite::broker::tycoon
 	class Location : public dcclite::FolderObject
 	{
 		public:
+			static const char *TYPE_NAME;
+
 			Location(RName name, TycoonService &tycoon, const rapidjson::Value &params);
 
 			IObject *AddChild(std::unique_ptr<Object> obj) override;
+
+			const char *GetTypeName() const noexcept override
+			{
+				return TYPE_NAME;
+			}
 
 		private:			
 	};

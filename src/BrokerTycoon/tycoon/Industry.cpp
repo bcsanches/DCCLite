@@ -21,12 +21,14 @@
 
 namespace dcclite::broker::tycoon
 {
-	CargoHolder::CargoHolder(TycoonService &tycoon, const rapidjson::Value &params) :
+	CargoHolder::CargoHolder(TycoonService &tycoon, const Industry &industry, const rapidjson::Value &params) :
 		CargoHolder{
 			tycoon.FindCargoByName(RName::Get(json::GetString(params, "cargo", "[Tycoon::CargoHolder]"))),
 			json::GetFloat(params, "dailyProduction", "[Tycoon::CargoHolder]"),
 			static_cast<uint8_t>(json::GetInt(params, "maximumStorage", "[CargoHolder]")),
-			tycoon.GetFastClock()
+			tycoon,
+			tycoon.GetFastClock(),
+			industry
 		}
 	{
 		auto destinationsValue = json::TryGetValue(params, "destinations");
@@ -52,6 +54,11 @@ namespace dcclite::broker::tycoon
 		if(destinationValue)
 		{
 			m_vecDestinations.emplace_back(*destinationValue);
+		}
+
+		if(m_vecDestinations.empty())
+		{
+			throw std::invalid_argument("[Tycoon::CargoHolder::CargoHolder] at least one destination must be specified");
 		}
 
 		//
@@ -82,12 +89,12 @@ namespace dcclite::broker::tycoon
 		auto now = m_rclFastClock.Now();
 
 		constexpr auto secondsPerDay = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::hours{ 24 });
-		auto interval = std::chrono::seconds{ static_cast<long>(secondsPerDay.count() / m_fDailyRate) };
+		auto interval = std::chrono::seconds{ static_cast<long>(secondsPerDay.count() / m_fpDailyRate) };
 
 		m_clProductionThinker.Schedule(now + interval);
 
 		auto realTimeInverval = m_rclFastClock.ConvertToRealTime(interval);
-		dcclite::Log::Trace("[Tycoon::CargoHolder::ScheduleProduction] Scheduled next production of {} in ~{} (~{})", m_rclCargo.GetName(), realTimeInverval, std::chrono::duration_cast<std::chrono::minutes>(realTimeInverval));
+		dcclite::Log::Trace("[Tycoon::CargoHolder::ScheduleProduction] Next production of {} in ~{} (~{})", m_rclCargo.GetName(), realTimeInverval, std::chrono::duration_cast<std::chrono::minutes>(realTimeInverval));
 	}
 
 	void CargoHolder::ProduceThinker(FastClockDef::TimePoint_t tp)
@@ -101,19 +108,74 @@ namespace dcclite::broker::tycoon
 			dcclite::Log::Trace("[Tycoon::CargoHolder::ScheduleProduction] Stock is full of {}, halted production", m_rclCargo.GetName());
 
 			//reached max capacity, stop production
-			m_fProducing = false;
-			return;
+			m_fProducing = false;			
+		}
+		else
+		{
+			this->ScheduleProduction();
 		}
 
-		this->ScheduleProduction();
+		m_rclTycoon.OnObjectStateChanged(IndustryToken{}, m_rclIndustry);
+	}
+
+	void CargoHolder::SerializeDelta(dcclite::JsonOutputStream_t &stream) const
+	{		
+		stream.AddIntValue("currentQuantity", m_uCurrentQuantity);
+		stream.AddBool("producing", m_fProducing);
+
+		if (m_fProducing)
+		{
+			using namespace std::chrono;
+
+			auto now = system_clock::now();
+
+			auto local = zoned_time{ current_zone(), now };
+
+			auto tp = local.get_local_time();
+
+			auto nextProductionTime = m_clProductionThinker.GetTimePoint();
+			stream.AddStringValue(
+				"nextProductionAt",
+				fmt::format("{:%H:%M}", local.get_local_time() + (m_rclFastClock.ConvertToRealTime(nextProductionTime - m_rclFastClock.Now())))
+			);
+		}
+		else
+		{
+			stream.AddStringValue("nextProductionAt", "N/A");
+		}
+	}
+
+	void CargoHolder::Serialize(dcclite::JsonOutputStream_t &stream) const
+	{
+		{
+			auto destionationsArray = stream.AddArray("destinations");
+
+			for (auto &d : m_vecDestinations)
+			{
+				destionationsArray.AddString(d);
+			}
+		}
+
+		stream.AddStringValue("cargo", m_rclCargo.GetNameData());
+		stream.AddFloatValue("dailyRate", m_fpDailyRate);
+		stream.AddIntValue("maximumQuantity", m_uMaxQuantity);
+
+		this->SerializeDelta(stream);
 	}
 
 	const char *Industry::TYPE_NAME = "dcclite::broker::tycoon::Industry";
 
 	Industry::Industry(RName name, TycoonService &tycoon, const rapidjson::Value &params):
 		Object{name},
-		m_clCargoHolder{tycoon, params["produce"]}
+		m_clCargoHolder{tycoon, *this, params["produce"]}
 	{
 		//empty
+	}
+
+	void Industry::Serialize(dcclite::JsonOutputStream_t &stream) const
+	{
+		Object::Serialize(stream);
+
+		m_clCargoHolder.Serialize(stream);
 	}
 }

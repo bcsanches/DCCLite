@@ -413,7 +413,7 @@ namespace dcclite::broker::exec::dcc
 		return this->FindAllDecoders<TurnoutDecoder>();		
 	}
 
-	void DccLiteService::Decoder_OnStateChanged(Decoder& decoder)
+	void DccLiteService::Decoder_OnStateChanged(Decoder &decoder)
 	{
 		this->NotifyItemChanged(decoder);
 	}		

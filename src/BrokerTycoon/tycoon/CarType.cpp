@@ -33,5 +33,22 @@ namespace dcclite::broker::tycoon
 
 		m_vecCargos.emplace_back(&cargo);
 	}
+
+	void CarType::Serialize(dcclite::JsonOutputStream_t &stream) const
+	{
+		dcclite::INamedItem::Serialize(stream);
+
+		stream.AddStringValue("description", m_strDescription);
+
+		if (!m_vecCargos.empty())
+		{
+			auto cargosArray = stream.AddArray("cargos");
+
+			for (const auto &c : m_vecCargos)
+			{
+				cargosArray.AddString(c->GetNameData());
+			}
+		}
+	}
 }
 

@@ -56,7 +56,7 @@ namespace dcclite::broker::tycoon
 
 	void FastClock::OnTick(const dcclite::Clock::TimePoint_t tp)
 	{
-		m_clThinker.Schedule(dcclite::Clock::DefaultClock_t::now() + m_tTickRate);
+		m_clThinker.Schedule(m_clThinker.GetTimePoint() + m_tTickRate);
 
 		using namespace std::chrono_literals;
 		m_tElapsed += 1min;

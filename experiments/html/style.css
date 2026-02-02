@@ -1,0 +1,128 @@
+/* ========================= */
+/* Reset e base */
+/* ========================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.6;
+  background: #f9fafb;
+  color: #111827;
+}
+
+/* ========================= */
+/* Variáveis */
+/* ========================= */
+:root {
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --surface: #ffffff;
+  --border: #e5e7eb;
+  --muted: #6b7280;
+
+  --radius: 12px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.08);
+}
+
+/* ========================= */
+/* Layout base */
+/* ========================= */
+.container {
+  width: 100%;
+  max-width: 1024px;
+  margin-inline: auto;
+  padding: 1rem;
+}
+
+/* ========================= */
+/* Header */
+/* ========================= */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.menu-toggle {
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Navegação mobile */
+.nav {
+  display: none;
+  flex-direction: column;
+  position: absolute;
+  top: 64px;
+  left: 0;
+  width: 100%;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav a {
+  padding: 1rem;
+  text-decoration: none;
+  color: inherit;
+  border-top: 1px solid var(--border);
+}
+
+/* ========================= */
+/* Tipografia */
+/* ========================= */
+h1, h2, h3 {
+  line-height: 1.25;
+  margin-bottom: .5em;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 1em;
+  color: #374151;
+}
+
+/* ========================= */
+/* Cards */
+/* ========================= */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+
+/* ========================= */
+/* Botões */
+/* ========================= */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: .6rem 1rem;
+
+  border-radius: var(--radius);
+  border: none;
+  background: var(--primary);
+  color: white;
+  font-size: 1rem;
+  curso

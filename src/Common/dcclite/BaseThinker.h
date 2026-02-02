@@ -65,6 +65,11 @@ namespace dcclite
 				return m_fScheduled;
 			}
 
+			[[nodiscard]] typename CLOCK::TimePoint_t GetTimePoint() const noexcept
+			{				
+				return m_tTimePoint;
+			}
+
 		protected:
 			BaseThinker(BaseThinker **phead, const CLOCK::TimePoint_t tp, const std::string_view name, Proc_t proc) noexcept :
 				m_pfnCallback{ proc },
