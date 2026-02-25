@@ -1,3 +1,9 @@
+# Version 0.11.2 - Development
+
+## Broker
+
+- Support to ignore aditional DCCex commands :P
+
 # Version 0.11.1
 
 ## LiteDecoder

@@ -138,6 +138,7 @@ LitePanelWx
 
 To Explore
 ----------
+- Rest authentication and validation HMAC: https://www.vinthewrench.com/p/giving-your-raspberry-pi-a-rest-3
 - mDNS: https://learn.microsoft.com/en-us/uwp/api/windows.networking.servicediscovery.dnssd?view=winrt-22621&redirectedfrom=MSDN
 - mDNS: https://fabiensanglard.net/mdns/
 - EngineDriver layer

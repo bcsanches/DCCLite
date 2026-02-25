@@ -27,6 +27,8 @@ namespace dcclite
 
 		SLASH = '/',
 
+		EXCLAMATION = '!',
+
 		VARIABLE_NAME = 256,
 
 		ID,

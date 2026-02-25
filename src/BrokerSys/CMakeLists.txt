@@ -65,8 +65,8 @@ target_compile_definitions(BrokerSysLib
 		DEBUG
 )
 
-target_include_directories(BrokerSysLib	
-	PUBLIC ${DCCLite_SOURCE_DIR}/contrib/JsonCreator/include    
+target_include_directories(BrokerSysLib
+	PUBLIC ${DCCLite_SOURCE_DIR}/contrib/JsonCreator/include
 	PUBLIC ${DCCLite_SOURCE_DIR}/contrib/ldmonitor/include    
 	PUBLIC ${DCCLite_SOURCE_DIR}/contrib/rapidjson/include
 	PUBLIC ${DCCLite_SOURCE_DIR}/contrib/sigslot/include

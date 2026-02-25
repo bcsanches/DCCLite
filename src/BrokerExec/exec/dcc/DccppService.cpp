@@ -531,9 +531,43 @@ namespace dcclite::broker::exec::dcc
 			return;
 		}
 
+		if(cmdToken.m_kToken == Tokens::EXCLAMATION)
+		{
+			//Emergency stop, just ignore....
+			if (parser.GetToken().m_kToken != Tokens::END_OF_BUFFER)
+			{
+				Log::Error("[DccppClient::OnMessage] Error parsing msg, expected TOKEN_EOF for: {}", msg);
+
+				goto ERROR_RESPONSE;
+			}
+			//
+			//nothing to answer...
+			
+			return;
+		}
+
+		if (cmdToken.m_kToken == Tokens::NUMBER)
+		{
+			if (parser.GetToken().m_kToken != Tokens::END_OF_BUFFER)
+			{
+				Log::Error("[DccppClient::OnMessage] Error parsing msg, expected TOKEN_EOF for: {}", msg);
+
+				goto ERROR_RESPONSE;
+			}
+
+			//turn on / off power, always return power off...
+			switch (cmdToken.m_svData[0])
+			{
+				case '0':
+				case '1':
+					m_clMessenger.Send(m_clAddress, "<p0>");
+					break;
+			}
+		}
+
 		if (cmdToken.m_kToken != Tokens::ID)
 		{
-			Log::Error("[DccppClient::OnMessage] Error parsing msg, expected TOKEN_ID for cmd identification: {}", msg);
+			Log::Error("[DccppClient::OnMessage] Error parsing msg, expected TOKEN_ID or TOKEN_NUMBER for cmd identification: {}", msg);
 
 			goto ERROR_RESPONSE;
 		}		

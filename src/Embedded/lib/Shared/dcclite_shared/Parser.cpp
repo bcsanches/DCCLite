@@ -87,6 +87,9 @@ namespace dcclite
 				case '/':
 					return this->MakeSingleCharToken(Tokens::SLASH, m_iPos - 1);
 
+				case '!':
+					return this->MakeSingleCharToken(Tokens::EXCLAMATION, m_iPos - 1);
+
 				case '$':
 					if (m_iPos == m_svCmd.GetSize())
 						return Token{ Tokens::SYNTAX_ERROR, m_svCmd };
