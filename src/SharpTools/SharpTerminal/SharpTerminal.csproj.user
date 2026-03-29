@@ -29,6 +29,9 @@
     <Compile Update="Forms\RemoteDeviceUserControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="Forms\RemoteIndustryUserControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="Forms\RemoteLocationManagerUserControl.cs">
       <SubType>UserControl</SubType>
     </Compile>

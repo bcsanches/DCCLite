@@ -1,6 +1,8 @@
+using SharpTerminal.Forms;
 using System.ComponentModel;
 using System.Json;
 using System.Runtime.Versioning;
+using System.Windows.Forms;
 
 namespace SharpTerminal.Tycoon
 {
@@ -67,6 +69,11 @@ namespace SharpTerminal.Tycoon
 			CurrentQuantity = (int)def["currentQuantity"];
 			Producing = (bool)def["producing"];
 			NextProductionAt = (string)def["nextProductionAt"];
+		}
+
+		public override Control CreateControl(IConsole console)
+		{
+			return new RemoteIndustryUserControl(console, this);
 		}
 	}
 }
