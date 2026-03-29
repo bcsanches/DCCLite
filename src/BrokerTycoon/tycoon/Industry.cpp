@@ -178,4 +178,12 @@ namespace dcclite::broker::tycoon
 
 		m_clCargoHolder.Serialize(stream);
 	}
+
+	void Industry::SerializeDelta(dcclite::JsonOutputStream_t &stream) const
+	{
+		this->SerializeIdentification(stream);
+
+		m_clCargoHolder.SerializeDelta(stream);
+	}
+
 }

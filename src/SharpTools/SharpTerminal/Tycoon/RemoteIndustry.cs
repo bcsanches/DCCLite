@@ -16,14 +16,38 @@ namespace SharpTerminal.Tycoon
 		[Category("Cargo Holder")]
 		public int MaximumQuantity { get; private set; }
 
-		[Category("Cargo Holder")]
-		public int CurrentQuantity { get; private set; }
+		private int m_iCurrentQuantity;
 
 		[Category("Cargo Holder")]
-		public bool Producing { get; private set; }
+		public int CurrentQuantity 
+		{ 
+			get => m_iCurrentQuantity; 
+			private set
+			{
+				UpdateProperty(ref m_iCurrentQuantity, value);
+			}
+		}
 
+
+		private bool m_fProducing;
 		[Category("Cargo Holder")]
-		public string NextProductionAt { get; private set; }
+		public bool Producing
+		{
+			get => m_fProducing;
+			private set
+			{
+				UpdateProperty(ref m_fProducing, value);
+			}
+		}
+
+
+		private string m_strNextProductionAt;
+		[Category("Cargo Holder")]
+		public string NextProductionAt 
+		{ 
+			get => m_strNextProductionAt; 
+			private set => UpdateProperty(ref m_strNextProductionAt, value);
+		}
 
 		public RemoteIndustry(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) :
 			base(name, className, path, internalId, parent)
@@ -38,7 +62,11 @@ namespace SharpTerminal.Tycoon
 
 		protected override void OnUpdateState(JsonValue def)
 		{
-			base.OnUpdateState(def);
+			base.OnUpdateState(def);			
+
+			CurrentQuantity = (int)def["currentQuantity"];
+			Producing = (bool)def["producing"];
+			NextProductionAt = (string)def["nextProductionAt"];
 		}
 	}
 }

@@ -110,7 +110,8 @@ namespace dcclite::broker::tycoon
 
 			~Industry() override = default;
 
-			void Serialize(dcclite::JsonOutputStream_t &stream) const;
+			void SerializeDelta(dcclite::JsonOutputStream_t &stream) const;
+			void Serialize(dcclite::JsonOutputStream_t &stream) const override;
 
 		private:
 			CargoHolder m_clCargoHolder;

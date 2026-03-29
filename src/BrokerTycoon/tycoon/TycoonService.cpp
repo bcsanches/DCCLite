@@ -295,7 +295,7 @@ namespace dcclite::broker::tycoon
 	
 	void TycoonService::OnObjectStateChanged([[maybe_unused]] const IndustryToken &token, const Industry &industry)
 	{
-		this->NotifyItemChanged(industry);
+		this->NotifyItemChanged(industry, [&industry](JsonOutputStream_t &stream) { industry.SerializeDelta(stream); });
 	}
 
 	//
