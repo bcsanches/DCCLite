@@ -18,6 +18,7 @@
 namespace dcclite::broker::tycoon
 {
 	class Cargo;
+	class Industry;
 	class TycoonService;
 
 	class IndustryToken
