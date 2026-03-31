@@ -8,6 +8,8 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
+#include <vector>
+
 #include <dcclite/IFolderObject.h>
 
 #include <rapidjson/document.h>
@@ -115,6 +117,7 @@ namespace dcclite::broker::tycoon
 			void Serialize(dcclite::JsonOutputStream_t &stream) const override;
 
 		private:
-			CargoHolder m_clCargoHolder;
+			CargoHolder			m_clCargoHolder;
+			std::vector<Spot>	m_vecSpots;
 	};
 }

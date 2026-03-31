@@ -168,8 +168,36 @@ namespace dcclite::broker::tycoon
 	Industry::Industry(RName name, TycoonService &tycoon, const rapidjson::Value &params):
 		Object{name},
 		m_clCargoHolder{tycoon, *this, params["produce"]}
-	{
-		//empty
+	{		
+		if(auto spot = json::TryGetString(params, "spot"))
+		{
+			m_vecSpots.emplace_back(RName{ *spot });
+		}
+
+		auto spotsValue = params.FindMember("spots");
+		if(spotsValue == params.MemberEnd())
+		{
+			if(m_vecSpots.empty())
+			{
+				throw std::invalid_argument("[Industry::Industry] either spot or spots must be specified");
+			}
+
+			return;
+		}
+
+		if (!m_vecSpots.empty())
+		{
+			throw std::invalid_argument("[Industry::Industry] spot and spots cannot be specified at the same time");
+		}
+
+		for(auto &it : spotsValue->value.GetArray())
+		{
+			if(!it.IsString())
+			{
+				throw std::invalid_argument("[Industry::Industry] each spot must be a string");
+			}
+			m_vecSpots.emplace_back(RName{ it.GetString() });
+		}
 	}
 
 	void Industry::Serialize(dcclite::JsonOutputStream_t &stream) const
@@ -185,5 +213,4 @@ namespace dcclite::broker::tycoon
 
 		m_clCargoHolder.SerializeDelta(stream);
 	}
-
 }

@@ -67,8 +67,8 @@ namespace SharpTerminal.Forms
 			// tableLayoutPanel1
 			// 
 			tableLayoutPanel1.ColumnCount = 2;
-			tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25.51724F));
-			tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 74.48276F));
+			tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 80F));
+			tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			tableLayoutPanel1.Controls.Add(m_tbStatus, 1, 3);
 			tableLayoutPanel1.Controls.Add(label4, 0, 3);
 			tableLayoutPanel1.Controls.Add(m_tbQuantity, 1, 2);
@@ -90,18 +90,19 @@ namespace SharpTerminal.Forms
 			// 
 			// m_tbStatus
 			// 
-			m_tbStatus.Anchor = System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			m_tbStatus.Location = new System.Drawing.Point(76, 104);
+			m_tbStatus.Dock = System.Windows.Forms.DockStyle.Fill;
+			m_tbStatus.Location = new System.Drawing.Point(83, 90);
+			m_tbStatus.Multiline = true;
 			m_tbStatus.Name = "m_tbStatus";
 			m_tbStatus.ReadOnly = true;
-			m_tbStatus.Size = new System.Drawing.Size(211, 23);
+			m_tbStatus.Size = new System.Drawing.Size(204, 51);
 			m_tbStatus.TabIndex = 7;
 			// 
 			// label4
 			// 
 			label4.Anchor = System.Windows.Forms.AnchorStyles.Right;
 			label4.AutoSize = true;
-			label4.Location = new System.Drawing.Point(28, 108);
+			label4.Location = new System.Drawing.Point(35, 108);
 			label4.Name = "label4";
 			label4.Size = new System.Drawing.Size(42, 15);
 			label4.TabIndex = 6;
@@ -110,17 +111,17 @@ namespace SharpTerminal.Forms
 			// m_tbQuantity
 			// 
 			m_tbQuantity.Anchor = System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			m_tbQuantity.Location = new System.Drawing.Point(76, 61);
+			m_tbQuantity.Location = new System.Drawing.Point(83, 61);
 			m_tbQuantity.Name = "m_tbQuantity";
 			m_tbQuantity.ReadOnly = true;
-			m_tbQuantity.Size = new System.Drawing.Size(211, 23);
+			m_tbQuantity.Size = new System.Drawing.Size(204, 23);
 			m_tbQuantity.TabIndex = 5;
 			// 
 			// label3
 			// 
 			label3.Anchor = System.Windows.Forms.AnchorStyles.Right;
 			label3.AutoSize = true;
-			label3.Location = new System.Drawing.Point(14, 65);
+			label3.Location = new System.Drawing.Point(21, 65);
 			label3.Name = "label3";
 			label3.Size = new System.Drawing.Size(56, 15);
 			label3.TabIndex = 4;
@@ -129,17 +130,17 @@ namespace SharpTerminal.Forms
 			// m_tbDailyRate
 			// 
 			m_tbDailyRate.Anchor = System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			m_tbDailyRate.Location = new System.Drawing.Point(76, 32);
+			m_tbDailyRate.Location = new System.Drawing.Point(83, 32);
 			m_tbDailyRate.Name = "m_tbDailyRate";
 			m_tbDailyRate.ReadOnly = true;
-			m_tbDailyRate.Size = new System.Drawing.Size(211, 23);
+			m_tbDailyRate.Size = new System.Drawing.Size(204, 23);
 			m_tbDailyRate.TabIndex = 3;
 			// 
 			// label2
 			// 
 			label2.Anchor = System.Windows.Forms.AnchorStyles.Right;
 			label2.AutoSize = true;
-			label2.Location = new System.Drawing.Point(8, 36);
+			label2.Location = new System.Drawing.Point(15, 36);
 			label2.Name = "label2";
 			label2.Size = new System.Drawing.Size(62, 15);
 			label2.TabIndex = 2;
@@ -149,7 +150,7 @@ namespace SharpTerminal.Forms
 			// 
 			label1.Anchor = System.Windows.Forms.AnchorStyles.Right;
 			label1.AutoSize = true;
-			label1.Location = new System.Drawing.Point(28, 7);
+			label1.Location = new System.Drawing.Point(35, 7);
 			label1.Name = "label1";
 			label1.Size = new System.Drawing.Size(42, 15);
 			label1.TabIndex = 0;
@@ -158,10 +159,10 @@ namespace SharpTerminal.Forms
 			// m_tbCargo
 			// 
 			m_tbCargo.Anchor = System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			m_tbCargo.Location = new System.Drawing.Point(76, 3);
+			m_tbCargo.Location = new System.Drawing.Point(83, 3);
 			m_tbCargo.Name = "m_tbCargo";
 			m_tbCargo.ReadOnly = true;
-			m_tbCargo.Size = new System.Drawing.Size(211, 23);
+			m_tbCargo.Size = new System.Drawing.Size(204, 23);
 			m_tbCargo.TabIndex = 1;
 			// 
 			// m_lbTitle
