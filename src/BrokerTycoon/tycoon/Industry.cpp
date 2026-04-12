@@ -10,6 +10,8 @@
 
 #include "Industry.h"
 
+#include <chrono>
+
 #include <fmt/chrono.h>
 
 #include <dcclite/FmtUtils.h>
