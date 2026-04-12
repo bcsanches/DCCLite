@@ -155,11 +155,14 @@ namespace SharpTerminal
 			var name = GenerateObjectName(remoteObject);
 			foreach (var node in nodes)
 			{
-				if(node.ImageKey != customIcon)
-					node.ImageKey = customIcon;
+				if(customIcon != null)
+				{
+					if (node.ImageKey != customIcon)
+						node.ImageKey = customIcon;
 
-				if(node.SelectedImageKey != customIcon)
-					node.SelectedImageKey = customIcon;
+					if (node.SelectedImageKey != customIcon)
+						node.SelectedImageKey = customIcon;
+				}								
 
 				if(node.Text != name)
 					node.Text = name;
@@ -173,8 +176,8 @@ namespace SharpTerminal
 
 		private void RemoteObject_StateChanged(RemoteObject sender, EventArgs args)
 		{            
-			if (sender.TryGetIconName() == null)
-				return;
+			//if (sender.TryGetIconName() == null)
+			//				return;
 
 			UpdateNodesData(sender);                        
 		}

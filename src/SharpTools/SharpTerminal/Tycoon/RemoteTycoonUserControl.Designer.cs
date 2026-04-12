@@ -38,9 +38,9 @@ namespace SharpTerminal.Forms
 			m_lbTitle.Location = new System.Drawing.Point(0, 0);
 			m_lbTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 			m_lbTitle.Name = "m_lbTitle";
-			m_lbTitle.Size = new System.Drawing.Size(99, 24);
+			m_lbTitle.Size = new System.Drawing.Size(80, 24);
 			m_lbTitle.TabIndex = 2;
-			m_lbTitle.Text = "Tycoon - ";
+			m_lbTitle.Text = "Tycoon";
 			// 
 			// RemoteTycoonUserControl
 			// 

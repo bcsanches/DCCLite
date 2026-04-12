@@ -120,7 +120,9 @@ namespace dcclite::broker::tycoon
 	void TycoonService::OnFastClockTick(FastClock &clock)
 	{
 		this->NotifyItemChanged(*this, [this](JsonOutputStream_t &stream) 
-			{ 
+			{
+				this->SerializeIdentification(stream);
+
 				auto str = fmt::format("{:%H:%M}", m_clFastClock.Now().time_since_epoch());
 				stream.AddStringValue("fast_clock_time", str);
 			}
