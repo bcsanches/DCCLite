@@ -55,7 +55,12 @@ namespace SharpTerminal.Tycoon
 					m_lstCarTypes.Add(new CarType(c));
 			}
 		}
-		
+
+		protected override void OnUpdateState(JsonValue def)
+		{
+			base.OnUpdateState(def);
+		}
+
 		public override Control CreateControl(IConsole console)
 		{
 			return new RemoteTycoonUserControl(console, this);

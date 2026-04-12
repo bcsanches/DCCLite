@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include <sigslot/signal.hpp>
+
 #include <chrono>
 
 #include <dcclite/BaseThinker.h>
@@ -61,6 +63,8 @@ namespace dcclite::broker::tycoon
 			{
 				return seconds / m_uRate;
 			}
+
+			sigslot::signal<FastClock &> m_sigTick;
 
 		private:
 			void OnTick(const dcclite::Clock::TimePoint_t tp);

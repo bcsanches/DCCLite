@@ -18,8 +18,9 @@
 #include <dcclite/RName.h>
 #include <dcclite/JsonUtils.h>
 
-#include "TycoonService.h"
 #include "Cargo.h"
+#include "FastClockUtils.h"
+#include "TycoonService.h"
 
 namespace dcclite::broker::tycoon
 {
@@ -127,18 +128,13 @@ namespace dcclite::broker::tycoon
 
 		if (m_fProducing)
 		{
-			using namespace std::chrono;
-
-			auto now = system_clock::now();
-
-			auto local = zoned_time{ current_zone(), now };
-
-			auto tp = local.get_local_time();
-
 			auto nextProductionTime = m_clProductionThinker.GetTimePoint();
+
+			auto localTime = FastClockUtils::GetLocalTime(nextProductionTime, m_rclFastClock);			
+			
 			stream.AddStringValue(
 				"nextProductionAt",
-				fmt::format("{:%H:%M}", local.get_local_time() + (m_rclFastClock.ConvertToRealTime(nextProductionTime - m_rclFastClock.Now())))
+				fmt::format("{:%H:%M}", localTime)
 			);
 		}
 		else
@@ -200,6 +196,11 @@ namespace dcclite::broker::tycoon
 			}
 			m_vecSpots.emplace_back(RName{ it.GetString() });
 		}
+
+		if(m_vecSpots.empty())
+		{
+			throw std::invalid_argument("[Industry::Industry] at least one spot must be specified");
+		}
 	}
 
 	void Industry::Serialize(dcclite::JsonOutputStream_t &stream) const
@@ -207,6 +208,12 @@ namespace dcclite::broker::tycoon
 		Object::Serialize(stream);
 
 		m_clCargoHolder.Serialize(stream);
+		
+		auto spotsData = stream.AddArray("spots");
+		for(auto &spot : m_vecSpots)
+		{
+			spotsData.AddString(spot.GetNameData());
+		}
 	}
 
 	void Industry::SerializeDelta(dcclite::JsonOutputStream_t &stream) const

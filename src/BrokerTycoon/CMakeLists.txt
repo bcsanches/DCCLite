@@ -13,6 +13,8 @@ add_library(
         tycoon/FastClock.cpp
         tycoon/FastClock.h
         tycoon/FastClockDefs.h
+        tycoon/FastClockUtils.cpp
+        tycoon/FastClockUtils.h
         tycoon/FastClockThinker.cpp
         tycoon/FastClockThinker.h
         tycoon/Industry.cpp
@@ -21,6 +23,7 @@ add_library(
         tycoon/Location.h
 		tycoon/TycoonService.cpp
 		tycoon/TycoonService.h        
+        tycoon/TycoonService_Load.cpp
 )
 
 source_group("tycoon"	FILES ${SRC_TYCOON})

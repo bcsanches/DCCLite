@@ -60,7 +60,9 @@ namespace dcclite::broker::tycoon
 			void LoadCarTypes(const rapidjson::Value &params);
 			void LoadLocations(const rapidjson::Value &params);			
 
-			void AddCargoToCarType(CarType &carType, std::string_view cargoName);			
+			void AddCargoToCarType(CarType &carType, std::string_view cargoName);
+
+			void OnFastClockTick(FastClock &clock);
 
 		private:
 			FastClock				m_clFastClock;
