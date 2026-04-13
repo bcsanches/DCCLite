@@ -266,23 +266,63 @@ namespace dcclite::broker::tycoon
 		return &(*it);
 	}
 
-	void Industry::ReserveSpot(const std::string_view spotName, const char *info)
+	Spot &Industry::FindSpot(const std::string_view spotName)
 	{
 		auto spot = this->TryFindSpot(spotName);
 		if(spot == nullptr)
-			throw std::runtime_error(fmt::format("[Industry::ReserveSpot] Spot {} not found in industry {}", spotName, this->GetNameData()));
+			throw std::runtime_error(fmt::format("[Industry::FindSpot] Spot {} not found in industry {}", spotName, this->GetName()));
 
-		spot->Reserve(info);
+		return *spot;
+	}
 
-		m_rclTycoon.OnObjectStateChanged(IndustryToken{}, *this, [this, spot](JsonOutputStream_t &stream)
+	void Industry::SendSpotStateChangedEvent(const Spot &spot) const
+	{
+		m_rclTycoon.OnObjectStateChanged(IndustryToken{}, *this, [this, &spot](JsonOutputStream_t &stream)
 			{
 				//just send down the spot that changed...
 				this->SerializeIdentification(stream);
 
 				auto spotsData = stream.AddArray("spots");
 				auto spotObject = spotsData.AddObject();
-				spot->Serialize(spotObject);
+				spot.Serialize(spotObject);
 			}
 		);
 	}
+
+	void Industry::ReserveSpot(const std::string_view spotName, const char *info)
+	{
+		auto &spot = this->FindSpot(spotName);
+		
+		spot.Reserve(info);
+
+		this->SendSpotStateChangedEvent(spot);
+	}
+
+	void Industry::CancelSpotReservation(const std::string_view spotName)
+	{
+		auto &spot = this->FindSpot(spotName);		
+
+		spot.CancelReservation();
+
+		this->SendSpotStateChangedEvent(spot);
+	}
+
+	void Industry::StartSpotLoad(const std::string_view spotName)
+	{
+		auto &spot = this->FindSpot(spotName);
+
+		spot.Load();
+
+		this->SendSpotStateChangedEvent(spot);
+	}
+
+	void Industry::RemoveCarFromSpot(const std::string_view spotName)
+	{
+		auto &spot = this->FindSpot(spotName);
+
+		spot.RemoveCar();
+
+		this->SendSpotStateChangedEvent(spot);
+	}
 }
+

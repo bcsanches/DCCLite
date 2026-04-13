@@ -1,8 +1,9 @@
 using SharpTerminal.Tycoon;
+using SharpTerminal.Tycoon.Forms;
 using System;
 using System.ComponentModel;
-using System.Net.Http.Headers;
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace SharpTerminal.Forms
@@ -10,11 +11,11 @@ namespace SharpTerminal.Forms
 	[SupportedOSPlatform("windows")]
 	public partial class RemoteIndustryUserControl : UserControl
 	{
-		Tycoon.RemoteIndustry	mIndustry;
-		Tycoon.Spot				mSelectedSpot;
-		IConsole				mConsole;
-
-		string m_strLinkSpotActionCmd;
+		Tycoon.RemoteIndustry mIndustry;
+		Tycoon.Spot mSelectedSpot;
+		IConsole mConsole;
+		Func<Task> mLinkClick;
+		Func<Task> mLinkClickAux;
 
 		public RemoteIndustryUserControl()
 		{
@@ -71,35 +72,38 @@ namespace SharpTerminal.Forms
 				case Tycoon.SpotStates.FREE:
 					m_lnkSpotAction.Text = "Reserve";
 					m_lnkSpotAction.Visible = true;
-					m_strLinkSpotActionCmd = "Set-IndustrySpotReserved";
+					mLinkClick = OnSetIndustrySpotReservedClick;
 					break;
 
 				case Tycoon.SpotStates.RESERVED:
 					m_lnkSpotAction.Text = "Load";
 					m_lnkSpotAction.Visible = true;
-					m_strLinkSpotActionCmd = "Start-IndustrySpotLoad";
+					mLinkClick = () => OnGenericSpotClick("Start-IndustrySpotLoad");
 
 					m_lnkSpotActionAux.Text = "Cancel reservation";
 					m_lnkSpotActionAux.Visible = true;
-					m_strLinkSpotActionCmd = "Clear-IndustrySpotReservation";
+					mLinkClickAux = () => OnGenericSpotClick("Clear-IndustrySpotReservation");
 					break;
 
 				case Tycoon.SpotStates.CAR_PARKED:
 					m_lnkSpotAction.Text = "Pickup car";
 					m_lnkSpotAction.Visible = true;
-					m_strLinkSpotActionCmd = "Set-IndustrySpotCarPicked";
+					mLinkClick = () => OnGenericSpotClick("Remove-CarFromSpot");
 					break;
 			}
+		}
+
+		private void HideSpotLinks()
+		{
+			m_lnkSpotAction.Visible = false;
+			m_lnkSpotActionAux.Visible = false;
 		}
 
 		private void m_cbSpot_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			var item = m_cbSpot.SelectedItem as Tycoon.Spot;
 
-			m_lnkSpotAction.Visible = false;
-			m_lnkSpotActionAux.Visible = false;
-
-			m_strLinkSpotActionCmd = null;
+			HideSpotLinks();
 
 			if (item == null)
 			{
@@ -126,22 +130,45 @@ namespace SharpTerminal.Forms
 			if (sender != mSelectedSpot)
 				return;
 
-			RefreshSpotInfo(mSelectedSpot);			
+			HideSpotLinks();
+			RefreshSpotInfo(mSelectedSpot);
 		}
 
-		private async void m_lnkSpotAction_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		private async void RunFunc(Func<Task> a)
 		{
-			if (m_strLinkSpotActionCmd == null)
-				return;
-
 			try
 			{
-				await mConsole.RequestAsync(m_strLinkSpotActionCmd, mIndustry.Path, ((Tycoon.Spot)m_cbSpot.SelectedItem).Name, "Hello");
+				await a();
 			}
 			catch (Exception ex)
 			{
 				MessageBox.Show(this, "Error executing command: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
+		}
+
+		private void m_lnkSpotAction_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			RunFunc(mLinkClick);
+		}
+
+		private void m_lnkSpotActionAux_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			RunFunc(mLinkClickAux);
+		}
+
+		Task OnSetIndustrySpotReservedClick()
+		{
+			using var dialog = new SpotReservationInfoForm();
+			dialog.ShowDialog();
+			if (dialog.DialogResult != DialogResult.OK)
+				return Task.CompletedTask;
+
+			return mConsole.RequestAsync("Set-IndustrySpotReserved", mIndustry.Path, ((Tycoon.Spot)m_cbSpot.SelectedItem).Name, dialog.InfoText);
+		}
+
+		Task OnGenericSpotClick(string proc)
+		{
+			return mConsole.RequestAsync(proc, mIndustry.Path, ((Tycoon.Spot)m_cbSpot.SelectedItem).Name);
 		}
 	}
 }

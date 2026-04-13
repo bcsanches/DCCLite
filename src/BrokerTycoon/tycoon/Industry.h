@@ -102,9 +102,10 @@ namespace dcclite::broker::tycoon
 				^           \
 				|            v
 	FREE -> RESERVED    CAR_PARKED  ---
-	   ^        |            ^         \
-	   |		v            /         |
-	   |	LOADING     -----          |
+	   ^      | |            ^         \
+	   |-----/	|            /         |
+	   |        v           /          |
+	   |	LOADING   ------           |
 	   \	                           |
 	    \                             /
 	     -----------------------------
@@ -115,11 +116,11 @@ namespace dcclite::broker::tycoon
 	class Spot: public INamedItem
 	{
 		public:
-			Spot(RName name) :
+			explicit Spot(RName name) :
 				INamedItem{ name }
 			{
 				//empty
-			}
+			}			
 
 			void Reserve(const char *info)
 			{
@@ -134,6 +135,17 @@ namespace dcclite::broker::tycoon
 					m_strInformation = info;
 				else
 					m_strInformation.clear();
+			}
+
+			void CancelReservation()
+			{
+				if (m_kState != SpotStates::RESERVED)
+				{
+					throw std::runtime_error("[Spot::CancelReservation] Spot is not reserved to cancel reservation");
+				}
+
+				m_kState = SpotStates::FREE;
+				m_strInformation.clear();
 			}
 
 			void Load()
@@ -156,11 +168,11 @@ namespace dcclite::broker::tycoon
 				m_kState = SpotStates::UNLOADING;
 			}
 
-			void ParkCar()
+			void OnCargoTransferFinished()
 			{
 				if (m_kState != SpotStates::LOADING && m_kState != SpotStates::UNLOADING)
 				{
-					throw std::runtime_error("[Spot::ParkCar] Spot is not loading or unloading to park car");
+					throw std::runtime_error("[Spot::OnCargoTransferFinished] Spot is not loading or unloading, cannot park car");
 				}
 
 				m_kState = SpotStates::CAR_PARKED;
@@ -192,6 +204,9 @@ namespace dcclite::broker::tycoon
 			Industry(RName name, TycoonService &tycoon, const rapidjson::Value &params);
 
 			void ReserveSpot(const std::string_view spotName, const char *info);
+			void CancelSpotReservation(const std::string_view spotName);
+			void StartSpotLoad(const std::string_view spotName);
+			void RemoveCarFromSpot(const std::string_view spotName);
 
 			const char *GetTypeName() const noexcept override
 			{
@@ -205,6 +220,9 @@ namespace dcclite::broker::tycoon
 
 		private:
 			Spot *TryFindSpot(const std::string_view spotName);
+			Spot &FindSpot(const std::string_view spotName);
+
+			void SendSpotStateChangedEvent(const Spot &spot) const;
 
 		private:
 			CargoHolder			m_clCargoHolder;

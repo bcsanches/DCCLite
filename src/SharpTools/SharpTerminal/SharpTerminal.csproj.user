@@ -32,7 +32,7 @@
     <Compile Update="Forms\TreeViewEx.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Update="Tycoon\RemoteIndustryUserControl.cs">
+    <Compile Update="Tycoon\Forms\RemoteIndustryUserControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="Forms\RemoteLocationManagerUserControl.cs">
@@ -50,10 +50,13 @@
     <Compile Update="Forms\RemoteShortcutUserControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Tycoon\RemoteTycoonUserControl.cs">
+    <Compile Update="Tycoon\Forms\RemoteTycoonUserControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="Forms\ServerSelectionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Tycoon\Forms\SpotReservationInfoForm.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>

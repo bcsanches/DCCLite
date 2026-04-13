@@ -230,6 +230,7 @@ namespace SharpTerminal.Forms
 			m_lnkSpotActionAux.TabIndex = 10;
 			m_lnkSpotActionAux.TabStop = true;
 			m_lnkSpotActionAux.Text = "linkLabel1";
+			m_lnkSpotActionAux.LinkClicked += m_lnkSpotActionAux_LinkClicked;
 			// 
 			// label5
 			// 

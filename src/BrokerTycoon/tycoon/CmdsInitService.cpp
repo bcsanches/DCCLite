@@ -27,27 +27,36 @@ namespace dcclite::broker::tycoon
 {
 	namespace terminal = shell::terminal;
 
-	/////////////////////////////////////////////////////////////////////////////
-	//
-	// ResetItemCmd
-	//
-	/////////////////////////////////////////////////////////////////////////////
-	class SetIndustrySpotReserved : public terminal::TerminalCmd
+	class IndustrySpotCmd : public terminal::TerminalCmd
 	{
-		public:
-			explicit SetIndustrySpotReserved(RName name = RName{ "Set-IndustrySpotReserved" }) :
+		protected:
+			explicit IndustrySpotCmd(RName name) :
 				TerminalCmd(name)
 			{
 				//empty
 			}
 
-			CmdResult_t Run(terminal::TerminalContext &context, const terminal::CmdId_t id, const rapidjson::Document &request) override
+			virtual size_t GetNumParams() const noexcept
+			{
+				return 2;
+			}
+
+			virtual std::string_view GetParamsMsg() const noexcept
 			{				
+				return "<industry_path> <spot>";
+			}
+
+			virtual void RunInternal(Industry &target, const char *spotName, const rapidjson::Value &array) = 0;
+
+		public:
+			CmdResult_t Run(terminal::TerminalContext &context, const terminal::CmdId_t id, const rapidjson::Document &request) override
+			{
 				auto paramsIt = request.FindMember("params");
-				if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() < 2))
+				if ((paramsIt == request.MemberEnd()) || (!paramsIt->value.IsArray()) || (paramsIt->value.Size() < this->GetNumParams()))
 				{
-					throw terminal::TerminalCmdException(fmt::format("Usage: {} <industry_path> <spot> [information]", this->GetName()), id);
+					throw terminal::TerminalCmdException(fmt::format("Usage: {} {}", this->GetName(), this->GetParamsMsg()), id);
 				}
+				paramsIt->value.GetArray();
 
 				auto itemPath = paramsIt->value[0].GetString();
 
@@ -63,18 +72,7 @@ namespace dcclite::broker::tycoon
 					throw terminal::TerminalCmdException(fmt::format("Industry at {} not found", itemPath), id);
 				}
 
-				const char *info = nullptr;
-				if (paramsIt->value.Size() == 3)
-				{
-					info = paramsIt->value[2].GetString();
-					dcclite::Log::Info("[SetIndustrySpotReserved] Reserving {} for {}.", itemPath, info);
-				}
-				else
-				{
-					dcclite::Log::Info("[SetIndustrySpotReserved] Reserving {}.", itemPath);
-				}
-
-				industry->ReserveSpot(paramsIt->value[1].GetString(), info);
+				this->RunInternal(*industry, paramsIt->value[1].GetString(), paramsIt->value);
 
 				return terminal::MsgUtils::MakeRpcResultMessage(id, [](Result_t &results)
 					{
@@ -82,6 +80,106 @@ namespace dcclite::broker::tycoon
 						results.AddStringValue("msg", "OK");
 					}
 				);
+			}
+	};
+
+	/////////////////////////////////////////////////////////////////////////////
+	//
+	// SetIndustrySpotReserved
+	//
+	/////////////////////////////////////////////////////////////////////////////
+	class SetIndustrySpotReservedCmd : public IndustrySpotCmd
+	{
+		public:
+			explicit SetIndustrySpotReservedCmd(RName name = RName{ "Set-IndustrySpotReserved" }) :
+				IndustrySpotCmd(name)
+			{
+				//empty
+			}
+
+		protected:
+			std::string_view GetParamsMsg() const noexcept override
+			{
+				return "<industry_path> <spot> [information]";
+			}
+
+			virtual void RunInternal(Industry &target, const char *spotName, const rapidjson::Value &array)
+			{
+				const char *info = nullptr;
+				if (array.Size() == 3)
+				{
+					info = array[2].GetString();
+					dcclite::Log::Info("[SetIndustrySpotReserved] Reserving {} for {}.", target.GetPath().string(), info);
+				}
+				else
+				{
+					dcclite::Log::Info("[SetIndustrySpotReserved] Reserving {}.", target.GetPath().string());
+				}
+
+				target.ReserveSpot(spotName, info);						
+			}
+	};
+
+	/////////////////////////////////////////////////////////////////////////////
+	//
+	// ClearIndustrySpotReservationCmd
+	//
+	/////////////////////////////////////////////////////////////////////////////
+	class ClearIndustrySpotReservationCmd : public IndustrySpotCmd
+	{
+		public:
+			explicit ClearIndustrySpotReservationCmd(RName name = RName{ "Clear-IndustrySpotReservation" }) :
+				IndustrySpotCmd(name)
+			{
+				//empty
+			}
+
+		protected:			
+			virtual void RunInternal(Industry &target, const char *spotName, const rapidjson::Value &array)
+			{				
+				target.CancelSpotReservation(spotName);
+			}
+	};
+
+	/////////////////////////////////////////////////////////////////////////////
+	//
+	// StartIndustrySpotLoadCmd
+	//
+	/////////////////////////////////////////////////////////////////////////////
+	class StartIndustrySpotLoadCmd : public IndustrySpotCmd
+	{
+		public:
+			explicit StartIndustrySpotLoadCmd(RName name = RName{ "Start-IndustrySpotLoad" }) :
+				IndustrySpotCmd(name)
+			{
+				//empty
+			}
+
+		protected:
+			virtual void RunInternal(Industry &target, const char *spotName, const rapidjson::Value &array)
+			{
+				target.StartSpotLoad(spotName);
+			}
+	};
+
+	/////////////////////////////////////////////////////////////////////////////
+	//
+	// RemoveCarFromIndustrySpotCmd
+	//
+	/////////////////////////////////////////////////////////////////////////////
+	class RemoveCarFromIndustrySpotCmd : public IndustrySpotCmd
+	{
+		public:
+			explicit RemoveCarFromIndustrySpotCmd(RName name = RName{ "Remove-CarFromSpot" }) :
+				IndustrySpotCmd(name)
+			{
+				//empty
+			}
+
+		protected:
+			virtual void RunInternal(Industry &target, const char *spotName, const rapidjson::Value &array)
+			{
+				target.RemoveCarFromSpot(spotName);
 			}
 	};
 
@@ -95,10 +193,11 @@ namespace dcclite::broker::tycoon
 
 	TerminalCmdsInitService::TerminalCmdsInitService(RName name, sys::Broker &broker, const rapidjson::Value &params, shell::terminal::CmdHostService &cmdHost) :
 		InitService{ name, broker, params }
-	{
-		{
-			cmdHost.AddCmd(std::make_unique<SetIndustrySpotReserved>());
-		}
+	{		
+		cmdHost.AddCmd(std::make_unique<SetIndustrySpotReservedCmd>());
+		cmdHost.AddCmd(std::make_unique<ClearIndustrySpotReservationCmd>());
+		cmdHost.AddCmd(std::make_unique<StartIndustrySpotLoadCmd>());
+		cmdHost.AddCmd(std::make_unique<RemoveCarFromIndustrySpotCmd>());		
 	}
 
 	void TerminalCmdsInitService::RegisterFactory()
