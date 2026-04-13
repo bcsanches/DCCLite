@@ -51,8 +51,8 @@ namespace dcclite::broker::tycoon
 			{
 				return TYPE_NAME;
 			}
-
-			void OnObjectStateChanged(const IndustryToken &token, const Industry &industry);
+			
+			void OnObjectStateChanged(const IndustryToken &token, const Industry &industry, dcclite::broker::sys::ObjectManagerEvent::SerializeDeltaProc_t proc = nullptr);
 
 		private:	
 			void Load(const rapidjson::Value &params);

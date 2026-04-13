@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
+// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
 // file at the top-level directory of this distribution.
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public
@@ -125,7 +125,7 @@ namespace SharpCommon
 
         private void EnableTestMode(bool enable)
         {
-            m_btnFlip.Enabled = enable;
+            m_btnSwitch.Enabled = enable;
             m_btnClose.Enabled = enable;
             m_btnThrow.Enabled = enable;    
         }        
@@ -363,11 +363,11 @@ namespace SharpCommon
             m_cbTestMode.Enabled = true;
         }
 
-        private async void m_btnFlip_Click(object sender, EventArgs e)
+        private async void m_btnSwitch_Click(object sender, EventArgs e)
         {
             m_cbTestMode.Enabled = false;
 
-            await m_clTarget.FlipAsync();            
+            await m_clTarget.SwitchAsync();            
 
             m_cbTestMode.Enabled = true;
         }

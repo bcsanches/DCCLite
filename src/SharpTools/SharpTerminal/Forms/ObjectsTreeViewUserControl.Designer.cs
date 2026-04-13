@@ -1,4 +1,6 @@
-﻿namespace SharpTerminal
+using SharpTerminal.Forms;
+
+namespace SharpTerminal
 {
     partial class ObjectsTreeViewUserControl
     {
@@ -29,7 +31,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.mTreeView = new System.Windows.Forms.TreeView();
+            this.mTreeView = new TreeViewEx();
             this.mImageList = new System.Windows.Forms.ImageList(this.components);
             this.SuspendLayout();
             // 

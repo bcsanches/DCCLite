@@ -32,6 +32,7 @@
 #include "shell/terminal/TerminalService.h"
 
 #include "tycoon/TycoonService.h"
+#include "tycoon/CmdsInitService.h"
 
 #include "sys/BonjourService.h"
 #include "sys/Broker.h"
@@ -112,6 +113,7 @@ static void InitServicesFactories()
 	shell::terminal::DccTerminalCmdsInitService::RegisterFactory();
 
 	tycoon::TycoonService::RegisterFactory();
+	tycoon::TerminalCmdsInitService::RegisterFactory();
 }
 
 int main(int argc, char **argv)

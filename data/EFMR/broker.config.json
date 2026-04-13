@@ -139,6 +139,11 @@
 		{
 			"class":"TycoonService",
 			"name":"tycoon"
+		},		
+		{
+			"class":"TycoonTerminalCmdsInitService",
+			"name":"tycoonTerminalCmdsInit",
+			"comment":"Make Tycoon Terminal commands available on terminal"
 		},
 		{
 			"class":"DccTerminalCmdsInitService",

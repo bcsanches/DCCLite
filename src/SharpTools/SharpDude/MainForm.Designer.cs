@@ -1,4 +1,4 @@
-﻿namespace SharpDude
+namespace SharpDude
 {
     partial class MainForm
     {
@@ -346,8 +346,7 @@
         private System.Windows.Forms.Button btnBurn;
         private System.Windows.Forms.Button btnExit;
         private System.Windows.Forms.BindingSource arduinoBindingSource;
-        private System.Windows.Forms.TextBox tbOutput;
-		private StatusStrip mStatusBar;
+        private System.Windows.Forms.TextBox tbOutput;		
 		private ToolStripStatusLabel m_lblStatus;
 	}
 }

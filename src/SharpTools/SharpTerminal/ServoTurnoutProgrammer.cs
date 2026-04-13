@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
+// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
 // file at the top-level directory of this distribution.
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public
@@ -49,9 +49,9 @@ namespace SharpTerminal
             await m_clConsole.RequestAsync("Deactivate-Item", m_clRemoteTurnout.Path);
         }
 
-        public async Task FlipAsync()
+        public async Task SwitchAsync()
         {
-            await m_clConsole.RequestAsync("Flip-Item", m_clRemoteTurnout.Path);
+            await m_clConsole.RequestAsync("Switch-Item", m_clRemoteTurnout.Path);
         }
     }
 

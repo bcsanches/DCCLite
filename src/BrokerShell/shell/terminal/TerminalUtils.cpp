@@ -20,8 +20,8 @@
 
 #include "exec/dcc/NetworkDevice.h"
 
-namespace dcclite::broker::shell::terminal::detail
-{			
+namespace dcclite::broker::shell::terminal::MsgUtils
+{
 	using namespace dcclite;
 
 	std::string MakeRpcMessage(CmdId_t id, std::string_view *methodName, std::string_view nestedObjName, std::function<void(JsonOutputStream_t &object)> filler)
@@ -51,7 +51,10 @@ namespace dcclite::broker::shell::terminal::detail
 
 		return messageWriter.GetString();
 	}
+}
 
+namespace dcclite::broker::shell::terminal::detail
+{
 	IFolderObject &GetCurrentFolder(const TerminalContext &context, const CmdId_t id)
 	{
 		auto item = context.TryGetItem();
@@ -137,7 +140,7 @@ namespace dcclite::broker::shell::terminal::detail
 		context.GetTaskManager().RemoveTask(task->GetTaskId());
 
 		//notify client
-		return detail::MakeRpcResultMessage(id, [](TerminalCmd::Result_t &results)
+		return MsgUtils::MakeRpcResultMessage(id, [](TerminalCmd::Result_t &results)
 			{
 				results.AddStringValue("classname", "string");
 				results.AddStringValue("msg", "OK");

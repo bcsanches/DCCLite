@@ -66,7 +66,7 @@ namespace dcclite::broker::shell::terminal
 
 		const auto taskId = task->GetTaskId();
 
-		return detail::MakeRpcResultMessage(id, [taskId](Result_t &results)
+		return MsgUtils::MakeRpcResultMessage(id, [taskId](Result_t &results)
 			{
 				results.AddStringValue("classname", "TaskId"); //useless, but makes life easier to debug, we can call from the console
 				results.AddIntValue("taskId", taskId);
@@ -148,7 +148,7 @@ namespace dcclite::broker::shell::terminal
 			throw TerminalCmdException(fmt::format("{}:cmdType {} not found", this->GetName(), actionName), id);
 		}
 
-		return detail::MakeRpcResultMessage(id, [](Result_t &results)
+		return MsgUtils::MakeRpcResultMessage(id, [](Result_t &results)
 			{
 				results.AddStringValue("classname", "string");
 				results.AddStringValue("msg", "OK");
@@ -186,11 +186,11 @@ namespace dcclite::broker::shell::terminal
 				//Notify SharpTerminal if failed or succeed
 				if (task.HasFailed())
 				{
-					m_rclContext.SendClientNotification(detail::MakeRpcErrorResponse(m_tCmdId, task.GetMessage()));
+					m_rclContext.SendClientNotification(MsgUtils::MakeRpcErrorResponse(m_tCmdId, task.GetMessage()));
 				}
 				else if (task.HasFinished())
 				{
-					auto msg = detail::MakeRpcResultMessage(m_tCmdId, [](Result_t &results)
+					auto msg = MsgUtils::MakeRpcResultMessage(m_tCmdId, [](Result_t &results)
 						{
 							results.AddStringValue("classname", "string");
 							results.AddStringValue("msg", "OK");

@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
+// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
 // file at the top-level directory of this distribution.
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public
@@ -68,7 +68,7 @@ namespace SharpTerminal
 	[SupportedOSPlatform("windows")]
 	public class RemoteDecoder : RemoteObject
     {
-        protected static IRemoteObjectAction g_FlipAction = new RemoteObjectCmdAction("Flip-Item", "Flip", "Activate / deactivate the item");
+        protected static IRemoteObjectAction g_SwitchAction = new RemoteObjectCmdAction("Switch-Item", "Switch", "Activate / deactivate the item");
 
         public int Address { get; }
         public string LocationHint { get; }
@@ -237,7 +237,7 @@ namespace SharpTerminal
 
         public override IRemoteObjectAction[] GetActions()
         {
-            return [g_FlipAction];
+            return [g_SwitchAction];
         }
     }
 
@@ -257,7 +257,7 @@ namespace SharpTerminal
 
         public override IRemoteObjectAction[] GetActions()
         {
-            return [g_FlipAction];
+            return [g_SwitchAction];
         }
     }
 
@@ -389,7 +389,7 @@ namespace SharpTerminal
 
         public override IRemoteObjectAction[] GetActions()
         {
-            return [g_FlipAction, gProgrammerAction];
+            return [g_SwitchAction, gProgrammerAction];
         }
 
         protected override void OnUpdateState(JsonValue objectDef)

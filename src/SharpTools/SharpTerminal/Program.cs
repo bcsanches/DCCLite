@@ -28,7 +28,7 @@ namespace SharpTerminal
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
 				Application.Run(new Console(args));
-			}            
+			}
             finally
             {
                 EmulatorManager.KillAll();

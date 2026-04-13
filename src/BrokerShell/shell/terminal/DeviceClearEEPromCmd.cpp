@@ -43,7 +43,7 @@ namespace dcclite::broker::shell::terminal
 
 				if (m_spTask->HasFailed())
 				{
-					m_rclContext.SendClientNotification(detail::MakeRpcErrorResponse(m_tCmdId, fmt::format("Clear EEPROM task failed: {}", m_spTask->GetMessage())));
+					m_rclContext.SendClientNotification(MsgUtils::MakeRpcErrorResponse(m_tCmdId, fmt::format("Clear EEPROM task failed: {}", m_spTask->GetMessage())));
 
 					//suicide, we are useless now
 					m_rclContext.DestroyFiber(*this);
@@ -53,7 +53,7 @@ namespace dcclite::broker::shell::terminal
 
 				if (m_spTask->HasFinished())
 				{					
-					auto msg = detail::MakeRpcResultMessage(m_tCmdId, [](Result_t &results)
+					auto msg = MsgUtils::MakeRpcResultMessage(m_tCmdId, [](Result_t &results)
 						{
 							results.AddStringValue("classname", "ClearEEPromResult");							
 						}

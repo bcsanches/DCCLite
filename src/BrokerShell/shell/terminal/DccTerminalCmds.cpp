@@ -43,8 +43,8 @@ using namespace dcclite::broker::shell::terminal;
 
 using dcclite::broker::shell::terminal::detail::GetCurrentFolder;
 using dcclite::broker::shell::terminal::detail::GetNetworkDevice;
-using dcclite::broker::shell::terminal::detail::MakeRpcErrorResponse;
-using dcclite::broker::shell::terminal::detail::MakeRpcResultMessage;
+using dcclite::broker::shell::terminal::MsgUtils::MakeRpcErrorResponse;
+using dcclite::broker::shell::terminal::MsgUtils::MakeRpcResultMessage;
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -374,13 +374,13 @@ class DeactivateItemCmd : public DecoderCmdBase
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// FlipItemCmd
+// SwitchItemCmd
 //
 /////////////////////////////////////////////////////////////////////////////
-class FlipItemCmd : public DecoderCmdBase
+class SwitchItemCmd : public DecoderCmdBase
 {
 	public:
-		explicit FlipItemCmd(RName name = RName{ "Flip-Item" }) :
+		explicit SwitchItemCmd(RName name = RName{ "Switch-Item" }) :
 			DecoderCmdBase(name)
 		{
 			//empty
@@ -390,7 +390,7 @@ class FlipItemCmd : public DecoderCmdBase
 		{
 			auto outputDecoder = this->FindOutputDecoder(context, id, request);
 
-			outputDecoder->ToggleState("FlipItemCmd");
+			outputDecoder->ToggleState("SwitchItemCmd");
 
 			return MakeRpcResultMessage(id, [outputDecoder](Result_t &results)
 				{
@@ -608,7 +608,7 @@ namespace dcclite::broker::shell::terminal
 		}
 
 		{
-			cmdHost.AddCmd(std::make_unique<FlipItemCmd>());
+			cmdHost.AddCmd(std::make_unique<SwitchItemCmd>());
 		}
 
 		{

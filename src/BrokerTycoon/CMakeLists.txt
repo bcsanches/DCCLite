@@ -10,6 +10,8 @@ add_library(
         tycoon/Cargo.h
         tycoon/CarType.cpp
         tycoon/CarType.h
+        tycoon/CmdsInitService.cpp
+        tycoon/CmdsInitService.h
         tycoon/FastClock.cpp
         tycoon/FastClock.h
         tycoon/FastClockDefs.h
@@ -68,7 +70,8 @@ target_include_directories(BrokerTycoonLib
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/sigslot/include    
     PUBLIC ${DCCLite_SOURCE_DIR}/src/Common
     PUBLIC ${DCCLite_SOURCE_DIR}/src/BrokerSys
-    PUBLIC ${DCCLite_SOURCE_DIR}/src/BrokerExec    
+    PUBLIC ${DCCLite_SOURCE_DIR}/src/BrokerExec
+    PUBLIC ${DCCLite_SOURCE_DIR}/src/BrokerShell
     PUBLIC ${DCCLite_SOURCE_DIR}/src/Embedded/lib/Shared
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/fmt/include
     PUBLIC ${DCCLite_SOURCE_DIR}/contrib/spdlog/include

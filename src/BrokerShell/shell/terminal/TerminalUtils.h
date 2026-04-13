@@ -20,7 +20,7 @@ namespace dcclite::broker::exec::dcc
 	class NetworkTask;
 }
 
-namespace dcclite::broker::shell::terminal::detail
+namespace dcclite::broker::shell::terminal::MsgUtils
 {
 	constexpr auto JSONRPC_KEY = "jsonrpc";
 	constexpr auto JSONRPC_VERSION = "2.0";
@@ -41,7 +41,10 @@ namespace dcclite::broker::shell::terminal::detail
 	{
 		return MakeRpcMessage(id, nullptr, "result", filler);
 	}
+}
 
+namespace dcclite::broker::shell::terminal::detail
+{
 	IFolderObject &GetCurrentFolder(const TerminalContext &context, const CmdId_t id);
 		
 	exec::dcc::NetworkDevice &GetNetworkDevice(const dcclite::Path_t &path, const TerminalContext &context, const CmdId_t id);

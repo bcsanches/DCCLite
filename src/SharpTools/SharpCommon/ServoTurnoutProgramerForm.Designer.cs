@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
+// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
 // file at the top-level directory of this distribution.
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public
@@ -53,7 +53,7 @@ namespace SharpCommon
             this.m_cbInvertedFrog = new System.Windows.Forms.CheckBox();
             this.m_cbInvertedPower = new System.Windows.Forms.CheckBox();
             this.m_cbTestMode = new System.Windows.Forms.CheckBox();
-            this.m_btnFlip = new System.Windows.Forms.Button();
+            this.m_btnSwitch = new System.Windows.Forms.Button();
             this.m_btnClose = new System.Windows.Forms.Button();
             this.m_btnThrow = new System.Windows.Forms.Button();
             this.m_btnCancel = new System.Windows.Forms.Button();
@@ -223,7 +223,7 @@ namespace SharpCommon
             // 
             this.tableLayoutPanel1.SetColumnSpan(groupBox2, 2);
             groupBox2.Controls.Add(this.m_cbTestMode);
-            groupBox2.Controls.Add(this.m_btnFlip);
+            groupBox2.Controls.Add(this.m_btnSwitch);
             groupBox2.Controls.Add(this.m_btnClose);
             groupBox2.Controls.Add(this.m_btnThrow);
             groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -245,16 +245,16 @@ namespace SharpCommon
             this.m_cbTestMode.UseVisualStyleBackColor = true;
             this.m_cbTestMode.CheckedChanged += new System.EventHandler(this.m_cbTestMode_CheckedChanged);
             // 
-            // m_btnFlip
+            // m_btnSwitch
             // 
-            this.m_btnFlip.Enabled = false;
-            this.m_btnFlip.Location = new System.Drawing.Point(168, 19);
-            this.m_btnFlip.Name = "m_btnFlip";
-            this.m_btnFlip.Size = new System.Drawing.Size(75, 23);
-            this.m_btnFlip.TabIndex = 2;
-            this.m_btnFlip.Text = "&Flip";
-            this.m_btnFlip.UseVisualStyleBackColor = true;
-            this.m_btnFlip.Click += new System.EventHandler(this.m_btnFlip_Click);
+            this.m_btnSwitch.Enabled = false;
+            this.m_btnSwitch.Location = new System.Drawing.Point(168, 19);
+            this.m_btnSwitch.Name = "m_btnSwitch";
+            this.m_btnSwitch.Size = new System.Drawing.Size(75, 23);
+            this.m_btnSwitch.TabIndex = 2;
+            this.m_btnSwitch.Text = "&Switch";
+            this.m_btnSwitch.UseVisualStyleBackColor = true;
+            this.m_btnSwitch.Click += new System.EventHandler(this.m_btnSwitch_Click);
             // 
             // m_btnClose
             // 
@@ -457,7 +457,7 @@ namespace SharpCommon
         private System.Windows.Forms.MaskedTextBox m_tbOperationTime;
         private System.Windows.Forms.Label m_lblStatus;
         private System.Windows.Forms.CheckBox m_cbTestMode;
-        private System.Windows.Forms.Button m_btnFlip;
+        private System.Windows.Forms.Button m_btnSwitch;
         private System.Windows.Forms.Button m_btnClose;
         private System.Windows.Forms.Button m_btnThrow;
         private System.Windows.Forms.LinkLabel m_lnkStartPos;

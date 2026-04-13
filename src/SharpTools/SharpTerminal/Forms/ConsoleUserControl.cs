@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
+// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
 // file at the top-level directory of this distribution.
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public
@@ -216,15 +216,60 @@ namespace SharpTerminal
             if (string.IsNullOrWhiteSpace(input))
                 return;
 
-            var cmds = input.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-            
-            foreach(var cmd in cmds)
-            {
-                var vargs = cmd.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            List<String> args = new();
+            int start = 0;
+            int i = 0;
+			while(i < input.Length)
+			{
+                char ch = input[i];
+                switch(ch)
+                {
+                    case '"':
+                        if(start != i)
+                        {
+							Console_Println("Invalid input, found \" in the middle of argument... help me, I am a lazy parser...");
+                            return;
+						}
 
-                ProcessCmd(vargs);
-                
-            }            
+                        int stringEnd = input.IndexOf('"', i + 1);
+                        if (stringEnd < 0)
+                        {
+                            Console_Println("Invalid input, expected end of string");
+                            return;
+                        }
+                        args.Add(input.Substring(i + 1, stringEnd - i - 1));
+
+                        if ((stringEnd < input.Length - 1) && (input[stringEnd + 1] != ' '))
+                        {
+							Console_Println("Invalid input, expected end of string to be at the end... not in the middle... I am really lazy here");
+							return;
+						}
+                        
+                        start = i = stringEnd + 1;
+						break;
+
+                    case ' ':
+                        if (i > start)
+                        {
+                            args.Add(input.Substring(start, i - start));                            
+						}
+                        //handle multiple spaces...
+						i = start = i + 1;
+						break;
+
+                    default:
+                        ++i;
+                        break;
+				}
+            }
+
+			//add last arg
+			if (i > start)
+            {
+                args.Add(input.Substring(start, i - start));
+			}
+
+            ProcessCmd(args.ToArray());			
         }
 
         public int ProcessCmd(object[] vargs)

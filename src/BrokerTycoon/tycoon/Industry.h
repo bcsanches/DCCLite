@@ -86,6 +86,32 @@ namespace dcclite::broker::tycoon
 			bool		m_fProducing = false;
 	};
 
+	enum class SpotStates 
+	{
+		FREE,
+		RESERVED,
+		LOADING,
+		UNLOADING,
+		CAR_PARKED
+	};
+
+	/**
+	Car Spot State Machine:
+
+			UNLOADING   ----
+				^           \
+				|            v
+	FREE -> RESERVED    CAR_PARKED  ---
+	   ^        |            ^         \
+	   |		v            /         |
+	   |	LOADING     -----          |
+	   \	                           |
+	    \                             /
+	     -----------------------------
+	
+	
+	*/
+
 	class Spot: public INamedItem
 	{
 		public:
@@ -95,8 +121,67 @@ namespace dcclite::broker::tycoon
 				//empty
 			}
 
-		private:
+			void Reserve(const char *info)
+			{
+				if (m_kState != SpotStates::FREE)
+				{
+					throw std::runtime_error("[Spot::Reserve] Spot is not free to reserve");
+				}
 
+				m_kState = SpotStates::RESERVED;
+
+				if(info)
+					m_strInformation = info;
+				else
+					m_strInformation.clear();
+			}
+
+			void Load()
+			{
+				if(m_kState != SpotStates::RESERVED)
+				{
+					throw std::runtime_error("[Spot::Load] Spot is not reserved to load");
+				}
+
+				m_kState = SpotStates::LOADING;
+			}
+
+			void Unload()
+			{
+				if (m_kState != SpotStates::RESERVED)
+				{
+					throw std::runtime_error("[Spot::Unload] Spot is not reserved to unload");
+				}
+
+				m_kState = SpotStates::UNLOADING;
+			}
+
+			void ParkCar()
+			{
+				if (m_kState != SpotStates::LOADING && m_kState != SpotStates::UNLOADING)
+				{
+					throw std::runtime_error("[Spot::ParkCar] Spot is not loading or unloading to park car");
+				}
+
+				m_kState = SpotStates::CAR_PARKED;
+			}
+
+			void RemoveCar()
+			{
+				if (m_kState != SpotStates::CAR_PARKED)
+				{
+					throw std::runtime_error("[Spot::RemoveCar] Spot does not have a car parked to remove");
+				}
+
+				m_kState = SpotStates::FREE;
+			}
+
+			void Serialize(dcclite::JsonOutputStream_t &stream) const;
+
+		private:
+			SpotStates m_kState = SpotStates::FREE;
+
+			std::string m_strInformation;
 	};
 
 	class Industry : public Object
@@ -105,6 +190,8 @@ namespace dcclite::broker::tycoon
 			static const char *TYPE_NAME;
 
 			Industry(RName name, TycoonService &tycoon, const rapidjson::Value &params);
+
+			void ReserveSpot(const std::string_view spotName, const char *info);
 
 			const char *GetTypeName() const noexcept override
 			{
@@ -117,7 +204,12 @@ namespace dcclite::broker::tycoon
 			void Serialize(dcclite::JsonOutputStream_t &stream) const override;
 
 		private:
+			Spot *TryFindSpot(const std::string_view spotName);
+
+		private:
 			CargoHolder			m_clCargoHolder;
 			std::vector<Spot>	m_vecSpots;
+
+			TycoonService		&m_rclTycoon;
 	};
 }

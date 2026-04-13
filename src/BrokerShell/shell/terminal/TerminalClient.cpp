@@ -123,7 +123,7 @@ namespace dcclite::broker::shell::terminal
 	{
 		m_clMessenger.Send(
 			m_clAddress,
-			detail::MakeRpcNotificationMessage(
+			MsgUtils::MakeRpcNotificationMessage(
 				-1,
 				"On-ItemPropertyValueChanged",
 				[&event](JsonOutputStream_t &params)
@@ -145,7 +145,7 @@ namespace dcclite::broker::shell::terminal
 			case sys::ObjectManagerEvent::ITEM_CREATED:
 				m_clMessenger.Send(
 					m_clAddress,
-					detail::MakeRpcNotificationMessage(
+					MsgUtils::MakeRpcNotificationMessage(
 						-1,
 						"On-ItemCreated",
 						[&event](JsonOutputStream_t &params)
@@ -159,7 +159,7 @@ namespace dcclite::broker::shell::terminal
 			case sys::ObjectManagerEvent::ITEM_DESTROYED:
 				m_clMessenger.Send(
 					m_clAddress,
-					detail::MakeRpcNotificationMessage(
+					MsgUtils::MakeRpcNotificationMessage(
 						-1,
 						"On-ItemDestroyed",
 						[&event](JsonOutputStream_t &params)
@@ -225,8 +225,8 @@ namespace dcclite::broker::shell::terminal
 				throw TerminalCmdException(fmt::format("Invalid json: {}", msg), -1);
 			}
 
-			auto jsonrpcKey = doc.FindMember(detail::JSONRPC_KEY);
-			if ((jsonrpcKey == doc.MemberEnd()) || (!jsonrpcKey->value.IsString()) || (strcmp(jsonrpcKey->value.GetString(), detail::JSONRPC_VERSION)))
+			auto jsonrpcKey = doc.FindMember(MsgUtils::JSONRPC_KEY);
+			if ((jsonrpcKey == doc.MemberEnd()) || (!jsonrpcKey->value.IsString()) || (strcmp(jsonrpcKey->value.GetString(), MsgUtils::JSONRPC_VERSION)))
 			{
 				throw TerminalCmdException(fmt::format("Invalid rpc version or was not set: {}", msg), -1);
 			}
@@ -264,11 +264,11 @@ namespace dcclite::broker::shell::terminal
 		}
 		catch (TerminalCmdException &ex)
 		{
-			result = detail::MakeRpcErrorResponse(ex.GetId(), ex.what());
+			result = MsgUtils::MakeRpcErrorResponse(ex.GetId(), ex.what());
 		}
 		catch (std::exception &ex)
 		{
-			result = detail::MakeRpcErrorResponse(cmdId, ex.what());
+			result = MsgUtils::MakeRpcErrorResponse(cmdId, ex.what());
 		}
 
 		if (std::holds_alternative<std::string>(result))

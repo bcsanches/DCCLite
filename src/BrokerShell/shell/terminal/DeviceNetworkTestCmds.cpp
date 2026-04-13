@@ -53,7 +53,7 @@ namespace dcclite::broker::shell::terminal
 
 		const auto taskId = task->GetTaskId();
 
-		return detail::MakeRpcResultMessage(id, [taskId](Result_t &results)
+		return MsgUtils::MakeRpcResultMessage(id, [taskId](Result_t &results)
 			{
 				results.AddStringValue("classname", "TaskId"); //useless, but makes life easier to debug, we can call from the console
 				results.AddIntValue("taskId", taskId);
@@ -84,7 +84,7 @@ namespace dcclite::broker::shell::terminal
 
 		auto netTastkResults = netTestTask->GetCurrentResults();
 
-		return detail::MakeRpcResultMessage(id, [netTastkResults](auto &results)
+		return MsgUtils::MakeRpcResultMessage(id, [netTastkResults](auto &results)
 			{
 				results.AddStringValue("classname", "NetworkTestResults"); //useless, but makes life easier to debug, we can call from the console
 

@@ -29,7 +29,10 @@
     <Compile Update="Forms\RemoteDeviceUserControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Update="Forms\RemoteIndustryUserControl.cs">
+    <Compile Update="Forms\TreeViewEx.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Tycoon\RemoteIndustryUserControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Update="Forms\RemoteLocationManagerUserControl.cs">

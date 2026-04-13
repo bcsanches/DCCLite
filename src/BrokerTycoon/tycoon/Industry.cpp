@@ -14,6 +14,8 @@
 
 #include <fmt/chrono.h>
 
+#include <magic_enum/magic_enum.hpp>
+
 #include <dcclite/FmtUtils.h>
 #include <dcclite/RName.h>
 #include <dcclite/JsonUtils.h>
@@ -133,13 +135,19 @@ namespace dcclite::broker::tycoon
 			auto localTime = FastClockUtils::GetLocalTime(nextProductionTime, m_rclFastClock);			
 			
 			stream.AddStringValue(
-				"nextProductionAt",
+				"nextProductionAtLocalTime",
 				fmt::format("{:%H:%M}", localTime)
+			);
+
+			stream.AddStringValue(
+				"nextProductionAt",
+				fmt::format("{:%H:%M}", nextProductionTime.time_since_epoch())
 			);
 		}
 		else
 		{
 			stream.AddStringValue("nextProductionAt", "N/A");
+			stream.AddStringValue("nextProductionAtLocalTime", "N/A");
 		}
 	}
 
@@ -152,7 +160,7 @@ namespace dcclite::broker::tycoon
 			{
 				destionationsArray.AddString(d);
 			}
-		}
+		}		
 
 		stream.AddStringValue("cargo", m_rclCargo.GetNameData());
 		stream.AddFloatValue("dailyRate", m_fpDailyRate);
@@ -161,11 +169,34 @@ namespace dcclite::broker::tycoon
 		this->SerializeDelta(stream);
 	}
 
+	///////////////////////////////////////////////////////////////////////////
+	//
+	//
+	// Spot
+	//
+	//
+	///////////////////////////////////////////////////////////////////////////
+	void Spot::Serialize(dcclite::JsonOutputStream_t &stream) const
+	{
+		stream.AddStringValue("name", this->GetNameData());
+		stream.AddStringValue("state", magic_enum::enum_name(m_kState));
+		stream.AddStringValue("info", m_strInformation);
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+	//
+	//
+	// Industry
+	//
+	//
+	///////////////////////////////////////////////////////////////////////////
+
 	const char *Industry::TYPE_NAME = "dcclite::broker::tycoon::Industry";
 
 	Industry::Industry(RName name, TycoonService &tycoon, const rapidjson::Value &params):
-		Object{name},
-		m_clCargoHolder{tycoon, *this, params["produce"]}
+		Object{name},		
+		m_clCargoHolder{tycoon, *this, params["produce"]},
+		m_rclTycoon{ tycoon }
 	{		
 		if(auto spot = json::TryGetString(params, "spot"))
 		{
@@ -212,7 +243,8 @@ namespace dcclite::broker::tycoon
 		auto spotsData = stream.AddArray("spots");
 		for(auto &spot : m_vecSpots)
 		{
-			spotsData.AddString(spot.GetNameData());
+			auto spotObject = spotsData.AddObject();
+			spot.Serialize(spotObject);			
 		}
 	}
 
@@ -221,5 +253,36 @@ namespace dcclite::broker::tycoon
 		this->SerializeIdentification(stream);
 
 		m_clCargoHolder.SerializeDelta(stream);
+	}
+
+	Spot *Industry::TryFindSpot(const std::string_view spotName)
+	{
+		auto it = std::ranges::find_if(m_vecSpots, [spotName](const Spot &s) { return s.GetNameData() == spotName; });
+		if(it == m_vecSpots.end())
+		{
+			return nullptr;
+		}
+
+		return &(*it);
+	}
+
+	void Industry::ReserveSpot(const std::string_view spotName, const char *info)
+	{
+		auto spot = this->TryFindSpot(spotName);
+		if(spot == nullptr)
+			throw std::runtime_error(fmt::format("[Industry::ReserveSpot] Spot {} not found in industry {}", spotName, this->GetNameData()));
+
+		spot->Reserve(info);
+
+		m_rclTycoon.OnObjectStateChanged(IndustryToken{}, *this, [this, spot](JsonOutputStream_t &stream)
+			{
+				//just send down the spot that changed...
+				this->SerializeIdentification(stream);
+
+				auto spotsData = stream.AddArray("spots");
+				auto spotObject = spotsData.AddObject();
+				spot->Serialize(spotObject);
+			}
+		);
 	}
 }

@@ -112,9 +112,12 @@ namespace dcclite::broker::tycoon
 		}
 	}
 	
-	void TycoonService::OnObjectStateChanged([[maybe_unused]] const IndustryToken &token, const Industry &industry)
+	void TycoonService::OnObjectStateChanged([[maybe_unused]] const IndustryToken &token, const Industry &industry, dcclite::broker::sys::ObjectManagerEvent::SerializeDeltaProc_t proc)
 	{
-		this->NotifyItemChanged(industry, [&industry](JsonOutputStream_t &stream) { industry.SerializeDelta(stream); });
+		this->NotifyItemChanged(
+			industry, 
+			proc ? proc : [&industry](JsonOutputStream_t &stream) { industry.SerializeDelta(stream); }
+		);
 	}
 
 	void TycoonService::OnFastClockTick(FastClock &clock)

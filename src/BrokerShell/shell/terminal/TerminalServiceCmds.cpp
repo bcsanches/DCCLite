@@ -57,7 +57,7 @@ namespace dcclite::broker::shell::terminal
 					folder = static_cast<IFolderObject *>(item);
 				}
 
-				return detail::MakeRpcResultMessage(id, [folder](Result_t &results)
+				return MsgUtils::MakeRpcResultMessage(id, [folder](Result_t &results)
 					{
 						results.AddStringValue("classname", "ChildItem");
 						results.AddStringValue("location", folder->GetPath().string());
@@ -107,7 +107,7 @@ namespace dcclite::broker::shell::terminal
 					throw TerminalCmdException(fmt::format("Invalid location {}", locationParam), id);
 				}
 
-				return detail::MakeRpcResultMessage(id, [item](Result_t &results)
+				return MsgUtils::MakeRpcResultMessage(id, [item](Result_t &results)
 					{
 						results.AddStringValue("classname", "Item");
 						results.AddStringValue("location", item->GetPath().string());
@@ -162,7 +162,7 @@ namespace dcclite::broker::shell::terminal
 					path = folder.GetPath();
 				}
 
-				return detail::MakeRpcResultMessage(id, [&path](Result_t &results)
+				return MsgUtils::MakeRpcResultMessage(id, [&path](Result_t &results)
 					{
 						results.AddStringValue("classname", "Location");
 						results.AddStringValue("location", path.string());
@@ -193,7 +193,7 @@ namespace dcclite::broker::shell::terminal
 
 				auto folder = static_cast<FolderObject *>(item);
 
-				return detail::MakeRpcResultMessage(id, [folder](Result_t &results)
+				return MsgUtils::MakeRpcResultMessage(id, [folder](Result_t &results)
 					{
 						results.AddStringValue("classname", "CmdList");
 
@@ -230,7 +230,7 @@ namespace dcclite::broker::shell::terminal
 			{
 				auto names = dcclite::detail::RName_GetAll();
 
-				return detail::MakeRpcResultMessage(id, [&names](Result_t &results)
+				return MsgUtils::MakeRpcResultMessage(id, [&names](Result_t &results)
 					{
 						results.AddStringValue("classname", "RNames");
 						auto dataArray = results.AddArray("rnames");

@@ -1,4 +1,7 @@
 - TODO:
+	- Spot:
+		- states: free, reserved, car parked, loading, unloading
+
 	- On SharpTerminal industry tab:		
 		- update production status and info			 
 		- Add a button to consume cargo

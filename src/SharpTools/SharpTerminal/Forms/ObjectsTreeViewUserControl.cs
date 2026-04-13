@@ -1,9 +1,11 @@
+using SharpTerminal.Forms;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace SharpTerminal
 {
@@ -150,6 +152,8 @@ namespace SharpTerminal
 			if (!mObjectsNodes.TryGetValue(remoteObject.InternalId, out var nodes))
 				return;
 
+			mTreeView.BeginUpdate();
+
 			var customIcon = remoteObject.TryGetIconName();
 
 			var name = GenerateObjectName(remoteObject);
@@ -166,7 +170,9 @@ namespace SharpTerminal
 
 				if(node.Text != name)
 					node.Text = name;
-			}            
+			}
+
+			mTreeView.EndUpdate();
 		}
 
 		private string GenerateObjectName(RemoteObject remoteObject)
@@ -179,7 +185,7 @@ namespace SharpTerminal
 			//if (sender.TryGetIconName() == null)
 			//				return;
 
-			UpdateNodesData(sender);                        
+			UpdateNodesData(sender);
 		}
 
 		private async void mRequestManager_ConnectionStateChanged(RequestManager sender, ConnectionStateEventArgs args)
@@ -290,9 +296,14 @@ namespace SharpTerminal
 		public ObjectsTreeViewUserControl()
 		{
 			InitializeComponent();
+			
+			this.SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint, true);
+			this.UpdateStyles();
 
 			DefaultIcons.LoadIcons(mImageList);
-			mTreeView.ImageList = mImageList;            
+			mTreeView.ImageList = mImageList;
+
+			((TreeViewEx)mTreeView).ForceDoubleBuffering();
 		}
 
 		private async Task<bool> TryToLoadNodeChildrenAsync(TreeNode node)

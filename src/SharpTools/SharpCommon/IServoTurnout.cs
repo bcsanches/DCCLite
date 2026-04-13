@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2022 - Bruno Sanches. See the COPYRIGHT
+// Copyright (C) 2022 - Bruno Sanches. See the COPYRIGHT
 // file at the top-level directory of this distribution.
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public
@@ -38,6 +38,6 @@ namespace SharpCommon
 
         public Task ActivateAsync();
         public Task DeactivateAsync();
-        public Task FlipAsync();
+        public Task SwitchAsync();
     }
 }
