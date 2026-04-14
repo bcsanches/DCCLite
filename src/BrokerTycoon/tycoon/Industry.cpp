@@ -31,6 +31,7 @@ namespace dcclite::broker::tycoon
 			tycoon.FindCargoByName(RName::Get(json::GetString(params, "cargo", "[Tycoon::CargoHolder]"))),
 			json::GetFloat(params, "dailyProduction", "[Tycoon::CargoHolder]"),
 			static_cast<uint8_t>(json::GetInt(params, "maximumStorage", "[CargoHolder]")),
+			std::chrono::hours{json::GetInt(params, "transferTimeHours", "[CargoHolder]")},
 			tycoon,
 			tycoon.GetFastClock(),
 			industry
@@ -71,14 +72,27 @@ namespace dcclite::broker::tycoon
 		this->ScheduleProduction();
 	}
 
-	void CargoHolder::Consume(const FastClock &fastClock)
-	{		
+	std::chrono::hours CargoHolder::StartCargoTransfer()
+	{
 		if (m_uCurrentQuantity == 0)
 		{
-			throw std::runtime_error("[Tycoon::CargoHolder::Consume] No cargo available to consume");
+			throw std::runtime_error("[Tycoon::CargoHolder::StartCargoTransfer] No cargo in stock!!!");
 		}
 
 		--m_uCurrentQuantity;
+		++m_uReservedQuantity;		
+
+		return m_tTransferTime;
+	}
+
+	void CargoHolder::CargoTransferFinished()
+	{		
+		if (m_uReservedQuantity == 0)
+		{
+			throw std::runtime_error("[Tycoon::CargoHolder::Consume] No cargo reserved!!!");
+		}
+
+		--m_uReservedQuantity;
 
 		//only schedule production if we are not already producing
 		if(!m_fProducing)
@@ -108,7 +122,7 @@ namespace dcclite::broker::tycoon
 
 		dcclite::Log::Trace("[Tycoon::CargoHolder::ScheduleProduction] Produced {}, now we have {}", m_rclCargo.GetName(), m_uCurrentQuantity);
 
-		if(m_uCurrentQuantity == m_uMaxQuantity)
+		if(!this->CanProduce())
 		{
 			dcclite::Log::Trace("[Tycoon::CargoHolder::ScheduleProduction] Stock is full of {}, halted production", m_rclCargo.GetName());
 
@@ -126,6 +140,7 @@ namespace dcclite::broker::tycoon
 	void CargoHolder::SerializeDelta(dcclite::JsonOutputStream_t &stream) const
 	{		
 		stream.AddIntValue("currentQuantity", m_uCurrentQuantity);
+		stream.AddIntValue("reservedQuantity", m_uReservedQuantity);
 		stream.AddBool("producing", m_fProducing);
 
 		if (m_fProducing)
@@ -183,6 +198,16 @@ namespace dcclite::broker::tycoon
 		stream.AddStringValue("info", m_strInformation);
 	}
 
+	void Spot::Load()
+	{
+		if (!this->CanLoad())
+		{
+			throw std::runtime_error("[Spot::Load] Spot is not reserved to load");
+		}
+
+		m_kState = SpotStates::LOADING;		
+	}
+
 	///////////////////////////////////////////////////////////////////////////
 	//
 	//
@@ -193,14 +218,27 @@ namespace dcclite::broker::tycoon
 
 	const char *Industry::TYPE_NAME = "dcclite::broker::tycoon::Industry";
 
+	void Industry::AddSpot(RName name)
+	{
+		m_vecSpots.emplace_back(name);
+
+		m_vecSpotThinkers.push_back(m_rclTycoon.GetFastClock().MakeUniqueThinker(
+			this->GetNameData(), 
+			[this, spotIndex = m_vecSpots.size() - 1](FastClockDef::TimePoint_t tp)
+			{
+				this->OnSpotTransferFinished(tp, spotIndex);
+			})
+		);
+	}
+
 	Industry::Industry(RName name, TycoonService &tycoon, const rapidjson::Value &params):
 		Object{name},		
 		m_clCargoHolder{tycoon, *this, params["produce"]},
 		m_rclTycoon{ tycoon }
-	{		
+	{				
 		if(auto spot = json::TryGetString(params, "spot"))
 		{
-			m_vecSpots.emplace_back(RName{ *spot });
+			this->AddSpot(RName{ *spot });
 		}
 
 		auto spotsValue = params.FindMember("spots");
@@ -219,18 +257,23 @@ namespace dcclite::broker::tycoon
 			throw std::invalid_argument("[Industry::Industry] spot and spots cannot be specified at the same time");
 		}
 
+		const auto spotsNum = spotsValue->value.GetArray().Size();
+		if(spotsNum == 0)
+		{
+			throw std::invalid_argument("[Industry::Industry] at least one spot must be specified");
+		}
+
+		m_vecSpots.reserve(spotsNum);
+		m_vecSpotThinkers.reserve(spotsNum);
+
 		for(auto &it : spotsValue->value.GetArray())
 		{
 			if(!it.IsString())
 			{
 				throw std::invalid_argument("[Industry::Industry] each spot must be a string");
 			}
-			m_vecSpots.emplace_back(RName{ it.GetString() });
-		}
 
-		if(m_vecSpots.empty())
-		{
-			throw std::invalid_argument("[Industry::Industry] at least one spot must be specified");
+			this->AddSpot(RName{ it.GetString() });			
 		}
 	}
 
@@ -255,15 +298,31 @@ namespace dcclite::broker::tycoon
 		m_clCargoHolder.SerializeDelta(stream);
 	}
 
-	Spot *Industry::TryFindSpot(const std::string_view spotName)
+	std::optional<size_t> Industry::TryFindSpotIndex(const std::string_view spotName) const
 	{
 		auto it = std::ranges::find_if(m_vecSpots, [spotName](const Spot &s) { return s.GetNameData() == spotName; });
-		if(it == m_vecSpots.end())
+		if (it == m_vecSpots.end())
 		{
-			return nullptr;
+			return std::nullopt;
 		}
 
-		return &(*it);
+		return std::distance(m_vecSpots.begin(), it);
+	}
+
+	size_t Industry::FindSpotIndex(const std::string_view spotName) const
+	{
+		auto index = this->TryFindSpotIndex(spotName);
+		if(!index)
+			throw std::runtime_error(fmt::format("[Industry::FindSpotIndex] Spot {} not found in industry {}", spotName, this->GetName()));
+
+		return *index;
+	}
+
+	Spot *Industry::TryFindSpot(const std::string_view spotName)
+	{
+		auto index = this->TryFindSpotIndex(spotName);
+		
+		return index ? &m_vecSpots[*index] : nullptr;		
 	}
 
 	Spot &Industry::FindSpot(const std::string_view spotName)
@@ -281,6 +340,20 @@ namespace dcclite::broker::tycoon
 			{
 				//just send down the spot that changed...
 				this->SerializeIdentification(stream);
+
+				auto spotsData = stream.AddArray("spots");
+				auto spotObject = spotsData.AddObject();
+				spot.Serialize(spotObject);
+			}
+		);
+	}
+
+	void Industry::SendDeltaWithSpotStateChangedEvent(const Spot &spot) const
+	{
+		m_rclTycoon.OnObjectStateChanged(IndustryToken{}, *this, [this, &spot](JsonOutputStream_t &stream)
+			{
+				//just send down the delta, including cargo holder, because its state changed...
+				this->SerializeDelta(stream);
 
 				auto spotsData = stream.AddArray("spots");
 				auto spotObject = spotsData.AddObject();
@@ -309,11 +382,22 @@ namespace dcclite::broker::tycoon
 
 	void Industry::StartSpotLoad(const std::string_view spotName)
 	{
-		auto &spot = this->FindSpot(spotName);
+		const auto spotIndex = this->FindSpotIndex(spotName);
+		auto &spot = m_vecSpots[spotIndex];
 
+		//make sure spot will not throw after we call StartCargoTransfer on cargo holder, 
+		// otherwise we will have an inconsistent state where cargo is reserved but spot is not loading
+		if(!spot.CanLoad())
+			throw std::runtime_error(fmt::format("[Industry::StartSpotLoad] Spot {} cannot be loaded because it is not reserved", spotName));
+
+		auto transferTime = m_clCargoHolder.StartCargoTransfer();		
 		spot.Load();
 
-		this->SendSpotStateChangedEvent(spot);
+		dcclite::Log::Trace("[Industry::StartSpotLoad] {}: Started loading spot {}, transfer will take {}", this->GetName(), spotName, transferTime);
+
+		m_vecSpotThinkers[spotIndex]->Schedule(m_rclTycoon.GetFastClock().Now() + transferTime);
+
+		this->SendDeltaWithSpotStateChangedEvent(spot);
 	}
 
 	void Industry::RemoveCarFromSpot(const std::string_view spotName)
@@ -324,5 +408,19 @@ namespace dcclite::broker::tycoon
 
 		this->SendSpotStateChangedEvent(spot);
 	}
+
+	void Industry::OnSpotTransferFinished(FastClockDef::TimePoint_t tp, size_t spotIndex)
+	{
+		assert(spotIndex < m_vecSpots.size());		
+
+		auto &spot = m_vecSpots[spotIndex];		
+
+		m_clCargoHolder.CargoTransferFinished();
+		spot.OnCargoTransferFinished();
+
+		dcclite::Log::Trace("[Industry::OnSpotFinishedTransfer] {}: Spot {} finished transfer", this->GetName(), spot.GetName());
+
+		this->SendDeltaWithSpotStateChangedEvent(spot);
+	}	
 }
 

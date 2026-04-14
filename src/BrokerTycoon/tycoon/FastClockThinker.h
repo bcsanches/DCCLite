@@ -58,12 +58,16 @@ namespace dcclite::broker::tycoon
 				//empty
 			}
 
+			inline FastClockThinker(FastClockThinker &&rhs) noexcept = delete;
+
+#if 0
 			inline FastClockThinker(FastClockThinker &&rhs) noexcept:
 				Base_t{ &rhs.m_rclManager.m_pclHead, std::move(rhs) },
 				m_rclManager{ rhs.m_rclManager }
 			{
 				//empty
 			}
+#endif
 
 			FastClockThinker(FastClockThinker const &) = delete;
 

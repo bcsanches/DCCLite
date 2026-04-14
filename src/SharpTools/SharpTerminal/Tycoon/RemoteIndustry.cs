@@ -77,6 +77,17 @@ namespace SharpTerminal.Tycoon
 			}
 		}
 
+		private int m_iReservedQuantity;
+		[Category("Cargo Holder")]
+		public int ReservedQuantity
+		{
+			get => m_iReservedQuantity;
+			set
+			{
+				UpdateProperty(ref m_iReservedQuantity, value);
+			}
+		}
+
 
 		private bool m_fProducing;
 		[Category("Cargo Holder")]
@@ -116,6 +127,7 @@ namespace SharpTerminal.Tycoon
 			DailyRate = (float)objectDef["dailyRate"];
 			MaximumQuantity = (int)objectDef["maximumQuantity"];
 			CurrentQuantity = (int)objectDef["currentQuantity"];
+			ReservedQuantity = (int)objectDef["reservedQuantity"];
 			Producing = (bool)objectDef["producing"];
 			NextProductionAt = (string)objectDef["nextProductionAt"];
 			NextProductionAtLocalTime = (string)objectDef["nextProductionAtLocalTime"];
@@ -143,7 +155,10 @@ namespace SharpTerminal.Tycoon
 			if(def.ContainsKey("currentQuantity"))
 				CurrentQuantity = (int)def["currentQuantity"];
 
-			if(def.ContainsKey("producing"))
+			if(def.ContainsKey("reservedQuantity"))
+				ReservedQuantity = (int)def["reservedQuantity"];
+
+			if (def.ContainsKey("producing"))
 				Producing = (bool)def["producing"];
 
 			if(def.ContainsKey("nextProductionAt"))

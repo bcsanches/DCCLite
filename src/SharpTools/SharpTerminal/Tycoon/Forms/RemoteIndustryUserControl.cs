@@ -32,7 +32,8 @@ namespace SharpTerminal.Forms
 
 			m_tbCargo.Text = industry.CargoName;
 			m_tbDailyRate.Text = industry.DailyRate.ToString();
-			m_tbQuantity.Text = industry.CurrentQuantity.ToString();
+			
+			this.UpdateQuantityInfo();
 
 			m_tbStatus.Text = industry.Producing ? "Next batch at " + industry.NextProductionAt : "Not producing";
 
@@ -47,13 +48,29 @@ namespace SharpTerminal.Forms
 			m_cbSpot.SelectedIndex = 0;
 		}
 
+		private void UpdateQuantityInfo()
+		{
+			var qtd = mIndustry.CurrentQuantity;
+			var reserved = mIndustry.ReservedQuantity;
+
+			if(reserved == 0)
+			{
+				m_tbQuantity.Text = qtd.ToString();
+			}
+			else
+			{
+				m_tbQuantity.Text = $"stored {qtd}, reserved {reserved}, total {qtd + reserved}";
+			}			
+		}
+
 		private void Industry_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			switch (e.PropertyName)
 			{
 				case nameof(Tycoon.RemoteIndustry.CurrentQuantity):
-					m_tbQuantity.Text = mIndustry.CurrentQuantity.ToString();
-					break;
+				case nameof(Tycoon.RemoteIndustry.ReservedQuantity):
+					UpdateQuantityInfo();
+					break;					
 
 				case nameof(Tycoon.RemoteIndustry.Producing):
 				case nameof(Tycoon.RemoteIndustry.NextProductionAt):
@@ -70,23 +87,23 @@ namespace SharpTerminal.Forms
 			switch (spot.State)
 			{
 				case Tycoon.SpotStates.FREE:
-					m_lnkSpotAction.Text = "Reserve";
+					m_lnkSpotAction.Text = "&Reserve";
 					m_lnkSpotAction.Visible = true;
 					mLinkClick = OnSetIndustrySpotReservedClick;
 					break;
 
 				case Tycoon.SpotStates.RESERVED:
-					m_lnkSpotAction.Text = "Load";
+					m_lnkSpotAction.Text = "&Load";
 					m_lnkSpotAction.Visible = true;
 					mLinkClick = () => OnGenericSpotClick("Start-IndustrySpotLoad");
 
-					m_lnkSpotActionAux.Text = "Cancel reservation";
+					m_lnkSpotActionAux.Text = "&Cancel reservation";
 					m_lnkSpotActionAux.Visible = true;
 					mLinkClickAux = () => OnGenericSpotClick("Clear-IndustrySpotReservation");
 					break;
 
 				case Tycoon.SpotStates.CAR_PARKED:
-					m_lnkSpotAction.Text = "Pickup car";
+					m_lnkSpotAction.Text = "&Pickup car";
 					m_lnkSpotAction.Visible = true;
 					mLinkClick = () => OnGenericSpotClick("Remove-CarFromSpot");
 					break;

@@ -1,12 +1,6 @@
-- TODO:
-	- Spot:
-		- states: free, reserved, car parked, loading, unloading
+- TODO:	
+	- On car pickup: display destination		
 
-	- On SharpTerminal industry tab:		
-		- update production status and info			 
-		- Add a button to consume cargo
-		 
-	- display all tycoon info on SharpTerminal
 	- Show a list view with all industries status?
 		- Name
 		- Cargo type
@@ -15,10 +9,7 @@
 		- Max Stock
 
 - Tycoon system
-	- generate car requests for industries
-	- store industries:
-		- location
-		- production rate
+
 	- web server?
 		- allow to check industries status on each location
 		- input car
@@ -35,11 +26,6 @@
 			- folder for carTypes
 		- Connected to fast clock
 
-
-
-		- Location
-			- Name
-			- Description
 		- Industry
 			- Name
 			- Type?
