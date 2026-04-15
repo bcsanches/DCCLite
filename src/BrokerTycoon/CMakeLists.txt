@@ -4,6 +4,11 @@ file(GLOB_RECURSE SRC_TYCOON
     "tycoon/*.h"
 )
 
+file(GLOB_RECURSE SRC_TYCOON_DETAIL
+    "tycoon/detail/*.cpp"
+    "tycoon/detail/*.h"
+)
+
 add_library(
     BrokerTycoonLib
         tycoon/Cargo.cpp
@@ -12,6 +17,8 @@ add_library(
         tycoon/CarType.h
         tycoon/CmdsInitService.cpp
         tycoon/CmdsInitService.h
+        tycoon/detail/Industry_detail.cpp
+        tycoon/detail/Industry_detail.h
         tycoon/FastClock.cpp
         tycoon/FastClock.h
         tycoon/FastClockDefs.h
@@ -20,15 +27,16 @@ add_library(
         tycoon/FastClockThinker.cpp
         tycoon/FastClockThinker.h
         tycoon/Industry.cpp
-        tycoon/Industry.h
+        tycoon/Industry.h        
         tycoon/Location.cpp
         tycoon/Location.h
 		tycoon/TycoonService.cpp
 		tycoon/TycoonService.h        
-        tycoon/TycoonService_Load.cpp
+        tycoon/TycoonService_Load.cpp        
 )
 
 source_group("tycoon"	FILES ${SRC_TYCOON})
+source_group("detail"	FILES ${SRC_TYCOON_DETAIL})
 
 if(WIN32)
     target_link_libraries(BrokerTycoonLib        

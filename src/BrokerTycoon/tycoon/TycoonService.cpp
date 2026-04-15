@@ -112,7 +112,7 @@ namespace dcclite::broker::tycoon
 		}
 	}
 	
-	void TycoonService::OnObjectStateChanged([[maybe_unused]] const IndustryToken &token, const Industry &industry, dcclite::broker::sys::ObjectManagerEvent::SerializeDeltaProc_t proc)
+	void TycoonService::OnObjectStateChanged(AccessToken<Industry>, const Industry &industry, dcclite::broker::sys::ObjectManagerEvent::SerializeDeltaProc_t proc)
 	{
 		this->NotifyItemChanged(
 			industry, 

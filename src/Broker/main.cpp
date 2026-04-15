@@ -82,7 +82,7 @@ static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 	//give some time for main thread to finish up... so it can do the cleanup
 	using namespace std::chrono_literals;
 
-	//if we return befor the main thread, it may not finish cleaning up...
+	//if we return before the main thread, it may not finish cleaning up...
 	while(g_fExitRequested.test())
 		std::this_thread::sleep_for(1000ms);
 

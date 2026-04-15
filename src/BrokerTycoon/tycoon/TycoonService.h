@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <dcclite/AccessToken.h>
 #include <dcclite/FileSystem.h>
 
 #include <sys/Service.h>
@@ -20,11 +21,10 @@ namespace dcclite::broker::tycoon
 {
 	class Cargo;
 	class CarType;
-	class Industry;
-	class IndustryToken;
+	class Industry;	
 
 	class TycoonService : public sys::Service
-	{
+	{		
 		public:
 			static void RegisterFactory();
 
@@ -50,9 +50,9 @@ namespace dcclite::broker::tycoon
 			const char *GetTypeName() const noexcept override
 			{
 				return TYPE_NAME;
-			}
-			
-			void OnObjectStateChanged(const IndustryToken &token, const Industry &industry, dcclite::broker::sys::ObjectManagerEvent::SerializeDeltaProc_t proc = nullptr);
+			}					
+
+			void OnObjectStateChanged(AccessToken<Industry>, const Industry &industry, dcclite::broker::sys::ObjectManagerEvent::SerializeDeltaProc_t proc = nullptr);
 
 		private:	
 			void Load(const rapidjson::Value &params);
@@ -62,9 +62,9 @@ namespace dcclite::broker::tycoon
 
 			void AddCargoToCarType(CarType &carType, std::string_view cargoName);
 
-			void OnFastClockTick(FastClock &clock);
+			void OnFastClockTick(FastClock &clock);			
 
-		private:
+		protected:
 			FastClock				m_clFastClock;
 
 			std::vector<Cargo>		m_vecCargos;

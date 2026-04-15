@@ -7,6 +7,7 @@ file(GLOB_RECURSE SRC_DCCLITE
 
 add_library(	
 	Common
+	dcclite/AccessToken.h
 	dcclite/BaseThinker.h
 	dcclite/Benchmark.cpp
 	dcclite/Benchmark.h
