@@ -1,4 +1,6 @@
 - TODO:	
+	- refresh cargo produtction stats on industry screen
+	- Make car load / unload work again
 	- On car pickup: display destination
 
 	- move cargo holder logic to industry, industry:

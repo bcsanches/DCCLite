@@ -14,9 +14,9 @@ namespace SharpTerminal.Tycoon
 			public string Name { get; }
 			public string Description { get; }
 
-			List<string> m_lstCargos = [];
+			List<Cargo> m_lstCargos = [];
 
-			public CarType(JsonValue objectDef)
+			public CarType(JsonValue objectDef, Dictionary<string, Cargo> registeredCargos)
 			{
 				Name = (string) objectDef["name"];
 				Description = (string) objectDef["description"];
@@ -26,12 +26,30 @@ namespace SharpTerminal.Tycoon
 					var cargosData = (JsonArray)objectDef["cargos"];
 
 					foreach(var c in cargosData)
-						m_lstCargos.Add(c.ToString());
+					{
+						var cargo = registeredCargos[(string) c];
+						m_lstCargos.Add(cargo);
+					}
+						
 				}
 			}
 		}
 
-		List<string> m_lstCargos = [];
+		internal class Cargo
+		{
+			public string Name { get; }
+
+			public Cargo(string name)
+			{
+				Name = name ?? throw new System.ArgumentNullException(nameof(name));
+
+				if(string.IsNullOrWhiteSpace(Name))
+					throw new System.ArgumentNullException(nameof(name));
+			}
+		}
+
+
+		Dictionary<string, Cargo> m_mapCargos = [];
 		List<CarType> m_lstCarTypes = [];
 
 		string m_strFastClockTime = "00:00";
@@ -55,7 +73,11 @@ namespace SharpTerminal.Tycoon
 				var cargosData = (JsonArray)objectDef["cargos"];
 
 				foreach (JsonValue c in cargosData)
-					m_lstCargos.Add(c.ToString());
+				{
+					var cargoName = (string)c;
+
+					m_mapCargos.Add(cargoName, new Cargo(cargoName));
+				}					
 			}
 
 			if(objectDef.ContainsKey("carTypes"))
@@ -63,7 +85,7 @@ namespace SharpTerminal.Tycoon
 				var carTypes = (JsonArray)objectDef["carTypes"];
 
 				foreach (var c in carTypes)
-					m_lstCarTypes.Add(new CarType(c));
+					m_lstCarTypes.Add(new CarType(c, m_mapCargos));
 			}
 		}
 

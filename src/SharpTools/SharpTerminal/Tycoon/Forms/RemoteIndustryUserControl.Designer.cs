@@ -37,17 +37,16 @@ namespace SharpTerminal.Forms
 			System.Windows.Forms.Label label4;
 			System.Windows.Forms.Label label3;
 			System.Windows.Forms.Label label2;
-			System.Windows.Forms.Label label1;
 			System.Windows.Forms.GroupBox groupBox2;
 			System.Windows.Forms.Label label5;
 			System.Windows.Forms.Label label6;
 			System.Windows.Forms.Label label7;
 			System.Windows.Forms.Label label8;
+			System.Windows.Forms.GroupBox Production;
 			tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			m_tbStatus = new System.Windows.Forms.TextBox();
 			m_tbQuantity = new System.Windows.Forms.TextBox();
 			m_tbDailyRate = new System.Windows.Forms.TextBox();
-			m_tbCargo = new System.Windows.Forms.TextBox();
 			tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
 			m_lnkSpotActionAux = new System.Windows.Forms.LinkLabel();
 			m_tbSpotInfo = new System.Windows.Forms.TextBox();
@@ -55,20 +54,26 @@ namespace SharpTerminal.Forms
 			m_cbSpot = new System.Windows.Forms.ComboBox();
 			m_lnkSpotAction = new System.Windows.Forms.LinkLabel();
 			m_lbTitle = new System.Windows.Forms.Label();
+			m_lvProduction = new System.Windows.Forms.ListView();
+			columnHeader1 = new System.Windows.Forms.ColumnHeader();
+			columnHeader2 = new System.Windows.Forms.ColumnHeader();
+			columnHeader3 = new System.Windows.Forms.ColumnHeader();
+			columnHeader4 = new System.Windows.Forms.ColumnHeader();
 			groupBox1 = new System.Windows.Forms.GroupBox();
 			label4 = new System.Windows.Forms.Label();
 			label3 = new System.Windows.Forms.Label();
 			label2 = new System.Windows.Forms.Label();
-			label1 = new System.Windows.Forms.Label();
 			groupBox2 = new System.Windows.Forms.GroupBox();
 			label5 = new System.Windows.Forms.Label();
 			label6 = new System.Windows.Forms.Label();
 			label7 = new System.Windows.Forms.Label();
 			label8 = new System.Windows.Forms.Label();
+			Production = new System.Windows.Forms.GroupBox();
 			groupBox1.SuspendLayout();
 			tableLayoutPanel1.SuspendLayout();
 			groupBox2.SuspendLayout();
 			tableLayoutPanel2.SuspendLayout();
+			Production.SuspendLayout();
 			SuspendLayout();
 			// 
 			// groupBox1
@@ -77,7 +82,7 @@ namespace SharpTerminal.Forms
 			groupBox1.Controls.Add(tableLayoutPanel1);
 			groupBox1.Location = new System.Drawing.Point(4, 27);
 			groupBox1.Name = "groupBox1";
-			groupBox1.Size = new System.Drawing.Size(296, 138);
+			groupBox1.Size = new System.Drawing.Size(296, 109);
 			groupBox1.TabIndex = 3;
 			groupBox1.TabStop = false;
 			groupBox1.Text = "Status";
@@ -87,29 +92,27 @@ namespace SharpTerminal.Forms
 			tableLayoutPanel1.ColumnCount = 2;
 			tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 80F));
 			tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-			tableLayoutPanel1.Controls.Add(m_tbStatus, 1, 3);
-			tableLayoutPanel1.Controls.Add(label4, 0, 3);
-			tableLayoutPanel1.Controls.Add(m_tbQuantity, 1, 2);
-			tableLayoutPanel1.Controls.Add(label3, 0, 2);
-			tableLayoutPanel1.Controls.Add(m_tbDailyRate, 1, 1);
-			tableLayoutPanel1.Controls.Add(label2, 0, 1);
-			tableLayoutPanel1.Controls.Add(label1, 0, 0);
-			tableLayoutPanel1.Controls.Add(m_tbCargo, 1, 0);
+			tableLayoutPanel1.Controls.Add(m_tbStatus, 1, 2);
+			tableLayoutPanel1.Controls.Add(label4, 0, 2);
+			tableLayoutPanel1.Controls.Add(m_tbQuantity, 1, 1);
+			tableLayoutPanel1.Controls.Add(label3, 0, 1);
+			tableLayoutPanel1.Controls.Add(m_tbDailyRate, 1, 0);
+			tableLayoutPanel1.Controls.Add(label2, 0, 0);
 			tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
 			tableLayoutPanel1.Location = new System.Drawing.Point(3, 19);
 			tableLayoutPanel1.Name = "tableLayoutPanel1";
-			tableLayoutPanel1.RowCount = 4;
+			tableLayoutPanel1.RowCount = 3;
 			tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			tableLayoutPanel1.Size = new System.Drawing.Size(290, 116);
+			tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+			tableLayoutPanel1.Size = new System.Drawing.Size(290, 87);
 			tableLayoutPanel1.TabIndex = 0;
 			// 
 			// m_tbStatus
 			// 
 			m_tbStatus.Dock = System.Windows.Forms.DockStyle.Fill;
-			m_tbStatus.Location = new System.Drawing.Point(83, 90);
+			m_tbStatus.Location = new System.Drawing.Point(83, 61);
 			m_tbStatus.Multiline = true;
 			m_tbStatus.Name = "m_tbStatus";
 			m_tbStatus.ReadOnly = true;
@@ -120,7 +123,7 @@ namespace SharpTerminal.Forms
 			// 
 			label4.Anchor = System.Windows.Forms.AnchorStyles.Right;
 			label4.AutoSize = true;
-			label4.Location = new System.Drawing.Point(35, 94);
+			label4.Location = new System.Drawing.Point(35, 65);
 			label4.Name = "label4";
 			label4.Size = new System.Drawing.Size(42, 15);
 			label4.TabIndex = 6;
@@ -129,7 +132,7 @@ namespace SharpTerminal.Forms
 			// m_tbQuantity
 			// 
 			m_tbQuantity.Anchor = System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			m_tbQuantity.Location = new System.Drawing.Point(83, 61);
+			m_tbQuantity.Location = new System.Drawing.Point(83, 32);
 			m_tbQuantity.Name = "m_tbQuantity";
 			m_tbQuantity.ReadOnly = true;
 			m_tbQuantity.Size = new System.Drawing.Size(204, 23);
@@ -139,7 +142,7 @@ namespace SharpTerminal.Forms
 			// 
 			label3.Anchor = System.Windows.Forms.AnchorStyles.Right;
 			label3.AutoSize = true;
-			label3.Location = new System.Drawing.Point(21, 65);
+			label3.Location = new System.Drawing.Point(21, 36);
 			label3.Name = "label3";
 			label3.Size = new System.Drawing.Size(56, 15);
 			label3.TabIndex = 4;
@@ -148,7 +151,7 @@ namespace SharpTerminal.Forms
 			// m_tbDailyRate
 			// 
 			m_tbDailyRate.Anchor = System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			m_tbDailyRate.Location = new System.Drawing.Point(83, 32);
+			m_tbDailyRate.Location = new System.Drawing.Point(83, 3);
 			m_tbDailyRate.Name = "m_tbDailyRate";
 			m_tbDailyRate.ReadOnly = true;
 			m_tbDailyRate.Size = new System.Drawing.Size(204, 23);
@@ -158,36 +161,17 @@ namespace SharpTerminal.Forms
 			// 
 			label2.Anchor = System.Windows.Forms.AnchorStyles.Right;
 			label2.AutoSize = true;
-			label2.Location = new System.Drawing.Point(15, 36);
+			label2.Location = new System.Drawing.Point(15, 7);
 			label2.Name = "label2";
 			label2.Size = new System.Drawing.Size(62, 15);
 			label2.TabIndex = 2;
 			label2.Text = "Daily Rate:";
 			// 
-			// label1
-			// 
-			label1.Anchor = System.Windows.Forms.AnchorStyles.Right;
-			label1.AutoSize = true;
-			label1.Location = new System.Drawing.Point(35, 7);
-			label1.Name = "label1";
-			label1.Size = new System.Drawing.Size(42, 15);
-			label1.TabIndex = 0;
-			label1.Text = "Cargo:";
-			// 
-			// m_tbCargo
-			// 
-			m_tbCargo.Anchor = System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-			m_tbCargo.Location = new System.Drawing.Point(83, 3);
-			m_tbCargo.Name = "m_tbCargo";
-			m_tbCargo.ReadOnly = true;
-			m_tbCargo.Size = new System.Drawing.Size(204, 23);
-			m_tbCargo.TabIndex = 1;
-			// 
 			// groupBox2
 			// 
-			groupBox2.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+			groupBox2.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
 			groupBox2.Controls.Add(tableLayoutPanel2);
-			groupBox2.Location = new System.Drawing.Point(3, 168);
+			groupBox2.Location = new System.Drawing.Point(3, 239);
 			groupBox2.Name = "groupBox2";
 			groupBox2.Size = new System.Drawing.Size(297, 150);
 			groupBox2.TabIndex = 4;
@@ -326,10 +310,51 @@ namespace SharpTerminal.Forms
 			m_lbTitle.TabIndex = 2;
 			m_lbTitle.Text = "Industry - ";
 			// 
+			// Production
+			// 
+			Production.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+			Production.Controls.Add(m_lvProduction);
+			Production.Location = new System.Drawing.Point(4, 142);
+			Production.Name = "Production";
+			Production.Size = new System.Drawing.Size(296, 91);
+			Production.TabIndex = 5;
+			Production.TabStop = false;
+			Production.Text = "Production";
+			// 
+			// m_lvProduction
+			// 
+			m_lvProduction.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] { columnHeader1, columnHeader2, columnHeader3, columnHeader4 });
+			m_lvProduction.Dock = System.Windows.Forms.DockStyle.Fill;
+			m_lvProduction.FullRowSelect = true;
+			m_lvProduction.Location = new System.Drawing.Point(3, 19);
+			m_lvProduction.MultiSelect = false;
+			m_lvProduction.Name = "m_lvProduction";
+			m_lvProduction.Size = new System.Drawing.Size(290, 69);
+			m_lvProduction.TabIndex = 0;
+			m_lvProduction.UseCompatibleStateImageBehavior = false;
+			m_lvProduction.View = System.Windows.Forms.View.Details;
+			// 
+			// columnHeader1
+			// 
+			columnHeader1.Text = "Cargo";
+			// 
+			// columnHeader2
+			// 
+			columnHeader2.Text = "Quantity";
+			// 
+			// columnHeader3
+			// 
+			columnHeader3.Text = "Reserved";
+			// 
+			// columnHeader4
+			// 
+			columnHeader4.Text = "Total";
+			// 
 			// RemoteIndustryUserControl
 			// 
 			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
 			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			Controls.Add(Production);
 			Controls.Add(groupBox2);
 			Controls.Add(groupBox1);
 			Controls.Add(m_lbTitle);
@@ -341,6 +366,7 @@ namespace SharpTerminal.Forms
 			groupBox2.ResumeLayout(false);
 			tableLayoutPanel2.ResumeLayout(false);
 			tableLayoutPanel2.PerformLayout();
+			Production.ResumeLayout(false);
 			ResumeLayout(false);
 			PerformLayout();
 		}
@@ -349,7 +375,6 @@ namespace SharpTerminal.Forms
 
 		private System.Windows.Forms.Label m_lbTitle;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;		
-		private System.Windows.Forms.TextBox m_tbCargo;
 		private System.Windows.Forms.TextBox m_tbDailyRate;
 		private System.Windows.Forms.TextBox m_tbQuantity;
 		private System.Windows.Forms.TextBox m_tbStatus;
@@ -359,5 +384,10 @@ namespace SharpTerminal.Forms
 		private System.Windows.Forms.ComboBox m_cbSpot;
 		private System.Windows.Forms.LinkLabel m_lnkSpotAction;
 		private System.Windows.Forms.LinkLabel m_lnkSpotActionAux;
+		private System.Windows.Forms.ListView m_lvProduction;
+		private System.Windows.Forms.ColumnHeader columnHeader1;
+		private System.Windows.Forms.ColumnHeader columnHeader2;
+		private System.Windows.Forms.ColumnHeader columnHeader3;
+		private System.Windows.Forms.ColumnHeader columnHeader4;
 	}
 }

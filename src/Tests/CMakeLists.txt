@@ -33,4 +33,5 @@ macro(package_add_test TESTNAME)
 endmacro()
 
 add_subdirectory(BrokerUnitTest)
+add_subdirectory(BrokerTycoonUnitTest)
 add_subdirectory(LiteDecoderUnitTest)

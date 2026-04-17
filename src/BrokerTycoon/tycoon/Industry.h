@@ -51,6 +51,8 @@ namespace dcclite::broker::tycoon
 			void OnCargoHolderStateChanged(AccessToken<detail::CargoHolder>) const;
 
 		private:
+			void SerializeDeltaDataOnly(dcclite::JsonOutputStream_t &stream) const;
+
 			std::optional<size_t> TryFindSpotIndex(const std::string_view spotName) const;
 			size_t FindSpotIndex(const std::string_view spotName) const;
 

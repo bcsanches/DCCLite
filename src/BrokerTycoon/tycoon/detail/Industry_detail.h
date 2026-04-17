@@ -255,8 +255,8 @@ namespace dcclite::broker::tycoon::detail
 			uint8_t		m_uCurrentQuantity = 0;
 			uint8_t		m_uReservedQuantity = 0;
 
-			std::chrono::hours m_tTransferTime;
-
 			bool		m_fProducing = false;
+
+			std::chrono::hours m_tTransferTime;			
 	};
 }

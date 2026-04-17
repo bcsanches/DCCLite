@@ -17,6 +17,51 @@ namespace SharpTerminal.Tycoon
 		CAR_PARKED
 	}
 
+	public class CargoInfo: NotifyPropertyBase
+	{
+		public readonly string CargoName;
+
+		private int m_iCurrentQuantity;
+
+		[Category("CargoInfo")]
+		public int CurrentQuantity
+		{
+			get => m_iCurrentQuantity;
+			private set
+			{
+				UpdateProperty(ref m_iCurrentQuantity, value);
+			}
+		}
+
+		private int m_iReservedQuantity;
+		[Category("CargoInfo")]
+		public int ReservedQuantity
+		{
+			get => m_iReservedQuantity;
+			set
+			{
+				UpdateProperty(ref m_iReservedQuantity, value);
+			}
+		}
+
+		public CargoInfo(JsonValue objectDef)
+		{
+			CargoName = (string)objectDef["cargo"];
+
+			this.UpdateState(objectDef);
+		}
+
+		public void UpdateState(JsonValue def)
+		{
+			if (def.ContainsKey("currentQuantity"))
+				CurrentQuantity = (int)def["currentQuantity"];
+
+			if (def.ContainsKey("reservedQuantity"))
+				ReservedQuantity = (int)def["reservedQuantity"];
+		}
+
+	}
+
 	public class Spot(string name, SpotStates state = SpotStates.FREE): NotifyPropertyBase
 	{
 		public readonly string Name = name ?? throw new System.ArgumentNullException(nameof(name));
@@ -55,39 +100,12 @@ namespace SharpTerminal.Tycoon
 
 	[SupportedOSPlatform("windows")]
 	public class RemoteIndustry: RemoteObject
-	{
-		[Category("Cargo Holder")]
-		public string CargoName { get; private set; }
-
+	{		
 		[Category("Cargo Holder")]
 		public float DailyRate { get; private set; }
 
 		[Category("Cargo Holder")]
-		public int MaximumQuantity { get; private set; }
-
-		private int m_iCurrentQuantity;
-
-		[Category("Cargo Holder")]
-		public int CurrentQuantity 
-		{ 
-			get => m_iCurrentQuantity; 
-			private set
-			{
-				UpdateProperty(ref m_iCurrentQuantity, value);
-			}
-		}
-
-		private int m_iReservedQuantity;
-		[Category("Cargo Holder")]
-		public int ReservedQuantity
-		{
-			get => m_iReservedQuantity;
-			set
-			{
-				UpdateProperty(ref m_iReservedQuantity, value);
-			}
-		}
-
+		public int MaximumQuantity { get; private set; }		
 
 		private bool m_fProducing;
 		[Category("Cargo Holder")]
@@ -120,19 +138,33 @@ namespace SharpTerminal.Tycoon
 
 		public Spot[] GetSpots() => m_setSpots.Values.ToArray();
 
+		public CargoInfo[] m_arProduces = null;
+		public CargoInfo[] Produces
+		{
+			get => m_arProduces;
+		}
+
 		public RemoteIndustry(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) :
 			base(name, className, path, internalId, parent)
-		{
-			CargoName = (string)objectDef["cargo"];
+		{			
 			DailyRate = (float)objectDef["dailyRate"];
-			MaximumQuantity = (int)objectDef["maximumQuantity"];
-			CurrentQuantity = (int)objectDef["currentQuantity"];
-			ReservedQuantity = (int)objectDef["reservedQuantity"];
+			MaximumQuantity = (int)objectDef["maximumQuantity"];			
 			Producing = (bool)objectDef["producing"];
 			NextProductionAt = (string)objectDef["nextProductionAt"];
 			NextProductionAtLocalTime = (string)objectDef["nextProductionAtLocalTime"];
 
-			this.LoadSpots((JsonArray)objectDef["spots"]);			
+			this.LoadSpots((JsonArray)objectDef["spots"]);
+			this.LoadProduction((JsonArray)objectDef["produces"]);
+		}
+
+		private void LoadProduction(JsonArray production)
+		{
+			m_arProduces = new CargoInfo[production.Count];
+
+			for (var i = 0; i < production.Count; i++)
+			{
+				m_arProduces[i] = new CargoInfo(production[i]);
+			}
 		}
 
 		private void LoadSpots(JsonArray spotsData)
@@ -150,13 +182,7 @@ namespace SharpTerminal.Tycoon
 
 		protected override void OnUpdateState(JsonValue def)
 		{
-			base.OnUpdateState(def);			
-
-			if(def.ContainsKey("currentQuantity"))
-				CurrentQuantity = (int)def["currentQuantity"];
-
-			if(def.ContainsKey("reservedQuantity"))
-				ReservedQuantity = (int)def["reservedQuantity"];
+			base.OnUpdateState(def);						
 
 			if (def.ContainsKey("producing"))
 				Producing = (bool)def["producing"];

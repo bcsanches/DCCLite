@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace SharpTerminal.Forms
 {
@@ -29,11 +30,10 @@ namespace SharpTerminal.Forms
 			mIndustry = industry ?? throw new ArgumentNullException(nameof(industry));
 
 			m_lbTitle.Text += " " + industry.Name;
-
-			m_tbCargo.Text = industry.CargoName;
+			
 			m_tbDailyRate.Text = industry.DailyRate.ToString();
 			
-			this.UpdateQuantityInfo();
+			this.FillProductionListView();
 
 			m_tbStatus.Text = industry.Producing ? "Next batch at " + industry.NextProductionAt : "Not producing";
 
@@ -48,6 +48,31 @@ namespace SharpTerminal.Forms
 			m_cbSpot.SelectedIndex = 0;
 		}
 
+		private void FillProductionListView()
+		{
+			var production = mIndustry.Produces;
+
+			m_lvProduction.SuspendLayout();
+			foreach(var cargoInfo in production)
+			{
+				var item = new ListViewItem(cargoInfo.CargoName);
+
+				item.SubItems.Add(cargoInfo.CurrentQuantity.ToString());
+				item.SubItems.Add(cargoInfo.ReservedQuantity.ToString());
+				item.SubItems.Add((cargoInfo.CurrentQuantity + cargoInfo.ReservedQuantity).ToString());
+
+				m_lvProduction.Items.Add(item);
+			}
+
+			foreach (ColumnHeader column in m_lvProduction.Columns)
+			{
+				column.Width = -2;
+			}
+
+			m_lvProduction.ResumeLayout();
+		}
+
+#if false
 		private void UpdateQuantityInfo()
 		{
 			var qtd = mIndustry.CurrentQuantity;
@@ -62,15 +87,18 @@ namespace SharpTerminal.Forms
 				m_tbQuantity.Text = $"stored {qtd}, reserved {reserved}, total {qtd + reserved}";
 			}			
 		}
+#endif
 
 		private void Industry_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			switch (e.PropertyName)
 			{
+#if false
 				case nameof(Tycoon.RemoteIndustry.CurrentQuantity):
 				case nameof(Tycoon.RemoteIndustry.ReservedQuantity):
 					UpdateQuantityInfo();
 					break;					
+#endif
 
 				case nameof(Tycoon.RemoteIndustry.Producing):
 				case nameof(Tycoon.RemoteIndustry.NextProductionAt):

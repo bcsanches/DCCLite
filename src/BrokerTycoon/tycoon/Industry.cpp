@@ -213,6 +213,11 @@ namespace dcclite::broker::tycoon
 	{
 		Object::Serialize(stream);
 
+		stream.AddFloatValue("dailyRate", m_fpDailyRate);
+		stream.AddIntValue("maximumQuantity", m_uMaxQuantity);
+
+		this->SerializeDeltaDataOnly(stream);
+
 		{
 			auto cargoInfoData = stream.AddArray("produces");
 			for (auto it : m_vecProduces)
@@ -231,9 +236,37 @@ namespace dcclite::broker::tycoon
 		}
 	}
 
+	void Industry::SerializeDeltaDataOnly(dcclite::JsonOutputStream_t &stream) const
+	{	
+		stream.AddBool("producing", m_fProducing);
+
+		if (m_fProducing)
+		{
+			auto nextProductionTime = m_clProductionThinker.GetTimePoint();
+
+			auto localTime = FastClockUtils::GetLocalTime(nextProductionTime, m_rclTycoon.GetFastClock());
+
+			stream.AddStringValue(
+				"nextProductionAtLocalTime",
+				fmt::format("{:%H:%M}", localTime)
+			);
+
+			stream.AddStringValue(
+				"nextProductionAt",
+				fmt::format("{:%H:%M}", nextProductionTime.time_since_epoch())
+			);
+		}
+		else
+		{
+			stream.AddStringValue("nextProductionAt", "N/A");
+			stream.AddStringValue("nextProductionAtLocalTime", "N/A");
+		}
+	}
+
 	void Industry::SerializeDelta(dcclite::JsonOutputStream_t &stream) const
 	{
 		this->SerializeIdentification(stream);
+		this->SerializeDeltaDataOnly(stream);	
 
 		{
 			auto cargoInfoData = stream.AddArray("produces");

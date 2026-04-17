@@ -93,7 +93,7 @@ TEST(TycoonServiceTest, InvalidClockRate0)
 		}	
 	)JSON";
 
-	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] fastClockRate must be greater than zero");	
+	CheckLoadException(json, "[TycoonService::tycoon] [Load] fastClockRate must be greater than zero");	
 }
 
 TEST(TycoonServiceTest, InvalidClockRateNegative)
@@ -106,7 +106,7 @@ TEST(TycoonServiceTest, InvalidClockRateNegative)
 		}	
 	)JSON";
 
-	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] fastClockRate must be greater than zero");
+	CheckLoadException(json, "[TycoonService::tycoon] [Load] fastClockRate must be greater than zero");
 }
 
 TEST(TycoonServiceTest, InvalidClockRateTooBig)
@@ -119,7 +119,7 @@ TEST(TycoonServiceTest, InvalidClockRateTooBig)
 		}	
 	)JSON";
 
-	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] fastClockRate must be less or equal than 255");	
+	CheckLoadException(json, "[TycoonService::tycoon] [Load] fastClockRate must be less or equal than 255");	
 }
 
 TEST(TycoonServiceTest, CargoDataIsNotArray)
@@ -133,7 +133,7 @@ TEST(TycoonServiceTest, CargoDataIsNotArray)
 		}	
 	)JSON";
 
-	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: invalid cargos definition, expected array");
+	CheckLoadException(json, "[TycoonService::tycoon] [Load] error: invalid cargos definition, expected array");
 }
 
 TEST(TycoonServiceTest, CargoArrayShouldContainObjects)
@@ -155,7 +155,7 @@ TEST(TycoonServiceTest, CargoArrayShouldContainObjects)
 		}	
 	)JSON";
 
-	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: invalid cargo definition, expected object");
+	CheckLoadException(json, "[TycoonService::tycoon] [Load] error: invalid cargo definition, expected object");
 }
 
 TEST(TycoonServiceTest, CargoArrayShouldContainCargoNames)
@@ -176,7 +176,7 @@ TEST(TycoonServiceTest, CargoArrayShouldContainCargoNames)
 		}	
 	)JSON";
 
-	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: cargo missing name property");	
+	CheckLoadException(json, "[TycoonService::tycoon] [Load] error: cargo missing name property");	
 }
 
 TEST(TycoonServiceTest, CargoArrayWithDuplicates)
@@ -203,7 +203,7 @@ TEST(TycoonServiceTest, CargoArrayWithDuplicates)
 		}	
 	)JSON";
 
-	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: duplicate cargo name 'Gado'");
+	CheckLoadException(json, "[TycoonService::tycoon] [Load] error: duplicate cargo name 'Gado'");
 }
 
 TEST(TycoonServiceTest, CarTypeWithInvalidType)
@@ -228,7 +228,7 @@ TEST(TycoonServiceTest, CarTypeWithInvalidType)
 		}
 	)JSON";
 
-	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: invalid carTypes definition, expected array");
+	CheckLoadException(json, "[TycoonService::tycoon] [Load] error: invalid carTypes definition, expected array");
 }
 
 TEST(TycoonServiceTest, CarTypeWithEmptyArray)
@@ -286,7 +286,7 @@ TEST(TycoonServiceTest, CarTypeWithInvalidCarTypeEntry)
 		}
 	)JSON";
 
-	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: invalid carType definition, expected object");
+	CheckLoadException(json, "[TycoonService::tycoon] [Load] error: invalid carType definition, expected object");
 }
 
 TEST(TycoonServiceTest, CarTypeWithoutName)
@@ -311,7 +311,7 @@ TEST(TycoonServiceTest, CarTypeWithoutName)
 		}
 	)JSON";
 
-	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: carType missing name property");
+	CheckLoadException(json, "[TycoonService::tycoon] [Load] error: carType missing name property");
 }
 
 TEST(TycoonServiceTest, CarTypeDuplicated)
@@ -343,7 +343,7 @@ TEST(TycoonServiceTest, CarTypeDuplicated)
 		}
 	)JSON";
 
-	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: duplicate carType name 'Fechado'");
+	CheckLoadException(json, "[TycoonService::tycoon] [Load] error: duplicate carType name 'Fechado'");
 }
 
 TEST(TycoonServiceTest, CarTypeWithoutCode1)
@@ -369,7 +369,7 @@ TEST(TycoonServiceTest, CarTypeWithoutCode1)
 		}
 	)JSON";
 
-	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: carType 'Fechado' missing type property, must be ABNT or AAR");
+	CheckLoadException(json, "[TycoonService::tycoon] [Load] error: carType 'Fechado' missing type property, must be ABNT or AAR");
 }
 
 TEST(TycoonServiceTest, CarTypeWithAAR)
@@ -418,7 +418,7 @@ TEST(TycoonServiceTest, CarTypeWithoutCargo1)
 		}
 	)JSON";
 
-	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: carType 'Fechado' has no cargos assigned");
+	CheckLoadException(json, "[TycoonService::tycoon] [Load] error: carType 'Fechado' has no cargos assigned");
 }
 
 TEST(TycoonServiceTest, CarTypeWithoutCargo2)
@@ -443,7 +443,7 @@ TEST(TycoonServiceTest, CarTypeWithoutCargo2)
 		}
 	)JSON";
 
-	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: carType 'Fechado' has no cargos assigned");
+	CheckLoadException(json, "[TycoonService::tycoon] [Load] error: carType 'Fechado' has no cargos assigned");
 }
 
 TEST(TycoonServiceTest, CarTypeWithInvalidCargosData)
@@ -468,7 +468,7 @@ TEST(TycoonServiceTest, CarTypeWithInvalidCargosData)
 		}
 	)JSON";
 
-	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [Load] error: carType 'Fechado' has invalid cargos definition, expected array");
+	CheckLoadException(json, "[TycoonService::tycoon] [Load] error: carType 'Fechado' has invalid cargos definition, expected array");
 }
 
 TEST(TycoonServiceTest, CarTypeWithInvalidCargoName1)
@@ -520,7 +520,7 @@ TEST(TycoonServiceTest, CarTypeWithInvalidCargoName2)
 	)JSON";
 
 	//blow up as RNAME is exists, but no cargo
-	CheckLoadException(json, "[TycoonServiceImpl::tycoon] [AddCargoToCarType] error: carType 'Fechado' references unknown cargo 'Fechado'");
+	CheckLoadException(json, "[TycoonService::tycoon] [AddCargoToCarType] error: carType 'Fechado' references unknown cargo 'Fechado'");
 }
 
 
