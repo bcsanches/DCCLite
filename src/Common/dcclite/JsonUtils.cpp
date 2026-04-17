@@ -110,13 +110,26 @@ namespace dcclite::json
 		if (!field.IsInt())
 		{
 			if (context)
-				throw std::runtime_error(fmt::format("[dcclite::json::GetString] Required field {} on {} must be an int", fieldName, context));
+				throw std::runtime_error(fmt::format("[dcclite::json::GetInt] Required field {} on {} must be an int", fieldName, context));
 			else
-				throw std::runtime_error(fmt::format("[dcclite::json::GetString] Required field {} must be an int", fieldName));
+				throw std::runtime_error(fmt::format("[dcclite::json::GetInt] Required field {} must be an int", fieldName));
 		}
 
 		return field.GetInt();
 
+	}
+
+	int GetRangedInt(const rapidjson::Value &data, const char *fieldName, int min, int max, const char *context)
+	{
+		auto value = GetInt(data, fieldName, context);
+
+		if(value < min)
+			throw std::runtime_error(fmt::format("[dcclite::json::GetInt] Required integer {} - {} must be greater than {}", fieldName, value, min));
+
+		if (value > max)
+			throw std::runtime_error(fmt::format("[dcclite::json::GetInt] Required integer {} - {} must be less than {}", fieldName, value, min));
+
+		return value;
 	}
 
 	float GetFloat(const rapidjson::Value &data, const char *fieldName, const char *context)

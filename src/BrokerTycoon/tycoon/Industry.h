@@ -35,7 +35,7 @@ namespace dcclite::broker::tycoon
 
 			void ReserveSpot(const std::string_view spotName, const char *info);
 			void CancelSpotReservation(const std::string_view spotName);
-			void StartSpotLoad(const std::string_view spotName);
+			void StartSpotLoad(const std::string_view spotName, const std::string_view cargoName);
 			void RemoveCarFromSpot(const std::string_view spotName);
 
 			const char *GetTypeName() const noexcept override
@@ -60,17 +60,41 @@ namespace dcclite::broker::tycoon
 			void SendSpotStateChangedEvent(const detail::Spot &spot) const;
 			void SendDeltaWithSpotStateChangedEvent(const detail::Spot &spot) const;
 
-			void OnSpotTransferFinished(FastClockDef::TimePoint_t tp, size_t spotIndex);
+			void OnCompleteSpotTransfer(FastClockDef::TimePoint_t tp, size_t spotIndex);
 
 			void AddSpot(RName spotName);
 
-		private:
-			detail::CargoHolder								m_clCargoHolder;
+			void ProduceThinker(FastClockDef::TimePoint_t tp);
+			void ScheduleProduction();
+
+			void LoadProductionData(const rapidjson::Value &params);
+			void LoadProduce(const rapidjson::Value &params);
+			void LoadSpots(const rapidjson::Value &params);
+
+			void AdjustProductionChances();
+
+			size_t RandomSelectCargoToProduce() const noexcept;
+
+			size_t FindCargoInfoIndexByCargoName(const std::string_view cargoName) const;
+
+			unsigned CalculateTotalCargoStored() const noexcept;
+
+		private:			
 			std::vector<detail::Spot>						m_vecSpots;
+			std::vector<detail::CargoInfo>					m_vecProduces;
 
 			//FIXME: this is ugly and sucks to dynamic allocate...
 			std::vector<std::unique_ptr<FastClockThinker>>	m_vecSpotThinkers;
 
-			TycoonService		&m_rclTycoon;
+			FastClockThinker								m_clProductionThinker;
+
+			TycoonService									&m_rclTycoon;
+
+			unsigned										m_uProduceTotalChance;
+
+			float											m_fpDailyRate;
+
+			uint8_t											m_uMaxQuantity;
+			bool											m_fProducing = false;
 	};
 }

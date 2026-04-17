@@ -156,10 +156,21 @@ namespace dcclite::broker::tycoon
 			}
 
 		protected:
+			std::string_view GetParamsMsg() const noexcept override
+			{
+				return "<industry_path> <spot> <cargo>";
+			}
+
+			virtual size_t GetNumParams() const noexcept
+			{
+				return 3;
+			}
+
 			virtual void RunInternal(Industry &target, const char *spotName, const rapidjson::Value &array)
 			{
-				target.StartSpotLoad(spotName);
-			}
+				const char *cargoName = array[2].GetString();
+				target.StartSpotLoad(spotName, cargoName);
+			}			
 	};
 
 	/////////////////////////////////////////////////////////////////////////////
