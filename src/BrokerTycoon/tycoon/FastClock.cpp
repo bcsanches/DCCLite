@@ -14,8 +14,7 @@
 
 namespace dcclite::broker::tycoon
 {
-	FastClock::FastClock(RName name, Rate_t rate) :
-		Object{ name },
+	FastClock::FastClock(Rate_t rate):
 		m_clThinker{ "FastClock::OnTick", THINKER_MF_LAMBDA(OnTick) }
 	{
 		this->SetRate(rate);

@@ -115,11 +115,11 @@ TEST(TycoonServiceTest, InvalidClockRateTooBig)
 		{
 			"class":"TycoonService",
 			"name":"tycoon",
-			"fastClockRate":256			
+			"fastClockRate":65536		
 		}	
 	)JSON";
 
-	CheckLoadException(json, "[TycoonService::tycoon] [Load] fastClockRate must be less or equal than 255");	
+	CheckLoadException(json, "[TycoonService::tycoon] [Load] fastClockRate must be less or equal than 65535");	
 }
 
 TEST(TycoonServiceTest, CargoDataIsNotArray)
@@ -547,5 +547,5 @@ TEST(TycoonServiceTest, CarTypeWithDuplicatedCargo)
 	)JSON";
 
 	//blow up as RNAME is exists, but no cargo
-	CheckLoadException(json, "[CarType::Fechado] Cargo 'Produtos' is already added to car type");
+	CheckLoadException(json, "[Tycoon::CarType::Fechado] Cargo 'Produtos' is already added to car type");
 }

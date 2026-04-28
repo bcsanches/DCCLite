@@ -28,7 +28,7 @@ namespace dcclite::broker::tycoon
 {
 	TycoonService::TycoonService(RName name, sys::Broker &broker, const rapidjson::Value &params) :
 		Service(name, broker, params),
-		m_clFastClock{ RName{"FastClock"}, 1 },
+		m_clFastClock{ 1 },
 		m_pathDataFileName{ sys::Project::GetFilePath(name.GetData()) }
 	{
 		BenchmarkLogger benchmark{ "TycoonService::TycoonService", this->GetNameData() };

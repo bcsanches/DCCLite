@@ -25,19 +25,14 @@
 
 namespace dcclite::broker::tycoon
 {
-	class FastClock : public Object
+	class FastClock
 	{
 		public:
 			typedef FastClockDef::time_point time_point;
 			typedef uint16_t Rate_t;
 
-			FastClock(RName name, Rate_t rate);
-			FastClock(const FastClock &) = delete;
-
-			virtual const char *GetTypeName() const noexcept override
-			{
-				return "FastClock";
-			}			
+			FastClock(Rate_t rate);
+			FastClock(const FastClock &) = delete;		
 
 			inline time_point Now() const noexcept
 			{
