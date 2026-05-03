@@ -207,78 +207,7 @@ namespace dcclite::broker::tycoon
 				this->OnCompleteSpotTransfer(tp, spotIndex);
 			})
 		);
-	}
-
-	void Industry::Serialize(dcclite::JsonOutputStream_t &stream) const
-	{
-		Object::Serialize(stream);
-
-		stream.AddFloatValue("dailyRate", m_fpDailyRate);
-		stream.AddIntValue("maximumQuantity", m_uMaxQuantity);
-
-		this->SerializeDeltaDataOnly(stream);
-
-		{
-			auto cargoInfoData = stream.AddArray("produces");
-			for (auto it : m_vecProduces)
-			{
-				auto obj = cargoInfoData.AddObject();
-
-				it.Serialize(obj);
-			}
-		}
-		
-		auto spotsData = stream.AddArray("spots");
-		for(auto &spot : m_vecSpots)
-		{
-			auto spotObject = spotsData.AddObject();
-			spot.Serialize(spotObject);			
-		}
-	}
-
-	void Industry::SerializeDeltaDataOnly(dcclite::JsonOutputStream_t &stream) const
-	{	
-		stream.AddBool("producing", m_fProducing);
-
-		if (m_fProducing)
-		{
-			auto nextProductionTime = m_clProductionThinker.GetTimePoint();
-
-			auto localTime = FastClockUtils::GetLocalTime(nextProductionTime, m_rclTycoon.GetFastClock());
-
-			stream.AddStringValue(
-				"nextProductionAtLocalTime",
-				fmt::format("{:%H:%M}", localTime)
-			);
-
-			stream.AddStringValue(
-				"nextProductionAt",
-				fmt::format("{:%H:%M}", nextProductionTime.time_since_epoch())
-			);
-		}
-		else
-		{
-			stream.AddStringValue("nextProductionAt", "N/A");
-			stream.AddStringValue("nextProductionAtLocalTime", "N/A");
-		}
-	}
-
-	void Industry::SerializeDelta(dcclite::JsonOutputStream_t &stream) const
-	{
-		this->SerializeIdentification(stream);
-		this->SerializeDeltaDataOnly(stream);	
-
-		{
-			auto cargoInfoData = stream.AddArray("produces");
-			for (size_t i = 0, sz = m_vecProduces.size(); i < sz; ++i)
-			{
-				auto obj = cargoInfoData.AddObject();
-
-				m_vecProduces[i].SerializeDelta(obj);
-				obj.AddIntValue("index", (int)i);
-			}
-		}
-	}
+	}	
 
 	std::optional<size_t> Industry::TryFindSpotIndex(const std::string_view spotName) const
 	{
@@ -328,30 +257,7 @@ namespace dcclite::broker::tycoon
 				spot.Serialize(spotObject);
 			}
 		);
-	}
-
-	void Industry::SendDeltaWithSpotStateChangedEvent(const detail::Spot &spot) const
-	{
-		m_rclTycoon.OnObjectStateChanged(AccessToken<Industry>{}, *this, [this, &spot](JsonOutputStream_t &stream)
-			{
-				//just send down the delta, including cargo holder, because its state changed...
-				this->SerializeDelta(stream);
-
-				{
-					auto spotsData = stream.AddArray("spots");
-					auto spotObject = spotsData.AddObject();
-					spot.Serialize(spotObject);
-				}
-				
-				//if the spot has cargo info, send it also...
-				if (auto cargoInfoIndex = spot.GetCargoIndex() >= 0)
-				{
-					auto cargoInfoObject = stream.AddObject("cargoInfo");
-					m_vecProduces[cargoInfoIndex].SerializeDelta(cargoInfoObject);
-				}
-			}
-		);
-	}
+	}	
 
 	void Industry::ReserveSpot(const std::string_view spotName, const char *info)
 	{
@@ -428,12 +334,13 @@ namespace dcclite::broker::tycoon
 
 		dcclite::Log::Trace("[Industry::OnCompleteSpotTransfer] {}: Spot {} finished transfer of {}", this->GetName(), spot.GetName(), cargoInfo.GetCargo().GetName());
 
-		this->SendDeltaWithSpotStateChangedEvent(spot);
-	}	
+		if (!m_fProducing)
+		{
+			//if production was halted because we reached max capacity, try to resume it now that we have free storage
+			this->ScheduleProduction();
+		}
 
-	void Industry::OnCargoHolderStateChanged(AccessToken<detail::CargoHolder>) const
-	{
-		m_rclTycoon.OnObjectStateChanged(AccessToken<Industry>{}, *this);
+		this->SendDeltaWithSpotStateChangedEvent(spot);
 	}
 
 	size_t Industry::FindCargoInfoIndexByCargoName(const std::string_view cargoName) const
@@ -511,7 +418,7 @@ namespace dcclite::broker::tycoon
 
 	void Industry::ProduceThinker(FastClockDef::TimePoint_t tp)
 	{
-		auto cargoIndex = this->RandomSelectCargoToProduce();
+		auto cargoIndex = (int)this->RandomSelectCargoToProduce();
 		auto &cargoInfo = m_vecProduces[cargoIndex];
 
 		cargoInfo.IncreaseQuantity();
@@ -532,7 +439,120 @@ namespace dcclite::broker::tycoon
 			this->ScheduleProduction();
 		}
 
-		m_rclTycoon.OnObjectStateChanged(AccessToken<Industry>{}, *this);
+		m_rclTycoon.OnObjectStateChanged(AccessToken<Industry>{}, *this, [this, cargoIndex](JsonOutputStream_t &stream) { this->SerializeDelta(stream, cargoIndex); });
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	//
+	// Serialization
+	// 
+	//
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	void Industry::Serialize(dcclite::JsonOutputStream_t &stream) const
+	{
+		Object::Serialize(stream);
+
+		stream.AddFloatValue("dailyRate", m_fpDailyRate);
+		stream.AddIntValue("maximumQuantity", m_uMaxQuantity);
+
+		this->SerializeDeltaDataOnly(stream);
+
+		{
+			auto cargoInfoData = stream.AddArray("produces");
+			for (auto it : m_vecProduces)
+			{
+				auto obj = cargoInfoData.AddObject();
+
+				it.Serialize(obj);
+			}
+		}
+
+		auto spotsData = stream.AddArray("spots");
+		for (auto &spot : m_vecSpots)
+		{
+			auto spotObject = spotsData.AddObject();
+			spot.Serialize(spotObject);
+		}
+	}
+
+	void Industry::SerializeDeltaDataOnly(dcclite::JsonOutputStream_t &stream) const
+	{
+		stream.AddBool("producing", m_fProducing);
+
+		if (m_fProducing)
+		{
+			auto nextProductionTime = m_clProductionThinker.GetTimePoint();
+
+			auto localTime = FastClockUtils::GetLocalTime(nextProductionTime, m_rclTycoon.GetFastClock());
+
+			stream.AddStringValue(
+				"nextProductionAtLocalTime",
+				fmt::format("{:%H:%M}", localTime)
+			);
+
+			stream.AddStringValue(
+				"nextProductionAt",
+				fmt::format("{:%H:%M}", nextProductionTime.time_since_epoch())
+			);
+		}
+		else
+		{
+			stream.AddStringValue("nextProductionAt", "N/A");
+			stream.AddStringValue("nextProductionAtLocalTime", "N/A");
+		}
+	}
+
+	void Industry::SerializeCargoInfo(dcclite::JsonOutputStream_t &stream, const int cargoInfoIndex) const
+	{
+		auto cargoInfoObject = stream.AddObject("cargoInfo");
+		m_vecProduces[cargoInfoIndex].SerializeDelta(cargoInfoObject);
+		cargoInfoObject.AddIntValue("index", cargoInfoIndex);
+	}
+
+	void Industry::SerializeDelta(dcclite::JsonOutputStream_t &stream, int cargoInfoHintIndex) const
+	{
+		this->SerializeIdentification(stream);
+		this->SerializeDeltaDataOnly(stream);
+
+		if (cargoInfoHintIndex < 0)
+		{
+			auto cargoInfoData = stream.AddArray("produces");
+			for (size_t i = 0, sz = m_vecProduces.size(); i < sz; ++i)
+			{
+				auto obj = cargoInfoData.AddObject();
+
+				m_vecProduces[i].SerializeDelta(obj);
+			}
+		}
+		else
+		{
+			this->SerializeCargoInfo(stream, cargoInfoHintIndex);
+		}
+	}
+
+	void Industry::SendDeltaWithSpotStateChangedEvent(const detail::Spot &spot) const
+	{
+		m_rclTycoon.OnObjectStateChanged(AccessToken<Industry>{}, *this, [this, &spot](JsonOutputStream_t &stream)
+			{
+				//just send down the delta, including cargo holder, because its state changed...
+				this->SerializeDelta(stream);
+
+				{
+					auto spotsData = stream.AddArray("spots");
+					auto spotObject = spotsData.AddObject();
+					spot.Serialize(spotObject);
+				}
+
+				//if the spot has cargo info, send it also...
+				auto cargoInfoIndex = spot.GetCargoIndex();
+				if (cargoInfoIndex >= 0)
+				{
+					this->SerializeCargoInfo(stream, cargoInfoIndex);
+				}
+			}
+		);
 	}
 }
 

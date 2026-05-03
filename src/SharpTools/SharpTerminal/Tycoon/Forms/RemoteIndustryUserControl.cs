@@ -6,17 +6,18 @@ using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace SharpTerminal.Forms
 {
 	[SupportedOSPlatform("windows")]
 	public partial class RemoteIndustryUserControl : UserControl
 	{
-		Tycoon.RemoteIndustry mIndustry;
-		Tycoon.Spot mSelectedSpot;
-		IConsole mConsole;
-		Func<Task> mLinkClick;
-		Func<Task> mLinkClickAux;
+		Tycoon.RemoteIndustry	mIndustry;
+		Tycoon.Spot				mSelectedSpot;
+		IConsole				mConsole;
+		Func<Task>				mLinkClick;
+		Func<Task>				mLinkClickAux;
 
 		public RemoteIndustryUserControl()
 		{
@@ -46,7 +47,7 @@ namespace SharpTerminal.Forms
 			}
 
 			m_cbSpot.SelectedIndex = 0;
-		}
+		}		
 
 		private void FillProductionListView()
 		{
@@ -60,8 +61,11 @@ namespace SharpTerminal.Forms
 				item.SubItems.Add(cargoInfo.CurrentQuantity.ToString());
 				item.SubItems.Add(cargoInfo.ReservedQuantity.ToString());
 				item.SubItems.Add((cargoInfo.CurrentQuantity + cargoInfo.ReservedQuantity).ToString());
+				item.Tag = cargoInfo;
 
 				m_lvProduction.Items.Add(item);
+
+				cargoInfo.PropertyChanged += Industry_CargoInfoPropertyChanged;
 			}
 
 			foreach (ColumnHeader column in m_lvProduction.Columns)
@@ -72,34 +76,26 @@ namespace SharpTerminal.Forms
 			m_lvProduction.ResumeLayout();
 		}
 
-#if false
-		private void UpdateQuantityInfo()
+		private void Industry_CargoInfoPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			var qtd = mIndustry.CurrentQuantity;
-			var reserved = mIndustry.ReservedQuantity;
-
-			if(reserved == 0)
+			var cargoInfo = (CargoInfo)sender;
+			
+			foreach(ListViewItem item in m_lvProduction.Items)
 			{
-				m_tbQuantity.Text = qtd.ToString();
+				if (item.Tag != cargoInfo)
+					continue;
+				
+				item.SubItems[1].Text = cargoInfo.CurrentQuantity.ToString();
+				item.SubItems[2].Text = cargoInfo.ReservedQuantity.ToString();
+				item.SubItems[3].Text = (cargoInfo.CurrentQuantity + cargoInfo.ReservedQuantity).ToString();
+				break;									
 			}
-			else
-			{
-				m_tbQuantity.Text = $"stored {qtd}, reserved {reserved}, total {qtd + reserved}";
-			}			
 		}
-#endif
 
 		private void Industry_PropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			switch (e.PropertyName)
 			{
-#if false
-				case nameof(Tycoon.RemoteIndustry.CurrentQuantity):
-				case nameof(Tycoon.RemoteIndustry.ReservedQuantity):
-					UpdateQuantityInfo();
-					break;					
-#endif
-
 				case nameof(Tycoon.RemoteIndustry.Producing):
 				case nameof(Tycoon.RemoteIndustry.NextProductionAt):
 					m_tbStatus.Text = mIndustry.Producing ? "Next batch at " + mIndustry.NextProductionAt : "Not producing";
@@ -123,7 +119,7 @@ namespace SharpTerminal.Forms
 				case Tycoon.SpotStates.RESERVED:
 					m_lnkSpotAction.Text = "&Load";
 					m_lnkSpotAction.Visible = true;
-					mLinkClick = () => OnGenericSpotClick("Start-IndustrySpotLoad");
+					mLinkClick = () => OnStartIndustrySpotLoadClick();
 
 					m_lnkSpotActionAux.Text = "&Cancel reservation";
 					m_lnkSpotActionAux.Visible = true;
@@ -209,6 +205,33 @@ namespace SharpTerminal.Forms
 				return Task.CompletedTask;
 
 			return mConsole.RequestAsync("Set-IndustrySpotReserved", mIndustry.Path, ((Tycoon.Spot)m_cbSpot.SelectedItem).Name, dialog.InfoText);
+		}
+
+		Task OnStartIndustrySpotLoadClick()
+		{
+			CargoInfo cargo = null;
+
+			//auto select if only one cargo is available, otherwise ask the user to select one
+			if (m_lvProduction.Items.Count == 1)
+			{
+				cargo = (CargoInfo)m_lvProduction.Items[0].Tag;
+			}
+			else
+			{
+				var selectedItems = m_lvProduction.SelectedItems;
+				if (selectedItems.Count == 0)
+				{
+					MessageBox.Show(this, "Please select a cargo to load.", "No cargo selected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+					m_lvProduction.Focus();
+
+					return Task.CompletedTask;
+				}
+
+				cargo = (CargoInfo)selectedItems[0].Tag;
+			}					
+
+			return mConsole.RequestAsync("Start-IndustrySpotLoad", mIndustry.Path, ((Tycoon.Spot)m_cbSpot.SelectedItem).Name, cargo.CargoName);
 		}
 
 		Task OnGenericSpotClick(string proc)

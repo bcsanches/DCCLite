@@ -45,13 +45,12 @@ namespace dcclite::broker::tycoon
 
 			~Industry() override = default;
 
-			void SerializeDelta(dcclite::JsonOutputStream_t &stream) const;
-			void Serialize(dcclite::JsonOutputStream_t &stream) const override;
-
-			void OnCargoHolderStateChanged(AccessToken<detail::CargoHolder>) const;
+			void SerializeDelta(dcclite::JsonOutputStream_t &stream, int cargoInfoHintIndex = -1) const;
+			void Serialize(dcclite::JsonOutputStream_t &stream) const override;			
 
 		private:
 			void SerializeDeltaDataOnly(dcclite::JsonOutputStream_t &stream) const;
+			void SerializeCargoInfo(dcclite::JsonOutputStream_t &stream, const int cargoInfoIndex) const;
 
 			std::optional<size_t> TryFindSpotIndex(const std::string_view spotName) const;
 			size_t FindSpotIndex(const std::string_view spotName) const;

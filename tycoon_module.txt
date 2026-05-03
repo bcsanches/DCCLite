@@ -1,12 +1,7 @@
 - TODO:	
-	- refresh cargo produtction stats on industry screen
-	- Make car load / unload work again
+		
+	- save / load state
 	- On car pickup: display destination
-
-	- move cargo holder logic to industry, industry:
-		- If have storage room, pickup a cargo type (randomly) and produce it
-		- Store quantity for each cargo type
-		- On reserve, ask for cargo to consume
 
 	- Industry consumption:
 		- Diferent storage quantity from production

@@ -20,6 +20,13 @@ namespace SharpTerminal.Forms
 				if(mIndustry != null)
 				{
 					mIndustry.PropertyChanged -= Industry_PropertyChanged;
+
+					foreach(var cargoInfo in mIndustry.Produces)
+					{
+						cargoInfo.PropertyChanged -= Industry_CargoInfoPropertyChanged;
+					}
+
+					mIndustry = null;
 				}
 			}
 			base.Dispose(disposing);

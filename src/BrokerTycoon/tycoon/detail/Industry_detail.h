@@ -117,7 +117,7 @@ namespace dcclite::broker::tycoon::detail
 
 			void OnCompleteCargoTransfer()
 			{
-				if (this->CanCompleteCargoTransfer())
+				if (!this->CanCompleteCargoTransfer())
 				{
 					throw std::runtime_error("[Spot::OnCompleteCargoTransfer] Spot is not loading or unloading, cannot park car");
 				}
@@ -210,53 +210,5 @@ namespace dcclite::broker::tycoon::detail
 
 			uint8_t						m_uCurrentQuantity = 0;
 			uint8_t						m_uReservedQuantity = 0;
-	};
-
-	class CargoHolder
-	{
-		public:
-			CargoHolder(TycoonService &tycoon, const Industry &industry, const rapidjson::Value &params);
-
-			/// <summary>
-			/// Starts the cargo transfer, increments the reserved quantity and returns how long the transfer will take
-			/// </summary>
-			/// <returns>How long the transfer should takes</returns>
-			std::chrono::hours StartCargoTransfer();
-
-			void CargoTransferFinished();
-
-			void Serialize(dcclite::JsonOutputStream_t &stream) const;
-			void SerializeDelta(dcclite::JsonOutputStream_t &stream) const;
-
-		private:
-			CargoHolder(const Cargo &cargo, float dailyRate, uint8_t maxQuantity, std::chrono::hours transferTime, FastClock &fastClock, const Industry &industry);
-
-			void ProduceThinker(FastClockDef::TimePoint_t tp);
-
-			void ScheduleProduction();
-
-			bool CanProduce() const noexcept
-			{
-				return m_uCurrentQuantity + m_uReservedQuantity < m_uMaxQuantity;
-			}
-
-		private:
-			std::vector<std::string>	m_vecDestinations;
-
-			FastClockThinker			m_clProductionThinker;
-
-			FastClock &m_rclFastClock;
-			const Industry &m_rclIndustry;
-
-			const Cargo &m_rclCargo;
-			float		m_fpDailyRate;
-			uint8_t		m_uMaxQuantity;
-
-			uint8_t		m_uCurrentQuantity = 0;
-			uint8_t		m_uReservedQuantity = 0;
-
-			bool		m_fProducing = false;
-
-			std::chrono::hours m_tTransferTime;			
-	};
+	};	
 }

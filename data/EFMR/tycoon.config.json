@@ -25,12 +25,18 @@
 	],
 	"carTypes":[
 		{
-			"name":"Fechado",
+			"name":"Fechado Revestido",
 			"ABNT":"FR",
 			"description":"Vagão Fechado convencional caixa metálica com revestimento",
+			"cargo":"Cimento Ensacado"
+		},
+		{
+			"name":"Fechado Comum",
+			"description":"Vagão fechado comum (genérico)",
+			"AAR":"B",
 			"cargos":[
-				"Produtos",
-				"Cimento Ensacado"
+				"Cimento Ensacado",
+				"Produtos"
 			]
 		},
 		{

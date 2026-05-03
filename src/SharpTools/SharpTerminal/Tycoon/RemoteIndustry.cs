@@ -200,6 +200,25 @@ namespace SharpTerminal.Tycoon
 					m_setSpots[spotName].UpdateRemoteState((string)s["state"], (string)s["info"]);
 				}
 			}
+
+			//Do we have all cargo info updates?
+			if (def.ContainsKey("produces"))
+			{
+				var production = (JsonArray)def["produces"];
+				for (var i = 0; i < production.Count; i++)
+				{					
+					m_arProduces[i].UpdateState(production[i]);
+				}
+			}
+
+			//single cargo info change?
+			if(def.ContainsKey("cargoInfo"))
+			{
+				var cargoInfo = (JsonObject)def["cargoInfo"];
+				
+				var index = (int)cargoInfo["index"];
+				m_arProduces[index].UpdateState(cargoInfo);				
+			}
 		}
 
 		public override Control CreateControl(IConsole console)
