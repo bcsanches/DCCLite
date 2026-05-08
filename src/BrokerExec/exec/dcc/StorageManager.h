@@ -34,6 +34,14 @@ namespace dcclite::broker::exec::dcc
 		void SaveState(const Device &device);
 		DecodersMap_t LoadState(RName deviceName, const dcclite::Guid expectedToken);
 
+		/**
+		* This reads the hash stored on cache to check if the current configuration file changed 
+		*
+		* If it did, it generates a new token and stores the new hash on cache, if not, it returns the stored token.
+		* 
+		* @returns the token associated with the file, or a new one if the file changed since last check, or null if there was an error reading the file or cache
+		* 				
+		*/
 		dcclite::Guid GetFileToken(const std::string_view fileName);
 	}
 }

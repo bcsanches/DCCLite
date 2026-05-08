@@ -29,3 +29,10 @@ namespace dcclite
 }
 
 #endif
+
+namespace dcclite::FileSystem
+{
+	bool CreateFilePath(const dcclite::fs::path &filePath);
+
+	bool SafeStoreText(const dcclite::fs::path &filePath, const char *FileExtension, const char *content);
+}

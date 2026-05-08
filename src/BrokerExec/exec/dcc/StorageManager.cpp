@@ -23,6 +23,7 @@
 #include <dcclite/Benchmark.h>
 #include <dcclite/FmtUtils.h>
 #include <dcclite/Guid.h>
+#include <dcclite/JsonUtils.h>
 #include <dcclite/Log.h>
 #include <dcclite/RName.h>
 
@@ -36,24 +37,6 @@
 
 namespace dcclite::broker::exec::dcc::StorageManager
 {	
-	static bool CreateFilePath(const dcclite::fs::path &filePath)
-	{		
-		auto path = filePath;
-		path.remove_filename();
-
-		std::error_code ec;
-		dcclite::fs::create_directories(path, ec);
-
-		if (ec)
-		{
-			dcclite::Log::Error("[StorageManager::GetFileToken] {} Cannot create app path for storing state, system error: {}", filePath.string(), ec.message());
-
-			return false;
-		}
-
-		return true;
-	}
-
 	static dcclite::fs::path GenerateBaseDeviceStateFileName(RName deviceName)
 	{
 		return sys::Project::GetAppFilePath(fmt::format("{}.state", deviceName.GetData()));
@@ -66,9 +49,9 @@ namespace dcclite::broker::exec::dcc::StorageManager
 		auto path = GenerateBaseDeviceStateFileName(deviceName);
 		path.concat(".json");
 
-		std::ifstream stateFile(path);
+		dcclite::json::FileDocument document;
 
-		if (!stateFile)
+		if(!document.Load(path))		
 		{
 			dcclite::Log::Warn("[StorageManager::LoadState] [{}] Failed to open state file: {}", deviceName.GetData(), path.string());
 
@@ -77,14 +60,14 @@ namespace dcclite::broker::exec::dcc::StorageManager
 
 		dcclite::Log::Info("[StorageManager::LoadState] [{}] Opened {}, starting parser", deviceName.GetData(), path.string());
 
-		rapidjson::IStreamWrapper isw(stateFile);
-		rapidjson::Document data;
-		if (data.ParseStream(isw).HasParseError())
+		if (!document.IsObject())
 		{
-			dcclite::Log::Error("[StorageManager::LoadState] [{}] Parser error for {}", deviceName.GetData(), path.string());
-			
+			dcclite::Log::Error("[StorageManager::LoadState] [{}] Expected json object on file {}", deviceName.GetData(), path.string());
+
 			return {};
 		}
+
+		auto data = document.GetObject();				
 
 		//read token first, because if it fails, hash is already null			
 		auto tokenData = data.FindMember("token");
@@ -186,32 +169,19 @@ namespace dcclite::broker::exec::dcc::StorageManager
 				dcclite::Log::Info("[StorageManager::SaveState][{}] No data to save, aborting", device.GetNameData());
 				return;
 			}
-				
-		}		
+		}
 		
-		auto path = GenerateBaseDeviceStateFileName(device.GetName());
-		path.concat(".tmp");
+		const auto path = GenerateBaseDeviceStateFileName(device.GetName());		
 
 		dcclite::Log::Info("[StorageManager::SaveState][{}] Generating state file: {}", device.GetNameData(), path.string());
-
-		if (!CreateFilePath(path))
+		if (!FileSystem::SafeStoreText(path, ".json", responseWriter.GetString()))
 		{
-			dcclite::Log::Error("[StorageManager::SaveState] Cannot create path {} for storing {} device data", path.string(), device.GetNameData());
+			dcclite::Log::Error("[StorageManager::SaveState] Error storing {} device data", path.string(), device.GetNameData());
 
 			return;
 		}
 
-		{
-			std::ofstream newStateFile(path, std::ios_base::trunc);
-
-			newStateFile << responseWriter.GetString();
-		}
-
-		auto newName{ path };
-		newName.replace_extension(".json");
-		dcclite::fs::rename(path, newName);
-
-		dcclite::Log::Info("[StorageManager::SaveState][{}] State file stored at: {}", device.GetNameData(), newName.string());
+		dcclite::Log::Info("[StorageManager::SaveState][{}] State file stored.", device.GetNameData());
 	}
 
 	dcclite::Guid GetFileToken(const std::string_view fileName)
@@ -288,7 +258,7 @@ namespace dcclite::broker::exec::dcc::StorageManager
 
 				token = dcclite::GuidCreate();
 
-				if(CreateFilePath(stateFilePath))
+				if(dcclite::FileSystem::CreateFilePath(stateFilePath))
 				{
 					std::ofstream newStateFile(stateFilePath, std::ios_base::trunc);
 

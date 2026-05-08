@@ -15,7 +15,9 @@
 #include <fmt/chrono.h>
 
 #include <dcclite/Benchmark.h>
+#include <dcclite/FileSystem.h>
 #include <dcclite/FmtUtils.h>
+#include <dcclite/JsonUtils.h>
 
 #include "sys/Project.h"
 #include "sys/ServiceFactory.h"
@@ -56,6 +58,13 @@ namespace dcclite::broker::tycoon
 				
 		m_clFastClock.m_sigTick.connect([this](FastClock &clock) { this->OnFastClockTick(clock); });
 		m_clFastClock.Start();
+
+		this->LoadState();
+	}
+
+	TycoonService::~TycoonService()
+	{
+		this->SaveState();
 	}
 
 	const Cargo *TycoonService::TryFindCargoByName(RName name) const noexcept
@@ -130,6 +139,61 @@ namespace dcclite::broker::tycoon
 				stream.AddStringValue("fast_clock_time", str);
 			}
 		);
+	}
+
+	//
+	//
+	// State Storage
+	//
+	//
+
+	static dcclite::fs::path GenerateBaseStateFileName(RName serviceName)
+	{
+		return sys::Project::GetAppFilePath(fmt::format("{}.state", serviceName.GetData()));
+	}
+
+	void TycoonService::SaveState()
+	{
+		auto stateFileName = GenerateBaseStateFileName(this->GetName());
+
+		dcclite::Log::Info("[TycoonService::SaveState][{}] Generating state file: {}", this->GetName(), stateFileName.string());
+
+		if (!FileSystem::SafeStoreText(stateFileName, ".json", "{\"info\":\"Hello\"}"))
+		{
+			dcclite::Log::Error("[TycoonService::SaveState][{}] Error storing device data at {}", this->GetName(), stateFileName.string());
+
+			return;
+		}
+
+		dcclite::Log::Info("[TycoonService::SaveState][{}] State file stored.", this->GetName());
+	}
+
+	void TycoonService::LoadState()
+	{
+		auto stateFileName = GenerateBaseStateFileName(this->GetName());
+		stateFileName.concat(".json");
+
+		dcclite::json::FileDocument document;
+
+		if (!document.Load(stateFileName))
+		{
+			dcclite::Log::Warn("[TycoonService::LoadState] [{}] Failed to open state file: {}", this->GetName(), stateFileName.string());
+
+			return;
+		}
+
+		dcclite::Log::Info("[TycoonService::LoadState] [{}] Opened {}, starting parser", this->GetName(), stateFileName.string());
+
+		if (!document.IsObject())
+		{
+			dcclite::Log::Error("[TycoonService::LoadState] [{}] Expected json object on file {}", this->GetName(), stateFileName.string());
+
+			return;
+		}
+
+		auto data = document.GetObject();
+
+		//load the data...
 	}
 
 	//

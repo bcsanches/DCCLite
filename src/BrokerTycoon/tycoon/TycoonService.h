@@ -31,6 +31,7 @@ namespace dcclite::broker::tycoon
 			static const char *TYPE_NAME;
 	
 			TycoonService(RName name, sys::Broker &broker, const rapidjson::Value &params);
+			~TycoonService();
 
 			const Cargo *TryFindCargoByName(RName name) const noexcept;
 			const Cargo &FindCargoByName(RName name) const;
@@ -62,7 +63,10 @@ namespace dcclite::broker::tycoon
 
 			void AddCargoToCarType(CarType &carType, std::string_view cargoName);
 
-			void OnFastClockTick(FastClock &clock);			
+			void OnFastClockTick(FastClock &clock);
+
+			void SaveState();
+			void LoadState();
 
 		protected:
 			FastClock				m_clFastClock;

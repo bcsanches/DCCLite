@@ -17,6 +17,7 @@ add_library(
 	dcclite/dcclite.cpp
 	dcclite/dcclite.h
 	dcclite/defs.h
+	dcclite/FileSystem.cpp
 	dcclite/FileSystem.h
 	dcclite/FolderObject.cpp
 	dcclite/FolderObject.h
