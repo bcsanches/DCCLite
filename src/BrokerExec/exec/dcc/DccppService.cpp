@@ -362,7 +362,7 @@ namespace dcclite::broker::exec::dcc
 
 	bool DccppClient::CreateTurnoutsIdListResponse(std::stringstream &response) const
 	{		
-		response << "<JT";
+		response << "<jT";
 
 		auto turnoutDecoders = m_rclSystem.FindAllTurnoutDecoders();
 		if (turnoutDecoders.empty())
@@ -507,6 +507,14 @@ namespace dcclite::broker::exec::dcc
 		if(auto decoder = dynamic_cast<const StateDecoder *>(&event.m_rclItem))
 			m_clMessenger.Send(m_clAddress, CreateDecoderStateResponse(*decoder));					
 	}
+
+	///////////////////////////////////////////////////////////////////////////
+	//
+	//
+	// Parses dccex messages - who wants some spaghetti code? :P
+	// 
+	//
+	///////////////////////////////////////////////////////////////////////////
 
 	void DccppClient::OnMessage(const std::string &msg)
 	{
@@ -654,10 +662,44 @@ namespace dcclite::broker::exec::dcc
 						//turnouts id list
 						if (tokenType == Tokens::NUMBER)
 						{
-							Log::Error("[DccppClient::Update] TODO HANDLE ID {} for {}, msg>: {}", id, cmdToken.m_svData, msg);
-							goto ERROR_RESPONSE;
-						}
+							if(id > std::numeric_limits<uint16_t>::max())
+							{
+								Log::Error("[DccppClient::Update] Invalid turnout id {}, number is too big!!!", id);
 
+								auto response = fmt::format("<jT {} X>", id);
+								m_clMessenger.Send(m_clAddress, response);
+								break;
+							}
+
+							auto decoder = m_rclSystem.TryFindDecoder(Address{ static_cast<uint16_t>(id) });
+							if (!decoder)
+							{
+								Log::Error("[DccppClient::Update] Decoder {} not found for {}, msg>: {}", id, cmdToken.m_svData, msg);
+
+								auto response = fmt::format("<jT {} X>", id);
+								m_clMessenger.Send(m_clAddress, response);
+								break;
+							}
+							
+							if (auto turnout = dynamic_cast<TurnoutDecoder *>(decoder))
+							{
+								auto response = fmt::format("<jT {} {} \"{}\">",
+									id,
+									turnout->GetState() == DecoderStates::ACTIVE ? 'T' : 'C',
+									turnout->GetName()
+								);
+
+								m_clMessenger.Send(m_clAddress, response);								
+							}							
+							else
+							{
+								Log::Error("[DccppClient::Update] Decoder {} is not a turnout {}, msg>: {}", id, cmdToken.m_svData, msg);
+
+								auto response = fmt::format("<jT {} X>", id);
+								m_clMessenger.Send(m_clAddress, response);
+							}
+						}
+						else
 						{
 							std::stringstream response;
 
