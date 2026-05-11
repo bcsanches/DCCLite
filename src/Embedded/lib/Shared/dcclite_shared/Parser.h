@@ -29,6 +29,8 @@ namespace dcclite
 
 		EXCLAMATION = '!',
 
+		EQUAL = '=',
+
 		VARIABLE_NAME = 256,
 
 		ID,

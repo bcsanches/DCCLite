@@ -208,7 +208,7 @@ namespace dcclite::broker::exec::dcc
 
 	static inline std::string CreateTurnoutDecoderStateResponse(const TurnoutDecoder& decoder)
 	{
-		return fmt::format("<H{} {}>", decoder.GetAddress(), (decoder.GetState() == DecoderStates::ACTIVE ? 1 : 0));
+		return fmt::format("<H {} {}>", decoder.GetAddress(), (decoder.GetState() == DecoderStates::ACTIVE ? 1 : 0));
 	}
 
 	static inline std::string CreateOutputDecoderStateResponse(const OutputDecoder& decoder)
@@ -565,6 +565,20 @@ namespace dcclite::broker::exec::dcc
 			}
 		}
 
+		if(cmdToken.m_kToken == Tokens::EQUAL)
+		{
+			if (parser.GetToken().m_kToken != Tokens::END_OF_BUFFER)
+			{
+				Log::Error("[DccppClient::OnMessage] Error parsing msg, expected TOKEN_EOF for: {}", msg);
+
+				goto ERROR_RESPONSE;
+			}
+					
+			//track manager... return a single track
+			m_clMessenger.Send("<= A MAIN>");
+			return;
+		}
+
 		if (cmdToken.m_kToken != Tokens::ID)
 		{
 			Log::Error("[DccppClient::OnMessage] Error parsing msg, expected TOKEN_ID or TOKEN_NUMBER for cmd identification: {}", msg);
@@ -584,8 +598,11 @@ namespace dcclite::broker::exec::dcc
 			// It seems that JMRI only send this when entering the "configure base station option"
 			//
 			case 'J':
-			{
-				if ((cmdToken.m_svData.GetSize() == 1) && (cmdToken.m_svData[1] != 'T'))
+			{				
+				char cmd;
+
+				//is this a <JR> or <J R> cmd?
+				if (cmdToken.m_svData.GetSize() == 1)
 				{					
 					auto token = parser.GetToken();
 					if (token.m_kToken != Tokens::ID)
@@ -595,32 +612,64 @@ namespace dcclite::broker::exec::dcc
 						goto ERROR_RESPONSE;
 					}
 
-					if (token.m_svData.Compare("T"))
-					{
-						Log::Error("[DccppClient::Update] Unknown parameter {} for {}, msg>: {}", token.m_svData, cmdToken.m_svData, msg);
-
-						goto ERROR_RESPONSE;
-					}
+					cmd = token.m_svData[0];
 				}
-
+				else
+				{
+					cmd = cmdToken.m_svData[1];
+				}
+							
+				//see if we have any other parameter, if yes, should be a int number
 				int id;
 				const auto tokenType = parser.GetNumber(id);
-				if (tokenType == Tokens::NUMBER)
-				{
-					Log::Error("[DccppClient::Update] TODO HANDLE ID {} for {}, msg>: {}", id, cmdToken.m_svData, msg);
-					goto ERROR_RESPONSE;
-				}
-				else if (tokenType != Tokens::END_OF_BUFFER)
+				if ((tokenType != Tokens::NUMBER) && (tokenType != Tokens::END_OF_BUFFER))
 				{
 					Log::Error("[DccppClient::Update] Unknown parameter {}, msg>: {}", cmdToken.m_svData, msg);
 
 					goto ERROR_RESPONSE;
-				}
-				
-				std::stringstream response;
+				}					
 
-				this->CreateTurnoutsIdListResponse(response);
-				m_clMessenger.Send(m_clAddress, response.str());				
+				switch (cmd)
+				{
+					case 'A':
+						//no routes...
+						m_clMessenger.Send(m_clAddress, "<jA.>");
+						break;
+
+					case 'R':
+						if(tokenType == Tokens::END_OF_BUFFER)
+						{
+							//no roster exists
+							m_clMessenger.Send(m_clAddress, "<jR>");
+						}
+						else
+						{
+							//no roster entry
+							auto response = fmt::format("<jR {} \"\" \"\">", id);
+							m_clMessenger.Send(m_clAddress, response);
+						}
+						break;
+
+					case 'T':
+						//turnouts id list
+						if (tokenType == Tokens::NUMBER)
+						{
+							Log::Error("[DccppClient::Update] TODO HANDLE ID {} for {}, msg>: {}", id, cmdToken.m_svData, msg);
+							goto ERROR_RESPONSE;
+						}
+
+						{
+							std::stringstream response;
+
+							this->CreateTurnoutsIdListResponse(response);
+							m_clMessenger.Send(m_clAddress, response.str());
+						}
+						break;
+
+					default:
+						Log::Error("[DccppClient::Update] Unknown parameter {}, msg>: {}", cmdToken.m_svData, msg);
+						goto ERROR_RESPONSE;			
+				}						
 				break;
 			}
 
