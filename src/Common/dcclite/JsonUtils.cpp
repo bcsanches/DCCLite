@@ -32,6 +32,19 @@ namespace dcclite::json
 		return &field->value;
 	}
 
+	const rapidjson::Value *TryGetObject(const rapidjson::Value &data, const char *fieldName)
+	{
+		auto field = TryGetValue(data, fieldName);
+
+		if (!field)
+			return nullptr;
+
+		if (!field->IsObject())
+			return nullptr;
+
+		return field;		
+	}
+
 	bool TryGetDefaultBool(const rapidjson::Value &data, const char *fieldName, const bool defaultValue)
 	{
 		auto field = TryGetValue(data, fieldName);
@@ -101,6 +114,21 @@ namespace dcclite::json
 		}
 
 		return str.value();
+	}
+
+	int64_t GetInt64(const rapidjson::Value &data, const char *fieldName, const char *context)
+	{
+		const auto &field = GetValue(data, fieldName, context);
+
+		if (!field.IsInt64())
+		{
+			if (context)
+				throw std::runtime_error(fmt::format("[dcclite::json::GetInt64] Required field {} on {} must be an int", fieldName, context));
+			else
+				throw std::runtime_error(fmt::format("[dcclite::json::GetInt64] Required field {} must be an int", fieldName));
+		}
+
+		return field.GetInt64();
 	}
 
 	int GetInt(const rapidjson::Value &data, const char *fieldName, const char *context)

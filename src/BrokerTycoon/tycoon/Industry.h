@@ -46,7 +46,10 @@ namespace dcclite::broker::tycoon
 			~Industry() override = default;
 
 			void SerializeDelta(dcclite::JsonOutputStream_t &stream, int cargoInfoHintIndex = -1) const;
-			void Serialize(dcclite::JsonOutputStream_t &stream) const override;			
+			void Serialize(dcclite::JsonOutputStream_t &stream) const override;
+
+			void SaveState(dcclite::JsonOutputStream_t &stream) const;
+			void LoadState(const rapidjson::Value &params);
 
 		private:
 			void SerializeDeltaDataOnly(dcclite::JsonOutputStream_t &stream) const;

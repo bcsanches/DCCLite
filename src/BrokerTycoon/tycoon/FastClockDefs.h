@@ -22,11 +22,12 @@ namespace dcclite::broker::tycoon
 			//
 			//
 			//chrono "interface"
+			using rep = int64_t;
+			using period = std::ratio<1>;							// 1 second per tick
+			using duration = std::chrono::duration<rep, period>;	//seconds
 
-			typedef std::chrono::seconds					duration;
-			typedef duration::rep							rep;
-			typedef duration::period						period;
-			typedef std::chrono::time_point<FastClockDef>	time_point;
+			using time_point = std::chrono::time_point<FastClockDef>;
+						
 			static const bool is_steady = true;
 
 			//

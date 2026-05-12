@@ -61,5 +61,25 @@ namespace dcclite::broker::tycoon
 
 		return FolderObject::AddChild(std::move(obj));
 	}
+
+	void Location::SaveState(dcclite::JsonOutputStream_t &stream) const
+	{
+		auto industries = stream.AddObject("industries");
+
+		this->ConstVisitChildren([&industries](const IObject &child)
+		{
+			auto &industry = dynamic_cast<const Industry &>(child);
+
+			auto industryData = industries.AddObject(industry.GetNameData());
+			industry.SaveState(industryData);
+
+			return true;
+		});
+	}
+
+	void Location::LoadState(const rapidjson::Value &params)
+	{
+
+	}
 }
 

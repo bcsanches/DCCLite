@@ -32,6 +32,9 @@ namespace dcclite::broker::tycoon
 				return TYPE_NAME;
 			}
 
+			void SaveState(dcclite::JsonOutputStream_t &stream) const;
+			void LoadState(const rapidjson::Value &params);
+
 		private:			
 	};
 }

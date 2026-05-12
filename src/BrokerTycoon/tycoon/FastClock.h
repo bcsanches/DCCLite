@@ -14,6 +14,8 @@
 
 #include <chrono>
 
+#include <rapidjson/document.h>
+
 #include <dcclite/BaseThinker.h>
 #include <dcclite/Clock.h>
 #include <dcclite/Object.h>
@@ -63,6 +65,9 @@ namespace dcclite::broker::tycoon
 			{
 				return seconds / m_uRate;
 			}
+
+			void SaveState(dcclite::JsonOutputStream_t &stream) const;
+			void LoadState(const rapidjson::Value &params);
 
 			sigslot::signal<FastClock &> m_sigTick;
 

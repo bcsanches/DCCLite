@@ -25,6 +25,7 @@
 #include "Cargo.h"
 #include "CarType.h"
 #include "Industry.h"
+#include "Location.h"
 
 namespace dcclite::broker::tycoon
 {
@@ -154,11 +155,36 @@ namespace dcclite::broker::tycoon
 
 	void TycoonService::SaveState()
 	{
+		JsonCreator::StringWriter responseWriter;
+		{
+			auto object = JsonCreator::MakeObject(responseWriter);
+
+			{
+				auto fastClock = object.AddObject("fastClock");
+				m_clFastClock.SaveState(fastClock);
+			}
+
+			auto locations = object.AddObject("locations");
+
+			//we only save industry state, because cargo and car types are static data, so they will be loaded from config file on next load
+			m_pLocations->VisitChildren([&locations](IObject &obj)
+				{
+					const auto &location = dynamic_cast<Location &>(obj);					
+
+					auto locationStream = locations.AddObject(location.GetNameData());
+
+					location.SaveState(locationStream);
+					return true;
+				}
+			);
+			
+		}
+
 		auto stateFileName = GenerateBaseStateFileName(this->GetName());
 
 		dcclite::Log::Info("[TycoonService::SaveState][{}] Generating state file: {}", this->GetName(), stateFileName.string());
 
-		if (!FileSystem::SafeStoreText(stateFileName, ".json", "{\"info\":\"Hello\"}"))
+		if (!FileSystem::SafeStoreText(stateFileName, ".json", responseWriter.GetString()))
 		{
 			dcclite::Log::Error("[TycoonService::SaveState][{}] Error storing device data at {}", this->GetName(), stateFileName.string());
 
@@ -194,6 +220,15 @@ namespace dcclite::broker::tycoon
 		auto data = document.GetObject();
 
 		//load the data...
+		auto fastClockData = dcclite::json::TryGetObject(data, "fastClock");
+		if (fastClockData == nullptr)
+		{
+			dcclite::Log::Error("[TycoonService::LoadState] [{}] Missing 'fastClock' object in state file {}, cannot load state", this->GetName(), stateFileName.string());
+
+			return;
+		}
+
+		m_clFastClock.LoadState(*fastClockData);
 	}
 
 	//

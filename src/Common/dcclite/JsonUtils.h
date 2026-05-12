@@ -20,6 +20,7 @@
 namespace dcclite::json
 {
 	const rapidjson::Value *TryGetValue(const rapidjson::Value &data, const char *fieldName);
+	const rapidjson::Value *TryGetObject(const rapidjson::Value &data, const char *fieldName);
 
 	bool TryGetDefaultBool(const rapidjson::Value &data, const char *fieldName, const bool defaultValue);
 
@@ -31,6 +32,8 @@ namespace dcclite::json
 	std::string_view GetString(const rapidjson::Value &data, const char *fieldName, const char *context = nullptr);
 	std::string_view TryGetDefaultString(const rapidjson::Value &data, const char *fieldName, std::string_view defaultValue);
 	std::optional<std::string_view> TryGetString(const rapidjson::Value &data, const char* fieldName);	
+
+	int64_t GetInt64(const rapidjson::Value &data, const char *fieldName, const char *context = nullptr);
 
 	int GetInt(const rapidjson::Value &data, const char *fieldName, const char *context = nullptr);
 	int GetRangedInt(const rapidjson::Value &data, const char *fieldName, int min, int max, const char *context = nullptr);

@@ -10,6 +10,7 @@
 
 #include "FastClock.h"
 
+#include <dcclite/JsonUtils.h>
 #include <dcclite/Log.h>
 
 namespace dcclite::broker::tycoon
@@ -64,5 +65,20 @@ namespace dcclite::broker::tycoon
 		m_clThinkerManager.UpdateThinkers(m_tElapsed);
 
 		m_sigTick(*this);
+	}
+
+	void FastClock::SaveState(dcclite::JsonOutputStream_t &stream) const
+	{		
+		stream.AddInt64Value("elapsed", m_tElapsed.time_since_epoch().count());
+		stream.AddIntValue("rate", m_uRate);
+	}
+
+	void FastClock::LoadState(const rapidjson::Value &params)
+	{
+		auto elapsed = dcclite::json::GetInt64(params, "elapsed", "[FastClock::LoadState]");		
+		
+		m_tElapsed = FastClockDef::TimePoint_t{ FastClockDef::duration{ elapsed } };
+
+		//we ignore rate for now, it chaging should not affect persisted state
 	}
 }
