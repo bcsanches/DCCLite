@@ -541,16 +541,33 @@ namespace dcclite::broker::exec::dcc
 
 		if(cmdToken.m_kToken == Tokens::EXCLAMATION)
 		{
-			//Emergency stop, just ignore....
-			if (parser.GetToken().m_kToken != Tokens::END_OF_BUFFER)
+			auto token = parser.GetToken();
+
+			if (token.m_kToken == Tokens::ID)
+			{
+				if (token.m_svData[0] == 'Q')
+				{
+					//Emergency stop status, the purpose? I have no idea...
+					m_clMessenger.Send(m_clAddress, "<!RESUMED>");
+
+					return;
+				}
+				else
+				{
+					Log::Error("[DccppClient::OnMessage] Error parsing msg, unknown cmd for !: {}", msg);
+					
+					goto ERROR_RESPONSE;
+				}
+			}
+			else if (parser.GetToken().m_kToken != Tokens::END_OF_BUFFER)
 			{
 				Log::Error("[DccppClient::OnMessage] Error parsing msg, expected TOKEN_EOF for: {}", msg);
 
 				goto ERROR_RESPONSE;
 			}
+
 			//
-			//nothing to answer...
-			
+			//nothing to answer...			
 			return;
 		}
 
@@ -772,12 +789,17 @@ namespace dcclite::broker::exec::dcc
 					goto ERROR_RESPONSE;
 				}
 
-				int direction;
-				if (parser.GetNumber(direction) != Tokens::NUMBER)
-				{
-					Log::Error("[DccppClient::OnMessage] Error parsing msg, expected TOKEN_NUMBER for device state: {}", msg);
+				const auto paramToken = parser.GetToken();
 
-					goto ERROR_RESPONSE;
+				//If is J <id> <state>, where state can be 0|1 or C|T
+				auto newState = DecoderStates::ACTIVE;
+				if (paramToken.m_kToken == Tokens::NUMBER)
+				{					
+					newState = (paramToken.m_svData[0] == '0') ? DecoderStates::INACTIVE : DecoderStates::ACTIVE;
+				}
+				else if (paramToken.m_kToken == Tokens::ID)
+				{
+					newState = (paramToken.m_svData[0] == 'T') ? DecoderStates::ACTIVE : DecoderStates::INACTIVE;
 				}
 
 				auto *dec = m_rclSystem.TryFindDecoder(Address(id));
@@ -798,7 +820,7 @@ namespace dcclite::broker::exec::dcc
 
 				auto *outputDecoder = static_cast<OutputDecoder *>(remoteDecoder);
 
-				auto newState = direction ? DecoderStates::ACTIVE : DecoderStates::INACTIVE;
+				
 
 				//if no state change pending and remote state is the requested one
 				if (!outputDecoder->GetPendingStateChange() && outputDecoder->GetState() == newState)
