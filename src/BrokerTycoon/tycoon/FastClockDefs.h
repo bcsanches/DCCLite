@@ -23,7 +23,7 @@ namespace dcclite::broker::tycoon
 			//
 			//chrono "interface"
 			using rep = int64_t;
-			using period = std::ratio<1>;							// 1 second per tick
+			using period = std::milli;								// 1 ms per tick
 			using duration = std::chrono::duration<rep, period>;	//seconds
 
 			using time_point = std::chrono::time_point<FastClockDef>;
@@ -32,6 +32,20 @@ namespace dcclite::broker::tycoon
 
 			//
 			//For thinkers
-			typedef time_point TimePoint_t;		
+			typedef time_point TimePoint_t;
+
+			static inline uint64_t ConvertToIntMs(const time_point tp) noexcept
+			{
+				static_assert(std::chrono::duration_cast<std::chrono::milliseconds>(duration{ 1 }).count() == 1, "FastClockDef duration must be in milliseconds");
+
+				return tp.time_since_epoch().count();
+			}
+
+			static inline time_point ConvertFromIntMs(const uint64_t value) noexcept
+			{
+				static_assert(std::chrono::duration_cast<std::chrono::milliseconds>(duration{ 1 }).count() == 1, "FastClockDef duration must be in milliseconds");
+
+				return time_point{ duration{ value } };
+			}
 	};
 }

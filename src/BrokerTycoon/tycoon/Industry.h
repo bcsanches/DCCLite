@@ -51,6 +51,9 @@ namespace dcclite::broker::tycoon
 			void SaveState(dcclite::JsonOutputStream_t &stream) const;
 			void LoadState(const rapidjson::Value &params);
 
+			const Cargo *TryGetCargoByCargoInfoIndex(size_t index) const;
+			int TryGetCargoInfoIndexByCargoName(std::string_view name) const;
+
 		private:
 			void SerializeDeltaDataOnly(dcclite::JsonOutputStream_t &stream) const;
 			void SerializeCargoInfo(dcclite::JsonOutputStream_t &stream, const int cargoInfoIndex) const;

@@ -45,6 +45,20 @@ namespace dcclite::json
 		return field;		
 	}
 
+	bool GetBool(const rapidjson::Value &data, const char *fieldName, const char *context)
+	{
+		const auto &field = GetValue(data, fieldName, context);
+		if (!field.IsBool())
+		{
+			if (context)
+				throw std::runtime_error(fmt::format("[dcclite::json::GetBool] Required field {} on {} must be a boolean", fieldName, context));
+			else
+				throw std::runtime_error(fmt::format("[dcclite::json::GetBool] Required field {} must be a boolean", fieldName));
+		}
+
+		return field.GetBool();
+	}
+
 	bool TryGetDefaultBool(const rapidjson::Value &data, const char *fieldName, const bool defaultValue)
 	{
 		auto field = TryGetValue(data, fieldName);
@@ -82,6 +96,21 @@ namespace dcclite::json
 		}
 
 		return *field;
+	}
+
+	const rapidjson::Value &GetObject(const rapidjson::Value &data, const char *fieldName, const char *context)
+	{
+		auto &field = GetValue(data, fieldName, context);
+
+		if (!field.IsObject())
+		{
+			if (context)
+				throw std::runtime_error(fmt::format("[dcclite::json::GetObject] Required field {} on {} must be an object", fieldName, context));
+			else
+				throw std::runtime_error(fmt::format("[dcclite::json::GetObject] Required field {} must be an object", fieldName));
+		}
+
+		return field;
 	}
 
 	std::optional<std::string_view> TryGetString(const rapidjson::Value &data, const char *fieldName)

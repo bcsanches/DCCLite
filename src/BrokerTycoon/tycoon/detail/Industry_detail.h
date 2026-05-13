@@ -30,6 +30,70 @@ namespace dcclite::broker::tycoon
 
 namespace dcclite::broker::tycoon::detail
 {
+	class CargoInfo
+	{
+		public:
+			CargoInfo(const TycoonService &tycoon, const rapidjson::Value &params);
+
+			inline uint8_t GetChance() const noexcept
+			{
+				return m_u8Chance;
+			}
+
+			inline const Cargo &GetCargo() const noexcept
+			{
+				return m_rclCargo;
+			}
+
+			inline unsigned GetSequence() const noexcept
+			{
+				return m_uSequence;
+			}
+
+			inline void SetSequence(unsigned v) noexcept
+			{
+				m_uSequence = v;
+			}
+
+			inline void IncreaseQuantity() noexcept
+			{
+				m_uCurrentQuantity++;
+			}			
+
+			inline unsigned GetTotal() const noexcept
+			{
+				return m_uCurrentQuantity + m_uReservedQuantity;
+			}
+
+			void Serialize(dcclite::JsonOutputStream_t &stream) const;
+			void SerializeDelta(dcclite::JsonOutputStream_t &stream) const;
+
+			/// <summary>
+			/// Starts the cargo transfer, increments the reserved quantity and returns how long the transfer will take
+			/// </summary>
+			/// <returns>How long the transfer should takes</returns>
+			std::chrono::hours StartCargoTransfer();
+
+			void CompleteCargoTransfer();
+
+			void SaveState(dcclite::JsonOutputStream_t &stream) const;
+			void LoadState(const rapidjson::Value &params);
+
+		private:
+			void LoadDestinations(const rapidjson::Value &params);
+
+		private:
+			std::vector<std::string>	m_vecDestinations;	
+
+			const Cargo					&m_rclCargo;
+			std::chrono::hours			m_tTransferTime;			
+			unsigned					m_uSequence = 0;
+			uint8_t						m_u8Chance;
+
+			uint8_t						m_uCurrentQuantity = 0;
+			uint8_t						m_uReservedQuantity = 0;
+	};
+
 	enum class SpotStates
 	{
 		FREE,
@@ -78,7 +142,7 @@ namespace dcclite::broker::tycoon::detail
 				if (info)
 					m_strInformation = info;
 				else
-					m_strInformation.clear();				
+					m_strInformation.clear();
 			}
 
 			void CancelReservation()
@@ -89,7 +153,7 @@ namespace dcclite::broker::tycoon::detail
 				}
 
 				m_kState = SpotStates::FREE;
-				m_strInformation.clear();				
+				m_strInformation.clear();
 			}
 
 			inline bool CanLoad() const noexcept
@@ -121,8 +185,8 @@ namespace dcclite::broker::tycoon::detail
 				{
 					throw std::runtime_error("[Spot::OnCompleteCargoTransfer] Spot is not loading or unloading, cannot park car");
 				}
-				
-				m_kState = SpotStates::CAR_PARKED;				
+
+				m_kState = SpotStates::CAR_PARKED;
 			}
 
 			void RemoveCar()
@@ -144,71 +208,13 @@ namespace dcclite::broker::tycoon::detail
 
 			void Serialize(dcclite::JsonOutputStream_t &stream) const;
 
+			void SaveState(dcclite::JsonOutputStream_t &stream, const Industry &industry) const;
+			[[nodiscard]] bool LoadState(const rapidjson::Value &params, const Industry &industry);
+
 		private:
 			std::string			m_strInformation;
 			int					m_iCargoIndex = -1;
 
 			SpotStates m_kState = SpotStates::FREE;
 	};
-
-	class CargoInfo
-	{
-		public:
-			CargoInfo(const TycoonService &tycoon, const rapidjson::Value &params);
-
-			inline uint8_t GetChance() const noexcept
-			{
-				return m_u8Chance;
-			}
-
-			inline const Cargo &GetCargo() const noexcept
-			{
-				return m_rclCargo;
-			}
-
-			inline unsigned GetSequence() const noexcept
-			{
-				return m_uSequence;
-			}
-
-			inline void SetSequence(unsigned v) noexcept
-			{
-				m_uSequence = v;
-			}
-
-			inline void IncreaseQuantity() noexcept
-			{
-				m_uCurrentQuantity++;
-			}			
-
-			inline unsigned GetTotal() const noexcept
-			{
-				return m_uCurrentQuantity + m_uReservedQuantity;
-			}
-
-			void Serialize(dcclite::JsonOutputStream_t &stream) const;
-			void SerializeDelta(dcclite::JsonOutputStream_t &stream) const;
-
-			/// <summary>
-			/// Starts the cargo transfer, increments the reserved quantity and returns how long the transfer will take
-			/// </summary>
-			/// <returns>How long the transfer should takes</returns>
-			std::chrono::hours StartCargoTransfer();
-
-			void CompleteCargoTransfer();
-
-		private:
-			void LoadDestinations(const rapidjson::Value &params);
-
-		private:
-			std::vector<std::string>	m_vecDestinations;	
-
-			const Cargo					&m_rclCargo;
-			std::chrono::hours			m_tTransferTime;			
-			unsigned					m_uSequence = 0;
-			uint8_t						m_u8Chance;
-
-			uint8_t						m_uCurrentQuantity = 0;
-			uint8_t						m_uReservedQuantity = 0;
-	};	
 }

@@ -321,6 +321,12 @@ namespace dcclite::broker::tycoon
 		auto &spot = m_vecSpots[spotIndex];
 		auto cargoInfoIndex = spot.GetCargoIndex();
 
+		if((cargoInfoIndex < 0) || (cargoInfoIndex >= m_vecProduces.size()))
+		{
+			dcclite::Log::Error("[Industry::OnCompleteSpotTransfer] Spot {} has invalid cargo index {}, cannot complete transfer", spot.GetName(), cargoInfoIndex);
+			return;
+		}
+
 		auto &cargoInfo = m_vecProduces[cargoInfoIndex];
 
 		//make sure spot will not throw, otherwise we will have an inconsistent state where transfer is completed but spot is still loading/unloading
@@ -341,6 +347,31 @@ namespace dcclite::broker::tycoon
 		}
 
 		this->SendDeltaWithSpotStateChangedEvent(spot);
+	}
+
+	const Cargo *Industry::TryGetCargoByCargoInfoIndex(size_t index) const
+	{
+		if(index >= m_vecProduces.size())
+			return nullptr;
+
+		return &m_vecProduces[index].GetCargo();
+	}
+
+	int Industry::TryGetCargoInfoIndexByCargoName(std::string_view name) const
+	{
+		RName cargoName = RName::TryGetName(name);
+		if (!cargoName)
+			return -1;
+
+		auto it = std::ranges::find_if(
+			m_vecProduces,
+			[cargoName](const detail::CargoInfo &ci) { return ci.GetCargo().GetName() == cargoName; }
+		);
+
+		if(it == m_vecProduces.end())
+			return -1;
+
+		return static_cast<int>(std::distance(m_vecProduces.begin(), it));
 	}
 
 	size_t Industry::FindCargoInfoIndexByCargoName(const std::string_view cargoName) const
@@ -566,10 +597,49 @@ namespace dcclite::broker::tycoon
 	void Industry::SaveState(dcclite::JsonOutputStream_t &stream) const
 	{
 		stream.AddBool("producing", m_fProducing);
+
+		stream.AddInt64Value("productionTimePoint", FastClockDef::ConvertToIntMs(m_clProductionThinker.GetTimePoint()));
+
+		{
+			auto producesData = stream.AddObject("produces");
+			for (size_t i = 0, sz = m_vecProduces.size(); i < sz; ++i)
+			{
+				auto produceData = producesData.AddObject(m_vecProduces[i].GetCargo().GetName().GetData());
+
+				m_vecProduces[i].SaveState(produceData);
+			}
+		}
+
+		{
+			auto spotsData = stream.AddObject("spots");
+
+			for (size_t i = 0, sz = m_vecSpots.size(); i < sz; ++i)
+			{
+				auto spotData = spotsData.AddObject(m_vecSpots[i].GetNameData());
+
+				spotData.AddInt64Value("transferTimePoint", FastClockDef::ConvertToIntMs(m_vecSpotThinkers[i]->GetTimePoint()));
+
+				auto spotObjectData = spotData.AddObject("spot");
+				m_vecSpots[i].SaveState(spotObjectData, *this);
+			}
+		}		
 	}
 
 	void Industry::LoadState(const rapidjson::Value &params)
 	{
+		m_fProducing = json::GetBool(params, "producing", "[Industry::LoadState]");
+
+		if (m_fProducing)
+		{
+			auto timePoint = json::GetInt64(params, "productionTimePoint", "[Industry::LoadState]");
+			m_clProductionThinker.Schedule(FastClockDef::ConvertFromIntMs(timePoint));
+		}
+		else
+		{
+			//Constructor may have started production, halt it...
+			m_clProductionThinker.Cancel();
+		}
+
 
 	}
 }

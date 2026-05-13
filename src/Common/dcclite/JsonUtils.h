@@ -22,12 +22,14 @@ namespace dcclite::json
 	const rapidjson::Value *TryGetValue(const rapidjson::Value &data, const char *fieldName);
 	const rapidjson::Value *TryGetObject(const rapidjson::Value &data, const char *fieldName);
 
+	bool GetBool(const rapidjson::Value &data, const char *fieldName, const char *context = nullptr);
 	bool TryGetDefaultBool(const rapidjson::Value &data, const char *fieldName, const bool defaultValue);
 
 	std::optional<int> TryGetInt(const rapidjson::Value &data, const char *fieldName);
 	int TryGetDefaultInt(const rapidjson::Value &data, const char *fieldName, const int defaultValue);
 
 	const rapidjson::Value &GetValue(const rapidjson::Value &data, const char *fieldName, const char *context);
+	const rapidjson::Value &GetObject(const rapidjson::Value &data, const char *fieldName, const char *context);
 
 	std::string_view GetString(const rapidjson::Value &data, const char *fieldName, const char *context = nullptr);
 	std::string_view TryGetDefaultString(const rapidjson::Value &data, const char *fieldName, std::string_view defaultValue);

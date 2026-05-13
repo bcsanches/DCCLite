@@ -141,6 +141,47 @@
 					}
 				},
 				{
+					"name":"Armazem 5",
+					"spot":"Portão 01",
+					"produces":[
+						{
+							"cargo":"Produtos",
+							"chance":50,
+							"transferTimeHours":4,
+							"destinations":[
+								"Varginha",
+								"Lavras",
+								"Barra do Piraí",
+								"Sapucaí"
+							]
+						},
+						{
+							"cargo":"Cimento Ensacado",
+							"chance":25,
+							"transferTimeHours":4,
+							"destinations":[
+								"Varginha",
+								"Lavras",
+								"Barra do Piraí",
+								"Sapucaí"
+							]
+						},
+						{
+							"cargo":"Carne",
+							"chance":5,
+							"transferTimeHours":5,
+							"destinations":[
+								"Varginha",
+								"Lavras",
+								"Barra do Piraí",
+								"Sapucaí"
+							]
+						}					
+					],
+					"dailyProduction":4,
+					"maximumStorage":4
+				},
+				{
 					"name":"Carregamento de Gado",
 					"spots":[
 						"Portão 01",

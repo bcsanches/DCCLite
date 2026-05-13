@@ -61,9 +61,9 @@ namespace dcclite::broker::tycoon
 				return std::make_unique<FastClockThinker>(m_clThinkerManager, name, proc);
 			}
 
-			inline std::chrono::seconds ConvertToRealTime(std::chrono::seconds seconds) const noexcept
+			inline std::chrono::seconds ConvertToRealTime(std::chrono::milliseconds ms) const noexcept
 			{
-				return seconds / m_uRate;
+				return std::chrono::duration_cast<std::chrono::seconds>(ms / m_uRate);
 			}
 
 			void SaveState(dcclite::JsonOutputStream_t &stream) const;

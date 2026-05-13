@@ -229,6 +229,33 @@ namespace dcclite::broker::tycoon
 		}
 
 		m_clFastClock.LoadState(*fastClockData);
+
+		auto locationsData = dcclite::json::TryGetObject(data, "locations");
+		if (!locationsData)
+		{
+			dcclite::Log::Error("[TycoonService::LoadState] [{}] Missing 'locations' object in state file {}, cannot load state", this->GetName(), stateFileName.string());
+			return;
+		}
+			
+		for (const auto &locationData : locationsData->GetObject())
+		{
+			RName locationName = RName::TryGetName(locationData.name.GetString());
+			if (!locationName)
+			{
+				dcclite::Log::Warn("[TycoonService::LoadState] [{}] Unknown location name '{}', skipping", this->GetName(), locationData.name.GetString());
+				continue;
+			}
+
+			auto obj = m_pLocations->TryGetChild(locationName);
+			if (!obj)
+			{
+				dcclite::Log::Warn("[TycoonService::LoadState] [{}] Location '{}' not found in service, skipping", this->GetName(), locationName.GetData());
+				continue;
+			}
+
+			auto &location = dynamic_cast<Location &>(*obj);
+			location.LoadState(locationData.value);				
+		}
 	}
 
 	//

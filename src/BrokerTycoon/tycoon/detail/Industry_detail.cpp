@@ -52,6 +52,49 @@ namespace dcclite::broker::tycoon::detail
 		m_iCargoIndex = cargoIndex;
 	}
 
+
+	void Spot::SaveState(dcclite::JsonOutputStream_t &stream, const Industry &industry) const
+	{
+		stream.AddStringValue("state", magic_enum::enum_name(m_kState));
+		stream.AddStringValue("info", m_strInformation);
+
+		if (m_iCargoIndex >= 0)
+			stream.AddStringValue("cargo", industry.TryGetCargoByCargoInfoIndex(m_iCargoIndex)->GetNameData());
+	}
+
+	bool Spot::LoadState(const rapidjson::Value &params, const Industry &industry)
+	{
+		auto state = magic_enum::enum_cast<SpotStates>(dcclite::json::GetValue(params, "state", "[Spot::LoadState]").GetString());
+		if(!state)
+		{
+			throw std::invalid_argument(fmt::format("[Spot::LoadState] Invalid state value: {}", dcclite::json::GetValue(params, "state", "[Spot::LoadState]").GetString()));
+		}
+
+		m_kState = *state;
+
+		if (auto info = json::TryGetString(params, "info"))
+			m_strInformation = *info;
+
+		if (auto cargoName = json::TryGetString(params, "cargo"))
+		{
+			auto index = industry.TryGetCargoInfoIndexByCargoName(cargoName.value());
+			if (index <= 0)
+			{
+				dcclite::Log::Error("[Spot::LoadState] Invalid cargo name: {}, resetting spot", cargoName.value());
+
+				m_iCargoIndex = -1;
+				m_strInformation.clear();
+				m_kState = SpotStates::FREE;
+
+				return false;
+			}
+
+			m_iCargoIndex = index;
+		}
+
+		return true;
+	}
+
 	///////////////////////////////////////////////////////////////////////////
 	//
 	//
@@ -159,5 +202,17 @@ namespace dcclite::broker::tycoon::detail
 		}
 
 		--m_uReservedQuantity;		
-	}	
+	}
+
+	void CargoInfo::SaveState(dcclite::JsonOutputStream_t &stream) const
+	{
+		stream.AddIntValue("currentQuantity", m_uCurrentQuantity);
+		stream.AddIntValue("reservedQuantity", m_uReservedQuantity);
+	}
+
+	void CargoInfo::LoadState(const rapidjson::Value &params)
+	{
+		m_uCurrentQuantity = json::GetInt(params, "currentQuantity", "[CargoInfo::LoadState]");
+		m_uReservedQuantity = json::GetInt(params, "reservedQuantity", "[CargoInfo::LoadState]");
+	}
 }

@@ -79,7 +79,27 @@ namespace dcclite::broker::tycoon
 
 	void Location::LoadState(const rapidjson::Value &params)
 	{
+		auto &industriesData = dcclite::json::GetObject(params, "industries", "[Location::LoadState]");
 
+		for (const auto &industryData : industriesData.GetObject())
+		{
+			RName industryName = RName::TryGetName(industryData.name.GetString());
+			if (!industryName)
+			{
+				dcclite::Log::Warn("[Location::LoadState] [{}] warning: industry with name '{}' not found, skipping it", this->GetName(), industryData.name.GetString());
+
+				continue;
+			}
+
+			auto industry = dynamic_cast<Industry *>(this->TryGetChild(industryName));
+			if(!industry)
+			{
+				dcclite::Log::Warn("[Location::LoadState] [{}] warning: industry with name '{}' not found, skipping it", this->GetName(), industryName);
+				continue;
+			}
+
+			industry->LoadState(industryData.value);
+		}
 	}
 }
 

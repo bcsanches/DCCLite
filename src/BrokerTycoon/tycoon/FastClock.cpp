@@ -59,7 +59,7 @@ namespace dcclite::broker::tycoon
 		m_clThinker.Schedule(m_clThinker.GetTimePoint() + m_tTickRate);
 
 		using namespace std::chrono_literals;
-		m_tElapsed += 1min;		
+		m_tElapsed += 1min;
 
 		//dcclite::Log::Trace("[FastClock::OnTick] Tick. Elapsed time: {}s", std::chrono::duration_cast<std::chrono::seconds>(m_tElapsed.time_since_epoch()).count());
 		m_clThinkerManager.UpdateThinkers(m_tElapsed);
@@ -69,7 +69,7 @@ namespace dcclite::broker::tycoon
 
 	void FastClock::SaveState(dcclite::JsonOutputStream_t &stream) const
 	{		
-		stream.AddInt64Value("elapsed", m_tElapsed.time_since_epoch().count());
+		stream.AddInt64Value("elapsed", FastClockDef::ConvertToIntMs(m_tElapsed));
 		stream.AddIntValue("rate", m_uRate);
 	}
 
@@ -77,7 +77,7 @@ namespace dcclite::broker::tycoon
 	{
 		auto elapsed = dcclite::json::GetInt64(params, "elapsed", "[FastClock::LoadState]");		
 		
-		m_tElapsed = FastClockDef::TimePoint_t{ FastClockDef::duration{ elapsed } };
+		m_tElapsed = FastClockDef::ConvertFromIntMs(elapsed);
 
 		//we ignore rate for now, it chaging should not affect persisted state
 	}
