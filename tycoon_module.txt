@@ -1,12 +1,18 @@
 - TODO:	
 		
 	- save / load state
+		- on industry spot load, run across the stored spot on state file, if any is missing, reset the industry
+		- after load, check industry state:
+			- check if cargo load quantities matches the spot states reservation
 	- On car pickup: display destination
 
 	- Industry consumption:
 		- Diferent storage quantity from production
+		- generates storage room each industry tick
+		- may need a queue if each cargo type takes diferent time to consume
 		- When unload completes, use stock room
 		- takes time to consume it
+		- may need two classes, one for "consumer logic" and another for "producer logic", each with its own state
 
 	- Show a list view with all industries status?
 		- Name
