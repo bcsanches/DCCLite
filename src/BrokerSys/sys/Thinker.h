@@ -57,6 +57,11 @@ namespace dcclite::broker::sys
 				return Base_t::UpdateThinkers(&g_pclThinkers, tp);
 			}
 
+			inline static Thinker *TryGetFirstThinker() 
+			{
+				return static_cast<Thinker *>(g_pclThinkers);
+			}
+
 		private:
 			static Base_t *g_pclThinkers;
 	};

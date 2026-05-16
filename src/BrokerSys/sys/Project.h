@@ -17,11 +17,41 @@ namespace dcclite::broker::sys
 {
 	namespace Project
 	{
+		/**
+		* The project working directory. This will be used to search for project related files
+		* 
+		* 						
+		*/
 		void SetWorkingDir(dcclite::fs::path path);
 
+
+		/**
+		*
+		* Gets a file path relative to the project working directory. This is used to search for project config files
+		* 
+		* 
+		* 
+		*/
 		dcclite::fs::path GetFilePath(const std::string_view fileName);
+
+		/**
+		*	Gets a path on AppData folder (win32) or ~/.local/share (linux) for the given file name. 
+		* 
+		*	This is used to store project related files that should not be shared between different projects, such as state files.
+		* 
+		*	This is for auto generated files and should not be used for user created files
+		*
+		*/
 		dcclite::fs::path GetAppFilePath(const std::string_view fileName);
 
+		/**
+		*	Sets an app name for using with the App folder. 
+		* 		
+		*	If you call SetName("MyProject"), 
+		*	then GetAppFilePath("state.json") will return something like "C:\Users\Username\AppData\Local\dcclite\MyProject\state.jsdccliteon" on Windows 
+		*	or "/home/username/.local/share/dcclite/MyProject/state.json" on Linux.
+		* 
+		*/
 		void SetName(std::string_view name);			
 
 		const std::string &GetName() noexcept;			

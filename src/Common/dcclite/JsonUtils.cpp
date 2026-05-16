@@ -220,7 +220,7 @@ namespace dcclite::json
 		}
 
 		return field.GetArray();
-	}
+	}	
 	
 	[[nodiscard]] bool FileDocument::Load(const dcclite::fs::path &path)
 	{

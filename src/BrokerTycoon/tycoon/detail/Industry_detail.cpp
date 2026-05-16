@@ -52,6 +52,12 @@ namespace dcclite::broker::tycoon::detail
 		m_iCargoIndex = cargoIndex;
 	}
 
+	void Spot::Reset()
+	{
+		m_kState = SpotStates::FREE;
+		m_strInformation.clear();
+		m_iCargoIndex = -1;
+	}
 
 	void Spot::SaveState(dcclite::JsonOutputStream_t &stream, const Industry &industry) const
 	{
@@ -202,6 +208,12 @@ namespace dcclite::broker::tycoon::detail
 		}
 
 		--m_uReservedQuantity;		
+	}
+
+	void CargoInfo::Reset()
+	{
+		m_uReservedQuantity = 0;
+		m_uCurrentQuantity = 0;
 	}
 
 	void CargoInfo::SaveState(dcclite::JsonOutputStream_t &stream) const

@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include <cstring>
+#include <array>
 
 #include "FileSystem.h"
 
@@ -89,7 +89,7 @@ namespace dcclite
 				//
 			private:
 				// Raw C file handle
-				FILE* m_file;
+				FILE *m_file;
 		};
 
 	}
@@ -124,7 +124,7 @@ namespace dcclite
 				detail::FileReader file(fileName.string().c_str());
 
 				// Read buffer
-				std::vector<std::uint8_t> buffer(4 * 1024);   // 4 KB buffer
+				std::array<std::uint8_t, 4 * 1024> buffer;   // 4 KB buffer
 
 				// Reading loop
 				while (!file.EoF())

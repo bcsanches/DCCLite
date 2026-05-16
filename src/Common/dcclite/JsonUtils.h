@@ -43,6 +43,11 @@ namespace dcclite::json
 	
 	const rapidjson::Value::ConstArray GetArray(const rapidjson::Value &data, const char *fieldName, const char *context = nullptr);
 
+	inline std::string_view MakeStringView(const rapidjson::Value &value)
+	{
+		return std::string_view{ value.GetString(), value.GetStringLength() };
+	}
+
 	class FileDocument
 	{
 		public:

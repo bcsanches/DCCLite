@@ -41,7 +41,7 @@ namespace dcclite::broker::tycoon
 
 	Industry::Industry(RName name, TycoonService &tycoon, const rapidjson::Value &params):
 		Object{name},
-		m_clProductionThinker{ tycoon.GetFastClock().MakeThinker("CargoHolder::ProductionThinker", FAST_CLOCK_THINKER_LAMBDA(ProduceThinker))},
+		m_clProductionThinker{ tycoon.GetFastClock().MakeThinker("Industry::ProduceThinker", FAST_CLOCK_THINKER_LAMBDA(ProduceThinker))},
 		m_rclTycoon{ tycoon },
 		m_fpDailyRate{ json::GetFloat(params, "dailyProduction", "[Tycoon::CargoHolder]") },
 		m_uMaxQuantity{ static_cast<uint8_t>(json::GetRangedInt(params, "maximumStorage", 0, 255, "[CargoHolder]")) }
@@ -209,9 +209,9 @@ namespace dcclite::broker::tycoon
 		);
 	}	
 
-	std::optional<size_t> Industry::TryFindSpotIndex(const std::string_view spotName) const
+	std::optional<size_t> Industry::TryFindSpotIndex(RName spotName) const
 	{
-		auto it = std::ranges::find_if(m_vecSpots, [spotName](const detail::Spot &s) { return s.GetNameData() == spotName; });
+		auto it = std::ranges::find_if(m_vecSpots, [spotName](const detail::Spot &s) { return s.GetName() == spotName; });
 		if (it == m_vecSpots.end())
 		{
 			return std::nullopt;
@@ -220,7 +220,7 @@ namespace dcclite::broker::tycoon
 		return std::distance(m_vecSpots.begin(), it);
 	}
 
-	size_t Industry::FindSpotIndex(const std::string_view spotName) const
+	size_t Industry::FindSpotIndex(RName spotName) const
 	{
 		auto index = this->TryFindSpotIndex(spotName);
 		if(!index)
@@ -229,14 +229,14 @@ namespace dcclite::broker::tycoon
 		return *index;
 	}
 
-	detail::Spot *Industry::TryFindSpot(const std::string_view spotName)
+	detail::Spot *Industry::TryFindSpot(RName spotName)
 	{
 		auto index = this->TryFindSpotIndex(spotName);
 		
 		return index ? &m_vecSpots[*index] : nullptr;		
 	}
 
-	detail::Spot &Industry::FindSpot(const std::string_view spotName)
+	detail::Spot &Industry::FindSpot(RName spotName)
 	{
 		auto spot = this->TryFindSpot(spotName);
 		if(spot == nullptr)
@@ -259,7 +259,7 @@ namespace dcclite::broker::tycoon
 		);
 	}	
 
-	void Industry::ReserveSpot(const std::string_view spotName, const char *info)
+	void Industry::ReserveSpot(RName spotName, const char *info)
 	{
 		auto &spot = this->FindSpot(spotName);
 		
@@ -268,7 +268,7 @@ namespace dcclite::broker::tycoon
 		this->SendSpotStateChangedEvent(spot);
 	}
 
-	void Industry::CancelSpotReservation(const std::string_view spotName)
+	void Industry::CancelSpotReservation(RName spotName)
 	{
 		auto &spot = this->FindSpot(spotName);		
 
@@ -277,7 +277,7 @@ namespace dcclite::broker::tycoon
 		this->SendSpotStateChangedEvent(spot);
 	}
 
-	void Industry::StartSpotLoad(const std::string_view spotName, const std::string_view cargoName)
+	void Industry::StartSpotLoad(RName spotName, RName cargoName)
 	{
 		const auto cargoInfoIndex = this->FindCargoInfoIndexByCargoName(cargoName);
 		auto &cargoInfo = m_vecProduces[cargoInfoIndex];
@@ -305,7 +305,7 @@ namespace dcclite::broker::tycoon
 		this->SendDeltaWithSpotStateChangedEvent(spot);
 	}
 
-	void Industry::RemoveCarFromSpot(const std::string_view spotName)
+	void Industry::RemoveCarFromSpot(RName spotName)
 	{
 		auto &spot = this->FindSpot(spotName);
 
@@ -374,15 +374,11 @@ namespace dcclite::broker::tycoon
 		return static_cast<int>(std::distance(m_vecProduces.begin(), it));
 	}
 
-	size_t Industry::FindCargoInfoIndexByCargoName(const std::string_view cargoName) const
-	{
-		RName cargoRName = RName::TryGetName(cargoName);
-		if(!cargoRName)
-			throw std::runtime_error(fmt::format("[Industry::FindCargoInfoIndexByCargoName] Cargo {} name not registered", cargoName));
-
+	size_t Industry::FindCargoInfoIndexByCargoName(RName cargoName) const
+	{		
 		auto it = std::ranges::find_if(
 			m_vecProduces, 
-			[cargoRName](const detail::CargoInfo &ci) { return ci.GetCargo().GetName() == cargoRName; }
+			[cargoName](const detail::CargoInfo &ci) { return ci.GetCargo().GetName() == cargoName; }
 		);
 
 		if(it == m_vecProduces.end())
@@ -601,7 +597,7 @@ namespace dcclite::broker::tycoon
 		stream.AddInt64Value("productionTimePoint", FastClockDef::ConvertToIntMs(m_clProductionThinker.GetTimePoint()));
 
 		{
-			auto producesData = stream.AddObject("produces");
+			auto producesData = stream.AddObject("production");
 			for (size_t i = 0, sz = m_vecProduces.size(); i < sz; ++i)
 			{
 				auto produceData = producesData.AddObject(m_vecProduces[i].GetCargo().GetName().GetData());
@@ -640,7 +636,131 @@ namespace dcclite::broker::tycoon
 			m_clProductionThinker.Cancel();
 		}
 
+		{
+			auto productionData = json::TryGetObject(params, "production");
+			if (productionData)
+			{
+				for (auto &it : productionData->GetObject())
+				{
+					auto cargoNameStr = std::string_view{ it.name.GetString(), it.name.GetStringLength() };
+					auto cargoName = RName::TryGetName(cargoNameStr);
+					if (!cargoName)
+					{
+						dcclite::Log::Warn("[Industry::LoadState] [{}] Cargo {} name is not even registered, skipping", this->GetName(), cargoNameStr);
 
+						//This is not so bad, we can live with that, maybe user removed a product from industry after the state was saved...
+						continue;
+					}
+
+					auto cargoInfoIndex = this->FindCargoInfoIndexByCargoName(cargoName);
+					if (cargoInfoIndex < 0)
+					{
+						dcclite::Log::Warn("[Industry::LoadState] [{}] Cargo {} in production state not found, skipping", this->GetName(), cargoName);
+
+						//This is not so bad, we can live with that, maybe user removed a product from industry after the state was saved...
+						continue;
+					}
+
+					m_vecProduces[cargoInfoIndex].LoadState(it.value);
+				}
+
+				//If all production loaded, lets check if user added a new product to this industry
+				for (size_t i = 0, sz = m_vecProduces.size(); i < sz; ++i)
+				{
+					auto &cargoInfo = m_vecProduces[i];
+					auto cargoName = cargoInfo.GetCargo().GetNameData();
+					if (!productionData->HasMember(cargoName.data()))
+					{
+						dcclite::Log::Warn("[Industry::LoadState] [{}] Cargo {} was not found in production state", this->GetName(), cargoName);
+
+						goto CORRUPTED_STATE;
+					}
+				}
+			}
+			else if (!m_vecProduces.empty())
+			{
+				dcclite::Log::Warn("[Industry::LoadState] [{}] production state not found, but industry has produces, state is probably corrupted", this->GetName());
+
+				goto CORRUPTED_STATE;
+			}
+		}
+
+		{
+			auto &spotsData = json::GetObject(params, "spots", "[Industry::LoadState]");
+			for (auto &it : spotsData.GetObject())
+			{
+				auto spotName = it.name.GetString();
+
+				RName rname = RName::TryGetName(spotName);
+				if (!rname)
+				{
+					dcclite::Log::Warn("[Industry::LoadState] [{}] Spot {} name is not even registered, skipping", this->GetName(), spotName);
+
+					goto CORRUPTED_STATE;
+				}
+
+				auto spotIndex = this->TryFindSpotIndex(rname);
+				if (!spotIndex)
+				{
+					dcclite::Log::Warn("[Industry::LoadState] [{}] Spot {} not found in state file, skipping", this->GetName(), spotName);
+
+					goto CORRUPTED_STATE;
+				}
+
+				auto &spotThinker = m_vecSpotThinkers[*spotIndex];
+				auto &spot = m_vecSpots[*spotIndex];
+
+				auto spotData = it.value.GetObject();
+
+				auto &spotObjectData = json::GetObject(spotData, "spot", "[Industry::LoadState]");
+
+				if (!spot.LoadState(spotObjectData, *this))
+				{
+					dcclite::Log::Warn("[Industry::LoadState] [{}]  thisFailed to load state for spot {}, state is probably corrupted", this->GetName(), spotName);
+
+					goto CORRUPTED_STATE;
+				}
+
+				if (spot.IsTransfering())
+				{
+					auto transferTimePoint = json::GetInt64(spotData, "transferTimePoint", "[Industry::LoadState]");
+					spotThinker->Schedule(FastClockDef::ConvertFromIntMs(transferTimePoint));
+				}
+			}
+		}
+
+		{
+			auto total = this->CalculateTotalCargoStored();
+			if (total > m_uMaxQuantity)
+			{
+				dcclite::Log::Warn("[Industry::LoadState] [{}] Total cargo stored {} exceeds max quantity {}, state is probably corrupted", this->GetName(), total, m_uMaxQuantity);
+
+				goto CORRUPTED_STATE;
+			}
+			else if ((total < m_uMaxQuantity) && (!m_fProducing))
+			{
+				//if we are not producing but we have free storage, try to resume production
+				this->ScheduleProduction();
+			}
+		}
+
+		return;
+
+CORRUPTED_STATE:
+
+		//try to fix state
+		dcclite::Log::Warn("[Industry::LoadState] [{}] State corrupted, resetting it to initial state, sorry...", this->GetName());
+
+		std::ranges::for_each(m_vecProduces, [](detail::CargoInfo &ci) { ci.Reset(); });
+			
+		for (size_t i = 0, sz = m_vecSpots.size(); i < sz; ++i)
+		{
+			m_vecSpots[i].Reset();
+			m_vecSpotThinkers[i]->Cancel();
+		}
+
+		if(!m_fProducing)
+			this->ScheduleProduction();		
 	}
 }
 

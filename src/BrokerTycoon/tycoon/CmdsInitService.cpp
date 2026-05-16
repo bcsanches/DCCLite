@@ -46,7 +46,7 @@ namespace dcclite::broker::tycoon
 				return "<industry_path> <spot>";
 			}
 
-			virtual void RunInternal(Industry &target, const char *spotName, const rapidjson::Value &array) = 0;
+			virtual void RunInternal(Industry &target, RName spotName, const rapidjson::Value &array, const terminal::CmdId_t id) = 0;
 
 		public:
 			CmdResult_t Run(terminal::TerminalContext &context, const terminal::CmdId_t id, const rapidjson::Document &request) override
@@ -72,7 +72,26 @@ namespace dcclite::broker::tycoon
 					throw terminal::TerminalCmdException(fmt::format("Industry at {} not found", itemPath), id);
 				}
 
-				this->RunInternal(*industry, paramsIt->value[1].GetString(), paramsIt->value);
+				auto spotNameStr = std::string_view(paramsIt->value[1].GetString(), paramsIt->value[1].GetStringLength());
+				RName spotName = RName::TryGetName(spotNameStr);
+				if(!spotName)
+				{
+					throw terminal::TerminalCmdException(fmt::format("Invalid spot name: {}", spotNameStr), id);
+				}
+
+				try
+				{
+					this->RunInternal(*industry, spotName, paramsIt->value, id);
+				}
+				catch(terminal::TerminalCmdException &)
+				{
+					//just to avoid next catch catching it..
+					throw;
+				}
+				catch (std::exception &ex)
+				{
+					throw terminal::TerminalCmdException(ex.what(), id);
+				}
 
 				return terminal::MsgUtils::MakeRpcResultMessage(id, [](Result_t &results)
 					{
@@ -103,8 +122,8 @@ namespace dcclite::broker::tycoon
 				return "<industry_path> <spot> [information]";
 			}
 
-			virtual void RunInternal(Industry &target, const char *spotName, const rapidjson::Value &array)
-			{
+			void RunInternal(Industry &target, RName spotName, const rapidjson::Value &array, const terminal::CmdId_t id) override
+			{				
 				const char *info = nullptr;
 				if (array.Size() == 3)
 				{
@@ -135,7 +154,7 @@ namespace dcclite::broker::tycoon
 			}
 
 		protected:			
-			virtual void RunInternal(Industry &target, const char *spotName, const rapidjson::Value &array)
+			void RunInternal(Industry &target, RName spotName, const rapidjson::Value &array, const terminal::CmdId_t id) override
 			{				
 				target.CancelSpotReservation(spotName);
 			}
@@ -161,14 +180,21 @@ namespace dcclite::broker::tycoon
 				return "<industry_path> <spot> <cargo>";
 			}
 
-			virtual size_t GetNumParams() const noexcept
+			size_t GetNumParams() const noexcept override
 			{
 				return 3;
 			}
 
-			virtual void RunInternal(Industry &target, const char *spotName, const rapidjson::Value &array)
+			void RunInternal(Industry &target, RName spotName, const rapidjson::Value &array, const terminal::CmdId_t id) override
 			{
-				const char *cargoName = array[2].GetString();
+				auto cargoNameStr = json::MakeStringView(array[2]);
+				RName cargoName = RName::TryGetName(cargoNameStr);
+
+				if (!cargoName)
+				{
+					throw terminal::TerminalCmdException(fmt::format("Invalid cargo name: {}", cargoNameStr), id);
+				}
+
 				target.StartSpotLoad(spotName, cargoName);
 			}			
 	};
@@ -188,7 +214,7 @@ namespace dcclite::broker::tycoon
 			}
 
 		protected:
-			virtual void RunInternal(Industry &target, const char *spotName, const rapidjson::Value &array)
+			void RunInternal(Industry &target, RName spotName, const rapidjson::Value &array, const terminal::CmdId_t id) override
 			{
 				target.RemoveCarFromSpot(spotName);
 			}

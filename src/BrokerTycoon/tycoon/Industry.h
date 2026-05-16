@@ -33,10 +33,10 @@ namespace dcclite::broker::tycoon
 
 			Industry(RName name, TycoonService &tycoon, const rapidjson::Value &params);
 
-			void ReserveSpot(const std::string_view spotName, const char *info);
-			void CancelSpotReservation(const std::string_view spotName);
-			void StartSpotLoad(const std::string_view spotName, const std::string_view cargoName);
-			void RemoveCarFromSpot(const std::string_view spotName);
+			void ReserveSpot(RName spotName, const char *info);
+			void CancelSpotReservation(RName spotName);
+			void StartSpotLoad(RName spotName, RName cargoName);
+			void RemoveCarFromSpot(RName spotName);
 
 			const char *GetTypeName() const noexcept override
 			{
@@ -58,11 +58,11 @@ namespace dcclite::broker::tycoon
 			void SerializeDeltaDataOnly(dcclite::JsonOutputStream_t &stream) const;
 			void SerializeCargoInfo(dcclite::JsonOutputStream_t &stream, const int cargoInfoIndex) const;
 
-			std::optional<size_t> TryFindSpotIndex(const std::string_view spotName) const;
-			size_t FindSpotIndex(const std::string_view spotName) const;
+			std::optional<size_t> TryFindSpotIndex(RName spotName) const;
+			size_t FindSpotIndex(RName spotName) const;
 
-			detail::Spot *TryFindSpot(const std::string_view spotName);
-			detail::Spot &FindSpot(const std::string_view spotName);
+			detail::Spot *TryFindSpot(RName spotName);
+			detail::Spot &FindSpot(RName spotName);
 
 			void SendSpotStateChangedEvent(const detail::Spot &spot) const;
 			void SendDeltaWithSpotStateChangedEvent(const detail::Spot &spot) const;
@@ -82,7 +82,7 @@ namespace dcclite::broker::tycoon
 
 			size_t RandomSelectCargoToProduce() const noexcept;
 
-			size_t FindCargoInfoIndexByCargoName(const std::string_view cargoName) const;
+			size_t FindCargoInfoIndexByCargoName(RName cargoName) const;
 
 			unsigned CalculateTotalCargoStored() const noexcept;
 

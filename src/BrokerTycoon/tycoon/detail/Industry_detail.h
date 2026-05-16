@@ -79,6 +79,11 @@ namespace dcclite::broker::tycoon::detail
 			void SaveState(dcclite::JsonOutputStream_t &stream) const;
 			void LoadState(const rapidjson::Value &params);
 
+			/// <summary>
+			/// Expectd to be used only on load state when state is detected to be corrupted
+			/// </summary>
+			void Reset();
+
 		private:
 			void LoadDestinations(const rapidjson::Value &params);
 
@@ -156,16 +161,15 @@ namespace dcclite::broker::tycoon::detail
 				m_strInformation.clear();
 			}
 
-			inline bool CanLoad() const noexcept
+			[[nodiscard]] inline bool CanLoad() const noexcept
 			{
 				return m_kState == SpotStates::RESERVED;
 			}
 
-			inline bool CanCompleteCargoTransfer() const noexcept
+			[[nodiscard]] inline bool CanCompleteCargoTransfer() const noexcept
 			{
 				return (m_kState == SpotStates::LOADING || m_kState == SpotStates::UNLOADING);
 			}
-
 
 			void Load(int cargoIndex);
 
@@ -201,15 +205,25 @@ namespace dcclite::broker::tycoon::detail
 				m_iCargoIndex = -1;
 			}
 
-			int GetCargoIndex() const noexcept
+			[[nodiscard]] inline int GetCargoIndex() const noexcept
 			{
 				return m_iCargoIndex;
+			}
+
+			[[nodiscard]] inline bool IsTransfering() const noexcept
+			{
+				return m_kState == SpotStates::LOADING || m_kState == SpotStates::UNLOADING;
 			}
 
 			void Serialize(dcclite::JsonOutputStream_t &stream) const;
 
 			void SaveState(dcclite::JsonOutputStream_t &stream, const Industry &industry) const;
 			[[nodiscard]] bool LoadState(const rapidjson::Value &params, const Industry &industry);
+
+			/// <summary>
+			/// Expectd to be used only on load state when state is detected to be corrupted
+			/// </summary>
+			void Reset();
 
 		private:
 			std::string			m_strInformation;

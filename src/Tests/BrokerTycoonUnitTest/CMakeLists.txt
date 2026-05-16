@@ -1,5 +1,9 @@
+add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 
-package_add_test(BrokerTycoonUnitTest	
+package_add_test(BrokerTycoonUnitTest
+	Helpers.cpp
+	Helpers.h
+	TycoonStateUnitTest.cpp
 	TycoonUnitTest.cpp	
 )
 

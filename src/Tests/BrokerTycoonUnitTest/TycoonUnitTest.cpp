@@ -10,51 +10,9 @@
 
 #include <gtest/gtest.h>
 
-#include <rapidjson/document.h>
-
-#include <dcclite/RName.h>
-
-#include "sys/ServiceFactory.h"
 #include "tycoon/TycoonService.h"
 
-using namespace dcclite;
-using namespace dcclite::broker::tycoon;
-using namespace dcclite::broker::sys;
-using namespace rapidjson;
-
-static std::unique_ptr<TycoonService> LoadTycoon(const char *json)
-{
-	Document d;
-	d.Parse(json);
-	auto obj = d.GetObject();
-
-	TycoonService::RegisterFactory();
-
-	auto ptr = ServiceFactory::TryFindFactory(RName{ "TycoonService" })->Create(
-		RName{ "tycoon" },
-		*static_cast<Broker *>(nullptr),
-		obj
-	);
-
-	return std::unique_ptr<TycoonService>{ static_cast<TycoonService *>(ptr.release()) };
-}
-
-static void CheckLoadException(const char *json, const char *expectedMessage)
-{	
-	try
-	{
-		LoadTycoon(json);
-		
-		FAIL() << "Expected exception!!";
-	}
-	catch (std::exception &ex)
-	{
-		EXPECT_STREQ(
-			ex.what(),
-			expectedMessage
-		);
-	}
-}
+#include "Helpers.h"
 
 TEST(TycoonServiceTest, Basic)
 {
