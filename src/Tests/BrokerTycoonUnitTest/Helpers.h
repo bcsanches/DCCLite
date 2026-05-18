@@ -8,6 +8,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
+#include <functional>
 #include <memory>
 
 namespace dcclite::broker::tycoon
@@ -17,3 +18,5 @@ namespace dcclite::broker::tycoon
 
 extern std::unique_ptr<dcclite::broker::tycoon::TycoonService> LoadTycoon(const char *json, bool deleteExistingState = false);
 extern void CheckLoadException(const char *json, const char *expectedMessage);
+
+extern void CheckException(std::function<void()> lambda, const char *expectedMsg);

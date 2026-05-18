@@ -49,11 +49,11 @@ std::unique_ptr<TycoonService> LoadTycoon(const char *json, bool deleteExistingS
 	return std::unique_ptr<TycoonService>{ static_cast<TycoonService *>(ptr.release()) };
 }
 
-void CheckLoadException(const char *json, const char *expectedMessage)
+void CheckException(std::function<void()> lambda, const char *expectedMsg)
 {
 	try
 	{
-		LoadTycoon(json);
+		lambda();
 
 		FAIL() << "Expected exception!!";
 	}
@@ -61,7 +61,19 @@ void CheckLoadException(const char *json, const char *expectedMessage)
 	{
 		EXPECT_STREQ(
 			ex.what(),
-			expectedMessage
+			expectedMsg
 		);
 	}
+}
+
+void CheckLoadException(const char *json, const char *expectedMessage)
+{
+	CheckException([json]()
+		{
+			LoadTycoon(json);
+
+			FAIL() << "Expected exception!!";
+		},
+		expectedMessage
+	);	
 }

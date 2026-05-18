@@ -11,10 +11,13 @@
 #include <gtest/gtest.h>
 
 #include "tycoon/TycoonService.h"
+#include "tycoon/Industry.h"
 
 #include "sys/Project.h"
 
 #include "Helpers.h"
+
+using namespace dcclite::broker::tycoon;
 
 static void Tick(int fastClockTicks)
 {
@@ -69,13 +72,13 @@ TEST(TycoonServiceStateTest, BasicState)
 			],
 			"locations":[
 				{
-					"name":"Três Corações",
+					"name":"TC",
 					"prefix":"TC",
 					"industries":		
 					[			
 						{
-							"name":"Entreposto SPR",					
-							"spot":"Portão 01",
+							"name":"Entreposto",					
+							"spot":"Gate",
 							"dailyProduction":24,
 							"maximumStorage":2,
 							"produces": [
@@ -90,10 +93,24 @@ TEST(TycoonServiceStateTest, BasicState)
 					]
 				}
 			]
-		}	
+		}
 	)JSON";
 
-	auto tycoon = LoadTycoon(json, true /* delete state file if exists*/);		
+	auto tycoon = LoadTycoon(json, true /* delete state file if it exists*/);
+
+	auto industry = dynamic_cast<Industry *>(tycoon->TryNavigate(dcclite::ObjectPath{ "locations/TC/Entreposto" }));
+	ASSERT_TRUE(industry);
+
+	dcclite::RName gateName{ "Gate" };
+
+	industry->ReserveSpot(gateName, "bla");
+	
+	CheckException([gateName, industry]
+		{
+			industry->StartSpotLoad(gateName, dcclite::RName{ "Produtos" });
+		}, 
+		"[Tycoon::CargoInfo::StartCargoTransfer] No cargo in stock!!!"
+	);	
 
 	Tick(60);
 
@@ -103,4 +120,9 @@ TEST(TycoonServiceStateTest, BasicState)
 
 	//reloads with state file
 	tycoon = LoadTycoon(json);
+
+	industry = dynamic_cast<Industry *>(tycoon->TryNavigate(dcclite::ObjectPath{ "locations/TC/Entreposto" }));
+	ASSERT_TRUE(industry);
+
+	industry->StartSpotLoad(gateName, dcclite::RName{ "Produtos" });
 }
