@@ -394,6 +394,11 @@ TEST(TycoonCycleStateTest, InvalidStates)
 		"[Tycoon::CargoInfo::StartCargoTransfer] No cargo in stock!!!"
 	);
 
+	auto cargoQuantity = industry->GetCargoQuantity(cargoName);
+
+	ASSERT_EQ(cargoQuantity.m_uQuantity, 0);
+	ASSERT_EQ(cargoQuantity.m_uReservedQuantity, 0);
+
 	//cannot remove car...
 	CheckException([gateName, industry, cargoName]
 		{
@@ -407,7 +412,7 @@ TEST(TycoonCycleStateTest, InvalidStates)
 	//produce something...
 	Tick(120);
 
-	auto cargoQuantity = industry->GetCargoQuantity(cargoName);
+	cargoQuantity = industry->GetCargoQuantity(cargoName);
 
 	ASSERT_EQ(cargoQuantity.m_uQuantity, 1);
 	ASSERT_EQ(cargoQuantity.m_uReservedQuantity, 0);
@@ -428,6 +433,12 @@ TEST(TycoonCycleStateTest, InvalidStates)
 		},
 		"[Industry::StartSpotLoad] Spot Gate cannot be loaded because it is not reserved"
 	);
+
+	//make sure quantity was not touched during failed load...
+	cargoQuantity = industry->GetCargoQuantity(cargoName);
+
+	ASSERT_EQ(cargoQuantity.m_uQuantity, 0);
+	ASSERT_EQ(cargoQuantity.m_uReservedQuantity, 1);
 
 	//Cancel non reservation
 	CheckException([industry, gateName]
