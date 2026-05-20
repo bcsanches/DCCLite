@@ -12,6 +12,8 @@
 
 #include <array>
 
+#include <string.h>
+
 #include "FileSystem.h"
 
 namespace dcclite
