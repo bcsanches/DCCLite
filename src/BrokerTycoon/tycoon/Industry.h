@@ -26,6 +26,12 @@ namespace dcclite::broker::tycoon
 	class Industry;
 	class TycoonService;
 
+	struct CargoQuantity
+	{
+		uint8_t m_uQuantity;
+		uint8_t m_uReservedQuantity;
+	};
+
 	class Industry : public Object
 	{
 		public:
@@ -53,6 +59,20 @@ namespace dcclite::broker::tycoon
 
 			const Cargo *TryGetCargoByCargoInfoIndex(size_t index) const;
 			int TryGetCargoInfoIndexByCargoName(std::string_view name) const;
+
+			////////////////////////////////////////////////////////////////////////////
+			//
+			//
+			// Unit test helpers...
+			//
+			//
+			////////////////////////////////////////////////////////////////////////////		
+			[[nodiscard]] CargoQuantity GetCargoQuantity(RName cargoName) const;
+
+			[[nodiscard]] inline bool IsProducing() const noexcept
+			{ 
+				return m_fProducing;
+			}
 
 		private:
 			void SerializeDeltaDataOnly(dcclite::JsonOutputStream_t &stream) const;

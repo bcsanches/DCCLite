@@ -77,3 +77,16 @@ void CheckLoadException(const char *json, const char *expectedMessage)
 		expectedMessage
 	);	
 }
+
+void Tick(int fastClockTicks)
+{
+	using namespace dcclite::broker::sys;
+
+	for (int i = 0; i < fastClockTicks; ++i)
+	{
+		auto first = Thinker::TryGetFirstThinker();
+		ASSERT_TRUE(first);
+
+		dcclite::broker::sys::Thinker::UpdateThinkers(first->GetTimePoint());
+	}
+}

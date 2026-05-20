@@ -19,19 +19,6 @@
 
 using namespace dcclite::broker::tycoon;
 
-static void Tick(int fastClockTicks)
-{
-	using namespace dcclite::broker::sys;
-	
-	for (int i = 0; i < fastClockTicks; ++i)
-	{
-		auto first = Thinker::TryGetFirstThinker();
-		ASSERT_TRUE(first);
-
-		dcclite::broker::sys::Thinker::UpdateThinkers(first->GetTimePoint());
-	}
-}
-
 TEST(TycoonServiceStateTest, BasicState)
 {
 	const char *json = R"JSON(
@@ -85,7 +72,7 @@ TEST(TycoonServiceStateTest, BasicState)
 								{
 									"cargo":"Produtos",
 									"chance":50,
-									"transferTimeHours":4,
+									"transferTimeHours":1,
 									"destinations":["Lavras"]							
 								}
 							]
@@ -104,10 +91,12 @@ TEST(TycoonServiceStateTest, BasicState)
 	dcclite::RName gateName{ "Gate" };
 
 	industry->ReserveSpot(gateName, "bla");
+
+	dcclite::RName cargoName{ "Produtos" };
 	
-	CheckException([gateName, industry]
+	CheckException([gateName, industry, cargoName]
 		{
-			industry->StartSpotLoad(gateName, dcclite::RName{ "Produtos" });
+			industry->StartSpotLoad(gateName, cargoName);
 		}, 
 		"[Tycoon::CargoInfo::StartCargoTransfer] No cargo in stock!!!"
 	);	
@@ -124,5 +113,22 @@ TEST(TycoonServiceStateTest, BasicState)
 	industry = dynamic_cast<Industry *>(tycoon->TryNavigate(dcclite::ObjectPath{ "locations/TC/Entreposto" }));
 	ASSERT_TRUE(industry);
 
-	industry->StartSpotLoad(gateName, dcclite::RName{ "Produtos" });
+	auto cargoQuantity = industry->GetCargoQuantity(cargoName);
+
+	ASSERT_EQ(cargoQuantity.m_uQuantity, 1);
+	ASSERT_EQ(cargoQuantity.m_uReservedQuantity, 0);
+
+	industry->StartSpotLoad(gateName, cargoName);
+
+	cargoQuantity = industry->GetCargoQuantity(cargoName);
+	ASSERT_EQ(cargoQuantity.m_uQuantity, 0);
+	ASSERT_EQ(cargoQuantity.m_uReservedQuantity, 1);
+
+	Tick(30);
+
+	cargoQuantity = industry->GetCargoQuantity(cargoName);
+	ASSERT_EQ(cargoQuantity.m_uQuantity, 0);
+	ASSERT_EQ(cargoQuantity.m_uReservedQuantity, 1);
+
+	tycoon.release();
 }

@@ -65,6 +65,16 @@ namespace dcclite::broker::tycoon::detail
 				return m_uCurrentQuantity + m_uReservedQuantity;
 			}
 
+			inline uint8_t GetQuantity() const noexcept 
+			{
+				return m_uCurrentQuantity;
+			}
+
+			inline uint8_t GetReservedQuantity() const noexcept
+			{
+				return m_uReservedQuantity;
+			}
+
 			void Serialize(dcclite::JsonOutputStream_t &stream) const;
 			void SerializeDelta(dcclite::JsonOutputStream_t &stream) const;
 

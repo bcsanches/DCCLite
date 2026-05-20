@@ -469,6 +469,13 @@ namespace dcclite::broker::tycoon
 		m_rclTycoon.OnObjectStateChanged(AccessToken<Industry>{}, *this, [this, cargoIndex](JsonOutputStream_t &stream) { this->SerializeDelta(stream, cargoIndex); });
 	}
 
+	CargoQuantity Industry::GetCargoQuantity(RName cargoName) const
+	{
+		auto index = this->FindCargoInfoIndexByCargoName(cargoName);
+
+		return { m_vecProduces[index].GetQuantity(), m_vecProduces[index].GetReservedQuantity() };
+	}
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//
 	//

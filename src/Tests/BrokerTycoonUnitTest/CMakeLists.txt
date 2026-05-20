@@ -4,6 +4,7 @@ package_add_test(BrokerTycoonUnitTest
 	Helpers.cpp
 	Helpers.h
 	TycoonStateUnitTest.cpp
+	TycoonCycleUnitTest.cpp
 	TycoonUnitTest.cpp	
 )
 

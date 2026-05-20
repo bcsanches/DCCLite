@@ -20,3 +20,5 @@ extern std::unique_ptr<dcclite::broker::tycoon::TycoonService> LoadTycoon(const 
 extern void CheckLoadException(const char *json, const char *expectedMessage);
 
 extern void CheckException(std::function<void()> lambda, const char *expectedMsg);
+
+void Tick(int fastClockTicks);
