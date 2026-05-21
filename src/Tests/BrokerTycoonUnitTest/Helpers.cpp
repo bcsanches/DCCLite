@@ -59,7 +59,7 @@ void CheckException(std::function<void()> lambda, const char *expectedMsg)
 	}
 	catch (std::exception &ex)
 	{
-		EXPECT_STREQ(
+		ASSERT_STREQ(
 			ex.what(),
 			expectedMsg
 		);

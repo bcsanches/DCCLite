@@ -170,8 +170,24 @@ TEST(EventHub, CancelMultipleTargets)
 	ASSERT_EQ(called, 2);
 }
 
+class EventDropManager
+{
+	public:
+		EventDropManager()
+		{
+			dcclite::broker::sys::EventHub::detail::DisableEventDrop();
+		}
+
+		~EventDropManager()
+		{
+			dcclite::broker::sys::EventHub::detail::EnableEventDrop();
+		}
+};
+
 TEST(EventHub, BadAlloc)
 {	
+	EventDropManager dropManager;
+
 	int called = 0;
 	ASSERT_EQ(MyTestEvent::GetObjectCount(), 0);
 
@@ -179,7 +195,7 @@ TEST(EventHub, BadAlloc)
 
 	try
 	{
-		for (int i = 0;i < 1024; ++i)
+		for (int i = 0;i < 8192; ++i)
 			dcclite::broker::sys::EventHub::PostEvent<MyTestEvent>(std::ref(t1), [&called] { ++called;  });
 
 		//fail

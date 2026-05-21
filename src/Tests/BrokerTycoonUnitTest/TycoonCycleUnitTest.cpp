@@ -359,7 +359,7 @@ TEST(TycoonCycleStateTest, InvalidStates)
 		{
 			industry->StartSpotLoad(gateName, cargoName);
 		},
-		"[Industry::StartSpotLoad] Spot Gate cannot be loaded because it is not reserved"
+		"[CargoProducer::StartSpotLoad] [Entreposto]: Spot Gate cannot be loaded because it is not reserved"
 	);
 
 	//cannot remove car...
@@ -431,7 +431,7 @@ TEST(TycoonCycleStateTest, InvalidStates)
 		{
 			industry->StartSpotLoad(gateName, cargoName);
 		},
-		"[Industry::StartSpotLoad] Spot Gate cannot be loaded because it is not reserved"
+		"[CargoProducer::StartSpotLoad] [Entreposto]: Spot Gate cannot be loaded because it is not reserved"
 	);
 
 	//make sure quantity was not touched during failed load...

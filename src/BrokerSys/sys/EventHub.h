@@ -73,6 +73,13 @@ namespace dcclite::broker::sys
 
 			void Lock();
 			void Unlock();
+
+			//for unit testing...
+			void DisableEventDrop();
+			void EnableEventDrop();
+
+			bool IsEventDroppingAllowed();
+
 		}
 		void PumpEvents(const std::optional<Clock::DefaultClock_t::time_point> &timeoutTime);
 
@@ -95,6 +102,12 @@ namespace dcclite::broker::sys
 #ifdef DCCLITE_DEBUG
 			catch (std::bad_alloc &)
 			{
+				if (!detail::IsEventDroppingAllowed())
+				{
+					detail::Unlock();
+					throw;
+				}
+
 				dcclite::Log::Warn("[EventHub::PostEvent] Alloc failed, are you debugging??");
 
 				detail::Unlock();

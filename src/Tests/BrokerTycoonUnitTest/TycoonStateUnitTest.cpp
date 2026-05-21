@@ -130,5 +130,5 @@ TEST(TycoonServiceStateTest, BasicState)
 	ASSERT_EQ(cargoQuantity.m_uQuantity, 0);
 	ASSERT_EQ(cargoQuantity.m_uReservedQuantity, 1);
 
-	tycoon.release();
+	tycoon.reset();
 }

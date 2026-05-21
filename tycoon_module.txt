@@ -1,9 +1,6 @@
 - TODO:	
-		
 	- save / load state
-		- on industry spot load, run across the stored spot on state file, if any is missing, reset the industry
-		- after load, check industry state:
-			- check if cargo load quantities matches the spot states reservation
+		- do unit testing of corrupted state		
 	- On car pickup: display destination
 
 	- Industry consumption:

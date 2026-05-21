@@ -284,6 +284,22 @@ namespace dcclite::broker::sys
 
 #endif
 
+			static bool g_fDropEvents = true;
+
+			void DisableEventDrop()
+			{
+				g_fDropEvents = false;
+			}
+
+			void EnableEventDrop()
+			{
+				g_fDropEvents = true;
+			}
+
+			bool IsEventDroppingAllowed()
+			{
+				return g_fDropEvents;
+			}
 		}		
 
 		void PumpEvents(const std::optional<Clock::DefaultClock_t::time_point> &timeoutTime)

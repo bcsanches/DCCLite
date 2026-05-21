@@ -17,7 +17,7 @@
 #include <dcclite/Object.h>
 #include <dcclite/RName.h>
 
-#include "../FastClockDefs.h"
+#include "../FastClock.h"
 #include "../FastClockThinker.h"
 
 namespace dcclite::broker::tycoon
@@ -26,6 +26,12 @@ namespace dcclite::broker::tycoon
 	class FastClock;
 	class Industry;
 	class TycoonService;
+
+	struct CargoQuantity
+	{
+		uint8_t m_uQuantity;
+		uint8_t m_uReservedQuantity;
+	};
 }
 
 namespace dcclite::broker::tycoon::detail
@@ -120,18 +126,24 @@ namespace dcclite::broker::tycoon::detail
 
 	/**
 	Car Spot State Machine:
-
-			UNLOADING   ----
-				^           \
-				|            v
-	FREE -> RESERVED    CAR_PARKED  ---
-	   ^      | |            ^         \
-	   |-----/	|            /         |
-	   |        v           /          |
-	   |	LOADING   ------           |
-	   \	                           |
-		\                             /
-		 -----------------------------
+	                    +-----------+
+			            | UNLOADING | ------
+                        +-----------+       \
+				              ^              \
+						      |               \
+							  | UNLOAD         |  Transfer completed
+							  |                v
+	+------+   RESERVE	+-----------+    +------------+   
+	| FREE | ---------->|  RESERVED |    | CAR_PARKED | ---------------
+	+------+            +-----------+    +------------+                 \
+	   ^     CANCEL       |  |                 ^                         \
+	   |<--------------- /   | LOAD            |                         |
+	   |                     v                /                          | Car Removed
+	   |                +---------+          / Transfer completed        |
+	   |	            | LOADING |----------                            |
+	   \	            +---------+                                      |
+		\                                                               /
+		 --------------------------------------------------------------
 
 
 	*/
@@ -241,4 +253,98 @@ namespace dcclite::broker::tycoon::detail
 
 			SpotStates m_kState = SpotStates::FREE;
 	};
+
+	class CargoProcessor
+	{
+
+	};
+
+	class CargoProducer: public CargoProcessor
+	{
+		public:
+			CargoProducer(TycoonService &tycoon, Industry &industry, const rapidjson::Value &params);
+
+			CargoProducer(const CargoProducer &) = delete;
+			CargoProducer(CargoProducer &&) = delete;
+
+			[[nodiscard]] inline bool IsProducing() const noexcept
+			{
+				return m_fProducing;
+			}
+
+			[[nodiscard]] unsigned CalculateTotalCargoStored() const noexcept;
+
+			const Cargo *TryGetCargoByCargoInfoIndex(size_t index) const;
+			int TryGetCargoInfoIndexByCargoName(std::string_view name) const;
+
+			size_t FindCargoInfoIndexByCargoName(RName cargoName) const;
+
+			/**
+			*	Start a transfer operation on spot with the cargo named by cargoName
+			* 
+			*	Returns how long transfer will take.
+			*/
+			[[nodiscard]] std::chrono::hours StartSpotLoad(Spot &spot, RName cargoName);
+
+			void FinishSpotTransfer(Spot &spot, const FastClock::time_point now);
+
+			[[nodiscard]] CargoQuantity GetCargoQuantity(RName cargoName) const;
+
+			///////////////////////////////////////////////////////////////////
+			//
+			// Serialization
+			//
+			///////////////////////////////////////////////////////////////////
+			void Serialize(dcclite::JsonOutputStream_t &stream, const FastClock &fastClock) const;
+			void SerializeDeltaDataOnly(dcclite::JsonOutputStream_t &stream, const FastClock &fastClock) const;
+
+			void SerializeCargoInfo(dcclite::JsonOutputStream_t &stream, const int cargoInfoIndex) const;
+
+			void SerializeProductionDelta(dcclite::JsonOutputStream_t &stream) const;
+
+			///////////////////////////////////////////////////////////////////
+			//
+			// Save / Load
+			//
+			///////////////////////////////////////////////////////////////////
+			void SaveState(dcclite::JsonOutputStream_t &stream) const;
+			bool LoadState(const rapidjson::Value &params, const FastClock::time_point now);
+
+			void ResetState(const FastClock::time_point now);
+
+		private:
+			void ProduceThinker(FastClockDef::TimePoint_t tp);
+
+			void LoadProductionData(TycoonService &tycoon, const rapidjson::Value &params);
+			void LoadProduce(TycoonService &tycoon, const rapidjson::Value &params);
+
+			void AdjustProductionChances();			
+
+			size_t RandomSelectCargoToProduce() const noexcept;
+
+			void ScheduleProduction(const FastClock::time_point now);
+
+			[[nodiscard]] inline detail::CargoInfo &GetCargoInfo(size_t index) noexcept
+			{
+				assert(index < m_vecProduces.size());
+
+				return m_vecProduces[index];
+			}
+
+		private:
+			std::vector<detail::CargoInfo>					m_vecProduces;
+
+			FastClockThinker								m_clProductionThinker;
+
+			Industry										&m_rclIndustry;
+
+			unsigned										m_uProduceTotalChance;
+
+			float											m_fpDailyRate;
+
+			uint8_t											m_uMaxQuantity;
+
+			bool											m_fProducing = false;
+	};
+
 }

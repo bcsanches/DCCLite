@@ -26,12 +26,6 @@ namespace dcclite::broker::tycoon
 	class Industry;
 	class TycoonService;
 
-	struct CargoQuantity
-	{
-		uint8_t m_uQuantity;
-		uint8_t m_uReservedQuantity;
-	};
-
 	class Industry : public Object
 	{
 		public:
@@ -57,8 +51,17 @@ namespace dcclite::broker::tycoon
 			void SaveState(dcclite::JsonOutputStream_t &stream) const;
 			void LoadState(const rapidjson::Value &params);
 
-			const Cargo *TryGetCargoByCargoInfoIndex(size_t index) const;
-			int TryGetCargoInfoIndexByCargoName(std::string_view name) const;
+			inline const Cargo *TryGetCargoByCargoInfoIndex(size_t index) const
+			{
+				return m_clProducer.TryGetCargoByCargoInfoIndex(index);
+			}
+
+			int TryGetCargoInfoIndexByCargoName(std::string_view name) const
+			{
+				return m_clProducer.TryGetCargoInfoIndexByCargoName(name);
+			}
+
+			void OnCargoProduced(AccessToken<detail::CargoProducer> token, unsigned cargoIndex);
 
 			////////////////////////////////////////////////////////////////////////////
 			//
@@ -66,18 +69,18 @@ namespace dcclite::broker::tycoon
 			// Unit test helpers...
 			//
 			//
-			////////////////////////////////////////////////////////////////////////////		
-			[[nodiscard]] CargoQuantity GetCargoQuantity(RName cargoName) const;
+			////////////////////////////////////////////////////////////////////////////
+			[[nodiscard]] inline CargoQuantity GetCargoQuantity(RName cargoName) const
+			{
+				return m_clProducer.GetCargoQuantity(cargoName);
+			}
 
 			[[nodiscard]] inline bool IsProducing() const noexcept
 			{ 
-				return m_fProducing;
+				return m_clProducer.IsProducing();
 			}
 
 		private:
-			void SerializeDeltaDataOnly(dcclite::JsonOutputStream_t &stream) const;
-			void SerializeCargoInfo(dcclite::JsonOutputStream_t &stream, const int cargoInfoIndex) const;
-
 			std::optional<size_t> TryFindSpotIndex(RName spotName) const;
 			size_t FindSpotIndex(RName spotName) const;
 
@@ -89,39 +92,18 @@ namespace dcclite::broker::tycoon
 
 			void OnCompleteSpotTransfer(FastClockDef::TimePoint_t tp, size_t spotIndex);
 
-			void AddSpot(RName spotName);
+			void AddSpot(RName spotName);			
 
-			void ProduceThinker(FastClockDef::TimePoint_t tp);
-			void ScheduleProduction();
-
-			void LoadProductionData(const rapidjson::Value &params);
-			void LoadProduce(const rapidjson::Value &params);
-			void LoadSpots(const rapidjson::Value &params);
-
-			void AdjustProductionChances();
-
-			size_t RandomSelectCargoToProduce() const noexcept;
-
-			size_t FindCargoInfoIndexByCargoName(RName cargoName) const;
-
-			unsigned CalculateTotalCargoStored() const noexcept;
+			void LoadSpots(const rapidjson::Value &params);			
 
 		private:			
-			std::vector<detail::Spot>						m_vecSpots;
-			std::vector<detail::CargoInfo>					m_vecProduces;
+			std::vector<detail::Spot>						m_vecSpots;			
 
 			//FIXME: this is ugly and sucks to dynamic allocate...
-			std::vector<std::unique_ptr<FastClockThinker>>	m_vecSpotThinkers;
-
-			FastClockThinker								m_clProductionThinker;
+			std::vector<std::unique_ptr<FastClockThinker>>	m_vecSpotThinkers;			
 
 			TycoonService									&m_rclTycoon;
 
-			unsigned										m_uProduceTotalChance;
-
-			float											m_fpDailyRate;
-
-			uint8_t											m_uMaxQuantity;
-			bool											m_fProducing = false;
+			detail::CargoProducer							m_clProducer;					
 	};
 }
