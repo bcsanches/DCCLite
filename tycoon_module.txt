@@ -1,9 +1,12 @@
 - TODO:	
 	- save / load state
-		- do unit testing of corrupted state		
-  - quatity test
-     - If increase, make sure production restarts
-     - If decrease, make sure production falta, even after car transfer, make sure It does not restart
+		- do unit testing of corrupted state
+		- check when cargo is removed
+		- check when cargo is added
+		- check if car type is removed
+		- check if car type is added
+		- check if spot is removed
+		- check if spot is added  
 	- On car pickup: display destination
 
 	- Industry consumption:

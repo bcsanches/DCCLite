@@ -351,6 +351,8 @@ TEST(TycoonServiceStateTest, MaxStorageChanges)
 
 	Tick(120);
 
+	//
+	//make sure production halted after reaching maximum storage
 	ASSERT_FALSE(industry->IsProducing());
 
 	dcclite::RName cargoName{ "Produtos" };
@@ -420,6 +422,8 @@ TEST(TycoonServiceStateTest, MaxStorageChanges)
 	industry = dynamic_cast<Industry *>(tycoon->TryNavigate(dcclite::ObjectPath{ "locations/TC/Entreposto" }));
 	ASSERT_TRUE(industry);
 
+	//
+	//Should be producing, maximum storage increased
 	ASSERT_TRUE(industry->IsProducing());
 
 	{
