@@ -56,6 +56,11 @@ namespace dcclite::broker::tycoon
 				return m_clProducer.TryGetCargoByCargoInfoIndex(index);
 			}
 
+			int TryGetCargoInfoIndexByCargoName(RName rname) const
+			{
+				return m_clProducer.TryGetCargoInfoIndexByCargoName(rname);
+			}
+			
 			int TryGetCargoInfoIndexByCargoName(std::string_view name) const
 			{
 				return m_clProducer.TryGetCargoInfoIndexByCargoName(name);

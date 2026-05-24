@@ -276,6 +276,7 @@ namespace dcclite::broker::tycoon::detail
 
 			const Cargo *TryGetCargoByCargoInfoIndex(size_t index) const;
 			int TryGetCargoInfoIndexByCargoName(std::string_view name) const;
+			int TryGetCargoInfoIndexByCargoName(RName rname) const;
 
 			size_t FindCargoInfoIndexByCargoName(RName cargoName) const;
 

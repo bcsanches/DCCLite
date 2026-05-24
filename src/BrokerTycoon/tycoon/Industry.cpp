@@ -346,7 +346,7 @@ namespace dcclite::broker::tycoon
 
 		return;
 
-CORRUPTED_STATE:
+CORRUPTED_STATE:	
 
 		//try to fix state
 		dcclite::Log::Warn("[Industry::LoadState] [{}] State corrupted, resetting it to initial state, sorry...", this->GetName());

@@ -90,7 +90,7 @@ namespace dcclite::broker::tycoon::detail
 		if (auto cargoName = json::TryGetString(params, "cargo"))
 		{
 			auto index = industry.TryGetCargoInfoIndexByCargoName(cargoName.value());
-			if (index <= 0)
+			if (index < 0)
 			{
 				dcclite::Log::Error("[Spot::LoadState] Invalid cargo name: {}, resetting spot", cargoName.value());
 
@@ -374,21 +374,26 @@ namespace dcclite::broker::tycoon::detail
 		return &m_vecProduces[index].GetCargo();
 	}
 
-	int CargoProducer::TryGetCargoInfoIndexByCargoName(std::string_view name) const
+	int CargoProducer::TryGetCargoInfoIndexByCargoName(RName rname) const
 	{
-		RName cargoName = RName::TryGetName(name);
-		if (!cargoName)
-			return -1;
-
 		auto it = std::ranges::find_if(
 			m_vecProduces,
-			[cargoName](const detail::CargoInfo &ci) { return ci.GetCargo().GetName() == cargoName; }
+			[rname](const detail::CargoInfo &ci) { return ci.GetCargo().GetName() == rname; }
 		);
 
 		if (it == m_vecProduces.end())
 			return -1;
 
 		return static_cast<int>(std::distance(m_vecProduces.begin(), it));
+	}
+
+	int CargoProducer::TryGetCargoInfoIndexByCargoName(std::string_view name) const
+	{
+		RName cargoName = RName::TryGetName(name);
+		if (!cargoName)
+			return -1;
+
+		return this->TryGetCargoInfoIndexByCargoName(cargoName);		
 	}
 
 	size_t CargoProducer::FindCargoInfoIndexByCargoName(RName cargoName) const
@@ -489,8 +494,12 @@ namespace dcclite::broker::tycoon::detail
 
 		dcclite::Log::Trace("[CargoProducer::OnCompleteSpotTransfer] [{}]: Spot {} finished transfer of {}", m_rclIndustry.GetName(), spot.GetName(), cargoInfo.GetCargo().GetName());
 
-		if (!m_fProducing)
-		{
+		//If not producing and if we have room, resume production...
+		//Checking TotalCargoStored against m_uMaxQuantity seems redundant, but, if the user changes the MaximumStorage
+		//and we load a state with a maximum storage lower than we have stored, this may happen, so we avoid restarting production 
+		//untill all excess cargo is consumed...
+		if ((!m_fProducing) && (this->CalculateTotalCargoStored() < m_uMaxQuantity))
+		{			
 			//if production was halted because we reached max capacity, try to resume it now that we have free storage
 			this->ScheduleProduction(now);
 		}		
@@ -693,7 +702,12 @@ namespace dcclite::broker::tycoon::detail
 		{
 			dcclite::Log::Warn("[CargoProducer::LoadState] [{}]: Total cargo stored {} exceeds max quantity {}, state is probably corrupted", m_rclIndustry.GetName(), total, m_uMaxQuantity);
 
-			return false;
+			//if production was under way, cancel it...
+			if (m_fProducing)
+			{
+				m_clProductionThinker.Cancel();
+				m_fProducing = false;
+			}
 		}
 		else if ((total < m_uMaxQuantity) && (!m_fProducing))
 		{
