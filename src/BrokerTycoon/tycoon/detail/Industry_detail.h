@@ -274,11 +274,11 @@ namespace dcclite::broker::tycoon::detail
 
 			[[nodiscard]] unsigned CalculateTotalCargoStored() const noexcept;
 
-			const Cargo *TryGetCargoByCargoInfoIndex(size_t index) const;
-			int TryGetCargoInfoIndexByCargoName(std::string_view name) const;
-			int TryGetCargoInfoIndexByCargoName(RName rname) const;
+			const Cargo *TryGetCargoByCargoInfoIndex(size_t index) const noexcept;
+			int TryGetCargoInfoIndexByCargoName(std::string_view name) const noexcept;
+			int TryGetCargoInfoIndexByCargoName(RName rname) const noexcept;
 
-			size_t FindCargoInfoIndexByCargoName(RName cargoName) const;
+			[[nodiscard]] size_t FindCargoInfoIndexByCargoName(RName cargoName) const;
 
 			/**
 			*	Start a transfer operation on spot with the cargo named by cargoName

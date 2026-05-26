@@ -475,3 +475,74 @@ TEST(TycoonCycleStateTest, InvalidStates)
 
 	
 }
+
+
+TEST(TycoonCycleStateTest, InvalidCargoTypeForCar)
+{
+	const char *json = R"JSON(
+		{
+			"class":"TycoonService",
+			"name":"tycoon",
+			"fastClockRate":60,
+			"cargos":[
+				{
+					"name":"Produtos"			
+				},
+				{
+					"name":"Bobinas"
+				}
+			],
+			"carTypes":[				
+				{
+					"name":"Fechado Comum",
+					"description":"Vagão fechado comum (genérico)",
+					"AAR":"B",
+					"cargos":[						
+						"Produtos"
+					]
+				}
+			],
+			"locations":[
+				{
+					"name":"TC",
+					"prefix":"TC",
+					"industries":		
+					[			
+						{
+							"name":"Entreposto",					
+							"spot":"Gate",
+							"dailyProduction":12,
+							"maximumStorage":2,
+							"produces": [
+								{
+									"cargo":"Bobinas",
+									"chance":50,
+									"transferTimeHours":1,
+									"destinations":["Lavras"]							
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	)JSON";
+
+	auto tycoon = LoadTycoon(json, true /* delete state file if it exists*/);
+
+	auto industry = dynamic_cast<Industry *>(tycoon->TryNavigate(dcclite::ObjectPath{ "locations/TC/Entreposto" }));
+	ASSERT_TRUE(industry);
+
+	dcclite::RName gateName{ "Gate" };
+
+	industry->ReserveSpot(gateName, "bla");
+
+	dcclite::RName cargoName{ "Produtos" };
+
+	CheckException([gateName, industry, cargoName]
+		{
+			industry->StartSpotLoad(gateName, cargoName);
+		},
+		"[CargoProducer::FindCargoInfoIndexByCargoName] [Entreposto]: Cargo Produtos not found"
+	);
+}

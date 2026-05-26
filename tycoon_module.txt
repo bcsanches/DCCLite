@@ -1,8 +1,6 @@
 - TODO:	
 	- save / load state
 		- do unit testing of corrupted state
-		- check when cargo is removed
-		- check when cargo is added
 		- check if car type is removed
 		- check if car type is added
 		- check if spot is removed

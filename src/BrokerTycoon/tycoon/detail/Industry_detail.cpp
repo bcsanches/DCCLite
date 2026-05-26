@@ -366,7 +366,7 @@ namespace dcclite::broker::tycoon::detail
 		);
 	}
 
-	const Cargo *CargoProducer::TryGetCargoByCargoInfoIndex(size_t index) const
+	const Cargo *CargoProducer::TryGetCargoByCargoInfoIndex(size_t index) const noexcept
 	{
 		if (index >= m_vecProduces.size())
 			return nullptr;
@@ -374,7 +374,7 @@ namespace dcclite::broker::tycoon::detail
 		return &m_vecProduces[index].GetCargo();
 	}
 
-	int CargoProducer::TryGetCargoInfoIndexByCargoName(RName rname) const
+	int CargoProducer::TryGetCargoInfoIndexByCargoName(RName rname) const noexcept
 	{
 		auto it = std::ranges::find_if(
 			m_vecProduces,
@@ -387,7 +387,7 @@ namespace dcclite::broker::tycoon::detail
 		return static_cast<int>(std::distance(m_vecProduces.begin(), it));
 	}
 
-	int CargoProducer::TryGetCargoInfoIndexByCargoName(std::string_view name) const
+	int CargoProducer::TryGetCargoInfoIndexByCargoName(std::string_view name) const noexcept
 	{
 		RName cargoName = RName::TryGetName(name);
 		if (!cargoName)
@@ -664,7 +664,7 @@ namespace dcclite::broker::tycoon::detail
 					continue;
 				}
 
-				auto cargoInfoIndex = this->FindCargoInfoIndexByCargoName(cargoName);
+				auto cargoInfoIndex = this->TryGetCargoInfoIndexByCargoName(cargoName);
 				if (cargoInfoIndex < 0)
 				{
 					dcclite::Log::Warn("[CargoProducer::LoadState] [{}]: Cargo {} in production state not found, skipping", m_rclIndustry.GetName(), cargoName);
