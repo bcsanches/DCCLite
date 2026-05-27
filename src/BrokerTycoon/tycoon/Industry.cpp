@@ -295,6 +295,16 @@ namespace dcclite::broker::tycoon
 		}		
 	}
 
+	static bool CanSpotBeIgnored(const rapidjson::Value &params)
+	{
+		auto spotState = detail::Spot::LoadStateEnum(params, "state");
+
+		if (!spotState)
+			return false;
+
+		return (spotState.value() != detail::SpotStates::LOADING) && (spotState.value() != detail::SpotStates::UNLOADING);
+	}
+
 	void Industry::LoadState(const rapidjson::Value &params)
 	{
 		if (!m_clProducer.LoadState(params, m_rclTycoon.GetFastClock().Now()))
@@ -306,28 +316,41 @@ namespace dcclite::broker::tycoon
 			{
 				auto spotName = it.name.GetString();
 
+				auto spotData = it.value.GetObject();
+				auto &spotObjectData = json::GetObject(spotData, "spot", "[Industry::LoadState]");
+
 				RName rname = RName::TryGetName(spotName);
 				if (!rname)
 				{
-					dcclite::Log::Warn("[Industry::LoadState] [{}] Spot {} name is not even registered, skipping", this->GetName(), spotName);
+					dcclite::Log::Warn("[Industry::LoadState] [{}] Spot {} name is not even registered", this->GetName(), spotName);
 
+					if (CanSpotBeIgnored(spotObjectData))
+					{
+						dcclite::Log::Warn("[Industry::LoadState] [{}] Spot {} was on free state, ignoring", this->GetName(), spotName);
+						continue;
+					}
+
+					dcclite::Log::Warn("[Industry::LoadState] [{}] Spot {} was being used, resetting industry", this->GetName(), spotName);
 					goto CORRUPTED_STATE;
-				}
+				}				
 
 				auto spotIndex = this->TryFindSpotIndex(rname);
 				if (!spotIndex)
 				{
-					dcclite::Log::Warn("[Industry::LoadState] [{}] Spot {} not found in state file, skipping", this->GetName(), spotName);
+					dcclite::Log::Warn("[Industry::LoadState] [{}] Spot {} not found in industry", this->GetName(), spotName);
 
-					goto CORRUPTED_STATE;
+					if (CanSpotBeIgnored(spotObjectData))
+					{
+						dcclite::Log::Warn("[Industry::LoadState] [{}] Spot {} was on free state, ignoring", this->GetName(), spotName);
+						continue;
+					}
+
+					dcclite::Log::Warn("[Industry::LoadState] [{}] Spot {} was being used, resetting industry", this->GetName(), spotName);
+					goto CORRUPTED_STATE;						
 				}
 
 				auto &spotThinker = m_vecSpotThinkers[*spotIndex];
-				auto &spot = m_vecSpots[*spotIndex];
-
-				auto spotData = it.value.GetObject();
-
-				auto &spotObjectData = json::GetObject(spotData, "spot", "[Industry::LoadState]");
+				auto &spot = m_vecSpots[*spotIndex];				
 
 				if (!spot.LoadState(spotObjectData, *this))
 				{

@@ -74,9 +74,18 @@ namespace dcclite::broker::tycoon::detail
 			stream.AddStringValue("cargo", industry.TryGetCargoByCargoInfoIndex(m_iCargoIndex)->GetNameData());
 	}
 
+	std::optional<SpotStates> Spot::LoadStateEnum(const rapidjson::Value &params, const char *field)
+	{
+		auto state = magic_enum::enum_cast<SpotStates>(dcclite::json::GetValue(params, field, "[Spot::LoadState]").GetString());
+		if (!state)
+			return {};
+
+		return state;
+	}
+
 	bool Spot::LoadState(const rapidjson::Value &params, const Industry &industry)
 	{
-		auto state = magic_enum::enum_cast<SpotStates>(dcclite::json::GetValue(params, "state", "[Spot::LoadState]").GetString());
+		auto state = Spot::LoadStateEnum(params, "state");		
 		if(!state)
 		{
 			throw std::invalid_argument(fmt::format("[Spot::LoadState] Invalid state value: {}", dcclite::json::GetValue(params, "state", "[Spot::LoadState]").GetString()));

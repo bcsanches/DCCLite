@@ -242,6 +242,8 @@ namespace dcclite::broker::tycoon::detail
 			void SaveState(dcclite::JsonOutputStream_t &stream, const Industry &industry) const;
 			[[nodiscard]] bool LoadState(const rapidjson::Value &params, const Industry &industry);
 
+			static std::optional<SpotStates> LoadStateEnum(const rapidjson::Value &params, const char *field);
+
 			/// <summary>
 			/// Expectd to be used only on load state when state is detected to be corrupted
 			/// </summary>
@@ -311,7 +313,7 @@ namespace dcclite::broker::tycoon::detail
 			void SaveState(dcclite::JsonOutputStream_t &stream) const;
 			bool LoadState(const rapidjson::Value &params, const FastClock::time_point now);
 
-			void ResetState(const FastClock::time_point now);
+			void ResetState(const FastClock::time_point now);			
 
 		private:
 			void ProduceThinker(FastClockDef::TimePoint_t tp);

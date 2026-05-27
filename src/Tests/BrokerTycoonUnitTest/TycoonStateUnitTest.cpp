@@ -133,168 +133,6 @@ TEST(TycoonServiceStateTest, BasicState)
 	tycoon.reset();
 }
 
-TEST(TycoonServiceStateTest, RemovedSpot)
-{
-	const char *json = R"JSON(
-		{
-			"class":"TycoonService",
-			"name":"tycoon",
-			"fastClockRate":60,
-			"cargos":[
-				{
-					"name":"Produtos"			
-				},
-				{
-					"name":"Cimento Ensacado"			
-				},
-				{
-					"name":"Conteiner"
-				},
-				{
-					"name":"Bobinas"
-				}
-			],
-			"carTypes":[
-				{
-					"name":"Fechado Revestido",
-					"ABNT":"FR",
-					"description":"Vagão Fechado convencional caixa metálica com revestimento",
-					"cargo":"Cimento Ensacado"
-				},
-				{
-					"name":"Fechado Comum",
-					"description":"Vagão fechado comum (genérico)",
-					"AAR":"B",
-					"cargos":[
-						"Cimento Ensacado",
-						"Produtos"
-					]
-				}
-			],
-			"locations":[
-				{
-					"name":"TC",
-					"prefix":"TC",
-					"industries":		
-					[			
-						{
-							"name":"Entreposto",					
-							"spots":["Gate 1", "Gate 2"],
-							"dailyProduction":24,
-							"maximumStorage":2,
-							"produces": [
-								{
-									"cargo":"Produtos",
-									"chance":50,
-									"transferTimeHours":1,
-									"destinations":["Lavras"]							
-								}
-							]
-						}
-					]
-				}
-			]
-		}
-	)JSON";
-
-	auto tycoon = LoadTycoon(json, true /* delete state file if it exists*/);
-
-	auto industry = dynamic_cast<Industry *>(tycoon->TryNavigate(dcclite::ObjectPath{ "locations/TC/Entreposto" }));
-	ASSERT_TRUE(industry);
-
-	dcclite::RName gateName{ "Gate 1" };
-
-	industry->ReserveSpot(gateName, "bla");
-
-	dcclite::RName cargoName{ "Produtos" };
-
-	CheckException([gateName, industry, cargoName]
-		{
-			industry->StartSpotLoad(gateName, cargoName);
-		},
-		"[Tycoon::CargoInfo::StartCargoTransfer] No cargo in stock!!!"
-	);
-
-	Tick(60);
-
-	tycoon.reset();
-
-	EXPECT_TRUE(dcclite::fs::exists(dcclite::broker::sys::Project::GetAppFilePath("tycoon.state.json")));
-
-	const char *json2 = R"JSON(
-		{
-			"class":"TycoonService",
-			"name":"tycoon",
-			"fastClockRate":60,
-			"cargos":[
-				{
-					"name":"Produtos"			
-				},
-				{
-					"name":"Cimento Ensacado"			
-				},
-				{
-					"name":"Conteiner"
-				},
-				{
-					"name":"Bobinas"
-				}
-			],
-			"carTypes":[
-				{
-					"name":"Fechado Revestido",
-					"ABNT":"FR",
-					"description":"Vagão Fechado convencional caixa metálica com revestimento",
-					"cargo":"Cimento Ensacado"
-				},
-				{
-					"name":"Fechado Comum",
-					"description":"Vagão fechado comum (genérico)",
-					"AAR":"B",
-					"cargos":[
-						"Cimento Ensacado",
-						"Produtos"
-					]
-				}
-			],
-			"locations":[
-				{
-					"name":"TC",
-					"prefix":"TC",
-					"industries":		
-					[			
-						{
-							"name":"Entreposto",					
-							"spots":["Gate 1"],
-							"dailyProduction":24,
-							"maximumStorage":2,
-							"produces": [
-								{
-									"cargo":"Produtos",
-									"chance":50,
-									"transferTimeHours":1,
-									"destinations":["Lavras"]							
-								}
-							]
-						}
-					]
-				}
-			]
-		}
-	)JSON";
-
-	//reloads with state file
-	tycoon = LoadTycoon(json2);
-
-	industry = dynamic_cast<Industry *>(tycoon->TryNavigate(dcclite::ObjectPath{ "locations/TC/Entreposto" }));
-	ASSERT_TRUE(industry);
-
-	auto cargoQuantity = industry->GetCargoQuantity(cargoName);
-
-	ASSERT_EQ(cargoQuantity.m_uQuantity, 0);
-	ASSERT_EQ(cargoQuantity.m_uReservedQuantity, 0);
-}
-
 TEST(TycoonServiceStateTest, MaxStorageChanges)
 {
 	const char *json = R"JSON(
@@ -978,3 +816,450 @@ TEST(TycoonServiceStateTest, CargoRemoved)
 
 	}
 }
+
+TEST(TycoonServiceStateTest, CargoRemovedFromSpot)
+{
+	const char *json = R"JSON(
+		{
+			"class":"TycoonService",
+			"name":"tycoon",
+			"fastClockRate":60,
+			"cargos":[
+				{
+					"name":"Produtos"			
+				},
+				{
+					"name":"Cimento Ensacado"			
+				}
+			],
+			"carTypes":[
+				{
+					"name":"Fechado Revestido",
+					"ABNT":"FR",
+					"description":"Vagão Fechado convencional caixa metálica com revestimento",
+					"cargo":"Cimento Ensacado"
+				}
+			],
+			"locations":[
+				{
+					"name":"TC",
+					"prefix":"TC",
+					"industries":		
+					[			
+						{
+							"name":"Entreposto",					
+							"spots":["Gate 1", "Gate 2"],
+							"dailyProduction":24,
+							"maximumStorage":10,
+							"produces": [
+								{
+									"cargo":"Produtos",
+									"chance":255,
+									"transferTimeHours":1,
+									"destinations":["Lavras"]							
+								},
+								{
+									"cargo":"Cimento Ensacado",
+									"chance":1,
+									"transferTimeHours":1,
+									"destinations":["Lavras"]							
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	)JSON";
+
+	{
+		auto tycoon = LoadTycoon(json, true);
+
+		auto industry = dynamic_cast<Industry *>(tycoon->TryNavigate(dcclite::ObjectPath{ "locations/TC/Entreposto" }));
+		ASSERT_TRUE(industry);
+
+		ASSERT_TRUE(industry->IsProducing());
+
+		dcclite::RName cargoName{ "Produtos" };
+		dcclite::RName spotName{ "Gate 2" };
+
+		{
+			auto cargoQuantity = industry->GetCargoQuantity(cargoName);
+			ASSERT_EQ(cargoQuantity.m_uQuantity, 0);
+			ASSERT_EQ(cargoQuantity.m_uReservedQuantity, 0);
+		}
+
+		//we need this loop, because may be, a small chance, "produtos" is not produced....
+		for (int i = 0;;++i)
+		{
+			Tick(60);
+			
+			//make sure product is produced...
+			auto cargoQuantity = industry->GetCargoQuantity(cargoName);
+			if (cargoQuantity.m_uQuantity > 0)
+				break;							
+
+			//consume it if not...			
+			dcclite::RName cargoNameCimento{ "Cimento Ensacado" };
+
+			if (i)
+				industry->RemoveCarFromSpot(spotName);
+
+			industry->ReserveSpot(spotName, "bla");
+			industry->StartSpotLoad(spotName, cargoNameCimento);
+		}
+
+		//we should have at least one item...
+		{
+			auto cargoQuantity = industry->GetCargoQuantity(cargoName);
+			ASSERT_EQ(cargoQuantity.m_uQuantity, 1);
+			ASSERT_EQ(cargoQuantity.m_uReservedQuantity, 0);
+		}
+
+		//now make sure industry is full
+		while(industry->IsProducing())
+		{
+			Tick(60);			
+		} 
+
+		//start loading it on spot....
+		industry->ReserveSpot(spotName, "bla");
+		industry->StartSpotLoad(spotName, cargoName);
+	}
+
+	{
+		const char *json2 = R"JSON(
+		{
+			"class":"TycoonService",
+			"name":"tycoon",
+			"fastClockRate":60,
+			"cargos":[
+				{
+					"name":"Cimento Ensacado"			
+				}
+			],
+			"carTypes":[
+				{
+					"name":"Fechado Revestido",
+					"ABNT":"FR",
+					"description":"Vagão Fechado convencional caixa metálica com revestimento",
+					"cargo":"Cimento Ensacado"
+				}
+			],
+			"locations":[
+				{
+					"name":"TC",
+					"prefix":"TC",
+					"industries":		
+					[			
+						{
+							"name":"Entreposto",					
+							"spots":["Gate 1", "Gate 2"],
+							"dailyProduction":24,
+							"maximumStorage":10,
+							"produces": [
+								{
+									"cargo":"Cimento Ensacado",
+									"chance":1,
+									"transferTimeHours":1,
+									"destinations":["Lavras"]							
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+		)JSON";
+
+		{
+			auto tycoon = LoadTycoon(json2);
+
+			auto industry = dynamic_cast<Industry *>(tycoon->TryNavigate(dcclite::ObjectPath{ "locations/TC/Entreposto" }));
+			ASSERT_TRUE(industry);
+
+			//should be producing again, because spot does not have reserved data about the product anymore and cargo is gone
+			ASSERT_TRUE(industry->IsProducing());			
+		}
+
+	}
+}
+
+TEST(TycoonServiceStateTest, FreeSpotRemoved)
+{
+	const char *json = R"JSON(
+		{
+			"class":"TycoonService",
+			"name":"tycoon",
+			"fastClockRate":60,
+			"cargos":[
+				{
+					"name":"Produtos"			
+				}
+			],
+			"carTypes":[
+				{
+					"name":"Fechado Revestido",
+					"ABNT":"FR",
+					"description":"Vagão Fechado convencional caixa metálica com revestimento",
+					"cargo":"Produtos"
+				}
+			],
+			"locations":[
+				{
+					"name":"TC",
+					"prefix":"TC",
+					"industries":		
+					[			
+						{
+							"name":"Entreposto",					
+							"spots":["Gate 1", "Gate 2"],
+							"dailyProduction":24,
+							"maximumStorage":2,
+							"produces": [
+								{
+									"cargo":"Produtos",
+									"chance":50,
+									"transferTimeHours":1,
+									"destinations":["Lavras"]							
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	)JSON";
+
+	const char *json2 = R"JSON(
+		{
+			"class":"TycoonService",
+			"name":"tycoon",
+			"fastClockRate":60,
+			"cargos":[
+				{
+					"name":"Produtos"			
+				}
+			],
+			"carTypes":[
+				{
+					"name":"Fechado Revestido",
+					"ABNT":"FR",
+					"description":"Vagão Fechado convencional caixa metálica com revestimento",
+					"cargo":"Produtos"
+				}
+			],
+			"locations":[
+				{
+					"name":"TC",
+					"prefix":"TC",
+					"industries":		
+					[			
+						{
+							"name":"Entreposto",					
+							"spots":["Gate 1"],
+							"dailyProduction":24,
+							"maximumStorage":2,
+							"produces": [
+								{
+									"cargo":"Produtos",
+									"chance":50,
+									"transferTimeHours":1,
+									"destinations":["Lavras"]							
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	)JSON";
+
+	{
+		auto tycoon = LoadTycoon(json, true);
+
+		auto industry = dynamic_cast<Industry *>(tycoon->TryNavigate(dcclite::ObjectPath{ "locations/TC/Entreposto" }));
+		ASSERT_TRUE(industry);
+
+		ASSERT_TRUE(industry->IsProducing());
+
+		dcclite::RName cargoName{ "Produtos" };
+
+		{
+			auto cargoQuantity = industry->GetCargoQuantity(cargoName);
+			ASSERT_EQ(cargoQuantity.m_uQuantity, 0);
+			ASSERT_EQ(cargoQuantity.m_uReservedQuantity, 0);
+		}
+
+		Tick(120);
+
+		{
+			auto cargoQuantity = industry->GetCargoQuantity(cargoName);
+			ASSERT_EQ(cargoQuantity.m_uQuantity, 2);
+			ASSERT_EQ(cargoQuantity.m_uReservedQuantity, 0);
+		}
+	}
+
+	{
+		{
+			auto tycoon = LoadTycoon(json2);
+
+			auto industry = dynamic_cast<Industry *>(tycoon->TryNavigate(dcclite::ObjectPath{ "locations/TC/Entreposto" }));
+			ASSERT_TRUE(industry);
+
+			ASSERT_FALSE(industry->IsProducing());
+
+			dcclite::RName cargoName{ "Produtos" };			
+
+			{
+				auto cargoQuantity = industry->GetCargoQuantity(cargoName);
+				ASSERT_EQ(cargoQuantity.m_uQuantity, 2);
+				ASSERT_EQ(cargoQuantity.m_uReservedQuantity, 0);
+			}
+		}
+
+	}
+}
+
+TEST(TycoonServiceStateTest, LoadingSpotRemoved)
+{
+	const char *json = R"JSON(
+		{
+			"class":"TycoonService",
+			"name":"tycoon",
+			"fastClockRate":60,
+			"cargos":[
+				{
+					"name":"Produtos"			
+				}
+			],
+			"carTypes":[
+				{
+					"name":"Fechado Revestido",
+					"ABNT":"FR",
+					"description":"Vagão Fechado convencional caixa metálica com revestimento",
+					"cargo":"Produtos"
+				}
+			],
+			"locations":[
+				{
+					"name":"TC",
+					"prefix":"TC",
+					"industries":		
+					[			
+						{
+							"name":"Entreposto",					
+							"spots":["Gate 1", "Gate 2"],
+							"dailyProduction":24,
+							"maximumStorage":2,
+							"produces": [
+								{
+									"cargo":"Produtos",
+									"chance":50,
+									"transferTimeHours":1,
+									"destinations":["Lavras"]							
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	)JSON";
+
+	const char *json2 = R"JSON(
+		{
+			"class":"TycoonService",
+			"name":"tycoon",
+			"fastClockRate":60,
+			"cargos":[
+				{
+					"name":"Produtos"			
+				}
+			],
+			"carTypes":[
+				{
+					"name":"Fechado Revestido",
+					"ABNT":"FR",
+					"description":"Vagão Fechado convencional caixa metálica com revestimento",
+					"cargo":"Produtos"
+				}
+			],
+			"locations":[
+				{
+					"name":"TC",
+					"prefix":"TC",
+					"industries":		
+					[			
+						{
+							"name":"Entreposto",					
+							"spots":["Gate 1"],
+							"dailyProduction":24,
+							"maximumStorage":2,
+							"produces": [
+								{
+									"cargo":"Produtos",
+									"chance":50,
+									"transferTimeHours":1,
+									"destinations":["Lavras"]							
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	)JSON";
+
+	{
+		auto tycoon = LoadTycoon(json, true);
+
+		auto industry = dynamic_cast<Industry *>(tycoon->TryNavigate(dcclite::ObjectPath{ "locations/TC/Entreposto" }));
+		ASSERT_TRUE(industry);
+
+		ASSERT_TRUE(industry->IsProducing());
+
+		dcclite::RName cargoName{ "Produtos" };
+
+		{
+			auto cargoQuantity = industry->GetCargoQuantity(cargoName);
+			ASSERT_EQ(cargoQuantity.m_uQuantity, 0);
+			ASSERT_EQ(cargoQuantity.m_uReservedQuantity, 0);
+		}
+
+		Tick(120);
+
+		{
+			auto cargoQuantity = industry->GetCargoQuantity(cargoName);
+			ASSERT_EQ(cargoQuantity.m_uQuantity, 2);
+			ASSERT_EQ(cargoQuantity.m_uReservedQuantity, 0);
+		}
+
+		dcclite::RName spotName{ "Gate 2" };
+
+		industry->ReserveSpot(spotName, "bla");
+		industry->StartSpotLoad(spotName, cargoName);
+	}
+
+	{
+		{
+			auto tycoon = LoadTycoon(json2);
+
+			auto industry = dynamic_cast<Industry *>(tycoon->TryNavigate(dcclite::ObjectPath{ "locations/TC/Entreposto" }));
+			ASSERT_TRUE(industry);
+
+			//industry has been reset due to spot removal, so production must resume
+			ASSERT_TRUE(industry->IsProducing());
+
+			dcclite::RName cargoName{ "Produtos" };
+
+			{
+				auto cargoQuantity = industry->GetCargoQuantity(cargoName);
+				ASSERT_EQ(cargoQuantity.m_uQuantity, 0);
+				ASSERT_EQ(cargoQuantity.m_uReservedQuantity, 0);
+			}
+		}
+
+	}
+}
+

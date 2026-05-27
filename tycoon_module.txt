@@ -1,10 +1,4 @@
-- TODO:	
-	- save / load state
-		- do unit testing of corrupted state
-		- check if car type is removed
-		- check if car type is added
-		- check if spot is removed
-		- check if spot is added  
+- TODO:		
 	- On car pickup: display destination
 
 	- Industry consumption:
