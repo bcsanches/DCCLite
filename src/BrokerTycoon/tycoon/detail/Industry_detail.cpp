@@ -45,6 +45,7 @@ namespace dcclite::broker::tycoon::detail
 		stream.AddStringValue("name", this->GetNameData());
 		stream.AddStringValue("state", magic_enum::enum_name(m_kState));
 		stream.AddStringValue("info", m_strInformation);
+		stream.AddStringValue("cargoInformation", m_strCargoInformation);
 	}
 
 	void Spot::Load(int cargoIndex)
@@ -69,6 +70,7 @@ namespace dcclite::broker::tycoon::detail
 	{
 		stream.AddStringValue("state", magic_enum::enum_name(m_kState));
 		stream.AddStringValue("info", m_strInformation);
+		stream.AddStringValue("carfoInformation", m_strCargoInformation);
 
 		if (m_iCargoIndex >= 0)
 			stream.AddStringValue("cargo", industry.TryGetCargoByCargoInfoIndex(m_iCargoIndex)->GetNameData());
@@ -95,6 +97,9 @@ namespace dcclite::broker::tycoon::detail
 
 		if (auto info = json::TryGetString(params, "info"))
 			m_strInformation = *info;
+
+		if (auto cargoInfo = json::TryGetString(params, "cargoInformation"))
+			m_strCargoInformation = *cargoInfo;
 
 		if (auto cargoName = json::TryGetString(params, "cargo"))
 		{
@@ -215,14 +220,20 @@ namespace dcclite::broker::tycoon::detail
 		return m_tTransferTime;
 	}
 
-	void CargoInfo::CompleteCargoTransfer()
+	const std::string &CargoInfo::CompleteCargoTransfer()
 	{
 		if (m_uReservedQuantity == 0)
 		{
 			throw std::runtime_error("[Tycoon::CargoInfo::CompleteCargoTransfer] No cargo reserved!!!");
 		}
 
-		--m_uReservedQuantity;		
+		--m_uReservedQuantity;
+
+		std::uniform_int_distribution<> dist(0, (int)m_vecDestinations.size() - 1);
+
+		unsigned destination = dist(g_clRandomGenerator);
+
+		return m_vecDestinations[destination];
 	}
 
 	void CargoInfo::Reset()
@@ -498,8 +509,7 @@ namespace dcclite::broker::tycoon::detail
 
 		//do cargo info op first, because it can throw if the transfer cannot be completed, 
 		// and we dont want to have a spot that is still loading/unloading but the cargo transfer is completed
-		cargoInfo.CompleteCargoTransfer();
-		spot.OnCompleteCargoTransfer();
+		spot.OnCompleteCargoTransfer(cargoInfo.CompleteCargoTransfer());
 
 		dcclite::Log::Trace("[CargoProducer::OnCompleteSpotTransfer] [{}]: Spot {} finished transfer of {}", m_rclIndustry.GetName(), spot.GetName(), cargoInfo.GetCargo().GetName());
 

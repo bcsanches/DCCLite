@@ -62,11 +62,12 @@ namespace SharpTerminal.Tycoon
 
 	}
 
-	public class Spot(string name, SpotStates state = SpotStates.FREE): NotifyPropertyBase
+	public class Spot(string name, SpotStates state, string info, string cargoInformation): NotifyPropertyBase
 	{
 		public readonly string Name = name ?? throw new System.ArgumentNullException(nameof(name));
 		private SpotStates m_kState = state;
-		private string m_strInformation = string.Empty;
+		private string m_strInformation = info;
+		private string m_strCargoInformation = cargoInformation;
 
 		public SpotStates State
 		{
@@ -86,16 +87,27 @@ namespace SharpTerminal.Tycoon
 			}
 		}
 
-		public void UpdateRemoteState(string stateName, string info)
+		public string CargoInformation
+		{
+			get => m_strCargoInformation;
+
+			set
+			{
+				UpdateProperty(ref m_strCargoInformation, value);
+			}
+		}
+
+		public void UpdateRemoteState(string stateName, string info, string cargoInformation)
 		{
 			State = (SpotStates)System.Enum.Parse(typeof(SpotStates), stateName);
 			Information = info;
+			CargoInformation = cargoInformation;
 		}
 
 		public override string ToString()
 		{
 			return Name;
-		}
+		}		
 	}
 
 	[SupportedOSPlatform("windows")]
@@ -174,7 +186,12 @@ namespace SharpTerminal.Tycoon
 				var spotName = (string)s["name"];
 				var state = (SpotStates)System.Enum.Parse(typeof(SpotStates), (string)s["state"]);
 
-				var spot = new Spot(spotName, state);
+				var spot = new Spot(
+					spotName, 
+					state,
+					(string)s["info"],
+					(string)s["cargoInformation"]
+				);
 
 				m_setSpots.Add(spot.Name, spot);
 			}
@@ -197,7 +214,11 @@ namespace SharpTerminal.Tycoon
 				{
 					var spotName = (string)s["name"];
 
-					m_setSpots[spotName].UpdateRemoteState((string)s["state"], (string)s["info"]);
+					m_setSpots[spotName].UpdateRemoteState(
+						(string)s["state"], 
+						(string)s["info"], 
+						(string)s["cargoInformation"]
+					);
 				}
 			}
 

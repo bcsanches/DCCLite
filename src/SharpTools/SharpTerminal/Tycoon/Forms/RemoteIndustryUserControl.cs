@@ -107,6 +107,7 @@ namespace SharpTerminal.Forms
 		{
 			m_tbSpotInfo.Text = spot.Information;
 			m_tbSpotState.Text = spot.State.ToString();
+			m_tbSpotCargoInformation.Text = spot.CargoInformation;
 
 			switch (spot.State)
 			{

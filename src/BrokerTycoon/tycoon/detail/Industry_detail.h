@@ -90,7 +90,11 @@ namespace dcclite::broker::tycoon::detail
 			/// <returns>How long the transfer should takes</returns>
 			std::chrono::hours StartCargoTransfer();
 
-			void CompleteCargoTransfer();
+			/// <summary>
+			/// 
+			/// </summary>
+			/// <returns>A random destination for the cargo</returns>
+			[[nodiscard]] const std::string &CompleteCargoTransfer();
 
 			void SaveState(dcclite::JsonOutputStream_t &stream) const;
 			void LoadState(const rapidjson::Value &params);
@@ -205,13 +209,14 @@ namespace dcclite::broker::tycoon::detail
 				m_kState = SpotStates::UNLOADING;
 			}
 
-			void OnCompleteCargoTransfer()
+			void OnCompleteCargoTransfer(std::string cargoInformation)
 			{
 				if (!this->CanCompleteCargoTransfer())
 				{
 					throw std::runtime_error("[Spot::OnCompleteCargoTransfer] Spot is not loading or unloading, cannot park car");
 				}
 
+				m_strCargoInformation = std::move(cargoInformation);
 				m_kState = SpotStates::CAR_PARKED;
 			}
 
@@ -224,6 +229,7 @@ namespace dcclite::broker::tycoon::detail
 
 				m_kState = SpotStates::FREE;
 				m_strInformation.clear();
+				m_strCargoInformation.clear();
 				m_iCargoIndex = -1;
 			}
 
@@ -251,6 +257,7 @@ namespace dcclite::broker::tycoon::detail
 
 		private:
 			std::string			m_strInformation;
+			std::string			m_strCargoInformation;
 			int					m_iCargoIndex = -1;
 
 			SpotStates m_kState = SpotStates::FREE;
