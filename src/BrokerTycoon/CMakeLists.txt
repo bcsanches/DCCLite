@@ -17,8 +17,12 @@ add_library(
         tycoon/CarType.h
         tycoon/CmdsInitService.cpp
         tycoon/CmdsInitService.h
-        tycoon/detail/Industry_detail.cpp
-        tycoon/detail/Industry_detail.h
+        tycoon/detail/CargoInfo.cpp
+        tycoon/detail/CargoInfo.h
+        tycoon/detail/CargoProducer.cpp
+        tycoon/detail/CargoProducer.h
+        tycoon/detail/Spot.cpp
+        tycoon/detail/Spot.h
         tycoon/FastClock.cpp
         tycoon/FastClock.h
         tycoon/FastClockDefs.h

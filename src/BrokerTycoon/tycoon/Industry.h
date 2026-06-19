@@ -18,11 +18,17 @@
 #include "FastClock.h"
 #include "FastClockThinker.h"
 
-#include "detail/Industry_detail.h"
+#include "detail/CargoProducer.h"
+#include "detail/Spot.h"
+
+namespace dcclite::broker::tycoon::detail
+{
+	class CargoProducer;	
+}
 
 namespace dcclite::broker::tycoon
 {
-	class Cargo;
+	class Cargo;	
 	class Industry;
 	class TycoonService;
 
