@@ -24,6 +24,12 @@ namespace dcclite::broker::tycoon
 
 namespace dcclite::broker::tycoon::detail
 {
+	/// <summary>
+	/// Stores information about a cargo produced or consumed by an industry.
+	/// 
+	/// Also this manages the cargo transfer, keeping track of how many cargo are currently 
+	/// stored and how many are reserved for transfer, and also how long the transfer should take.
+	/// </summary>
 	class CargoInfo
 	{
 		public:
@@ -39,14 +45,14 @@ namespace dcclite::broker::tycoon::detail
 				return m_rclCargo;
 			}
 
-			inline unsigned GetSequence() const noexcept
+			inline unsigned GetCumulativeChance() const noexcept
 			{
-				return m_uSequence;
+				return m_uCumulativeChance;
 			}
 
-			inline void SetSequence(unsigned v) noexcept
+			inline void SetCumulativeChance(unsigned v) noexcept
 			{
-				m_uSequence = v;
+				m_uCumulativeChance = v;
 			}
 
 			inline void IncreaseQuantity() noexcept
@@ -100,7 +106,12 @@ namespace dcclite::broker::tycoon::detail
 
 			const Cargo &m_rclCargo;
 			std::chrono::hours			m_tTransferTime;
-			unsigned					m_uSequence = 0;
+
+			/// <summary>
+			/// Sequence is used for drawing a cargo for production inside a producer
+			/// </summary>
+			/// FIXME: remove this from the cargo info?
+			unsigned					m_uCumulativeChance = 0;
 			uint8_t						m_u8Chance;
 
 			uint8_t						m_uCurrentQuantity = 0;

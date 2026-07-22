@@ -41,6 +41,55 @@ namespace dcclite::broker::tycoon::detail
 
 	};
 
+	class ProductionManager
+	{
+		public:
+			void Load(TycoonService &tycoon, const rapidjson::Value &params, const RName industryName);
+
+			const Cargo *TryGetCargoByCargoInfoIndex(size_t index) const noexcept;
+
+			int TryGetCargoInfoIndexByCargoName(std::string_view name) const noexcept;
+			int TryGetCargoInfoIndexByCargoName(RName rname) const noexcept;
+
+			[[nodiscard]] size_t FindCargoInfoIndexByCargoName(RName cargoName, RName industryName) const;
+
+			[[nodiscard]] unsigned CalculateTotalCargoStored() const noexcept;
+
+			size_t RandomSelectCargoToProduce(RName industryName) const noexcept;
+
+			[[nodiscard]] CargoQuantity GetCargoQuantity(RName cargoName, RName industryName) const;
+
+			[[nodiscard]] inline detail::CargoInfo &GetCargoInfo(size_t index) noexcept
+			{
+				assert(index < m_vecProduces.size());
+
+				return m_vecProduces[index];
+			}
+
+			void Serialize(dcclite::JsonOutputStream_t &stream) const;
+			void SerializeDelta(dcclite::JsonOutputStream_t &stream) const;
+			void SerializeCargoInfoDelta(dcclite::JsonOutputStream_t &stream, const int cargoInfoIndex) const;
+
+			void SaveState(dcclite::JsonOutputStream_t &stream) const;
+			bool LoadState(const rapidjson::Value &params);
+
+			void ResetState();
+
+			[[nodiscard]] inline size_t GetProducesCount() const noexcept
+			{
+				return m_vecProduces.size();
+			}
+
+		private:
+			void LoadProduce(TycoonService &tycoon, const rapidjson::Value &params);
+
+			void AdjustProductionChances();			
+
+		private:
+			std::vector<detail::CargoInfo>					m_vecProduces;
+			unsigned										m_uTotalChance;
+	};
+
 	class CargoProducer : public CargoProcessor
 	{
 		public:
@@ -54,13 +103,25 @@ namespace dcclite::broker::tycoon::detail
 				return m_fProducing;
 			}
 
-			[[nodiscard]] unsigned CalculateTotalCargoStored() const noexcept;
+			[[nodiscard]] inline unsigned CalculateTotalCargoStored() const noexcept
+			{
+				return m_clProductionManager.CalculateTotalCargoStored();
+			}
 
-			const Cargo *TryGetCargoByCargoInfoIndex(size_t index) const noexcept;
-			int TryGetCargoInfoIndexByCargoName(std::string_view name) const noexcept;
-			int TryGetCargoInfoIndexByCargoName(RName rname) const noexcept;
+			[[nodiscard]] inline const Cargo *TryGetCargoByCargoInfoIndex(size_t index) const noexcept
+			{
+				return m_clProductionManager.TryGetCargoByCargoInfoIndex(index);
+			}
 
-			[[nodiscard]] size_t FindCargoInfoIndexByCargoName(RName cargoName) const;
+			[[nodiscard]] inline int TryGetCargoInfoIndexByCargoName(std::string_view name) const noexcept
+			{
+				return m_clProductionManager.TryGetCargoInfoIndexByCargoName(name);
+			}
+
+			[[nodiscard]] inline int TryGetCargoInfoIndexByCargoName(RName rname) const noexcept
+			{
+				return m_clProductionManager.TryGetCargoInfoIndexByCargoName(rname);
+			}			
 
 			/**
 			*	Start a transfer operation on spot with the cargo named by cargoName
@@ -83,7 +144,10 @@ namespace dcclite::broker::tycoon::detail
 
 			void SerializeCargoInfo(dcclite::JsonOutputStream_t &stream, const int cargoInfoIndex) const;
 
-			void SerializeProductionDelta(dcclite::JsonOutputStream_t &stream) const;
+			inline void SerializeProductionDelta(dcclite::JsonOutputStream_t &stream) const
+			{
+				m_clProductionManager.SerializeDelta(stream);
+			}
 
 			///////////////////////////////////////////////////////////////////
 			//
@@ -96,32 +160,16 @@ namespace dcclite::broker::tycoon::detail
 			void ResetState(const FastClock::time_point now);
 
 		private:
-			void ProduceThinker(FastClockDef::TimePoint_t tp);
+			void ProduceThinker(FastClockDef::TimePoint_t tp);			
 
-			void LoadProductionData(TycoonService &tycoon, const rapidjson::Value &params);
-			void LoadProduce(TycoonService &tycoon, const rapidjson::Value &params);
+			void ScheduleProduction(const FastClock::time_point now);			
 
-			void AdjustProductionChances();
-
-			size_t RandomSelectCargoToProduce() const noexcept;
-
-			void ScheduleProduction(const FastClock::time_point now);
-
-			[[nodiscard]] inline detail::CargoInfo &GetCargoInfo(size_t index) noexcept
-			{
-				assert(index < m_vecProduces.size());
-
-				return m_vecProduces[index];
-			}
-
-		private:
-			std::vector<detail::CargoInfo>					m_vecProduces;
-
+		private:			
 			FastClockThinker								m_clProductionThinker;
 
-			Industry										&m_rclIndustry;
+			ProductionManager								m_clProductionManager;
 
-			unsigned										m_uProduceTotalChance;
+			Industry										&m_rclIndustry;			
 
 			float											m_fpDailyRate;
 

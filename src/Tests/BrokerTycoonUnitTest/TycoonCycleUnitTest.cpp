@@ -543,6 +543,6 @@ TEST(TycoonCycleStateTest, InvalidCargoTypeForCar)
 		{
 			industry->StartSpotLoad(gateName, cargoName);
 		},
-		"[CargoProducer::FindCargoInfoIndexByCargoName] [Entreposto]: Cargo Produtos not found"
+		"[ProductionManager::FindCargoInfoIndexByCargoName] [Entreposto]: Cargo Produtos not found"
 	);
 }

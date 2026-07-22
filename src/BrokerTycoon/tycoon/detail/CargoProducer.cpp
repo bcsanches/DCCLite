@@ -27,6 +27,273 @@ static thread_local std::mt19937 g_clRandomGenerator{ std::random_device{}() };
 
 namespace dcclite::broker::tycoon::detail
 {
+
+	void ProductionManager::LoadProduce(TycoonService &tycoon, const rapidjson::Value &params)
+	{
+		m_vecProduces.emplace_back(tycoon, params);
+	}
+
+	void ProductionManager::AdjustProductionChances()
+	{
+		m_uTotalChance = 0;
+		for (auto i = 0; i < m_vecProduces.size(); ++i)
+		{
+			m_vecProduces[i].SetCumulativeChance(m_vecProduces[i].GetChance() + m_uTotalChance);
+			m_uTotalChance += m_vecProduces[i].GetChance();
+		}
+	}
+
+	void ProductionManager::Load(TycoonService &tycoon, const rapidjson::Value &params, const RName industryName)
+	{
+		auto singleProduce = params.FindMember("produce");
+		if (singleProduce != params.MemberEnd())
+		{
+			if (!singleProduce->value.IsObject())
+			{
+				throw std::invalid_argument(fmt::format("[ProductionManager::Load] [{}]: produce must be an object", industryName));
+			}
+
+			this->LoadProduce(tycoon, singleProduce->value);
+		}
+
+		auto producesValue = params.FindMember("produces");
+		if (producesValue == params.MemberEnd())
+		{
+			if (!m_vecProduces.empty())
+			{
+				return;
+			}
+
+			throw std::invalid_argument(fmt::format("[ProductionManager::Load] [{}]: either produce or produces must be specified", industryName));
+		}
+
+		if (producesValue->value.IsObject())
+		{
+			//redudant... but...
+			this->LoadProduce(tycoon, producesValue->value);
+
+			return;
+		}
+
+		if (!producesValue->value.IsArray())
+		{
+			throw std::invalid_argument(fmt::format("[ProductionManager::Load] [{}]: produces must be either an object or an array", industryName));
+		}
+
+		auto producesData = producesValue->value.GetArray();
+		m_vecProduces.reserve(producesData.Size());
+		for (auto &it : producesData)
+		{
+			if (!it.IsObject())
+			{
+				throw std::invalid_argument(fmt::format("[ProductionManager::Load] [{}]: each produce in produces array must be an object", industryName));
+			}
+
+			this->LoadProduce(tycoon, it);
+		}
+
+		if (m_vecProduces.empty())
+		{
+			throw std::invalid_argument(fmt::format("[ProductionManager::Load] [{}]: at least one produce must be specified", industryName));
+		}
+
+		//
+		//make sure we have a single type
+		for (size_t i = 0, sz = m_vecProduces.size() - 1; i < sz; ++i)
+		{
+			auto it = std::find_if(
+				m_vecProduces.begin() + i + 1,
+				m_vecProduces.end(),
+				[this, i](const detail::CargoInfo &ci)
+				{
+					return &ci.GetCargo() == &m_vecProduces[i].GetCargo();
+				}
+			);
+
+			if (it != m_vecProduces.end())
+			{
+				throw std::invalid_argument(fmt::format("[ProductionManager::Load] [{}]: multiple produces with the same cargo {} are not allowed", industryName, m_vecProduces[i].GetCargo().GetName()));
+			}
+		}
+
+		this->AdjustProductionChances();
+	}
+
+	unsigned ProductionManager::CalculateTotalCargoStored() const noexcept
+	{
+		return std::accumulate(
+			m_vecProduces.begin(),
+			m_vecProduces.end(),
+			0u,
+			[](unsigned acc, const detail::CargoInfo &info)
+			{
+				return acc + info.GetTotal();
+			}
+		);
+	}
+
+	const Cargo *ProductionManager::TryGetCargoByCargoInfoIndex(size_t index) const noexcept
+	{
+		if (index >= m_vecProduces.size())
+			return nullptr;
+
+		return &m_vecProduces[index].GetCargo();
+	}
+
+	int ProductionManager::TryGetCargoInfoIndexByCargoName(RName rname) const noexcept
+	{
+		auto it = std::ranges::find_if(
+			m_vecProduces,
+			[rname](const detail::CargoInfo &ci) { return ci.GetCargo().GetName() == rname; }
+		);
+
+		if (it == m_vecProduces.end())
+			return -1;
+
+		return static_cast<int>(std::distance(m_vecProduces.begin(), it));
+	}
+
+	int ProductionManager::TryGetCargoInfoIndexByCargoName(std::string_view name) const noexcept
+	{
+		RName cargoName = RName::TryGetName(name);
+		if (!cargoName)
+			return -1;
+
+		return this->TryGetCargoInfoIndexByCargoName(cargoName);
+	}
+
+	size_t ProductionManager::RandomSelectCargoToProduce(RName industryName) const noexcept
+	{
+		if (m_vecProduces.size() == 1)
+			return 0;
+
+		std::uniform_int_distribution<> dist(0, m_uTotalChance - 1);
+
+		unsigned randomChance = dist(g_clRandomGenerator);
+
+		//CDF — Cumulative Distribution Function
+		for (unsigned i = 0, lowerBound = 0; i < m_vecProduces.size(); ++i)
+		{
+			auto &cargoInfo = m_vecProduces[i];
+			auto cumulativeChance = cargoInfo.GetCumulativeChance();
+			if ((randomChance >= lowerBound) && (randomChance < cumulativeChance))
+				return i;
+
+			lowerBound = cumulativeChance;
+		}
+
+		dcclite::Log::Error("[Tycoon::ProductionManager::RandomSelectCargoToProduce] [{}]: Could not find cargo", industryName);
+
+		std::uniform_int_distribution<> safeDist(0, (int)m_vecProduces.size() - 1);
+
+		return (size_t)safeDist(g_clRandomGenerator);
+	}
+
+	size_t ProductionManager::FindCargoInfoIndexByCargoName(RName cargoName, RName industryName) const
+	{
+		auto it = std::ranges::find_if(
+			m_vecProduces,
+			[cargoName](const detail::CargoInfo &ci) { return ci.GetCargo().GetName() == cargoName; }
+		);
+
+		if (it == m_vecProduces.end())
+			throw std::runtime_error(fmt::format("[ProductionManager::FindCargoInfoIndexByCargoName] [{}]: Cargo {} not found", industryName, cargoName));
+
+		return std::distance(m_vecProduces.begin(), it);
+	}
+
+	CargoQuantity ProductionManager::GetCargoQuantity(RName cargoName, RName industryName) const
+	{
+		auto index = this->FindCargoInfoIndexByCargoName(cargoName, industryName);
+
+		return { m_vecProduces[index].GetQuantity(), m_vecProduces[index].GetReservedQuantity() };
+	}
+
+	void ProductionManager::Serialize(dcclite::JsonOutputStream_t &stream) const
+	{		
+		auto cargoInfoData = stream.AddArray("produces");
+		for (auto &it : m_vecProduces)
+		{
+			auto obj = cargoInfoData.AddObject();
+
+			it.Serialize(obj);
+		}		
+	}
+
+	void ProductionManager::SerializeDelta(dcclite::JsonOutputStream_t &stream) const
+	{
+		auto cargoInfoData = stream.AddArray("produces");
+		for (size_t i = 0, sz = m_vecProduces.size(); i < sz; ++i)
+		{
+			auto obj = cargoInfoData.AddObject();
+
+			m_vecProduces[i].SerializeDelta(obj);
+		}
+	}
+
+	void ProductionManager::SerializeCargoInfoDelta(dcclite::JsonOutputStream_t &stream, const int cargoInfoIndex) const
+	{
+		m_vecProduces[cargoInfoIndex].SerializeDelta(stream);
+		stream.AddIntValue("index", cargoInfoIndex);
+	}
+
+	void ProductionManager::SaveState(dcclite::JsonOutputStream_t &stream) const
+	{
+		for (size_t i = 0, sz = m_vecProduces.size(); i < sz; ++i)
+		{
+			auto produceData = stream.AddObject(m_vecProduces[i].GetCargo().GetName().GetData());
+
+			m_vecProduces[i].SaveState(produceData);
+		}
+	}
+
+	bool ProductionManager::LoadState(const rapidjson::Value &params)
+	{
+		for (auto &it : params.GetObject())
+		{
+			auto cargoNameStr = std::string_view{ it.name.GetString(), it.name.GetStringLength() };
+			auto cargoName = RName::TryGetName(cargoNameStr);
+			if (!cargoName)
+			{
+				dcclite::Log::Warn("[ProductionManager::LoadState] Cargo {} name is not even registered, skipping", cargoNameStr);
+
+				//This is not so bad, we can live with that, maybe user removed a product from industry after the state was saved...
+				continue;
+			}
+
+			auto cargoInfoIndex = this->TryGetCargoInfoIndexByCargoName(cargoName);
+			if (cargoInfoIndex < 0)
+			{
+				dcclite::Log::Warn("[ProductionManager::LoadState] Cargo {} in production state not found, skipping", cargoName);
+
+				//This is not so bad, we can live with that, maybe user removed a product from industry after the state was saved...
+				continue;
+			}
+
+			m_vecProduces[cargoInfoIndex].LoadState(it.value);
+		}
+
+		//If all production loaded, lets check if user added a new product to this industry
+		for (size_t i = 0, sz = m_vecProduces.size(); i < sz; ++i)
+		{
+			auto &cargoInfo = m_vecProduces[i];
+			auto cargoName = cargoInfo.GetCargo().GetNameData();
+			if (!params.HasMember(cargoName.data()))
+			{
+				dcclite::Log::Error("[ProductionManager::LoadState] Cargo {} was not found in production state", cargoName);
+
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	void ProductionManager::ResetState()
+	{
+		std::ranges::for_each(m_vecProduces, [](detail::CargoInfo &ci) { ci.Reset(); });
+	}
+
 	///////////////////////////////////////////////////////////////////////////
 	//
 	//
@@ -50,182 +317,9 @@ namespace dcclite::broker::tycoon::detail
 			throw std::invalid_argument(fmt::format("[CargoProducer::CargoProducer] [{}]: maxQuantity must be greater than zero", m_rclIndustry.GetName()));
 		}
 
-		this->LoadProductionData(tycoon, params);
-		this->AdjustProductionChances();
+		m_clProductionManager.Load(tycoon, params, m_rclIndustry.GetName());
 
 		this->ScheduleProduction(tycoon.GetFastClock().Now());
-	}
-
-
-	void CargoProducer::LoadProduce(TycoonService &tycoon, const rapidjson::Value &params)
-	{
-		m_vecProduces.emplace_back(tycoon, params);
-	}
-
-	void CargoProducer::LoadProductionData(TycoonService &tycoon, const rapidjson::Value &params)
-	{
-		auto singleProduce = params.FindMember("produce");
-		if (singleProduce != params.MemberEnd())
-		{
-			if (!singleProduce->value.IsObject())
-			{
-				throw std::invalid_argument(fmt::format("[CargoProducer::LoadProductionData] [{}]: produce must be an object", m_rclIndustry.GetName()));
-			}
-
-			this->LoadProduce(tycoon, singleProduce->value);
-		}
-
-		auto producesValue = params.FindMember("produces");
-		if (producesValue == params.MemberEnd())
-		{
-			if (!m_vecProduces.empty())
-			{
-				return;
-			}
-
-			throw std::invalid_argument(fmt::format("[CargoProducer::LoadProductionData] [{}]: either produce or produces must be specified", m_rclIndustry.GetName()));
-		}
-
-		if (producesValue->value.IsObject())
-		{
-			//redudant... but...
-			this->LoadProduce(tycoon, producesValue->value);
-
-			return;
-		}
-
-		if (!producesValue->value.IsArray())
-		{
-			throw std::invalid_argument(fmt::format("[CargoProducer::LoadProductionData] [{}]: produces must be either an object or an array", m_rclIndustry.GetName()));
-		}
-
-		auto producesData = producesValue->value.GetArray();
-		m_vecProduces.reserve(producesData.Size());
-		for (auto &it : producesData)
-		{
-			if (!it.IsObject())
-			{
-				throw std::invalid_argument(fmt::format("[CargoProducer::LoadProductionData] [{}]: each produce in produces array must be an object", m_rclIndustry.GetName()));
-			}
-
-			this->LoadProduce(tycoon, it);
-		}
-
-		if (m_vecProduces.empty())
-		{
-			throw std::invalid_argument(fmt::format("[CargoProducer::LoadProductionData] [{}]: at least one produce must be specified", m_rclIndustry.GetName()));
-		}
-
-		//
-		//make sure we have a single type
-		for (size_t i = 0, sz = m_vecProduces.size() - 1; i < sz; ++i)
-		{
-			auto it = std::find_if(
-				m_vecProduces.begin() + i + 1,
-				m_vecProduces.end(),
-				[this, i](const detail::CargoInfo &ci)
-				{
-					return &ci.GetCargo() == &m_vecProduces[i].GetCargo();
-				}
-			);
-
-			if (it != m_vecProduces.end())
-			{
-				throw std::invalid_argument(fmt::format("[CargoProducer::LoadProductionData] [{}]: multiple produces with the same cargo {} are not allowed", m_rclIndustry.GetName(), m_vecProduces[i].GetCargo().GetName()));
-			}
-		}
-	}
-
-	void CargoProducer::AdjustProductionChances()
-	{
-		m_uProduceTotalChance = 0;
-		for (auto i = 0; i < m_vecProduces.size(); ++i)
-		{
-			m_vecProduces[i].SetSequence(m_vecProduces[i].GetChance() + m_uProduceTotalChance);
-			m_uProduceTotalChance += m_vecProduces[i].GetChance();
-		}
-	}
-
-	unsigned CargoProducer::CalculateTotalCargoStored() const noexcept
-	{
-		return std::accumulate(
-			m_vecProduces.begin(),
-			m_vecProduces.end(),
-			0u,
-			[](unsigned acc, const detail::CargoInfo &info)
-			{
-				return acc + info.GetTotal();
-			}
-		);
-	}
-
-	const Cargo *CargoProducer::TryGetCargoByCargoInfoIndex(size_t index) const noexcept
-	{
-		if (index >= m_vecProduces.size())
-			return nullptr;
-
-		return &m_vecProduces[index].GetCargo();
-	}
-
-	int CargoProducer::TryGetCargoInfoIndexByCargoName(RName rname) const noexcept
-	{
-		auto it = std::ranges::find_if(
-			m_vecProduces,
-			[rname](const detail::CargoInfo &ci) { return ci.GetCargo().GetName() == rname; }
-		);
-
-		if (it == m_vecProduces.end())
-			return -1;
-
-		return static_cast<int>(std::distance(m_vecProduces.begin(), it));
-	}
-
-	int CargoProducer::TryGetCargoInfoIndexByCargoName(std::string_view name) const noexcept
-	{
-		RName cargoName = RName::TryGetName(name);
-		if (!cargoName)
-			return -1;
-
-		return this->TryGetCargoInfoIndexByCargoName(cargoName);
-	}
-
-	size_t CargoProducer::FindCargoInfoIndexByCargoName(RName cargoName) const
-	{
-		auto it = std::ranges::find_if(
-			m_vecProduces,
-			[cargoName](const detail::CargoInfo &ci) { return ci.GetCargo().GetName() == cargoName; }
-		);
-
-		if (it == m_vecProduces.end())
-			throw std::runtime_error(fmt::format("[CargoProducer::FindCargoInfoIndexByCargoName] [{}]: Cargo {} not found", m_rclIndustry.GetName(), cargoName));
-
-		return std::distance(m_vecProduces.begin(), it);
-	}
-
-	size_t CargoProducer::RandomSelectCargoToProduce() const noexcept
-	{
-		if (m_vecProduces.size() == 1)
-			return 0;
-
-		std::uniform_int_distribution<> dist(0, m_uProduceTotalChance - 1);
-
-		unsigned chance = dist(g_clRandomGenerator);
-
-		for (unsigned i = 0, previousSequence = 0; i < m_vecProduces.size(); ++i)
-		{
-			auto &cargoInfo = m_vecProduces[i];
-			auto sequence = cargoInfo.GetSequence();
-			if ((chance >= previousSequence) && (chance < sequence))
-				return i;
-
-			previousSequence = sequence;
-		}
-
-		dcclite::Log::Error("[Tycoon::CargoProducer::RandomSelectCargoToProduce] [{}]: Could not find cargo", m_rclIndustry.GetName());
-
-		std::uniform_int_distribution<> safeDist(0, (int)m_vecProduces.size() - 1);
-
-		return (size_t)safeDist(g_clRandomGenerator);
 	}
 
 	void CargoProducer::ScheduleProduction(const FastClock::time_point now)
@@ -244,8 +338,8 @@ namespace dcclite::broker::tycoon::detail
 
 	std::chrono::hours CargoProducer::StartSpotLoad(Spot &spot, RName cargoName)
 	{
-		const auto cargoInfoIndex = this->FindCargoInfoIndexByCargoName(cargoName);
-		auto &cargoInfo = this->GetCargoInfo(cargoInfoIndex);
+		const auto cargoInfoIndex = m_clProductionManager.FindCargoInfoIndexByCargoName(cargoName, m_rclIndustry.GetName());
+		auto &cargoInfo = m_clProductionManager.GetCargoInfo(cargoInfoIndex);
 
 		//make sure spot will not throw after we call StartCargoTransfer on cargo holder, 
 		// otherwise we will have an inconsistent state where cargo is reserved but spot is not loading
@@ -269,12 +363,12 @@ namespace dcclite::broker::tycoon::detail
 	{
 		auto cargoInfoIndex = spot.GetCargoIndex();
 
-		if ((cargoInfoIndex < 0) || (cargoInfoIndex >= m_vecProduces.size()))
+		if ((cargoInfoIndex < 0) || (cargoInfoIndex >= m_clProductionManager.GetProducesCount()))
 		{
 			throw std::runtime_error(fmt::format("[CargoProducer::FinishSpotTransfer] [{}]: Spot {} has invalid cargo index {}, cannot complete transfer", m_rclIndustry.GetName(), spot.GetName(), cargoInfoIndex));
 		}
 
-		auto &cargoInfo = m_vecProduces[cargoInfoIndex];
+		auto &cargoInfo = m_clProductionManager.GetCargoInfo(cargoInfoIndex);
 
 		//make sure spot will not throw, otherwise we will have an inconsistent state where transfer is completed but spot is still loading/unloading
 		if (!spot.CanCompleteCargoTransfer())
@@ -299,8 +393,8 @@ namespace dcclite::broker::tycoon::detail
 
 	void CargoProducer::ProduceThinker(FastClockDef::TimePoint_t tp)
 	{
-		auto cargoIndex = (int)this->RandomSelectCargoToProduce();
-		auto &cargoInfo = m_vecProduces[cargoIndex];
+		auto cargoIndex = (int)m_clProductionManager.RandomSelectCargoToProduce(m_rclIndustry.GetName());
+		auto &cargoInfo = m_clProductionManager.GetCargoInfo(cargoIndex);
 
 		cargoInfo.IncreaseQuantity();
 
@@ -323,11 +417,9 @@ namespace dcclite::broker::tycoon::detail
 		m_rclIndustry.OnCargoProduced(AccessToken<CargoProducer>{}, cargoIndex);
 	}
 
-	CargoQuantity CargoProducer::GetCargoQuantity(RName cargoName) const
+	[[nodiscard]] CargoQuantity CargoProducer::GetCargoQuantity(RName cargoName) const
 	{
-		auto index = this->FindCargoInfoIndexByCargoName(cargoName);
-
-		return { m_vecProduces[index].GetQuantity(), m_vecProduces[index].GetReservedQuantity() };
+		return m_clProductionManager.GetCargoQuantity(cargoName, m_rclIndustry.GetName());
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -345,15 +437,7 @@ namespace dcclite::broker::tycoon::detail
 
 		this->SerializeDeltaDataOnly(stream, fastClock);
 
-		{
-			auto cargoInfoData = stream.AddArray("produces");
-			for (auto it : m_vecProduces)
-			{
-				auto obj = cargoInfoData.AddObject();
-
-				it.Serialize(obj);
-			}
-		}
+		m_clProductionManager.Serialize(stream);
 	}
 
 	void CargoProducer::SerializeDeltaDataOnly(dcclite::JsonOutputStream_t &stream, const FastClock &fastClock) const
@@ -386,20 +470,8 @@ namespace dcclite::broker::tycoon::detail
 	void CargoProducer::SerializeCargoInfo(dcclite::JsonOutputStream_t &stream, const int cargoInfoIndex) const
 	{
 		auto cargoInfoObject = stream.AddObject("cargoInfo");
-		m_vecProduces[cargoInfoIndex].SerializeDelta(cargoInfoObject);
-		cargoInfoObject.AddIntValue("index", cargoInfoIndex);
-	}
-
-	void CargoProducer::SerializeProductionDelta(dcclite::JsonOutputStream_t &stream) const
-	{
-		auto cargoInfoData = stream.AddArray("produces");
-		for (size_t i = 0, sz = m_vecProduces.size(); i < sz; ++i)
-		{
-			auto obj = cargoInfoData.AddObject();
-
-			m_vecProduces[i].SerializeDelta(obj);
-		}
-	}
+		m_clProductionManager.SerializeCargoInfoDelta(cargoInfoObject, cargoInfoIndex);
+	}	
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//
@@ -417,12 +489,8 @@ namespace dcclite::broker::tycoon::detail
 
 		{
 			auto producesData = stream.AddObject("production");
-			for (size_t i = 0, sz = m_vecProduces.size(); i < sz; ++i)
-			{
-				auto produceData = producesData.AddObject(m_vecProduces[i].GetCargo().GetName().GetData());
-
-				m_vecProduces[i].SaveState(produceData);
-			}
+			
+			m_clProductionManager.SaveState(producesData);
 		}
 	}
 
@@ -444,42 +512,11 @@ namespace dcclite::broker::tycoon::detail
 		auto productionData = json::TryGetObject(params, "production");
 		if (productionData)
 		{
-			for (auto &it : productionData->GetObject())
+			if(!m_clProductionManager.LoadState(*productionData))
 			{
-				auto cargoNameStr = std::string_view{ it.name.GetString(), it.name.GetStringLength() };
-				auto cargoName = RName::TryGetName(cargoNameStr);
-				if (!cargoName)
-				{
-					dcclite::Log::Warn("[CargoProducer::LoadState] [{}]: Cargo {} name is not even registered, skipping", m_rclIndustry.GetName(), cargoNameStr);
-
-					//This is not so bad, we can live with that, maybe user removed a product from industry after the state was saved...
-					continue;
-				}
-
-				auto cargoInfoIndex = this->TryGetCargoInfoIndexByCargoName(cargoName);
-				if (cargoInfoIndex < 0)
-				{
-					dcclite::Log::Warn("[CargoProducer::LoadState] [{}]: Cargo {} in production state not found, skipping", m_rclIndustry.GetName(), cargoName);
-
-					//This is not so bad, we can live with that, maybe user removed a product from industry after the state was saved...
-					continue;
-				}
-
-				m_vecProduces[cargoInfoIndex].LoadState(it.value);
-			}
-
-			//If all production loaded, lets check if user added a new product to this industry
-			for (size_t i = 0, sz = m_vecProduces.size(); i < sz; ++i)
-			{
-				auto &cargoInfo = m_vecProduces[i];
-				auto cargoName = cargoInfo.GetCargo().GetNameData();
-				if (!productionData->HasMember(cargoName.data()))
-				{
-					dcclite::Log::Warn("[CargoProducer::LoadState] [{}]: Cargo {} was not found in production state", m_rclIndustry.GetName(), cargoName);
-
-					return false;
-				}
-			}
+				dcclite::Log::Warn("[CargoProducer::LoadState] [{}]: Failed to load production state", m_rclIndustry.GetName());
+				return false;
+			}			
 		}
 		else
 		{
@@ -512,7 +549,7 @@ namespace dcclite::broker::tycoon::detail
 
 	void CargoProducer::ResetState(const FastClock::time_point now)
 	{
-		std::ranges::for_each(m_vecProduces, [](detail::CargoInfo &ci) { ci.Reset(); });
+		m_clProductionManager.ResetState();
 
 		if (!m_fProducing)
 			this->ScheduleProduction(now);

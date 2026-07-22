@@ -1,4 +1,6 @@
-- TODO:
+- TODO:	
+	- calculate cargo production time based on monte carlo simulation 
+
 	- Industry consumption:
 		- Diferent storage quantity from production
 		- generates storage room each industry tick
