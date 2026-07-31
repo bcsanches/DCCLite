@@ -130,69 +130,6 @@ local function on_train_entered_helix_down(device)
 	end	
 end
 
-local function on_helix_exit_sensor(sensor)
-
-	log_trace("[TC_SIGNAL_D06] on_helix_exit_sensor sensor")
-
-	if (signal_state == SIGNAL_STATES.helix_path_busy) and sensor.active then				
-		log_trace("[TC_SIGNAL_D06] on_helix_exit_sensor sensor ACTIVE")
-
-		signal_state = SIGNAL_STATES.helix_path_exiting
-
-	elseif (signal_state == SIGNAL_STATES.helix_path_exiting) and sensor.inactive then
-		log_trace("[TC_SIGNAL_D06] on_helix_exit_sensor INACTIVE - resetting")
-
-		--reset signal
-		signal_state = SIGNAL_STATES.automatic
-
-		log_trace("[TC_SIGNAL_D06] on_helix_exit_sensor INACTIVE - signal state set to automatic")
-
-		log_info("type=" .. tostring(type(on_monitored_devices_change)))
-		log_info("value=" .. tostring(on_monitored_devices_change))
-
-		-- check state		
-		on_monitored_devices_change(sensor)
-
-		log_trace("[TC_SIGNAL_D06] on_helix_exit_sensor INACTIVE - on_monitored_devices_change finished")
-	end
-end
-
-local function on_soledade_branch_exit_sensor(sensor)
-	if (signal_state == SIGNAL_STATES.soledade_path_busy) and sensor.active then				
-		signal_state = SIGNAL_STATES.soledade_path_exiting		
-	elseif (signal_state == SIGNAL_STATES.soledade_path_exiting) and sensor.inactive then
-
-		--reset signal
-		signal_state = SIGNAL_STATES.automatic
-
-		-- check state
-		on_monitored_devices_change(sensor)
-	end
-end
-
---[[
-function on_helix_path_section_change(section)
-    log_info("[TC_SIGNAL_D06] [on_helix_path_section_change] " .. section:get_state_name())
-
-    if section:is_clear() then
-        log_trace("[TC_SIGNAL_D06] [on_helix_path_section_change] train left the block")        
-
-        return
-    end
-
-    if section.state == SECTION_STATES.up_start then
-        log_trace("[TC_SIGNAL_D06] [on_helix_path_section_change] train leaving TC")    
-    elseif section.state == SECTION_STATES.down_start then
-        -- train is aproaching Soledade and entered the block?
-        log_trace("[TC_SIGNAL_D06] [on_helix_path_section_change] train aproaching TC")
-    elseif section.state == SECTION_STATES.up then
-        log_trace("[TC_SIGNAL_D06] [on_helix_path_section_change] train entering staging - block complete")    
-    elseif section.state == SECTION_STATES.down then
-        log_trace("[TC_SIGNAL_D06] [on_helix_path_section_change] train entering TC - block complete")    
-    end            
-end
---]]
-
 local function is_helix_path_reserved()
 	return (signal_state ~= SIGNAL_STATES.helix_path_clear) and (signal_state ~= SIGNAL_STATES.helix_path_busy) and (signal_state ~= SIGNAL_STATES.helix_path_exiting)
 end
@@ -338,6 +275,69 @@ local function on_monitored_devices_change(device)
 	-- Finally path clear and no blocks ocupied...
 	set_helix_down_aspect()
 end
+
+local function on_helix_exit_sensor(sensor)
+
+	log_trace("[TC_SIGNAL_D06] on_helix_exit_sensor sensor")
+
+	if (signal_state == SIGNAL_STATES.helix_path_busy) and sensor.active then				
+		log_trace("[TC_SIGNAL_D06] on_helix_exit_sensor sensor ACTIVE")
+
+		signal_state = SIGNAL_STATES.helix_path_exiting
+
+	elseif (signal_state == SIGNAL_STATES.helix_path_exiting) and sensor.inactive then
+		log_trace("[TC_SIGNAL_D06] on_helix_exit_sensor INACTIVE - resetting")
+
+		--reset signal
+		signal_state = SIGNAL_STATES.automatic
+
+		log_trace("[TC_SIGNAL_D06] on_helix_exit_sensor INACTIVE - signal state set to automatic")
+
+		log_info("type=" .. tostring(type(on_monitored_devices_change)))
+		log_info("value=" .. tostring(on_monitored_devices_change))
+
+		-- check state		
+		on_monitored_devices_change(sensor)
+
+		log_trace("[TC_SIGNAL_D06] on_helix_exit_sensor INACTIVE - on_monitored_devices_change finished")
+	end
+end
+
+local function on_soledade_branch_exit_sensor(sensor)
+	if (signal_state == SIGNAL_STATES.soledade_path_busy) and sensor.active then				
+		signal_state = SIGNAL_STATES.soledade_path_exiting		
+	elseif (signal_state == SIGNAL_STATES.soledade_path_exiting) and sensor.inactive then
+
+		--reset signal
+		signal_state = SIGNAL_STATES.automatic
+
+		-- check state
+		on_monitored_devices_change(sensor)
+	end
+end
+
+--[[
+function on_helix_path_section_change(section)
+    log_info("[TC_SIGNAL_D06] [on_helix_path_section_change] " .. section:get_state_name())
+
+    if section:is_clear() then
+        log_trace("[TC_SIGNAL_D06] [on_helix_path_section_change] train left the block")        
+
+        return
+    end
+
+    if section.state == SECTION_STATES.up_start then
+        log_trace("[TC_SIGNAL_D06] [on_helix_path_section_change] train leaving TC")    
+    elseif section.state == SECTION_STATES.down_start then
+        -- train is aproaching Soledade and entered the block?
+        log_trace("[TC_SIGNAL_D06] [on_helix_path_section_change] train aproaching TC")
+    elseif section.state == SECTION_STATES.up then
+        log_trace("[TC_SIGNAL_D06] [on_helix_path_section_change] train entering staging - block complete")    
+    elseif section.state == SECTION_STATES.down then
+        log_trace("[TC_SIGNAL_D06] [on_helix_path_section_change] train entering TC - block complete")    
+    end            
+end
+--]]
 
 hlx_t08:on_state_change(on_monitored_devices_change)
 hlx_t07:on_state_change(on_monitored_devices_change)
