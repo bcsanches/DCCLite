@@ -8,7 +8,7 @@ SECTION_STATES = {
     down = 4
 }
 
-function get_section_state_name(state)
+local function get_section_state_name(state)
     --log_trace("trying to find state name")
 
     if state == SECTION_STATES.clear then
@@ -115,7 +115,7 @@ function MiniBlock:on_end_sensor_change(sensor)
 
 end
 
-function dispatch_mini_block_sensor_event(sensor, mini_block)    
+local function dispatch_mini_block_sensor_event(sensor, mini_block)    
     if mini_block.start_sensor == sensor then
         mini_block:on_start_sensor_change(sensor)
     else

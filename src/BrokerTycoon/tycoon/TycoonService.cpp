@@ -126,7 +126,7 @@ namespace dcclite::broker::tycoon
 	{
 		this->NotifyItemChanged(
 			industry, 
-			proc ? proc : [&industry](JsonOutputStream_t &stream) { industry.SerializeDelta(stream); }
+			proc ? proc : [&industry](JsonOutputStream_t &stream) { industry.SerializeDelta(stream, std::nullopt); }
 		);
 	}
 

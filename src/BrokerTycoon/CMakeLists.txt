@@ -21,6 +21,8 @@ add_library(
         tycoon/detail/CargoInfo.h
         tycoon/detail/CargoProducer.cpp
         tycoon/detail/CargoProducer.h
+        tycoon/detail/ProductionManager.cpp
+        tycoon/detail/ProductionManager.h
         tycoon/detail/Spot.cpp
         tycoon/detail/Spot.h
         tycoon/FastClock.cpp

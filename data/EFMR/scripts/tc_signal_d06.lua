@@ -59,7 +59,7 @@ local hlx_sensor_dmt03 = dcclite.dcc0.HLX_DMT03
 -- soledade branch sensors
 local sl_bp_main_d01 = dcclite.dcc0.SL_BP_MAIN_D01
 
-SIGNAL_STATES = {
+local SIGNAL_STATES = {
     automatic = 0,
 	helix_path_clear = 1,
 	helix_path_busy = 2,
@@ -72,21 +72,21 @@ SIGNAL_STATES = {
 
 local signal_state = SIGNAL_STATES.automatic
 
-function set_stop_aspect(reason)
+local function set_stop_aspect(reason)
 	log_info(reason)
 
 	signal_d06:set_aspect(SignalAspects.Stop, "TC_SIGNAL_D06_SCRIPT", reason)
 	signal_state = SIGNAL_STATES.automatic
 end
 
-function set_helix_down_aspect()
+local function set_helix_down_aspect()
 	log_info("TC_SIGNAL_D06 Route to staging CLEAR")
 	signal_d06:set_aspect(SignalAspects.Clear, "TC_SIGNAL_D06_SCRIPT", "Path to staging entrance is set")
 
 	signal_state = SIGNAL_STATES.helix_path_clear
 end
 
-function set_helix_up_aspect()
+local function set_helix_up_aspect()
 	log_info("TC_SIGNAL_D06 Route to helix UP RESTRICTED")
 	signal_d06:set_aspect(SignalAspects.Restricted, "TC_SIGNAL_D06_SCRIPT", "Path to helix UP is set")
 
@@ -94,14 +94,14 @@ function set_helix_up_aspect()
 end
 
 
-function set_soledade_branch_aspect()
+local function set_soledade_branch_aspect()
 	log_info("[TC_SIGNAL_D06] Soledade path CLEAR")
 	signal_d06:set_aspect(SignalAspects.Aproach, "TC_SIGNAL_D06_SCRIPT", "Path to Soledade is set")
 
 	signal_state = SIGNAL_STATES.soledade_path_clear
 end
 
-function on_train_entered_helix_down(device)
+local function on_train_entered_helix_down(device)
 
 	log_info("[TC_SIGNAL_D06] on_train_entered_helix_down " .. device.name)
 
@@ -130,7 +130,7 @@ function on_train_entered_helix_down(device)
 	end	
 end
 
-function on_helix_exit_sensor(sensor)
+local function on_helix_exit_sensor(sensor)
 
 	log_trace("[TC_SIGNAL_D06] on_helix_exit_sensor sensor")
 
@@ -145,12 +145,19 @@ function on_helix_exit_sensor(sensor)
 		--reset signal
 		signal_state = SIGNAL_STATES.automatic
 
-		-- check state
-		on_device_change(sensor)
+		log_trace("[TC_SIGNAL_D06] on_helix_exit_sensor INACTIVE - signal state set to automatic")
+
+		log_info("type=" .. tostring(type(on_monitored_devices_change)))
+		log_info("value=" .. tostring(on_monitored_devices_change))
+
+		-- check state		
+		on_monitored_devices_change(sensor)
+
+		log_trace("[TC_SIGNAL_D06] on_helix_exit_sensor INACTIVE - on_monitored_devices_change finished")
 	end
 end
 
-function on_soledade_branch_exit_sensor(sensor)
+local function on_soledade_branch_exit_sensor(sensor)
 	if (signal_state == SIGNAL_STATES.soledade_path_busy) and sensor.active then				
 		signal_state = SIGNAL_STATES.soledade_path_exiting		
 	elseif (signal_state == SIGNAL_STATES.soledade_path_exiting) and sensor.inactive then
@@ -159,7 +166,7 @@ function on_soledade_branch_exit_sensor(sensor)
 		signal_state = SIGNAL_STATES.automatic
 
 		-- check state
-		on_device_change(sensor)
+		on_monitored_devices_change(sensor)
 	end
 end
 
@@ -186,13 +193,15 @@ function on_helix_path_section_change(section)
 end
 --]]
 
-function is_helix_path_reserved()
+local function is_helix_path_reserved()
 	return (signal_state ~= SIGNAL_STATES.helix_path_clear) and (signal_state ~= SIGNAL_STATES.helix_path_busy) and (signal_state ~= SIGNAL_STATES.helix_path_exiting)
 end
 
-function on_device_change(device)
+local function on_monitored_devices_change(device)
 
-	log_info("[TC_SIGNAL_D06] on_device_change " .. device.name)
+	log_info("[TC_SIGNAL_D06] on_monitored_devices_change entered")
+
+	log_info("[TC_SIGNAL_D06] on_monitored_devices_change " .. device.name)
 
 	-- Are we going to Soledade or up the helix?
     if hlx_t03.thrown then		
@@ -330,19 +339,19 @@ function on_device_change(device)
 	set_helix_down_aspect()
 end
 
-hlx_t08:on_state_change(on_device_change)
-hlx_t07:on_state_change(on_device_change)
-hlx_t06:on_state_change(on_device_change)
-hlx_t05:on_state_change(on_device_change)
-hlx_t04:on_state_change(on_device_change)
-hlx_t03:on_state_change(on_device_change)
-hlx_t02:on_state_change(on_device_change)
-hlx_t01:on_state_change(on_device_change)
+hlx_t08:on_state_change(on_monitored_devices_change)
+hlx_t07:on_state_change(on_monitored_devices_change)
+hlx_t06:on_state_change(on_monitored_devices_change)
+hlx_t05:on_state_change(on_monitored_devices_change)
+hlx_t04:on_state_change(on_monitored_devices_change)
+hlx_t03:on_state_change(on_monitored_devices_change)
+hlx_t02:on_state_change(on_monitored_devices_change)
+hlx_t01:on_state_change(on_monitored_devices_change)
 
-hlx_sensor_dtc02:on_state_change(on_device_change)
-hlx_sensor_dtc01:on_state_change(on_device_change)
-hlx_sensor_dtc00:on_state_change(on_device_change)
-hlx_sensor_dmt03:on_state_change(on_device_change)
+hlx_sensor_dtc02:on_state_change(on_monitored_devices_change)
+hlx_sensor_dtc01:on_state_change(on_monitored_devices_change)
+hlx_sensor_dtc00:on_state_change(on_monitored_devices_change)
+hlx_sensor_dmt03:on_state_change(on_monitored_devices_change)
 
 hlx_sensor_dtc02:on_state_change(on_train_entered_helix_down)
 hlx_sensor_dtc00:on_state_change(on_helix_exit_sensor)
@@ -360,6 +369,6 @@ helix_down_path_section = Section:new({
 ]]--
 
 -- set initial state
-on_device_change(signal_d06)
+on_monitored_devices_change(signal_d06)
 
 log_info("[TC_SIGNAL_D06] - init OK " .. signal_state)

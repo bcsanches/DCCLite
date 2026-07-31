@@ -7,7 +7,7 @@ local hlx_t06 = dcclite.dcc0.HLX_T06;
 
 local hlx_quad_inverter = dcclite.dcc0.INV_HELIX_TC_SOL;
 
-function on_t04_change(decoder)
+local function on_t04_change(decoder)
 
     log_info("hlx_t04 change event");
 
@@ -39,11 +39,11 @@ function on_t04_change(decoder)
     
 end
 
-function on_t05_change(decoder)
+local function on_t05_change(decoder)
     
 end
 
-function initialize()
+local function initialize()
     log_trace("Hello from 'on_state_change' ");
 
     on_t04_change();

@@ -7,7 +7,7 @@ local signal_d11 = dcclite.dcc0.TC_SIG_11D
 -- turnouts
 local tc_t02 = dcclite.dcc0.TC_T02
 
-function on_device_change(device)
+local function on_device_change(device)
 	if tc_t02.thrown then
 		if signal_d06.aspect == SignalAspects.Stop then
 			signal_d11:set_aspect(SignalAspects.Restricted, "TC_SIGNAL_D11_SCRIPT", "tc_02 thrown, d06 stop")

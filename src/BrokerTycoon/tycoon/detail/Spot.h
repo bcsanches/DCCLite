@@ -10,9 +10,7 @@
 
 #pragma once
 
-#include <dcclite/Object.h>
-
-#include <rapidjson/document.h>
+#include "ProductionManager.h"
 
 namespace dcclite::broker::tycoon
 {
@@ -102,7 +100,7 @@ namespace dcclite::broker::tycoon::detail
 				return (m_kState == SpotStates::LOADING || m_kState == SpotStates::UNLOADING);
 			}
 
-			void Load(int cargoIndex);
+			void Load(CargoIndex cargoIndex);
 
 			void Unload()
 			{
@@ -135,12 +133,12 @@ namespace dcclite::broker::tycoon::detail
 				m_kState = SpotStates::FREE;
 				m_strInformation.clear();
 				m_strCargoInformation.clear();
-				m_iCargoIndex = -1;
+				m_optCargoIndex = std::nullopt;
 			}
 
-			[[nodiscard]] inline int GetCargoIndex() const noexcept
+			[[nodiscard]] inline std::optional<CargoIndex> GetCargoIndex() const noexcept
 			{
-				return m_iCargoIndex;
+				return m_optCargoIndex;
 			}
 
 			[[nodiscard]] inline bool IsTransfering() const noexcept
@@ -161,9 +159,15 @@ namespace dcclite::broker::tycoon::detail
 			void Reset();
 
 		private:
-			std::string			m_strInformation;
-			std::string			m_strCargoInformation;
-			int					m_iCargoIndex = -1;
+			std::string					m_strInformation;
+			std::string					m_strCargoInformation;
+
+			/// <summary>
+			/// The cargo we are loading / unloading from a CargoProducer. 
+			/// This is only set when the spot is in LOADING or UNLOADING state. 
+			/// It is cleared when the spot is FREE or RESERVED.
+			/// </summary>
+			std::optional<CargoIndex>	m_optCargoIndex;
 
 			SpotStates m_kState = SpotStates::FREE;
 	};

@@ -34,7 +34,7 @@ namespace dcclite::broker::tycoon::detail
 		stream.AddStringValue("cargoInformation", m_strCargoInformation);
 	}
 
-	void Spot::Load(int cargoIndex)
+	void Spot::Load(CargoIndex cargoIndex)
 	{
 		if (!this->CanLoad())
 		{
@@ -42,14 +42,14 @@ namespace dcclite::broker::tycoon::detail
 		}
 
 		m_kState = SpotStates::LOADING;
-		m_iCargoIndex = cargoIndex;
+		m_optCargoIndex = cargoIndex;
 	}
 
 	void Spot::Reset()
 	{
 		m_kState = SpotStates::FREE;
 		m_strInformation.clear();
-		m_iCargoIndex = -1;
+		m_optCargoIndex = std::nullopt;
 	}
 
 	void Spot::SaveState(dcclite::JsonOutputStream_t &stream, const Industry &industry) const
@@ -58,8 +58,8 @@ namespace dcclite::broker::tycoon::detail
 		stream.AddStringValue("info", m_strInformation);
 		stream.AddStringValue("carfoInformation", m_strCargoInformation);
 
-		if (m_iCargoIndex >= 0)
-			stream.AddStringValue("cargo", industry.TryGetCargoByCargoInfoIndex(m_iCargoIndex)->GetNameData());
+		if (m_optCargoIndex)
+			stream.AddStringValue("cargo", industry.TryGetCargoByCargoInfoIndex(m_optCargoIndex.value())->GetNameData());
 	}
 
 	std::optional<SpotStates> Spot::LoadStateEnum(const rapidjson::Value &params, const char *field)
@@ -90,18 +90,18 @@ namespace dcclite::broker::tycoon::detail
 		if (auto cargoName = json::TryGetString(params, "cargo"))
 		{
 			auto index = industry.TryGetCargoInfoIndexByCargoName(cargoName.value());
-			if (index < 0)
+			if (!index)
 			{
 				dcclite::Log::Error("[Spot::LoadState] Invalid cargo name: {}, resetting spot", cargoName.value());
 
-				m_iCargoIndex = -1;
+				m_optCargoIndex = std::nullopt;
 				m_strInformation.clear();
 				m_kState = SpotStates::FREE;
 
 				return false;
 			}
 
-			m_iCargoIndex = index;
+			m_optCargoIndex = index;
 		}
 
 		return true;

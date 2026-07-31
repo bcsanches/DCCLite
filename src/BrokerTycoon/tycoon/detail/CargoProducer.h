@@ -12,24 +12,13 @@
 
 #include <chrono>
 
-#include <rapidjson/document.h>
-
 #include "../FastClock.h"
 
-#include "CargoInfo.h"
+#include "ProductionManager.h"
 
 namespace dcclite::broker::tycoon
 {
-	class Cargo;
-	class FastClock;
 	class Industry;
-	class TycoonService;
-
-	struct CargoQuantity
-	{
-		uint8_t m_uQuantity;
-		uint8_t m_uReservedQuantity;
-	};
 }
 
 namespace dcclite::broker::tycoon::detail
@@ -39,56 +28,7 @@ namespace dcclite::broker::tycoon::detail
 	class CargoProcessor
 	{
 
-	};
-
-	class ProductionManager
-	{
-		public:
-			void Load(TycoonService &tycoon, const rapidjson::Value &params, const RName industryName);
-
-			const Cargo *TryGetCargoByCargoInfoIndex(size_t index) const noexcept;
-
-			int TryGetCargoInfoIndexByCargoName(std::string_view name) const noexcept;
-			int TryGetCargoInfoIndexByCargoName(RName rname) const noexcept;
-
-			[[nodiscard]] size_t FindCargoInfoIndexByCargoName(RName cargoName, RName industryName) const;
-
-			[[nodiscard]] unsigned CalculateTotalCargoStored() const noexcept;
-
-			size_t RandomSelectCargoToProduce(RName industryName) const noexcept;
-
-			[[nodiscard]] CargoQuantity GetCargoQuantity(RName cargoName, RName industryName) const;
-
-			[[nodiscard]] inline detail::CargoInfo &GetCargoInfo(size_t index) noexcept
-			{
-				assert(index < m_vecProduces.size());
-
-				return m_vecProduces[index];
-			}
-
-			void Serialize(dcclite::JsonOutputStream_t &stream) const;
-			void SerializeDelta(dcclite::JsonOutputStream_t &stream) const;
-			void SerializeCargoInfoDelta(dcclite::JsonOutputStream_t &stream, const int cargoInfoIndex) const;
-
-			void SaveState(dcclite::JsonOutputStream_t &stream) const;
-			bool LoadState(const rapidjson::Value &params);
-
-			void ResetState();
-
-			[[nodiscard]] inline size_t GetProducesCount() const noexcept
-			{
-				return m_vecProduces.size();
-			}
-
-		private:
-			void LoadProduce(TycoonService &tycoon, const rapidjson::Value &params);
-
-			void AdjustProductionChances();			
-
-		private:
-			std::vector<detail::CargoInfo>					m_vecProduces;
-			unsigned										m_uTotalChance;
-	};
+	};	
 
 	class CargoProducer : public CargoProcessor
 	{
@@ -108,17 +48,17 @@ namespace dcclite::broker::tycoon::detail
 				return m_clProductionManager.CalculateTotalCargoStored();
 			}
 
-			[[nodiscard]] inline const Cargo *TryGetCargoByCargoInfoIndex(size_t index) const noexcept
+			[[nodiscard]] inline const Cargo *TryGetCargoByCargoInfoIndex(CargoIndex index) const noexcept
 			{
 				return m_clProductionManager.TryGetCargoByCargoInfoIndex(index);
 			}
 
-			[[nodiscard]] inline int TryGetCargoInfoIndexByCargoName(std::string_view name) const noexcept
+			[[nodiscard]] inline std::optional<CargoIndex> TryGetCargoInfoIndexByCargoName(std::string_view name) const noexcept
 			{
 				return m_clProductionManager.TryGetCargoInfoIndexByCargoName(name);
 			}
 
-			[[nodiscard]] inline int TryGetCargoInfoIndexByCargoName(RName rname) const noexcept
+			[[nodiscard]] inline std::optional<CargoIndex> TryGetCargoInfoIndexByCargoName(RName rname) const noexcept
 			{
 				return m_clProductionManager.TryGetCargoInfoIndexByCargoName(rname);
 			}			
@@ -142,7 +82,7 @@ namespace dcclite::broker::tycoon::detail
 			void Serialize(dcclite::JsonOutputStream_t &stream, const FastClock &fastClock) const;
 			void SerializeDeltaDataOnly(dcclite::JsonOutputStream_t &stream, const FastClock &fastClock) const;
 
-			void SerializeCargoInfo(dcclite::JsonOutputStream_t &stream, const int cargoInfoIndex) const;
+			void SerializeCargoInfo(dcclite::JsonOutputStream_t &stream, CargoIndex cargoInfoIndex) const;
 
 			inline void SerializeProductionDelta(dcclite::JsonOutputStream_t &stream) const
 			{

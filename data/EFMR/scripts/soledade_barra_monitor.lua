@@ -6,9 +6,33 @@ local hlx_quad_inverter = dcclite.dcc0.INV_HELIX_TC_SOL;
 
 local sl_bp_triangle_turnout = dcclite.dcc0.HLX_T06;
 
-local on_hlx_quad_inverter_state_change
+local section01;
+local section02;
+local section03;
 
-function on_section01_state_change(section)
+local function on_hlx_quad_inverter_state_change(quad_inverter)
+
+    log_trace("[SoledadeBarraMonitor] on_hlx_quad_inverter_state_change")
+
+    if not section01:is_clear() then
+        log_trace("[SoledadeBarraMonitor] section is busy, ignoring")
+
+        return
+    end
+    
+    log_trace("[SoledadeBarraMonitor] section is clear, updating")
+
+    local state = hlx_quad_inverter.active;
+    
+    -- if turnout is on the way up the helix, align the phases
+    if sl_bp_triangle_turnout.thrown then 
+        state = not state    
+    end
+
+    main_line_quad_inverter:set_state(state);
+end
+
+local function on_section01_state_change(section)
     log_info("section 01 state change: " .. section:get_state_name())
 
     if section:is_clear() then
@@ -36,7 +60,7 @@ function on_section01_state_change(section)
     
 end
 
-function on_section02_state_change(section)
+local function on_section02_state_change(section)
     log_info("section 02 state change: " .. section:get_state_name())
 
     if section.state == SECTION_STATES.up_start then
@@ -50,18 +74,13 @@ function on_section02_state_change(section)
     elseif section.state == SECTION_STATES.down then
         log_trace("[SoledadeBarraMonitor] train on midway aproaching soledade - block complete")    
     end
-end
+end 
 
-
-function on_tsection03_state_change(tsection)    
+local function on_tsection03_state_change(tsection)
     log_trace("[SoledadeBarraMonitor] on_tsection03_state_change")
 end
 
-local section01;
-local section02;
-local section03;
-
-function configure_sections()
+local function configure_sections()
     local sl_bp_main_d01 = dcclite.dcc0.SL_BP_MAIN_D01;
     local sl_bp_main_d02 = dcclite.dcc0.SL_BP_MAIN_D02;
     local sl_bp_main_d03 = dcclite.dcc0.SL_BP_MAIN_D03;
@@ -103,29 +122,7 @@ function configure_sections()
     log_trace("[SoledadeBarraMonitor] configure_sections OK")
 end
 
-function on_hlx_quad_inverter_state_change(quad_inverter)
-
-    log_trace("[SoledadeBarraMonitor] on_hlx_quad_inverter_state_change")
-
-    if not section01:is_clear() then
-        log_trace("[SoledadeBarraMonitor] section is busy, ignoring")
-
-        return
-    end
-    
-    log_trace("[SoledadeBarraMonitor] section is clear, updating")
-
-    local state = hlx_quad_inverter.active;
-    
-    -- if turnout is on the way up the helix, align the phases
-    if sl_bp_triangle_turnout.thrown then 
-        state = not state    
-    end
-
-    main_line_quad_inverter:set_state(state);
-end
-
-function on_sl_bp_triangle_turnout_state_change(turnout)
+local function on_sl_bp_triangle_turnout_state_change(turnout)
     log_trace("[SoledadeBarraMonitor] on_sl_bp_triangle_turnout_state_change")
 
     -- just force a refresh
@@ -133,7 +130,7 @@ function on_sl_bp_triangle_turnout_state_change(turnout)
 
 end
 
-function on_sl_bp_d01_reset_button_state_change(turnout)
+local function on_sl_bp_d01_reset_button_state_change(turnout)
     log_trace("[SoledadeBarraMonitor] on_sl_bp_d01_reset_button_state_change")
 
     section01:reset()

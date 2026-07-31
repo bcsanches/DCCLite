@@ -202,7 +202,7 @@ namespace dcclite::broker::tycoon
 		this->SendDeltaWithSpotStateChangedEvent(spot);
 	}
 
-	void Industry::OnCargoProduced(AccessToken<detail::CargoProducer> token, unsigned cargoIndex)
+	void Industry::OnCargoProduced(AccessToken<detail::CargoProducer> token, CargoIndex cargoIndex)
 	{
 		m_rclTycoon.OnObjectStateChanged(AccessToken<Industry>{}, *this, [this, cargoIndex](JsonOutputStream_t &stream) { this->SerializeDelta(stream, cargoIndex); });
 	}
@@ -229,19 +229,19 @@ namespace dcclite::broker::tycoon
 		}
 	}
 
-	void Industry::SerializeDelta(dcclite::JsonOutputStream_t &stream, int cargoInfoHintIndex) const
+	void Industry::SerializeDelta(dcclite::JsonOutputStream_t &stream, std::optional<CargoIndex> cargoIndex) const
 	{
 		this->SerializeIdentification(stream);
 
 		m_clProducer.SerializeDeltaDataOnly(stream, m_rclTycoon.GetFastClock());		
 
-		if (cargoInfoHintIndex < 0)
+		if (!cargoIndex)
 		{
 			m_clProducer.SerializeProductionDelta(stream);			
 		}
 		else
 		{
-			m_clProducer.SerializeCargoInfo(stream, cargoInfoHintIndex);
+			m_clProducer.SerializeCargoInfo(stream, cargoIndex.value());
 		}
 	}
 
@@ -250,7 +250,7 @@ namespace dcclite::broker::tycoon
 		m_rclTycoon.OnObjectStateChanged(AccessToken<Industry>{}, *this, [this, &spot](JsonOutputStream_t &stream)
 			{
 				//just send down the delta, including cargo holder, because its state changed...
-				this->SerializeDelta(stream);
+				this->SerializeDelta(stream, std::nullopt);
 
 				{
 					auto spotsData = stream.AddArray("spots");
@@ -260,9 +260,9 @@ namespace dcclite::broker::tycoon
 
 				//if the spot has cargo info, send it also...
 				auto cargoInfoIndex = spot.GetCargoIndex();
-				if (cargoInfoIndex >= 0)
+				if (cargoInfoIndex)
 				{
-					m_clProducer.SerializeCargoInfo(stream, cargoInfoIndex);
+					m_clProducer.SerializeCargoInfo(stream, cargoInfoIndex.value());
 				}
 			}
 		);

@@ -17,7 +17,7 @@ for i = 1, 12 do
 	}	
 end
 
-function on_power_button_state_change(button, relay)
+local function on_power_button_state_change(button, relay)
 	if not button.active then
 		return
 	end
@@ -27,7 +27,7 @@ function on_power_button_state_change(button, relay)
     relay:set_state(not relay.active)
 end
 
-function on_relay_state_change(relay, led)
+local function on_relay_state_change(relay, led)
     log_trace("[StagingPanelExitC] Relay state change")
 
     led:set_state(relay.active)
@@ -356,7 +356,7 @@ local routes = {
 	}
 }
 
-function set_route(button, route_info)
+local function set_route(button, route_info)
 	if not button.active then
 		return
 	end
@@ -373,7 +373,7 @@ function set_route(button, route_info)
 	end	
 end	
 
-function check_route(route_info)
+local function check_route(route_info)
 	log_trace("[StagingPanelExitC] Checking route " .. route_info.name)
 
 	local turnouts = route_info.turnouts

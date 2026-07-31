@@ -37,9 +37,7 @@ namespace dcclite::broker::sys::FileWatcher
 		
 	static std::mutex										g_lckMutex;
 	static std::map<dcclite::fs::path, DirectoryWatcher>	g_mapWatchers;
-	static EventTarget										g_clSentinel;
-
-	static bool IsHandleValid(const ldmonitor::fs::path &path, const std::string &fileName) noexcept;	
+	static EventTarget										g_clSentinel;	
 
 	class DirectoryWatcher
 	{
@@ -72,7 +70,7 @@ namespace dcclite::broker::sys::FileWatcher
 				return m_mapHandles.empty();
 			}
 
-			bool IsHandleValid(std::string fileName) const
+			bool IsHandleValid(const std::string &fileName) const
 			{
 				return m_mapHandles.find(fileName) != m_mapHandles.end();
 			}

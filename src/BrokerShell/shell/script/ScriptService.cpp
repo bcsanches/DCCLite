@@ -99,7 +99,7 @@ namespace dcclite::broker::shell::script
 
 				m_clLua.script_file(path.string());
 
-				if (m_setScripts.find(path) != m_setScripts.end())
+				if (m_setScripts.find(path) == m_setScripts.end())
 				{
 					WatchFile(path);
 					m_setScripts.insert(path);

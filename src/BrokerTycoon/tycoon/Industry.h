@@ -51,28 +51,28 @@ namespace dcclite::broker::tycoon
 
 			~Industry() override = default;
 
-			void SerializeDelta(dcclite::JsonOutputStream_t &stream, int cargoInfoHintIndex = -1) const;
+			void SerializeDelta(dcclite::JsonOutputStream_t &stream, std::optional<CargoIndex> cargoIndexHint) const;
 			void Serialize(dcclite::JsonOutputStream_t &stream) const override;
 
 			void SaveState(dcclite::JsonOutputStream_t &stream) const;
 			void LoadState(const rapidjson::Value &params);
 
-			inline const Cargo *TryGetCargoByCargoInfoIndex(size_t index) const
+			inline const Cargo *TryGetCargoByCargoInfoIndex(CargoIndex index) const
 			{
 				return m_clProducer.TryGetCargoByCargoInfoIndex(index);
 			}
 
-			int TryGetCargoInfoIndexByCargoName(RName rname) const
+			std::optional<CargoIndex> TryGetCargoInfoIndexByCargoName(RName rname) const
 			{
 				return m_clProducer.TryGetCargoInfoIndexByCargoName(rname);
 			}
 			
-			int TryGetCargoInfoIndexByCargoName(std::string_view name) const
+			std::optional<CargoIndex> TryGetCargoInfoIndexByCargoName(std::string_view name) const
 			{
 				return m_clProducer.TryGetCargoInfoIndexByCargoName(name);
 			}
 
-			void OnCargoProduced(AccessToken<detail::CargoProducer> token, unsigned cargoIndex);
+			void OnCargoProduced(AccessToken<detail::CargoProducer> token, CargoIndex cargoIndex);
 
 			////////////////////////////////////////////////////////////////////////////
 			//
