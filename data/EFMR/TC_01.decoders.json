@@ -18,6 +18,24 @@
 		"location": "TC"
 	},
 	{
+		"name": "TC_SIG_5D_HG",
+		"class": "Output",
+		"address": 1304,
+		"pin": 43,
+		"inverted": true,
+		"ignoreSavedState": true,
+		"location": "TC"
+	},
+	{
+		"name": "TC_SIG_5D_HR",
+		"class": "Output",
+		"address": 1305,
+		"pin": 42,
+		"inverted": true,
+		"ignoreSavedState": true,
+		"location": "TC"
+	},
+	{
 		"name":"TC_TurntableSensorA",
 		"class":"Sensor",
 		"pin":49,

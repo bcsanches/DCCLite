@@ -1,6 +1,9 @@
 DCCLite
 -------
 
+- Devices locks?
+	- allow a CTC system to lock a turnout
+
 - Create new library for DccTerminalCmds?
 	- BrokerDccShell ?
 
@@ -95,6 +98,42 @@ DCCLite
 	- WiThrottleServer
 		- allow mobiles to connect
 		- Talks with ThrottleService
+
+	- Make a pipeline system (like windows IO drivers?):
+		- RawLayer: simple send commands to the DCC System, this will be the HAL layer, send the real commands to DCC
+			- The RawLayer can be used also as a RawDriver, for driving locomotives as original
+		- RosterDriverLayer: just use DecoderPro roster data, show labels, etc
+		- InertiaLayer: apply inertial to accleration and deceleration		
+		- ProtoLayer: instead of 28 notches, use the standard diesel engine 8 notches
+			- Each notch increase several speed steps, for example: 
+				notch 1: 0 - 3
+				notch 2: 4 - 6
+				notch 3: 7 - 9
+				notch 4: 10 - 12
+				notch 5: 13 - 16
+				notch 6: 17 - 20
+				notch 7: 21 - 24
+				notch 8: 25 - 28
+			- The inertial layer takes care of slowly adjusting speed
+
+	- Allow user to present to EngineDriver roster each layer, ie:
+		- R - 4190 - RFFSA: selecting this drives 4190 engine as raw, no button labels, no inertial, nothing
+		- 4190 - RFFSA: the JMRI roster data, with buttons, config, etc
+		- L - 4190 - RFFSA: the load layer or inertial, allow engine to have inertial effects
+
+
+ProtoDiver
+----------
+
+Create a mobile app for driving engines like the real ones, put controls like notchs, brakes, etc
+Allow selection of loads:
+	- light engine
+	- light load
+	- medium load
+	- heavy load
+
+
+Talks directly with EngineDriverServer
 
 LitePanelSDL
 ------------

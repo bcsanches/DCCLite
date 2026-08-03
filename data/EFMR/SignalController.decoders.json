@@ -1,107 +1,178 @@
 [
-  {
-	"name":"STC_SIG_12",
-	"class":"VirtualSignal",    
-	"address":"1840",  
-	"heads":
 	{
-		"red":"STC_HR12",
-		"green":"STC_HG12"
-	},        
-	"aspects":
-	[
-		{
-			"name":"Stop",
-			"on":["red"]
+		"name": "STC_SIG_12",
+		"class": "VirtualSignal",
+		"address": "1840",
+		"heads": {
+			"red": "STC_HR12",
+			"green": "STC_HG12"
 		},
-		{
-			"name":"Restricted",
-			"on":["red"],
-			"flash":true
-		},
-		{
-			"name":"Aproach",
-			"on":["green"],
-			"flash":true
-		},
-		{
-			"name":"Clear",
-			"on":["green"]
-		},
-		{
-			"name":"Dark",
-			"off":["red", "green"]
-		}        
-	]  
-  },
-  {
-	"name":"TC_SIG_6D",
-	"class":"VirtualSignal",    
-	"address":1312,  
-	"heads":
+		"aspects": [
+			{
+				"name": "Stop",
+				"on": [
+					"red"
+				]
+			},
+			{
+				"name": "Restricted",
+				"on": [
+					"red"
+				],
+				"flash": true
+			},
+			{
+				"name": "Aproach",
+				"on": [
+					"green"
+				],
+				"flash": true
+			},
+			{
+				"name": "Clear",
+				"on": [
+					"green"
+				]
+			},
+			{
+				"name": "Dark",
+				"off": [
+					"red",
+					"green"
+				]
+			}
+		]
+	},
 	{
-		"red":"TC_SIG_6D_HR",
-		"green":"TC_SIG_6D_HG"
-	},        
-	"aspects":
-	[
-		{
-			"name":"Stop",
-			"on":["red"]
+		"name": "TC_SIG_5D",
+		"class": "VirtualSignal",
+		"address": 1306,
+		"heads": {
+			"red": "TC_SIG_5D_HR",
+			"green": "TC_SIG_5D_HG"
 		},
-		{
-			"name":"Restricted",
-			"on":["red"],
-			"flash":true
-		},
-		{
-			"name":"Aproach",
-			"on":["green"],
-			"flash":true
-		},
-		{
-			"name":"Clear",
-			"on":["green"]
-		},
-		{
-			"name":"Dark",
-			"off":["red", "green"]
-		}        
-	]  
-  },
-  {
-	"name":"TC_SIG_11D",
-	"class":"VirtualSignal",    
-	"address":1303,  
-	"heads":
+		"aspects": [
+			{
+				"name": "Stop",
+				"on": [
+					"red"
+				]
+			},
+			{
+				"name": "Restricted",
+				"on": [
+					"red"
+				],
+				"flash": true
+			},
+			{
+				"name": "Aproach",
+				"on": [
+					"green"
+				],
+				"flash": true
+			},
+			{
+				"name": "Clear",
+				"on": [
+					"green"
+				]
+			},
+			{
+				"name": "Dark",
+				"off": [
+					"red",
+					"green"
+				]
+			}
+		]
+	},
 	{
-		"red":"TC_SIG_11D_HR",
-		"green":"TC_SIG_11D_HG"
-	},        
-	"aspects":
-	[
-		{
-			"name":"Stop",
-			"on":["red"]
+		"name": "TC_SIG_6D",
+		"class": "VirtualSignal",
+		"address": 1312,
+		"heads": {
+			"red": "TC_SIG_6D_HR",
+			"green": "TC_SIG_6D_HG"
 		},
-		{
-			"name":"Restricted",
-			"on":["red"],
-			"flash":true
+		"aspects": [
+			{
+				"name": "Stop",
+				"on": [
+					"red"
+				]
+			},
+			{
+				"name": "Restricted",
+				"on": [
+					"red"
+				],
+				"flash": true
+			},
+			{
+				"name": "Aproach",
+				"on": [
+					"green"
+				],
+				"flash": true
+			},
+			{
+				"name": "Clear",
+				"on": [
+					"green"
+				]
+			},
+			{
+				"name": "Dark",
+				"off": [
+					"red",
+					"green"
+				]
+			}
+		]
+	},
+	{
+		"name": "TC_SIG_11D",
+		"class": "VirtualSignal",
+		"address": 1303,
+		"heads": {
+			"red": "TC_SIG_11D_HR",
+			"green": "TC_SIG_11D_HG"
 		},
-		{
-			"name":"Aproach",
-			"on":["green"],
-			"flash":true
-		},
-		{
-			"name":"Clear",
-			"on":["green"]
-		},
-		{
-			"name":"Dark",
-			"off":["red", "green"]
-		}        
-	]  
-  }
+		"aspects": [
+			{
+				"name": "Stop",
+				"on": [
+					"red"
+				]
+			},
+			{
+				"name": "Restricted",
+				"on": [
+					"red"
+				],
+				"flash": true
+			},
+			{
+				"name": "Aproach",
+				"on": [
+					"green"
+				],
+				"flash": true
+			},
+			{
+				"name": "Clear",
+				"on": [
+					"green"
+				]
+			},
+			{
+				"name": "Dark",
+				"off": [
+					"red",
+					"green"
+				]
+			}
+		]
+	}
 ]
