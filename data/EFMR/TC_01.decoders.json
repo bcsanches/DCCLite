@@ -36,6 +36,18 @@
 		"location": "TC"
 	},
 	{
+		"name": "TC_D_MAIN_05",
+		"class": "Sensor",
+		"pin": 41,
+		"address": 1306,
+		"pullup": true,
+		"inverted": true,
+		"activateDelay": 0,
+		"deactivateDelay": 10,
+		"location": "Tres Coracoes",
+		"comment": "Sensor infrared 05 - Saida superior - principal - Sinal SIG_5D"
+	},
+	{
 		"name":"TC_TurntableSensorA",
 		"class":"Sensor",
 		"pin":49,

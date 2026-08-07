@@ -152,7 +152,7 @@ namespace SharpTerminal
 			if (!mObjectsNodes.TryGetValue(remoteObject.InternalId, out var nodes))
 				return;
 
-			mTreeView.BeginUpdate();
+			//mTreeView.BeginUpdate();
 
 			var customIcon = remoteObject.TryGetIconName();
 
@@ -172,7 +172,7 @@ namespace SharpTerminal
 					node.Text = name;
 			}
 
-			mTreeView.EndUpdate();
+			//mTreeView.EndUpdate();
 		}
 
 		private string GenerateObjectName(RemoteObject remoteObject)
