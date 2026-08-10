@@ -152,6 +152,7 @@ namespace SharpTerminal
 			if (!mObjectsNodes.TryGetValue(remoteObject.InternalId, out var nodes))
 				return;
 
+			//Begin update was causing flickering
 			//mTreeView.BeginUpdate();
 
 			var customIcon = remoteObject.TryGetIconName();
