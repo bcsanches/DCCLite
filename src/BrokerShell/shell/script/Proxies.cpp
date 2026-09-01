@@ -84,6 +84,20 @@ class DecoderProxy
 			return !this->IsActive();
 		}
 
+		void Lock(const char *requester)
+		{
+			auto decoder = DynamicDecoderCast<dcclite::broker::exec::dcc::OutputDecoder>();
+
+			decoder->Lock(requester);
+		}
+
+		void Unlock()
+		{
+			auto decoder = DynamicDecoderCast<dcclite::broker::exec::dcc::OutputDecoder>();
+
+			decoder->Unlock();
+		}
+
 		void OnStateChange(sol::function callBack)
 		{
 			this->RegisterCallback(callBack);
@@ -140,7 +154,7 @@ class DecoderProxy
 			auto decoder = dynamic_cast<T *>(&m_rclDecoder);
 			if (!decoder)
 			{
-				throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::SetState] [{}]: Decoder is not an output decoder {}!!!", this->GetName(), typeid(T).name()));
+				throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::DynamicDecoderCast] [{}]: Decoder is not an output decoder {}!!!", this->GetName(), typeid(T).name()));
 			}
 
 			return decoder;
@@ -291,6 +305,8 @@ namespace dcclite::broker::shell::script::detail
 			"set_state", &DecoderProxy::SetState,
 			"on_state_change", &DecoderProxy::OnStateChange,
 			"on_aspect_change", &DecoderProxy::OnAspectChange,
+			"lock", &DecoderProxy::Lock,
+			"unlock", &DecoderProxy::Unlock,
 			"set_aspect", &DecoderProxy::SetAspect,
 			"aspect", sol::property(&DecoderProxy::GetAspect)
 		);

@@ -18,12 +18,12 @@ function RouteMonitor:new(r)
 		error("[RouteMonitor:new] turnouts required")
 	end
 
-	for _, turnout_info in ipairs(self.turnouts) do
+	for _, turnout_info in ipairs(r.turnouts) do
 		if not turnout_info.turnout then
 			error("[RouteMonitor:new] turnout required")
 		end
 
-		if (not turnout_info.state == TURNOUT_STATES.closed) and (not turnout_info.state == TURNOUT_STATES.thrown) then
+		if (turnout_info.state ~= TURNOUT_STATES.closed) and (turnout_info.state ~= TURNOUT_STATES.thrown) then
 			error("[RouteMonitor:new] turnout state must be 'closed' or 'thrown'")
 		end
 	end
@@ -31,6 +31,7 @@ function RouteMonitor:new(r)
 	setmetatable(r, self)
     self.__index = self
 
+	return r
 end
 
 function RouteMonitor:is_route_set()
@@ -41,6 +42,18 @@ function RouteMonitor:is_route_set()
 	end
 	
 	return true
+end
+
+function RouteMonitor:lock()
+	for _, turnout_info in ipairs(self.turnouts) do
+		turnout_info.turnout:lock()
+	end
+end
+
+function RouteMonitor:unlock()
+	for _, turnout_info in ipairs(self.turnouts) do
+		turnout_info.turnout:unlock()
+	end
 end
 
 log_info("[RouteMonitor] Init finished")

@@ -177,6 +177,12 @@ function Section:on_start_sensor_change(sensor)
 		return
 	end
 
+	-- if the sensor has a sensor checker and it returns false, ignore the sensor now...
+	if self.start_sensor_checker and not self.start_sensor_checker(self, sensor) then
+		log_trace("[Section:" .. self.name .. "] on_start_sensor_change sensor check returned false")
+		return
+	end
+
     if self.mini_block then
         dispatch_mini_block_sensor_event(sensor, self.mini_block)
     else
@@ -188,6 +194,12 @@ function Section:on_end_sensor_change(sensor)
     log_trace("[Section:" .. self.name .. "] on_end_sensor_change")
 
 	if self.inactive then
+		return
+	end
+
+	-- if the sensor has a sensor checker and it returns false, ignore the sensor now...
+	if self.end_sensor_checker and not self.end_sensor_checker(self, sensor) then
+		log_trace("[Section:" .. self.name .. "] on_end_sensor_change sensor check returned false")
 		return
 	end
 
@@ -278,16 +290,16 @@ function Section:new(o)
         error("[Section:new] callback is nil or not a function]")
     end
 
-    log_trace("[Section:new] Registering callback for start sensor")
+    --log_trace("[Section:new] Registering callback for start sensor")
     o.start_sensor:on_state_change(
-        function(sensor)            
+        function(sensor)
             o:on_start_sensor_change(sensor)
         end
     )
 
-    log_trace("[Section:new] Registering callback for end sensor")
+    --log_trace("[Section:new] Registering callback for end sensor")
     o.end_sensor:on_state_change(
-        function(sensor)                        
+        function(sensor)
             o:on_end_sensor_change(sensor)
         end
     )

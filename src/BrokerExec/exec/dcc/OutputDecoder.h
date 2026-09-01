@@ -89,6 +89,23 @@ namespace dcclite::broker::exec::dcc
 				return m_fActivateOnPowerUp;
 			}
 
+			void Lock(const char *requester)
+			{
+				m_fLocked = true;
+				m_strLockedBy = requester;
+			}
+
+			void Unlock()
+			{
+				m_fLocked = false;
+				m_strLockedBy.clear();
+			}
+
+			[[nodiscard]] inline bool IsLocked() const noexcept
+			{
+				return m_fLocked;
+			}
+
 			//
 			//IObject
 			//
@@ -100,10 +117,14 @@ namespace dcclite::broker::exec::dcc
 			}				
 
 		private:				
+			std::string m_strLockedBy;
+
 			dcclite::DecoderStates m_kRequestedState = dcclite::DecoderStates::INACTIVE;
 
 			bool m_fInvertedOperation = false;
 			bool m_fIgnoreSavedState = false;
 			bool m_fActivateOnPowerUp = false;
+
+			bool m_fLocked = false;
 	};
 }

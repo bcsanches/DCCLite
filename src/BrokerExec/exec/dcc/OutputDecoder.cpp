@@ -39,6 +39,13 @@ namespace dcclite::broker::exec::dcc
 	{
 		if (m_kRequestedState != newState)
 		{
+			if (this->IsLocked())
+			{
+				dcclite::Log::Warn("[OutputDecoder::SetState] Client requested to set a locked device state: {}", this->GetName());
+
+				return false;
+			}
+
 			dcclite::Log::Info("[OutputDecoder::{}] [SetState] requested change from {} to {} by {}",
 				this->GetName(),
 				dcclite::DecoderStateName(m_kRequestedState),
@@ -69,5 +76,7 @@ namespace dcclite::broker::exec::dcc
 		stream.AddBool("invertedOperation", m_fInvertedOperation);
 		stream.AddBool("ignoreSaveState", m_fIgnoreSavedState);
 		stream.AddBool("activateOnPowerUp", m_fActivateOnPowerUp);
+		stream.AddBool("locked", m_fLocked);		
+		stream.AddStringValue("lockedBy", m_strLockedBy);
 	}
 }

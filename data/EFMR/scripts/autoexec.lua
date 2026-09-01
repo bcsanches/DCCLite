@@ -11,9 +11,9 @@ run_script("st_panel_exitc.lua")
 
 run_script("tc_02.lua")
 
-run_script("tc_signal_d05.lua")
-run_script("tc_signal_d06.lua")
-run_script("tc_signal_d11.lua")
+run_script("tc_signal_05d.lua")
+run_script("tc_signal_06d.lua")
+run_script("tc_signal_11d.lua")
 
 log_info("Autoexec finished")
 

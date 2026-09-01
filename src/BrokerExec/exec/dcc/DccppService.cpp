@@ -818,9 +818,7 @@ namespace dcclite::broker::exec::dcc
 					goto ERROR_RESPONSE;
 				}
 
-				auto *outputDecoder = static_cast<OutputDecoder *>(remoteDecoder);
-
-				
+				auto *outputDecoder = static_cast<OutputDecoder *>(remoteDecoder);				
 
 				//if no state change pending and remote state is the requested one
 				if (!outputDecoder->GetPendingStateChange() && outputDecoder->GetState() == newState)
@@ -830,6 +828,14 @@ namespace dcclite::broker::exec::dcc
 				}
 				else
 				{
+					//if locked, ignore
+					if (outputDecoder->IsLocked())
+					{
+						dcclite::Log::Warn("[DccppClient::OnMessage] Client requested to set a locked device state: {}", outputDecoder->GetName());
+
+						goto ERROR_RESPONSE;
+					}
+
 					//now we set the new state and later, the decoder will update it and send a response to JMRI
 					outputDecoder->SetState(newState, "DccppClient");
 				}
