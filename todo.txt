@@ -142,6 +142,8 @@ DCCLite
 	- TripleTrackSection: abandon, use multiple sections
 	- update route section to know next section and avoid re-ocupying the block
 	- it may have a direction set (will be used by signal logic)
+	- PathSection: depends on a route to be set, like a turnout inside a interlock. Sensors are ignored if the path is not
+		set. Can be used to represent all paths from a interlock
 
 	- SignalController
 		- controls a single signal
@@ -188,7 +190,7 @@ DCCLite
 - SignalController
 	- Managers a SignalInterlock
 	- AutoSignalController
-		- monitors the signal inputs, if route is clear, sets the signal do clear
+		- monitors the signal inputs, if route is clear, sets the signal to clear
 	- ManualSignalController
 		- Accepts user input and set a signal to clear if possible
 
