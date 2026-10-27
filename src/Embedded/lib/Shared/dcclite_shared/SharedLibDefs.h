@@ -84,7 +84,20 @@ namespace dcclite
 		OUTD_ACTIVATE_ON_POWER_UP = 0x04,
 
 		OUTD_ACTIVE = 0x80
-	};		
+	};
+
+	enum BlinkOutputDecoderFlags : uint8_t
+	{
+		//make sure we use the same bits as OutputDecoderFlags
+		BOUTD_INVERTED_OPERATION = OutputDecoderFlags::OUTD_INVERTED_OPERATION,
+		BOUTD_IGNORE_SAVED_STATE = OutputDecoderFlags::OUTD_IGNORE_SAVED_STATE,
+		BOUTD_ACTIVATE_ON_POWER_UP = OutputDecoderFlags::OUTD_ACTIVATE_ON_POWER_UP,
+
+		BOUTD_BLINKING = 0x40,
+
+		//the same as OutputDecoderFlags
+		BOUTD_ACTIVE = OutputDecoderFlags::OUTD_ACTIVE
+	};
 
 	enum ServoTurnoutDecoderFlags : uint8_t
 	{

@@ -23,8 +23,6 @@ OutputDecoder::OutputDecoder(dcclite::Packet &packet) :
 	m_clPin{ packet.Read<dcclite::PinType_t>(), Pin::MODE_OUTPUT }
 {	
 	m_fFlags = packet.Read<uint8_t>();	
-
-	using namespace dcclite;
 	
 	this->Init();
 }

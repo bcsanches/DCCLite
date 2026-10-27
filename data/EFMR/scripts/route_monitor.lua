@@ -44,9 +44,13 @@ function RouteMonitor:is_route_set()
 	return true
 end
 
-function RouteMonitor:lock()
+function RouteMonitor:lock(reason)
+	log_info("[RouteMonitor] lock reason = " .. tostring(reason))
+
 	for _, turnout_info in ipairs(self.turnouts) do
-		turnout_info.turnout:lock()
+		log_info("[RouteMonitor] calling turnout lock reason = " .. tostring(reason))
+
+		turnout_info.turnout:lock(reason)
 	end
 end
 

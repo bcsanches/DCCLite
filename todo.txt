@@ -1,31 +1,22 @@
 DCCLite
 -------
 
-- Devices locks?
-	- allow a CTC system to lock a turnout
-
 - Create new library for DccTerminalCmds?
 	- BrokerDccShell ?
 
-- Flashing output, how to avoid all messages?
-	- put a flash flag on output
-		- Create a FlashOutput, when on, will turn on the flash flag on output
-		- output will flash (or not) according to the flag
+- Blinking output, how to avoid all messages?
+	- put a blink flag on output
+		- Create a BlinkOutput, when on, will turn on the blink flag on output
+		- output will blink (or not) according to the flag
 			- OutputDecoder - the existing output
-			- FlashOutputDecoder - new decoder with flashing capability
-			- FlashOutputDecoderController - turns on / off the flag on above
+			- BlinkOutputDecoder - new decoder with flashing capability
+			- BlinkOutputDecoderController - turns on / off the flag on above
 				- When active, sets the flag state on FlashOutputDecoder 
-				- FlashOutputDecoder does not change state, just the flag value
+				- BlinkhOutputDecoder does not change state, just the flag value
 					- if already active, starts flashing
 					- if inactive, statys inactive
 
-	- Update signals to use it
-
-	- Create a FlashOutput, use same pin and does the flashing logic
-		- dcclite will complain due to pin conflict
-
-	- FlashOutput will turn on / off the output
-		- more logical, but again, dcclite will go crazy trying to turn it off and not syncing state, will mess up the net protocol
+	- Update signals to use it	
 
 - Better emulator:	
 	- Remote connect to emulators
@@ -48,16 +39,131 @@ DCCLite
 		- Display unregistered arduinos
 		- Detect arduino on USB and offer to burn it
 
+	- Log:
+		- display log as a listview (wireguard client)
+		- filter log types: debug, trace, info, etc
+		- filter with string: [Lua]
+
 - Dispatcher
-	- SectionManager: manages all sections? 
-	- Section: the base with two sensors?
-		- when on sensor gets hit, defines the direction
+
+	- Section
+		- can be enabled / disabled
+			- when disabled ignore sensors
+			- if disabled with sensor active - fault
+
+	- TransitSection: Section
+		- two sensors		
+		- has a direction info (based on sensor)
+		- has a direction hint (if sensor activated on wrong side on this case, panic)
+
+	- SingleSensorSection: Section
+		- just a single sensor, if active, section is ocupied
+		- no way to determine direction
+
+    ----------------------------------------
+	- Below here, new data for other system:
+
+	- TrackPiece
+		- base component for Block and Interlock						
+
+	- Block:
+		- should contain one section
+		- left block
+		- right block
+		- left signal
+		- right signal
+
+	- Interlock:
+		- should contain one or more sections
+		- path:
+			- connects blocks between interlock
+			- left and right block
+			- section used for this
+			- turnout list with state
+
+	- CTC System
+		- Has info about blocks
+		- grab sections data from Broker
+		- configure section route info for broker (it has the layout data)
+		- block may contain several sections (interlock)
+
+	- Should the signal protect the block entrance (below design) or protect block exit?
+		- should protect block exit, left and right signals
+
+
+       S0          S1     
+     Block0   Interlock2  O-| Block2
+    --------|------*--------|---------|
+            |-O   /           S5
+	 Block1      /  S3        S6
+    --------|---*-----------|---------|
+       S2   |-O     S4    O-| Block 3 |-O
+              
+
+	Block | Section | Left       | Right      | LeftSig   | RightSig 
+	B0    | S0      | nil        | Interlock2 | nil       | signal
+	B1    | S2      | nil        | Interlock2 | nil       | signal
+	B2    | S5      | Interlock2 | nil        | signal    | nil      
+	B3    | S6      | Interlock2 | nil        | signal    | signal
+
+
+	Interlock2
+
+	Path | Section | Left | Right
+    P0   | S1      | B0   | B2
+	P1   | S3      | B1   | B2
+	P2   | S4      | B1   | B3
+
+	Path | Turnout | State
+	P0   | T0      | Closed
+	P1   | T0      | Thrown
+	P1   | T1      | Thrown
+	P2   | T1      | Closed
+
+	- User activates right signal on Block1:
+		- Signal knows its blocks and side on block
+		- System grabs block 1 info
+		- request right side connection
+			- Interlock is returned, so asks interlock
+				- incoming from B1, get valid path
+					- there are two options on path table, so the turnout states must be checked
+					- based on turnout states, finds the valid path, suppose P2
+					- may return null if no valid path (turnouts not on correct route)
+				- when path is found, asks if it is free (section must be inactive)
+				- if path is free, grab next block
+				
+			- B3 is returned
+			- If B3 if free, check right signal, if exists, reserve all this route, clear signal and stops
+				- If B3 does not contain a signal, continue on next block / interlock until it is blocked, chain finishes or a signal is found
+	
 	- StorageSection: a block with an entry and exit sensor, no turnouts, simple block for stopping a train
 	- TrackSection: is it necessary? Consider as main line?
 	- Abandon TrackSection on dispatcher
-	- TripleTrackSection: the same as track section, but with two sections and only one active at time
+	- TripleTrackSection: abandon, use multiple sections
 	- update route section to know next section and avoid re-ocupying the block
 	- it may have a direction set (will be used by signal logic)
+
+	- SignalController
+		- controls a single signal
+		- starts at danger state
+		- It references a Section that it protects
+		- when requested, can be cleared, it checks:
+			- section is clear?
+			- section route, if any, is set?
+
+			- if it can be cleared, set the Signal aspect
+			- mark the section as reserved and expected direction, follow section links until it finds a signal on the same direction
+
+		- When not in danger state, as soon as its sections gets ocupied, resets to DANGER
+
+	- SignalMaster
+		- SignalController brain
+
+		- AutomaticSignalMaster
+			- Automatically goes to clear when the section is clear and goes to danger otherwise
+
+		- ManualSignalMaster
+			- Only change state when requested by controller (CTC controlled signal)
 
 - Create SignalInterlock
 	- where it will be stored? SignalLogicManager on BrokerShellLib? Dispatcher?

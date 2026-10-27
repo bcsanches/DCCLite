@@ -83,9 +83,13 @@ static bool ConsoleCtrlHandler(dcclite::ConsoleEvent event)
 	using namespace std::chrono_literals;
 
 	//if we return before the main thread, it may not finish cleaning up...
-	while(g_fExitRequested.test())
-		std::this_thread::sleep_for(1000ms);
+	while (g_fExitRequested.test())
+	{
+		dcclite::Log::Trace("[Main] Waiting main thread...");
+		std::this_thread::sleep_for(100ms);
+	}		
 
+	dcclite::Log::Info("[Main] Done waiting.");
 	return true;
 }
 

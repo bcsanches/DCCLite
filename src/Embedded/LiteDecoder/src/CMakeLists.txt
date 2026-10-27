@@ -1,28 +1,27 @@
 
 set(LiteDecoderLib_SRCS
-	Blinker.cpp
-  Config.cpp  
-  DecoderManager.cpp
-  main.cpp
-  NetUdp.cpp
-  OutputDecoder.cpp
-  QuadInverterDecoder.cpp
-  ServoProgrammer.cpp  
-  Session.cpp
-  TurntableAutoInverterDecoder.cpp        
+    Blinker.cpp    
+    Config.cpp  
+    DecoderManager.cpp
+    main.cpp
+    NetUdp.cpp    
+    QuadInverterDecoder.cpp
+    ServoProgrammer.cpp  
+    Session.cpp
+    TurntableAutoInverterDecoder.cpp        
 )
 
 set(LiteDecoderLib_HDRS
-	Blinker.h
-  Config.h 
-  DecoderManager.h  
-  main.h
-  NetUdp.h
-  OutputDecoder.h
-  QuadInverterDecoder.h
-  ServoProgrammer.h    
-  Session.h  
-  TurntableAutoInverterDecoder.h    
+	Blinker.h    
+    Config.h 
+    DecoderManager.h  
+    LiteDecoderLibDefs.h
+    main.h
+    NetUdp.h    
+    QuadInverterDecoder.h
+    ServoProgrammer.h    
+    Session.h  
+    TurntableAutoInverterDecoder.h    
 )
 
 add_compile_definitions(LITEDECODERLIB_EXPORTS DCCLITE_ARDUINO_EMULATOR)

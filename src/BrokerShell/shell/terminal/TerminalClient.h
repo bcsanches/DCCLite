@@ -13,6 +13,8 @@
 #include <list>
 #include <map>
 
+#include <spdlog/sinks/base_sink.h>
+
 #include <dcclite/NetMessenger.h>
 
 #include "sys/EventHub.h"
@@ -30,6 +32,20 @@ namespace dcclite::broker::exec::dcc
 namespace dcclite::broker::shell::terminal
 {	
 	class CmdHostService;
+	class TerminalClient;
+	
+	class TerminalClientLogSink : public spdlog::sinks::base_sink <std::mutex>
+	{
+		public:
+			TerminalClientLogSink(TerminalClient &client);
+
+		protected:
+			void sink_it_(const spdlog::details::log_msg &msg) override;
+			void flush_() override;
+
+		private:
+			TerminalClient &m_rclClient;
+	};
 
 	class TaskManager
 	{
@@ -77,6 +93,10 @@ namespace dcclite::broker::shell::terminal
 
 			void OnMsg(const std::string &msg);
 
+			void OnLogSinkMsg(std::string logmsg);
+
+			void SendLogMsg(std::string logmsg);
+
 			//
 			//
 			// ITerminalClient_ContextServices 
@@ -86,24 +106,9 @@ namespace dcclite::broker::shell::terminal
 			TaskManager &GetTaskManager() override;
 			void SendClientNotification(const std::string_view msg) override;
 
-			class MsgArrivedEvent: public sys::EventHub::IEvent
-			{
-				public:
-					MsgArrivedEvent(TerminalClient &target, std::string &&msg):
-						IEvent(target),
-						m_strMessage(msg)
-					{
-						//empty
-					}
-
-					void Fire() override
-					{
-						static_cast<TerminalClient &>(this->GetTarget()).OnMsg(m_strMessage);
-					}
-
-				private:
-					std::string m_strMessage;
-			};
+			friend class MsgArrivedEvent;
+			friend class LogMsgEvent;
+			friend class TerminalClientLogSink;
 
 		private:
 			NetMessenger	m_clMessenger;
@@ -119,6 +124,8 @@ namespace dcclite::broker::shell::terminal
 
 			std::thread										m_thReceiveThread;
 
-			const NetworkAddress	m_clAddress;
+			const NetworkAddress							m_clAddress;
+
+			std::shared_ptr<TerminalClientLogSink>			m_spLogSink;
 		};
 }

@@ -25,6 +25,67 @@
 
 namespace dcclite::broker::shell::terminal
 {
+	class MsgArrivedEvent : public sys::EventHub::IEvent
+	{
+		public:
+			MsgArrivedEvent(TerminalClient &target, std::string &&msg) :
+				IEvent(target),
+				m_strMessage(std::move(msg))
+			{
+				//empty
+			}
+
+			void Fire() override
+			{
+				static_cast<TerminalClient &>(this->GetTarget()).OnMsg(m_strMessage);
+			}
+
+		private:
+			std::string m_strMessage;
+	};
+
+	class LogMsgEvent : public sys::EventHub::IEvent
+	{
+		public:
+			LogMsgEvent(TerminalClient &target, std::string &&msg) :
+				IEvent(target),
+				m_strMessage(std::move(msg))
+			{
+				//empty
+			}
+
+			void Fire() override
+			{
+				static_cast<TerminalClient &>(this->GetTarget()).SendLogMsg(m_strMessage);
+			}
+
+		private:
+			std::string m_strMessage;
+	};
+	
+	TerminalClientLogSink::TerminalClientLogSink(TerminalClient &client) :
+		m_rclClient{ client }
+	{
+		//empty
+	}
+
+	void TerminalClientLogSink::sink_it_(const spdlog::details::log_msg &msg)
+	{
+		// log_msg is a struct containing the log entry info like level, timestamp, thread id etc.
+		// msg.payload (before v1.3.0: msg.raw) contains pre formatted log
+
+		// If needed (very likely but not mandatory), the sink formats the message before sending it to its final destination:
+		spdlog::memory_buf_t formatted;
+		spdlog::sinks::base_sink<std::mutex>::formatter_->format(msg, formatted);
+
+		m_rclClient.OnLogSinkMsg(fmt::to_string(formatted));		
+	}
+
+	void TerminalClientLogSink::flush_()
+	{
+		//empty
+	}	
+
 	/////////////////////////////////////////////////////////////////////////////
 	//
 	// TaskManager
@@ -76,6 +137,9 @@ namespace dcclite::broker::shell::terminal
 
 		m_thReceiveThread = std::thread{ [this] {this->ReceiveDataThreadProc(); } };
 		dcclite::SetThreadName(m_thReceiveThread, "TerminalClient::ReceiveThread");
+
+		m_spLogSink = std::make_shared<TerminalClientLogSink>(*this);
+		dcclite::Log::GetDefault()->sinks().push_back(m_spLogSink);
 	}
 
 	TerminalClient::~TerminalClient()
@@ -96,6 +160,14 @@ namespace dcclite::broker::shell::terminal
 		);
 
 		sys::EventHub::CancelEvents(*this);
+
+		//remove the log sink...
+		auto &sinks = dcclite::Log::GetDefault()->sinks();
+		auto it = std::ranges::find(sinks, m_spLogSink);
+		if (it == sinks.end())
+			return;
+
+		sinks.erase(it);
 	}	
 
 	void TerminalClient::RegisterListeners()
@@ -285,6 +357,33 @@ namespace dcclite::broker::shell::terminal
 		}
 	}
 
+	void TerminalClient::SendLogMsg(std::string logmsg)
+	{
+		m_clMessenger.Send(
+			m_clAddress,
+			MsgUtils::MakeRpcNotificationMessage(
+				-1,
+				"On-LogMsg",
+				[&logmsg](JsonOutputStream_t &params)
+				{
+					params.AddStringValue("msg", logmsg);					
+				}
+			)
+		);
+	}
+
+	void TerminalClient::OnLogSinkMsg(std::string logmsg)
+	{
+		if (dcclite::IsMainThread())
+		{
+			this->SendLogMsg(std::move(logmsg));
+		}
+		else
+		{
+			sys::EventHub::PostEvent<LogMsgEvent>(std::ref(*this), std::move(logmsg));
+		}
+	}
+
 	void TerminalClient::ReceiveDataThreadProc()
 	{
 		for (;;)
@@ -301,7 +400,7 @@ namespace dcclite::broker::shell::terminal
 				throw std::logic_error(fmt::format("[TerminalClient::ReceiveDataThreadProc] Unexpected socket error: {}", magic_enum::enum_name(status)));
 
 			//dcclite::Log::Trace("[TerminalClient::ReceiveDataThreadProc] Got data");
-			sys::EventHub::PostEvent<TerminalClient::MsgArrivedEvent>(std::ref(*this), std::move(msg));
+			sys::EventHub::PostEvent<MsgArrivedEvent>(std::ref(*this), std::move(msg));
 		}
 
 		m_rclOwner.Async_DisconnectClient(*this);

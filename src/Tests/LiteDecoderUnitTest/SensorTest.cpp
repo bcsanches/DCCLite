@@ -26,60 +26,13 @@
 #include <exec/dcc/SensorDecoder.h>
 
 #include "../TestsCommon/BrokerMockups.h"
+#include "MiniDuino.h"
 
 using namespace rapidjson;
 namespace broker = dcclite::broker::exec::dcc;
 
 static DecoderServicesMockup g_DecoderServices;
 static DeviceDecoderServicesMockup g_DeviceDecoderServices;
-
-class MiniDuino
-{
-	static void Setup()
-	{
-
-	}
-
-	static void Loop()
-	{
-		auto ticks = millis();
-
-		for (auto dec : g_pclSingleton->m_vecDecoders)
-		{
-			dec->Update(ticks);
-		}
-	}
-
-	public:
-		MiniDuino()
-		{
-			assert(!g_pclSingleton);
-
-			g_pclSingleton = this;
-
-			ArduinoLib::Setup(Setup, Loop, "SensorDecoderTest");
-		}
-
-		~MiniDuino()
-		{
-			ArduinoLib::Finalize();
-
-			g_pclSingleton = nullptr;
-		}
-
-		void AddDecoder(Decoder &dec)
-		{
-			m_vecDecoders.push_back(&dec);
-		}
-
-	private:
-		std::vector<Decoder *> m_vecDecoders;
-
-		static MiniDuino *g_pclSingleton;
-
-};
-
-MiniDuino *MiniDuino::g_pclSingleton = nullptr;
 
 bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream &stream)
 {

@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
+// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
 // file at the top-level directory of this distribution.
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public
@@ -103,7 +103,7 @@ namespace SharpTerminal
 			// 
 			exitToolStripMenuItem.Name = "exitToolStripMenuItem";
 			exitToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4;
-			exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			exitToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
 			exitToolStripMenuItem.Text = "E&xit";
 			exitToolStripMenuItem.Click += ExitToolStripMenuItem_Click;
 			// 
@@ -117,7 +117,7 @@ namespace SharpTerminal
 			// aboutToolStripMenuItem
 			// 
 			aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-			aboutToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			aboutToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
 			aboutToolStripMenuItem.Text = "&About";
 			aboutToolStripMenuItem.Click += AboutToolStripMenuItem_Click;
 			// 
@@ -177,8 +177,8 @@ namespace SharpTerminal
 			// 
 			// Console
 			// 
-			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 			ClientSize = new System.Drawing.Size(915, 794);
 			Controls.Add(splitContainer2);
 			Controls.Add(statusStrip1);

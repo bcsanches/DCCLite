@@ -84,11 +84,11 @@ class DecoderProxy
 			return !this->IsActive();
 		}
 
-		void Lock(const char *requester)
+		void Lock(std::string reason)
 		{
 			auto decoder = DynamicDecoderCast<dcclite::broker::exec::dcc::OutputDecoder>();
 
-			decoder->Lock(requester);
+			decoder->Lock(std::move(reason));
 		}
 
 		void Unlock()
@@ -150,26 +150,24 @@ class DecoderProxy
 
 		template <typename T>
 		inline T *DynamicDecoderCast()
-		{
-			auto decoder = dynamic_cast<T *>(&m_rclDecoder);
-			if (!decoder)
+		{			
+			if (auto decoder = dynamic_cast<T *>(&m_rclDecoder))
 			{
-				throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::DynamicDecoderCast] [{}]: Decoder is not an output decoder {}!!!", this->GetName(), typeid(T).name()));
+				return decoder;				
 			}
 
-			return decoder;
+			throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::DynamicDecoderCast] [{}]: Decoder is not an output decoder {}!!!", this->GetName(), typeid(T).name()));
 		}
 
 		template <typename T>
 		inline const T *DynamicDecoderCast() const
-		{
-			auto decoder = dynamic_cast<const T *>(&m_rclDecoder);
-			if (!decoder)
+		{			
+			if (auto decoder = dynamic_cast<const T *>(&m_rclDecoder))
 			{
-				throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::SetState] [{}]: Decoder is not an output decoder {}!!!", this->GetName(), typeid(T).name()));
+				return decoder;
 			}
 
-			return decoder;
+			throw std::runtime_error(fmt::format("[ScriptService] [DecoderProxy::SetState] [{}]: Decoder is not an output decoder {}!!!", this->GetName(), typeid(T).name()));
 		}
 
 		void OnRemoteDecoderStateSync(dcclite::broker::exec::dcc::Decoder &decoder)

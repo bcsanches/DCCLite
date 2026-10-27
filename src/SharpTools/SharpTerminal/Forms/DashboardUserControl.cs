@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Runtime.Versioning;
 using System.Windows.Forms;
@@ -7,110 +7,116 @@ namespace SharpTerminal
 {
 	[SupportedOSPlatform("windows")]
 	public partial class DashboardUserControl : UserControl
-    {
-        public DashboardUserControl()
-        {
-            InitializeComponent();
-        }
+	{
+		public DashboardUserControl()
+		{
+			InitializeComponent();
+		}
 
-        public DashboardUserControl(IConsole console, RemoteRoot root) :
-            this()
-        {
-            mLoadTimer_Tick(null, null);
+		public DashboardUserControl(IConsole console, RemoteRoot root) :
+			this()
+		{			
+			mConsole = console ?? throw new ArgumentNullException(nameof(console));
+			mRoot = root ?? throw new ArgumentNullException(nameof(root));
+		}
 
-            mConsole = console ?? throw new ArgumentNullException(nameof(console));
-            mRoot = root ?? throw new ArgumentNullException(nameof(root));
-        }
+		private readonly IConsole mConsole;
+		private readonly RemoteRoot mRoot;
 
-        protected async override void OnLoad(EventArgs e)
-        {
-            base.OnLoad(e);
-            
-            mLoadTimer.Start();
+		private int mCurrentChar = 0;
 
-            //Visual Studio Designer?
-            if (mConsole == null)
-                return;
+		private static char[] gChars = { '|', '/', '-', '\\' };
 
-            var result = await mConsole.RequestAsync("Get-RNames");            
+		private void mLoadTimer_Tick(object sender, EventArgs e)
+		{
+			++mCurrentChar;
 
-            if (result["classname"] != "RNames")
-            {
-                m_lbTitle.Text = "Error loading data";
+			if (mCurrentChar == gChars.Length)
+				mCurrentChar = 0;
 
-                MessageBox.Show("Error: classname is " + result["classname"]);                
-            }
-            else
-            {
-                m_lbTitle.Text = "Broker data";
+			m_lbTitle.Text = "Loading data " + gChars[mCurrentChar];
+		}
 
-                var namesData = result["rnames"];
+		private async void LoadNames()
+		{
+			mLoadTimer_Tick(null, null);
 
-                //
-                //Use a DataTable because it is much, much faster than adding directly to the DataGridView
-                // https://stackoverflow.com/a/36770807/440867
-                var dataTable = new DataTable();                
+			mLoadTimer.Start();
 
-                dataTable.Columns.Add("Index");
-                dataTable.Columns["Index"].DataType = typeof(int);
+			//Visual Studio Designer?
+			if (mConsole == null)
+				return;
 
-                dataTable.Columns.Add("Pos");
-                dataTable.Columns["Pos"].DataType = typeof(int);
+			var result = await mConsole.RequestAsync("Get-RNames");
 
-                dataTable.Columns.Add("Cluster");
-                dataTable.Columns["Cluster"].DataType = typeof(int);
+			if (result["classname"] != "RNames")
+			{
+				m_lbTitle.Text = "Error loading data";
 
-                dataTable.Columns.Add("Length");
-                dataTable.Columns["Length"].DataType = typeof(int);
+				MessageBox.Show("Error: classname is " + result["classname"]);
+			}
+			else
+			{
+				m_lbTitle.Text = "Broker data";
 
-                dataTable.Columns.Add("Name");                
+				var namesData = result["rnames"];
 
-                for (int i = 0;i < namesData.Count; ++i)
-                {
-                    var nameData = namesData[i];
+				//
+				//Use a DataTable because it is much, much faster than adding directly to the DataGridView
+				// https://stackoverflow.com/a/36770807/440867
+				var dataTable = new DataTable();
 
-                    var row = dataTable.NewRow();
-                    row["Pos"] = (int)nameData["position"];
-                    row["Index"] = (int)nameData["index"];
-                    row["Cluster"] = (int)nameData["cluster"];                    
+				dataTable.Columns.Add("Index");
+				dataTable.Columns["Index"].DataType = typeof(int);
 
-                    var rname = nameData["name"].ToString();
+				dataTable.Columns.Add("Pos");
+				dataTable.Columns["Pos"].DataType = typeof(int);
 
-                    row["Length"] = rname.Length;
-                    row["Name"] = rname;
+				dataTable.Columns.Add("Cluster");
+				dataTable.Columns["Cluster"].DataType = typeof(int);
 
-                    dataTable.Rows.Add(row);
-                }
+				dataTable.Columns.Add("Length");
+				dataTable.Columns["Length"].DataType = typeof(int);
 
-                m_gridMain.SuspendLayout();
-                m_gridMain.Columns.Clear();
-                m_gridMain.DataSource = dataTable;
+				dataTable.Columns.Add("Name");
 
-                for(int i = 0;i < 4;++i)                 
-                    m_gridMain.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+				for (int i = 0; i < namesData.Count; ++i)
+				{
+					var nameData = namesData[i];
 
-                m_gridMain.Columns[4].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+					var row = dataTable.NewRow();
+					row["Pos"] = (int)nameData["position"];
+					row["Index"] = (int)nameData["index"];
+					row["Cluster"] = (int)nameData["cluster"];
 
-                m_gridMain.ResumeLayout();
-            }
-            mLoadTimer.Stop();
-        }
+					var rname = nameData["name"].ToString();
 
-        private IConsole    mConsole;
-        private RemoteRoot  mRoot;
+					row["Length"] = rname.Length;
+					row["Name"] = rname;
 
-        private int         mCurrentChar = 0;
+					dataTable.Rows.Add(row);
+				}
 
-        private static char[] gChars = {'|', '/', '-', '\\'};
+				m_gridMain.SuspendLayout();
+				m_gridMain.Columns.Clear();
+				m_gridMain.DataSource = dataTable;
 
-        private void mLoadTimer_Tick(object sender, EventArgs e)
-        {
-            ++mCurrentChar;
+				for (int i = 0; i < 4; ++i)
+					m_gridMain.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
 
-            if(mCurrentChar == gChars.Length)
-                mCurrentChar = 0;
+				m_gridMain.Columns[4].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
 
-            m_lbTitle.Text = "Loading data " + gChars[mCurrentChar];
-        }
-    }
+				m_gridMain.ResumeLayout();
+			}
+			mLoadTimer.Stop();
+		}
+
+
+		private void m_pgNames_Enter(object sender, EventArgs e)
+		{
+			m_pgNames.Enter -= m_pgNames_Enter;
+
+			LoadNames();
+		}
+	}
 }

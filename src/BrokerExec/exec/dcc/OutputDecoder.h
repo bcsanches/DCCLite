@@ -89,10 +89,10 @@ namespace dcclite::broker::exec::dcc
 				return m_fActivateOnPowerUp;
 			}
 
-			void Lock(const char *requester)
+			void Lock(std::string requester)
 			{
 				m_fLocked = true;
-				m_strLockedBy = requester;
+				m_strLockedBy = std::move(requester);
 			}
 
 			void Unlock()

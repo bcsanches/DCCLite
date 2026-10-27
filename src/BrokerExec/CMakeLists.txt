@@ -8,6 +8,10 @@ add_library(
     BrokerExecLib	   	             
 		exec/dcc/Address.cpp
         exec/dcc/Address.h
+        exec/dcc/BlinkOutputDecoder.cpp
+        exec/dcc/BlinkOutputDecoder.h
+        exec/dcc/BlinkOutputDecoderController.cpp
+        exec/dcc/BlinkOutputDecoderController.h
         exec/dcc/DccLiteService.cpp        
         exec/dcc/DccLiteService.h  
         exec/dcc/DccppService.cpp
@@ -15,7 +19,7 @@ add_library(
         exec/dcc/Decoder.cpp
         exec/dcc/Decoder.h
         exec/dcc/Device.cpp
-        exec/dcc/Device.h      
+        exec/dcc/Device.h        
         exec/dcc/IDccLiteService.h  
         exec/dcc/IDevice.h
         exec/dcc/IResettableObject.h
@@ -28,7 +32,7 @@ add_library(
         exec/dcc/NetworkDeviceTasks.cpp
         exec/dcc/NetworkDeviceTasks.h
         exec/dcc/OutputDecoder.cpp
-        exec/dcc/OutputDecoder.h
+        exec/dcc/OutputDecoder.h        
         exec/dcc/PinManager.cpp
         exec/dcc/PinManager.h
         exec/dcc/QuadInverter.cpp

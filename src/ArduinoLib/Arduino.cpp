@@ -209,3 +209,8 @@ void ArduinoLib::SetPinDigitalVoltage(int pin, VoltageModes voltage)
 	detail::g_Pins.at(pin).setDigitalVoltage(voltage);
 }
 
+VoltageModes ArduinoLib::GetPinDigitalVoltage(int pin)
+{
+	return detail::g_Pins.at(pin).digitalRead() == HIGH ? VoltageModes::HIGH : VoltageModes::LOW;
+}
+

@@ -4,6 +4,9 @@ add_compile_definitions(DCCLITE_ARDUINO_EMULATOR)
 add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 
 package_add_test(LiteDecoderUnitTest
+	MiniDuino.cpp
+	MiniDuino.h
+	OutputDecoderTest.cpp
 	SensorTest.cpp
 )
 

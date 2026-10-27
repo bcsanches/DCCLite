@@ -1,8 +1,26 @@
 # Version 0.11.2 - Development
 
+TODO
+- make blink work
+- make log display
+
 ## Broker
 
 - Support to ignore aditional DCCex commands :P
+- Added BlinkOutputDecoder
+- Added BlinkOutputDecoderController
+- Added log to SharpConsole
+
+## LiteDecoder
+
+- Added test cases for OutputDecoder
+- Refactored code to use a common OutputDecoderState
+- Added BlinkOutputDecoder
+- Added BlinkOutputDecoderController
+
+## SharpConsole
+
+- Refactored Dashboard to show log messages
 
 # Version 0.11.1
 

@@ -36,11 +36,20 @@ Use case
 	- Linha do gado:
 		- Requer um vagão gaiola baia 1
 		- Requer um vagão gaiola baia 2
-4 - Usuario faz as manobras
-5 - Quando encostar o vagão adequado, registra no sistema:
+4 - Usuario remove os vagões que tiver interesse do trem e vai fazendo a reserva nos slots
+5 - os vagões são acumulados em uma linha de recepção
+	- pode-se usar algum dispositivo como o cartabs do pessoal da KCS (ou GD) para marcar os vagoes para cada local
+6 - trem vai embora
+
+....
+A manobra posiciona os vagoes em cada local e da entrada no sistema indicando que foi entregue o vagão
+7 - Quando encostar o vagão adequado, registra no sistema:
 	- Entregue vagão gaiola baia 1
 	- Entregue vagão fechado entreposto SPR
-6 - Sistema calcula tempo para fazer a operação
+8 - Sistema calcula tempo para fazer a operação
+
+---------------
+Quando os vagões forem liberados, a manobra vai colocando eles nas linhas adequadas do pátio (uma para cada destino)
 
 ------------
 1 - Chega novo trem

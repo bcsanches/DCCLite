@@ -3,5 +3,10 @@
     "name":"SL_BP_ResetButton",
     "class":"VirtualTurnout",    
     "address":"1652"    
+  },
+  {
+    "name":"TC_ButtonClearSignal05D",
+    "class":"VirtualTurnout",
+    "address":"1499"
   }
 ]

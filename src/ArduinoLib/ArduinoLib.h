@@ -44,6 +44,8 @@ namespace ArduinoLib
 	ARDUINO_API void SetSerialInput(const char *data);
 
 	ARDUINO_API void SetPinDigitalVoltage(int pin, VoltageModes voltage);
+
+	ARDUINO_API VoltageModes GetPinDigitalVoltage(int pin);
 }
 
 
