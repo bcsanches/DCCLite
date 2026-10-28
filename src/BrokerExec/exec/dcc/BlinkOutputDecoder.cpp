@@ -35,12 +35,24 @@ namespace dcclite::broker::exec::dcc
 				fmt::format(
 					"[BlinkOutputDecoder::{}] blinkInterval is too big ({}), max is {}.",
 					this->GetName(),
-					m_tBlinkInterval.count(), 
+					m_tBlinkInterval.count(),
 					std::numeric_limits<uint16_t>::max()
 				)
 			);
 		}
-	}	
+
+		if (m_tBlinkInterval.count() == 0)
+		{
+			throw std::logic_error(
+				fmt::format(
+					"[BlinkOutputDecoder::{}] blinkInterval must be greater than zero",
+					this->GetName(),
+					m_tBlinkInterval.count(),
+					std::numeric_limits<uint16_t>::max()
+				)
+			);
+		}
+	}
 
 	void BlinkOutputDecoder::WriteConfig(dcclite::Packet &packet) const
 	{

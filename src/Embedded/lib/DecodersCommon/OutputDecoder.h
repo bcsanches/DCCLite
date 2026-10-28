@@ -11,15 +11,13 @@
 #pragma once
 
 #include "Decoder.h"
+#include "OutputDecoderState.h"
 
-#include "Pin.h"
 
 class OutputDecoder : public Decoder
 {	
 	private:
-		uint16_t		m_uFlagsStorageIndex = 0;
-		Pin				m_clPin;
-		uint8_t			m_fFlags = 0;
+		OutputDecoderState m_clState;
 
 	public:
 		explicit OutputDecoder(dcclite::Packet &packet);
@@ -41,16 +39,11 @@ class OutputDecoder : public Decoder
 
 		bool IsActive() const override
 		{
-			return m_fFlags & dcclite::OUTD_ACTIVE;
+			return m_clState.IsActive();
 		}
 
 		bool IsSyncRequired() const override
 		{
 			return false;
-		}
-
-	private:
-		void Init();
-
-		void OperatePin();
+		}			
 };

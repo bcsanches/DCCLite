@@ -41,7 +41,9 @@ namespace dcclite
 		DEC_SERVO_TURNOUT = 3,
 		DEC_SIGNAL = 4,			//Only virtual, not implemented on Arduino
 		DEC_TURNTABLE_AUTO_INVERTER = 5,
-		DEC_QUAD_INVERTER = 6
+		DEC_QUAD_INVERTER = 6,
+		DEC_BLINK_OUTPUT = 7,
+		DEC_BLINK_OUTPUT_CONTROLLER = 8
 	};
 
 	enum class DecoderStates
@@ -83,7 +85,15 @@ namespace dcclite
 		OUTD_IGNORE_SAVED_STATE = 0x02,
 		OUTD_ACTIVATE_ON_POWER_UP = 0x04,
 
-		OUTD_ACTIVE = 0x80
+		OUTD_RESERVED_BIT = 0x08,
+
+		OUTD_USER_BIT4 = 0x10,
+		OUTD_USER_BIT5 = 0x20,
+		OUTD_USER_BIT6 = 0x40,
+
+		OUTD_ACTIVE = 0x80,
+
+		OUTD_USER_BITS = (OUTD_USER_BIT4 | OUTD_USER_BIT5 | OUTD_USER_BIT6)
 	};
 
 	enum BlinkOutputDecoderFlags : uint8_t
@@ -93,7 +103,8 @@ namespace dcclite
 		BOUTD_IGNORE_SAVED_STATE = OutputDecoderFlags::OUTD_IGNORE_SAVED_STATE,
 		BOUTD_ACTIVATE_ON_POWER_UP = OutputDecoderFlags::OUTD_ACTIVATE_ON_POWER_UP,
 
-		BOUTD_BLINKING = 0x40,
+		BOUTD_BLINKING = OUTD_USER_BIT4,
+		BOUTD_OUTPUT_ACTIVE = OUTD_USER_BIT5,
 
 		//the same as OutputDecoderFlags
 		BOUTD_ACTIVE = OutputDecoderFlags::OUTD_ACTIVE

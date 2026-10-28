@@ -33,7 +33,7 @@ namespace dcclite::broker::exec::dcc
 
 		dcclite::DecoderTypes GetType() const noexcept override
 		{
-			return dcclite::DecoderTypes::DEC_OUTPUT;
+			return dcclite::DecoderTypes::DEC_BLINK_OUTPUT_CONTROLLER;
 		}
 
 		//

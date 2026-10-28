@@ -12,18 +12,19 @@
 
 #include "Decoder.h"
 
-#include "Pin.h"
+#include "OutputDecoderState.h"
 
-class OutputDecoder : public Decoder
+class BlinkOutputDecoder : public Decoder
 {
 	private:
-		uint16_t		m_uFlagsStorageIndex = 0;
-		Pin				m_clPin;
-		uint8_t			m_fFlags = 0;
+		OutputDecoderState	m_clState;
+
+		uint16_t			m_u16IntervalMs;
+		unsigned long		m_uNextThink = 0;
 
 	public:
-		explicit OutputDecoder(dcclite::Packet &packet);
-		explicit OutputDecoder(Storage::EpromStream &stream);
+		explicit BlinkOutputDecoder(dcclite::Packet &packet);
+		explicit BlinkOutputDecoder(Storage::EpromStream &stream);
 
 		void SaveConfig(Storage::EpromStream &stream) override;
 
@@ -34,23 +35,32 @@ class OutputDecoder : public Decoder
 
 		dcclite::DecoderTypes GetType() const override
 		{
-			return dcclite::DecoderTypes::DEC_OUTPUT;
+			return dcclite::DecoderTypes::DEC_BLINK_OUTPUT;
 		};
 
 		bool AcceptServerState(dcclite::DecoderStates state, const unsigned long time) override;
 
 		bool IsActive() const override
 		{
-			return m_fFlags & dcclite::OUTD_ACTIVE;
+			return m_clState.IsActive();
+		}
+
+		inline bool IsInverted() const
+		{
+			return m_clState.IsInverted();
 		}
 
 		bool IsSyncRequired() const override
 		{
 			return false;
 		}
+		
+		bool Update(const unsigned long ticks) override;
 
+		void SetBlinkingState(dcclite::DecoderStates state);
+	
 	private:
 		void Init();
 
-		void OperatePin();
+		void StartBlinking(const unsigned long time);
 };

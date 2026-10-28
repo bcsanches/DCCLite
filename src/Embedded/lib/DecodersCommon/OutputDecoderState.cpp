@@ -35,26 +35,63 @@ OutputDecoderState::OutputDecoderState(Storage::EpromStream &stream)
 	this->Init();
 }
 
+void OutputDecoderState::SaveConfig(Storage::EpromStream &stream)
+{
+	stream.Put(m_clPin.Raw());
+
+	m_uFlagsStorageIndex = stream.GetIndex();
+	stream.Put(m_fFlags);
+}
+
+bool OutputDecoderState::SetActive(dcclite::DecoderStates state)
+{
+	bool active = state == dcclite::DecoderStates::ACTIVE;
+	if (this->IsActive() == active)
+		return false;
+
+	if (active)
+		m_fFlags |= dcclite::OUTD_ACTIVE;
+	else
+		m_fFlags &= ~dcclite::OUTD_ACTIVE;
+
+	this->SetOutput(state);
+	this->PersistState();
+
+	return true;
+}
+
+void OutputDecoderState::SetOutput(dcclite::DecoderStates state)
+{
+	bool active = state == dcclite::DecoderStates::ACTIVE;
+
+	const bool physicalState = this->IsInverted() ? !active : active;
+	m_clPin.DigitalWrite(physicalState ? Pin::VHIGH : Pin::VLOW);
+}
+
+bool OutputDecoderState::AcceptServerState(dcclite::DecoderStates state)
+{	
+	return this->SetActive(state);
+}
+
 void OutputDecoderState::Init()
 {
-	using namespace dcclite;
-
-	// sets status to 0 (INACTIVE) is bit 1 of iFlag=0, otherwise set to value of bit 2 of iFlag
-	//m_fStatus = bitRead(m_fFlags, 1) ? bitRead(m_fFlags, 2) : 0;
-	if (m_fFlags & OUTD_IGNORE_SAVED_STATE)
+	if (this->IgnoreSavedState())
 	{
-		if (m_fFlags & OUTD_ACTIVATE_ON_POWER_UP)
-			m_fFlags |= OUTD_ACTIVE;
+		if (this->ActivateOnPowerUp())
+			m_fFlags |= dcclite::OUTD_ACTIVE;
 		else
-			m_fFlags &= ~OUTD_ACTIVE;
+			m_fFlags &= ~dcclite::OUTD_ACTIVE;
 	}
 
-#if 0
-	Console::SendLogEx("[OutputDecoder]", ' ', "PIN: ", m_tPin);
-	Console::SendLogEx("[OutputDecoder]", ' ', "IGNORE_SAVE: ", m_fFlags & OUTD_IGNORE_SAVED_STATE);
-	Console::SendLogEx("[OutputDecoder]", ' ', "ACTIVATE_ON_POWERUP: ", m_fFlags & OUTD_ACTIVATE_ON_POWER_UP);
-	Console::SendLogEx("[OutputDecoder]", ' ', "ACTIVE: ", m_fFlags & OUTD_ACTIVE);
-#endif
+	this->SetOutput(this->IsActive() ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
+	this->PersistState();
+}
+
+void OutputDecoderState::PersistState()
+{
+	// Index is zero until SaveConfig() assigns the EEPROM slot.
+	if (m_uFlagsStorageIndex && !this->IgnoreSavedState())
+		Storage::UpdateField(m_uFlagsStorageIndex, m_fFlags);
 }
 
 
