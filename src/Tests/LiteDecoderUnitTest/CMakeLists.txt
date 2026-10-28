@@ -7,7 +7,8 @@ package_add_test(LiteDecoderUnitTest
 	BlinkOutputDecoderTest.cpp
 	MiniDuino.cpp
 	MiniDuino.h
-	OutputDecoderTest.cpp
+	OutputDecoderStateTest.cpp
+	OutputDecoderTest.cpp	
 	SensorTest.cpp
 )
 

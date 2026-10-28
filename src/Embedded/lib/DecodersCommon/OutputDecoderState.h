@@ -27,7 +27,7 @@ class OutputDecoderState
 	private:
 		uint16_t		m_uFlagsStorageIndex = 0;
 		Pin				m_clPin;
-		uint8_t			m_fFlags = 0;
+		uint8_t			m_fFlags;
 
 	public:
 		explicit OutputDecoderState(dcclite::Packet &packet);
