@@ -3,11 +3,10 @@
 TODO
 - make blink work
 - make log display
-- test case for OUtputState user bits
+
 - Implement BlinkController
 - Unit tests for BlinkController
 - Unit tests for BlinkOUtput stream
-- unit tests for BlinkOutputDecoder from dccex
 
 ## Broker
 
