@@ -17,6 +17,8 @@
 #include <exec/dcc/BlinkOutputDecoder.h>
 #include <ArduinoLib.h>
 
+#include <Storage.h>
+
 #include <BlinkOutputDecoder.h>
 
 #include "MiniDuino.h"
@@ -32,279 +34,422 @@ static DeviceDecoderServicesMockup g_DeviceDecoderServices;
 
 static void WriteBlinkConfig(dcclite::Packet &packet, const char *json)
 {
-    Document document;
-    document.Parse(json);
+	Document document;
+	document.Parse(json);
 
-    broker::BlinkOutputDecoder output{
-        broker::Address{1301},
-        dcclite::RName{"test"},
-        g_DecoderServices,
-        g_DeviceDecoderServices,
-        document
-    };
+	broker::BlinkOutputDecoder output{
+		broker::Address{1301},
+		dcclite::RName{"test"},
+		g_DecoderServices,
+		g_DeviceDecoderServices,
+		document
+	};
 
-    output.WriteConfig(packet);
+	output.WriteConfig(packet);
 }
 
-TEST(LiteDecoder, BlinkOutputDecoder_InitialState)
+TEST(BlinkOutputDecoder, InitialState)
 {
-    const char *json = R"JSON(
-        {
-            "name": "TEST_BLINK",
-            "class": "BlinkOutput",
-            "address": 1301,
-            "pin": 45,
-            "inverted": false,
-            "ignoreSavedState": false,
-            "location": "TC",
-            "blinkInterval": 100
-        }
-    )JSON";
+	const char *json = R"JSON(
+		{
+			"name": "TEST_BLINK",
+			"class": "BlinkOutput",
+			"address": 1301,
+			"pin": 45,
+			"inverted": false,
+			"ignoreSavedState": false,
+			"location": "TC",
+			"blinkInterval": 100
+		}
+	)JSON";
 
-    dcclite::Packet packet;
-    WriteBlinkConfig(packet, json);
-    packet.Reset();
+	dcclite::Packet packet;
+	WriteBlinkConfig(packet, json);
+	packet.Reset();
 
-    ASSERT_EQ(packet.Read<uint8_t>(), static_cast<uint8_t>(dcclite::DecoderTypes::DEC_BLINK_OUTPUT));
+	ASSERT_EQ(packet.Read<uint8_t>(), static_cast<uint8_t>(dcclite::DecoderTypes::DEC_BLINK_OUTPUT));
 
-    MiniDuino board;
-    RemoteBlinkOutputDecoder decoder{ packet };
+	MiniDuino board;
+	RemoteBlinkOutputDecoder decoder{ packet };
 
-    ASSERT_EQ(decoder.GetType(), dcclite::DecoderTypes::DEC_BLINK_OUTPUT);
+	ASSERT_EQ(decoder.GetType(), dcclite::DecoderTypes::DEC_BLINK_OUTPUT);
 
-    ASSERT_FALSE(decoder.IsInverted());
-    ASSERT_FALSE(decoder.IsActive());
-    ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+	ASSERT_FALSE(decoder.IsInverted());
+	ASSERT_FALSE(decoder.IsActive());
+	ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
 
-    decoder.AcceptServerState(dcclite::DecoderStates::ACTIVE, millis());
+	decoder.AcceptServerState(dcclite::DecoderStates::ACTIVE, millis());
 
-    ASSERT_TRUE(decoder.IsActive());
-    ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+	ASSERT_TRUE(decoder.IsActive());
+	ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
 }
 
-TEST(LiteDecoder, BlinkOutputDecoder_TogglesAtInterval)
+TEST(BlinkOutputDecoder, TogglesAtInterval)
 {
-    const char *json = R"JSON(
-        {
-            "name": "TEST_BLINK",
-            "class": "BlinkOutput",
-            "address": 1301,
-            "pin": 45,
-            "inverted": false,
-            "ignoreSavedState": true,
-            "location": "TC",
-            "blinkInterval": 100
-        }
-    )JSON";
+	const char *json = R"JSON(
+		{
+			"name": "TEST_BLINK",
+			"class": "BlinkOutput",
+			"address": 1301,
+			"pin": 45,
+			"inverted": false,
+			"ignoreSavedState": true,
+			"location": "TC",
+			"blinkInterval": 100
+		}
+	)JSON";
 
-    dcclite::Packet packet;
-    WriteBlinkConfig(packet, json);
+	dcclite::Packet packet;
+	WriteBlinkConfig(packet, json);
 
-    packet.Reset();
-    ASSERT_EQ(packet.Read<uint8_t>(), static_cast<uint8_t>(dcclite::DecoderTypes::DEC_BLINK_OUTPUT));
+	packet.Reset();
+	ASSERT_EQ(packet.Read<uint8_t>(), static_cast<uint8_t>(dcclite::DecoderTypes::DEC_BLINK_OUTPUT));
 
-    MiniDuino board;
-    RemoteBlinkOutputDecoder decoder{ packet };
+	MiniDuino board;
+	RemoteBlinkOutputDecoder decoder{ packet };
 
-    const unsigned long start = millis();
+	const unsigned long start = millis();
 
-    decoder.AcceptServerState(dcclite::DecoderStates::ACTIVE, start);
+	decoder.AcceptServerState(dcclite::DecoderStates::ACTIVE, start);
 
-    decoder.SetBlinkingState(dcclite::DecoderStates::ACTIVE);
+	decoder.SetBlinkingState(dcclite::DecoderStates::ACTIVE);
 
-    // Antes do primeiro prazo, a saída permanece ligada.
-    decoder.Update(start + 99);
+	// Before first interval, the output should be HIGH.
+	decoder.Update(start + 99);
 
-    EXPECT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+	EXPECT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
 
-    // Primeiro prazo: a fase inicial é sincronizada com ACTIVE.
-    decoder.Update(start + 100);
+	// First interval is gone, output should toggle to LOW.
+	decoder.Update(start + 100);
 
-    EXPECT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+	EXPECT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
 
-    // Segundo prazo: a saída deve desligar.
-    decoder.Update(start + 200);
+	// Second interval is gone, output should toggle to HIGH.
+	decoder.Update(start + 200);
 
-    EXPECT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+	EXPECT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
 
-    // Terceiro prazo: a saída deve ligar novamente.
-    decoder.Update(start + 300);
+	// Third interval is gone, output should toggle to LOW.
+	decoder.Update(start + 300);
 
-    EXPECT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+	EXPECT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
 }
 
-TEST(LiteDecoder, BlinkOutputDecoder_InactiveDecoderDoesNotToggle)
+TEST(BlinkOutputDecoder, InactiveDecoderDoesNotToggle)
 {
-    const char *json = R"JSON(
-        {
-            "name": "TEST_BLINK",
-            "class": "BlinkOutput",
-            "address": 1301,
-            "pin": 45,
-            "inverted": false,
-            "ignoreSavedState": true,
-            "location": "TC",
-            "blinkInterval": 100
-        }
-    )JSON";
+	const char *json = R"JSON(
+		{
+			"name": "TEST_BLINK",
+			"class": "BlinkOutput",
+			"address": 1301,
+			"pin": 45,
+			"inverted": false,
+			"ignoreSavedState": true,
+			"location": "TC",
+			"blinkInterval": 100
+		}
+	)JSON";
 
-    dcclite::Packet packet;
-    WriteBlinkConfig(packet, json);
-    packet.Reset();
-    ASSERT_EQ(packet.Read<uint8_t>(), static_cast<uint8_t>(dcclite::DecoderTypes::DEC_BLINK_OUTPUT));
+	dcclite::Packet packet;
+	WriteBlinkConfig(packet, json);
+	packet.Reset();
+	ASSERT_EQ(packet.Read<uint8_t>(), static_cast<uint8_t>(dcclite::DecoderTypes::DEC_BLINK_OUTPUT));
 
-    MiniDuino board;
-    RemoteBlinkOutputDecoder decoder{ packet };
+	MiniDuino board;
+	RemoteBlinkOutputDecoder decoder{ packet };
 
-    decoder.SetBlinkingState(dcclite::DecoderStates::ACTIVE);
+	decoder.SetBlinkingState(dcclite::DecoderStates::ACTIVE);
 
-    EXPECT_FALSE(decoder.IsActive());
+	EXPECT_FALSE(decoder.IsActive());
 
-    decoder.Update(millis() + 1000);
+	decoder.Update(millis() + 1000);
 
-    EXPECT_FALSE(decoder.IsActive());
-    EXPECT_EQ( ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+	EXPECT_FALSE(decoder.IsActive());
+	EXPECT_EQ( ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
 }
 
-TEST(LiteDecoder, BlinkOutputDecoder_InvertedOutput)
+TEST(BlinkOutputDecoder, InvertedOutput)
 {
-    const char *json = R"JSON(
-        {
-            "name": "TEST_BLINK",
-            "class": "BlinkOutput",
-            "address": 1301,
-            "pin": 45,
-            "inverted": true,
-            "ignoreSavedState": true,
-            "location": "TC",
-            "blinkInterval": 100
-        }
-    )JSON";
+	const char *json = R"JSON(
+		{
+			"name": "TEST_BLINK",
+			"class": "BlinkOutput",
+			"address": 1301,
+			"pin": 45,
+			"inverted": true,
+			"ignoreSavedState": true,
+			"location": "TC",
+			"blinkInterval": 100
+		}
+	)JSON";
 
-    dcclite::Packet packet;
-    WriteBlinkConfig(packet, json);
-    packet.Reset();
-    ASSERT_EQ(packet.Read<uint8_t>(), static_cast<uint8_t>(dcclite::DecoderTypes::DEC_BLINK_OUTPUT));
+	dcclite::Packet packet;
+	WriteBlinkConfig(packet, json);
+	packet.Reset();
+	ASSERT_EQ(packet.Read<uint8_t>(), static_cast<uint8_t>(dcclite::DecoderTypes::DEC_BLINK_OUTPUT));
 
-    MiniDuino board;
-    RemoteBlinkOutputDecoder decoder{ packet };
+	MiniDuino board;
+	RemoteBlinkOutputDecoder decoder{ packet };
 
-    decoder.AcceptServerState(dcclite::DecoderStates::ACTIVE, millis());
+	decoder.AcceptServerState(dcclite::DecoderStates::ACTIVE, millis());
 
-    EXPECT_TRUE(decoder.IsActive());
+	EXPECT_TRUE(decoder.IsActive());
 
-    EXPECT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+	EXPECT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
 }
 
 
-TEST(LiteDecoder, BlinkOutputDecoder_StopBlinkingRestoresActiveOutput)
+TEST(BlinkOutputDecoder, StopBlinkingRestoresActiveOutput)
 {
-    const char *json = R"JSON(
-        {
-            "name": "TEST_BLINK",
-            "class": "BlinkOutput",
-            "address": 1301,
-            "pin": 45,
-            "inverted": false,
-            "ignoreSavedState": true,
-            "location": "TC",
-            "blinkInterval": 100
-        }
-    )JSON";
+	const char *json = R"JSON(
+		{
+			"name": "TEST_BLINK",
+			"class": "BlinkOutput",
+			"address": 1301,
+			"pin": 45,
+			"inverted": false,
+			"ignoreSavedState": true,
+			"location": "TC",
+			"blinkInterval": 100
+		}
+	)JSON";
 
-    dcclite::Packet packet;
-    WriteBlinkConfig(packet, json);
-    packet.Reset();
+	dcclite::Packet packet;
+	WriteBlinkConfig(packet, json);
+	packet.Reset();
 
-    ASSERT_EQ(packet.Read<uint8_t>(), static_cast<uint8_t>(dcclite::DecoderTypes::DEC_BLINK_OUTPUT));
+	ASSERT_EQ(packet.Read<uint8_t>(), static_cast<uint8_t>(dcclite::DecoderTypes::DEC_BLINK_OUTPUT));
 
-    MiniDuino board;
-    RemoteBlinkOutputDecoder decoder{ packet };
+	MiniDuino board;
+	RemoteBlinkOutputDecoder decoder{ packet };
 
-    board.AddDecoder(decoder);
+	board.AddDecoder(decoder);
 
-    const unsigned long start = millis();
+	const unsigned long start = millis();
 
-    decoder.SetBlinkingState(dcclite::DecoderStates::ACTIVE);
-    decoder.AcceptServerState(dcclite::DecoderStates::ACTIVE, start);
+	decoder.SetBlinkingState(dcclite::DecoderStates::ACTIVE);
+	decoder.AcceptServerState(dcclite::DecoderStates::ACTIVE, start);
 
-    ASSERT_TRUE(decoder.IsActive());
+	ASSERT_TRUE(decoder.IsActive());
 
-    // Advance through two blink transitions until the physical output is LOW.
-    decoder.Update(start + 100);
-    ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+	// Advance through blink transition until the physical output is LOW.
+	decoder.Update(start + 100);
+	ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);	
 
-    decoder.Update(start + 200);
-    ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+	// Stopping blinking must restore the output while the decoder is active.
+	decoder.SetBlinkingState(dcclite::DecoderStates::INACTIVE);
 
-    // Stopping blinking must restore the output while the decoder is active.
-    decoder.SetBlinkingState(dcclite::DecoderStates::INACTIVE);
+	ASSERT_TRUE(decoder.IsActive());
+	ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
 
-    ASSERT_TRUE(decoder.IsActive());
-    ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+	// The output must remain HIGH after blinking has stopped.
+	decoder.Update(start + 300);
+	decoder.Update(start + 400);
 
-    // The output must remain HIGH after blinking has stopped.
-    decoder.Update(start + 300);
-    decoder.Update(start + 400);
-
-    ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+	ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
 }
 
-TEST(LiteDecoder, BlinkOutputDecoder_StopBlinkingDoesNotActivateInactiveOutput)
+TEST(BlinkOutputDecoder, StopBlinkingDoesNotActivateInactiveOutput)
 {
-    const char *json = R"JSON(
-        {
-            "name": "TEST_BLINK",
-            "class": "BlinkOutput",
-            "address": 1301,
-            "pin": 45,
-            "inverted": false,
-            "ignoreSavedState": true,
-            "location": "TC",
-            "blinkInterval": 100
-        }
-    )JSON";
+	const char *json = R"JSON(
+		{
+			"name": "TEST_BLINK",
+			"class": "BlinkOutput",
+			"address": 1301,
+			"pin": 45,
+			"inverted": false,
+			"ignoreSavedState": true,
+			"location": "TC",
+			"blinkInterval": 100
+		}
+	)JSON";
 
-    dcclite::Packet packet;
-    WriteBlinkConfig(packet, json);
-    packet.Reset();
+	dcclite::Packet packet;
+	WriteBlinkConfig(packet, json);
+	packet.Reset();
 
-    ASSERT_EQ(packet.Read<uint8_t>(), static_cast<uint8_t>(dcclite::DecoderTypes::DEC_BLINK_OUTPUT));
+	ASSERT_EQ(packet.Read<uint8_t>(), static_cast<uint8_t>(dcclite::DecoderTypes::DEC_BLINK_OUTPUT));
 
-    MiniDuino board;
-    RemoteBlinkOutputDecoder decoder{ packet };
+	MiniDuino board;
+	RemoteBlinkOutputDecoder decoder{ packet };
 
-    board.AddDecoder(decoder);
+	board.AddDecoder(decoder);
 
-    const unsigned long start = millis();
+	const unsigned long start = millis();
 
-    decoder.SetBlinkingState(dcclite::DecoderStates::ACTIVE);
-    decoder.AcceptServerState(dcclite::DecoderStates::ACTIVE, start);
+	decoder.SetBlinkingState(dcclite::DecoderStates::ACTIVE);
+	decoder.AcceptServerState(dcclite::DecoderStates::ACTIVE, start);
 
-    ASSERT_TRUE(decoder.IsActive());
+	ASSERT_TRUE(decoder.IsActive());
 
-    // Advance through two blink transitions until the physical output is LOW.
-    decoder.Update(start + 100);
-    decoder.Update(start + 200);
+	// Advance through blink transitions until the physical output is LOW.
+	decoder.Update(start + 100);	
 
-    ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+	ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
 
-    // Deactivate the decoder while the blinking output is LOW.
-    decoder.AcceptServerState(dcclite::DecoderStates::INACTIVE, start + 200);
+	// Deactivate the decoder while the blinking output is LOW.
+	decoder.AcceptServerState(dcclite::DecoderStates::INACTIVE, start + 200);
 
-    ASSERT_FALSE(decoder.IsActive());
-    ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+	ASSERT_FALSE(decoder.IsActive());
+	ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
 
-    // Stopping blinking must not activate an inactive decoder.
-    decoder.SetBlinkingState(dcclite::DecoderStates::INACTIVE);
+	// Stopping blinking must not activate an inactive decoder.
+	decoder.SetBlinkingState(dcclite::DecoderStates::INACTIVE);
 
-    ASSERT_FALSE(decoder.IsActive());
-    ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+	ASSERT_FALSE(decoder.IsActive());
+	ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
 
-    // The output must remain LOW after blinking has stopped.
-    decoder.Update(start + 300);
-    decoder.Update(start + 400);
+	// The output must remain LOW after blinking has stopped.
+	decoder.Update(start + 300);
+	decoder.Update(start + 400);
 
-    ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+	ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+}
+
+TEST(BlinkOutputDecoder, EpromStreamActiveBlinking)
+{
+	const char *json = R"JSON(
+		{
+			"name": "TEST_BLINK",
+			"class": "BlinkOutput",
+			"address": 1301,
+			"pin": 45,
+			"inverted": false,
+			"ignoreSavedState": false,
+			"location": "TC",
+			"blinkInterval": 100
+		}
+	)JSON";
+
+	dcclite::Packet packet;
+	WriteBlinkConfig(packet, json);
+	packet.Reset();
+
+	ASSERT_EQ(packet.Read<uint8_t>(), static_cast<uint8_t>(dcclite::DecoderTypes::DEC_BLINK_OUTPUT));
+
+	{
+		MiniDuino board;
+		RemoteBlinkOutputDecoder decoder{ packet };
+
+		ASSERT_EQ(decoder.GetType(), dcclite::DecoderTypes::DEC_BLINK_OUTPUT);
+
+		ASSERT_FALSE(decoder.IsInverted());
+		ASSERT_FALSE(decoder.IsActive());
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+		ASSERT_FALSE(decoder.IsBlinking());
+		
+		Storage::EpromStream stream{ 0 };
+
+		decoder.SaveConfig(stream);		
+
+		decoder.SetBlinkingState(dcclite::DecoderStates::ACTIVE);
+		ASSERT_TRUE(decoder.IsBlinking());
+
+		decoder.AcceptServerState(dcclite::DecoderStates::ACTIVE, millis());
+
+		//tick clock so arduino emulator persist eeprom
+		ArduinoLib::FixedTick(1);
+	}	
+
+	{
+		MiniDuino board;
+
+		Storage::EpromStream stream{ 0 };
+
+		RemoteBlinkOutputDecoder decoder{ stream };
+		board.AddDecoder(decoder);		
+
+		ASSERT_EQ(decoder.GetType(), dcclite::DecoderTypes::DEC_BLINK_OUTPUT);		
+
+		ASSERT_FALSE(decoder.IsInverted());
+		ASSERT_TRUE(decoder.IsActive());
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);		
+		ASSERT_TRUE(decoder.IsBlinking());
+
+		ArduinoLib::FixedTick(0);
+
+		ArduinoLib::FixedTick(150);
+
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);		
+	}
+}
+
+TEST(BlinkOutputDecoder, EpromStreamInactiveBlinkingInverted)
+{
+	const char *json = R"JSON(
+		{
+			"name": "TEST_BLINK",
+			"class": "BlinkOutput",
+			"address": 1301,
+			"pin": 45,
+			"inverted": true,
+			"ignoreSavedState": false,
+			"location": "TC",
+			"blinkInterval": 100
+		}
+	)JSON";
+
+	dcclite::Packet packet;
+	WriteBlinkConfig(packet, json);
+	packet.Reset();
+
+	ASSERT_EQ(packet.Read<uint8_t>(), static_cast<uint8_t>(dcclite::DecoderTypes::DEC_BLINK_OUTPUT));
+
+	{
+		MiniDuino board;
+		RemoteBlinkOutputDecoder decoder{ packet };
+
+		ASSERT_EQ(decoder.GetType(), dcclite::DecoderTypes::DEC_BLINK_OUTPUT);
+
+		ASSERT_TRUE(decoder.IsInverted());
+		ASSERT_FALSE(decoder.IsActive());
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+		ASSERT_FALSE(decoder.IsBlinking());
+
+		Storage::EpromStream stream{ 0 };
+
+		decoder.SaveConfig(stream);
+
+		decoder.SetBlinkingState(dcclite::DecoderStates::ACTIVE);
+		ASSERT_TRUE(decoder.IsBlinking());
+
+		decoder.AcceptServerState(dcclite::DecoderStates::ACTIVE, millis());
+
+		//tick clock so arduino emulator persist eeprom
+		ArduinoLib::FixedTick(1);
+
+		decoder.AcceptServerState(dcclite::DecoderStates::INACTIVE, millis());
+
+		ArduinoLib::FixedTick(1);
+	}
+
+	{
+		MiniDuino board;
+
+		Storage::EpromStream stream{ 0 };
+
+		RemoteBlinkOutputDecoder decoder{ stream };
+		board.AddDecoder(decoder);
+
+		ASSERT_EQ(decoder.GetType(), dcclite::DecoderTypes::DEC_BLINK_OUTPUT);
+
+		ASSERT_TRUE(decoder.IsInverted());
+		ASSERT_FALSE(decoder.IsActive());
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+		ASSERT_TRUE(decoder.IsBlinking());
+
+		ArduinoLib::FixedTick(0);
+
+		ArduinoLib::FixedTick(150);
+
+		//Inactive, should not change state
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+
+		decoder.AcceptServerState(dcclite::DecoderStates::ACTIVE, millis());
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+
+		ArduinoLib::FixedTick(150);
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+	}
 }
 

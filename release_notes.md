@@ -6,7 +6,6 @@ TODO
 
 - Implement BlinkController
 - Unit tests for BlinkController
-- Unit tests for BlinkOUtput stream
 
 ## Broker
 

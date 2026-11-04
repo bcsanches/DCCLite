@@ -58,6 +58,11 @@ class BlinkOutputDecoder : public Decoder
 		bool Update(const unsigned long ticks) override;
 
 		void SetBlinkingState(dcclite::DecoderStates state);
+
+		inline bool IsBlinking() const
+		{
+			return m_clState.GetUserBits() & dcclite::BOUTD_BLINKING;
+		}
 	
 	private:
 		void Init();

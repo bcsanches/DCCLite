@@ -97,14 +97,15 @@ bool BlinkOutputDecoder::AcceptServerState(dcclite::DecoderStates state, const u
 
 void BlinkOutputDecoder::StartBlinking(const unsigned long time)
 {
-	m_clState.SetUserBits(dcclite::BOUTD_BLINKING);
-	m_uNextThink = time + m_u16IntervalMs;
+	//If the decoder is active, mark the blinking output as active, so the first update will turn it off.
+	m_clState.SetUserBits(dcclite::BOUTD_BLINKING | (this->IsActive() ? dcclite::BOUTD_OUTPUT_ACTIVE : 0));
+	m_uNextThink = time + m_u16IntervalMs;	
 }
 
 void BlinkOutputDecoder::Init()
 {
-	if(!(m_clState.GetUserBits() &dcclite::BOUTD_BLINKING))
-		return;
+	if(!(m_clState.GetUserBits() & dcclite::BOUTD_BLINKING))
+		return;	
 
 	this->StartBlinking(millis());
 }
