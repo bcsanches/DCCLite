@@ -110,6 +110,21 @@ namespace dcclite
 		BOUTD_ACTIVE = OutputDecoderFlags::OUTD_ACTIVE
 	};
 
+	enum BlinkOutputDecoderControllerFlags : uint8_t
+	{
+		//make sure we use the same bits as OutputDecoderFlags
+
+		//inverted makes no sense here
+		BOUTDC_RESERVED0 = OutputDecoderFlags::OUTD_INVERTED_OPERATION,
+
+		BOUTDC_IGNORE_SAVED_STATE = OutputDecoderFlags::OUTD_IGNORE_SAVED_STATE,
+		BOUTDC_ACTIVATE_ON_POWER_UP = OutputDecoderFlags::OUTD_ACTIVATE_ON_POWER_UP,
+
+		BOUTDC_RESERVED1 = OutputDecoderFlags::OUTD_RESERVED_BIT,
+
+		BOUTDC_ACTIVE = OutputDecoderFlags::OUTD_ACTIVE
+	};
+
 	enum ServoTurnoutDecoderFlags : uint8_t
 	{
 		SRVT_STATE_BITS = 0x03,

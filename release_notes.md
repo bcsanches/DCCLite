@@ -4,8 +4,8 @@ TODO
 - make blink work
 - make log display
 
-- Implement BlinkController
-- Unit tests for BlinkController
+- Implement BlinkController on device
+- Unit tests for BlinkController on device
 
 ## Broker
 

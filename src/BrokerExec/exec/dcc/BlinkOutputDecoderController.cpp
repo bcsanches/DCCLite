@@ -14,6 +14,8 @@
 
 #include "BlinkOutputDecoder.h"
 
+#include <dcclite/JsonUtils.h>
+
 namespace dcclite::broker::exec::dcc
 {
 	BlinkOutputDecoderController::BlinkOutputDecoderController(
@@ -24,7 +26,7 @@ namespace dcclite::broker::exec::dcc
 		const rapidjson::Value &params
 	):
 		OutputDecoder{ address, name, owner, dev, params },
-		m_rnTarget{ params["target"].GetString() }
+		m_rnTarget{ dcclite::json::GetString(params, "target", "BlinkOutputDecoderController") }
 	{
 		//empty
 	}
@@ -47,6 +49,10 @@ namespace dcclite::broker::exec::dcc
 	{
 		OutputDecoder::WriteConfig(packet);
 
+		uint8_t flags = this->ActivateOnPowerUp() ? BOUTDC_ACTIVATE_ON_POWER_UP : 0;
+		flags |= this->IgnoreSavedState() ? BOUTDC_IGNORE_SAVED_STATE : 0;
+
+		packet.Write8(flags);
 		packet.Write8(m_u8TargetIndex);
 	}
 }
