@@ -41,49 +41,6 @@ static DeviceDecoderServicesMockup g_DeviceDecoderServices;
 
 class DecoderManagerInstance;
 
-namespace DecoderManager
-{
-	std::vector<Decoder *> g_vecDecoders;
-
-	DecoderManagerInstance *g_pclInstance = nullptr;
-
-	Decoder *TryGetDecoder(const uint8_t slot) noexcept
-	{
-		assert(g_pclInstance);
-
-		return g_vecDecoders.at(slot);
-	}
-
-	void Clear()
-	{
-		g_vecDecoders.clear();
-	}
-
-	void RegisterDecoder(Decoder &decoder)
-	{
-		g_vecDecoders.push_back(&decoder);
-	}
-}
-
-class DecoderManagerInstance
-{
-	public:
-		DecoderManagerInstance()
-		{
-			assert(DecoderManager::g_pclInstance == nullptr);
-			assert(DecoderManager::g_vecDecoders.empty());
-
-			DecoderManager::g_pclInstance = this;
-		}
-
-		~DecoderManagerInstance()
-		{
-			DecoderManager::g_vecDecoders.clear();
-
-			DecoderManager::g_pclInstance = nullptr;
-		}
-};
-
 template <typename T>
 static dcclite::Packet WriteDecoderConfig(const char *json)
 {
@@ -113,33 +70,57 @@ static dcclite::Packet WriteDecoderConfig(const char *json)
 TEST(BlinkOutputMasterDecoder, InitialState)
 {
 	const char *json = R"JSON(
-		{
-			"name": "TEST_BLINK_CTRL",
-			"class": "BlinkOutputController",
-			"address": 1301,			
-			"ignoreSavedState": false,
-			"location": "TC",
-			"blinkInterval": 100
-		}
-	)JSON";
+		[
+			{
+				"name": "TEST_BLINK_MASTER",
+				"class": "BlinkOutputMaster",
+				"address": 1301,
+				"ignoreSavedState": false,
+				"location": "TC",
+				"slave":"BLINK"				
+			},
+			{
+				"name": "BLINK",
+				"class": "BlinkOutput",
+				"address": 1302,
+				"pin": 45,
+				"inverted": false,
+				"ignoreSavedState": false,
+				"location": "TC",
+				"blinkInterval": 100
+			}
+		]
+	)JSON";	
 
-	auto packet = WriteDecoderConfig<broker::BlinkOutputMasterDecoder>(json);	
+	ManagedMiniDuino board;	
 
-	ASSERT_EQ(packet.Read<uint8_t>(), static_cast<uint8_t>(dcclite::DecoderTypes::DEC_BLINK_OUTPUT_MASTER));
+	board.Load(json);
 
-	MiniDuino board;
-	RemoteBlinkOutputMasterDecoder masterDecoder{ packet };	
+	auto master = board.GetDecoder(0);
+	ASSERT_EQ(master->GetType(), dcclite::DecoderTypes::DEC_BLINK_OUTPUT_MASTER);
 
-	RemoteBlinkOutputDecoder decoder{ packet };
+	auto slave = board.GetDecoder(1);
+	ASSERT_EQ(slave->GetType(), dcclite::DecoderTypes::DEC_BLINK_OUTPUT);
 
-	ASSERT_EQ(decoder.GetType(), dcclite::DecoderTypes::DEC_BLINK_OUTPUT);
-
-	ASSERT_FALSE(decoder.IsInverted());
-	ASSERT_FALSE(decoder.IsActive());
+	auto blinkSlave = dynamic_cast<BlinkOutputDecoder *>(slave);
+	ASSERT_FALSE(blinkSlave->IsBlinking());
+	
 	ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
 
-	decoder.AcceptServerState(dcclite::DecoderStates::ACTIVE, millis());
+	master->AcceptServerState(dcclite::DecoderStates::ACTIVE, millis());
+	ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+	
+	ASSERT_TRUE(blinkSlave->IsBlinking());
 
-	ASSERT_TRUE(decoder.IsActive());
+	ArduinoLib::FixedTick(1);
+
+	master->AcceptServerState(dcclite::DecoderStates::ACTIVE, millis());
+	ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+
+	blinkSlave->AcceptServerState(dcclite::DecoderStates::ACTIVE, 1);
 	ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+
+	//make sure blink is blinking
+	ArduinoLib::FixedTick(100);
+	ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
 }

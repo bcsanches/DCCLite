@@ -47,6 +47,9 @@ bool BlinkOutputMasterDecoder::AcceptServerState(dcclite::DecoderStates state, c
 	if (this->IsActive() == active)
 		return false;
 
+	m_fFlags.SetActiveBit(active);
+	m_fFlags.PersistState();
+
 	auto decoder = DecoderManager::TryGetDecoder(m_u8BlinkDecoderIndex);
 	if (decoder == nullptr)
 	{
@@ -63,11 +66,8 @@ bool BlinkOutputMasterDecoder::AcceptServerState(dcclite::DecoderStates state, c
 	}
 
 	auto blinkDecoder = static_cast<BlinkOutputDecoder *>(decoder);
-
-	m_fFlags.SetActiveBit(active);
-	blinkDecoder->SetBlinkingState(state);
-
-	m_fFlags.PersistState();
+	
+	blinkDecoder->SetBlinkingState(state);	
 
 	return true;
 }

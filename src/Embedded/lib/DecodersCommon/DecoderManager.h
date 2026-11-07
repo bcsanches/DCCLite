@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include <cstdint>
+#include <stdint.h>
 
 class Decoder;
 

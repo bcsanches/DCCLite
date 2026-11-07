@@ -10,17 +10,17 @@
 
 #pragma once
 
-#include <cstdint>
+#include <stdint.h>
 
 #include <dcclite_shared/Packet.h>
 
 #include "Storage.h"
 
 template <
-	uint8_t IGNORE_SAVED_STATE_MASK,
-	uint8_t INVERTED_MASK,
-	uint8_t ACTIVATE_ON_POWER_UP_MASK,
-	uint8_t ACTIVE_MASK,
+	uint8_t IGNORE_SAVED_STATE_BIT,
+	uint8_t INVERTED_BIT,
+	uint8_t ACTIVATE_ON_POWER_UP_BIT,
+	uint8_t ACTIVE_BIT,
 	uint8_t USER_BITS_MASK = 0x00,
 	uint8_t PACKET_MASK = 0xFF,
 	uint8_t STREAM_MASK = 0xFF
@@ -75,51 +75,51 @@ struct OutputDecoderFlags
 			static_assert(STREAM_MASK != 0, "STREAM_MASK must be non-zero to use OutputDecoderFlags with EpromStream");
 
 			m_uStorageIndex = stream.GetIndex();
-			stream.Put(m_fFlags);
+			stream.Put(static_cast<uint8_t>(m_fFlags & STREAM_MASK));
 		}
 
 		inline void PersistState() noexcept
 		{
 			if (m_uStorageIndex && !this->IgnoreSavedState())
-				Storage::UpdateField(m_uStorageIndex, m_fFlags);
+				Storage::UpdateField(m_uStorageIndex, static_cast<uint8_t>(m_fFlags & STREAM_MASK));
 		}
 
 		inline bool IgnoreSavedState() const noexcept
 		{
-			static_assert(IGNORE_SAVED_STATE_MASK != 0, "IGNORE_SAVED_STATE_MASK must be non-zero to use IgnoreSavedState");
+			static_assert(IGNORE_SAVED_STATE_BIT != 0, "IGNORE_SAVED_STATE_MASK must be non-zero to use IgnoreSavedState");
 
-			return IGNORE_SAVED_STATE_MASK && (m_fFlags & IGNORE_SAVED_STATE_MASK);
+			return (m_fFlags & IGNORE_SAVED_STATE_BIT);
 		}
 
 		inline bool IsInverted() const noexcept
 		{
-			static_assert(INVERTED_MASK != 0, "INVERTED_MASK must be non-zero to use IsInverted");
+			static_assert(INVERTED_BIT != 0, "INVERTED_MASK must be non-zero to use IsInverted");
 
-			return INVERTED_MASK && (m_fFlags & INVERTED_MASK);
+			return (m_fFlags & INVERTED_BIT);
 		}
 
 		inline bool ActivateOnPowerUp() const noexcept
 		{
-			static_assert(ACTIVATE_ON_POWER_UP_MASK != 0, "ACTIVATE_ON_POWER_UP_MASK must be non-zero to use ActivateOnPowerUp");
+			static_assert(ACTIVATE_ON_POWER_UP_BIT != 0, "ACTIVATE_ON_POWER_UP_MASK must be non-zero to use ActivateOnPowerUp");
 
-			return ACTIVATE_ON_POWER_UP_MASK && (m_fFlags & ACTIVATE_ON_POWER_UP_MASK);
+			return (m_fFlags & ACTIVATE_ON_POWER_UP_BIT);
 		}
 
 		inline bool IsActive() const noexcept
 		{
-			static_assert(ACTIVE_MASK != 0, "ACTIVE_MASK must be non-zero to use IsActive");
+			static_assert(ACTIVE_BIT != 0, "ACTIVE_MASK must be non-zero to use IsActive");
 
-			return ACTIVE_MASK && (m_fFlags & ACTIVE_MASK);
+			return (m_fFlags & ACTIVE_BIT);
 		}		
 
 		inline void SetActiveBit(bool active) noexcept
 		{
-			static_assert(ACTIVE_MASK != 0, "ACTIVE_MASK must be non-zero to use SetActiveBit");
+			static_assert(ACTIVE_BIT != 0, "ACTIVE_MASK must be non-zero to use SetActiveBit");
 
 			if (active)
-				m_fFlags |= ACTIVE_MASK;
+				m_fFlags |= ACTIVE_BIT;
 			else
-				m_fFlags &= ~ACTIVE_MASK;			
+				m_fFlags &= ~ACTIVE_BIT;
 		}
 
 		inline void SetUserBits(uint8_t flags) noexcept

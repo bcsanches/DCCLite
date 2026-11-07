@@ -27,7 +27,7 @@ TEST(BlinkOutputMasterDecoder, Basic)
 			"ignoreSavedState": true,
 			"activateOnPowerUp": true,			
 			"location": "TC",
-			"target":"TEST_BLINK"
+			"slave":"TEST_BLINK"
 		}
 	)JSON";
 
@@ -107,7 +107,7 @@ TEST(BlinkOutputMasterDecoder, NoTargetDecoder)
 			"address": 1302,
 			"ignoreSavedState": false,
 			"location": "TC",
-			"target":"TEST_BLINK"				
+			"slave":"TEST_BLINK"				
 		}
 	)JSON";
 

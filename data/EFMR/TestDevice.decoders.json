@@ -1,49 +1,18 @@
 [  
-  {
-    "name":"TurntableSensorA",
-    "class":"Sensor",
-    "pin":20,
-    "address":"0x114",
-    "pullup":true,
-    "inverted":true,
-    "activateDelayMs":5,
-    "deactivateDelayMs":5
-  },
-  {
-    "name":"TurntableSensorB",
-    "class":"Sensor",
-    "pin":21,
-    "address":"0x115",
-    "pullup":true,
-    "inverted":true,
-    "activateDelayMs":5,
-    "deactivateDelayMs":5
-  },  
-  {
-    "name": "TurntableInverter",
-    "class": "TurntableAutoInverter",
-    "address": "0x116",
-    "sensorA": "TurntableSensorA",
-    "sensorB": "TurntableSensorB",    
-    "trackPowerAPin": 30,
-    "trackPowerBPin": 31
-  },
-  {
-    "name": "QuadInverter",
-    "class": "QuadInverter",
-    "address": "0x118",    
-    "trackPowerAPins": [8, 9],
-    "trackPowerBPins": [10, 11]
-  },
-  {
-    "name":"BrokenSensor",
-    "class":"Sensor",
-    "pin":22,
-    "address":"0x117",
-    "pullup":true,
-    "inverted":false,
-    "activateDelay":0,
-    "deactivateDelay":0,
-    "broken":true
-  }
+	{
+		"name": "blink",
+		"class": "BlinkOutput",
+		"address": 9000,
+		"pin": 10,
+		"inverted": true,
+		"ignoreSavedState": false,
+		"location": "TC",
+		"blinkInterval":100
+	},
+	{
+		"name": "blinkm",
+		"class": "BlinkOutputMaster",
+		"address": 9001,
+		"slave": "blink"
+	}
 ]

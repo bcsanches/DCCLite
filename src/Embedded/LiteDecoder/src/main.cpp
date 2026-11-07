@@ -120,7 +120,7 @@ bool Console::Custom_ParseCommand(dcclite::StringView command)
 	return false;
 }
 
-#define DECODERS_STORAGE_ID F("DECS020")
+#define DECODERS_STORAGE_ID F("DECS021")
 #define NET_UDP_STORAGE_ID	F("NetU003")
 #define SESSION_STORAGE_ID  F("Sson002")
 

@@ -17,12 +17,23 @@ class MiniDuino
 	public:
 		MiniDuino();
 
-		~MiniDuino();
+		virtual ~MiniDuino();
 
 		void AddDecoder(Decoder &dec);
+		Decoder *GetDecoder(uint8_t index);
 
-	private:
+	
+	protected:
 		std::vector<Decoder *> m_vecDecoders;
+};
 
-		static MiniDuino *g_pclSingleton;
+class ManagedMiniDuino: public MiniDuino
+{
+	public:
+		virtual ~ManagedMiniDuino();
+
+		void Load(const char *json);
+
+		void Store();
+		void LoadFromStorage();
 };

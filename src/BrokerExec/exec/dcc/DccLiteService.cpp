@@ -20,8 +20,10 @@
 
 #include "magic_enum/magic_enum.hpp"
 
-#include "NetworkDevice.h"
+#include "BlinkOutputDecoder.h"
+#include "BlinkOutputMasterDecoder.h"
 #include "LocationManager.h"
+#include "NetworkDevice.h"
 #include "QuadInverter.h"
 #include "SensorDecoder.h"
 #include "SignalDecoder.h"
@@ -52,6 +54,12 @@ namespace dcclite::broker::exec::dcc
 
 		if (className.compare("Sensor") == 0)
 			return std::make_unique<SensorDecoder>(address, name, owner, dev, params);
+
+		if (className.compare("BlinkOutput") == 0)
+			return std::make_unique<BlinkOutputDecoder>(address, name, owner, dev, params);
+
+		if (className.compare("BlinkOutputMaster") == 0)
+			return std::make_unique<BlinkOutputMasterDecoder>(address, name, owner, dev, params);
 
 		if (className.compare("VirtualSignal") == 0)
 			return std::make_unique<SignalDecoder>(address, name, owner, dev, params);

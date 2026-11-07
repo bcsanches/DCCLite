@@ -1,6 +1,21 @@
 DCCLite
 -------
 
+- QuadInverterDecoder
+	- Move to DecodersCommonLib
+	- Create UnitTestes
+	- Use OutputDecoderFlags
+
+- ServoTurnoutDecoder
+	- Create UnitTestes
+	- Use OutputDecoderFlags
+	- Standarize bits to use OUTPUT_DECODER standard bits
+
+- TurntableAutoInverterDecoder
+	- Move to DecodersCommonLib
+	- Create UnitTestes
+	- Use OutputDecoderFlags
+
 - Create new library for DccTerminalCmds?
 	- BrokerDccShell ?
 

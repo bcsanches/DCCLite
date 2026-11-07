@@ -26,7 +26,7 @@ namespace dcclite::broker::exec::dcc
 		const rapidjson::Value &params
 	):
 		OutputDecoder{ address, name, owner, dev, params },
-		m_rnTarget{ dcclite::json::GetString(params, "target", "BlinkOutputMasterDecoder") }
+		m_rnTarget{ dcclite::json::GetString(params, "slave", "BlinkOutputMasterDecoder") }
 	{
 		//empty
 	}

@@ -1,11 +1,14 @@
-# Version 0.11.2 - Development
+# Version 0.12.0 - Development
 
 TODO
+- quando carregar o arduino apos um reset, o blink não pisca, deveria carregar o estado
+    - esta salvando o bit de blink?
+    - o blink master esta resetando?
+- Update sharp console for blink
+- Update EEPROM Viewer
 - make blink work
 - make log display
 
-- Implement BlinkController on device
-- Unit tests for BlinkController on device
 
 ## Broker
 

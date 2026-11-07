@@ -11,6 +11,8 @@
 #include "DecoderManagerImpl.h"
 
 #include "Console.h"
+#include "BlinkOutputDecoder.h"
+#include "BlinkOutputMasterDecoder.h"
 #include "OutputDecoder.h"
 #include "QuadInverterDecoder.h"
 #include "SensorDecoder.h"
@@ -52,7 +54,13 @@ static Decoder *Create(const dcclite::DecoderTypes type, dcclite::Packet &packet
 			return new QuadInverterDecoder(packet);
 
 		case dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER:
-			return new TurntableAutoInverterDecoder(packet);		
+			return new TurntableAutoInverterDecoder(packet);
+
+		case dcclite::DecoderTypes::DEC_BLINK_OUTPUT:
+			return new BlinkOutputDecoder(packet);
+
+		case dcclite::DecoderTypes::DEC_BLINK_OUTPUT_MASTER:
+			return new BlinkOutputMasterDecoder(packet);
 
 		default:
 			//Console::SendLogEx(MODULE_NAME, FSTR_INVALID_DECODER_TYPE, static_cast<int>(type));
@@ -133,6 +141,8 @@ void DecoderManager::SaveConfig(Storage::EpromStream &stream)
 		dcclite::DecoderTypes::DEC_SERVO_TURNOUT,
 		dcclite::DecoderTypes::DEC_TURNTABLE_AUTO_INVERTER,
 		dcclite::DecoderTypes::DEC_QUAD_INVERTER,
+		dcclite::DecoderTypes::DEC_BLINK_OUTPUT,
+		dcclite::DecoderTypes::DEC_BLINK_OUTPUT_MASTER,
 
 		dcclite::DecoderTypes::DEC_NULL
 	};
@@ -289,6 +299,24 @@ void DecoderManager::LoadConfig(Storage::EpromStream &stream)
 
 					//DCCLITE_LOG << 'Q';
 					Console::Printf(F("Q"));
+					break;
+
+				case dcclite::DecoderTypes::DEC_BLINK_OUTPUT:
+					decoder = new BlinkOutputDecoder(stream);
+
+					usedMem += sizeof(BlinkOutputDecoder);
+
+					//DCCLITE_LOG << 'B';
+					Console::Printf(F("B"));
+					break;
+
+				case dcclite::DecoderTypes::DEC_BLINK_OUTPUT_MASTER:
+					decoder = new BlinkOutputMasterDecoder(stream);
+
+					usedMem += sizeof(BlinkOutputMasterDecoder);
+
+					//DCCLITE_LOG << 'M';
+					Console::Printf(F("M"));
 					break;
 
 				default:
