@@ -18,7 +18,6 @@ class ServoTurnoutDecoder;
 
 namespace LocalDecoderManager
 {
-
 	enum ButtonActions
 	{
 		kTHROW = 0x01,

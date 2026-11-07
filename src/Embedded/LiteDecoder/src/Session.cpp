@@ -20,7 +20,7 @@
 #include "Console.h"
 #include "Config.h"
 #include "Decoder.h"
-#include "DecoderManager.h"
+#include "DecoderManagerImpl.h"
 #include "NetUdp.h"
 #include "Storage.h"
 #include "Strings.h"

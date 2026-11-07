@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include "OutputDecoderFlags.h"
 #include "Pin.h"
 
 namespace dcclite
@@ -22,12 +23,20 @@ namespace Storage
 	class EpromStream;
 }
 
+using StandardOutputDecoderFlags = OutputDecoderFlags<
+	dcclite::OUTD_IGNORE_SAVED_STATE,
+	dcclite::OUTD_INVERTED_OPERATION,
+	dcclite::OUTD_ACTIVATE_ON_POWER_UP,
+	dcclite::OUTD_ACTIVE,
+	dcclite::OUTD_USER_BITS
+>;
+
 class OutputDecoderState
 {
 	private:
-		uint16_t		m_uFlagsStorageIndex = 0;
-		Pin				m_clPin;
-		uint8_t			m_fFlags;
+		StandardOutputDecoderFlags  m_fFlags;
+
+		Pin				            m_clPin;		
 
 	public:
 		explicit OutputDecoderState(dcclite::Packet &packet);
@@ -35,49 +44,46 @@ class OutputDecoderState
 
 		void SaveConfig(Storage::EpromStream &stream);
 
-        inline bool IsActive() const noexcept
-        {
-            return (m_fFlags & dcclite::OUTD_ACTIVE) != 0;
-        }
+		inline bool IsActive() const noexcept
+		{
+			return m_fFlags.IsActive();
+		}
 
-        inline bool IsInverted() const noexcept
-        {
-            return (m_fFlags & dcclite::OUTD_INVERTED_OPERATION) != 0;
-        }
+		inline bool IsInverted() const noexcept
+		{
+			return m_fFlags.IsInverted();            
+		}
 
-        inline bool IgnoreSavedState() const noexcept
-        {
-            return (m_fFlags & dcclite::OUTD_IGNORE_SAVED_STATE) != 0;
-        }
+		inline bool IgnoreSavedState() const noexcept
+		{
+			return m_fFlags.IgnoreSavedState();            
+		}
 
-        inline bool ActivateOnPowerUp() const noexcept
-        {
-            return (m_fFlags & dcclite::OUTD_ACTIVATE_ON_POWER_UP) != 0;
-        }
+		inline bool ActivateOnPowerUp() const noexcept
+		{
+			return m_fFlags.ActivateOnPowerUp();            
+		}
 
-        inline void SetUserBits(uint8_t flags) noexcept
-        {                       
-            //replace user bits...
-            m_fFlags = (m_fFlags & ~dcclite::OUTD_USER_BITS) | (flags & dcclite::OUTD_USER_BITS);
-        }
+		inline void SetUserBits(uint8_t flags) noexcept
+		{   
+			m_fFlags.SetUserBits(flags);
+		}
 
-        inline uint8_t GetUserBits() const noexcept
-        {
-            return m_fFlags & dcclite::OUTD_USER_BITS;
-        }
+		inline uint8_t GetUserBits() const noexcept
+		{
+			return m_fFlags.GetUserBits();
+		}
 
-        // Changes logical state and persists it when configured to do so.
-        // Returns false if the logical state did not change.
-        bool SetActive(dcclite::DecoderStates state);
+		// Changes logical state and persists it when configured to do so.
+		// Returns false if the logical state did not change.
+		bool SetActive(dcclite::DecoderStates state);
 
-        // Changes only the physical pin level (with inversion). Useful for blink
-        // phases: the decoder can remain logically active while the pin is off.
-        void SetOutput(dcclite::DecoderStates state);
+		// Changes only the physical pin level (with inversion). Useful for blink
+		// phases: the decoder can remain logically active while the pin is off.
+		void SetOutput(dcclite::DecoderStates state);
 
-        bool AcceptServerState(dcclite::DecoderStates state);
+		bool AcceptServerState(dcclite::DecoderStates state);
 
 	private:
 		void Init();
-
-        void PersistState();
 };

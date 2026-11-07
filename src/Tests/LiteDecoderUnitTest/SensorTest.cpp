@@ -49,7 +49,7 @@ void Storage::Custom_SaveModules(Storage::EpromStream &stream)
 
 }
 
-TEST(LiteDecoder, SensorTest_Default)
+TEST(SensorTest, Default)
 {
 	const char *json = R"JSON(
 		{
@@ -120,7 +120,7 @@ TEST(LiteDecoder, SensorTest_Default)
 	}
 }
 
-TEST(LiteDecoder, SensorTest_CoolDownFlip)
+TEST(SensorTest, CoolDownFlip)
 {
 	const char *json = R"JSON(
 		{
@@ -193,7 +193,7 @@ TEST(LiteDecoder, SensorTest_CoolDownFlip)
 	}
 }
 
-TEST(LiteDecoder, SensorTest_Inverted)
+TEST(SensorTest, Inverted)
 {
 	const char *json = R"JSON(
 		{
@@ -271,7 +271,7 @@ TEST(LiteDecoder, SensorTest_Inverted)
 	}
 }
 
-TEST(LiteDecoder, SensorTest_StartDelay)
+TEST(SensorTest, StartDelay)
 {
 	const char *json = R"JSON(
 		{
@@ -366,7 +366,7 @@ TEST(LiteDecoder, SensorTest_StartDelay)
 	}
 }
 
-TEST(LiteDecoder, SensorTest_ActivateDelay)
+TEST(SensorTest, ActivateDelay)
 {
 	const char *json = R"JSON(
 		{
@@ -459,7 +459,7 @@ TEST(LiteDecoder, SensorTest_ActivateDelay)
 }
 
 
-TEST(LiteDecoder, SensorTest_DeactivateDelay)
+TEST(SensorTest, DeactivateDelay)
 {
 	const char *json = R"JSON(
 		{

@@ -10,8 +10,8 @@ add_library(
         exec/dcc/Address.h
         exec/dcc/BlinkOutputDecoder.cpp
         exec/dcc/BlinkOutputDecoder.h
-        exec/dcc/BlinkOutputDecoderController.cpp
-        exec/dcc/BlinkOutputDecoderController.h
+        exec/dcc/BlinkOutputMasterDecoder.cpp
+        exec/dcc/BlinkOutputMasterDecoder.h
         exec/dcc/DccLiteService.cpp        
         exec/dcc/DccLiteService.h  
         exec/dcc/DccppService.cpp

@@ -8,7 +8,7 @@
 // This Source Code Form is "Incompatible With Secondary Licenses", as
 // defined by the Mozilla Public License, v. 2.0.
 
-#include "BlinkOutputDecoderController.h"
+#include "BlinkOutputMasterDecoder.h"
 
 #include <dcclite_shared/Packet.h>
 
@@ -18,7 +18,7 @@
 
 namespace dcclite::broker::exec::dcc
 {
-	BlinkOutputDecoderController::BlinkOutputDecoderController(
+	BlinkOutputMasterDecoder::BlinkOutputMasterDecoder(
 		const Address &address,
 		RName name,
 		IDccLite_DecoderServices &owner,
@@ -26,12 +26,12 @@ namespace dcclite::broker::exec::dcc
 		const rapidjson::Value &params
 	):
 		OutputDecoder{ address, name, owner, dev, params },
-		m_rnTarget{ dcclite::json::GetString(params, "target", "BlinkOutputDecoderController") }
+		m_rnTarget{ dcclite::json::GetString(params, "target", "BlinkOutputMasterDecoder") }
 	{
 		//empty
 	}
 
-	void BlinkOutputDecoderController::InitAfterDeviceLoad()
+	void BlinkOutputMasterDecoder::InitAfterDeviceLoad()
 	{
 		RemoteDecoder::InitAfterDeviceLoad();
 
@@ -45,12 +45,12 @@ namespace dcclite::broker::exec::dcc
 		m_u8TargetIndex = networkDevice->FindDecoderIndex(outputDecoder);
 	}
 
-	void BlinkOutputDecoderController::WriteConfig(dcclite::Packet &packet) const
+	void BlinkOutputMasterDecoder::WriteConfig(dcclite::Packet &packet) const
 	{
 		OutputDecoder::WriteConfig(packet);
 
-		uint8_t flags = this->ActivateOnPowerUp() ? BOUTDC_ACTIVATE_ON_POWER_UP : 0;
-		flags |= this->IgnoreSavedState() ? BOUTDC_IGNORE_SAVED_STATE : 0;
+		uint8_t flags = this->ActivateOnPowerUp() ? BOUTMD_ACTIVATE_ON_POWER_UP : 0;
+		flags |= this->IgnoreSavedState() ? BOUTMD_IGNORE_SAVED_STATE : 0;
 
 		packet.Write8(flags);
 		packet.Write8(m_u8TargetIndex);

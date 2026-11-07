@@ -14,10 +14,10 @@
 
 namespace dcclite::broker::exec::dcc
 {
-	class BlinkOutputDecoderController : public OutputDecoder
+	class BlinkOutputMasterDecoder : public OutputDecoder
 	{
 		public:
-			BlinkOutputDecoderController(
+			BlinkOutputMasterDecoder(
 				const Address &address,
 				RName name,
 				IDccLite_DecoderServices &owner,
@@ -25,26 +25,26 @@ namespace dcclite::broker::exec::dcc
 				const rapidjson::Value &params
 			);
 
-		~BlinkOutputDecoderController() = default;
+			~BlinkOutputMasterDecoder() = default;
 
-		void InitAfterDeviceLoad() override;
+			void InitAfterDeviceLoad() override;
 
-		void WriteConfig(dcclite::Packet &packet) const override;
+			void WriteConfig(dcclite::Packet &packet) const override;
 
-		dcclite::DecoderTypes GetType() const noexcept override
-		{
-			return dcclite::DecoderTypes::DEC_BLINK_OUTPUT_CONTROLLER;
-		}
+			dcclite::DecoderTypes GetType() const noexcept override
+			{
+				return dcclite::DecoderTypes::DEC_BLINK_OUTPUT_MASTER;
+			}
 
-		//
-		//IObject
-		//
-		//
+			//
+			//IObject
+			//
+			//
 
-		const char *GetTypeName() const noexcept override
-		{
-			return "BlinkOutputDecoderController";
-		}
+			const char *GetTypeName() const noexcept override
+			{
+				return "BlinkOutputMasterDecoder";
+			}
 
 		private:
 			RName	m_rnTarget;

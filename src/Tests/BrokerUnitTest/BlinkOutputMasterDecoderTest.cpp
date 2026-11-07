@@ -4,7 +4,7 @@
 #include <dcclite_shared/Packet.h>
 
 #include "exec/dcc/BlinkOutputDecoder.h"
-#include "exec/dcc/BlinkOutputDecoderController.h"
+#include "exec/dcc/BlinkOutputMasterDecoder.h"
 
 #include "../TestsCommon/BrokerMockups.h"
 
@@ -12,7 +12,7 @@ using namespace rapidjson;
 
 using namespace dcclite::broker::exec::dcc;
 
-TEST(BlinkOutputDecoderController, Basic)
+TEST(BlinkOutputMasterDecoder, Basic)
 {
 	DecoderServicesMockup decoderServices;
 	DeviceDecoderServicesMockup deviceDecoderServices;
@@ -22,7 +22,7 @@ TEST(BlinkOutputDecoderController, Basic)
 	const char *json = R"JSON(
 		{
 			"name": "TEST_BLINK_CONTROLLER",
-			"class": "BlinkOutputController",
+			"class": "BlinkOutputMaster",
 			"address": 1302,
 			"ignoreSavedState": true,
 			"activateOnPowerUp": true,			
@@ -34,8 +34,8 @@ TEST(BlinkOutputDecoderController, Basic)
 	Document d;
 	d.Parse(json);
 
-	BlinkOutputDecoderController decoder{ Address{1302}, dcclite::RName{"testCtrl"}, decoderServices, deviceDecoderServices, d };
-	ASSERT_EQ(decoder.GetType(), dcclite::DecoderTypes::DEC_BLINK_OUTPUT_CONTROLLER);
+	BlinkOutputMasterDecoder decoder{ Address{1302}, dcclite::RName{"testCtrl"}, decoderServices, deviceDecoderServices, d };
+	ASSERT_EQ(decoder.GetType(), dcclite::DecoderTypes::DEC_BLINK_OUTPUT_MASTER);
 	
 	const char *json2 = R"JSON(
 		{
@@ -63,23 +63,23 @@ TEST(BlinkOutputDecoderController, Basic)
 
 	packet.Reset();
 
-	ASSERT_EQ(DecoderTypes::DEC_BLINK_OUTPUT_CONTROLLER, static_cast<DecoderTypes>(packet.Read<uint8_t>()));
+	ASSERT_EQ(DecoderTypes::DEC_BLINK_OUTPUT_MASTER, static_cast<DecoderTypes>(packet.Read<uint8_t>()));
 	ASSERT_EQ(Address{ 1302 }, Address{ packet });
 
 	auto flags = packet.Read<uint8_t>();
-	ASSERT_EQ(BOUTDC_ACTIVATE_ON_POWER_UP | BOUTDC_IGNORE_SAVED_STATE, flags);
+	ASSERT_EQ(BOUTMD_ACTIVATE_ON_POWER_UP | BOUTMD_IGNORE_SAVED_STATE, flags);
 
 	//blinkDecoder index
 	auto index = packet.Read<uint8_t>();
 	ASSERT_EQ(1, index);
 }
 
-TEST(BlinkOutputDecoderController, NoTarget)
+TEST(BlinkOutputMasterDecoder, NoTarget)
 {
 	const char *json = R"JSON(
 		{
 			"name": "TEST_BLINK_CONTROLLER",
-			"class": "BlinkOutputController",
+			"class": "BlinkOutputMaster",
 			"address": 1302,
 			"ignoreSavedState": false,
 			"location": "TC"					
@@ -92,10 +92,10 @@ TEST(BlinkOutputDecoderController, NoTarget)
 	DecoderServicesMockup decoderServices;
 	DeviceDecoderServicesMockup deviceDecoderServices;
 
-	EXPECT_ANY_THROW(BlinkOutputDecoderController(Address{ 1301 }, dcclite::RName{ "test" }, decoderServices, deviceDecoderServices, d));
+	EXPECT_ANY_THROW(BlinkOutputMasterDecoder(Address{ 1301 }, dcclite::RName{ "test" }, decoderServices, deviceDecoderServices, d));
 }
 
-TEST(BlinkOutputDecoderController, NoTargetDecoder)
+TEST(BlinkOutputMasterDecoder, NoTargetDecoder)
 {
 	DecoderServicesMockup decoderServices;
 	DeviceDecoderServicesMockup deviceDecoderServices;
@@ -103,7 +103,7 @@ TEST(BlinkOutputDecoderController, NoTargetDecoder)
 	const char *json = R"JSON(
 		{
 			"name": "TEST_BLINK_CONTROLLER",
-			"class": "BlinkOutputController",
+			"class": "BlinkOutputMaster",
 			"address": 1302,
 			"ignoreSavedState": false,
 			"location": "TC",
@@ -114,7 +114,7 @@ TEST(BlinkOutputDecoderController, NoTargetDecoder)
 	Document d;
 	d.Parse(json);
 
-	BlinkOutputDecoderController decoder(Address{ 1301 }, dcclite::RName{ "test" }, decoderServices, deviceDecoderServices, d);
+	BlinkOutputMasterDecoder decoder(Address{ 1301 }, dcclite::RName{ "test" }, decoderServices, deviceDecoderServices, d);
 
 	EXPECT_THROW(decoder.InitAfterDeviceLoad(), std::exception);	
 }

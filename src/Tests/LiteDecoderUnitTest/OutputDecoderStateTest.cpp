@@ -27,7 +27,7 @@ static void WriteOutputDecoderStatePacket(dcclite::Packet &packet, uint8_t flags
 	packet.Write8(flags);
 	packet.Reset();
 }
-TEST(LiteDecoder, OutputDecoderState_UserBitsInitiallyEmpty)
+TEST(OutputDecoderState, UserBitsInitiallyEmpty)
 {
 	MiniDuino board;
 	dcclite::Packet packet;
@@ -38,7 +38,7 @@ TEST(LiteDecoder, OutputDecoderState_UserBitsInitiallyEmpty)
 	ASSERT_EQ(state.GetUserBits(), 0);
 }
 
-TEST(LiteDecoder, OutputDecoderState_SetAndGetUserBits)
+TEST(OutputDecoderState, SetAndGetUserBits)
 {
 	MiniDuino board;
 	const auto userBits = static_cast<uint8_t>(dcclite::BOUTD_BLINKING | dcclite::BOUTD_OUTPUT_ACTIVE);
@@ -59,7 +59,7 @@ TEST(LiteDecoder, OutputDecoderState_SetAndGetUserBits)
 	ASSERT_TRUE(state.IgnoreSavedState());
 }
 
-TEST(LiteDecoder, OutputDecoderState_SetUserBitsMasksNonUserFlags)
+TEST(OutputDecoderState, SetUserBitsMasksNonUserFlags)
 {
 	MiniDuino board;
 	dcclite::Packet packet;
@@ -75,7 +75,7 @@ TEST(LiteDecoder, OutputDecoderState_SetUserBitsMasksNonUserFlags)
 	ASSERT_FALSE(state.IsInverted());
 }
 
-TEST(LiteDecoder, OutputDecoderState_SetActiveReturnsTrueWhenStateChanges)
+TEST(OutputDecoderState, SetActiveReturnsTrueWhenStateChanges)
 {
 	MiniDuino board;
 	dcclite::Packet packet;
@@ -94,7 +94,7 @@ TEST(LiteDecoder, OutputDecoderState_SetActiveReturnsTrueWhenStateChanges)
 	ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(TEST_PIN), VoltageModes::LOW);
 }
 
-TEST(LiteDecoder, OutputDecoderState_SetActiveReturnsFalseWhenStateIsUnchanged)
+TEST(OutputDecoderState, SetActiveReturnsFalseWhenStateIsUnchanged)
 {
 	MiniDuino board;
 	dcclite::Packet packet;

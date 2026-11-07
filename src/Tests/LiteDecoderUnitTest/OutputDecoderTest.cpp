@@ -32,7 +32,7 @@ namespace broker = dcclite::broker::exec::dcc;
 static DecoderServicesMockup g_DecoderServices;
 static DeviceDecoderServicesMockup g_DeviceDecoderServices;
 
-TEST(LiteDecoder, OutputDecoder_Default)
+TEST(OutputDecoder, Default)
 {
 	const char *json = R"JSON(
 		{
@@ -80,7 +80,7 @@ TEST(LiteDecoder, OutputDecoder_Default)
 	ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);	
 }
 
-TEST(LiteDecoder, OutputDecoder_RepeatedState)
+TEST(OutputDecoder, RepeatedState)
 {
 	const char *json = R"JSON(
 		{
@@ -140,7 +140,7 @@ TEST(LiteDecoder, OutputDecoder_RepeatedState)
 	ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
 }
 
-TEST(LiteDecoder, OutputDecoder_RepeatedStateInverted)
+TEST(OutputDecoder, RepeatedStateInverted)
 {
 	const char *json = R"JSON(
 		{
@@ -202,7 +202,7 @@ TEST(LiteDecoder, OutputDecoder_RepeatedStateInverted)
 	ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
 }
 
-TEST(LiteDecoder, OutputDecoder_Inverted)
+TEST(OutputDecoder, Inverted)
 {
 	const char *json = R"JSON(
 		{
@@ -253,7 +253,7 @@ TEST(LiteDecoder, OutputDecoder_Inverted)
 	ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
 }
 
-TEST(LiteDecoder, OutputDecoder_SaveStateInverted)
+TEST(OutputDecoder, SaveStateInverted)
 {
 	const char *json = R"JSON(
 		{
@@ -347,7 +347,7 @@ TEST(LiteDecoder, OutputDecoder_SaveStateInverted)
 }
 
 
-TEST(LiteDecoder, OutputDecoder_SaveState)
+TEST(OutputDecoder, SaveState)
 {
 	const char *json = R"JSON(
 		{
@@ -438,7 +438,7 @@ TEST(LiteDecoder, OutputDecoder_SaveState)
 	}
 }
 
-TEST(LiteDecoder, OutputDecoder_IgnoreSaveState)
+TEST(OutputDecoder, IgnoreSaveState)
 {
 	const char *json = R"JSON(
 		{
@@ -511,7 +511,7 @@ TEST(LiteDecoder, OutputDecoder_IgnoreSaveState)
 	}
 }
 
-TEST(LiteDecoder, OutputDecoder_ActivateOnPowerUpWithSaveStateFlag)
+TEST(OutputDecoder, ActivateOnPowerUpWithSaveStateFlag)
 {
 	const char *json = R"JSON(
 		{
@@ -572,7 +572,7 @@ TEST(LiteDecoder, OutputDecoder_ActivateOnPowerUpWithSaveStateFlag)
 	}
 }
 
-TEST(LiteDecoder, OutputDecoder_ActivateOnPowerUp)
+TEST(OutputDecoder, ActivateOnPowerUp)
 {
 	const char *json = R"JSON(
 		{
@@ -637,7 +637,7 @@ TEST(LiteDecoder, OutputDecoder_ActivateOnPowerUp)
 	}
 }
 
-TEST(LiteDecoder, OutputDecoder_IgnoreSavedStateWithoutActivateOnPowerUp)
+TEST(OutputDecoder, IgnoreSavedStateWithoutActivateOnPowerUp)
 {
 	const char *json = R"JSON(
 		{
@@ -692,6 +692,8 @@ TEST(LiteDecoder, OutputDecoder_IgnoreSavedStateWithoutActivateOnPowerUp)
 	}
 }
 
+#if 0
+//As OutputDecoder on broker is not allowing to set ACTIVATE_ON_POWER_UP without IGNORE_SAVED_STATE, this test is not valid anymore.
 TEST(LiteDecoder, OutputDecoder_ActivateOnPowerUpWithSavedInactiveState)
 {
 	const char *json = R"JSON(
@@ -740,3 +742,4 @@ TEST(LiteDecoder, OutputDecoder_ActivateOnPowerUpWithSavedInactiveState)
 		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(47), VoltageModes::LOW);
 	}
 }
+#endif

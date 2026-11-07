@@ -1,8 +1,8 @@
 
 package_add_test(BrokerUnitTest
 	BitPackUnitTest.cpp
-	BlinkOutputDecoderControllerTest.cpp
 	BlinkOutputDecoderTest.cpp
+	BlinkOutputMasterDecoderTest.cpp
 	EventHubTest.cpp
 	FolderObjectTest.cpp
 	GuidTest.cpp

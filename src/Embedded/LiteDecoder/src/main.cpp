@@ -18,7 +18,7 @@
 #include "main.h"
 #include "Blinker.h"
 #include "Console.h"
-#include "DecoderManager.h"
+#include "DecoderManagerImpl.h"
 #include "NetUdp.h"
 #include "Session.h"
 #include "Storage.h"

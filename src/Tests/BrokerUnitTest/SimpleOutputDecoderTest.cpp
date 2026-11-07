@@ -122,10 +122,31 @@ TEST(SimpleOutputDecoderTest, ActivateOnPowerUp)
 			"address": "4467",
 			"pin": 64,
 			"inverted": false,
+			"ignoreSavedState": true,
+			"activateOnPowerUp": true
+		}
+	)JSON";
+
+	CheckFlags(json, dcclite::OutputDecoderFlags::OUTD_ACTIVATE_ON_POWER_UP | dcclite::OutputDecoderFlags::OUTD_IGNORE_SAVED_STATE);
+}
+
+TEST(SimpleOutputDecoderTest, ActivateOnPowerUpWithoutIgnoreSaveStateFlag)
+{
+	const char *json = R"JSON(
+		{
+			"name": "ST_PNL_EXTC_LED_TRK_07",
+			"class": "Output",
+			"address": "4467",
+			"pin": 64,
+			"inverted": false,
 			"ignoreSavedState": false,
 			"activateOnPowerUp": true
 		}
 	)JSON";
 
-	CheckFlags(json, dcclite::OutputDecoderFlags::OUTD_ACTIVATE_ON_POWER_UP);
+	Document d;
+	d.Parse(json);
+
+	//activateOnPowerUp without ignoreSavedState is not allowed, should throw an exception
+	ASSERT_ANY_THROW(SimpleOutputDecoder(Address{ 128 }, dcclite::RName{ "test" }, g_DecoderServices, g_DeviceDecoderServices, d));
 }

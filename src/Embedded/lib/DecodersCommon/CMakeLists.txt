@@ -1,10 +1,12 @@
 
-set(DecodersCommonLib_SRCS
+set(DecodersCommonLib_SRCS	
     BlinkOutputDecoder.cpp
+    BlinkOutputMasterDecoder.cpp
     Console.cpp
 	Decoder.cpp
     LocalDecoderManager.cpp
     OutputDecoder.cpp
+    OutputDecoderFlags.h
     OutputDecoderState.cpp
     SensorDecoder.cpp
     ServoTurnoutDecoder.cpp
@@ -12,10 +14,12 @@ set(DecodersCommonLib_SRCS
     Strings.cpp
 )
 
-set(DecodersCommonLib_HDRS
+set(DecodersCommonLib_HDRS    
 	BlinkOutputDecoder.h
+    BlinkOutputMasterDecoder.h
     Console.h
     Decoder.h
+    DecoderManager.h
     LocalDecoderManager.h
 	OutputDecoder.h
     OutputDecoderState.h

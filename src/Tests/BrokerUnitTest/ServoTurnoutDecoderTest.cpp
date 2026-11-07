@@ -186,7 +186,8 @@ TEST(ServoTurnoutDecoderTest, ActivateOnPowerUpFlag)
 			"name":"STA_T01",
 			"class":"ServoTurnout",
 			"address":"1700",
-			"pin": 3,			
+			"pin": 3,
+			"ignoreSavedState":true,
 			"activateOnPowerUp":true,
 			"powerPin":26,
 			"frogPin":28,			
@@ -195,7 +196,7 @@ TEST(ServoTurnoutDecoderTest, ActivateOnPowerUpFlag)
 		}
 	)JSON";
 
-	CheckTurnoutFlags(json, dcclite::ServoTurnoutDecoderFlags::SRVT_ACTIVATE_ON_POWER_UP);
+	CheckTurnoutFlags(json, dcclite::ServoTurnoutDecoderFlags::SRVT_ACTIVATE_ON_POWER_UP | dcclite::ServoTurnoutDecoderFlags::SRVT_IGNORE_SAVED_STATE);
 }
 
 TEST(ServoTurnoutDecoderTest, InvertedFrogFlag)

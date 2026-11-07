@@ -32,6 +32,9 @@ namespace dcclite::broker::exec::dcc
 		m_fIgnoreSavedState = json::TryGetDefaultBool(params, "ignoreSavedState", false);
 		m_fActivateOnPowerUp = json::TryGetDefaultBool(params, "activateOnPowerUp", false);
 
+		if(!m_fIgnoreSavedState && m_fActivateOnPowerUp)
+			throw std::logic_error(fmt::format("[OutputDecoder::{}] Cannot have activateOnPowerUp set to true when ignoreSavedState is false", this->GetName()));
+
 		this->SyncRemoteState(this->IgnoreSavedState() && this->ActivateOnPowerUp() ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);				
 	}
 

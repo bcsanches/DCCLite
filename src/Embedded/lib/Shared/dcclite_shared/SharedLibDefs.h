@@ -43,7 +43,7 @@ namespace dcclite
 		DEC_TURNTABLE_AUTO_INVERTER = 5,
 		DEC_QUAD_INVERTER = 6,
 		DEC_BLINK_OUTPUT = 7,
-		DEC_BLINK_OUTPUT_CONTROLLER = 8
+		DEC_BLINK_OUTPUT_MASTER = 8
 	};
 
 	enum class DecoderStates
@@ -115,14 +115,14 @@ namespace dcclite
 		//make sure we use the same bits as OutputDecoderFlags
 
 		//inverted makes no sense here
-		BOUTDC_RESERVED0 = OutputDecoderFlags::OUTD_INVERTED_OPERATION,
+		BOUTMD_RESERVED0 = OutputDecoderFlags::OUTD_INVERTED_OPERATION,
 
-		BOUTDC_IGNORE_SAVED_STATE = OutputDecoderFlags::OUTD_IGNORE_SAVED_STATE,
-		BOUTDC_ACTIVATE_ON_POWER_UP = OutputDecoderFlags::OUTD_ACTIVATE_ON_POWER_UP,
+		BOUTMD_IGNORE_SAVED_STATE = OutputDecoderFlags::OUTD_IGNORE_SAVED_STATE,
+		BOUTMD_ACTIVATE_ON_POWER_UP = OutputDecoderFlags::OUTD_ACTIVATE_ON_POWER_UP,
 
-		BOUTDC_RESERVED1 = OutputDecoderFlags::OUTD_RESERVED_BIT,
+		BOUTMD_RESERVED1 = OutputDecoderFlags::OUTD_RESERVED_BIT,
 
-		BOUTDC_ACTIVE = OutputDecoderFlags::OUTD_ACTIVE
+		BOUTMD_ACTIVE = OutputDecoderFlags::OUTD_ACTIVE
 	};
 
 	enum ServoTurnoutDecoderFlags : uint8_t
@@ -152,17 +152,32 @@ namespace dcclite
 
 	enum TurntableAutoInverterDecoderFlags: uint8_t
 	{
-		TRTD_INVERTED = 0x01,
-		TRTD_REMOTE_ACTIVE = 0x40,
-		TRTD_ACTIVE = 0x80
+		TRTD_INVERTED = OUTD_INVERTED_OPERATION,		//Bit 0 - 0x01
+		TRTD_RESERVED_BIT1 = OUTD_IGNORE_SAVED_STATE,	//IgnoreSaveState not used 0x02
+		TRTD_REMOTE_ACTIVE = OUTD_ACTIVATE_ON_POWER_UP,	//Bit 2 - 0x04
+
+		TRTD_RESERVED_BIT3 = OUTD_RESERVED_BIT,			//Bit 3 - 0x08
+
+		TRTD_UNUSED_BIT4 = OUTD_USER_BIT4,				//Bit 4 - 0x10
+		TRTD_UNUSED_BIT5 = OUTD_USER_BIT5,				//Bit 5 - 0x20
+		TRTD_UNUSED_BIT6 = OUTD_USER_BIT6,				//Bit 6 - 0x40
+
+		TRTD_ACTIVE = OUTD_ACTIVE						//Bit 7 - 0x80
 	};
 
 	enum QuadInverterDecoderFlags : uint8_t
 	{		
-		QUAD_INVERTED = 0x01,
-		QUAD_IGNORE_SAVED_STATE = 0x02,
-		QUAD_ACTIVATE_ON_POWER_UP = 0x04,		
-		QUAD_ACTIVE = 0x80
+		QUAD_INVERTED = OUTD_INVERTED_OPERATION,				//Bit 0 - 0x01
+		QUAD_IGNORE_SAVED_STATE = OUTD_IGNORE_SAVED_STATE,		//Bit 1 - 0x02
+		QUAD_ACTIVATE_ON_POWER_UP = OUTD_ACTIVATE_ON_POWER_UP,	//Bit 2 - 0x04
+
+		QUAD_RESERVED = OUTD_RESERVED_BIT,						//Bit 3 - 0x08
+
+		QUAD_UNUSED_BIT4 = OUTD_USER_BIT4,						//Bit 4 - 0x10
+		QUAD_UNUSED_BIT5 = OUTD_USER_BIT5,						//Bit 5 - 0x20
+		QUAD_UNUSED_BIT6 = OUTD_USER_BIT6,						//Bit 6 - 0x40
+
+		QUAD_ACTIVE = OUTD_ACTIVE								//Bit 7 - 0x80
 	};	
 
 } //end of namespace dcclite

@@ -48,6 +48,14 @@ namespace Storage
 	#endif
 			void Get(uint16_t &number);
 
+			template <typename T>
+			T Read() noexcept
+			{
+				T data;
+				this->Get(data);
+				return data;
+			}
+
 			unsigned int GetString(char *name, unsigned int nameSize);
 			void GetRaw(uint8_t *data, uint16_t size);
 

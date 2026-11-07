@@ -2,7 +2,7 @@
 set(LiteDecoderLib_SRCS
     Blinker.cpp    
     Config.cpp  
-    DecoderManager.cpp
+    DecoderManagerImpl.cpp
     main.cpp
     NetUdp.cpp    
     QuadInverterDecoder.cpp
@@ -14,7 +14,7 @@ set(LiteDecoderLib_SRCS
 set(LiteDecoderLib_HDRS
 	Blinker.h    
     Config.h 
-    DecoderManager.h  
+    DecoderManagerImpl.h  
     LiteDecoderLibDefs.h
     main.h
     NetUdp.h    

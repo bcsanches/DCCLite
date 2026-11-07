@@ -13,7 +13,7 @@
 #include <dcclite_shared/Packet.h>
 
 #include "Console.h"
-#include "DecoderManager.h"
+#include "DecoderManagerImpl.h"
 #include "ServoTurnoutDecoder.h"
 #include "Session.h"
 

@@ -15,7 +15,7 @@
 #include <dcclite_shared/Packet.h>
 
 #include "Console.h"
-#include "DecoderManager.h"
+#include "DecoderManagerImpl.h"
 #include "SensorDecoder.h"
 #include "Storage.h"
 
