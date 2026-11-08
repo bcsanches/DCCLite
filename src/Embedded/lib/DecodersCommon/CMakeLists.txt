@@ -30,6 +30,9 @@ set(DecodersCommonLib_HDRS
     Strings.h
 )
 
+source_group("src" FILES ${DecodersCommonLib_SRCS})
+source_group("src" FILES ${DecodersCommonLib_HDRS})
+
 add_compile_definitions(_CRT_SECURE_NO_WARNINGS DCCLITE_ARDUINO_EMULATOR)
 
 add_library(DecodersCommonLib  ${DecodersCommonLib_SRCS} ${DecodersCommonLib_HDRS})

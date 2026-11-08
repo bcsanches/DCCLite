@@ -26,7 +26,7 @@ namespace dcclite::broker::exec::dcc
 		const rapidjson::Value &params
 	):
 		OutputDecoder{ address, name, owner, dev, params },
-		m_rnTarget{ dcclite::json::GetString(params, "slave", "BlinkOutputMasterDecoder") }
+		m_rnSlave{ dcclite::json::GetString(params, "slave", "BlinkOutputMasterDecoder") }
 	{
 		//empty
 	}
@@ -37,7 +37,7 @@ namespace dcclite::broker::exec::dcc
 
 		auto networkDevice = m_rclDevice.TryGetINetworkDevice();
 
-		auto &decoder = networkDevice->FindDecoder(m_rnTarget);
+		auto &decoder = networkDevice->FindDecoder(m_rnSlave);
 
 		//make sure we are pointing to an blink output decoder
 		auto &outputDecoder = dynamic_cast<BlinkOutputDecoder &>(decoder);
@@ -54,5 +54,12 @@ namespace dcclite::broker::exec::dcc
 
 		packet.Write8(flags);
 		packet.Write8(m_u8TargetIndex);
+	}
+
+	void BlinkOutputMasterDecoder::Serialize(dcclite::JsonOutputStream_t &stream) const
+	{
+		OutputDecoder::Serialize(stream);
+
+		stream.AddStringValue("slave", m_rnSlave.GetData());
 	}
 }

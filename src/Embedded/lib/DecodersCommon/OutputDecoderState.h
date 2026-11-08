@@ -43,6 +43,11 @@ class OutputDecoderState
 		explicit OutputDecoderState(Storage::EpromStream &stream);
 
 		void SaveConfig(Storage::EpromStream &stream);
+		
+		inline void PersistState() const noexcept
+		{
+			m_fFlags.PersistState();
+		}
 
 		inline bool IsActive() const noexcept
 		{

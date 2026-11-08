@@ -1,18 +1,42 @@
-[  
+[
+	{
+		"name": "simple_output",
+		"class": "Output",
+		"address": 9000,
+		"pin": 13,
+		"inverted": false,
+		"ignoreSavedState": false,
+		"location": "TC"		
+	},
 	{
 		"name": "blink",
 		"class": "BlinkOutput",
-		"address": 9000,
+		"address": 9001,
 		"pin": 10,
 		"inverted": true,
-		"ignoreSavedState": false,
-		"location": "TC",
-		"blinkInterval":100
+		"ignoreSavedState": false,		
+		"blinkInterval":2000
 	},
 	{
 		"name": "blinkm",
 		"class": "BlinkOutputMaster",
-		"address": 9001,
+		"address": 9002,
 		"slave": "blink"
+	},
+	{
+		"name": "blink_fast",
+		"class": "BlinkOutput",
+		"address": 9003,
+		"pin": 11,
+		"inverted": true,
+		"ignoreSavedState": false,
+		"location": "TC",
+		"blinkInterval":50
+	},
+	{
+		"name": "blinkm2",
+		"class": "BlinkOutputMaster",
+		"address": 9004,
+		"slave": "blink_fast"
 	}
 ]

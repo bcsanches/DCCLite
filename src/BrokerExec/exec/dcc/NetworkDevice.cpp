@@ -1024,6 +1024,7 @@ namespace dcclite::broker::exec::dcc
 				return static_cast<uint8_t>(i);
 		}
 
+		[[unlikely]]
 		throw std::out_of_range(fmt::format("[Device::{}] [FindDecoderIndex] Decoder {} not found", this->GetName(), decoder.GetName()));
 	}
 

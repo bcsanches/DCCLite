@@ -80,7 +80,7 @@ bool BlinkOutputDecoder::Update(const unsigned long ticks)
 	m_clState.SetOutput(outputActive ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);
 
 	//store bits...
-	m_clState.SetUserBits(bits);
+	m_clState.SetUserBits(bits);	
 
 	return false;
 }
@@ -121,5 +121,8 @@ void BlinkOutputDecoder::SetBlinkingState(dcclite::DecoderStates state)
 		m_clState.SetUserBits(0);
 		m_clState.SetOutput(m_clState.IsActive() ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE);		
 	}
+
+	//save the bit flags, so we can restore them after a power cycle.
+	m_clState.PersistState();
 }
 

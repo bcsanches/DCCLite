@@ -39,8 +39,8 @@ static uint8_t g_u8Buffer[BUFFER_SIZE];
 
 static void printIp (const __FlashStringHelper *ifsh, const IPAddress &ip) 
 {
-    Serial.print(ifsh);
-    Serial.println(ip);    
+	Serial.print(ifsh);
+	Serial.println(ip);    
 }
 
 #else
@@ -68,24 +68,12 @@ enum States
 
 //<nodeName> <mac> <port>
 
-void NetUdp::LoadConfig(Storage::EpromStream &stream, bool oldConfig)
+void NetUdp::LoadConfig(Storage::EpromStream &stream)
 {
 	for(int i = 0;i < dcclite::MAX_NODE_NAME; ++i)
 		stream.Get(g_szNodeName[i]);
 
-	g_szNodeName[dcclite::MAX_NODE_NAME] = 0;
-
-	if(oldConfig)
-	{
-		uint8_t mac;
-		for(int i = 0;i < 6; ++i)
-		{
-			stream.Get(mac);
-		}
-
-		uint16_t unusedSrcPort;
-		stream.Get(unusedSrcPort);
-	}	
+	g_szNodeName[dcclite::MAX_NODE_NAME] = 0;	
 
 	NetUdp::LogStatus();
 }
@@ -112,10 +100,10 @@ static void GenerateMac(uint8_t mac[6])
 		// the first 5 of 8 are at 0x0E to 0x013
 		// the last  3 of 8 are at 0x15 to 0x017
 		mac[i] = boot_signature_byte_get(0x0E + i + (i>2? 4 : 0));
-    }
+	}
 
-    mac[0] &= 0xFE;
-    mac[0] |= 0x02;
+	mac[0] &= 0xFE;
+	mac[0] |= 0x02;
   }
 
 bool NetUdp::Init(ReceiveCallback_t callback)
@@ -223,7 +211,7 @@ bool NetUdp::Init(ReceiveCallback_t callback)
 
 	ether.printIp(F("mask : "), ether.netmask);
 	ether.printIp(F("GW IP: "), ether.gwip);
- 	ether.printIp(F("DNS IP: "), ether.dnsip);
+	ether.printIp(F("DNS IP: "), ether.dnsip);
 	ether.printIp(F("IP:  "), ether.myip);
 
 	ether.udpServerListenOnPort(callback, SRC_PORT);

@@ -1,12 +1,7 @@
-# Version 0.12.0 - Development
+# Version 0.14.0 - Development
 
 TODO
-- quando carregar o arduino apos um reset, o blink não pisca, deveria carregar o estado
-    - esta salvando o bit de blink?
-    - o blink master esta resetando?
-- Update sharp console for blink
-- Update EEPROM Viewer
-- make blink work
+
 - make log display
 
 
@@ -14,7 +9,7 @@ TODO
 
 - Support to ignore aditional DCCex commands :P
 - Added BlinkOutputDecoder
-- Added BlinkOutputDecoderController
+- Added BlinkOutputDecoderMaster
 - Added log to SharpConsole
 - RouteMonitor now supports locking
 

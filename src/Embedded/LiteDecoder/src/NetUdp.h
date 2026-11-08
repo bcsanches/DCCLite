@@ -31,7 +31,7 @@ namespace NetUdp
 		const char *data,   ///< UDP payload data
 		unsigned int len);
 
-	extern void LoadConfig(Storage::EpromStream &stream, bool oldConfig = false);
+	extern void LoadConfig(Storage::EpromStream &stream);
 
 	extern void SaveConfig(Storage::EpromStream &stream);
 

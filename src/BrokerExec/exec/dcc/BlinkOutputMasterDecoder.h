@@ -36,6 +36,8 @@ namespace dcclite::broker::exec::dcc
 				return dcclite::DecoderTypes::DEC_BLINK_OUTPUT_MASTER;
 			}
 
+			void Serialize(dcclite::JsonOutputStream_t &stream) const override;
+
 			//
 			//IObject
 			//
@@ -47,7 +49,7 @@ namespace dcclite::broker::exec::dcc
 			}
 
 		private:
-			RName	m_rnTarget;
+			RName	m_rnSlave;
 
 			uint8_t m_u8TargetIndex = 0;
 	};

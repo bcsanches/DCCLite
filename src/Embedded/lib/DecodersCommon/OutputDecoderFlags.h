@@ -78,7 +78,7 @@ struct OutputDecoderFlags
 			stream.Put(static_cast<uint8_t>(m_fFlags & STREAM_MASK));
 		}
 
-		inline void PersistState() noexcept
+		inline void PersistState() const noexcept
 		{
 			if (m_uStorageIndex && !this->IgnoreSavedState())
 				Storage::UpdateField(m_uStorageIndex, static_cast<uint8_t>(m_fFlags & STREAM_MASK));

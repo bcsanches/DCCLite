@@ -22,6 +22,11 @@ class MiniDuino
 		void AddDecoder(Decoder &dec);
 		Decoder *GetDecoder(uint8_t index);
 
+		template <typename T>
+		T *GetDecoderAs(uint8_t index)
+		{
+			return dynamic_cast<T *>(this->GetDecoder(index));
+		}
 	
 	protected:
 		std::vector<Decoder *> m_vecDecoders;

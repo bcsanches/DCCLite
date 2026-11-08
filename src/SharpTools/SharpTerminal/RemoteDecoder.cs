@@ -228,7 +228,14 @@ namespace SharpTerminal
     }
 
 	[SupportedOSPlatform("windows")]
-	public class RemoteOutputDecoder(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) : RemoteDecoder(name, className, path, internalId, objectDef, parent)
+	public class RemoteOutputDecoder(
+        string name, 
+        string className, 
+        string path, 
+        ulong internalId, 
+        JsonValue objectDef, 
+        RemoteFolder parent
+        ) : RemoteDecoder(name, className, path, internalId, objectDef, parent)
     {
         public override string TryGetIconName()
         {
@@ -240,6 +247,28 @@ namespace SharpTerminal
             return [g_SwitchAction];
         }
     }
+
+	[SupportedOSPlatform("windows")]
+	public class RemoteBlinkOutputMasterDecoder: RemoteOutputDecoder
+    {
+        string mSlave;
+
+		public string Slave
+		{
+			get { return mSlave; }
+
+			set
+			{
+				this.UpdateProperty(ref mSlave, value);
+			}
+		}
+
+		public RemoteBlinkOutputMasterDecoder(string name, string className, string path, ulong internalId, JsonValue objectDef, RemoteFolder parent) :
+            base(name, className, path, internalId, objectDef, parent)
+        {
+            Slave = objectDef["slave"];
+		}
+	}
 
 	[SupportedOSPlatform("windows")]
 	public class RemoteTurnoutDecoder: RemoteDecoder

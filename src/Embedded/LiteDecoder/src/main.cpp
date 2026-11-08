@@ -124,8 +124,6 @@ bool Console::Custom_ParseCommand(dcclite::StringView command)
 #define NET_UDP_STORAGE_ID	F("NetU003")
 #define SESSION_STORAGE_ID  F("Sson002")
 
-#define NET_UDP_OLD_STORAGE_ID	F("NetU002")
-
 bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream &stream)
 {
 	if (FStrNCmp(lump.m_archName, DECODERS_STORAGE_ID, FStrLen(DECODERS_STORAGE_ID)) == 0)
@@ -139,16 +137,6 @@ bool Storage::Custom_LoadModules(const Storage::Lump &lump, Storage::EpromStream
 		//Console::SendLogEx(MODULE_NAME, FSTR_DECODERS, ' ', "cfg", ' ', g_uDecodersPosition);
 		//DCCLITE_LOG_MODULE_LN(FSTR_DECODERS << F(" cfg ") << g_uDecodersPosition);
 		Console::Printf(F("[%z] %z %z %d\n"), MODULE_NAME, FSTR_DECODERS, F("cfg"), g_uDecodersPosition);
-
-		return true;
-	}
-
-	if (FStrNCmp(lump.m_archName, NET_UDP_OLD_STORAGE_ID, FStrLen(NET_UDP_OLD_STORAGE_ID)) == 0)
-	{		
-		//DCCLITE_LOG_MODULE_LN(MODULE_NAME << F(" net udp OLD OLD OLD cfg"));
-		Console::Printf(F("[%z] %z %z %z\n"), MODULE_NAME, F("net udp"), F("OLD OLD OLD"), F("cfg"));
-
-		NetUdp::LoadConfig(stream, true);
 
 		return true;
 	}

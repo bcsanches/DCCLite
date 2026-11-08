@@ -453,3 +453,154 @@ TEST(BlinkOutputDecoder, EpromStreamInactiveBlinkingInverted)
 	}
 }
 
+TEST(BlinkOutputDecoder, PersistBlinkState)
+{
+	const char *json = R"JSON(
+		[
+			{
+				"name": "TEST_BLINK",
+				"class": "BlinkOutput",
+				"address": 1301,
+				"pin": 45,
+				"inverted": false,
+				"ignoreSavedState": false,
+				"location": "TC",
+				"blinkInterval": 100
+			}
+		]
+	)JSON";
+
+	{
+		ManagedMiniDuino board;
+
+		board.Load(json);
+
+		auto decoder = board.GetDecoderAs<RemoteBlinkOutputDecoder>(0);
+
+		ASSERT_TRUE(decoder);
+		ASSERT_EQ(decoder->GetType(), dcclite::DecoderTypes::DEC_BLINK_OUTPUT);
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+
+		board.Store();
+
+		ArduinoLib::FixedTick(100);
+
+		decoder->AcceptServerState(dcclite::DecoderStates::ACTIVE, millis());
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+
+		ArduinoLib::FixedTick(100);
+
+		decoder->SetBlinkingState(dcclite::DecoderStates::ACTIVE);
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+
+		ArduinoLib::FixedTick(100);
+
+		//Is it blinking? Should be LOW now.
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+
+		ArduinoLib::FixedTick(100);
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+
+		ArduinoLib::FixedTick(100);
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+
+		//definetely it is blinking
+	}
+
+	{
+		ManagedMiniDuino board;
+
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+
+		board.LoadFromStorage();
+
+		auto decoder = board.GetDecoderAs<RemoteBlinkOutputDecoder>(0);
+
+		ASSERT_TRUE(decoder);
+		ASSERT_TRUE(decoder->IsBlinking());
+		ASSERT_EQ(decoder->GetType(), dcclite::DecoderTypes::DEC_BLINK_OUTPUT);
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+
+		ArduinoLib::FixedTick(100);
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+
+		ArduinoLib::FixedTick(100);
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+
+		ArduinoLib::FixedTick(100);
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+
+		//definetely it is blinking... again...
+		decoder->SetBlinkingState(dcclite::DecoderStates::INACTIVE);
+
+		//should go high, as we disabled blinking, but decoder is active... this is tested elsewhere... but... does not hurt to test again
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+
+		//tick, to make sure eeprom state is persisted...
+		ArduinoLib::FixedTick(100);
+	}
+
+	{
+		ManagedMiniDuino board;
+
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+
+		board.LoadFromStorage();
+
+		auto decoder = board.GetDecoderAs<RemoteBlinkOutputDecoder>(0);
+
+		ASSERT_TRUE(decoder);
+		ASSERT_FALSE(decoder->IsBlinking());
+		ASSERT_EQ(decoder->GetType(), dcclite::DecoderTypes::DEC_BLINK_OUTPUT);
+
+		//it died on high, should start HIGH again
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+
+		decoder->SetBlinkingState(dcclite::DecoderStates::ACTIVE);
+		decoder->AcceptServerState(dcclite::DecoderStates::INACTIVE, millis());
+
+		//blinking, but inactive
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+
+		ArduinoLib::FixedTick(100);
+
+		//sitting quiet...
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+	}
+
+	{
+		ManagedMiniDuino board;
+
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+
+		board.LoadFromStorage();
+
+		auto decoder = board.GetDecoderAs<RemoteBlinkOutputDecoder>(0);
+
+		ASSERT_TRUE(decoder);
+		ASSERT_TRUE(decoder->IsBlinking());
+		ASSERT_EQ(decoder->GetType(), dcclite::DecoderTypes::DEC_BLINK_OUTPUT);
+
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+
+		ArduinoLib::FixedTick(100);
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+
+		ArduinoLib::FixedTick(100);
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+
+		//it is definetely disabled...
+
+		decoder->AcceptServerState(dcclite::DecoderStates::ACTIVE, millis());
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+
+		ArduinoLib::FixedTick(100);
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::LOW);
+
+		ArduinoLib::FixedTick(100);
+		ASSERT_EQ(ArduinoLib::GetPinDigitalVoltage(45), VoltageModes::HIGH);
+
+		//ok, it is blinking again...
+	}
+}
+

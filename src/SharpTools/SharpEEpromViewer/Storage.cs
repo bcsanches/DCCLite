@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
+// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
 // file at the top-level directory of this distribution.
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public
@@ -139,7 +139,6 @@ namespace SharpEEPromViewer
 
 	class SensorDecoder: Decoder
 	{
-
 		public bool HasPullUp { get; }
 		public bool IsInverted { get; }
 
@@ -513,6 +512,82 @@ namespace SharpEEPromViewer
 		}
 	}
 
+	class BlinkOutputDecoder : Decoder
+	{
+		public bool IsInverted { get; }
+		public bool ShouldIgnoreSaveState { get; }
+
+		public bool ShouldActivateOnPowerUp { get; }
+
+		public bool OutputActive { get; }
+
+		public bool Active { get; }
+
+		public bool Blinking { get; }
+
+		public UInt16 BlinkIntervalMs { get; }
+
+		[Flags]
+		enum Flags : byte
+		{
+			BOUTD_INVERTED_OPERATION = 0x01,
+			BOUTD_IGNORE_SAVED_STATE = 0x02,
+			BOUTD_ACTIVATE_ON_POWER_UP = 0x04,
+
+			BOUTD_BLINKING = 0x10,
+			BOUTD_OUTPUT_ACTIVE = 0x20,
+
+			BOUTD_ACTIVE = 0x80
+		}
+
+		public BlinkOutputDecoder(byte slot, BinaryReader reader) :
+			base(slot, 4, reader.ReadByte())
+		{
+			var flags = (Flags)reader.ReadByte();
+
+			IsInverted = (flags & Flags.BOUTD_INVERTED_OPERATION) == Flags.BOUTD_INVERTED_OPERATION;
+			ShouldIgnoreSaveState = (flags & Flags.BOUTD_IGNORE_SAVED_STATE) == Flags.BOUTD_IGNORE_SAVED_STATE;
+			ShouldActivateOnPowerUp = (flags & Flags.BOUTD_ACTIVATE_ON_POWER_UP) == Flags.BOUTD_ACTIVATE_ON_POWER_UP;
+			OutputActive = (flags & Flags.BOUTD_OUTPUT_ACTIVE) == Flags.BOUTD_OUTPUT_ACTIVE;
+			Blinking = (flags & Flags.BOUTD_BLINKING) == Flags.BOUTD_BLINKING;
+			Active = (flags & Flags.BOUTD_ACTIVE) == Flags.BOUTD_ACTIVE;
+
+			BlinkIntervalMs = reader.ReadUInt16();
+		}
+	}
+
+	class BlinkOutputMasterDecoder : Item
+	{		
+		public bool ShouldIgnoreSaveState { get; }
+
+		public bool ShouldActivateOnPowerUp { get; }
+
+		public bool Active { get; }		
+
+		public byte SlaveIndex { get; }
+
+		[Flags]
+		enum Flags : byte
+		{
+			BOUTMD_IGNORE_SAVED_STATE = 0x02,
+			BOUTMD_ACTIVATE_ON_POWER_UP = 0x04,			
+
+			BOUTMD_ACTIVE = 0x80
+		}
+
+		public BlinkOutputMasterDecoder(byte slot, BinaryReader reader) :
+			base(slot, 2)
+		{
+			var flags = (Flags)reader.ReadByte();
+			
+			ShouldIgnoreSaveState = (flags & Flags.BOUTMD_IGNORE_SAVED_STATE) == Flags.BOUTMD_IGNORE_SAVED_STATE;
+			ShouldActivateOnPowerUp = (flags & Flags.BOUTMD_ACTIVATE_ON_POWER_UP) == Flags.BOUTMD_ACTIVATE_ON_POWER_UP;
+			Active = (flags & Flags.BOUTMD_ACTIVE) == Flags.BOUTMD_ACTIVE;
+
+			SlaveIndex = reader.ReadByte();
+		}
+	}
+
 	class Lump
 	{
 		static readonly Dictionary<string, Type> gKnownTypes = new()
@@ -526,8 +601,9 @@ namespace SharpEEPromViewer
 			{ "DECS016\0", typeof(DecodersLumpV016) },  //015 and 016 the same, but 016 has QuadInverterDecoder
 			{ "DECS017\0", typeof(DecodersLumpV017) },  //017 Turntable auto inverter changed
 			{ "DECS018\0", typeof(DecodersLumpV018) },  //018 Sensor using word instead of byte for delays
-			{ "DECS019\0", typeof(DecodersLump) },      //019 Turntable auto inverter using single pin for each track
-			{ "DECS020\0", typeof(DecodersLump) },      //020 Quad inverter using invert flag (no storage size change)
+			{ "DECS019\0", typeof(DecodersLumpV020) },  //019 Turntable auto inverter using single pin for each track
+			{ "DECS020\0", typeof(DecodersLumpV020) },  //020 Quad inverter using invert flag (no storage size change)
+			{ "DECS021\0", typeof(DecodersLump) },      //021 BlinkOutput and BlinkOutputMaster decoders added
 			{ "ENDEND1\0", typeof(MarkerLump) }
 		};
 
@@ -966,7 +1042,7 @@ namespace SharpEEPromViewer
 		}
 	}
 
-	class DecodersLump : Lump
+	class DecodersLumpV020 : Lump
 	{
 		enum DecoderTypes : byte
 		{
@@ -986,6 +1062,81 @@ namespace SharpEEPromViewer
 			{ DecoderTypes.DEC_SERVO_TURNOUT,           typeof(ServoTurnoutDecoder) },
 			{ DecoderTypes.DEC_TURNTABLE_AUTO_INVERTER, typeof(TurntableAutoInverterDecoder) },
 			{ DecoderTypes.DEC_QUAD_INVERTER,           typeof(QuadInverterDecoder) }
+		};
+
+		public Guid Guid { get; }
+
+		public DecodersLumpV020(string name, UInt16 size, BinaryReader reader) :
+			base(name, size)
+		{
+			if (size < 17)
+				throw new ArgumentOutOfRangeException("[DecodersLumpV020] Must have at least 17 bytes, but got " + size);
+
+			Guid = new Guid(reader.ReadBytes(16));
+
+			var bytesLeft = size - 16;
+
+			for (; ; )
+			{
+				--bytesLeft;
+				var decType = (DecoderTypes)reader.ReadByte();
+				if (decType == DecoderTypes.DEC_NULL)
+					break;
+
+				if (!gKnownTypes.TryGetValue(decType, out Type decoderClassType))
+					throw new ArgumentOutOfRangeException("dectype not suppported: " + decType.ToString());
+
+				--bytesLeft;
+				var decQuantity = reader.ReadByte();
+
+				for (var i = 0; i < decQuantity; ++i)
+				{
+					--bytesLeft;
+					var slot = reader.ReadByte();
+
+					var decoder = (Item)System.Activator.CreateInstance(decoderClassType, slot, reader);
+
+					bytesLeft -= decoder.Size;
+
+					this.AddItem(decoder);
+				}
+
+			}
+
+			if (bytesLeft != 0)
+			{
+				throw new ArgumentOutOfRangeException("bytes left...");
+			}
+
+			//skip...
+			//reader.ReadBytes(size - 16);
+		}
+	}
+
+	class DecodersLump : Lump
+	{
+		enum DecoderTypes : byte
+		{
+			DEC_NULL = 0,
+			DEC_OUTPUT = 1,
+			DEC_SENSOR = 2,
+			DEC_SERVO_TURNOUT = 3,
+			DEC_SIGNAL = 4,         //Only virtual, not implemented on Arduino
+			DEC_TURNTABLE_AUTO_INVERTER = 5,
+			DEC_QUAD_INVERTER = 6,
+			DEC_BLINK_OUTPUT = 7,
+			DEC_BLINK_OUTPUT_MASTER = 8
+		};
+
+		static readonly Dictionary<DecoderTypes, Type> gKnownTypes = new()
+		{
+			{ DecoderTypes.DEC_OUTPUT,                  typeof(OutputDecoder) },
+			{ DecoderTypes.DEC_SENSOR,                  typeof(SensorDecoder) },
+			{ DecoderTypes.DEC_SERVO_TURNOUT,           typeof(ServoTurnoutDecoder) },
+			{ DecoderTypes.DEC_TURNTABLE_AUTO_INVERTER, typeof(TurntableAutoInverterDecoder) },
+			{ DecoderTypes.DEC_QUAD_INVERTER,           typeof(QuadInverterDecoder) },
+			{ DecoderTypes.DEC_BLINK_OUTPUT,            typeof(BlinkOutputDecoder) },
+			{ DecoderTypes.DEC_BLINK_OUTPUT_MASTER,     typeof(BlinkOutputMasterDecoder) }			
 		};
 
 		public Guid Guid { get; }
@@ -1036,6 +1187,8 @@ namespace SharpEEPromViewer
 			//reader.ReadBytes(size - 16);
 		}
 	}
+
+
 
 	class MarkerLump: Lump
 	{
