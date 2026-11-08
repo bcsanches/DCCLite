@@ -43,8 +43,7 @@ namespace dcclite::broker::sys
 	auto constexpr LOCONET_THINK_TIME = 20ms;
 	auto constexpr LOCONET_PURGE_INTERVAL = 100s;
 	auto constexpr LOCONET_PURGE_TIMEOUT = 200s;
-
-	auto constexpr SIGNAL_FLASH_INTERVAL = 500ms;
+	
 	auto constexpr SIGNAL_WAIT_STATE_TIMEOUT = 250ms;
 
 	auto constexpr THROTTLE_SERVICE_THINK_TIME = 20ms;

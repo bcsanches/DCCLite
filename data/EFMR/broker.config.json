@@ -10,19 +10,19 @@
 					"class": "ArduinoMega"
 				},
 				{
-					"name": "HadesEntA",
+					"name": "StagingEntA",
 					"class": "ArduinoMega"
 				},
 				{
-					"name": "HadesExtA",
+					"name": "StagingExtA",
 					"class": "ArduinoMega"
 				},
 				{
-					"name": "HadesEntC",
+					"name": "StagingEntC",
 					"class": "ArduinoMega"
 				},
 				{
-					"name": "HadesExtC",
+					"name": "StagingExtC",
 					"class": "ArduinoMega"
 				},
 				{

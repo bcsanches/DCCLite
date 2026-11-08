@@ -1,7 +1,7 @@
 [
 	{
 		"name": "TC_SIG_11D_HG",
-		"class": "Output",
+		"class": "BlinkOutput",
 		"address": 1301,
 		"pin": 45,
 		"inverted": true,
@@ -10,7 +10,7 @@
 	},
 	{
 		"name": "TC_SIG_11D_HR",
-		"class": "Output",
+		"class": "BlinkOutput",
 		"address": 1302,
 		"pin": 44,
 		"inverted": true,
@@ -19,7 +19,7 @@
 	},
 	{
 		"name": "TC_SIG_5D_HG",
-		"class": "Output",
+		"class": "BlinkOutput",
 		"address": 1304,
 		"pin": 43,
 		"inverted": true,
@@ -28,7 +28,7 @@
 	},
 	{
 		"name": "TC_SIG_5D_HR",
-		"class": "Output",
+		"class": "BlinkOutput",
 		"address": 1305,
 		"pin": 42,
 		"inverted": true,
@@ -58,6 +58,38 @@
 		"deactivateDelay": 10,
 		"location": "Tres Coracoes",
 		"comment": "Sensor infrared 01 - Entrada superior - principal - Sinal SIG_1E"
+	},
+	{
+		"name": "TC_SIG_11D_HG_Master",
+		"class": "BlinkOutputMaster",
+		"address": 1313,		
+		"ignoreSavedState": true,
+		"slave": "TC_SIG_11D_HG",
+		"location": "TC"
+	},
+	{
+		"name": "TC_SIG_11D_HR_Master",
+		"class": "BlinkOutputMaster",
+		"address": 1314,		
+		"ignoreSavedState": true,
+		"slave": "TC_SIG_11D_HR",
+		"location": "TC"
+	},
+	{
+		"name": "TC_SIG_5D_HR_Master",
+		"class": "BlinkOutputMaster",
+		"address": 1316,		
+		"ignoreSavedState": true,
+		"slave": "TC_SIG_5D_HR",
+		"location": "TC"
+	},
+	{
+		"name": "TC_SIG_5D_HG_Master",
+		"class": "BlinkOutputMaster",
+		"address": 1317,		
+		"ignoreSavedState": true,
+		"slave": "TC_SIG_5D_HG",
+		"location": "TC"
 	},
 	{
 		"name":"TC_TurntableSensorA",

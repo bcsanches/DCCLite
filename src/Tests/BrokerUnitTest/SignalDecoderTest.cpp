@@ -76,9 +76,7 @@ TEST(SignalDecoderTest, Basic)
 			[
 			{
 				"name":"Stop",
-				"on":["red"],
-				"flash":false,
-				"comment":"Flash false is the default, we just put it here for testing"				
+				"on":["red"]				
 			},
 			{
 				"name":"Clear",
@@ -91,10 +89,9 @@ TEST(SignalDecoderTest, Basic)
 			{
 				"name":"Dark",
 				"on":["yellow", "caution"],
-				"off":["green"],
-				"flash":true,
+				"off":["green"],				
 				"comment":"This is not parsed, this aspect is used for testing special cases on parsing"
-			}      
+			}
 		]  
 	}
 	)JSON";	
@@ -129,8 +126,7 @@ TEST(SignalDecoderTest, Basic)
 	//
 	//
 	ASSERT_EQ(aspects[0].m_vecOnHeads.size(), 2);
-	ASSERT_EQ(aspects[0].m_vecOffHeads.size(), 1) << "m_vecOffHeads should contain one element only";
-	ASSERT_TRUE(aspects[0].m_Flash);
+	ASSERT_EQ(aspects[0].m_vecOffHeads.size(), 1) << "m_vecOffHeads should contain one element only";	
 
 	//Check if m_vecOffHeads on DARK aspect contains only green, that is configured on JSON	
 	ASSERT_TRUE(VectorHasStr(aspects[0].m_vecOffHeads, "STC_HG12"));
@@ -146,8 +142,7 @@ TEST(SignalDecoderTest, Basic)
 	for (int i = 1; i < 3; ++i)
 	{		
 		ASSERT_EQ(aspects[i].m_vecOnHeads.size(), 1);
-		ASSERT_EQ(aspects[i].m_vecOffHeads.size(), 3);
-		ASSERT_FALSE(aspects[i].m_Flash);
+		ASSERT_EQ(aspects[i].m_vecOffHeads.size(), 3);		
 	}
 
 	//size was checked to be 1, so just confirm correct head is there
@@ -421,4 +416,30 @@ TEST(SignalDecoderTest, InvalidAspectName)
 	)JSON")) << "Signal definition in JSON uses an name for aspect that is not know [BLA]";
 };
 
+TEST(SignalDecoderTest, FlashDeprecated)
+{
+	const char *json = R"JSON(
+		{
+			"name":"STC_SIG_12",
+			"class":"VirtualSignal",    
+			"address":"1840",  
+			"heads":
+			{
+				"red":"STC_HR12",
+				"green":"STC_HG12",
+				"yellow":"STC_HY12",
+				"caution":"STC_BLA"				
+			},        
+			"aspects":
+			[
+			{
+				"name":"Stop",
+				"on":["red"],				
+				"flash":false
+			}
+		]  
+	}
+	)JSON";
 
+	ASSERT_THAT(ExtractSignalExceptionString(json), HasSubstr("deprecated"));
+}

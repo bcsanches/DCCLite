@@ -133,11 +133,10 @@ namespace dcclite::broker::exec::dcc
 					newAspect.m_vecOffHeads.push_back(headName);
 				}
 			}
-
-			auto flashData = aspectElement.FindMember("flash");
-			newAspect.m_Flash = (flashData != aspectElement.MemberEnd()) ? flashData->value.GetBool() : false;
 			
-
+			if(aspectElement.FindMember("flash") != aspectElement.MemberEnd())
+				throw std::invalid_argument(fmt::format("[SignalDecoder::{}] [SignalDecoder] Error: aspect {} \"flash\" is deprecated", this->GetName(), name));
+						
 			m_vecAspects.push_back(std::move(newAspect));
 		}		
 
@@ -357,38 +356,6 @@ namespace dcclite::broker::exec::dcc
 			}
 		);
 
-		if (m_rclOwner.m_vecAspects[m_rclOwner.m_uCurrentAspectIndex].m_Flash)
-		{
-			m_rclOwner.m_vState.emplace<State_Flash>(m_rclOwner, dcclite::Clock::DefaultClock_t::now());
-		}
-		else
-		{
-			m_rclOwner.m_vState.emplace<std::monostate>();
-		}
-	}
-	
-	
-	SignalDecoder::State_Flash::State_Flash(SignalDecoder &self, const dcclite::Clock::TimePoint_t time):
-		State{self},
-		m_clThinker{ "SignalDecoder::State_Flash", THINKER_MF_LAMBDA(OnThink)}
-	{
-		this->OnThink(time);
-	}
-	
-	void SignalDecoder::State_Flash::OnThink(const dcclite::Clock::TimePoint_t time)
-	{		
-		m_fOn = !m_fOn;
-
-		const auto state = m_fOn ? dcclite::DecoderStates::ACTIVE : dcclite::DecoderStates::INACTIVE;
-
-		m_rclOwner.ForEachHead(m_rclOwner.m_vecAspects[m_rclOwner.m_uCurrentAspectIndex].m_vecOnHeads, m_rclOwner.m_eCurrentAspect, [state, this](OutputDecoder &dec)
-			{
-				dec.SetState(state, m_rclOwner.GetName().GetData().data());
-
-				return true;
-			}
-		);
-
-		m_clThinker.Schedule(time + sys::SIGNAL_FLASH_INTERVAL);
-	}		
+		m_rclOwner.m_vState.emplace<std::monostate>();		
+	}			
 }

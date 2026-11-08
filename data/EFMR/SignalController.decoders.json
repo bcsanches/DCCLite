@@ -1,54 +1,12 @@
-[
-	{
-		"name": "STC_SIG_12",
-		"class": "VirtualSignal",
-		"address": "1840",
-		"heads": {
-			"red": "STC_HR12",
-			"green": "STC_HG12"
-		},
-		"aspects": [
-			{
-				"name": "Stop",
-				"on": [
-					"red"
-				]
-			},
-			{
-				"name": "Restricted",
-				"on": [
-					"red"
-				],
-				"flash": true
-			},
-			{
-				"name": "Aproach",
-				"on": [
-					"green"
-				],
-				"flash": true
-			},
-			{
-				"name": "Clear",
-				"on": [
-					"green"
-				]
-			},
-			{
-				"name": "Dark",
-				"off": [
-					"red",
-					"green"
-				]
-			}
-		]
-	},
+[	
 	{
 		"name": "TC_SIG_5D",
 		"class": "VirtualSignal",
 		"address": 1315,
 		"heads": {
+			"red_blink": "TC_SIG_5D_HR_Master",
 			"red": "TC_SIG_5D_HR",
+			"green_blink": "TC_SIG_5D_HG_Master",
 			"green": "TC_SIG_5D_HG"
 		},
 		"aspects": [
@@ -61,16 +19,16 @@
 			{
 				"name": "Restricted",
 				"on": [
-					"red"
-				],
-				"flash": true
+					"red",
+					"red_blink"
+				]
 			},
 			{
 				"name": "Aproach",
-				"on": [
-					"green"
-				],
-				"flash": true
+				"on": [					
+					"green",
+					"green_blink"
+				]
 			},
 			{
 				"name": "Clear",
@@ -92,7 +50,9 @@
 		"class": "VirtualSignal",
 		"address": 1312,
 		"heads": {
+			"red_blink": "TC_SIG_6D_HR_MASTER",
 			"red": "TC_SIG_6D_HR",
+			"green_blink": "TC_SIG_6D_HG_MASTER",
 			"green": "TC_SIG_6D_HG"
 		},
 		"aspects": [
@@ -105,16 +65,16 @@
 			{
 				"name": "Restricted",
 				"on": [
-					"red"
-				],
-				"flash": true
+					"red",
+					"red_blink"
+				]				
 			},
 			{
 				"name": "Aproach",
 				"on": [
+					"green_blink",
 					"green"
-				],
-				"flash": true
+				]				
 			},
 			{
 				"name": "Clear",
@@ -136,7 +96,9 @@
 		"class": "VirtualSignal",
 		"address": 1303,
 		"heads": {
+			"red_blink": "TC_SIG_11D_HR_Master",
 			"red": "TC_SIG_11D_HR",
+			"green_blink": "TC_SIG_11D_HG_Master",
 			"green": "TC_SIG_11D_HG"
 		},
 		"aspects": [
@@ -149,16 +111,16 @@
 			{
 				"name": "Restricted",
 				"on": [
-					"red"
-				],
-				"flash": true
+					"red",
+					"red_blink"
+				]
 			},
 			{
 				"name": "Aproach",
 				"on": [
-					"green"
-				],
-				"flash": true
+					"green",
+					"green_blink"
+				]				
 			},
 			{
 				"name": "Clear",

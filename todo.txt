@@ -1,6 +1,12 @@
 DCCLite
 -------
 
+- SignalDecoder
+	- auto detect blink master?
+		- If signal aspect includes a blink flag, any head included on the "on", add a "_Master" to it and try to find it out
+		- If found, automatically include the output on the aspect table
+		- need to track the new heads and include it on the off table on all other aspects (also track auto generated off table		
+
 - QuadInverterDecoder
 	- Move to DecodersCommonLib
 	- Create UnitTestes

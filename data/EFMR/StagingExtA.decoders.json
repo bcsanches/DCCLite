@@ -1,0 +1,134 @@
+[
+	{
+		"name": "STA_T11",
+		"class": "ServoTurnout",
+		"address": "1721",
+		"pin": 46,
+		"inverted": true,
+		"powerPin": 65,
+		"frogPin": 64,
+		"invertedFrog": false,
+		"operationTime": 1000,
+		"range": 20
+	},
+	{
+		"name": "STA_T12",
+		"class": "ServoTurnout",
+		"address": "1722",
+		"pin": 47,
+		"inverted": false,
+		"powerPin": 63,
+		"frogPin": 62,
+		"invertedFrog": true,
+		"operationTime": 1000,
+		"range": 25
+	},
+	{
+		"name": "STA_T13",
+		"class": "ServoTurnout",
+		"address": "1723",
+		"pin": 44,
+		"inverted": false,
+		"powerPin": 60,
+		"frogPin": 61,
+		"invertedFrog": true,
+		"operationTime": 1000,
+		"range": 20
+	},
+	{
+		"name": "STA_T14",
+		"class": "ServoTurnout",
+		"address": "1724",
+		"pin": 45,
+		"inverted": true,
+		"powerPin": 59,
+		"frogPin": 58,
+		"operationTime": 1000,
+		"range": 30
+	},
+	{
+		"name": "STA_T15",
+		"class": "ServoTurnout",
+		"address": "1725",
+		"pin": 42,
+		"inverted": true,
+		"powerPin": 57,
+		"frogPin": 56,
+		"invertedFrog": false,
+		"operationTime": 1000
+	},
+	{
+		"name": "STA_T16",
+		"class": "ServoTurnout",
+		"address": "1726",
+		"pin": 43,
+		"inverted": false,
+		"powerPin": 55,
+		"frogPin": 54,
+		"invertedFrog": false,
+		"operationTime": 1000
+	},
+	{
+		"name": "STA_D01C",
+		"class": "Sensor",
+		"pin": 69,
+		"address": "1727",
+		"pullup": false,
+		"inverted": true,
+		"activateDelay": 0,
+		"deactivateDelay": 5,
+		"comment": "Sensor final do staging linha 01",
+		"sector": "ST/A"
+	},
+	{
+		"name": "STA_D02C",
+		"class": "Sensor",
+		"pin": 68,
+		"address": "1728",
+		"pullup": false,
+		"inverted": true,
+		"activateDelay": 0,
+		"deactivateDelay": 5,
+		"comment": "Sensor final do staging linha 02",
+		"sector": "ST/A"
+	},
+	{
+		"name": "SL_BP_MAIN_D01",
+		"class": "Sensor",
+		"pin": 41,
+		"address": "1650",
+		"pullup": true,
+		"inverted": true,
+		"activateDelay": 0,
+		"deactivateDelay": 15,
+		"location": "Soledade",
+		"comment": "Sensor infrared 01 - Principal Soledade x Barra"
+	},
+	{
+		"name": "SL_BP_MAIN_D02",
+		"class": "Sensor",
+		"pin": 40,
+		"address": "1651",
+		"pullup": true,
+		"inverted": true,
+		"activateDelay": 0,
+		"deactivateDelay": 15,
+		"location": "Soledade",
+		"comment": "Sensor infrared 02 - Principal Soledade x Barra"
+	},
+	{
+		"name": "SL_BP_MAIN_INVERTER",
+		"class": "QuadInverter",
+		"address": 1690,
+		"flipInterval": 5,
+		"inverted": true,
+		"trackPowerAPins": [
+			9,
+			10
+		],
+		"trackPowerBPins": [
+			11,
+			12
+		]
+	}
+]

@@ -24,7 +24,7 @@
 		"invertedFrog": false,
 		"operationTime": 3000,
 		"range": 20,
-		"comment": "AMV 02 - inferior saida para TC"		
+		"comment": "AMV 02 - inferior saida para TC"
 	},
 	{
 		"name": "HLX_T03",
@@ -151,29 +151,47 @@
 		"comment": "Sensor infrared 00 - Entrada Staging A"
 	},
 	{
+		"name": "TC_SIG_6D_HG_MASTER",
+		"class": "BlinkOutputMaster",
+		"address": 1308,		
+		"ignoreSavedState": true,
+		"location": "TC",
+		"slave":"TC_SIG_6D_HG"		
+	},
+	{
+		"name": "TC_SIG_6D_HR_MASTER",
+		"class": "BlinkOutputMaster",
+		"address": 1309,		
+		"ignoreSavedState": true,
+		"location": "TC",
+		"slave":"TC_SIG_6D_HR"		
+	},
+	{
 		"name": "TC_SIG_6D_HR",
-		"class": "Output",
+		"class": "BlinkOutput",
 		"address": 1310,
 		"pin": 65,
 		"inverted": true,
 		"ignoreSavedState": true,
-		"location": "TC"
+		"location": "TC",
+		"blinkInterval": 500
 	},
 	{
 		"name": "TC_SIG_6D_HG",
-		"class": "Output",
+		"class": "BlinkOutput",
 		"address": 1311,
 		"pin": 64,
 		"inverted": true,
 		"ignoreSavedState": true,
-		"location": "TC"
+		"location": "TC",
+		"blinkInterval": 500
 	},
 	{
 		"name": "INV_HELIX_TC_SOL",
 		"class": "QuadInverter",
 		"address": 1890,
-		"flipInterval":5,
-		"inverted":true,
+		"flipInterval": 5,
+		"inverted": true,
 		"trackPowerAPins": [
 			11,
 			12

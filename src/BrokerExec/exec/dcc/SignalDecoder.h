@@ -99,8 +99,6 @@ namespace dcclite::broker::exec::dcc
 
 				std::vector<RName> m_vecOnHeads;
 				std::vector<RName> m_vecOffHeads;
-
-				bool m_Flash = false;
 			};
 
 			friend class ::SignalTester;		
@@ -139,18 +137,7 @@ namespace dcclite::broker::exec::dcc
 					unsigned m_uWaitListSize = 0;
 
 					sys::Thinker m_clTimeoutThinker;
-			};
-
-			struct State_Flash: State
-			{
-				State_Flash(SignalDecoder &self, const dcclite::Clock::TimePoint_t time);
-
-				void OnThink(const dcclite::Clock::TimePoint_t time);
-
-				bool m_fOn = true;				
-
-				sys::Thinker m_clThinker;
-			};
+			};			
 
 		private:
 			dcclite::SignalAspects	m_eCurrentAspect;
@@ -159,7 +146,7 @@ namespace dcclite::broker::exec::dcc
 			std::string				m_strAspectReason;
 			std::string				m_strAspectRequester;
 
-			std::variant<std::monostate, State_Flash, State_WaitTurnOff> m_vState;			
+			std::variant<std::monostate, State_WaitTurnOff> m_vState;			
 
 			//Heads definitions, std::map key is the head "user name" and std::map value is the decoder name
 			std::map<dcclite::RName, dcclite::RName> m_mapHeads;
