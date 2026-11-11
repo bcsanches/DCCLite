@@ -58,6 +58,7 @@ namespace SharpTerminal
 			mRequestManager.ConnectionStateChanged += mRequestManager_ConnectionStateChanged;
 
 			RemoteObjectManager.SetRequestManager(mRequestManager);
+			RemoteLogBuffer.SetRequestManager(mRequestManager);
 		}
 
 		private bool DisplayServerSelectionForm()

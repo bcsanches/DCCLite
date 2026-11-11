@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
+// Copyright (C) 2019 - Bruno Sanches. See the COPYRIGHT
 // file at the top-level directory of this distribution.
 // 
 // This Source Code Form is subject to the terms of the Mozilla Public
@@ -231,24 +231,24 @@ namespace SharpTerminal
 
             if (!jsonObject.TryGetValue("id", out var idValue))
             {
-                if (RpcNotificationArrived != null)
+                if(RpcNotificationArrived == null)
+                    return;
+				
+                if(mSyncContext != null)
                 {
-                    if(mSyncContext != null)
-                    {
-                        mSyncContext.Post((object param) =>
-                            {
-                                var args = new RpcNotificationEventArgs(jsonObject);
-                                RpcNotificationArrived(this, args);
-                            }, 
-                            jsonObject
-                        );
-                    }
-                    else
-                    {
-                        var args = new RpcNotificationEventArgs(jsonObject);
-                        RpcNotificationArrived(this, args);
-                    }                    
+                    mSyncContext.Post((object param) =>
+                        {
+                            var args = new RpcNotificationEventArgs(jsonObject);
+                            RpcNotificationArrived(this, args);
+                        }, 
+                        jsonObject
+                    );
                 }
+                else
+                {
+                    var args = new RpcNotificationEventArgs(jsonObject);
+                    RpcNotificationArrived(this, args);
+                }                
 
                 return;
             }

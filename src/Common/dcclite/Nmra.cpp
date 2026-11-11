@@ -18,9 +18,23 @@
 
 */
 
+/*
+* 
+* NMRA S-9.2.1
+* 
+*		Byte 1		Byte 2		Byte 3		Byte 4
+		10AAAAAA	0AAA0AA1	XXXXXXXX	EEEEEEEE
+		Address		Address		Aspect		Checksum
+
+		0x3F -> 00111111, so extract the 6 bits of the address from the first byte
+		0x0E -> 00001110, so extract the 3 bits of the address from the second byt, shift right 1 to get the 3 bits of the address
+		0x70 -> 01110000, so extract the 3 bits of the address from the second byte, shift right 4 to get the 3 bits of the address
+			invert it as they are 2 complemented, so we can get the 3 bits of the address from the second byte
+
+*/
+
 static void accSignalDecoderPktCommon(uint8_t dest[4], const int lowAddr, const int boardAddr, const dcclite::SignalAspects aspect)
 {
-
 	int midAddr = boardAddr & 0x3F;
 	int highAddr = ((~boardAddr) >> 6) & 0x07;
 	
@@ -47,6 +61,7 @@ std::tuple<uint16_t, dcclite::SignalAspects> dcclite::ExtractSignalDataFromPacke
 
 	int boardAddr = (hiAddr << 6 | midAddr);
 
+	//OutputAddress = (BoardAddress * 4) + LowAddress + 1		
 	return std::make_tuple(((boardAddr << 2) | lowAddr) + 1, static_cast<dcclite::SignalAspects>(packet[2]));
 }
 

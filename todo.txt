@@ -5,7 +5,21 @@ DCCLite
 	- auto detect blink master?
 		- If signal aspect includes a blink flag, any head included on the "on", add a "_Master" to it and try to find it out
 		- If found, automatically include the output on the aspect table
-		- need to track the new heads and include it on the off table on all other aspects (also track auto generated off table		
+		- need to track the new heads and include it on the off table on all other aspects (also track auto generated off table
+		
+	- auto generate blink master?
+		- Not sure if it is worth it, because:
+			- which address to use?
+			- how to send it to the device?
+			- use the internal decoder feature, if the device is online: 
+				need to reset it
+				Set configuration hash
+				- This will force a new hash everytime, save the custom created decoders on a file?
+				- auto restore the custom created decoders, so avoid recreation, like a cache?
+				- If config file changes, need to clear out the cache
+				- must check if the signal controller is restarted on this case and the cache is recreated				
+			- using the cache system, when a signal controller is created, if the blink master is on cache, it will not be created
+
 
 - QuadInverterDecoder
 	- Move to DecodersCommonLib
@@ -24,20 +38,6 @@ DCCLite
 
 - Create new library for DccTerminalCmds?
 	- BrokerDccShell ?
-
-- Blinking output, how to avoid all messages?
-	- put a blink flag on output
-		- Create a BlinkOutput, when on, will turn on the blink flag on output
-		- output will blink (or not) according to the flag
-			- OutputDecoder - the existing output
-			- BlinkOutputDecoder - new decoder with flashing capability
-			- BlinkOutputDecoderController - turns on / off the flag on above
-				- When active, sets the flag state on FlashOutputDecoder 
-				- BlinkhOutputDecoder does not change state, just the flag value
-					- if already active, starts flashing
-					- if inactive, statys inactive
-
-	- Update signals to use it	
 
 - Better emulator:	
 	- Remote connect to emulators

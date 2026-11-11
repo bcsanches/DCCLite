@@ -2,8 +2,6 @@
 
 TODO
 
-- update all signals to use blink output
-- remove flash code from signal
 - make log display
 
 
