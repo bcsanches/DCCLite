@@ -61,6 +61,7 @@ else(WIN32)
 		PRIVATE bcrypt.lib 
 		PRIVATE fmt
     	PRIVATE LitePanelLib
+    	PRIVATE IMGUI
     	wx::net
     	wx::core
     	wx::base
