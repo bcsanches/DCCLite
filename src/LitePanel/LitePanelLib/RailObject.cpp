@@ -205,6 +205,7 @@ namespace LitePanel
 		switch (m_tType)
 		{
 			case SimpleRailTypes::STRAIGHT:
+			case SimpleRailTypes::TERMINAL:
 				this->DrawStraightRail(renderer, viewInfo, tileOrigin);
 				break;
 
