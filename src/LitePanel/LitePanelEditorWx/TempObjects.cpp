@@ -25,7 +25,7 @@ namespace LitePanel
 			return static_cast<uint8_t>(std::clamp(value, 0.0f, 1.0f) * 255.0f);
 		};
 
-		const auto color = Render::LP_COL32(channel(m_fpColor[0]), channel(m_fpColor[1]), channel(m_fpColor[2]), 255);
+		const auto color = LP_COL32(channel(m_fpColor[0]), channel(m_fpColor[1]), channel(m_fpColor[2]), 255);
 		const auto halfSize = static_cast<float>(viewInfo.m_uHalfTileSize);
 		const FloatPoint_t offset{halfSize, halfSize};
 		const FloatPoint_t halfExtent{halfSize * 0.8f, halfSize * 0.8f};
