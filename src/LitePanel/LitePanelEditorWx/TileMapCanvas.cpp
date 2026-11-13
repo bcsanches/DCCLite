@@ -75,19 +75,15 @@ namespace LitePanel::Gui
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		dcclite::PanelEditor::ImGuiTileMapRenderer renderer(
+			*ImGui::GetBackgroundDrawList(),
+			ImVec2(0.0f, 0.0f)
+		);
 		m_tRenderer.SetupFrame(
-			*static_cast<LitePanel::Render::IRenderer*>(nullptr),
+			renderer,
 			LitePanel::FloatPoint_t{static_cast<float>(clientSize.x), static_cast<float>(clientSize.y)}
 		);
-
-		if (m_tRenderer.GetRenderFlags() || true)
-		{
-			dcclite::PanelEditor::ImGuiTileMapRenderer renderer(
-				*ImGui::GetBackgroundDrawList(),
-				ImVec2(0.0f, 0.0f)
-			);
-			m_tRenderer.Draw(renderer);
-		}
+		m_tRenderer.Draw(renderer);
 
 		m_fPendingDraw = false;
 	}
@@ -128,8 +124,8 @@ namespace LitePanel::Gui
 		{
 			auto currentPos = LitePanel::IntPoint_t{event.GetX(), event.GetY()};
 			m_tRenderer.Move(LitePanel::FloatPoint_t{
-				static_cast<float>(m_tMoveStartPos.m_tX - currentPos.m_tX),
-				static_cast<float>(m_tMoveStartPos.m_tY - currentPos.m_tY)
+				static_cast<float>(currentPos.m_tX - m_tMoveStartPos.m_tX),
+				static_cast<float>(currentPos.m_tY - m_tMoveStartPos.m_tY)
 			});
 			m_tMoveStartPos = currentPos;
 			RequestDraw();
