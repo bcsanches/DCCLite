@@ -1,6 +1,7 @@
 
 set(LitePanelWx_SRCS	
 	GLCanvas.cpp
+	../LitePanelEditorCommon/ImGuiTileMapRenderer.cpp
 	LitePanel.cpp      
 	PanelDocument.cpp
 	PanelDocumentView.cpp
@@ -25,6 +26,7 @@ add_executable(LitePanelWx WIN32 ${LitePanelWx_SRCS} ${LitePanelWx_HDRS})
 target_include_directories(LitePanelWx 
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/Common  
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/LitePanel/LitePanelLib
+	PRIVATE ${DCCLite_SOURCE_DIR}/src/LitePanel/LitePanelEditorCommon
 	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/imgui
 )
 
