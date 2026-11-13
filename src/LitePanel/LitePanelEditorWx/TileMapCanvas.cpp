@@ -456,7 +456,6 @@ namespace LitePanel::Gui
 		}		
 
 NOTILES:
-		this->SwapBuffers();
 
 		m_fPendingDraw = false;
 	}
