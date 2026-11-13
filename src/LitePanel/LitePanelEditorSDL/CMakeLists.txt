@@ -9,8 +9,6 @@ add_executable(LitePanelEditorSDL
 	DocumentWidget.h
 	EditorWidget.cpp
 	EditorWidget.h
-	ImGuiTileMapRenderer.cpp
-	ImGuiTileMapRenderer.h
 	KeyBindingManager.cpp
 	KeyBindingManager.h
 	main.cpp
@@ -35,6 +33,7 @@ target_include_directories(LitePanelEditorSDL
 	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/spdlog/include
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/Common
         PRIVATE ${DCCLite_SOURCE_DIR}/src/LitePanel/
+	PRIVATE ${DCCLite_SOURCE_DIR}/src/LitePanel/LitePanelEditorCommon
 )
 
 if(${DCCLITE_IMGUI_TOOLS_FREETYPE})
