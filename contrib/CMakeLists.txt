@@ -5,31 +5,25 @@ add_subdirectory(lua-5.4.6)
 add_subdirectory(sigslot)
 add_subdirectory(spdlog)
 
-if(${DCCLITE_IMGUI_TOOLS})
+if(DCCLITE_IMGUI_TOOLS)
 	add_subdirectory(SDL)
 endif()
 
-if(${DCCLITE_GUI_TOOLS})
-	set(wxBUILD_CXX_STANDARD 20 CACHE STRING "" FORCE)
-	add_subdirectory(wxWidgets)
-endif()
-
-if(${DCCLITE_IMGUI_TOOLS})
+if(DCCLITE_GUI_TOOLS OR DCCLITE_IMGUI_TOOLS)
 
 	add_compile_definitions(IMGUI_DEFINE_MATH_OPERATORS)
 
-	if(${DCCLITE_IMGUI_TOOLS_FREETYPE})
+	if(DCCLITE_IMGUI_TOOLS_FREETYPE)
 		add_compile_definitions(IMGUI_ENABLE_FREETYPE)
-	
 		set(IMGUI_FREETYPE_SRCS
 			imgui/misc/freetype/imgui_freetype.cpp
 			imgui/misc/freetype/imgui_freetype.h
-      	)
-  else()
+		)
+	else()
 		set(IMGUI_FREETYPE_SRCS)
-  endif()
+	endif()
 
-	add_library(IMGUI 
+	add_library(IMGUI
 		imgui/imconfig.h
 		imgui/imgui.cpp
 		imgui/imgui.h
@@ -42,28 +36,32 @@ if(${DCCLITE_IMGUI_TOOLS})
 		imgui/imstb_textedit.h
 		imgui/imstb_truetype.h
 
-		imgui/backends/imgui_impl_sdl3.h
-		imgui/backends/imgui_impl_sdl3.cpp
-		imgui/backends/imgui_impl_sdlrenderer3.cpp
-		imgui/backends/imgui_impl_sdlrenderer3.h   
+		imgui/backends/imgui_impl_opengl3.cpp
+		imgui/backends/imgui_impl_opengl3.h
 
-		${IMGUI_FREETYPE_SRCS} 
+		${IMGUI_FREETYPE_SRCS}
 	)
 
-	target_include_directories(IMGUI 	
-		PRIVATE ${DCCLite_SOURCE_DIR}/contrib/imgui/	
-		PRIVATE ${DCCLite_SOURCE_DIR}/contrib/SDL/include
-	)
-
-	target_link_libraries(IMGUI)	
-
-	if(${DCCLITE_IMGUI_TOOLS_FREETYPE})
-		add_subdirectory(freetype-2.7)
-
-		target_include_directories(IMGUI 	
-			PRIVATE ${DCCLite_SOURCE_DIR}/contrib/freetype-2.7/include
+	if(DCCLITE_IMGUI_TOOLS)
+		target_sources(IMGUI PRIVATE
+			imgui/backends/imgui_impl_sdl3.h
+			imgui/backends/imgui_impl_sdl3.cpp
+			imgui/backends/imgui_impl_sdlrenderer3.cpp
+			imgui/backends/imgui_impl_sdlrenderer3.h
 		)
+	endif()
 
+	target_include_directories(IMGUI
+		PRIVATE ${DCCLite_SOURCE_DIR}/contrib/imgui/
+	)
+
+	if(DCCLITE_IMGUI_TOOLS)
+		target_include_directories(IMGUI PRIVATE ${DCCLite_SOURCE_DIR}/contrib/SDL/include)
+	endif()
+
+	if(DCCLITE_IMGUI_TOOLS_FREETYPE)
+		add_subdirectory(freetype-2.7)
+		target_include_directories(IMGUI PRIVATE ${DCCLite_SOURCE_DIR}/contrib/freetype-2.7/include)
 	endif()
 
 endif()
