@@ -66,6 +66,7 @@ namespace LitePanel::Render
 
 				m_ptOrigin = {};
 				m_tViewHelper.m_stInfo.m_uZoomLevel = 1;
+				this->UpdateViewInfo();
 			}
 
 			inline LitePanel::TileCoord_t WorldToTileFloor(const FloatPoint_t &worldPoint) const noexcept
