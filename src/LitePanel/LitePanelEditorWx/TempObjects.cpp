@@ -28,7 +28,7 @@ namespace LitePanel
 		const auto color = LP_COL32(channel(m_fpColor[0]), channel(m_fpColor[1]), channel(m_fpColor[2]), 255);
 		const auto halfSize = static_cast<float>(viewInfo.m_uHalfTileSize);
 		const FloatPoint_t offset{halfSize, halfSize};
-		const FloatPoint_t halfExtent{halfSize * 0.8f, halfSize * 0.8f};
+		const FloatPoint_t halfExtent{halfSize, halfSize};
 		renderer.DrawFilledRect(tileOrigin + offset - halfExtent, tileOrigin + offset + halfExtent, color);
 	}
 }
