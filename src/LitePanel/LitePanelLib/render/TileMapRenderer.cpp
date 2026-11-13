@@ -212,6 +212,9 @@ namespace LitePanel::Render
 
 	std::optional<TileCoord_t> TileMapRenderer::GetTilePos(const FloatPoint_t &worldPoint) const noexcept
 	{
+		if (!m_pclTileMap)
+			return {};
+
 		auto point = worldPoint + m_ptOrigin;
 
 		auto tilePos = m_tViewHelper.WorldToTileFloor(point);
