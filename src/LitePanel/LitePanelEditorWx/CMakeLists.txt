@@ -25,6 +25,7 @@ add_executable(LitePanelWx WIN32 ${LitePanelWx_SRCS} ${LitePanelWx_HDRS})
 target_include_directories(LitePanelWx 
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/Common  
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/LitePanel/LitePanelLib
+	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/imgui
 )
 
 #set_target_properties( Broker PROPERTIES RUNTIME_OUTPUT_DIRECTORY bin/ )
@@ -35,6 +36,7 @@ if(WIN32)
 		PRIVATE bcrypt.lib 
 		PRIVATE fmt      
 		PRIVATE LitePanelLib
+		PRIVATE IMGUI
 		wx::net
 		wx::core
 		wx::base
