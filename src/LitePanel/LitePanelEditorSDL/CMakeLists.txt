@@ -1,6 +1,7 @@
 add_compile_definitions(IMGUI_DEFINE_MATH_OPERATORS)
 
 add_executable(LitePanelEditorSDL 
+	../LitePanelEditorCommon/ImGuiTileMapRenderer.cpp
 	ConsoleWidget.cpp
 	ConsoleWidget.h
 	Document.cpp
