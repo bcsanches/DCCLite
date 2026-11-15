@@ -1,10 +1,5 @@
 # Version 0.14.0 - Development
 
-TODO
-
-- make log display
-
-
 ## Broker
 
 - Support to ignore aditional DCCex commands :P

@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Runtime.Versioning;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace SharpTerminal
 {
@@ -15,9 +16,14 @@ namespace SharpTerminal
 
 		public DashboardUserControl(IConsole console, RemoteRoot root) :
 			this()
-		{			
+		{
 			mConsole = console ?? throw new ArgumentNullException(nameof(console));
 			mRoot = root ?? throw new ArgumentNullException(nameof(root));
+
+			this.FillLogListView();
+			this.ShowListViewLastLine();
+
+			RemoteLogBuffer.MsgArrived += RemoteLogBuffer_MsgArrived;
 		}
 
 		private readonly IConsole mConsole;
@@ -117,6 +123,70 @@ namespace SharpTerminal
 			m_pgNames.Enter -= m_pgNames_Enter;
 
 			LoadNames();
+		}
+
+		private void AddLogLine(LogMsg lmsg)
+		{
+			var item = m_lvLog.Items.Add(lmsg.Time.ToString());
+			item.SubItems.Add(lmsg.Msg);
+		}
+
+		private void FillLogListView()
+		{
+			var msgs = RemoteLogBuffer.GetMsgs();
+			foreach (var msg in msgs)
+			{
+				this.AddLogLine(msg);
+			}
+		}
+
+		private void ShowListViewLastLine()
+		{
+			if (m_lvLog.Items.Count > 0)
+				m_lvLog.EnsureVisible(m_lvLog.Items.Count - 1);
+		}
+
+		private void m_tbFilter_TextChanged(object sender, EventArgs e)
+		{
+			var filter = m_tbFilter.Text;
+
+			m_lvLog.SuspendLayout();
+			m_lvLog.Items.Clear();
+
+			if (string.IsNullOrWhiteSpace(filter))
+			{
+				this.FillLogListView();
+			}
+			else
+			{
+				var msgs = RemoteLogBuffer.GetMsgs();				
+
+				foreach (var m in msgs)
+				{
+					if (m.Msg.Contains(filter))
+						this.AddLogLine(m);
+				}
+			}
+
+			this.ShowListViewLastLine();
+
+			m_lvLog.ResumeLayout();
+		}		
+
+		private void RemoteLogBuffer_MsgArrived(object sender, MsgArrivedEventArgs e)
+		{
+			if(this.InvokeRequired)
+			{
+				this.Invoke(new EventHandler<MsgArrivedEventArgs>(RemoteLogBuffer_MsgArrived), sender, e);
+				return;
+			}
+
+			m_lvLog.SuspendLayout();
+
+			AddLogLine(e.Msg);
+			this.ShowListViewLastLine();
+
+			m_lvLog.ResumeLayout();
 		}
 	}
 }

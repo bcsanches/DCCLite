@@ -13,9 +13,11 @@ namespace SharpTerminal
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing)
             {
-                components.Dispose();
+                components?.Dispose();
+
+				RemoteLogBuffer.MsgArrived -= RemoteLogBuffer_MsgArrived;
             }
             base.Dispose(disposing);
         }
@@ -31,10 +33,12 @@ namespace SharpTerminal
 			components = new System.ComponentModel.Container();
 			System.Windows.Forms.ColumnHeader columnHeader1;
 			System.Windows.Forms.ColumnHeader columnHeader2;
+			System.Windows.Forms.Label label1;
 			m_lbTitle = new System.Windows.Forms.Label();
 			mLoadTimer = new System.Windows.Forms.Timer(components);
 			m_tabControl = new System.Windows.Forms.TabControl();
 			m_pgLog = new System.Windows.Forms.TabPage();
+			m_tbFilter = new System.Windows.Forms.TextBox();
 			m_lvLog = new System.Windows.Forms.ListView();
 			m_pgNames = new System.Windows.Forms.TabPage();
 			m_gridMain = new System.Windows.Forms.DataGridView();
@@ -45,6 +49,7 @@ namespace SharpTerminal
 			Column4 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			columnHeader1 = new System.Windows.Forms.ColumnHeader();
 			columnHeader2 = new System.Windows.Forms.ColumnHeader();
+			label1 = new System.Windows.Forms.Label();
 			m_tabControl.SuspendLayout();
 			m_pgLog.SuspendLayout();
 			m_pgNames.SuspendLayout();
@@ -54,10 +59,21 @@ namespace SharpTerminal
 			// columnHeader1
 			// 
 			columnHeader1.Text = "Time";
+			columnHeader1.Width = 120;
 			// 
 			// columnHeader2
 			// 
 			columnHeader2.Text = "Message";
+			columnHeader2.Width = 280;
+			// 
+			// label1
+			// 
+			label1.AutoSize = true;
+			label1.Location = new System.Drawing.Point(6, 9);
+			label1.Name = "label1";
+			label1.Size = new System.Drawing.Size(36, 15);
+			label1.TabIndex = 2;
+			label1.Text = "Filter:";
 			// 
 			// m_lbTitle
 			// 
@@ -88,6 +104,8 @@ namespace SharpTerminal
 			// 
 			// m_pgLog
 			// 
+			m_pgLog.Controls.Add(label1);
+			m_pgLog.Controls.Add(m_tbFilter);
 			m_pgLog.Controls.Add(m_lvLog);
 			m_pgLog.Location = new System.Drawing.Point(4, 24);
 			m_pgLog.Name = "m_pgLog";
@@ -97,16 +115,25 @@ namespace SharpTerminal
 			m_pgLog.Text = "Log";
 			m_pgLog.UseVisualStyleBackColor = true;
 			// 
+			// m_tbFilter
+			// 
+			m_tbFilter.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+			m_tbFilter.Location = new System.Drawing.Point(48, 6);
+			m_tbFilter.Name = "m_tbFilter";
+			m_tbFilter.Size = new System.Drawing.Size(319, 23);
+			m_tbFilter.TabIndex = 1;
+			m_tbFilter.TextChanged += m_tbFilter_TextChanged;
+			// 
 			// m_lvLog
 			// 
+			m_lvLog.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
 			m_lvLog.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] { columnHeader1, columnHeader2 });
-			m_lvLog.Dock = System.Windows.Forms.DockStyle.Fill;
 			m_lvLog.FullRowSelect = true;
 			m_lvLog.GridLines = true;
-			m_lvLog.Location = new System.Drawing.Point(3, 3);
+			m_lvLog.Location = new System.Drawing.Point(3, 35);
 			m_lvLog.MultiSelect = false;
 			m_lvLog.Name = "m_lvLog";
-			m_lvLog.Size = new System.Drawing.Size(367, 205);
+			m_lvLog.Size = new System.Drawing.Size(367, 173);
 			m_lvLog.TabIndex = 0;
 			m_lvLog.UseCompatibleStateImageBehavior = false;
 			m_lvLog.View = System.Windows.Forms.View.Details;
@@ -192,6 +219,7 @@ namespace SharpTerminal
 			Size = new System.Drawing.Size(388, 279);
 			m_tabControl.ResumeLayout(false);
 			m_pgLog.ResumeLayout(false);
+			m_pgLog.PerformLayout();
 			m_pgNames.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)m_gridMain).EndInit();
 			ResumeLayout(false);
@@ -211,6 +239,7 @@ namespace SharpTerminal
 		private System.Windows.Forms.DataGridViewTextBoxColumn Column2;
 		private System.Windows.Forms.DataGridViewTextBoxColumn Column5;
 		private System.Windows.Forms.DataGridViewTextBoxColumn Column4;
-		private System.Windows.Forms.ListView m_lvLog;
+		private System.Windows.Forms.ListView m_lvLog;		
+		private System.Windows.Forms.TextBox m_tbFilter;
 	}
 }
