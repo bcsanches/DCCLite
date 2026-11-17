@@ -15,25 +15,24 @@
 
 namespace LitePanel::Gui
 {
-	class OGLCanvas: public wxGLCanvas
+	class GL_Canvas: public wxGLCanvas
 	{
 		public:
-		OGLCanvas(wxWindow *parent, int id = -1);
-		~OGLCanvas() = default;
+			GL_Canvas(wxWindow *parent, int id = -1);
+			~GL_Canvas() = default;
 
 		protected:
-		virtual void OnDraw() = 0;
+			virtual void OnDraw() = 0;
 
 		private:
-		// Events
-		void OnPaint(wxPaintEvent &e);
-		void OnEraseBackground(wxEraseEvent &e);
+			// Events
+			void OnPaint(wxPaintEvent &e);
+			void OnEraseBackground(wxEraseEvent &e);
 
-		void InitGL();
+			void InitGL();
 
 		private:
-		bool m_fInitialized = false;
-
+			bool m_fInitialized = false;
 	};
 }
 

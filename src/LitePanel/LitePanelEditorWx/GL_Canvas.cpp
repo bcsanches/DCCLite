@@ -9,12 +9,13 @@
 // defined by the Mozilla Public License, v. 2.0.
 
 
-#include "GLCanvas.h"
+#include "GL_Canvas.h"
 
 namespace LitePanel::Gui
 {
 	namespace OpenGLState
-	{	wxGLContext *g_pclContext = nullptr;
+	{	
+		wxGLContext *g_pclContext = nullptr;
 
 		void SetCurrent(wxGLCanvas &win)
 		{
@@ -29,15 +30,15 @@ namespace LitePanel::Gui
 		}
 	}
 
-	OGLCanvas::OGLCanvas(wxWindow *parent, int id):
+	GL_Canvas::GL_Canvas(wxWindow *parent, int id):
 		wxGLCanvas(parent, id) 
 	{
 		// Bind events
-		Bind(wxEVT_PAINT, &OGLCanvas::OnPaint, this);
-		Bind(wxEVT_ERASE_BACKGROUND, &OGLCanvas::OnEraseBackground, this);	
+		Bind(wxEVT_PAINT, &GL_Canvas::OnPaint, this);
+		Bind(wxEVT_ERASE_BACKGROUND, &GL_Canvas::OnEraseBackground, this);
 	}
 
-	void OGLCanvas::InitGL()
+	void GL_Canvas::InitGL()
 	{
 		glViewport(0, 0, GetSize().x, GetSize().y);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -64,7 +65,7 @@ namespace LitePanel::Gui
 		m_fInitialized = true;
 	}
 
-	void OGLCanvas::OnPaint(wxPaintEvent &e)
+	void GL_Canvas::OnPaint(wxPaintEvent &e)
 	{
 		if(!this->IsShown())
 			return;
@@ -77,7 +78,7 @@ namespace LitePanel::Gui
 		this->OnDraw();
 	}
 
-	void OGLCanvas::OnEraseBackground(wxEraseEvent &e)
+	void GL_Canvas::OnEraseBackground(wxEraseEvent &e)
 	{
 		//empty
 	}

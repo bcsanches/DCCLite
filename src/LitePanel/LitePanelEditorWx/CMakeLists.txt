@@ -1,6 +1,7 @@
 
 set(LitePanelWx_SRCS	
-	GLCanvas.cpp
+	GL_Canvas.cpp
+	GL_Renderer.cpp
 	LitePanel.cpp      
 	PanelDocument.cpp
 	PanelDocumentView.cpp
@@ -11,7 +12,8 @@ set(LitePanelWx_SRCS
 )
 
 set(LitePanelWx_HDRS
-	GLCanvas.h
+	GL_Canvas.h
+	GL_Renderer.h
 	LitePanel.h
 	PanelDocument.h
 	PanelDocumentView.h
@@ -25,6 +27,7 @@ add_executable(LitePanelWx WIN32 ${LitePanelWx_SRCS} ${LitePanelWx_HDRS})
 target_include_directories(LitePanelWx 
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/Common  
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/LitePanel/LitePanelLib
+	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/imgui/	
 )
 
 #set_target_properties( Broker PROPERTIES RUNTIME_OUTPUT_DIRECTORY bin/ )
@@ -35,6 +38,7 @@ if(WIN32)
 		PRIVATE bcrypt.lib 
 		PRIVATE fmt      
 		PRIVATE LitePanelLib
+		PRIVATE IMGUI
 		wx::net
 		wx::core
 		wx::base

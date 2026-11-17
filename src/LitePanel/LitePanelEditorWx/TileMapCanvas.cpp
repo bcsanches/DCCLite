@@ -67,7 +67,7 @@ namespace LitePanel::Gui
 
 
 	TileMapCanvas::TileMapCanvas(wxWindow *parent, int id):
-		OGLCanvas{parent, id}	
+		GL_Canvas{parent, id}	
 	{		
 		Bind(wxEVT_LEFT_DOWN, &TileMapCanvas::OnMouseLeftDown, this);
 		Bind(wxEVT_MIDDLE_DOWN, &TileMapCanvas::OnMouseMiddleDown, this);

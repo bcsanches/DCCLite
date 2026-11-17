@@ -15,9 +15,7 @@
 #include <memory>
 
 namespace LitePanel::Gui
-{
-	class ToolManager;
-
+{	
 	class PanelEditorCanvas: public TileMapCanvas
 	{
 		public:

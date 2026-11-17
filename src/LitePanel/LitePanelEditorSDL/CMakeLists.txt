@@ -34,7 +34,7 @@ target_include_directories(LitePanelEditorSDL
 	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/SDL/include
 	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/spdlog/include
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/Common
-        PRIVATE ${DCCLite_SOURCE_DIR}/src/LitePanel/
+    PRIVATE ${DCCLite_SOURCE_DIR}/src/LitePanel/
 )
 
 if(${DCCLITE_IMGUI_TOOLS_FREETYPE})

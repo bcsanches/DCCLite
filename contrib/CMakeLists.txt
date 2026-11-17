@@ -45,7 +45,10 @@ if(${DCCLITE_IMGUI_TOOLS})
 		imgui/backends/imgui_impl_sdl3.h
 		imgui/backends/imgui_impl_sdl3.cpp
 		imgui/backends/imgui_impl_sdlrenderer3.cpp
-		imgui/backends/imgui_impl_sdlrenderer3.h   
+		imgui/backends/imgui_impl_sdlrenderer3.h
+
+		imgui/backends/imgui_impl_opengl2.cpp
+		imgui/backends/imgui_impl_opengl2.h		
 
 		${IMGUI_FREETYPE_SRCS} 
 	)

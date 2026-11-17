@@ -31,7 +31,6 @@ wxIMPLEMENT_APP(LitePanel::Gui::LiteApp);
 
 namespace LitePanel::Gui
 {
-
 	typedef  std::function<void(const LitePanel::TileCoord_t &)> ToolProc_t;
 
 	class ToolManager
@@ -545,7 +544,7 @@ namespace LitePanel::Gui
 				));
 			},
 			"Straight track section with block split",
-				"Creates a block split track section"
+			"Creates a block split track section"
 		);
 
 		//toolBarLeft1->AddSeparator();		
@@ -654,5 +653,4 @@ namespace LitePanel::Gui
 			}
 		}
 	}
-
 }

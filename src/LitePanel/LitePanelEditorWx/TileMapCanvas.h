@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "GLCanvas.h"
+#include "GL_Canvas.h"
 
 #include "Point.h"
 #include "TileMap.h"
@@ -75,7 +75,7 @@ namespace LitePanel::Gui
 		TileCoord_t WorldToTile(const IntPoint_t& worldPoint) const;
 	};
 
-	class TileMapCanvas: public OGLCanvas
+	class TileMapCanvas: public GL_Canvas
 	{
 		private:
 			struct RenderArgs;
