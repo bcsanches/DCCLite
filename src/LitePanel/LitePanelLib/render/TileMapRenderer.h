@@ -85,8 +85,8 @@ namespace LitePanel::Render
 
 			std::optional<TileCoord_t> GetTilePos(const FloatPoint_t &worldPoint) const noexcept;
 
-			void ZoomIn() noexcept;
-			void ZoomOut() noexcept;
+			void ZoomIn(const FloatPoint_t &mousePosition) noexcept;
+			void ZoomOut(const FloatPoint_t &mousePosition) noexcept;
 
 		private:			
 			RenderArgs MakeRenderArgs() const;
@@ -94,6 +94,8 @@ namespace LitePanel::Render
 			void UpdateViewInfo();
 
 			void ClipOrigin();
+
+			void Zoom(uint8_t newZoomLevel, const FloatPoint_t &mousePosition) noexcept;
 
 		private:			
 			struct ViewHelper

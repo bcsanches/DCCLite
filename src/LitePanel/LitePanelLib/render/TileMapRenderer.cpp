@@ -115,22 +115,53 @@ namespace LitePanel::Render
 		m_tViewHelper.m_stInfo.m_uDiagonalLineWidth = g_tScales[m_tViewHelper.m_stInfo.m_uZoomLevel].m_uDiagonalLineWidth;
 	}
 
-	void TileMapRenderer::ZoomIn() noexcept
+	void TileMapRenderer::ZoomIn(const FloatPoint_t &mousePosition) noexcept
 	{
-		if (m_tViewHelper.m_stInfo.m_uZoomLevel == MAX_ZOOM_LEVELS - 1)
+		if (m_tViewHelper.m_stInfo.m_uZoomLevel >= MAX_ZOOM_LEVELS - 1)
 			return;
 
-		m_tViewHelper.m_stInfo.m_uZoomLevel++;
-		this->UpdateViewInfo();
+		this->Zoom(m_tViewHelper.m_stInfo.m_uZoomLevel + 1, mousePosition);
 	}
 
-	void TileMapRenderer::ZoomOut() noexcept
+	void TileMapRenderer::ZoomOut(
+		const FloatPoint_t &mousePosition) noexcept
 	{
 		if (m_tViewHelper.m_stInfo.m_uZoomLevel == 0)
 			return;
 
-		m_tViewHelper.m_stInfo.m_uZoomLevel--;
+		this->Zoom(m_tViewHelper.m_stInfo.m_uZoomLevel - 1, mousePosition);
+	}
+
+	void TileMapRenderer::Zoom(uint8_t newZoomLevel, const FloatPoint_t &mousePosition) noexcept
+	{
+		if (!m_pclTileMap)
+			return;		
+
+		if (newZoomLevel == m_tViewHelper.m_stInfo.m_uZoomLevel)
+			return;
+
+		const auto oldTileSize = m_tViewHelper.m_stInfo.m_uTileSize;
+
+		// World position currently under the mouse cursor.
+		const auto worldPoint = m_ptOrigin + mousePosition - m_ptMapOffset;
+
+		// Change zoom level.
+		m_tViewHelper.m_stInfo.m_uZoomLevel = newZoomLevel;
 		this->UpdateViewInfo();
+
+		const auto newTileSize = m_tViewHelper.m_stInfo.m_uTileSize;
+
+		// Recalculate map offset for the new zoom level.
+		m_ptOrigin = {};
+		this->ClipOrigin();
+
+		// Calculate the new origin, preserving the mouse anchor.
+		const float scale = static_cast<float>(newTileSize) / oldTileSize;
+
+		m_ptOrigin = worldPoint * scale - mousePosition + m_ptMapOffset;
+
+		// Keep the viewport inside the map boundaries.
+		this->ClipOrigin();
 	}
 
 	void TileMapRenderer::SetupFrame(IRenderer &renderer, const FloatPoint_t &clientSize)

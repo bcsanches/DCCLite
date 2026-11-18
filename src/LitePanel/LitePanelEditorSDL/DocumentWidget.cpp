@@ -165,13 +165,16 @@ namespace dcclite::PanelEditor
 					if (ImGui::IsKeyDown(ImGuiKey_MouseWheelY))
 					{
 						auto &io = ImGui::GetIO();
+
+						auto mousePos = ImGuiVecToPoint(io.MousePos);
+
 						if (io.MouseWheel < 0)
 						{
-							m_vecRenderers[i].ZoomOut();
+							m_vecRenderers[i].ZoomOut(mousePos);
 						}
 						else
 						{
-							m_vecRenderers[i].ZoomIn();
+							m_vecRenderers[i].ZoomIn(mousePos);
 						}
 					}
 

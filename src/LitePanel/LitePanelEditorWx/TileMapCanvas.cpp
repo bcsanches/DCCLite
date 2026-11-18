@@ -134,13 +134,15 @@ namespace LitePanel::Gui
 
 	void TileMapCanvas::OnMouseWheel(wxMouseEvent &event)
 	{	
+		const FloatPoint_t mousePosition{static_cast<float>(event.GetX()), static_cast<float>(event.GetY())};
+
 		if (event.GetWheelRotation() > 0)
 		{
-			m_clTileMapRenderer.ZoomIn();			
+			m_clTileMapRenderer.ZoomIn(mousePosition);
 		}
 		else
 		{
-			m_clTileMapRenderer.ZoomOut();
+			m_clTileMapRenderer.ZoomOut(mousePosition);
 		}
 
 		this->RequestDraw();
