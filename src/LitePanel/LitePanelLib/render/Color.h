@@ -20,6 +20,11 @@
 
 #define LP_COL32(R,G,B,A)    (((uint32_t)(A)<<LP_COL32_A_SHIFT) | ((uint32_t)(B)<<LP_COL32_B_SHIFT) | ((uint32_t)(G)<<LP_COL32_G_SHIFT) | ((uint32_t)(R)<<LP_COL32_R_SHIFT))
 
+#define LP_COL_GETA(C) (C >> LP_COL32_A_SHIFT)
+#define LP_COL_GETR(C) (C & 0xFF)
+#define LP_COL_GETG(C) ((C >> LP_COL32_G_SHIFT) & 0xFF)
+#define LP_COL_GETB(C) ((C >> LP_COL32_B_SHIFT) & 0xFF)
+
 namespace LitePanel::Render
 {
 	typedef uint32_t Color_t;

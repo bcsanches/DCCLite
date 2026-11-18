@@ -10,8 +10,14 @@
 
 #pragma once
 
-#include "MapObject.h"
+#include <LitePanelLib/MapObject.h>
+#include <LitePanelLib/Render/Color.h>
 
+
+namespace LitePanel::Render
+{
+	struct ViewInfo;
+}
 
 namespace LitePanel
 {
@@ -27,9 +33,7 @@ namespace LitePanel
 				MapObject(position)
 			{
 				//empty
-			}
-
-			virtual void Draw(const Gui::ViewInfo &viewInfo) const noexcept = 0;
+			}			
 		
 			bool IsPersistent() const noexcept override
 			{
@@ -40,18 +44,17 @@ namespace LitePanel
 	class QuadObject : public TempObject
 	{
 		public:
-			QuadObject(const TileCoord_t& position, float r, float g, float b):
-				TempObject(position)
+			QuadObject(const TileCoord_t& position, LitePanel::Render::Color_t color):
+				TempObject{ position },
+				m_tColor{color}
 			{
-				m_fpColor[0] = r;
-				m_fpColor[1] = g;
-				m_fpColor[2] = b;
+				//empty
 			}
 
-			void Draw(const Gui::ViewInfo &viewInfo) const noexcept override;		
+			void Draw(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const override;			
 
 		private:	
-			float m_fpColor[3];
+			LitePanel::Render::Color_t m_tColor;
 
 	};
 }

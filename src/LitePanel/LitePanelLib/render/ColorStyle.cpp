@@ -21,8 +21,27 @@ namespace LitePanel::Render
 		LP_COL32(200, 200, 200, 255)	//Rail
 	};
 
+	const ColorStyle g_tLightStyle =
+	{
+		LP_COL32(000, 000, 000, 040),	//GridLine
+		LP_COL32(255, 255, 255, 255),	//Background
+		LP_COL32(255, 255, 178, 255),	//TileHighLight
+		LP_COL32(000, 000, 000, 255),	//TileMapBorder
+		LP_COL32(000, 000, 000, 255)	//Rail
+	};
+
 	namespace detail
 	{
 		const ColorStyle *g_ptCurrentColorStyle = &g_tDarkStyle;
+		const ColorStyle *g_ptStyles[] = 
+		{ 
+			&g_tDarkStyle, 
+			&g_tLightStyle 
+		};
+	}
+
+	void SetColorStyle(ColorStyles style)
+	{
+		detail::g_ptCurrentColorStyle = detail::g_ptStyles[static_cast<int>(style)];
 	}
 }

@@ -1,6 +1,6 @@
 file(GLOB_RECURSE SRC_RENDER
-    "render/*.cpp"
-    "render/*.h"
+    "Render/*.cpp"
+    "Render/*.h"
 )
 
  
@@ -11,10 +11,10 @@ set(LitePanelLib_SRCS
 	Panel.cpp
 	RailObject.cpp
 	TileMap.cpp	
-	render/Color.cpp
-	render/ColorStyle.cpp
-	render/IRenderer.cpp
-	render/TileMapRenderer.cpp
+	Render/Color.cpp
+	Render/ColorStyle.cpp
+	Render/IRenderer.cpp
+	Render/TileMapRenderer.cpp
 )
 
 set(LitePanelLib_HDRS
@@ -26,13 +26,13 @@ set(LitePanelLib_HDRS
 	Point.h
 	RailObject.h
 	TileMap.h
-	render/Color.h
-	render/ColorStyle.h
-	render/IRenderer.h
-	render/TileMapRenderer.h
+	Render/Color.h
+	Render/ColorStyle.h
+	Render/IRenderer.h
+	Render/TileMapRenderer.h
 )
 
-source_group("render"          FILES ${SRC_RENDER})
+source_group("Render"          FILES ${SRC_RENDER})
 
 if(WIN32)
 

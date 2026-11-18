@@ -148,6 +148,24 @@ namespace LitePanel
 	void SimpleRailObject::DrawStraightRail(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const
 	{
 		DrawLine(renderer, viewInfo, tileOrigin, this->GetAngle());
+
+		if (m_fBlockSplit)
+		{
+			auto halfTileSize = static_cast<float>(viewInfo.m_uHalfTileSize);
+			auto tileSize = static_cast<float>(viewInfo.m_uTileSize);
+
+			auto x = (m_fBlockSplit & kBLOCK_SPLIT_LEFT) ? tileOrigin.m_tX + 1 : tileOrigin.m_tX + tileSize - 1;
+			auto y = tileOrigin.m_tY + (halfTileSize / 2);
+
+			auto &colorStyle = LitePanel::Render::GetCurrentColorStyle();
+
+			renderer.DrawLine(
+				FloatPoint_t{ x, y },
+				FloatPoint_t{ x, y + halfTileSize },
+				colorStyle.m_tRail,
+				viewInfo.m_fpLineWidth
+			);
+		}
 	}
 
 	void SimpleRailObject::DrawCurveLeftRail(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const

@@ -9,42 +9,17 @@
 // defined by the Mozilla Public License, v. 2.0.
 
 
+#include "GL_Renderer.h"
 #include "TileMapCanvas.h"
 #include "TempObjects.h"
-#include "RailObject.h"
 
-struct ScaleInfo
-{
-	uint8_t m_uScale;
-	uint8_t m_uLineWidth;
-	uint8_t m_uDiagonalLineWidth;
-};
-
-constexpr auto MAX_ZOOM_LEVELS = 5;
-
-constexpr ScaleInfo g_tScales[MAX_ZOOM_LEVELS] = 
-{
-	{8, 2, 3},
-	{16, 4, 5},
-	{32, 8, 16},
-	{64, 16, 32},
-	{128, 32, 44}
-};
-
-#define CURRENT_SCALE (g_tScales[m_uZoomLevel].m_uScale)
+#include <LitePanelLib/RailObject.h>
 
 namespace LitePanel::Gui
 {		
 	wxDEFINE_EVENT(EVT_TILE_UNDER_MOUSE_CHANGED, TileEvent);
 	wxDEFINE_EVENT(EVT_TILE_LEFT_CLICK, TileEvent);
 	wxDEFINE_EVENT(EVT_TILE_RIGHT_CLICK, TileEvent);
-
-	TileCoord_t ViewInfo::WorldToTile(const IntPoint_t &worldPoint) const
-	{
-		auto localCoord = worldPoint / CURRENT_SCALE;
-
-		return TileCoord_t{ static_cast<TileCoord_t::Type_t>(localCoord.m_tX), static_cast<TileCoord_t::Type_t>(localCoord.m_tY)};
-	}
 
 	class RenderTimer : public wxTimer
 	{
@@ -77,7 +52,9 @@ namespace LitePanel::Gui
 
 		Bind(wxEVT_CLOSE_WINDOW, &TileMapCanvas::OnClose, this);
 
-		m_upRenderTimer = std::make_unique<RenderTimer>(*this);				
+		m_upRenderTimer = std::make_unique<RenderTimer>(*this);
+
+		//m_clTIleMapRenderer.ZoomIn();
 	}
 
 	TileMapCanvas::~TileMapCanvas()
@@ -88,26 +65,16 @@ namespace LitePanel::Gui
 	void TileMapCanvas::SetTileMap(const LitePanel::TileMap *tileMap) noexcept
 	{
 		m_pclTileMap = tileMap;
+		m_clTileMapRenderer.SetTileMap(m_pclTileMap);
 
 		if (m_pclTileMap)
-		{
-			this->UpdateRenderInfo();
+		{						
 			m_upRenderTimer->Start(25);			
 		}
 		else
 		{
 			m_upRenderTimer->Stop();
-		}		
-	}
-
-	void TileMapCanvas::UpdateRenderInfo()
-	{
-		assert(m_pclTileMap);
-
-		m_tViewInfo.m_uTileScale = g_tScales[m_tViewInfo.m_uZoomLevel].m_uScale;
-		m_tViewInfo.m_uHalfTileScale = g_tScales[m_tViewInfo.m_uZoomLevel].m_uScale / 2;
-		m_tViewInfo.m_uLineWidth = g_tScales[m_tViewInfo.m_uZoomLevel].m_uLineWidth;
-		m_tViewInfo.m_uDiagonalLineWidth = g_tScales[m_tViewInfo.m_uZoomLevel].m_uDiagonalLineWidth;		
+		}
 
 		this->RequestDraw();
 	}
@@ -121,271 +88,6 @@ namespace LitePanel::Gui
 		this->Refresh();
 	}
 
-	TileMapCanvas::RenderArgs TileMapCanvas::MakeRenderArgs() const
-	{
-		assert(m_pclTileMap);
-
-		RenderArgs rargs;
-
-		rargs.m_tViewClientSize = LitePanel::IntPoint_t{ this->GetSize().x, this->GetSize().y };	
-		rargs.m_tViewOrigin = m_tOrigin;					
-
-		//Not possible, due to bugs...
-		if((m_tOrigin.m_tX < 0) || (m_tOrigin.m_tY < 0))
-		{
-			return rargs;
-		}
-
-		const auto tileMapSize = m_pclTileMap->GetSize();
-
-		rargs.m_tTilePos_ViewOrigin = m_tViewInfo.WorldToTile(m_tOrigin);
-		if((rargs.m_tTilePos_ViewOrigin.m_tX >= tileMapSize.m_tX) || (rargs.m_tTilePos_ViewOrigin.m_tY >= tileMapSize.m_tY))
-			return rargs;
-
-		//Get the client area last pixel (right bottom corner) position
-		IntPoint_t viewLimit = m_tOrigin + rargs.m_tViewClientSize - IntPoint_t{ 1, 1 };
-
-		//get the world size in pixels right bottom corner (less one pixel)
-		IntPoint_t worldBounds = (IntPoint_t{ m_pclTileMap->GetSize() } * m_tViewInfo.m_uTileScale) - IntPoint_t{1, 1};		
-
-		//Now if the viewLimit is outside the tile Map, clamp it to inside the tileMap
-		worldBounds.m_tX = std::min(viewLimit.m_tX, worldBounds.m_tX);
-		worldBounds.m_tY = std::min(viewLimit.m_tY, worldBounds.m_tY);
-
-		rargs.m_tTilePos_LastVisible = m_tViewInfo.WorldToTile(worldBounds) + TileCoord_t{ 1, 1 };
-
-		rargs.m_tNumVisibleTiles = rargs.m_tTilePos_LastVisible - rargs.m_tTilePos_ViewOrigin ;		
-	
-		return rargs;
-	}
-
-	void TileMapCanvas::DrawGrid(const RenderArgs &rargs)
-	{
-		assert(m_pclTileMap);
-
-		glDisable(GL_LINE_SMOOTH);
-		glLineWidth(1.0f);
-
-		glColor4f(0.85f, 0.85f, 0.85f, 1.0f);
-
-		glBegin(GL_LINES);		
-	
-		for (int i = 0; i <= rargs.m_tNumVisibleTiles.m_tX; ++i)
-		{
-			LitePanel::IntPoint_t tilePos{ rargs.m_tTilePos_ViewOrigin.m_tX + i, rargs.m_tTilePos_ViewOrigin.m_tY };
-
-			if (tilePos.m_tX > m_pclTileMap->GetSize().m_tX)
-				break;
-
-			auto tileWorldPos = tilePos * m_tViewInfo.m_uTileScale;
-
-			glVertex2i(tileWorldPos.m_tX, tileWorldPos.m_tY);
-			glVertex2i(tileWorldPos.m_tX, (rargs.m_tTilePos_LastVisible.m_tY) * m_tViewInfo.m_uTileScale);
-		}
-
-		for (int i = 0; i <= rargs.m_tNumVisibleTiles.m_tY; ++i)
-		{
-			LitePanel::IntPoint_t tilePos{ rargs.m_tTilePos_ViewOrigin.m_tX, rargs.m_tTilePos_ViewOrigin.m_tY + i };
-
-			if (tilePos.m_tY > m_pclTileMap->GetSize().m_tY)
-				break;
-
-			auto tileWorldPos = tilePos * m_tViewInfo.m_uTileScale;
-	
-			glVertex2i(tileWorldPos.m_tX, tileWorldPos.m_tY);
-			glVertex2i((rargs.m_tTilePos_LastVisible.m_tX) * m_tViewInfo.m_uTileScale, tileWorldPos.m_tY);
-		}	
-
-		glEnd();
-
-		//glPopMatrix();
-	}
-
-	static GLfloat g_arfpAngleTable[] = { 0.0f, 45.0f, 90.0f, 135.0f, 180.0f, 225.0f, 270.0f, 315.0f };
-
-	void TileMapCanvas::DrawStraightRail(const LitePanel::SimpleRailObject &rail) const
-	{	
-		glColor4f(0.0f, 0.0f, 0.0f, 1.0f);		
-
-		switch(rail.GetAngle())
-		{
-			case LitePanel::ObjectAngles::EAST:
-			case LitePanel::ObjectAngles::NORTH:
-			case LitePanel::ObjectAngles::SOUTH:
-			case LitePanel::ObjectAngles::WEST:
-				{
-					//glEnable(GL_LINE_SMOOTH);
-					glLineWidth(m_tViewInfo.m_uLineWidth);					
-
-					glRotatef(g_arfpAngleTable[static_cast<int>(rail.GetAngle())], 0, 0, 1);
-
-					const auto splitFlags = rail.GetBlockSplit();
-					if (splitFlags & kBLOCK_SPLIT_LEFT)
-					{
-						glBegin(GL_LINES);
-
-						glVertex2f(-static_cast<int>(m_tViewInfo.m_uHalfTileScale), -static_cast<int>(m_tViewInfo.m_uHalfTileScale)/1.25f);
-						glVertex2f(-static_cast<int>(m_tViewInfo.m_uHalfTileScale), m_tViewInfo.m_uHalfTileScale /1.25f);
-
-						glEnd();
-					}
-
-					if (splitFlags & kBLOCK_SPLIT_RIGHT)
-					{
-						glBegin(GL_LINES);
-
-						glVertex2f(m_tViewInfo.m_uHalfTileScale, -static_cast<int>(m_tViewInfo.m_uHalfTileScale) / 1.25f);
-						glVertex2f(m_tViewInfo.m_uHalfTileScale, m_tViewInfo.m_uHalfTileScale / 1.25f);
-
-						glEnd();
-					}
-
-					glBegin(GL_LINES);
-
-					glVertex2i(-static_cast<int>(m_tViewInfo.m_uHalfTileScale), 0);
-					glVertex2i(m_tViewInfo.m_uHalfTileScale, 0);
-
-					glEnd();
-				}
-				break;
-
-			default:
-				{					
-					//glEnable(GL_LINE_SMOOTH);
-					glLineWidth(m_tViewInfo.m_uDiagonalLineWidth);
-
-					if ((rail.GetAngle() == LitePanel::ObjectAngles::NORTHEAST) || (rail.GetAngle() == LitePanel::ObjectAngles::SOUTHWEST))
-						glRotatef(90, 0, 0, 1);
-
-					glBegin(GL_LINES);
-
-					glVertex2i(-static_cast<int>(m_tViewInfo.m_uHalfTileScale), -static_cast<int>(m_tViewInfo.m_uHalfTileScale));
-					glVertex2i(m_tViewInfo.m_uHalfTileScale, m_tViewInfo.m_uHalfTileScale);					
-
-					glEnd();
-				}
-		}		
-	}
-
-	void TileMapCanvas::DrawCurveRail(const LitePanel::SimpleRailObject &rail) const
-	{
-		glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
-		glLineWidth(m_tViewInfo.m_uLineWidth);
-
-		switch (rail.GetAngle())
-		{
-			case LitePanel::ObjectAngles::EAST:
-			case LitePanel::ObjectAngles::NORTH:
-			case LitePanel::ObjectAngles::SOUTH:
-			case LitePanel::ObjectAngles::WEST:
-				{
-					//glEnable(GL_LINE_SMOOTH);
-
-					glRotatef(-g_arfpAngleTable[static_cast<int>(rail.GetAngle())], 0, 0, 1);
-
-					if (rail.GetType() == SimpleRailTypes::CURVE_RIGHT)
-						glScalef(1, -1, 1);
-
-					const auto splitFlags = rail.GetBlockSplit();
-					if (splitFlags & kBLOCK_SPLIT_LEFT)
-					{
-						glBegin(GL_LINES);
-
-						glVertex2f(-static_cast<int>(m_tViewInfo.m_uHalfTileScale), -static_cast<int>(m_tViewInfo.m_uHalfTileScale) / 1.25f);
-						glVertex2f(-static_cast<int>(m_tViewInfo.m_uHalfTileScale), m_tViewInfo.m_uHalfTileScale / 1.25f);
-
-						glEnd();
-					}
-
-					glBegin(GL_LINES);
-
-					glVertex2i(-static_cast<int>(m_tViewInfo.m_uHalfTileScale), 0);
-					glVertex2i(1, 0);
-
-					glEnd();
-
-
-					glLineWidth(m_tViewInfo.m_uDiagonalLineWidth);
-					glBegin(GL_LINES);
-
-					glVertex2i(0, 0);
-					glVertex2i(m_tViewInfo.m_uHalfTileScale, -static_cast<int>(m_tViewInfo.m_uHalfTileScale));
-
-					glEnd();
-				}
-				break;
-		}
-	}
-
-	void TileMapCanvas::DrawSimpleRail(const LitePanel::SimpleRailObject &rail) const
-	{
-		switch (rail.GetType())
-		{
-			case SimpleRailTypes::STRAIGHT:
-			case SimpleRailTypes::TERMINAL:
-				this->DrawStraightRail(rail);
-				break;
-
-			case SimpleRailTypes::CURVE_LEFT:
-			case SimpleRailTypes::CURVE_RIGHT:
-				this->DrawCurveRail(rail);
-				break;		
-
-			default:
-				throw std::exception("[MapCanvas::DrawSimpleRail] Invalid rail type");
-		}		
-	}
-
-	void TileMapCanvas::DrawObject(const MapObject &obj) const
-	{
-		auto simpleRailObject = dynamic_cast<const LitePanel::SimpleRailObject *>(&obj);
-		if (simpleRailObject)
-		{
-			this->DrawSimpleRail(*simpleRailObject);			
-		}		
-		else if (auto tempObject = dynamic_cast<const LitePanel::TempObject*>(&obj))
-		{
-			tempObject->Draw(m_tViewInfo);
-		}
-	}
-
-	void TileMapCanvas::Render(const RenderArgs &rargs)
-	{
-		assert(m_pclTileMap);
-		
-		assert((rargs.m_tNumVisibleTiles.m_tX > 0) && (rargs.m_tNumVisibleTiles.m_tY > 0));
-
-		glMatrixMode(GL_MODELVIEW);		
-
-		for(auto y = rargs.m_tTilePos_ViewOrigin.m_tY; y < rargs.m_tTilePos_LastVisible.m_tY; ++y)
-		{
-			for(auto x = rargs.m_tTilePos_ViewOrigin.m_tX; x < rargs.m_tTilePos_LastVisible.m_tX; ++x)
-			{
-				const auto position = TileCoord_t{x, y};				
-				
-				auto layers = m_pclTileMap->GetLayers();
-				for (auto layer = 0; layer < m_pclTileMap->GetNumLayers(); ++layer)
-				{
-					auto obj = layers[layer].TryGetMapObject(position);
-
-					if(!obj)
-						continue;
-
-					//go to center of tile
-					IntPoint_t tileWorldPos = IntPoint_t{position} * m_tViewInfo.m_uTileScale;
-					tileWorldPos += IntPoint_t{1, 1} * (m_tViewInfo.m_uTileScale / 2);
-
-					glPushMatrix();
-					glTranslatef(tileWorldPos.m_tX, tileWorldPos.m_tY, 0);		
-
-					DrawObject(*obj);					
-
-					glPopMatrix();
-				}
-			}			
-		}
-	}
-
 	void TileMapCanvas::OnDraw()
 	{
 		// Clear
@@ -397,65 +99,34 @@ namespace LitePanel::Gui
 
 		if (m_pclTileMap)
 		{
-			auto rargs = this->MakeRenderArgs();
-
-			if((rargs.m_tNumVisibleTiles.m_tX == 0) || (rargs.m_tNumVisibleTiles.m_tY == 0))
-				goto NOTILES;
+			GL_Renderer renderer;
 
 			// Setup the viewport
 			glViewport(0, 0, GetSize().x, GetSize().y);
 
 			// Setup the screen projection
 			glMatrixMode(GL_PROJECTION);
-			glLoadIdentity();
+			glLoadIdentity();			
+
+			auto clientSize = this->GetClientSize();
+
+			m_clTileMapRenderer.SetupFrame(renderer, LitePanel::FloatPoint_t{ (float)clientSize.GetWidth(), (float)clientSize.GetHeight() });
 
 			glOrtho(
-				rargs.m_tViewOrigin.m_tX, 
-				static_cast<GLdouble>(GetSize().x + rargs.m_tViewOrigin.m_tX),
-				static_cast<GLdouble>(GetSize().y + rargs.m_tViewOrigin.m_tY),
-				rargs.m_tViewOrigin.m_tY,
-				-1, 
+				0,
+				static_cast<GLdouble>(GetSize().x + 0),
+				static_cast<GLdouble>(GetSize().y + 0),
+				0,
+				-1,
 				1
 			);
 
 			glMatrixMode(GL_MODELVIEW);
-			glLoadIdentity();			
+			glLoadIdentity();
 
-	#if 0
+			m_clTileMapRenderer.Draw(renderer);
+		}
 
-			int r = 0, g = 1, b = 0;
-		
-			for (int y = 0; y < m_pclTileMap->GetSize().m_tY; ++y)
-			{		
-				for (int x = 0; x < m_pclTileMap->GetSize().m_tX; ++x)
-				{	
-					glBegin(GL_QUADS);
-						glColor3f(255 * r, 255, 0);
-						glVertex2i((x + 0) * m_tRenderInfo.m_uTileScale, (y + 0) * m_tRenderInfo.m_uTileScale);
-
-						glColor3f(255, 255 * g, 0);
-						glVertex2i((x + 1) * m_tRenderInfo.m_uTileScale, (y + 0) * m_tRenderInfo.m_uTileScale);
-
-						glColor3f(255, 0, 255 * b);
-						glVertex2i((x + 1) * m_tRenderInfo.m_uTileScale, (y + 1) * m_tRenderInfo.m_uTileScale);
-
-						glColor3f(255, 255, 255);
-						glVertex2i((x + 0) * m_tRenderInfo.m_uTileScale, (y + 1) * m_tRenderInfo.m_uTileScale);
-					glEnd();
-
-					r = !r;
-					g = !g;
-					b = !b;
-				}
-			}
-
-	#endif
-
-			this->DrawGrid(rargs);
-			this->Render(rargs);
-		}		
-
-NOTILES:
 		this->SwapBuffers();
 
 		m_fPendingDraw = false;
@@ -465,31 +136,14 @@ NOTILES:
 	{	
 		if (event.GetWheelRotation() > 0)
 		{
-			m_tViewInfo.m_uZoomLevel = std::min(m_tViewInfo.m_uZoomLevel + 1, MAX_ZOOM_LEVELS-1);
-
-			m_tViewInfo.m_uTileScale = g_tScales[m_tViewInfo.m_uZoomLevel].m_uScale;
+			m_clTileMapRenderer.ZoomIn();			
 		}
 		else
 		{
-			if(m_tViewInfo.m_uZoomLevel == 0)
-				return;
-
-			m_tViewInfo.m_uZoomLevel --;
-			m_tViewInfo.m_uTileScale = g_tScales[m_tViewInfo.m_uZoomLevel].m_uScale;
-
-			//adjust scrolling
-			if(m_tOrigin.m_tX > 0)
-				m_tOrigin.m_tX -= m_tViewInfo.m_uTileScale * 2;
-
-			if (m_tOrigin.m_tY > 0)
-				m_tOrigin.m_tY -= m_tViewInfo.m_uTileScale * 2;
-
-			//avoid putting origin beyond left upper corner
-			m_tOrigin.m_tX = std::max(m_tOrigin.m_tX, 0);
-			m_tOrigin.m_tY = std::max(m_tOrigin.m_tY, 0);
+			m_clTileMapRenderer.ZoomOut();
 		}
 
-		this->UpdateRenderInfo();
+		this->RequestDraw();
 	}
 
 	void TileMapCanvas::OnMouseLeftDown(wxMouseEvent &event)
@@ -524,12 +178,10 @@ NOTILES:
 
 		if (m_fMapMouseScroll)
 		{
-			auto currentPos = LitePanel::IntPoint_t{ event.GetX(), event.GetY() };
+			const auto currentPos = LitePanel::IntPoint_t{ event.GetX(), event.GetY() };
+			const auto delta = currentPos - m_tMoveStartPos;
 
-			m_tOrigin += currentPos - m_tMoveStartPos;
-			m_tOrigin.m_tX = std::max(0, m_tOrigin.m_tX);
-			m_tOrigin.m_tY = std::max(0, m_tOrigin.m_tY);
-
+			m_clTileMapRenderer.Move(LitePanel::IntPoint2Float(delta));
 			m_tMoveStartPos = currentPos;
 
 			this->RequestDraw();
@@ -591,15 +243,8 @@ NOTILES:
 			return {};
 
 		const IntPoint_t mousePos{event.GetX(), event.GetY()};
-		
-		const auto tilePos = m_tViewInfo.WorldToTile(mousePos + m_tOrigin);
 
-		const auto mapSize = m_pclTileMap->GetSize();
-
-		if((tilePos.m_tX >= mapSize.m_tX) || (tilePos.m_tY >= mapSize.m_tY))
-			return {};
-
-		return tilePos;
+		return m_clTileMapRenderer.GetTilePos(LitePanel::IntPoint2Float(mousePos));
 	}
 
 	void TileMapCanvas::OnClose(wxCloseEvent& evt)

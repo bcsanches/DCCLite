@@ -12,7 +12,6 @@
 
 #include <wx/wx.h>
 
-
 namespace LitePanel::Gui
 {
 	class MainFrame;

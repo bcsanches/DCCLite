@@ -11,8 +11,10 @@
 
 #include "PanelDocumentView.h"
 
-#include "LitePanel.h"
-#include "Panel.h"
+#include <LitePanelLib/Panel.h>
+
+#include "LitePanelApp.h"
+
 #include "PanelDocument.h"
 
 #include <wx/rtti.h>

@@ -17,14 +17,18 @@
 
 #include <fmt/format.h>
 
-#include "EditCmds.h"
-#include "LitePanel.h"
-#include "MapObject.h"
-#include "Panel.h"
+#include <LitePanelLib/EditCmds.h>
+#include <LitePanelLib/MapObject.h>
+#include <LitePanelLib/Panel.h>
+#include <LitePanelLib/RailObject.h>
+
+#include <LitePanelLib/Render/ColorStyle.h>
+
+#include "LitePanelApp.h"
 #include "PanelDocument.h"
 #include "PanelDocumentView.h"
 #include "PanelEditorCanvas.h"
-#include "RailObject.h"
+
 #include "TempObjects.h"
 
 wxIMPLEMENT_APP(LitePanel::Gui::LiteApp);
@@ -571,6 +575,8 @@ namespace LitePanel::Gui
 		toolBarLeft2->Bind(wxEVT_TOOL, &MainFrame::OnToolLeftClick, this, wxID_ANY);
 		m_pclMapCanvas->Bind(LitePanel::Gui::EVT_TILE_LEFT_CLICK, &MainFrame::OnTileLeftClick, this, wxID_ANY);
 		m_pclMapCanvas->Bind(LitePanel::Gui::EVT_TILE_UNDER_MOUSE_CHANGED, &MainFrame::OnTileUnderMouseChanged, this, wxID_ANY);
+
+		LitePanel::Render::SetColorStyle(LitePanel::Render::ColorStyles::LIGHT);
 	}
 
 	void MainFrame::OnSize(wxSizeEvent &event)
@@ -640,8 +646,8 @@ namespace LitePanel::Gui
 		else
 		{
 			if (!m_pclMouseShadow)
-			{
-				auto obj = std::make_unique<LitePanel::QuadObject>(position.value(), 1.0f, 1.0f, 0.7f);
+			{				
+				auto obj = std::make_unique<LitePanel::QuadObject>(position.value(), LitePanel::Render::GetCurrentColorStyle().m_tTileHighLight);
 
 				m_pclMouseShadow = obj.get();
 

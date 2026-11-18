@@ -26,13 +26,16 @@ namespace LitePanel::Render
 
 	enum class ColorStyles
 	{
-		DARK
+		DARK = 0,
+		LIGHT
 	};
 
 	namespace detail
 	{
 		extern const ColorStyle *g_ptCurrentColorStyle;
 	}
+
+	void SetColorStyle(ColorStyles style);
 
 	inline const ColorStyle &GetCurrentColorStyle() noexcept
 	{

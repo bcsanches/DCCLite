@@ -15,10 +15,9 @@
 #include <wx/cmdproc.h>
 #include <wx/docview.h>
 
-#include <Panel.h>
-
-#include "LitePanelLibDefs.h"
-#include "EditCmds.h"
+#include <LitePanelLib/EditCmds.h> 
+#include <LitePanelLib/LitePanelLibDefs.h>
+#include <LitePanelLib/Panel.h>
 
 namespace LitePanel::Gui
 {

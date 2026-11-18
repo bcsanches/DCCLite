@@ -1,8 +1,10 @@
 
+add_compile_definitions(IMGUI_DEFINE_MATH_OPERATORS)
+
 set(LitePanelWx_SRCS	
 	GL_Canvas.cpp
 	GL_Renderer.cpp
-	LitePanel.cpp      
+	LitePanelApp.cpp      
 	PanelDocument.cpp
 	PanelDocumentView.cpp
 	PanelEditorCanvas.cpp  
@@ -14,7 +16,7 @@ set(LitePanelWx_SRCS
 set(LitePanelWx_HDRS
 	GL_Canvas.h
 	GL_Renderer.h
-	LitePanel.h
+	LitePanelApp.h
 	PanelDocument.h
 	PanelDocumentView.h
 	PanelEditorCanvas.h
@@ -22,11 +24,21 @@ set(LitePanelWx_HDRS
 	TileMapCanvas.h
 )
 
+file(GLOB_RECURSE LITE_PANEL_EDITOR_SOURCES
+    "*.cpp"
+    "*.h"
+	"*.rc"
+)
+
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}
+             FILES ${LITE_PANEL_EDITOR_SOURCES}
+)
+
 add_executable(LitePanelWx WIN32 ${LitePanelWx_SRCS} ${LitePanelWx_HDRS})
 
 target_include_directories(LitePanelWx 
 	PRIVATE ${DCCLite_SOURCE_DIR}/src/Common  
-	PRIVATE ${DCCLite_SOURCE_DIR}/src/LitePanel/LitePanelLib
+	PRIVATE ${DCCLite_SOURCE_DIR}/src/LitePanel/
 	PRIVATE ${DCCLite_SOURCE_DIR}/contrib/imgui/	
 )
 

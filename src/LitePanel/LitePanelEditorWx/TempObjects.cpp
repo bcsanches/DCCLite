@@ -15,19 +15,15 @@
 
 #include "TileMapCanvas.h"
 
+#include <LitePanelLib/Render/IRenderer.h>
+#include <LitePanelLib/Render/TileMapRenderer.h>
+
 namespace LitePanel
 {
-	void QuadObject::Draw(const Gui::ViewInfo &viewInfo) const noexcept
+	void QuadObject::Draw(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const
 	{
-		glColor4f(m_fpColor[0], m_fpColor[1], m_fpColor[2], 1.0f);
+		auto sz = static_cast<FloatPoint_t::Type_t>(viewInfo.m_uTileSize);
 
-		glBegin(GL_QUADS);
-
-		glVertex2i(-static_cast<int>(viewInfo.m_uHalfTileScale), -static_cast<int>(viewInfo.m_uHalfTileScale));
-		glVertex2i(viewInfo.m_uHalfTileScale, -static_cast<int>(viewInfo.m_uHalfTileScale));
-		glVertex2i(viewInfo.m_uHalfTileScale, viewInfo.m_uHalfTileScale);
-		glVertex2i(-static_cast<int>(viewInfo.m_uHalfTileScale), viewInfo.m_uHalfTileScale);
-
-		glEnd();
-	}	
+		renderer.DrawFilledRect(tileOrigin, FloatPoint_t{ sz, sz }, m_tColor);
+	}
 }

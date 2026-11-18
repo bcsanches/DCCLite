@@ -24,8 +24,8 @@
 #include "JsonCreator/StringWriter.h"
 #include "JsonCreator/Object.h"
 
-#include "EditCmds.h"
-#include "MapObject.h"
+#include <LitePanelLib/EditCmds.h>
+#include <LitePanelLib/MapObject.h>
 
 wxIMPLEMENT_DYNAMIC_CLASS(LitePanel::Gui::PanelDocument, wxDocument);
 

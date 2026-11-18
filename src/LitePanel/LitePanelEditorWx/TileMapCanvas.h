@@ -12,8 +12,9 @@
 
 #include "GL_Canvas.h"
 
-#include "Point.h"
-#include "TileMap.h"
+#include <LitePanelLib/Point.h>
+#include <LitePanelLib/TileMap.h>
+#include <LitePanelLib/Render/TileMapRenderer.h>
 
 #include <optional>
 
@@ -64,17 +65,6 @@ namespace LitePanel::Gui
 			const std::optional<TileCoord_t> m_tTilePosition;
 	};				
 
-	struct ViewInfo
-	{
-		uint8_t m_uZoomLevel = DEFAULT_ZOOM_LEVEL;
-		unsigned m_uTileScale;
-		unsigned m_uHalfTileScale;
-		unsigned m_uLineWidth;
-		unsigned m_uDiagonalLineWidth;		
-
-		TileCoord_t WorldToTile(const IntPoint_t& worldPoint) const;
-	};
-
 	class TileMapCanvas: public GL_Canvas
 	{
 		private:
@@ -104,9 +94,7 @@ namespace LitePanel::Gui
 			void OnMouseLeaveWindow(wxMouseEvent &event);
 
 		private:
-			void DrawGrid(const RenderArgs &rargs);
-
-			void UpdateRenderInfo();
+			void DrawGrid(const RenderArgs &rargs);			
 
 			RenderArgs MakeRenderArgs() const;
 
@@ -123,36 +111,13 @@ namespace LitePanel::Gui
 			void OnClose(wxCloseEvent& evt);
 
 		private:
-			
-
-			struct RenderArgs
-			{
-				//Visible screen rect size in pixels (how many pixels we will draw or client rect on GUI)
-				IntPoint_t m_tViewClientSize;
-
-				//View position in world space - upper left corner
-				IntPoint_t m_tViewOrigin;				
-
-				//First visible tile on view (upper left corner) - can be out of bounds
-				TileCoord_t m_tTilePos_ViewOrigin;
-
-				//The last visible tile on view (right bottom corner) - can be out of bounds
-				TileCoord_t m_tTilePos_LastVisible;
-
-				//Number of visible tiles that can fit on screen, including partially visible tiles on screen borders
-				//if any of this one is zero, no visible tiles
-				TileCoord_t m_tNumVisibleTiles;
-			};
-
-			IntPoint_t m_tOrigin;
-
 			IntPoint_t m_tMoveStartPos;
 
 			const TileMap *m_pclTileMap = nullptr;
 
-			std::unique_ptr<RenderTimer> m_upRenderTimer;
+			LitePanel::Render::TileMapRenderer m_clTileMapRenderer;
 
-			ViewInfo m_tViewInfo;
+			std::unique_ptr<RenderTimer> m_upRenderTimer;
 
 			std::optional<TileCoord_t> m_tTileUnderMouse;
 			bool m_fMapMouseScroll = false;
