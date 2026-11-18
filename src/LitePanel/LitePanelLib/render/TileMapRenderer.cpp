@@ -259,9 +259,8 @@ namespace LitePanel::Render
 			std::min(rargs.m_tTileMapScreenSize.m_tX, m_ptClientSize.m_tX),
 			std::min(rargs.m_tTileMapScreenSize.m_tY, m_ptClientSize.m_tY)
 		};
-
-		const auto borderEnd = m_ptMapOffset + borderSize;
-		renderer.DrawFilledRect(m_ptMapOffset, borderEnd, colorStyle.m_tBackground);
+		
+		renderer.DrawFilledRect(m_ptMapOffset, borderSize, colorStyle.m_tBackground);
 		//renderer.DrawFilledRect(m_ptMapOffset, borderEnd, LP_COL32(255, 0, 255, 255));
 
 		const FloatPoint_t tileSize{ static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize), static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize) };
@@ -326,7 +325,7 @@ namespace LitePanel::Render
 			);
 		}
 
-		renderer.DrawRect(m_ptMapOffset, borderEnd, colorStyle.m_tTileMapBorder);
+		renderer.DrawRect(m_ptMapOffset, borderSize, colorStyle.m_tTileMapBorder);
 
 #if 0
 		for (int i = rargs.m_tTilePos_FirstOrigin.m_tX; i <= rargs.m_tTilePos_LastVisible.m_tX + 1; ++i)

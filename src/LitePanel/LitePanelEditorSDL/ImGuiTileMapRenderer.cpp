@@ -29,14 +29,26 @@ namespace dcclite::PanelEditor
 		m_clDrawList.AddLine(m_ptClientOrigin + PointToImGuiVec(p1), m_ptClientOrigin + PointToImGuiVec(p2), color, thickness);		
 	}
 
-	void ImGuiTileMapRenderer::DrawRect(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2, LitePanel::Render::Color_t color)
+	void ImGuiTileMapRenderer::DrawRect(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t size, LitePanel::Render::Color_t color)
 	{
-		m_clDrawList.AddRect(m_ptClientOrigin + PointToImGuiVec(p1), m_ptClientOrigin + PointToImGuiVec(p2), color);
+		const auto p2 = p1 + size;
+
+		m_clDrawList.AddRect(
+			m_ptClientOrigin + PointToImGuiVec(p1),
+			m_ptClientOrigin + PointToImGuiVec(p2),
+			color
+		);
 	}
 
-	void ImGuiTileMapRenderer::DrawFilledRect(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2, LitePanel::Render::Color_t color)
+	void ImGuiTileMapRenderer::DrawFilledRect(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t size, LitePanel::Render::Color_t color)
 	{
-		m_clDrawList.AddRectFilled(m_ptClientOrigin + PointToImGuiVec(p1), m_ptClientOrigin + PointToImGuiVec(p2), color);		
+		const auto p2 = p1 + size;
+
+		m_clDrawList.AddRectFilled(
+			m_ptClientOrigin + PointToImGuiVec(p1), 
+			m_ptClientOrigin + PointToImGuiVec(p2), 
+			color
+		);		
 	}
 
 	void ImGuiTileMapRenderer::DrawText(float fontSize, LitePanel::FloatPoint_t pos, LitePanel::Render::Color_t color, const char *textBegin, const char *textEnd)
