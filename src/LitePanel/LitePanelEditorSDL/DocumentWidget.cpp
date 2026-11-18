@@ -39,6 +39,7 @@ namespace dcclite::PanelEditor
 		for (int i = 0; i < numPanels; ++i)
 		{
 			m_vecRenderers.push_back(LitePanel::Render::TileMapRenderer{ &panels[i].GetTileMap() });
+			m_vecRenderers[i].SetRenderFlags(LitePanel::Render::TileMapRendererFlags_CenterMap);
 		}
 	}
 

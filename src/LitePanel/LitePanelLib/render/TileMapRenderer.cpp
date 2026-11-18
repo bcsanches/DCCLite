@@ -145,47 +145,16 @@ namespace LitePanel::Render
 
 	void TileMapRenderer::ClipOrigin()
 	{
-#if 0
 		assert(m_pclTileMap);
-
-		m_ptOrigin.m_tX = std::max(0.0f, m_ptOrigin.m_tX);
-		m_ptOrigin.m_tY = std::max(0.0f, m_ptOrigin.m_tY);
-
-		const auto &tileMapSize = m_pclTileMap->GetSize();
-		FloatPoint_t mapSizeInPixels = TilePointToFloat(tileMapSize) * static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize);
-		
-		if (m_ptClientSize.m_tX > mapSizeInPixels.m_tX)
-		{
-			// do not move if map is smaller than client size
-			m_ptOrigin.m_tX = 0.0f;
-		}
-		else if ((m_ptOrigin.m_tX + m_ptClientSize.m_tX) > mapSizeInPixels.m_tX)
-		{
-			//map is bigger than client size, but origin is going beyond, so clip it...
-			m_ptOrigin.m_tX = mapSizeInPixels.m_tX - m_ptClientSize.m_tX;
-		}
-
-		if (m_ptClientSize.m_tY > mapSizeInPixels.m_tY)
-		{
-			m_ptOrigin.m_tY = 0.0f;
-		}
-		else if ((m_ptOrigin.m_tY + m_ptClientSize.m_tY) > mapSizeInPixels.m_tY)
-		{
-			//map is bigger than client size, but origin is going beyond, so clip it...
-			m_ptOrigin.m_tY = mapSizeInPixels.m_tY - m_ptClientSize.m_tY;
-		}
-#else
-		assert(m_pclTileMap);
-
-		m_ptOrigin.m_tX = std::max(0.0f, m_ptOrigin.m_tX);
-		m_ptOrigin.m_tY = std::max(0.0f, m_ptOrigin.m_tY);
 
 		const auto &tileMapSize = m_pclTileMap->GetSize();
 
-		FloatPoint_t mapSizeInPixels = TilePointToFloat(tileMapSize) * static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize);
+		const FloatPoint_t mapSizeInPixels = TilePointToFloat(tileMapSize) * static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize);
+
+		const bool centerMap = (m_u32Flags & TileMapRendererFlags_CenterMap);
 
 		// Horizontal
-		if (m_ptClientSize.m_tX > mapSizeInPixels.m_tX)
+		if (centerMap && m_ptClientSize.m_tX > mapSizeInPixels.m_tX)
 		{
 			m_ptOrigin.m_tX = 0.0f;
 			m_ptMapOffset.m_tX = (m_ptClientSize.m_tX - mapSizeInPixels.m_tX) / 2.0f;
@@ -194,11 +163,18 @@ namespace LitePanel::Render
 		{
 			m_ptMapOffset.m_tX = 0.0f;
 
-			m_ptOrigin.m_tX = std::min(m_ptOrigin.m_tX, mapSizeInPixels.m_tX - m_ptClientSize.m_tX);
+			if (mapSizeInPixels.m_tX <= m_ptClientSize.m_tX)
+			{
+				m_ptOrigin.m_tX = 0.0f;
+			}
+			else
+			{
+				m_ptOrigin.m_tX = std::clamp(m_ptOrigin.m_tX, 0.0f, mapSizeInPixels.m_tX - m_ptClientSize.m_tX);
+			}
 		}
 
 		// Vertical
-		if (m_ptClientSize.m_tY > mapSizeInPixels.m_tY)
+		if (centerMap && m_ptClientSize.m_tY > mapSizeInPixels.m_tY)
 		{
 			m_ptOrigin.m_tY = 0.0f;
 			m_ptMapOffset.m_tY = (m_ptClientSize.m_tY - mapSizeInPixels.m_tY) / 2.0f;
@@ -206,10 +182,16 @@ namespace LitePanel::Render
 		else
 		{
 			m_ptMapOffset.m_tY = 0.0f;
-			m_ptOrigin.m_tY = std::min(m_ptOrigin.m_tY, mapSizeInPixels.m_tY - m_ptClientSize.m_tY);
-		}
-#endif
 
+			if (mapSizeInPixels.m_tY <= m_ptClientSize.m_tY)
+			{
+				m_ptOrigin.m_tY = 0.0f;
+			}
+			else
+			{
+				m_ptOrigin.m_tY = std::clamp(m_ptOrigin.m_tY, 0.0f, mapSizeInPixels.m_tY - m_ptClientSize.m_tY);
+			}
+		}
 	}
 
 	RenderArgs TileMapRenderer::MakeRenderArgs() const
@@ -281,7 +263,9 @@ namespace LitePanel::Render
 			borderSize.m_tY = std::min(borderSize.m_tY, rargs.m_tTileMapScreenSize.m_tY);
 		}
 
-		renderer.DrawFilledRect(m_ptMapOffset, borderSize, colorStyle.m_tBackground);
+		const auto borderEnd = m_ptMapOffset + borderSize;
+		renderer.DrawFilledRect(m_ptMapOffset, borderEnd, colorStyle.m_tBackground);
+		//renderer.DrawFilledRect(m_ptMapOffset, borderEnd, LP_COL32(255, 0, 255, 255));
 
 		const FloatPoint_t tileSize{ static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize), static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize) };
 
@@ -345,7 +329,7 @@ namespace LitePanel::Render
 			);
 		}
 
-		renderer.DrawRect(m_ptMapOffset, borderSize, colorStyle.m_tTileMapBorder);
+		renderer.DrawRect(m_ptMapOffset, borderEnd, colorStyle.m_tTileMapBorder);
 
 #if 0
 		for (int i = rargs.m_tTilePos_FirstOrigin.m_tX; i <= rargs.m_tTilePos_LastVisible.m_tX + 1; ++i)
