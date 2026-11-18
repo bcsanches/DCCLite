@@ -11,9 +11,6 @@
 
 #include "GL_Canvas.h"
 
-#include <imgui.h>
-#include <backends/imgui_impl_opengl2.h>
-
 namespace LitePanel::Gui
 {
 	namespace OpenGLState
@@ -63,21 +60,7 @@ namespace LitePanel::Gui
 		glOrtho(0, GetSize().x, GetSize().y, 0, -1, 100);
 
 		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-
-		// Setup Dear ImGui context
-		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
-
-		ImGuiIO &io = ImGui::GetIO(); (void)io;
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-		io.IniFilename = nullptr;
-
-		ImGui::StyleColorsClassic();
-
-		ImGui_ImplOpenGL2_Init();
+		glLoadIdentity();		
 
 		m_fInitialized = true;
 	}

@@ -38,9 +38,8 @@ namespace LitePanel::Render
 	};
 
 	enum TileMapRendererFlags
-	{
-		TileMapRendererFlags_DrawBorderTileMapRect = 0x01,
-		TileMapRendererFlags_CenterMap = 0x02
+	{		
+		TileMapRendererFlags_CenterMap = 0x01
 	};
 
 	class TileMapRenderer

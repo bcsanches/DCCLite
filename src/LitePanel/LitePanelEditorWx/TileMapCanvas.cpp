@@ -54,7 +54,7 @@ namespace LitePanel::Gui
 
 		m_upRenderTimer = std::make_unique<RenderTimer>(*this);
 
-		//m_clTIleMapRenderer.ZoomIn();
+		m_clTileMapRenderer.SetRenderFlags(LitePanel::Render::TileMapRendererFlags_CenterMap);
 	}
 
 	TileMapCanvas::~TileMapCanvas()

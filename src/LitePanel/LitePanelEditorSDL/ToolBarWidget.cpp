@@ -217,7 +217,7 @@ namespace dcclite::PanelEditor
 		m_clToolsMap{ {2, 6}, 2 }
 	{		
 		m_clTileMapRenderer.SetTileMap(&m_clToolsMap);
-		m_clTileMapRenderer.SetRenderFlags(LitePanel::Render::TileMapRendererFlags_DrawBorderTileMapRect);
+		//m_clTileMapRenderer.SetRenderFlags(LitePanel::Render::TileMapRendererFlags_DrawBorderTileMapRect);
 
 		m_clToolsMap.RegisterObject(
 			std::make_unique<SimpleRailObjectToolButton>(

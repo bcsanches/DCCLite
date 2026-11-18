@@ -255,13 +255,10 @@ namespace LitePanel::Render
 
 		auto rargs = this->MakeRenderArgs();
 
-		FloatPoint_t borderSize = m_ptClientSize;
-
-		if (m_u32Flags & TileMapRendererFlags_DrawBorderTileMapRect)
-		{
-			borderSize.m_tX = std::min(borderSize.m_tX, rargs.m_tTileMapScreenSize.m_tX);
-			borderSize.m_tY = std::min(borderSize.m_tY, rargs.m_tTileMapScreenSize.m_tY);
-		}
+		const FloatPoint_t borderSize{
+			std::min(rargs.m_tTileMapScreenSize.m_tX, m_ptClientSize.m_tX),
+			std::min(rargs.m_tTileMapScreenSize.m_tY, m_ptClientSize.m_tY)
+		};
 
 		const auto borderEnd = m_ptMapOffset + borderSize;
 		renderer.DrawFilledRect(m_ptMapOffset, borderEnd, colorStyle.m_tBackground);

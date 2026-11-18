@@ -12,8 +12,6 @@
 
 #include <LitePanelLib/Render/IRenderer.h>
 
-#include <imgui.h>
-
 namespace LitePanel::Gui
 {	
 	class GL_Renderer : public LitePanel::Render::IRenderer
