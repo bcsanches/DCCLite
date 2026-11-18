@@ -10,6 +10,7 @@
 
 #include "TileMapRenderer.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include <fmt/format.h>
@@ -144,6 +145,7 @@ namespace LitePanel::Render
 
 	void TileMapRenderer::ClipOrigin()
 	{
+#if 0
 		assert(m_pclTileMap);
 
 		m_ptOrigin.m_tX = std::max(0.0f, m_ptOrigin.m_tX);
@@ -172,6 +174,41 @@ namespace LitePanel::Render
 			//map is bigger than client size, but origin is going beyond, so clip it...
 			m_ptOrigin.m_tY = mapSizeInPixels.m_tY - m_ptClientSize.m_tY;
 		}
+#else
+		assert(m_pclTileMap);
+
+		m_ptOrigin.m_tX = std::max(0.0f, m_ptOrigin.m_tX);
+		m_ptOrigin.m_tY = std::max(0.0f, m_ptOrigin.m_tY);
+
+		const auto &tileMapSize = m_pclTileMap->GetSize();
+
+		FloatPoint_t mapSizeInPixels = TilePointToFloat(tileMapSize) * static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize);
+
+		// Horizontal
+		if (m_ptClientSize.m_tX > mapSizeInPixels.m_tX)
+		{
+			m_ptOrigin.m_tX = 0.0f;
+			m_ptMapOffset.m_tX = (m_ptClientSize.m_tX - mapSizeInPixels.m_tX) / 2.0f;
+		}
+		else
+		{
+			m_ptMapOffset.m_tX = 0.0f;
+
+			m_ptOrigin.m_tX = std::min(m_ptOrigin.m_tX, mapSizeInPixels.m_tX - m_ptClientSize.m_tX);
+		}
+
+		// Vertical
+		if (m_ptClientSize.m_tY > mapSizeInPixels.m_tY)
+		{
+			m_ptOrigin.m_tY = 0.0f;
+			m_ptMapOffset.m_tY = (m_ptClientSize.m_tY - mapSizeInPixels.m_tY) / 2.0f;
+		}
+		else
+		{
+			m_ptMapOffset.m_tY = 0.0f;
+			m_ptOrigin.m_tY = std::min(m_ptOrigin.m_tY, mapSizeInPixels.m_tY - m_ptClientSize.m_tY);
+		}
+#endif
 
 	}
 
@@ -212,7 +249,7 @@ namespace LitePanel::Render
 
 	std::optional<TileCoord_t> TileMapRenderer::GetTilePos(const FloatPoint_t &worldPoint) const noexcept
 	{
-		auto point = worldPoint + m_ptOrigin;
+		auto point = worldPoint - m_ptMapOffset + m_ptOrigin;
 
 		auto tilePos = m_tViewHelper.WorldToTileFloor(point);
 
@@ -232,7 +269,7 @@ namespace LitePanel::Render
 		if (!m_pclTileMap)
 			return;
 			
-		auto &colorStyle = GetCurrentColorStyle();		
+		auto &colorStyle = GetCurrentColorStyle();
 
 		auto rargs = this->MakeRenderArgs();
 
@@ -244,7 +281,7 @@ namespace LitePanel::Render
 			borderSize.m_tY = std::min(borderSize.m_tY, rargs.m_tTileMapScreenSize.m_tY);
 		}
 
-		renderer.DrawFilledRect(FloatPoint_t{ 0, 0 }, borderSize, colorStyle.m_tBackground);
+		renderer.DrawFilledRect(m_ptMapOffset, borderSize, colorStyle.m_tBackground);
 
 		const FloatPoint_t tileSize{ static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize), static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize) };
 
@@ -262,7 +299,7 @@ namespace LitePanel::Render
 					if (!obj)
 						continue;
 
-					auto tileWorldOrigin = TilePointToFloat(tilePos) * static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize) - m_ptOrigin;
+					auto tileWorldOrigin = TilePointToFloat(tilePos) * static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize) - m_ptOrigin + m_ptMapOffset;
 
 					renderer.PushClipRect(tileWorldOrigin, tileWorldOrigin + tileSize);
 
@@ -282,8 +319,11 @@ namespace LitePanel::Render
 			auto tileWorldPos = IntPointToFloat(tilePos * m_tViewHelper.m_stInfo.m_uTileSize);
 
 			renderer.DrawLine(
-				tileWorldPos - rargs.m_tViewOrigin,
-				FloatPoint_t{ tileWorldPos.m_tX - rargs.m_tViewOrigin.m_tX, static_cast<float>((rargs.m_tNumVisibleTiles.m_tY) * m_tViewHelper.m_stInfo.m_uTileSize) },
+				tileWorldPos - rargs.m_tViewOrigin + m_ptMapOffset,
+				FloatPoint_t{ 
+					tileWorldPos.m_tX - rargs.m_tViewOrigin.m_tX + m_ptMapOffset.m_tX,
+					static_cast<float>((rargs.m_tNumVisibleTiles.m_tY) * m_tViewHelper.m_stInfo.m_uTileSize) + m_ptMapOffset.m_tY
+				},
 				colorStyle.m_tGridLine
 			);
 		}		
@@ -296,13 +336,16 @@ namespace LitePanel::Render
 			auto tileWorldPos = IntPointToFloat(tilePos * m_tViewHelper.m_stInfo.m_uTileSize);
 
 			renderer.DrawLine(
-				tileWorldPos - rargs.m_tViewOrigin,				
-				FloatPoint_t{ static_cast<float>((rargs.m_tNumVisibleTiles.m_tX) * m_tViewHelper.m_stInfo.m_uTileSize), tileWorldPos.m_tY - rargs.m_tViewOrigin.m_tY },
+				tileWorldPos - rargs.m_tViewOrigin + m_ptMapOffset,
+				FloatPoint_t{ 
+					static_cast<float>((rargs.m_tNumVisibleTiles.m_tX) * m_tViewHelper.m_stInfo.m_uTileSize) + m_ptMapOffset.m_tX,
+					tileWorldPos.m_tY - rargs.m_tViewOrigin.m_tY + m_ptMapOffset.m_tY
+				},
 				colorStyle.m_tGridLine
 			);
 		}
 
-		renderer.DrawRect(FloatPoint_t{ 0, 0 }, borderSize, colorStyle.m_tTileMapBorder);
+		renderer.DrawRect(m_ptMapOffset, borderSize, colorStyle.m_tTileMapBorder);
 
 #if 0
 		for (int i = rargs.m_tTilePos_FirstOrigin.m_tX; i <= rargs.m_tTilePos_LastVisible.m_tX + 1; ++i)

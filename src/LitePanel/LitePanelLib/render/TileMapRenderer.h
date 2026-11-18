@@ -39,7 +39,8 @@ namespace LitePanel::Render
 
 	enum TileMapRendererFlags
 	{
-		TileMapRendererFlags_DrawBorderTileMapRect = 0x01		
+		TileMapRendererFlags_DrawBorderTileMapRect = 0x01,
+		TileMapRendererFlags_CenterMap = 0x02
 	};
 
 	class TileMapRenderer
@@ -109,6 +110,8 @@ namespace LitePanel::Render
 
 			FloatPoint_t	m_ptClientSize;
 			FloatPoint_t	m_ptOrigin;
+
+			FloatPoint_t	m_ptMapOffset;
 
 			ViewHelper		m_tViewHelper;
 
