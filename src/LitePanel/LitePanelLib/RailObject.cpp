@@ -73,7 +73,7 @@ namespace LitePanel
 		{
 			FloatPoint_t{0,		0.5},		//EAST
 			FloatPoint_t{0.5f,	0.5f},		//NORTHEAST
-			FloatPoint_t{0.5,	0},			//NORTH
+			FloatPoint_t{0.5,	0.5f},		//NORTH
 			FloatPoint_t{0.53f,	0.530f},	//NORTHWEST
 			FloatPoint_t{1,		0.5},		//WEST
 			FloatPoint_t{0.53f,	0.47f},		//SOUTHWEST
@@ -85,7 +85,7 @@ namespace LitePanel
 		{
 			FloatPoint_t{0.535f,	0.5f},	//EAST
 			FloatPoint_t{1,			0},		//NORTHEAST
-			FloatPoint_t{0.5f,		0.5f},	//NORTH
+			FloatPoint_t{0.5f,		1},		//NORTH
 			FloatPoint_t{0.0f,		0.0f},	//NORTHWEST
 			FloatPoint_t{0.465f,	0.5},	//WEST
 			FloatPoint_t{0,			1},		//SOUTHWEST
@@ -145,26 +145,51 @@ namespace LitePanel
 		);
 	}
 
+	void SimpleRailObject::DrawVerticalBlockSplit(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const
+	{
+		auto halfTileSize = static_cast<float>(viewInfo.m_uHalfTileSize);
+		auto tileSize = static_cast<float>(viewInfo.m_uTileSize);
+
+		auto x = (m_fBlockSplit & kBLOCK_SPLIT_LEFT) ? tileOrigin.m_tX + 1 : tileOrigin.m_tX + tileSize - 1;
+		auto y = tileOrigin.m_tY + (halfTileSize / 2);
+
+		auto &colorStyle = LitePanel::Render::GetCurrentColorStyle();
+
+		renderer.DrawLine(
+			FloatPoint_t{ x, y },
+			FloatPoint_t{ x, y + halfTileSize },
+			colorStyle.m_tRail,
+			viewInfo.m_fpLineWidth
+		);
+	}
+
+	void SimpleRailObject::DrawHorizontalBlockSplit(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const
+	{
+		auto halfTileSize = static_cast<float>(viewInfo.m_uHalfTileSize);
+		auto tileSize = static_cast<float>(viewInfo.m_uTileSize);
+
+		auto angle = this->GetAngle();
+		
+		auto x = tileOrigin.m_tX + (halfTileSize / 2);
+		auto y = (m_fBlockSplit & kBLOCK_SPLIT_TOP) ? tileOrigin.m_tY + 1 : tileOrigin.m_tY + tileSize - 1;
+
+		auto &colorStyle = LitePanel::Render::GetCurrentColorStyle();
+
+		renderer.DrawLine(
+			FloatPoint_t{ x, y },
+			FloatPoint_t{ x + halfTileSize, y },
+			colorStyle.m_tRail,
+			viewInfo.m_fpLineWidth
+		);
+	}
+
 	void SimpleRailObject::DrawStraightRail(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const
 	{
 		DrawLine(renderer, viewInfo, tileOrigin, this->GetAngle());
 
 		if (m_fBlockSplit)
 		{
-			auto halfTileSize = static_cast<float>(viewInfo.m_uHalfTileSize);
-			auto tileSize = static_cast<float>(viewInfo.m_uTileSize);
-
-			auto x = (m_fBlockSplit & kBLOCK_SPLIT_LEFT) ? tileOrigin.m_tX + 1 : tileOrigin.m_tX + tileSize - 1;
-			auto y = tileOrigin.m_tY + (halfTileSize / 2);
-
-			auto &colorStyle = LitePanel::Render::GetCurrentColorStyle();
-
-			renderer.DrawLine(
-				FloatPoint_t{ x, y },
-				FloatPoint_t{ x, y + halfTileSize },
-				colorStyle.m_tRail,
-				viewInfo.m_fpLineWidth
-			);
+			this->DrawVerticalBlockSplit(renderer, viewInfo, tileOrigin);
 		}
 	}
 
@@ -185,10 +210,18 @@ namespace LitePanel
 
 			case ObjectAngles::NORTH:
 				DrawHalfLine(renderer, viewInfo, tileOrigin, ObjectAngles::NORTHWEST);
+				if (m_fBlockSplit)
+				{
+					this->DrawHorizontalBlockSplit(renderer, viewInfo, tileOrigin);
+				}
 				break;
 
 			case ObjectAngles::SOUTH:
 				DrawHalfLine(renderer, viewInfo, tileOrigin, ObjectAngles::SOUTHEAST);
+				if (m_fBlockSplit)
+				{
+					this->DrawHorizontalBlockSplit(renderer, viewInfo, tileOrigin);
+				}
 				break;
 		}
 	}
@@ -210,10 +243,18 @@ namespace LitePanel
 
 			case ObjectAngles::NORTH:
 				DrawHalfLine(renderer, viewInfo, tileOrigin, ObjectAngles::NORTHEAST);
+				if (m_fBlockSplit)
+				{
+					this->DrawHorizontalBlockSplit(renderer, viewInfo, tileOrigin);
+				}
 				break;
 
 			case ObjectAngles::SOUTH:
 				DrawHalfLine(renderer, viewInfo, tileOrigin, ObjectAngles::SOUTHWEST);
+				if (m_fBlockSplit)
+				{
+					this->DrawHorizontalBlockSplit(renderer, viewInfo, tileOrigin);
+				}
 				break;
 		}
 	}

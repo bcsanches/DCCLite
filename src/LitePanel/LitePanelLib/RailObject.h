@@ -56,7 +56,9 @@ namespace LitePanel
 	{
 		kBLOCK_SPLIT_NONE = 0,
 		kBLOCK_SPLIT_LEFT = 0x02,
-		kBLOCK_SPLIT_RIGHT = 0x04
+		kBLOCK_SPLIT_RIGHT = 0x04,
+		kBLOCK_SPLIT_TOP = 0x08,
+		kBLOCK_SPLIT_BOTTOM = 0x10
 	};
 
 	class SimpleRailObject: public RailObject
@@ -97,6 +99,9 @@ namespace LitePanel
 			void DrawStraightRail(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const;
 			void DrawCurveLeftRail(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const;
 			void DrawCurveRightRail(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const;
+
+			void DrawVerticalBlockSplit(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const;
+			void DrawHorizontalBlockSplit(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const;
 
 		private:
 			const SimpleRailTypes	m_tType;			

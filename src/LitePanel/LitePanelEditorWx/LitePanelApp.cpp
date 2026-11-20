@@ -326,10 +326,10 @@ namespace LitePanel::Gui
 					coord,
 					LitePanel::ObjectAngles::EAST,
 					LitePanel::SimpleRailTypes::STRAIGHT
-					));
+				));
 			},
 			"Horizontal track section",
-				"Creates a horizontal track section"
+			"Creates a horizontal track section"
 		);
 
 		m_clToolManager.AddTool(
@@ -342,10 +342,10 @@ namespace LitePanel::Gui
 					coord,
 					LitePanel::ObjectAngles::NORTH,
 					LitePanel::SimpleRailTypes::STRAIGHT
-					));
+				));
 			},
 			"Vertical track section",
-				"Creates a vertical track section"
+			"Creates a vertical track section"
 		);
 
 		m_clToolManager.AddTool(
@@ -358,10 +358,10 @@ namespace LitePanel::Gui
 					coord,
 					LitePanel::ObjectAngles::NORTHEAST,
 					LitePanel::SimpleRailTypes::STRAIGHT
-					));
+				));
 			},
 			"Diagonal track section",
-				"Creates a diagonal track section"
+			"Creates a diagonal track section"
 		);
 
 		
@@ -376,11 +376,11 @@ namespace LitePanel::Gui
 					coord,
 					LitePanel::ObjectAngles::NORTHWEST,
 					LitePanel::SimpleRailTypes::STRAIGHT
-					));
+				));
 			},
 			"Diagonal inverted track section",
-				"Creates a inverted diagonal track section"
-				);
+			"Creates a inverted diagonal track section"
+		);
 
 		//toolBarLeft1->AddSeparator();
 		//toolBarLeft2->AddSeparator();
@@ -395,10 +395,10 @@ namespace LitePanel::Gui
 					coord,
 					LitePanel::ObjectAngles::EAST,
 					LitePanel::SimpleRailTypes::CURVE_LEFT
-					));
+				));
 			},
 			"Left curve track section",
-				"Creates a left curve track section"
+			"Creates a left curve track section"
 		);
 
 		m_clToolManager.AddTool(
@@ -411,10 +411,10 @@ namespace LitePanel::Gui
 					coord,
 					LitePanel::ObjectAngles::WEST,
 					LitePanel::SimpleRailTypes::CURVE_RIGHT
-					));
+				));
 			},
 			"Right curve track section",
-				"Creates a right curve track section"
+			"Creates a right curve track section"
 		);
 
 		m_clToolManager.AddTool(
@@ -427,10 +427,10 @@ namespace LitePanel::Gui
 					coord,
 					LitePanel::ObjectAngles::EAST,
 					LitePanel::SimpleRailTypes::CURVE_RIGHT
-					));
+				));
 			},
 			"Right curve track section",
-				"Creates a right curve track section"
+			"Creates a right curve track section"
 		);
 
 		m_clToolManager.AddTool(
@@ -443,7 +443,7 @@ namespace LitePanel::Gui
 					coord,
 					LitePanel::ObjectAngles::WEST,
 					LitePanel::SimpleRailTypes::CURVE_LEFT
-					));
+				));
 			},
 			"Left curve track section",
 			"Creates a left curve track section"
@@ -459,8 +459,8 @@ namespace LitePanel::Gui
 					coord,
 					LitePanel::ObjectAngles::NORTH,
 					LitePanel::SimpleRailTypes::CURVE_RIGHT,
-					LitePanel::kBLOCK_SPLIT_LEFT
-					));
+					LitePanel::kBLOCK_SPLIT_BOTTOM
+				));
 			},
 			"Right curve track section",
 			"Creates a right curve track section"
@@ -476,8 +476,8 @@ namespace LitePanel::Gui
 					coord,
 					LitePanel::ObjectAngles::NORTH,
 					LitePanel::SimpleRailTypes::CURVE_LEFT,
-					LitePanel::kBLOCK_SPLIT_LEFT
-					));
+					LitePanel::kBLOCK_SPLIT_BOTTOM
+				));
 			},
 			"Left curve track section",
 			"Creates a left curve track section"
@@ -493,10 +493,10 @@ namespace LitePanel::Gui
 					coord,
 					LitePanel::ObjectAngles::SOUTH,
 					LitePanel::SimpleRailTypes::CURVE_LEFT,
-					LitePanel::kBLOCK_SPLIT_LEFT
+					LitePanel::kBLOCK_SPLIT_TOP
 				));
 			},
-			"Left curve track section",
+			"Left curve track section with top block split",
 			"Creates a left curve track section"
 		);
 
@@ -510,10 +510,10 @@ namespace LitePanel::Gui
 					coord,
 					LitePanel::ObjectAngles::SOUTH,
 					LitePanel::SimpleRailTypes::CURVE_RIGHT,
-					LitePanel::kBLOCK_SPLIT_LEFT
+					LitePanel::kBLOCK_SPLIT_TOP
 				));
 			},
-			"Right curve track section",
+			"Right curve track section with top block split",
 			"Creates a right curve track section"
 		);
 
