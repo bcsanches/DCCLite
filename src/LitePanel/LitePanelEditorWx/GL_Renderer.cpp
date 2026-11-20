@@ -12,37 +12,78 @@ namespace LitePanel::Gui
 		//empty
 	}
 
-	void GL_Renderer::DrawLine(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2, LitePanel::Render::Color_t color, float thickness)
+	void GL_Renderer::DrawFilledQuad(const FloatPoint_t &p1, const FloatPoint_t &p2, const FloatPoint_t &p3, const FloatPoint_t &p4, LitePanel::Render::Color_t color)
 	{
 		glColor4ub(LP_COL_GETR(color), LP_COL_GETG(color), LP_COL_GETB(color), LP_COL_GETA(color));
-		glLineWidth(thickness);
 
-		glBegin(GL_LINES);
-
+		glBegin(GL_QUADS);
 		glVertex2f(p1.m_tX, p1.m_tY);
 		glVertex2f(p2.m_tX, p2.m_tY);
-
+		glVertex2f(p3.m_tX, p3.m_tY);
+		glVertex2f(p4.m_tX, p4.m_tY);
 		glEnd();
+	}
+
+	void GL_Renderer::DrawLine(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2, LitePanel::Render::Color_t color, float thickness)
+	{
+		//line vector
+		const auto delta = p2 - p1;
+
+		//vector length
+		const float length = std::sqrt(delta.m_tX * delta.m_tX + delta.m_tY * delta.m_tY);
+
+		if (length == 0.0f)
+			return;
+
+		//make a perpendicular vector, just flip x and y and invert one of then... also normalize it and in the end, adjust it size for half line thickness
+		const FloatPoint_t normal{
+			-delta.m_tY / length * thickness * 0.5f,
+			 delta.m_tX / length * thickness * 0.5f
+		};
+
+		DrawFilledQuad(
+			p1 + normal,
+			p2 + normal,
+			p2 - normal,
+			p1 - normal,
+			color
+		);
 	}
 
 	void GL_Renderer::DrawRect(LitePanel::FloatPoint_t p1, LitePanel::FloatSize_t size, LitePanel::Render::Color_t color)
 	{
-		glColor4ub(LP_COL_GETR(color), LP_COL_GETG(color), LP_COL_GETB(color), LP_COL_GETA(color));
+		constexpr float BORDER_WIDTH = 1.0f;
 
 		const auto p2 = p1 + size;
 
-		glBegin(GL_LINE_LOOP);
+		DrawFilledRect(
+			p1,
+			FloatSize_t{ size.m_tWidth, BORDER_WIDTH },
+			color
+		);
 
-		glVertex2f(p1.m_tX, p1.m_tY);
-		glVertex2f(p2.m_tX, p1.m_tY);
-		glVertex2f(p2.m_tX, p2.m_tY);
-		glVertex2f(p1.m_tX, p2.m_tY);
+		DrawFilledRect(
+			FloatPoint_t{ p1.m_tX, p2.m_tY - BORDER_WIDTH },
+			FloatSize_t{ size.m_tWidth, BORDER_WIDTH },
+			color
+		);
 
-		glEnd();
+		DrawFilledRect(
+			p1,
+			FloatSize_t{ BORDER_WIDTH, size.m_tHeight },
+			color
+		);
+
+		DrawFilledRect(
+			FloatPoint_t{ p2.m_tX - BORDER_WIDTH, p1.m_tY },
+			FloatSize_t{ BORDER_WIDTH, size.m_tHeight },
+			color
+		);
 	}
 
 	void GL_Renderer::DrawFilledRect(LitePanel::FloatPoint_t p1, LitePanel::FloatSize_t size, LitePanel::Render::Color_t color)
 	{
+		glLineWidth(1.0f);
 		glColor4ub(LP_COL_GETR(color), LP_COL_GETG(color), LP_COL_GETB(color), LP_COL_GETA(color));
 
 		const auto p2 = p1 + size;

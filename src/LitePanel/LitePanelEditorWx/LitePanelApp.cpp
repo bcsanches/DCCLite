@@ -14,6 +14,7 @@
 #include <wx/cmdproc.h>
 #include <wx/docview.h>
 #include <wx/object.h>
+#include <wx/tglbtn.h>
 
 #include <fmt/format.h>
 
@@ -39,11 +40,10 @@ namespace LitePanel::Gui
 
 	class ToolManager
 	{
-		public:
-			size_t AddToolBar(wxToolBar *toolBar);
-
+		public:			
 			void AddTool(
-				size_t toolBarIndex,
+				wxWindow *parent,
+				wxSizer *sizer,
 				const wxString &label,
 				const wxBitmap &bitmap,
 				ToolProc_t proc,
@@ -51,94 +51,83 @@ namespace LitePanel::Gui
 				const wxString &longHelp = wxEmptyString
 			);
 
-			void OnLeftClick(wxCommandEvent &event);
+			void OnToolToggle(wxCommandEvent &event);
 
 			inline ToolProc_t TryGetSelectedToolProc() const
 			{
 				return m_pfnSelectedTool;
 			}
 
-		private:
-			std::vector<wxToolBar*> m_vecToolBars;			
-
-			ToolProc_t		m_pfnSelectedTool = nullptr;
-
+		private:			
 			struct ToolInfo
 			{
-				wxToolBarToolBase *m_pTool;
-				ToolProc_t m_pfnProc;
-
-				wxToolBar *m_pclToolBar;
+				wxBitmapToggleButton *m_pButton;
+				ToolProc_t m_pfnProc;				
 			};
 
-			std::vector<ToolInfo> m_vecTools;
+			ToolProc_t				m_pfnSelectedTool = nullptr;
+			std::vector<ToolInfo>	m_vecTools;
 	};
 
-	size_t ToolManager::AddToolBar(wxToolBar* toolBar)
-	{
-		assert(std::find(m_vecToolBars.begin(), m_vecToolBars.end(), toolBar) == m_vecToolBars.end());
-		assert(toolBar);
-
-		m_vecToolBars.push_back(toolBar);
-
-		return m_vecToolBars.size();
-	}	
-
 	void ToolManager::AddTool(
-		size_t toolBarIndex,
+		wxWindow *parent,
+		wxSizer *sizer,		
 		const wxString &label,
 		const wxBitmap &bitmap,
 		ToolProc_t proc,
 		const wxString &shortHelp,
 		const wxString &longHelp)
 	{
-		--toolBarIndex;
-		assert(toolBarIndex < m_vecToolBars.size());
-		assert(m_vecToolBars[toolBarIndex]);
+		auto button = new wxBitmapToggleButton(
+			parent,
+			wxID_ANY,
+			bitmap,
+			wxDefaultPosition,
+			wxSize(32, 32)
+		);
 
-		auto toolBar = m_vecToolBars[toolBarIndex];
+		if (!shortHelp.empty())
+			button->SetToolTip(shortHelp);
 
-		auto tool = toolBar->AddCheckTool(wxID_ANY, label, bitmap, wxNullBitmap, shortHelp, longHelp);
+		if (!longHelp.empty())
+			button->SetHelpText(longHelp);
 
-		m_vecTools.push_back(ToolInfo{ tool, proc, toolBar});
+		sizer->Add(button, 0, wxALL, 0);
+
+		m_vecTools.push_back({ button, std::move(proc) });
+
+		button->Bind(wxEVT_TOGGLEBUTTON, &ToolManager::OnToolToggle, this);
 	}
 
-	void ToolManager::OnLeftClick(wxCommandEvent &event)
+	void ToolManager::OnToolToggle(wxCommandEvent &event)
 	{
-		auto clickedToolIt = std::find_if(
+		auto it = std::find_if(
 			m_vecTools.begin(),
 			m_vecTools.end(),
-			[id = event.GetId()](auto &toolInfo)
+			[&event](const ToolInfo &info)
 			{
-				return toolInfo.m_pTool->GetId() == id;
+				return info.m_pButton->GetId() == event.GetId();
 			}
 		);
-		
-		if (clickedToolIt == m_vecTools.end())
+
+		if (it == m_vecTools.end())
 		{
 			event.Skip();
 			return;
 		}
 
-		auto &toolInfo = *clickedToolIt;
-
-		if (!toolInfo.m_pTool->IsToggled())
+		if (!it->m_pButton->GetValue())
 		{
 			m_pfnSelectedTool = nullptr;
-
 			return;
 		}
-		else
-		{
-			m_pfnSelectedTool = toolInfo.m_pfnProc;
-		}
 
-		for (auto &toolIt : m_vecTools)
-		{
-			if (toolIt.m_pTool == toolInfo.m_pTool)
-				continue;
+		m_pfnSelectedTool = it->m_pfnProc;
 
-			toolIt.m_pclToolBar->ToggleTool(toolIt.m_pTool->GetId(), false);
+		for (auto &tool : m_vecTools)
+		{
+			if (tool.m_pButton != it->m_pButton)
+				tool.m_pButton->SetValue(false);
 		}
 	}
 
@@ -152,15 +141,15 @@ namespace LitePanel::Gui
 
 		private:
 			void OnExit(wxCommandEvent &event);
-			void OnAbout(wxCommandEvent &event);
-			void OnSize(wxSizeEvent &event);
-
-			void OnToolLeftClick(wxCommandEvent &event);			
+			void OnAbout(wxCommandEvent &event);			
 
 			void OnTileLeftClick(LitePanel::Gui::TileEvent &event);
 			void OnTileUnderMouseChanged(LitePanel::Gui::TileEvent &event);
 
 			void ExecuteInsertRailCmd(std::unique_ptr<LitePanel::RailObject> railObj);
+
+			void InitTools(wxWindow *toolPalette, wxSizer *toolGrid);
+			void InitMenuBar();
 
 		private:		
 			ToolManager m_clToolManager;
@@ -174,10 +163,7 @@ namespace LitePanel::Gui
 
 			PanelDocument *m_pclDocument = nullptr;
 
-			LitePanel::Gui::PanelEditorCanvas *m_pclMapCanvas = nullptr;
-
-			//offset due to horizontal toolbars
-			uint32_t m_uOffset = 0;
+			LitePanel::Gui::PanelEditorCanvas *m_pclMapCanvas = nullptr;			
 	};
 	
 	bool LiteApp::OnInit()
@@ -277,7 +263,85 @@ namespace LitePanel::Gui
 		m_pclDocManager(docManager)
 	{
 		assert(docManager);
+				
+		auto contentPanel = new wxPanel(this);		
 
+		auto toolPalette = new wxScrolledWindow(contentPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
+
+		toolPalette->SetScrollRate(0, 8);
+
+		auto paletteSizer = new wxBoxSizer(wxVERTICAL);
+		auto toolGrid = new wxGridSizer(0, 2, 0, 0);
+
+		paletteSizer->Add(toolGrid, 0, wxALIGN_TOP);
+		toolPalette->SetSizer(paletteSizer);
+
+		m_pclMapCanvas = new LitePanel::Gui::PanelEditorCanvas(contentPanel);
+
+		auto contentSizer = new wxBoxSizer(wxHORIZONTAL);
+		contentSizer->Add(toolPalette, 0, wxEXPAND);
+		contentSizer->Add(m_pclMapCanvas, 1, wxEXPAND);
+
+		contentPanel->SetSizer(contentSizer);
+
+		auto frameSizer = new wxBoxSizer(wxVERTICAL);
+		frameSizer->Add(contentPanel, 1, wxEXPAND);
+
+		SetSizer(frameSizer);
+
+		this->InitMenuBar();
+
+		CreateStatusBar();
+
+		SetStatusText("Welcome to LitePanel Editor!");
+		
+		this->InitTools(toolPalette, toolGrid);
+
+		toolPalette->FitInside();
+
+		const int scrollbarWidth = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X); 
+
+		const int gridWidth = toolGrid->GetMinSize().x;
+
+		toolPalette->SetMinSize(wxSize(gridWidth, -1));
+
+		toolPalette->Bind(
+			wxEVT_SIZE,
+			[toolPalette, contentPanel, gridWidth, scrollbarWidth]
+			(wxSizeEvent &event)
+			{
+				event.Skip();
+
+				//after Size is processed, check size for the toolbar and increase it or shrink for the scroolbar
+				toolPalette->CallAfter(
+					[toolPalette, contentPanel, gridWidth, scrollbarWidth]()
+					{
+						const bool needsScroll = toolPalette->GetVirtualSize().y > toolPalette->GetClientSize().y;
+						const int requiredWidth = gridWidth + (needsScroll ? scrollbarWidth : 0);
+
+						if (toolPalette->GetMinSize().x != requiredWidth)
+						{
+							toolPalette->SetMinSize(wxSize(requiredWidth, -1));
+							contentPanel->Layout();
+						}
+					}
+				);
+			}
+		);
+
+		contentPanel->Layout();
+		Layout();
+		
+		Bind(wxEVT_MENU, &MainFrame::OnAbout, this, wxID_ABOUT);
+		Bind(wxEVT_MENU, &MainFrame::OnExit, this, wxID_EXIT);		
+		m_pclMapCanvas->Bind(LitePanel::Gui::EVT_TILE_LEFT_CLICK, &MainFrame::OnTileLeftClick, this, wxID_ANY);
+		m_pclMapCanvas->Bind(LitePanel::Gui::EVT_TILE_UNDER_MOUSE_CHANGED, &MainFrame::OnTileUnderMouseChanged, this, wxID_ANY);
+
+		LitePanel::Render::SetColorStyle(LitePanel::Render::ColorStyles::LIGHT);
+	}
+
+	void MainFrame::InitMenuBar()
+	{
 		wxMenu *menuFile = new wxMenu;
 
 		menuFile->Append(wxID_NEW);
@@ -300,24 +364,15 @@ namespace LitePanel::Gui
 		menuBar->Append(menuFile, "&File");
 		menuBar->Append(m_pclEditMenu, "&Edit");
 		menuBar->Append(menuHelp, "&Help");
-		
-		m_pclMapCanvas = new LitePanel::Gui::PanelEditorCanvas(this);
 
 		SetMenuBar(menuBar);
+	}
 
-		CreateStatusBar();
-		SetStatusText("Welcome to LitePanel Editor!");
-
-		//auto toolBarTop = 
-
-		auto toolBarLeft1 = this->CreateToolBar(wxTB_LEFT | wxTB_FLAT | wxTB_DOCKABLE);
-		auto toolBarLeft1Index = m_clToolManager.AddToolBar(toolBarLeft1);
-
-		auto toolBarLeft2 = new wxToolBar(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTB_LEFT | wxTB_FLAT | wxTB_DOCKABLE);
-		auto toolBarLeft2Index = m_clToolManager.AddToolBar(toolBarLeft2);		
-
+	void MainFrame::InitTools(wxWindow *toolPalette, wxSizer *toolGrid)
+	{
 		m_clToolManager.AddTool(
-			toolBarLeft1Index,
+			toolPalette,
+			toolGrid,
 			"track",
 			wxBITMAP(rail_straight_000_icon),
 			[this](const LitePanel::TileCoord_t &coord) -> void
@@ -333,10 +388,11 @@ namespace LitePanel::Gui
 		);
 
 		m_clToolManager.AddTool(
-			toolBarLeft2Index,
+			toolPalette,
+			toolGrid,
 			"track",
 			wxBITMAP(rail_straight_090_icon),
-			[this](const LitePanel::TileCoord_t& coord) -> void
+			[this](const LitePanel::TileCoord_t &coord) -> void
 			{
 				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 					coord,
@@ -349,7 +405,8 @@ namespace LitePanel::Gui
 		);
 
 		m_clToolManager.AddTool(
-			toolBarLeft1Index,
+			toolPalette,
+			toolGrid,
 			"track",
 			wxBITMAP(rail_straight_045_icon),
 			[this](const LitePanel::TileCoord_t &coord) -> void
@@ -364,10 +421,11 @@ namespace LitePanel::Gui
 			"Creates a diagonal track section"
 		);
 
-		
+
 
 		m_clToolManager.AddTool(
-			toolBarLeft2Index,
+			toolPalette,
+			toolGrid,
 			"track",
 			wxBITMAP(rail_straight_135_icon),
 			[this](const LitePanel::TileCoord_t &coord) -> void
@@ -386,7 +444,8 @@ namespace LitePanel::Gui
 		//toolBarLeft2->AddSeparator();
 
 		m_clToolManager.AddTool(
-			toolBarLeft1Index,
+			toolPalette,
+			toolGrid,
 			"track",
 			wxBITMAP(rail_left_curve_000_icon),
 			[this](const LitePanel::TileCoord_t &coord) -> void
@@ -402,10 +461,11 @@ namespace LitePanel::Gui
 		);
 
 		m_clToolManager.AddTool(
-			toolBarLeft2Index,
+			toolPalette,
+			toolGrid,
 			"track",
 			wxBITMAP(rail_right_curve_180_icon),
-			[this](const LitePanel::TileCoord_t& coord) -> void
+			[this](const LitePanel::TileCoord_t &coord) -> void
 			{
 				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 					coord,
@@ -418,10 +478,11 @@ namespace LitePanel::Gui
 		);
 
 		m_clToolManager.AddTool(
-			toolBarLeft1Index,
+			toolPalette,
+			toolGrid,
 			"track",
 			wxBITMAP(rail_right_curve_000_icon),
-			[this](const LitePanel::TileCoord_t& coord) -> void
+			[this](const LitePanel::TileCoord_t &coord) -> void
 			{
 				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 					coord,
@@ -434,7 +495,8 @@ namespace LitePanel::Gui
 		);
 
 		m_clToolManager.AddTool(
-			toolBarLeft2Index,
+			toolPalette,
+			toolGrid,
 			"track",
 			wxBITMAP(rail_left_curve_180_icon),
 			[this](const LitePanel::TileCoord_t &coord) -> void
@@ -447,13 +509,14 @@ namespace LitePanel::Gui
 			},
 			"Left curve track section",
 			"Creates a left curve track section"
-		);		
+		);
 
 		m_clToolManager.AddTool(
-			toolBarLeft1Index,
+			toolPalette,
+			toolGrid,
 			"track",
 			wxBITMAP(rail_right_curve_090_icon),
-			[this](const LitePanel::TileCoord_t& coord) -> void
+			[this](const LitePanel::TileCoord_t &coord) -> void
 			{
 				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 					coord,
@@ -467,10 +530,11 @@ namespace LitePanel::Gui
 		);
 
 		m_clToolManager.AddTool(
-			toolBarLeft2Index,
+			toolPalette,
+			toolGrid,
 			"track",
 			wxBITMAP(rail_left_curve_090_icon),
-			[this](const LitePanel::TileCoord_t& coord) -> void
+			[this](const LitePanel::TileCoord_t &coord) -> void
 			{
 				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 					coord,
@@ -484,7 +548,8 @@ namespace LitePanel::Gui
 		);
 
 		m_clToolManager.AddTool(
-			toolBarLeft1Index,
+			toolPalette,
+			toolGrid,
 			"track",
 			wxBITMAP(rail_left_curve_270_icon),
 			[this](const LitePanel::TileCoord_t &coord) -> void
@@ -501,10 +566,11 @@ namespace LitePanel::Gui
 		);
 
 		m_clToolManager.AddTool(
-			toolBarLeft2Index,
+			toolPalette,
+			toolGrid,
 			"track",
 			wxBITMAP(rail_right_curve_270_icon),
-			[this](const LitePanel::TileCoord_t& coord) -> void
+			[this](const LitePanel::TileCoord_t &coord) -> void
 			{
 				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 					coord,
@@ -518,7 +584,8 @@ namespace LitePanel::Gui
 		);
 
 		m_clToolManager.AddTool(
-			toolBarLeft1Index,
+			toolPalette,
+			toolGrid,
 			"track terminal",
 			wxBITMAP(rail_terminal_straight_180_icon),
 			[this](const LitePanel::TileCoord_t &coord) -> void
@@ -535,7 +602,8 @@ namespace LitePanel::Gui
 		);
 
 		m_clToolManager.AddTool(
-			toolBarLeft2Index,
+			toolPalette,
+			toolGrid,
 			"track",
 			wxBITMAP(rail_terminal_straight_000_icon),
 			[this](const LitePanel::TileCoord_t &coord) -> void
@@ -550,40 +618,6 @@ namespace LitePanel::Gui
 			"Straight track section with block split",
 			"Creates a block split track section"
 		);
-
-		//toolBarLeft1->AddSeparator();		
-		//toolBarLeft2->AddSeparator();
-
-		toolBarLeft1->Realize();
-		toolBarLeft2->Realize();	
-
-#if 1		
-		//adjust size due to secondary toolbar
-		{
-			wxSize size = GetClientSize();
-
-			toolBarLeft2->SetSize(0, 0, wxDefaultCoord, size.y);
-			m_uOffset = toolBarLeft2->GetSize().x;
-
-			m_pclMapCanvas->SetSize(m_uOffset, 0, size.x - m_uOffset, size.y);
-		}		
-#endif
-		Bind(wxEVT_SIZE, &MainFrame::OnSize, this, wxID_ANY);
-		Bind(wxEVT_MENU, &MainFrame::OnAbout, this, wxID_ABOUT);
-		Bind(wxEVT_MENU, &MainFrame::OnExit, this, wxID_EXIT);
-		toolBarLeft1->Bind(wxEVT_TOOL, &MainFrame::OnToolLeftClick, this, wxID_ANY);	
-		toolBarLeft2->Bind(wxEVT_TOOL, &MainFrame::OnToolLeftClick, this, wxID_ANY);
-		m_pclMapCanvas->Bind(LitePanel::Gui::EVT_TILE_LEFT_CLICK, &MainFrame::OnTileLeftClick, this, wxID_ANY);
-		m_pclMapCanvas->Bind(LitePanel::Gui::EVT_TILE_UNDER_MOUSE_CHANGED, &MainFrame::OnTileUnderMouseChanged, this, wxID_ANY);
-
-		LitePanel::Render::SetColorStyle(LitePanel::Render::ColorStyles::LIGHT);
-	}
-
-	void MainFrame::OnSize(wxSizeEvent &event)
-	{
-		wxSize size = GetClientSize();
-
-		m_pclMapCanvas->SetSize(m_uOffset, 0, size.x - m_uOffset, size.y);
 	}
 
 	void MainFrame::OnExit(wxCommandEvent &event)
@@ -599,14 +633,6 @@ namespace LitePanel::Gui
 			"Author: Bruno C. Sanches - 2020",
 			"About LitePanel", wxOK | wxICON_INFORMATION);
 	}
-
-	void MainFrame::OnToolLeftClick(wxCommandEvent &event)
-	{
-		//wxLogMessage("Hello toolbar!");
-
-		m_clToolManager.OnLeftClick(event);
-	}
-
 
 	void MainFrame::OnTileLeftClick(LitePanel::Gui::TileEvent &event)
 	{

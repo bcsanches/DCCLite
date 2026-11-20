@@ -357,6 +357,7 @@ namespace LitePanel::Render
 		}
 
 		renderer.DrawRect(m_ptMapOffset, borderSize, colorStyle.m_tTileMapBorder);
+		//renderer.DrawRect(m_ptMapOffset + FloatPoint_t{ 1, 0 }, borderSize - FloatPoint_t{ 1, 1 }, colorStyle.m_tTileMapBorder);		
 
 #if 0
 		for (int i = rargs.m_tTilePos_FirstOrigin.m_tX; i <= rargs.m_tTilePos_LastVisible.m_tX + 1; ++i)

@@ -31,6 +31,8 @@ namespace LitePanel::Gui
 			void PopClipRect() override;
 
 		private:
+			void DrawFilledQuad(const FloatPoint_t &p1, const FloatPoint_t &p2, const FloatPoint_t &p3, const FloatPoint_t &p4, LitePanel::Render::Color_t color);
+
 			struct ClipRectState
 			{
 				int		m_aiScissorBox[4];
