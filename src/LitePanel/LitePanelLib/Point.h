@@ -15,6 +15,9 @@
 namespace LitePanel
 {
 	template <typename T>
+	struct Size;
+
+	template <typename T>
 	struct Point
 	{
 		typedef T Type_t;
@@ -70,6 +73,14 @@ namespace LitePanel
 			m_tY += rhs.m_tY;
 
 			return *this;
+		}
+
+		inline Point operator+(const Size<T> &rhs) const noexcept
+		{
+			return {
+				m_tX + rhs.m_tWidth,
+				m_tY + rhs.m_tHeight
+			};
 		}
 
 		inline bool operator==(const Point& rhs) const noexcept

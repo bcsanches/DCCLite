@@ -25,6 +25,7 @@ set(LitePanelLib_HDRS
 	Panel.h
 	Point.h
 	RailObject.h
+	Size.h
 	TileMap.h
 	Render/Color.h
 	Render/ColorStyle.h
