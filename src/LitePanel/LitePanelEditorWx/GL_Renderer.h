@@ -12,6 +12,8 @@
 
 #include <LitePanelLib/Render/IRenderer.h>
 
+#include <vector>
+
 namespace LitePanel::Gui
 {	
 	class GL_Renderer : public LitePanel::Render::IRenderer
@@ -28,7 +30,14 @@ namespace LitePanel::Gui
 			void PushClipRect(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2) override;
 			void PopClipRect() override;
 
-		private:			
+		private:
+			struct ClipRectState
+			{
+				int		m_aiScissorBox[4];
+				bool	m_fScissorEnabled;
+			};
+
+			std::vector<ClipRectState> m_vecClipRectStack;
 	};
 }
 

@@ -1,5 +1,8 @@
 #include "GL_Renderer.h"
 
+#include <algorithm>
+#include <cmath>
+
 #include <wx/glcanvas.h>
 
 namespace LitePanel::Gui
@@ -60,11 +63,71 @@ namespace LitePanel::Gui
 
 	void GL_Renderer::PushClipRect(LitePanel::FloatPoint_t p1, LitePanel::FloatPoint_t p2)
 	{
+		ClipRectState state{};
 
+		glGetIntegerv(GL_SCISSOR_BOX, state.m_aiScissorBox);
+		state.m_fScissorEnabled = glIsEnabled(GL_SCISSOR_TEST);
+
+		m_vecClipRectStack.push_back(state);
+
+		GLint viewport[4];
+		glGetIntegerv(GL_VIEWPORT, viewport);
+
+		// Normalize rectangle coordinates.
+		const auto minX = std::min(p1.m_tX, p2.m_tX);
+		const auto minY = std::min(p1.m_tY, p2.m_tY);
+		const auto maxX = std::max(p1.m_tX, p2.m_tX);
+		const auto maxY = std::max(p1.m_tY, p2.m_tY);
+
+		// Convert from top-left to OpenGL bottom-left coordinates.
+		GLint left = viewport[0] + static_cast<GLint>(std::floor(minX));
+		GLint right = viewport[0] + static_cast<GLint>(std::ceil(maxX));
+
+		GLint bottom = viewport[1] + viewport[3] - static_cast<GLint>(std::ceil(maxY));
+		GLint top = viewport[1] + viewport[3] - static_cast<GLint>(std::floor(minY));
+
+		// Intersect with viewport.
+		left = std::max(left, viewport[0]);
+		right = std::min(right, viewport[0] + viewport[2]);
+
+		bottom = std::max(bottom, viewport[1]);
+		top = std::min(top, viewport[1] + viewport[3]);
+
+		// Intersect with current scissor rectangle.
+		if (state.m_fScissorEnabled)
+		{
+			const auto &current = state.m_aiScissorBox;
+
+			left = std::max(left, current[0]);
+			bottom = std::max(bottom, current[1]);
+
+			right = std::min(right, current[0] + current[2]);
+			top = std::min(top, current[1] + current[3]);
+		}
+
+		glEnable(GL_SCISSOR_TEST);
+
+		glScissor(left, bottom, std::max(0, right - left), std::max(0, top - bottom));
 	}
 
 	void GL_Renderer::PopClipRect()
 	{
+		if (m_vecClipRectStack.empty())
+			return;
 
+		const auto state = m_vecClipRectStack.back();
+		m_vecClipRectStack.pop_back();
+
+		glScissor(
+			state.m_aiScissorBox[0],
+			state.m_aiScissorBox[1],
+			state.m_aiScissorBox[2],
+			state.m_aiScissorBox[3]
+		);
+
+		if (state.m_fScissorEnabled)
+			glEnable(GL_SCISSOR_TEST);
+		else
+			glDisable(GL_SCISSOR_TEST);
 	}
 }

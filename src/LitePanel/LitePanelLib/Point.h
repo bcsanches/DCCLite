@@ -89,5 +89,5 @@ namespace LitePanel
 	inline FloatPoint_t IntPoint2Float(const IntPoint_t &p)
 	{
 		return FloatPoint_t{ static_cast<FloatPoint_t::Type_t>(p.m_tX), static_cast<FloatPoint_t::Type_t>(p.m_tY) };
-	}
+	}	
 }
