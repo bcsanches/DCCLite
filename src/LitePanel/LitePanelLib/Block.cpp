@@ -9,3 +9,17 @@
 // defined by the Mozilla Public License, v. 2.0.
 
 #include "Block.h"
+
+#include <stdexcept>
+
+namespace LitePanel
+{
+	Block::Block(IntPoint_t leftTile, IntPoint_t rightTile, std::string userName):
+		m_clLeftTile{leftTile},
+		m_clRightTile{rightTile},
+		m_strUserName{std::move(userName)}
+	{
+		if (leftTile.m_tX > rightTile.m_tX)
+			throw std::invalid_argument("left tile must be at left of right tile");
+	}
+}

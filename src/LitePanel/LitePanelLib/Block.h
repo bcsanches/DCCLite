@@ -12,22 +12,34 @@
 
 #include <string>
 
+#include <array>
+#include <optional>
+
+#include "Point.h"
+
 namespace LitePanel
 {
 	class Block
 	{
 		public:
-			Block();
+			Block(IntPoint_t leftTile, IntPoint_t rightTile, std::string userName = "");
 
 		private:
 			std::string m_strUserName;
+
+			//Those points always point to valid positions
+			//First and last can be same (single tile blocks)			
+			IntPoint_t m_clLeftTile;
+			IntPoint_t m_clRightTile;
 	};
+
+	constexpr auto MAX_BLOCKS = 1024;
 
 	class BlockManager
 	{
 		public:
 
 		private:
-
+			std::array<std::optional<Block>, MAX_BLOCKS> m_arBlocks;
 	};
 }
