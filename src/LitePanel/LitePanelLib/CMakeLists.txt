@@ -1,4 +1,5 @@
 set(LitePanelLib_SRCS
+    Block.cpp
     EditCmds.cpp
     MapObject.cpp
     MapObjectFactory.cpp
@@ -12,6 +13,7 @@ set(LitePanelLib_SRCS
 )
 
 set(LitePanelLib_HDRS
+    Block.h
     EditCmds.h
     LitePanelLibDefs.h
     MapObject.h
