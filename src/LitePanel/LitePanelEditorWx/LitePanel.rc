@@ -18,4 +18,9 @@ rail_terminal_straight_090_icon BITMAP "resources/bitmaps/rail_terminal_straight
 rail_terminal_straight_180_icon BITMAP "resources/bitmaps/rail_terminal_straight_180.bmp"
 rail_terminal_straight_270_icon BITMAP "resources/bitmaps/rail_terminal_straight_270.bmp"
 
+rail_left_turnout_000_icon BITMAP "resources/bitmaps/left_turnout_000.bmp"
+rail_right_turnout_000_icon BITMAP "resources/bitmaps/right_turnout_000.bmp"
+
+rail_left_turnout_180_icon BITMAP "resources/bitmaps/left_turnout_180.bmp"
+rail_right_turnout_180_icon BITMAP "resources/bitmaps/right_turnout_180.bmp"
 

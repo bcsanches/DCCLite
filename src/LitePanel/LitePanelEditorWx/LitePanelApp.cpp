@@ -147,6 +147,7 @@ namespace LitePanel::Gui
 			void OnTileUnderMouseChanged(LitePanel::Gui::TileEvent &event);
 
 			void ExecuteInsertRailCmd(std::unique_ptr<LitePanel::RailObject> railObj);
+			void ExecuteInsertJunctionRailCmd(std::unique_ptr<LitePanel::JunctionRailObject> railObj);
 
 			void InitTools(wxWindow *toolPalette, wxSizer *toolGrid);
 			void InitMenuBar();
@@ -256,6 +257,20 @@ namespace LitePanel::Gui
 				std::make_unique<LitePanel::InsertRailCmd>(std::move(railObj))
 			}
 		);		
+	}
+
+	void MainFrame::ExecuteInsertJunctionRailCmd(std::unique_ptr<LitePanel::JunctionRailObject> railObj)
+	{
+		const auto &coord = railObj->GetPosition();
+
+		m_pclCommandProcessor->Submit(
+			new PanelDocumentCommand{
+				*m_pclDocument,
+				"Insert turnout object",
+				m_pclDocument->GetPanel()->IsRailTileOccupied(coord) ? std::make_unique<LitePanel::RemoveRailCmd>(coord) : std::unique_ptr<LitePanel::EditCmd>{},
+				std::make_unique<LitePanel::InsertRailCmd>(std::move(railObj))
+			}
+		);
 	}
 
 	MainFrame::MainFrame(wxDocManager *docManager) :
@@ -617,6 +632,74 @@ namespace LitePanel::Gui
 			},
 			"Straight track section with block split",
 			"Creates a block split track section"
+		);
+
+		m_clToolManager.AddTool(
+			toolPalette,
+			toolGrid,
+			"track",
+			wxBITMAP(rail_left_turnout_000_icon),
+			[this](const LitePanel::TileCoord_t &coord) -> void
+			{
+				ExecuteInsertJunctionRailCmd(std::make_unique<LitePanel::JunctionRailObject>(
+					coord,
+					LitePanel::ObjectAngles::EAST,
+					LitePanel::JunctionTypes::LEFT_TURNOUT					
+				));
+			},
+			"Left turnout",
+			"Creates a left turnout"
+		);
+
+		m_clToolManager.AddTool(
+			toolPalette,
+			toolGrid,
+			"track",
+			wxBITMAP(rail_right_turnout_180_icon),
+			[this](const LitePanel::TileCoord_t &coord) -> void
+			{
+				ExecuteInsertJunctionRailCmd(std::make_unique<LitePanel::JunctionRailObject>(
+					coord,
+					LitePanel::ObjectAngles::WEST,
+					LitePanel::JunctionTypes::RIGHT_TURNOUT
+				));
+			},
+			"Right turnout",
+			"Creates a right turnout"
+		);
+
+		m_clToolManager.AddTool(
+			toolPalette,
+			toolGrid,
+			"track",
+			wxBITMAP(rail_left_turnout_180_icon),
+			[this](const LitePanel::TileCoord_t &coord) -> void
+			{
+				ExecuteInsertJunctionRailCmd(std::make_unique<LitePanel::JunctionRailObject>(
+					coord,
+					LitePanel::ObjectAngles::WEST,
+					LitePanel::JunctionTypes::LEFT_TURNOUT
+				));
+			},
+			"Left turnout",
+			"Creates a left turnout"
+		);
+
+		m_clToolManager.AddTool(
+			toolPalette,
+			toolGrid,
+			"track",
+			wxBITMAP(rail_right_turnout_000_icon),
+			[this](const LitePanel::TileCoord_t &coord) -> void
+			{
+				ExecuteInsertJunctionRailCmd(std::make_unique<LitePanel::JunctionRailObject>(
+					coord,
+					LitePanel::ObjectAngles::EAST,
+					LitePanel::JunctionTypes::RIGHT_TURNOUT
+				));
+			},
+			"Right turnout",
+			"Creates a right turnout"
 		);
 	}
 
