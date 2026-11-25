@@ -11,6 +11,11 @@
 #include "Block.h"
 
 #include <stdexcept>
+#include <ranges>
+
+#include <fmt/format.h>
+
+#include "BlockIndex.h"
 
 namespace LitePanel
 {
@@ -20,6 +25,39 @@ namespace LitePanel
 		m_strUserName{std::move(userName)}
 	{
 		if (leftTile.m_tX > rightTile.m_tX)
-			throw std::invalid_argument("left tile must be at left of right tile");
+			throw std::invalid_argument("[Block::Block] left tile must be at left of right tile");
+	}
+
+	BlockIndex BlockManager::AllocBlock(IntPoint_t leftTile, IntPoint_t rightTile, std::string userName)
+	{
+		auto it = std::ranges::find_if(m_arBlocks, [](const auto &block)
+		{
+			return !block.has_value();
+		});
+
+		if (it == m_arBlocks.end())
+			throw std::out_of_range("[BlockManager::AllocBlock] No more free blocks");
+
+		auto index = std::distance(m_arBlocks.begin(), it);
+
+		it->emplace(leftTile, rightTile, std::move(userName));
+
+		return BlockIndex{ index };
+	}
+
+	void BlockManager::ReleaseBlock(BlockIndex index)
+	{
+		if (!index)
+		{
+			//free null... do nothing
+			return;
+		}
+
+		auto pos = index.GetValue();
+
+		if (pos >= MAX_BLOCKS)
+			throw std::out_of_range(fmt::format("[BlockManager::ReleaseBlock] BlockIndex {} is out of range", pos));
+				
+		m_arBlocks[pos] = std::nullopt;
 	}
 }

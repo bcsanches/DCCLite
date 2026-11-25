@@ -14,6 +14,7 @@ set(LitePanelLib_SRCS
 
 set(LitePanelLib_HDRS
     Block.h
+    BlockIndex.h
     EditCmds.h
     LitePanelLibDefs.h
     MapObject.h
