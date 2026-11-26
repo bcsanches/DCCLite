@@ -537,7 +537,7 @@ namespace LitePanel::Gui
 					coord,
 					LitePanel::ObjectAngles::NORTH,
 					LitePanel::SimpleRailTypes::CURVE_RIGHT,
-					LitePanel::kBLOCK_SPLIT_BOTTOM
+					LitePanel::BlockSplitTypes::BOTTOM
 				));
 			},
 			"Right curve track section",
@@ -555,7 +555,7 @@ namespace LitePanel::Gui
 					coord,
 					LitePanel::ObjectAngles::NORTH,
 					LitePanel::SimpleRailTypes::CURVE_LEFT,
-					LitePanel::kBLOCK_SPLIT_BOTTOM
+					LitePanel::BlockSplitTypes::BOTTOM
 				));
 			},
 			"Left curve track section",
@@ -573,7 +573,7 @@ namespace LitePanel::Gui
 					coord,
 					LitePanel::ObjectAngles::SOUTH,
 					LitePanel::SimpleRailTypes::CURVE_LEFT,
-					LitePanel::kBLOCK_SPLIT_TOP
+					LitePanel::BlockSplitTypes::TOP
 				));
 			},
 			"Left curve track section with top block split",
@@ -591,7 +591,7 @@ namespace LitePanel::Gui
 					coord,
 					LitePanel::ObjectAngles::SOUTH,
 					LitePanel::SimpleRailTypes::CURVE_RIGHT,
-					LitePanel::kBLOCK_SPLIT_TOP
+					LitePanel::BlockSplitTypes::TOP
 				));
 			},
 			"Right curve track section with top block split",
@@ -609,7 +609,7 @@ namespace LitePanel::Gui
 					coord,
 					LitePanel::ObjectAngles::EAST,
 					LitePanel::SimpleRailTypes::STRAIGHT,
-					LitePanel::kBLOCK_SPLIT_RIGHT
+					LitePanel::BlockSplitTypes::RIGHT
 				));
 			},
 			"Straight track section with block split",
@@ -627,7 +627,7 @@ namespace LitePanel::Gui
 					coord,
 					LitePanel::ObjectAngles::EAST,
 					LitePanel::SimpleRailTypes::STRAIGHT,
-					LitePanel::kBLOCK_SPLIT_LEFT
+					LitePanel::BlockSplitTypes::LEFT
 				));
 			},
 			"Straight track section with block split",

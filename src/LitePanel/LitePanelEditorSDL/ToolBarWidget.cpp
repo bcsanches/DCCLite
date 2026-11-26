@@ -109,7 +109,7 @@ namespace dcclite::PanelEditor
 				const LitePanel::TileCoord_t &position,
 				LitePanel::ObjectAngles angle,
 				const LitePanel::SimpleRailTypes type,
-				const LitePanel::BlockSplitTypes splitTypes = LitePanel::kBLOCK_SPLIT_NONE):
+				const LitePanel::BlockSplitTypes splitTypes = LitePanel::BlockSplitTypes::NONE):
 				m_tPosition{ position },
 				m_kAngle{angle},
 				m_kType{ type },
@@ -166,7 +166,7 @@ namespace dcclite::PanelEditor
 					position,
 					m_kAngle,
 					m_kType,
-					LitePanel::kBLOCK_SPLIT_NONE
+					LitePanel::BlockSplitTypes::NONE
 				);
 			}
 

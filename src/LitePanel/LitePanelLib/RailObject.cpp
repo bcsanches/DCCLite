@@ -42,16 +42,16 @@ namespace LitePanel
 
 	SimpleRailObject::SimpleRailObject(const TileCoord_t& position, ObjectAngles angle, const SimpleRailTypes type, const BlockSplitTypes splitTypes) :
 		RailObject(position, angle),
-		m_tType(type),
-		m_fBlockSplit(splitTypes)
+		m_kType(type),
+		m_kBlockSplit(splitTypes)
 	{
 		//empty
 	}
 
 	SimpleRailObject::SimpleRailObject(const rapidjson::Value &params):
 		RailObject(params),		
-		m_tType{params["type"].GetInt()},
-		m_fBlockSplit{static_cast<uint8_t>(params["blockSplit"].GetInt())}
+		m_kType{params["type"].GetInt()},
+		m_kBlockSplit{static_cast<uint8_t>(params["blockSplit"].GetInt())}
 	{
 		//empty
 	}
@@ -60,8 +60,8 @@ namespace LitePanel
 	{
 		RailObject::OnSave(stream);
 		
-		stream.AddIntValue("type", static_cast<int>(m_tType));
-		stream.AddIntValue("blockSplit", m_fBlockSplit);
+		stream.AddIntValue("type", static_cast<int>(m_kType));
+		stream.AddIntValue("blockSplit", static_cast<int>(m_kBlockSplit));
 	}	
 
 	static void DrawHalfLine(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin, const ObjectAngles angle)
@@ -150,7 +150,7 @@ namespace LitePanel
 		auto halfTileSize = static_cast<float>(viewInfo.m_uHalfTileSize);
 		auto tileSize = static_cast<float>(viewInfo.m_uTileSize);
 
-		auto x = (m_fBlockSplit & kBLOCK_SPLIT_LEFT) ? tileOrigin.m_tX + 1 : tileOrigin.m_tX + tileSize - 1;
+		auto x = (m_kBlockSplit == BlockSplitTypes::LEFT) ? tileOrigin.m_tX + 1 : tileOrigin.m_tX + tileSize - 1;
 		auto y = tileOrigin.m_tY + (halfTileSize / 2);
 
 		auto &colorStyle = LitePanel::Render::GetCurrentColorStyle();
@@ -171,7 +171,7 @@ namespace LitePanel
 		auto angle = this->GetAngle();
 		
 		auto x = tileOrigin.m_tX + (halfTileSize / 2);
-		auto y = (m_fBlockSplit & kBLOCK_SPLIT_TOP) ? tileOrigin.m_tY + 1 : tileOrigin.m_tY + tileSize - 1;
+		auto y = (m_kBlockSplit == BlockSplitTypes::TOP) ? tileOrigin.m_tY + 1 : tileOrigin.m_tY + tileSize - 1;
 
 		auto &colorStyle = LitePanel::Render::GetCurrentColorStyle();
 
@@ -187,7 +187,7 @@ namespace LitePanel
 	{
 		DrawLine(renderer, viewInfo, tileOrigin, this->GetAngle());
 
-		if (m_fBlockSplit)
+		if (m_kBlockSplit != BlockSplitTypes::NONE)
 		{
 			this->DrawVerticalBlockSplit(renderer, viewInfo, tileOrigin);
 		}
@@ -210,7 +210,7 @@ namespace LitePanel
 
 			case ObjectAngles::NORTH:
 				DrawHalfLine(renderer, viewInfo, tileOrigin, ObjectAngles::NORTHWEST);
-				if (m_fBlockSplit)
+				if (m_kBlockSplit != BlockSplitTypes::NONE)
 				{
 					this->DrawHorizontalBlockSplit(renderer, viewInfo, tileOrigin);
 				}
@@ -218,7 +218,7 @@ namespace LitePanel
 
 			case ObjectAngles::SOUTH:
 				DrawHalfLine(renderer, viewInfo, tileOrigin, ObjectAngles::SOUTHEAST);
-				if (m_fBlockSplit)
+				if (m_kBlockSplit != BlockSplitTypes::NONE)
 				{
 					this->DrawHorizontalBlockSplit(renderer, viewInfo, tileOrigin);
 				}
@@ -243,7 +243,7 @@ namespace LitePanel
 
 			case ObjectAngles::NORTH:
 				DrawHalfLine(renderer, viewInfo, tileOrigin, ObjectAngles::NORTHEAST);
-				if (m_fBlockSplit)
+				if (m_kBlockSplit != BlockSplitTypes::NONE)
 				{
 					this->DrawHorizontalBlockSplit(renderer, viewInfo, tileOrigin);
 				}
@@ -251,7 +251,7 @@ namespace LitePanel
 
 			case ObjectAngles::SOUTH:
 				DrawHalfLine(renderer, viewInfo, tileOrigin, ObjectAngles::SOUTHWEST);
-				if (m_fBlockSplit)
+				if (m_kBlockSplit != BlockSplitTypes::NONE)
 				{
 					this->DrawHorizontalBlockSplit(renderer, viewInfo, tileOrigin);
 				}
@@ -261,7 +261,7 @@ namespace LitePanel
 
 	void SimpleRailObject::Draw(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const
 	{		
-		switch (m_tType)
+		switch (m_kType)
 		{
 			case SimpleRailTypes::STRAIGHT:
 				this->DrawStraightRail(renderer, viewInfo, tileOrigin);
@@ -298,7 +298,7 @@ namespace LitePanel
 		IntPoint_t first;
 		IntPoint_t second;
 
-		switch (m_tType)
+		switch (m_kType)
 		{
 			case SimpleRailTypes::STRAIGHT:
 			case SimpleRailTypes::TERMINAL:
@@ -338,7 +338,7 @@ namespace LitePanel
 			case SimpleRailTypes::CURVE_LEFT:
 			case SimpleRailTypes::CURVE_RIGHT:
 			{
-				const bool left = m_tType == SimpleRailTypes::CURVE_LEFT;
+				const bool left = m_kType == SimpleRailTypes::CURVE_LEFT;
 
 				switch (GetAngle())
 				{

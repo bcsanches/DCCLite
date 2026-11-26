@@ -56,7 +56,7 @@ namespace LitePanel
 			Block *block = nullptr;
 
 			//Do we have a left neighbor tile?
-			if (!(simpleRail->GetBlockSplit() & kBLOCK_SPLIT_LEFT) && nt.first)
+			if ((simpleRail->GetBlockSplit() != BlockSplitTypes::LEFT) && nt.first)
 			{
 				auto leftObj = m_mapTileMap.TryGetMapObject(nt.first.value(), kRAIL_LAYER);
 				auto leftRail = dynamic_cast<const SimpleRailObject *>(leftObj);
@@ -66,7 +66,7 @@ namespace LitePanel
 				{
 					//Is the left neighbor rail object connected to us and not a spliter?
 					auto rightTile = leftRail->GetRightNeighbor(mapSize);
-					if (rightTile && rightTile == object->GetPosition() && !(leftRail->GetBlockSplit() & kBLOCK_SPLIT_RIGHT))
+					if (rightTile && rightTile == object->GetPosition() && (leftRail->GetBlockSplit() != BlockSplitTypes::RIGHT))
 					{
 						//Yes, we are connected
 						blockIndex = leftRail->GetBlockIndex();
@@ -77,7 +77,7 @@ namespace LitePanel
 				}
 			}
 
-			if(!(simpleRail->GetBlockSplit() & kBLOCK_SPLIT_RIGHT) && nt.second)
+			if((simpleRail->GetBlockSplit() != BlockSplitTypes::RIGHT) && nt.second)
 			{
 				auto rightObj = m_mapTileMap.TryGetMapObject(nt.second.value(), kRAIL_LAYER);
 				auto rightRail = dynamic_cast<const SimpleRailObject *>(rightObj);
@@ -87,7 +87,7 @@ namespace LitePanel
 				{
 					//Is the right neighbor connected to us and not a splitter?
 					auto leftTile = rightRail->GetLeftNeighbor(mapSize);
-					if (leftTile && leftTile == object->GetPosition() && !(rightRail->GetBlockSplit() & kBLOCK_SPLIT_LEFT))
+					if (leftTile && leftTile == object->GetPosition() && (rightRail->GetBlockSplit() != BlockSplitTypes::LEFT))
 					{
 						//yes, we are connected...
 

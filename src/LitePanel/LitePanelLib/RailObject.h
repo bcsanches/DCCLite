@@ -66,13 +66,13 @@ namespace LitePanel
 		TERMINAL
 	};
 
-	enum BlockSplitTypes
+	enum class BlockSplitTypes
 	{
-		kBLOCK_SPLIT_NONE = 0,
-		kBLOCK_SPLIT_LEFT = 0x02,
-		kBLOCK_SPLIT_RIGHT = 0x04,
-		kBLOCK_SPLIT_TOP = 0x08,
-		kBLOCK_SPLIT_BOTTOM = 0x10
+		NONE = 0,
+		LEFT,
+		RIGHT,
+		TOP,
+		BOTTOM
 	};
 
 	using NeighborTiles_t = std::pair<std::optional<TileCoord_t>, std::optional<TileCoord_t>>;
@@ -85,14 +85,14 @@ namespace LitePanel
 				const TileCoord_t &position, 
 				ObjectAngles angle, 
 				const SimpleRailTypes type, 
-				const BlockSplitTypes splitTypes = kBLOCK_SPLIT_NONE
+				const BlockSplitTypes splitTypes = BlockSplitTypes::NONE
 			);
 
 			SimpleRailObject(const rapidjson::Value &params);
 
 			inline const SimpleRailTypes GetType() const noexcept
 			{
-				return m_tType;
+				return m_kType;
 			}
 
 			const char* GetTypeName() const noexcept override
@@ -100,9 +100,9 @@ namespace LitePanel
 				return TYPE_NAME;
 			}
 
-			inline uint8_t GetBlockSplit() const noexcept
+			inline BlockSplitTypes GetBlockSplit() const noexcept
 			{
-				return m_fBlockSplit;
+				return m_kBlockSplit;
 			}
 
 			std::optional<TileCoord_t> GetLeftNeighbor(const TileMapSize_t &mapSize) const;
@@ -128,8 +128,8 @@ namespace LitePanel
 			NeighborPositions_t GetNeighborPositions() const;
 
 		private:
-			const SimpleRailTypes	m_tType;			
-			const uint8_t			m_fBlockSplit;
+			const SimpleRailTypes	m_kType;			
+			const BlockSplitTypes   m_kBlockSplit;
 	};
 
 	enum class JunctionTypes
