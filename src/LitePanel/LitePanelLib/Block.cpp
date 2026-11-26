@@ -19,7 +19,7 @@
 
 namespace LitePanel
 {
-	Block::Block(IntPoint_t leftTile, IntPoint_t rightTile, std::string userName):
+	Block::Block(TileCoord_t leftTile, TileCoord_t rightTile, std::string userName):
 		m_clLeftTile{leftTile},
 		m_clRightTile{rightTile},
 		m_strUserName{std::move(userName)}
@@ -28,7 +28,7 @@ namespace LitePanel
 			throw std::invalid_argument("[Block::Block] left tile must be at left of right tile");
 	}
 
-	BlockIndex BlockManager::AllocBlock(IntPoint_t leftTile, IntPoint_t rightTile, std::string userName)
+	BlockIndex BlockManager::AllocBlock(TileCoord_t leftTile, TileCoord_t rightTile, std::string userName)
 	{
 		auto it = std::ranges::find_if(m_arBlocks, [](const auto &block)
 		{
@@ -68,4 +68,18 @@ namespace LitePanel
 
 		return m_arBlocks[pos].value();
 	}
+
+	Block &BlockManager::GetBlock(BlockIndex index)
+	{
+		if (!index)
+			throw std::invalid_argument("[BlockManager::GetBlock] index is null");
+
+		auto pos = index.GetValue();
+
+		if (!m_arBlocks[pos].has_value())
+			throw std::invalid_argument(fmt::format("[BlockManager::GetBlock] BlockIndex {} points to a null block", pos));
+
+		return m_arBlocks[pos].value();
+	}
+
 }

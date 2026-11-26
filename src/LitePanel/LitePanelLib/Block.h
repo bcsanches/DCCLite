@@ -15,7 +15,7 @@
 #include <array>
 #include <optional>
 
-#include "Point.h"
+#include "LitePanelLibDefs.h"
 #include "BlockIndex.h"
 
 namespace LitePanel
@@ -23,24 +23,35 @@ namespace LitePanel
 	class Block
 	{
 		public:
-			Block(IntPoint_t leftTile, IntPoint_t rightTile, std::string userName = "");
+			Block(TileCoord_t leftTile, TileCoord_t rightTile, std::string userName = "");
+
+			inline void ExpandLeft(TileCoord_t leftTile) noexcept
+			{
+				m_clLeftTile = leftTile;
+			}
+
+			inline void ExpandRight(TileCoord_t rightTile) noexcept
+			{
+				m_clRightTile = rightTile;
+			}
 
 		private:
 			std::string m_strUserName;
 
 			// Those points always point to valid positions.
 			// First and last can be the same (single tile blocks).
-			IntPoint_t m_clLeftTile;
-			IntPoint_t m_clRightTile;
+			TileCoord_t m_clLeftTile;
+			TileCoord_t m_clRightTile;
 	};
 
 	class BlockManager
 	{
 		public:
-			BlockIndex AllocBlock(IntPoint_t leftTile, IntPoint_t rightTile, std::string userName = "");
+			BlockIndex AllocBlock(TileCoord_t leftTile, TileCoord_t rightTile, std::string userName = "");
 			void ReleaseBlock(BlockIndex index);
 
 			const Block &GetBlock(BlockIndex index) const;
+			Block &GetBlock(BlockIndex index);
 
 		private:
 			std::array<std::optional<Block>, MAX_BLOCKS> m_arBlocks;

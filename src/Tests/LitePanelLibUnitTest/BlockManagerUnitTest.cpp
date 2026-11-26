@@ -85,9 +85,11 @@ TEST(BlockManagerUnitTest, ThrowsWhenAllSlotsAreAllocated)
 {
 	BlockManager manager;
 
+	static_assert(MAX_BLOCKS <= std::numeric_limits<TileCoord_t::Type_t>::max());
+
 	for (std::uint32_t i = 0; i < MAX_BLOCKS; ++i)
 	{
-		const auto coordinate = static_cast<std::int32_t>(i);
+		const auto coordinate = static_cast<TileCoord_t::Type_t>(i);
 		const auto index = manager.AllocBlock({ coordinate, 0 }, { coordinate, 0 });
 
 		ASSERT_TRUE(index);

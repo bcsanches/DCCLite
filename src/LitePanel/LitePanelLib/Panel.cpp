@@ -41,17 +41,82 @@ namespace LitePanel
 	}
 
 	void Panel::RegisterRail(std::unique_ptr<RailObject> object)
-	{
+	{		
 		if (auto *junction = dynamic_cast<JunctionRailObject *>(object.get()))
 		{
 
 		}
 		else if (auto *simpleRail = dynamic_cast<SimpleRailObject *>(object.get()))
 		{
-			auto neighborsTiles = simpleRail->GetNeighborTiles(m_mapTileMap.GetSize());
+			auto &mapSize = m_mapTileMap.GetSize();
 
+			auto nt = simpleRail->GetNeighborTiles(mapSize);
 
+			BlockIndex blockIndex;
+			Block *block = nullptr;
 
+			//Do we have a left neighbor tile?
+			if (nt.first)
+			{
+				auto leftObj = m_mapTileMap.TryGetMapObject(nt.first.value(), kRAIL_LAYER);
+				auto leftRail = dynamic_cast<const SimpleRailObject *>(leftObj);
+
+				//is left neighbor tile a rail object?
+				if (leftRail)
+				{
+					//Is the left neighbor rail object connected to us?
+					auto rightTile = leftRail->GetRightNeighbor(mapSize);
+					if (rightTile && rightTile == object->GetPosition())
+					{
+						//Yes, we are connected
+						blockIndex = leftRail->GetBlockIndex();
+						block = &m_clBlockManager.GetBlock(blockIndex);
+
+						block->ExpandRight(rightTile.value());
+					}
+				}
+			}
+
+			if(nt.second)
+			{
+				auto rightObj = m_mapTileMap.TryGetMapObject(nt.second.value(), kRAIL_LAYER);
+				auto rightRail = dynamic_cast<const SimpleRailObject *>(rightObj);
+
+				//is right neighbor a rail object?
+				if (rightRail)
+				{
+					//Is the right neighbor connected to us?
+					auto leftTile = rightRail->GetLeftNeighbor(mapSize);
+					if (leftTile && leftTile == object->GetPosition())
+					{
+						//yes, we are connected...
+
+						if (block)
+						{
+							//we already have a left block, so we got merge the blocks
+							//TODO: left block will expand to the right block
+							//follow all elements on block and set their block index
+							assert(0);
+						}
+						else
+						{
+							blockIndex = rightRail->GetBlockIndex();
+							block = &m_clBlockManager.GetBlock(blockIndex);
+
+							block->ExpandLeft(leftTile.value());
+						}
+					}
+				}
+			}
+
+			if (!blockIndex)
+			{
+				//create a new block
+				auto pos = object->GetPosition();
+				blockIndex = m_clBlockManager.AllocBlock(pos, pos);				
+			}
+
+			object->SetBlockIndex(blockIndex);
 		}
 
 		m_mapTileMap.RegisterObject(std::move(object), kRAIL_LAYER);

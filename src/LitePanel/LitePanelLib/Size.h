@@ -22,42 +22,42 @@ namespace LitePanel
 		T m_tWidth = { 0 };
 		T m_tHeight = { 0 };
 
-		Size() = default;
-		Size(const Size &) = default;
+		constexpr Size() = default;
+		constexpr Size(const Size &) = default;
 
 		template <typename Y>
-		inline Size(const Size<Y> &rhs) noexcept :
+		constexpr Size(const Size<Y> &rhs) noexcept :
 			m_tWidth{ rhs.m_tWidth },
 			m_tHeight{ rhs.m_tHeight }
 		{
 			//empty
 		}
 
-		inline Size(T width, T height) noexcept :
+		constexpr Size(T width, T height) noexcept :
 			m_tWidth{ width },
 			m_tHeight{ height }
 		{
 			//empty
 		}
 
-		inline Size(const Point<T> &p) noexcept :
+		constexpr Size(const Point<T> &p) noexcept :
 			m_tWidth{ p.m_tX },
 			m_tHeight{ p.m_tY }
 		{
 			//empty
 		}
 
-		inline Size operator*(T value) const noexcept
+		constexpr Size operator*(T value) const noexcept
 		{
 			return { m_tWidth * value, m_tHeight * value };
 		}
 
-		inline Size operator/(T value) const noexcept
+		constexpr Size operator/(T value) const noexcept
 		{
 			return { m_tWidth / value, m_tHeight / value };
 		}
 
-		inline Size operator+(const Size &rhs) const noexcept
+		constexpr Size operator+(const Size &rhs) const noexcept
 		{
 			return {
 				m_tWidth + rhs.m_tWidth,
@@ -65,7 +65,7 @@ namespace LitePanel
 			};
 		}
 
-		inline Size operator-(const Size &rhs) const noexcept
+		constexpr Size operator-(const Size &rhs) const noexcept
 		{
 			return {
 				m_tWidth - rhs.m_tWidth,
@@ -73,12 +73,12 @@ namespace LitePanel
 			};
 		}
 
-		inline bool operator==(const Size &rhs) const noexcept
+		constexpr bool operator==(const Size &rhs) const noexcept
 		{
 			return m_tWidth == rhs.m_tWidth && m_tHeight == rhs.m_tHeight;
 		}
 
-		inline bool operator!=(const Size &rhs) const noexcept
+		constexpr bool operator!=(const Size &rhs) const noexcept
 		{
 			return !(*this == rhs);
 		}

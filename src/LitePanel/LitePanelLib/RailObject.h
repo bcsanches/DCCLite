@@ -12,12 +12,13 @@
 
 #include <optional>
 
+#include "BlockIndex.h"
 #include "MapObject.h"
 
 namespace LitePanel
 {	
 	/**
-	* By design, those are immutable
+	* By design, those are ALMOST immutable (block ref can change, but object geometry can never change
 	
 	*/
 	class RailObject: public MapObject
@@ -34,7 +35,17 @@ namespace LitePanel
 			const char* GetTypeName() const noexcept override
 			{
 				return TYPE_NAME;
-			}			
+			}
+
+			inline BlockIndex GetBlockIndex() const noexcept
+			{
+				return m_tBlockIndex;
+			}
+
+			inline void SetBlockIndex(BlockIndex blockIndex) noexcept
+			{
+				m_tBlockIndex = blockIndex;
+			}
 
 			static constexpr auto TYPE_NAME = "RailObject";
 
@@ -43,6 +54,7 @@ namespace LitePanel
 
 		private:
 			const ObjectAngles m_tAngle = ObjectAngles::EAST;
+			BlockIndex m_tBlockIndex;
 	};
 
 	enum class SimpleRailTypes
@@ -62,6 +74,9 @@ namespace LitePanel
 		kBLOCK_SPLIT_TOP = 0x08,
 		kBLOCK_SPLIT_BOTTOM = 0x10
 	};
+
+	using NeighborTiles_t = std::pair<std::optional<TileCoord_t>, std::optional<TileCoord_t>>;
+	using NeighborPositions_t = std::pair<IntPoint_t, IntPoint_t>;
 
 	class SimpleRailObject: public RailObject
 	{
@@ -90,7 +105,10 @@ namespace LitePanel
 				return m_fBlockSplit;
 			}
 
-			std::pair<std::optional<TileCoord_t>, std::optional<TileCoord_t>> GetNeighborTiles(const TileMapSize_t &mapSize) const;
+			std::optional<TileCoord_t> GetLeftNeighbor(const TileMapSize_t &mapSize) const;
+			std::optional<TileCoord_t> GetRightNeighbor(const TileMapSize_t &mapSize) const;
+
+			NeighborTiles_t GetNeighborTiles(const TileMapSize_t &mapSize) const;
 
 			void Draw(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const override;
 
@@ -106,6 +124,8 @@ namespace LitePanel
 
 			void DrawVerticalBlockSplit(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const;
 			void DrawHorizontalBlockSplit(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const;
+
+			NeighborPositions_t GetNeighborPositions() const;
 
 		private:
 			const SimpleRailTypes	m_tType;			
