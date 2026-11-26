@@ -60,4 +60,19 @@ namespace LitePanel
 				
 		m_arBlocks[pos] = std::nullopt;
 	}
+
+	const Block &BlockManager::GetBlock(BlockIndex index) const
+	{
+		if (!index)
+			throw std::invalid_argument("[BlockManager::GetBlock] index is null");
+
+		auto pos = index.GetValue();
+		if (pos >= MAX_BLOCKS)
+			throw std::out_of_range(fmt::format("[BlockManager::GetBlock] BlockIndex {} is out of range", pos));
+
+		if (!m_arBlocks[pos].has_value())
+			throw std::invalid_argument(fmt::format("[BlockManager::GetBlock] BlockIndex {} points to a null block", pos));
+
+		return m_arBlocks[pos].value();
+	}
 }

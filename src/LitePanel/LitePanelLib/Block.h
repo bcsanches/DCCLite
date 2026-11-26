@@ -43,6 +43,8 @@ namespace LitePanel
 			BlockIndex AllocBlock(IntPoint_t leftTile, IntPoint_t rightTile, std::string userName = "");
 			void ReleaseBlock(BlockIndex index);
 
+			const Block &GetBlock(BlockIndex index) const;
+
 		private:
 			std::array<std::optional<Block>, MAX_BLOCKS> m_arBlocks;
 	};

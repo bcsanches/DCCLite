@@ -35,3 +35,7 @@ endmacro()
 add_subdirectory(BrokerUnitTest)
 add_subdirectory(BrokerTycoonUnitTest)
 add_subdirectory(LiteDecoderUnitTest)
+
+if (${DCCLITE_GUI_TOOLS} OR ${DCCLITE_IMGUI_TOOLS})
+	add_subdirectory(LitePanelLibUnitTest)
+endif()
