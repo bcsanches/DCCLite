@@ -1,5 +1,7 @@
 package_add_test(LitePanelLibUnitTest
+	BlockIndexUnitTest.cpp
     BlockUnitTest.cpp
+	BlockManagerUnitTest.cpp
 )
 
 target_include_directories(LitePanelLibUnitTest PRIVATE
