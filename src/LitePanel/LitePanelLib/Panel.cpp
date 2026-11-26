@@ -64,9 +64,9 @@ namespace LitePanel
 				//is left neighbor tile a rail object?
 				if (leftRail)
 				{
-					//Is the left neighbor rail object connected to us?
+					//Is the left neighbor rail object connected to us and not a spliter?
 					auto rightTile = leftRail->GetRightNeighbor(mapSize);
-					if (rightTile && rightTile == object->GetPosition())
+					if (rightTile && rightTile == object->GetPosition() && !(leftRail->GetBlockSplit() & kBLOCK_SPLIT_RIGHT))
 					{
 						//Yes, we are connected
 						blockIndex = leftRail->GetBlockIndex();
@@ -85,9 +85,9 @@ namespace LitePanel
 				//is right neighbor a rail object?
 				if (rightRail)
 				{
-					//Is the right neighbor connected to us?
+					//Is the right neighbor connected to us and not a splitter?
 					auto leftTile = rightRail->GetLeftNeighbor(mapSize);
-					if (leftTile && leftTile == object->GetPosition())
+					if (leftTile && leftTile == object->GetPosition() && !(rightRail->GetBlockSplit() & kBLOCK_SPLIT_LEFT))
 					{
 						//yes, we are connected...
 
