@@ -385,6 +385,7 @@ namespace LitePanel::Gui
 
 	void MainFrame::InitTools(wxWindow *toolPalette, wxSizer *toolGrid)
 	{
+		// -
 		m_clToolManager.AddTool(
 			toolPalette,
 			toolGrid,
@@ -402,6 +403,7 @@ namespace LitePanel::Gui
 			"Creates a horizontal track section"
 		);
 
+		// |
 		m_clToolManager.AddTool(
 			toolPalette,
 			toolGrid,
@@ -418,7 +420,7 @@ namespace LitePanel::Gui
 			"Vertical track section",
 			"Creates a vertical track section"
 		);
-
+		// /
 		m_clToolManager.AddTool(
 			toolPalette,
 			toolGrid,
@@ -432,12 +434,12 @@ namespace LitePanel::Gui
 					LitePanel::SimpleRailTypes::STRAIGHT
 				));
 			},
-			"Diagonal track section",
+			"Diagonal track section /",
 			"Creates a diagonal track section"
 		);
 
 
-
+		// \ 
 		m_clToolManager.AddTool(
 			toolPalette,
 			toolGrid,
@@ -451,13 +453,14 @@ namespace LitePanel::Gui
 					LitePanel::SimpleRailTypes::STRAIGHT
 				));
 			},
-			"Diagonal inverted track section",
+			"Diagonal inverted track section \\",
 			"Creates a inverted diagonal track section"
 		);
 
 		//toolBarLeft1->AddSeparator();
 		//toolBarLeft2->AddSeparator();
 
+		// -/
 		m_clToolManager.AddTool(
 			toolPalette,
 			toolGrid,
@@ -471,10 +474,11 @@ namespace LitePanel::Gui
 					LitePanel::SimpleRailTypes::CURVE_LEFT
 				));
 			},
-			"Left curve track section",
+			"Left curve track section -/",
 			"Creates a left curve track section"
 		);
 
+		// \-
 		m_clToolManager.AddTool(
 			toolPalette,
 			toolGrid,
@@ -488,10 +492,11 @@ namespace LitePanel::Gui
 					LitePanel::SimpleRailTypes::CURVE_RIGHT
 				));
 			},
-			"Right curve track section",
+			"Right curve track section \\-",
 			"Creates a right curve track section"
 		);
 
+		// -\ 
 		m_clToolManager.AddTool(
 			toolPalette,
 			toolGrid,
@@ -505,10 +510,11 @@ namespace LitePanel::Gui
 					LitePanel::SimpleRailTypes::CURVE_RIGHT
 				));
 			},
-			"Right curve track section",
+			"Right curve track section -\\",
 			"Creates a right curve track section"
 		);
 
+		// /-
 		m_clToolManager.AddTool(
 			toolPalette,
 			toolGrid,
@@ -522,10 +528,13 @@ namespace LitePanel::Gui
 					LitePanel::SimpleRailTypes::CURVE_LEFT
 				));
 			},
-			"Left curve track section",
+			"Left curve track section /-",
 			"Creates a left curve track section"
 		);
 
+		//    /
+		//   |
+		//  ---
 		m_clToolManager.AddTool(
 			toolPalette,
 			toolGrid,
@@ -540,10 +549,13 @@ namespace LitePanel::Gui
 					LitePanel::BlockSplitTypes::BOTTOM
 				));
 			},
-			"Right curve track section",
+			"Right curve track section - BOTTOM",
 			"Creates a right curve track section"
 		);
 
+		//  \
+		//   |
+		//  ---
 		m_clToolManager.AddTool(
 			toolPalette,
 			toolGrid,
@@ -558,10 +570,14 @@ namespace LitePanel::Gui
 					LitePanel::BlockSplitTypes::BOTTOM
 				));
 			},
-			"Left curve track section",
+			"Left curve track section - BOTTOM",
 			"Creates a left curve track section"
 		);
 
+
+		//  ___
+		//   |
+		//  /
 		m_clToolManager.AddTool(
 			toolPalette,
 			toolGrid,
@@ -576,10 +592,13 @@ namespace LitePanel::Gui
 					LitePanel::BlockSplitTypes::TOP
 				));
 			},
-			"Left curve track section with top block split",
+			"Left curve track section with top block split TOP",
 			"Creates a left curve track section"
 		);
 
+		//  ___
+		//   |
+		//   \ 
 		m_clToolManager.AddTool(
 			toolPalette,
 			toolGrid,
@@ -594,10 +613,13 @@ namespace LitePanel::Gui
 					LitePanel::BlockSplitTypes::TOP
 				));
 			},
-			"Right curve track section with top block split",
+			"Right curve track section with top block split TOP",
 			"Creates a right curve track section"
 		);
 
+		//
+		//  ----|
+		//
 		m_clToolManager.AddTool(
 			toolPalette,
 			toolGrid,
@@ -612,10 +634,13 @@ namespace LitePanel::Gui
 					LitePanel::BlockSplitTypes::RIGHT
 				));
 			},
-			"Straight track section with block split",
+			"Straight track section with block split --|",
 			"Creates a block split track section"
 		);
 
+		//
+		//  |----
+		//
 		m_clToolManager.AddTool(
 			toolPalette,
 			toolGrid,
@@ -630,7 +655,7 @@ namespace LitePanel::Gui
 					LitePanel::BlockSplitTypes::LEFT
 				));
 			},
-			"Straight track section with block split",
+			"Straight track section with block split |---",
 			"Creates a block split track section"
 		);
 

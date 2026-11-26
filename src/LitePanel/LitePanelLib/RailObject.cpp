@@ -51,7 +51,7 @@ namespace LitePanel
 	SimpleRailObject::SimpleRailObject(const rapidjson::Value &params):
 		RailObject(params),		
 		m_kType{params["type"].GetInt()},
-		m_kBlockSplit{static_cast<uint8_t>(params["blockSplit"].GetInt())}
+		m_kBlockSplit{static_cast<BlockSplitTypes>(params["blockSplit"].GetInt())}
 	{
 		//empty
 	}
