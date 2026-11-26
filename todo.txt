@@ -264,6 +264,11 @@ Allow selection of loads:
 
 Talks directly with EngineDriverServer
 
+LitePanel
+---------
+
+BlockSplitTypes -> Modify block split to be a enum, not a bit mask
+
 LitePanelSDL
 ------------
 

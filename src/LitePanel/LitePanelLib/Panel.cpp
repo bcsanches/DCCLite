@@ -56,7 +56,7 @@ namespace LitePanel
 			Block *block = nullptr;
 
 			//Do we have a left neighbor tile?
-			if (nt.first)
+			if (!(simpleRail->GetBlockSplit() & kBLOCK_SPLIT_LEFT) && nt.first)
 			{
 				auto leftObj = m_mapTileMap.TryGetMapObject(nt.first.value(), kRAIL_LAYER);
 				auto leftRail = dynamic_cast<const SimpleRailObject *>(leftObj);
@@ -77,7 +77,7 @@ namespace LitePanel
 				}
 			}
 
-			if(nt.second)
+			if(!(simpleRail->GetBlockSplit() & kBLOCK_SPLIT_RIGHT) && nt.second)
 			{
 				auto rightObj = m_mapTileMap.TryGetMapObject(nt.second.value(), kRAIL_LAYER);
 				auto rightRail = dynamic_cast<const SimpleRailObject *>(rightObj);
