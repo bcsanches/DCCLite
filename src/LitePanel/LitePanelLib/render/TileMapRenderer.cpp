@@ -50,7 +50,7 @@ namespace LitePanel::Render
 	struct RenderArgs
 	{
 		//Visible screen rect size in pixels (how many pixels we will draw or client rect on GUI)
-		FloatPoint_t m_tViewClientSize;
+		FloatSize_t m_tViewClientSize;
 
 		//View position in world space - upper left corner
 		FloatPoint_t m_tViewOrigin;
@@ -66,8 +66,8 @@ namespace LitePanel::Render
 		TileCoord_t m_tNumVisibleTiles;
 
 		//
-		//The size in pixels of the tile map (may be bigger than ViewClientSize
-		FloatPoint_t m_tTileMapScreenSize;
+		//The size in pixels of the tile map (may be bigger than ViewClientSize)
+		FloatSize_t m_tTileMapScreenSize;
 
 		//
 		//The tile map origin, may be negative due to scroll
@@ -100,6 +100,11 @@ namespace LitePanel::Render
 	inline FloatPoint_t TilePointToFloat(const TileCoord_t &tile) noexcept
 	{
 		return FloatPoint_t{ static_cast<float>(tile.m_tX), static_cast<float>(tile.m_tY) };
+	}
+
+	inline FloatSize_t TileMapSizeToFloat(const TileMapSize_t &size) noexcept
+	{
+		return FloatSize_t{ static_cast<float>(size.m_tWidth), static_cast<float>(size.m_tHeight) };
 	}
 
 	inline FloatPoint_t IntPointToFloat(const IntPoint_t &tile) noexcept
@@ -180,47 +185,47 @@ namespace LitePanel::Render
 
 		const auto &tileMapSize = m_pclTileMap->GetSize();
 
-		const FloatPoint_t mapSizeInPixels = TilePointToFloat(tileMapSize) * static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize);
+		const auto mapSizeInPixels = TileMapSizeToFloat(tileMapSize) * static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize);
 
 		const bool centerMap = (m_u32Flags & TileMapRendererFlags_CenterMap);
 
 		// Horizontal
-		if (centerMap && m_ptClientSize.m_tX > mapSizeInPixels.m_tX)
+		if (centerMap && m_ptClientSize.m_tWidth > mapSizeInPixels.m_tWidth)
 		{
 			m_ptOrigin.m_tX = 0.0f;
-			m_ptMapOffset.m_tX = (m_ptClientSize.m_tX - mapSizeInPixels.m_tX) / 2.0f;
+			m_ptMapOffset.m_tX = (m_ptClientSize.m_tWidth - mapSizeInPixels.m_tWidth) / 2.0f;
 		}
 		else
 		{
 			m_ptMapOffset.m_tX = 0.0f;
 
-			if (mapSizeInPixels.m_tX <= m_ptClientSize.m_tX)
+			if (mapSizeInPixels.m_tWidth <= m_ptClientSize.m_tWidth)
 			{
 				m_ptOrigin.m_tX = 0.0f;
 			}
 			else
 			{
-				m_ptOrigin.m_tX = std::clamp(m_ptOrigin.m_tX, 0.0f, mapSizeInPixels.m_tX - m_ptClientSize.m_tX);
+				m_ptOrigin.m_tX = std::clamp(m_ptOrigin.m_tX, 0.0f, mapSizeInPixels.m_tWidth - m_ptClientSize.m_tWidth);
 			}
 		}
 
 		// Vertical
-		if (centerMap && m_ptClientSize.m_tY > mapSizeInPixels.m_tY)
+		if (centerMap && m_ptClientSize.m_tHeight > mapSizeInPixels.m_tHeight)
 		{
 			m_ptOrigin.m_tY = 0.0f;
-			m_ptMapOffset.m_tY = (m_ptClientSize.m_tY - mapSizeInPixels.m_tY) / 2.0f;
+			m_ptMapOffset.m_tY = (m_ptClientSize.m_tHeight - mapSizeInPixels.m_tHeight) / 2.0f;
 		}
 		else
 		{
 			m_ptMapOffset.m_tY = 0.0f;
 
-			if (mapSizeInPixels.m_tY <= m_ptClientSize.m_tY)
+			if (mapSizeInPixels.m_tHeight <= m_ptClientSize.m_tHeight)
 			{
 				m_ptOrigin.m_tY = 0.0f;
 			}
 			else
 			{
-				m_ptOrigin.m_tY = std::clamp(m_ptOrigin.m_tY, 0.0f, mapSizeInPixels.m_tY - m_ptClientSize.m_tY);
+				m_ptOrigin.m_tY = std::clamp(m_ptOrigin.m_tY, 0.0f, mapSizeInPixels.m_tHeight - m_ptClientSize.m_tHeight);
 			}
 		}
 	}
@@ -236,23 +241,23 @@ namespace LitePanel::Render
 
 		const auto &tileMapSize = m_pclTileMap->GetSize();
 
-		rargs.m_tTileMapScreenSize = TilePointToFloat(tileMapSize) * static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize);
+		rargs.m_tTileMapScreenSize = TileMapSizeToFloat(tileMapSize) * static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize);
 
 		rargs.m_tTilePos_FirstOrigin = m_tViewHelper.WorldToTileFloor(m_ptOrigin);				
 
-		FloatPoint_t fvisibleTiles = m_ptClientSize / static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize);
+		auto fvisibleTiles = m_ptClientSize / static_cast<float>(m_tViewHelper.m_stInfo.m_uTileSize);
 
-		rargs.m_tNumVisibleTiles.m_tX = static_cast<TileCoord_t::Type_t>(roundf(fvisibleTiles.m_tX));
-		rargs.m_tNumVisibleTiles.m_tY = static_cast<TileCoord_t::Type_t>(roundf(fvisibleTiles.m_tY));
+		rargs.m_tNumVisibleTiles.m_tX = static_cast<TileCoord_t::Type_t>(roundf(fvisibleTiles.m_tWidth));
+		rargs.m_tNumVisibleTiles.m_tY = static_cast<TileCoord_t::Type_t>(roundf(fvisibleTiles.m_tHeight));
 
 		rargs.m_tTilePos_LastVisible.m_tX = std::min(
 			static_cast<TileCoord_t::Type_t>(rargs.m_tNumVisibleTiles.m_tX + rargs.m_tTilePos_FirstOrigin.m_tX), 
-			static_cast<TileCoord_t::Type_t>(tileMapSize.m_tX - 1)
+			static_cast<TileCoord_t::Type_t>(tileMapSize.m_tWidth - 1)
 		);
 
 		rargs.m_tTilePos_LastVisible.m_tY = std::min(
 			static_cast<TileCoord_t::Type_t>(rargs.m_tNumVisibleTiles.m_tY + rargs.m_tTilePos_FirstOrigin.m_tY), 
-			static_cast<TileCoord_t::Type_t>(tileMapSize.m_tY - 1)
+			static_cast<TileCoord_t::Type_t>(tileMapSize.m_tHeight - 1)
 		);
 
 		rargs.m_tNumVisibleTiles = (rargs.m_tTilePos_LastVisible - rargs.m_tTilePos_FirstOrigin) + TileCoord_t{ 1, 1 };
@@ -268,10 +273,10 @@ namespace LitePanel::Render
 
 		auto &mapSize = m_pclTileMap->GetSize();
 
-		if (tilePos.m_tX >= mapSize.m_tX)
+		if (tilePos.m_tX >= mapSize.m_tWidth)
 			return {};
 
-		if (tilePos.m_tY >= mapSize.m_tY)
+		if (tilePos.m_tY >= mapSize.m_tHeight)
 			return {};
 
 		return tilePos;
@@ -287,8 +292,8 @@ namespace LitePanel::Render
 		auto rargs = this->MakeRenderArgs();
 
 		const FloatPoint_t borderSize{
-			std::min(rargs.m_tTileMapScreenSize.m_tX, m_ptClientSize.m_tX),
-			std::min(rargs.m_tTileMapScreenSize.m_tY, m_ptClientSize.m_tY)
+			std::min(rargs.m_tTileMapScreenSize.m_tWidth, m_ptClientSize.m_tWidth),
+			std::min(rargs.m_tTileMapScreenSize.m_tHeight, m_ptClientSize.m_tHeight)
 		};
 		
 		renderer.DrawFilledRect(m_ptMapOffset, borderSize, colorStyle.m_tBackground);

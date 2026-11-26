@@ -10,9 +10,11 @@
 
 #pragma once
 
+#include <string>
+
 #include "TileMap.h"
 
-#include <string>
+#include "Block.h"
 
 namespace LitePanel
 {
@@ -57,6 +59,7 @@ namespace LitePanel
 		private:
 			std::string m_strName;
 
-			TileMap m_mapTileMap;			
+			TileMap			m_mapTileMap;
+			BlockManager	m_clBlockManager;
 	};
 }

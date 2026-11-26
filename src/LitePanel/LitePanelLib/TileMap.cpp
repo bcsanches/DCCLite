@@ -19,12 +19,17 @@
 
 namespace LitePanel
 {
-	TileLayer::TileLayer(const TileCoord_t size):
-		m_vecMap{static_cast<size_t>(size.m_tX * size.m_tY)},
+	static void CheckSize(const TileMapSize_t size)
+	{
+		if ((size.m_tWidth == 0) || (size.m_tHeight == 0))
+			throw std::invalid_argument("[LitePanel::TileMap] size must be > 0");
+	}
+
+	TileLayer::TileLayer(const TileMapSize_t size):
+		m_vecMap{static_cast<size_t>(size.m_tWidth * size.m_tHeight)},
 		m_tSize{size}
 	{
-		assert(size.m_tX > 0);
-		assert(size.m_tY > 0);
+		CheckSize(size);		
 	}
 
 	TileLayer::TileLayer(TileLayer &&other) noexcept:
@@ -36,15 +41,15 @@ namespace LitePanel
 
 	size_t TileLayer::GetIndex(const TileCoord_t &position) const
 	{
-		if ((position.m_tX >= m_tSize.m_tX) || (position.m_tY >= m_tSize.m_tY))
+		if ((position.m_tX >= m_tSize.m_tWidth) || (position.m_tY >= m_tSize.m_tHeight))
 			throw std::out_of_range(fmt::format("[TileMap::CheckCoordinate] Coordinate {} - {} is out of bounds for size {} - {}",
 				position.m_tX,
 				position.m_tY,
-				m_tSize.m_tX,
-				m_tSize.m_tY
+				m_tSize.m_tWidth,
+				m_tSize.m_tHeight
 		));
 
-		return (position.m_tY * m_tSize.m_tX) + position.m_tX;
+		return (position.m_tY * m_tSize.m_tWidth) + position.m_tX;
 	}
 
 	const MapObject *TileLayer::TryGetMapObject(const TileCoord_t position) const
@@ -110,13 +115,6 @@ namespace LitePanel
 	// TileMap
 	//
 	//
-
-	static void CheckSize(const TileCoord_t size)
-	{
-		if ((size.m_tX == 0) || (size.m_tY == 0))
-			throw std::invalid_argument("[LitePanel::TileMap] size must be > 0");		
-	}
-
 
 	TileMap::TileMap(const TileCoord_t size, const unsigned numLayers)
 	{
@@ -233,8 +231,8 @@ namespace LitePanel
 	{
 		const auto &size = m_vecLayers[0].GetSize();
 
-		stream.AddIntValue("width", size.m_tX);
-		stream.AddIntValue("height", size.m_tY);
+		stream.AddIntValue("width", size.m_tWidth);
+		stream.AddIntValue("height", size.m_tHeight);
 
 		auto layersArray = stream.AddArray("layers");
 		for (auto& layer : m_vecLayers)
@@ -248,7 +246,7 @@ namespace LitePanel
 	{
 		std::vector<TileLayer> newLayers;		
 
-		auto size = TileCoord_t{ 
+		auto size = TileMapSize_t{ 
 			static_cast<uint8_t>(data["width"].GetInt()), 
 			static_cast<uint8_t>(data["height"].GetInt()) 
 		};

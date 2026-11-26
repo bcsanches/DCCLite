@@ -42,6 +42,18 @@ namespace LitePanel
 
 	void Panel::RegisterRail(std::unique_ptr<RailObject> object)
 	{
+		if (auto *junction = dynamic_cast<JunctionRailObject *>(object.get()))
+		{
+
+		}
+		else if (auto *simpleRail = dynamic_cast<SimpleRailObject *>(object.get()))
+		{
+			auto neighborsTiles = simpleRail->GetNeighborTiles(m_mapTileMap.GetSize());
+
+
+
+		}
+
 		m_mapTileMap.RegisterObject(std::move(object), kRAIL_LAYER);
 	}
 

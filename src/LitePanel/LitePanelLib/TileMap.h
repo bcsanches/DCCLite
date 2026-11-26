@@ -24,7 +24,7 @@ namespace LitePanel
 	class TileLayer
 	{
 		public:
-			TileLayer(const TileCoord_t size);
+			TileLayer(const TileMapSize_t size);
 			TileLayer(TileLayer &&other) noexcept;
 
 			TileLayer() = delete;
@@ -35,7 +35,7 @@ namespace LitePanel
 
 			const MapObject *TryGetMapObject(const TileCoord_t pos) const;
 
-			const TileCoord_t &GetSize() const noexcept { return m_tSize; }
+			const TileMapSize_t &GetSize() const noexcept { return m_tSize; }
 
 			void Save(JsonOutputStream_t& stream) const;
 			void Load(const rapidjson::Value& data);
@@ -45,7 +45,7 @@ namespace LitePanel
 
 		private:
 			//It is redundant to save the size on every layer, but makes life easier
-			TileCoord_t m_tSize;
+			TileMapSize_t m_tSize;
 
 			std::vector<std::unique_ptr<MapObject>> m_vecMap;
 	};
@@ -64,7 +64,7 @@ namespace LitePanel
 
 			TileMap(TileMap &&) = default;
 
-			const TileCoord_t &GetSize() const noexcept { return m_vecLayers[0].GetSize(); }
+			const TileMapSize_t &GetSize() const noexcept { return m_vecLayers[0].GetSize(); }
 
 			void RegisterObject(std::unique_ptr<MapObject> object, const uint8_t layer);	
 			std::unique_ptr<MapObject> UnregisterObject(const MapObject &obj, const uint8_t layer);
@@ -86,10 +86,10 @@ namespace LitePanel
 			{
 				auto &size = this->GetSize();
 
-				if (position.m_tX >= size.m_tX)
+				if (position.m_tX >= size.m_tWidth)
 					return false;
 
-				if (position.m_tY >= size.m_tY)
+				if (position.m_tY >= size.m_tHeight)
 					return false;
 
 				return true;
@@ -99,10 +99,10 @@ namespace LitePanel
 			{
 				auto &size = this->GetSize();
 
-				if (position.m_tX >= size.m_tX)
+				if (position.m_tX >= size.m_tWidth)
 					return false;
 
-				if (position.m_tY >= size.m_tY)
+				if (position.m_tY >= size.m_tHeight)
 					return false;
 
 				return true;
@@ -113,7 +113,7 @@ namespace LitePanel
 			void AddListener(ITileMapListener *listener);
 			void RemoveListener(ITileMapListener *listener);
 
-			void Save(JsonOutputStream_t& stream) const;
+			void Save(JsonOutputStream_t &stream) const;
 			void Load(const rapidjson::Value &data);
 
 		private:

@@ -278,6 +278,105 @@ namespace LitePanel
 		}		
 	}
 
+	inline std::optional<TileCoord_t> NormalizeTileCoord(IntPoint_t point, const TileMapSize_t &mapSize)
+	{
+		if (point.m_tX < 0 || point.m_tY < 0 || point.m_tX >= mapSize.m_tWidth || point.m_tY >= mapSize.m_tHeight)
+		{
+			return std::nullopt;
+		}
+
+		return TileCoord_t{
+			static_cast<TileCoord_t::Type_t>(point.m_tX),
+			static_cast<TileCoord_t::Type_t>(point.m_tY)
+		};
+	}
+
+	std::pair<std::optional<TileCoord_t>, std::optional<TileCoord_t>> SimpleRailObject::GetNeighborTiles(const TileMapSize_t &mapSize) const
+	{
+		const auto position = IntPoint_t{ GetPosition() };
+
+		IntPoint_t first;
+		IntPoint_t second;
+
+		switch (m_tType)
+		{
+			case SimpleRailTypes::STRAIGHT:
+			case SimpleRailTypes::TERMINAL:
+			{
+				switch (GetAngle())
+				{
+					case ObjectAngles::EAST:
+					case ObjectAngles::WEST:
+						first = { position.m_tX - 1, position.m_tY };
+						second = { position.m_tX + 1, position.m_tY };
+						break;
+
+					case ObjectAngles::NORTH:
+					case ObjectAngles::SOUTH:
+						first = { position.m_tX, position.m_tY - 1 };
+						second = { position.m_tX, position.m_tY + 1 };
+						break;
+
+					case ObjectAngles::NORTHEAST:
+					case ObjectAngles::SOUTHWEST:
+						first = { position.m_tX - 1, position.m_tY + 1 };
+						second = { position.m_tX + 1, position.m_tY - 1 };
+						break;
+
+					case ObjectAngles::NORTHWEST:
+					case ObjectAngles::SOUTHEAST:
+						first = { position.m_tX - 1, position.m_tY - 1 };
+						second = { position.m_tX + 1, position.m_tY + 1 };
+						break;
+				}
+				break;
+			}
+
+		case SimpleRailTypes::CURVE_LEFT:
+		case SimpleRailTypes::CURVE_RIGHT:
+		{
+			const bool left = m_tType == SimpleRailTypes::CURVE_LEFT;
+
+			switch (GetAngle())
+			{
+				case ObjectAngles::EAST:
+					first = { position.m_tX - 1, position.m_tY };
+					second = { position.m_tX + 1, position.m_tY + (left ? -1 : 1) };
+					break;
+
+				case ObjectAngles::WEST:
+					first = { position.m_tX - 1, position.m_tY + (left ? 1 : -1) };
+					second = { position.m_tX + 1, position.m_tY };
+					break;
+
+				case ObjectAngles::NORTH:
+					first = { position.m_tX + (left ? -1 : 0), position.m_tY + (left ? -1 : 1) };
+					second = { position.m_tX + (left ? 0 : 1), position.m_tY + (left ? 1 : -1) };
+					break;
+
+				case ObjectAngles::SOUTH:
+					first = { position.m_tX + (left ? 0 : -1), position.m_tY + (left ? -1 : 1) };
+					second = { position.m_tX + (left ? 1 : 0), position.m_tY + (left ? 1 : -1) };
+					break;
+
+				default:
+					throw std::invalid_argument("[SimpleRailObject::GetNeighborTiles] Invalid curve angle");
+			}
+			break;
+		}
+		}
+
+		if (first.m_tX > second.m_tX || (first.m_tX == second.m_tX && first.m_tY > second.m_tY))
+		{
+			std::swap(first, second);
+		}
+
+		return {
+			NormalizeTileCoord(first, mapSize),
+			NormalizeTileCoord(second, mapSize)			
+		};
+	}
+
 	JunctionRailObject::JunctionRailObject(const TileCoord_t &position, ObjectAngles angle, const JunctionTypes type):
 		RailObject(position, angle),
 		m_tType(type)

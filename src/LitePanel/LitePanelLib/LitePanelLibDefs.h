@@ -11,6 +11,7 @@
 #pragma once
 
 #include "Point.h"
+#include "Size.h"
 
 #include "JsonCreator/Object.h"
 #include "JsonCreator/StringWriter.h"
@@ -27,6 +28,7 @@ namespace LitePanel
 	constexpr auto DEFAULT_TILE_SIZE = 32;
 
 	typedef Point<uint16_t> TileCoord_t;
+	typedef Size<uint16_t> TileMapSize_t;
 
 	typedef JsonCreator::Object<JsonCreator::StringWriter> JsonOutputStream_t;
 }

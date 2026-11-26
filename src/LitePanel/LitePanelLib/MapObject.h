@@ -68,11 +68,16 @@ namespace LitePanel
 			static std::unique_ptr<MapObject> Create(const rapidjson::Value& defs);
 
 		protected:
-			virtual void OnSave(JsonOutputStream_t& stream) const noexcept;			
+			virtual void OnSave(JsonOutputStream_t& stream) const noexcept;
 
-		private:
 			friend class TileLayer;
 
+			inline const TileLayer *TryGetTileLayer() const noexcept
+			{
+				return m_pclLayer;
+			}
+
+		private:			
 			inline void SetLayer(TileLayer *layer) noexcept
 			{
 				m_pclLayer = layer;

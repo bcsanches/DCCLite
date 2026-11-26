@@ -329,9 +329,9 @@ namespace dcclite::PanelEditor
 
 		auto &mapSize = m_clToolsMap.GetSize();
 
-		for (uint16_t i = 0; i < mapSize.m_tX; ++i)
+		for (uint16_t i = 0; i < mapSize.m_tWidth; ++i)
 		{
-			for (uint16_t j = 0; j < mapSize.m_tY; ++j)
+			for (uint16_t j = 0; j < mapSize.m_tHeight; ++j)
 			{
 				LitePanel::TileCoord_t pos{ i, j };
 

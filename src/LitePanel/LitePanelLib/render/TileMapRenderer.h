@@ -109,7 +109,7 @@ namespace LitePanel::Render
 
 			const TileMap	*m_pclTileMap = nullptr;
 
-			FloatPoint_t	m_ptClientSize;
+			FloatSize_t		m_ptClientSize;
 			FloatPoint_t	m_ptOrigin;
 
 			FloatPoint_t	m_ptMapOffset;

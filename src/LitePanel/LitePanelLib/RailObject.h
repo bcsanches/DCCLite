@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include <optional>
+
 #include "MapObject.h"
 
 namespace LitePanel
@@ -87,6 +89,8 @@ namespace LitePanel
 			{
 				return m_fBlockSplit;
 			}
+
+			std::pair<std::optional<TileCoord_t>, std::optional<TileCoord_t>> GetNeighborTiles(const TileMapSize_t &mapSize) const;
 
 			void Draw(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const override;
 
