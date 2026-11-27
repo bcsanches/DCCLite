@@ -170,9 +170,7 @@ namespace LitePanel
 	void SimpleRailObject::DrawHorizontalBlockSplit(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const
 	{
 		auto halfTileSize = static_cast<float>(viewInfo.m_uHalfTileSize);
-		auto tileSize = static_cast<float>(viewInfo.m_uTileSize);
-
-		auto angle = m_tLink.GetNext();
+		auto tileSize = static_cast<float>(viewInfo.m_uTileSize);		
 		
 		auto x = tileOrigin.m_tX + (halfTileSize / 2);
 		auto y = (m_kBlockSplit == BlockSplitTypes::TOP) ? tileOrigin.m_tY + 1 : tileOrigin.m_tY + tileSize - 1;
