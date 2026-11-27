@@ -129,4 +129,43 @@ namespace LitePanel
 			std::invalid_argument
 		);
 	}
+
+	TEST(RailLinkTest, IsStraightReturnsTrueForAllEightStraightOrientations)
+	{
+		EXPECT_TRUE((RailLink{ ObjectAngles::EAST, ObjectAngles::WEST }.IsStraight()));
+		EXPECT_TRUE((RailLink{ ObjectAngles::NORTHEAST, ObjectAngles::SOUTHWEST }.IsStraight()));
+		EXPECT_TRUE((RailLink{ ObjectAngles::NORTH, ObjectAngles::SOUTH }.IsStraight()));
+		EXPECT_TRUE((RailLink{ ObjectAngles::NORTHWEST, ObjectAngles::SOUTHEAST }.IsStraight()));
+		EXPECT_TRUE((RailLink{ ObjectAngles::WEST, ObjectAngles::EAST }.IsStraight()));
+		EXPECT_TRUE((RailLink{ ObjectAngles::SOUTHWEST, ObjectAngles::NORTHEAST }.IsStraight()));
+		EXPECT_TRUE((RailLink{ ObjectAngles::SOUTH, ObjectAngles::NORTH }.IsStraight()));
+		EXPECT_TRUE((RailLink{ ObjectAngles::SOUTHEAST, ObjectAngles::NORTHWEST }.IsStraight()));
+	}
+
+	TEST(RailLinkTest, IsStraightReturnsFalseForCurveOrientations)
+	{
+		EXPECT_FALSE((RailLink{ ObjectAngles::EAST, ObjectAngles::NORTHWEST }.IsStraight()));
+		EXPECT_FALSE((RailLink{ ObjectAngles::EAST, ObjectAngles::SOUTHWEST }.IsStraight()));
+
+		EXPECT_FALSE((RailLink{ ObjectAngles::NORTHEAST, ObjectAngles::WEST }.IsStraight()));
+		EXPECT_FALSE((RailLink{ ObjectAngles::NORTHEAST, ObjectAngles::SOUTH }.IsStraight()));
+
+		EXPECT_FALSE((RailLink{ ObjectAngles::NORTH, ObjectAngles::SOUTHEAST }.IsStraight()));
+		EXPECT_FALSE((RailLink{ ObjectAngles::NORTH, ObjectAngles::SOUTHWEST }.IsStraight()));
+
+		EXPECT_FALSE((RailLink{ ObjectAngles::NORTHWEST, ObjectAngles::EAST }.IsStraight()));
+		EXPECT_FALSE((RailLink{ ObjectAngles::NORTHWEST, ObjectAngles::SOUTH }.IsStraight()));
+
+		EXPECT_FALSE((RailLink{ ObjectAngles::WEST, ObjectAngles::NORTHEAST }.IsStraight()));
+		EXPECT_FALSE((RailLink{ ObjectAngles::WEST, ObjectAngles::SOUTHEAST }.IsStraight()));
+
+		EXPECT_FALSE((RailLink{ ObjectAngles::SOUTHWEST, ObjectAngles::EAST }.IsStraight()));
+		EXPECT_FALSE((RailLink{ ObjectAngles::SOUTHWEST, ObjectAngles::NORTH }.IsStraight()));
+
+		EXPECT_FALSE((RailLink{ ObjectAngles::SOUTH, ObjectAngles::NORTHWEST }.IsStraight()));
+		EXPECT_FALSE((RailLink{ ObjectAngles::SOUTH, ObjectAngles::NORTHEAST }.IsStraight()));
+
+		EXPECT_FALSE((RailLink{ ObjectAngles::SOUTHEAST, ObjectAngles::WEST }.IsStraight()));
+		EXPECT_FALSE((RailLink{ ObjectAngles::SOUTHEAST, ObjectAngles::NORTH }.IsStraight()));
+	}
 }

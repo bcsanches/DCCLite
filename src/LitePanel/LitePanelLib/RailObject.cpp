@@ -44,9 +44,8 @@ namespace LitePanel
 		stream.AddIntValue("nextTile", static_cast<int>(m_tLink.GetNext()));
 	}
 
-	SimpleRailObject::SimpleRailObject(const TileCoord_t& position, const RailLink link, const SimpleRailTypes type, const BlockSplitTypes splitTypes) :
-		RailObject(position, link),
-		m_kType(type),
+	SimpleRailObject::SimpleRailObject(const TileCoord_t& position, const RailLink link, const BlockSplitTypes splitTypes) :
+		RailObject(position, link),		
 		m_kBlockSplit(splitTypes)
 	{
 		//empty
@@ -54,7 +53,6 @@ namespace LitePanel
 
 	SimpleRailObject::SimpleRailObject(const rapidjson::Value &params):
 		RailObject(params),		
-		m_kType{params["type"].GetInt()},
 		m_kBlockSplit{static_cast<BlockSplitTypes>(params["blockSplit"].GetInt())}
 	{
 		//empty
@@ -63,8 +61,7 @@ namespace LitePanel
 	void SimpleRailObject::OnSave(JsonOutputStream_t& stream) const noexcept
 	{
 		RailObject::OnSave(stream);
-		
-		stream.AddIntValue("type", static_cast<int>(m_kType));
+				
 		stream.AddIntValue("blockSplit", static_cast<int>(m_kBlockSplit));
 	}	
 
@@ -173,7 +170,7 @@ namespace LitePanel
 		auto tileSize = static_cast<float>(viewInfo.m_uTileSize);		
 		
 		auto x = tileOrigin.m_tX + (halfTileSize / 2);
-		auto y = (m_kBlockSplit == BlockSplitTypes::TOP) ? tileOrigin.m_tY + 1 : tileOrigin.m_tY + tileSize - 1;
+		auto y = (m_kBlockSplit == BlockSplitTypes::LEFT) ? tileOrigin.m_tY + 1 : tileOrigin.m_tY + tileSize - 1;
 
 		auto &colorStyle = LitePanel::Render::GetCurrentColorStyle();
 
@@ -209,21 +206,10 @@ namespace LitePanel
 
 	void SimpleRailObject::Draw(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const
 	{		
-		switch (m_kType)
-		{
-			case SimpleRailTypes::STRAIGHT:
-				this->DrawStraightRail(renderer, viewInfo, tileOrigin);
-				break;
-
-			case SimpleRailTypes::CURVE_LEFT:
-				this->DrawCurveRail(renderer, viewInfo, tileOrigin);
-				break;
-
-			case SimpleRailTypes::CURVE_RIGHT:
-				this->DrawCurveRail(renderer, viewInfo, tileOrigin);
-				break;
-
-		}
+		if(m_tLink.IsStraight())
+			this->DrawStraightRail(renderer, viewInfo, tileOrigin);
+		else
+			this->DrawCurveRail(renderer, viewInfo, tileOrigin);		
 	}
 
 	inline std::optional<TileCoord_t> NormalizeTileCoord(IntPoint_t point, const TileMapSize_t &mapSize)

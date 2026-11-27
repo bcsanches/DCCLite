@@ -55,22 +55,11 @@ namespace LitePanel
 			BlockIndex		m_tBlockIndex;
 	};
 
-	enum class SimpleRailTypes
-	{
-		STRAIGHT,
-		CURVE_LEFT,
-		CURVE_RIGHT,
-		//CROSSING,
-		TERMINAL
-	};
-
 	enum class BlockSplitTypes
 	{
 		NONE = 0,
 		LEFT,
-		RIGHT,
-		TOP,
-		BOTTOM
+		RIGHT
 	};
 
 	using NeighborTiles_t = std::pair<std::optional<TileCoord_t>, std::optional<TileCoord_t>>;
@@ -81,17 +70,11 @@ namespace LitePanel
 		public:
 			SimpleRailObject(
 				const TileCoord_t &position, 
-				const RailLink link,
-				const SimpleRailTypes type, 
+				const RailLink link,				
 				const BlockSplitTypes splitTypes = BlockSplitTypes::NONE
 			);
 
-			SimpleRailObject(const rapidjson::Value &params);
-
-			inline const SimpleRailTypes GetType() const noexcept
-			{
-				return m_kType;
-			}
+			SimpleRailObject(const rapidjson::Value &params);			
 
 			const char* GetTypeName() const noexcept override
 			{
@@ -124,8 +107,7 @@ namespace LitePanel
 
 			NeighborPositions_t GetNeighborPositions() const;
 
-		private:
-			const SimpleRailTypes	m_kType;			
+		private:					
 			const BlockSplitTypes   m_kBlockSplit;
 	};
 

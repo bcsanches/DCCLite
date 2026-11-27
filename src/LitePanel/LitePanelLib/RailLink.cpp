@@ -65,4 +65,28 @@ namespace LitePanel
 		if(it == g_kValidAngles[previousIndex].end())
 			throw std::invalid_argument("[RailLink] Previous and next angles form invalid shape");
 	}
+
+	RailTypes RailLink::GetType() const noexcept
+	{
+		if (this->IsStraight())
+			return RailTypes::STRAIGHT;
+
+		static constexpr std::array<ObjectAngles, 8> leftCurves =
+		{
+			ObjectAngles::SOUTHWEST,	// EAST
+			ObjectAngles::SOUTH,		// NORTHEAST
+			ObjectAngles::SOUTHEAST,	// NORTH
+			ObjectAngles::EAST,			// NORTHWEST
+			ObjectAngles::NORTHEAST,	// WEST
+			ObjectAngles::NORTH,		// SOUTHWEST
+			ObjectAngles::NORTHWEST,	// SOUTH
+			ObjectAngles::NORTH			// SOUTHEAST
+		};
+
+		const auto index = static_cast<unsigned>(m_kPrevious);
+
+		return (m_kNext == leftCurves[index])
+			? RailTypes::CURVE_LEFT
+			: RailTypes::CURVE_RIGHT;
+	}
 }

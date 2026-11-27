@@ -14,6 +14,13 @@
 
 namespace LitePanel
 {
+	enum class RailTypes
+	{
+		STRAIGHT,
+		CURVE_LEFT,
+		CURVE_RIGHT		
+	};
+
 	class RailLink
 	{
 		public:
@@ -28,6 +35,13 @@ namespace LitePanel
 			{
 				return m_kNext;
 			}
+
+			bool constexpr IsStraight() const noexcept
+			{
+				return (static_cast<unsigned>(m_kPrevious) + 4u) % 8u == static_cast<unsigned>(m_kNext);
+			}
+
+			RailTypes GetType() const noexcept;
 
 			bool operator==(const RailLink &) const = default;
 
