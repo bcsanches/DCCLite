@@ -1,9 +1,10 @@
 package_add_test(LitePanelLibUnitTest
-	BlockIndexUnitTest.cpp
-    BlockUnitTest.cpp
-	BlockManagerUnitTest.cpp
+	BlockIndexTest.cpp
+    BlockTest.cpp
+	BlockManagerTest.cpp
+    PanelTest.cpp
     RailLinkTest.cpp
-	SimpleRailObjectUnitTest.cpp
+	SimpleRailObjectTest.cpp
 )
 
 target_include_directories(LitePanelLibUnitTest PRIVATE

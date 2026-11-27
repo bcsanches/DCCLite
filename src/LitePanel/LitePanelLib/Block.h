@@ -35,6 +35,16 @@ namespace LitePanel
 				m_clRightTile = rightTile;
 			}
 
+			inline TileCoord_t GetLeftTile() const noexcept
+			{
+				return m_clLeftTile;
+			}
+
+			inline TileCoord_t GetRightTile() const noexcept
+			{
+				return m_clRightTile;
+			}
+
 		private:
 			std::string m_strUserName;
 

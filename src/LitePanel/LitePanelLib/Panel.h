@@ -28,7 +28,7 @@ namespace LitePanel
 
 			Panel(Panel &&) = default;
 
-			void RegisterRail(std::unique_ptr<RailObject> object);
+			RailObject &RegisterRail(std::unique_ptr<RailObject> object);
 			std::unique_ptr<RailObject> TryUnregisterRail(const TileCoord_t &position);
 
 			bool IsRailTileOccupied(const TileCoord_t &position) const noexcept;
@@ -37,6 +37,11 @@ namespace LitePanel
 
 			void SetTempObjectPosition(MapObject &obj, const TileCoord_t &newPosition);
 			std::unique_ptr<MapObject> UnregisterTempObject(const MapObject &obj);
+
+			const Block &GetBlock(BlockIndex index) const noexcept
+			{
+				return m_clBlockManager.GetBlock(index);
+			}
 
 			inline TileMap &GetTileMap() noexcept
 			{

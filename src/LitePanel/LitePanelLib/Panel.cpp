@@ -40,8 +40,9 @@ namespace LitePanel
 			throw std::invalid_argument("[Panel::Panel] File contains invalid number of layers");		
 	}
 
-	void Panel::RegisterRail(std::unique_ptr<RailObject> object)
+	RailObject &Panel::RegisterRail(std::unique_ptr<RailObject> object)
 	{		
+#if 0
 		if (auto *junction = dynamic_cast<JunctionRailObject *>(object.get()))
 		{
 
@@ -118,13 +119,83 @@ namespace LitePanel
 
 			object->SetBlockIndex(blockIndex);
 		}
+#endif
+
+		auto *ptr = object.get();
 
 		m_mapTileMap.RegisterObject(std::move(object), kRAIL_LAYER);
+
+		if (auto *junction = dynamic_cast<JunctionRailObject *>(ptr))
+		{
+
+		}
+		else if (auto *simpleRail = dynamic_cast<SimpleRailObject *>(ptr))
+		{
+			auto &mapSize = m_mapTileMap.GetSize();
+
+			auto nt = simpleRail->GetNeighborTiles(mapSize);
+			const auto &railPosition = simpleRail->GetPosition();
+
+			BlockIndex blockIndex;
+			Block *block = nullptr;
+			
+			//do we have a left tile?
+			if (nt.first)
+			{
+				auto leftObj = m_mapTileMap.TryGetMapObject(nt.first.value(), kRAIL_LAYER);				
+
+				//Do we have a object on the left tile and is this object rail?
+				if (auto leftRail = dynamic_cast<const SimpleRailObject *>(leftObj))
+				{
+					auto leftRailRightNeighborTile = leftRail->GetRightNeighbor(mapSize);
+
+					//is the leftRail right neighbor the same as we are? 
+					if (leftRailRightNeighborTile && (leftRailRightNeighborTile.value() == railPosition))
+					{
+						//Yes, the rail on the left side connects to us...						
+						blockIndex = leftRail->GetBlockIndex();
+						block = &m_clBlockManager.GetBlock(blockIndex);
+
+						//expand block
+						block->ExpandRight(railPosition);
+					}
+				}
+			}
+
+			if (!blockIndex)
+			{
+				//create a new block
+				blockIndex = m_clBlockManager.AllocBlock(railPosition, railPosition);
+			}
+
+			simpleRail->SetBlockIndex(blockIndex);
+		}
+
+		return *ptr;
 	}
 
 	std::unique_ptr<RailObject> Panel::TryUnregisterRail(const TileCoord_t &position)
 	{
 		auto tmp = m_mapTileMap.TryUnregisterObject(position, kRAIL_LAYER);
+
+		if (auto *simpleRail = dynamic_cast<SimpleRailObject *>(tmp.get()))
+		{
+			auto nt = simpleRail->GetNeighborTiles(m_mapTileMap.GetSize());
+
+			if (nt.first)
+			{
+				auto leftNeighbor = m_mapTileMap.TryGetMapObject(nt.first.value(), kRAIL_LAYER);
+				auto leftRail = dynamic_cast<const SimpleRailObject *>(leftNeighbor);
+				if (leftRail)
+				{
+
+				}
+			}
+
+
+		}
+
+		
 
 		return std::unique_ptr<RailObject>(static_cast<RailObject *>(tmp.release()));
 	}
