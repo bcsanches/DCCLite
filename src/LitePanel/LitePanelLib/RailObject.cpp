@@ -315,18 +315,24 @@ namespace LitePanel
 		}
 	};
 
+	static void CheckJunctionAngle(const ObjectAngles linkAngle, const char *name)
+	{
+		const auto index = static_cast<int>(linkAngle);
+
+		if (index >= g_kJunctionValidAngles.size())
+			throw std::out_of_range(fmt::format("[JunctionRailObject] Invalid {} angle: {}", name, magic_enum::enum_name(linkAngle)));
+
+		const auto angle = g_kJunctionValidAngles[index];
+		if (!angle.has_value())
+			throw std::out_of_range(fmt::format("[JunctionRailObject] Invalid {} angle: {}", name, magic_enum::enum_name(linkAngle)));
+	}
+
 	JunctionRailObject::JunctionRailObject(const TileCoord_t &position, const RailLink link, const JunctionTypes type):
 		RailObject(position, link),
 		m_tType(type)
 	{
-		const auto index = static_cast<int>(link.GetPrevious());
-
-		if (index >= g_kJunctionValidAngles.size())
-			throw std::out_of_range(fmt::format("[JunctionRailObject] Invalid angle : {}", magic_enum::enum_name(link.GetPrevious())));
-
-		const auto angle = g_kJunctionValidAngles[index];
-		if(!angle.has_value())
-			throw std::out_of_range(fmt::format("[JunctionRailObject] Invalid angle : {}", magic_enum::enum_name(link.GetPrevious())));
+		CheckJunctionAngle(link.GetPrevious(), "previous");
+		CheckJunctionAngle(link.GetNext(), "next");		
 	}	
 
 	void JunctionRailObject::Draw(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const

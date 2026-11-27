@@ -489,7 +489,7 @@ namespace LitePanel::Gui
 				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 					coord,
 					LitePanel::RailLink{ LitePanel::ObjectAngles::NORTHWEST, LitePanel::ObjectAngles::EAST },					
-					LitePanel::SimpleRailTypes::CURVE_RIGHT
+					LitePanel::SimpleRailTypes::CURVE_LEFT
 				));
 			},
 			"Right curve track section \\- NW -> E",
@@ -525,7 +525,7 @@ namespace LitePanel::Gui
 				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 					coord,
 					LitePanel::RailLink{ LitePanel::ObjectAngles::SOUTHWEST, LitePanel::ObjectAngles::EAST },					
-					LitePanel::SimpleRailTypes::CURVE_LEFT
+					LitePanel::SimpleRailTypes::CURVE_RIGHT
 				));
 			},
 			"Left curve track section /- SW -> E",
@@ -566,7 +566,7 @@ namespace LitePanel::Gui
 				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 					coord,
 					LitePanel::RailLink{ LitePanel::ObjectAngles::NORTHWEST, LitePanel::ObjectAngles::SOUTH },
-					LitePanel::SimpleRailTypes::CURVE_LEFT,
+					LitePanel::SimpleRailTypes::CURVE_RIGHT,
 					LitePanel::BlockSplitTypes::BOTTOM
 				));
 			},
