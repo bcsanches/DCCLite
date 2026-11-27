@@ -577,7 +577,7 @@ namespace LitePanel::Gui
 
 		//  ___
 		//   |
-		//  /
+		//    \ 
 		m_clToolManager.AddTool(
 			toolPalette,
 			toolGrid,
@@ -587,18 +587,18 @@ namespace LitePanel::Gui
 			{
 				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 					coord,
-					LitePanel::RailLink{ LitePanel::ObjectAngles::SOUTHWEST, LitePanel::ObjectAngles::NORTH },
+					LitePanel::RailLink{ LitePanel::ObjectAngles::NORTH, LitePanel::ObjectAngles::SOUTHEAST },
 					LitePanel::SimpleRailTypes::CURVE_LEFT,
 					LitePanel::BlockSplitTypes::TOP
 				));
 			},
-			"Left curve track section with top block split TOP - SW -> N",
+			"Left curve track section with top block split TOP - N -> SE",
 			"Creates a left curve track section"
 		);
 
 		//  ___
 		//   |
-		//   \ 
+		//   / 
 		m_clToolManager.AddTool(
 			toolPalette,
 			toolGrid,
@@ -608,12 +608,12 @@ namespace LitePanel::Gui
 			{
 				ExecuteInsertRailCmd(std::make_unique<LitePanel::SimpleRailObject>(
 					coord,
-					LitePanel::RailLink{ LitePanel::ObjectAngles::NORTH, LitePanel::ObjectAngles::SOUTHEAST },
+					LitePanel::RailLink{ LitePanel::ObjectAngles::NORTH, LitePanel::ObjectAngles::SOUTHWEST },
 					LitePanel::SimpleRailTypes::CURVE_RIGHT,
 					LitePanel::BlockSplitTypes::TOP
 				));
 			},
-			"Right curve track section with top block split TOP - N -> SE",
+			"Right curve track section with top block split TOP - N -> SW",
 			"Creates a right curve track section"
 		);
 
