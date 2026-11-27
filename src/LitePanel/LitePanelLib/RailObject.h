@@ -14,6 +14,7 @@
 
 #include "BlockIndex.h"
 #include "MapObject.h"
+#include "RailLink.h"
 
 namespace LitePanel
 {	
@@ -24,13 +25,8 @@ namespace LitePanel
 	class RailObject: public MapObject
 	{
 		public:
-			RailObject(const TileCoord_t &position, ObjectAngles angle = ObjectAngles::EAST);
+			RailObject(const TileCoord_t &position, const RailLink link);
 			RailObject(const rapidjson::Value& params);
-
-			inline const ObjectAngles GetAngle() const
-			{
-				return m_tAngle;
-			}
 
 			const char* GetTypeName() const noexcept override
 			{
@@ -52,9 +48,11 @@ namespace LitePanel
 		protected:
 			void OnSave(JsonOutputStream_t& stream) const noexcept override;
 
+		protected:
+			const RailLink	m_tLink;
+
 		private:
-			const ObjectAngles m_tAngle = ObjectAngles::EAST;
-			BlockIndex m_tBlockIndex;
+			BlockIndex		m_tBlockIndex;
 	};
 
 	enum class SimpleRailTypes
@@ -83,7 +81,7 @@ namespace LitePanel
 		public:
 			SimpleRailObject(
 				const TileCoord_t &position, 
-				ObjectAngles angle, 
+				const RailLink link,
 				const SimpleRailTypes type, 
 				const BlockSplitTypes splitTypes = BlockSplitTypes::NONE
 			);
@@ -141,7 +139,7 @@ namespace LitePanel
 	class JunctionRailObject: public RailObject
 	{
 		public:
-			JunctionRailObject(const TileCoord_t &position, ObjectAngles angle, const JunctionTypes type);
+			JunctionRailObject(const TileCoord_t &position, const RailLink link, const JunctionTypes type);
 
 			const char* GetTypeName() const noexcept override
 			{

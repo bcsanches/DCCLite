@@ -11,153 +11,143 @@ namespace
 {
 	constexpr TileMapSize_t MAP_SIZE{ 10, 10 };
 
-	void ExpectNeighbors(
-		const SimpleRailObject &rail,
-		const std::optional<TileCoord_t> &expectedFirst,
-		const std::optional<TileCoord_t> &expectedSecond)
+	void ExpectNeighbors(const SimpleRailObject &rail, const std::optional<TileCoord_t> &expectedLeft, const std::optional<TileCoord_t> &expectedRight)
 	{
-		const auto [first, second] = rail.GetNeighborTiles(MAP_SIZE);
+		const auto [left, right] = rail.GetNeighborTiles(MAP_SIZE);
 
-		ASSERT_EQ(first.has_value(), expectedFirst.has_value());
-		ASSERT_EQ(second.has_value(), expectedSecond.has_value());
+		ASSERT_EQ(left.has_value(), expectedLeft.has_value());
+		ASSERT_EQ(right.has_value(), expectedRight.has_value());
 
-		if (expectedFirst)
-			EXPECT_EQ(*first, *expectedFirst);
+		if (expectedLeft)
+			EXPECT_EQ(*left, *expectedLeft);
 
-		if (expectedSecond)
-			EXPECT_EQ(*second, *expectedSecond);
+		if (expectedRight)
+			EXPECT_EQ(*right, *expectedRight);
 	}
 }
 
-TEST(SimpleRailObjectUnitTest, StraightRailEastReturnsHorizontalNeighbors)
+TEST(SimpleRailObjectUnitTest, HorizontalStraightReturnsPreviousAndNextNeighbors)
 {
-	const SimpleRailObject rail({ 5, 5 }, ObjectAngles::EAST, SimpleRailTypes::STRAIGHT);
+	const SimpleRailObject rail({ 5, 5 }, RailLink{ ObjectAngles::EAST, ObjectAngles::WEST }, SimpleRailTypes::STRAIGHT);
+
 	ExpectNeighbors(rail, TileCoord_t{ 4, 5 }, TileCoord_t{ 6, 5 });
 }
 
-TEST(SimpleRailObjectUnitTest, StraightRailNorthReturnsVerticalNeighborsInYOrder)
+TEST(SimpleRailObjectUnitTest, VerticalStraightReturnsPreviousAndNextNeighbors)
 {
-	const SimpleRailObject rail({ 5, 5 }, ObjectAngles::NORTH, SimpleRailTypes::STRAIGHT);
+	const SimpleRailObject rail({ 5, 5 }, RailLink{ ObjectAngles::NORTH, ObjectAngles::SOUTH }, SimpleRailTypes::STRAIGHT);
+
 	ExpectNeighbors(rail, TileCoord_t{ 5, 4 }, TileCoord_t{ 5, 6 });
 }
 
-
-TEST(SimpleRailObjectUnitTest, StraightRailWestReturnsHorizontalNeighbors)
+TEST(SimpleRailObjectUnitTest, NortheastSouthwestStraightReturnsDiagonalNeighbors)
 {
-	const SimpleRailObject rail({ 5, 5 }, ObjectAngles::WEST, SimpleRailTypes::STRAIGHT);
-	ExpectNeighbors(rail, TileCoord_t{ 4, 5 }, TileCoord_t{ 6, 5 });
-}
+	const SimpleRailObject rail({ 5, 5 }, RailLink{ ObjectAngles::NORTHEAST, ObjectAngles::SOUTHWEST }, SimpleRailTypes::STRAIGHT);
 
-TEST(SimpleRailObjectUnitTest, StraightRailSouthReturnsVerticalNeighborsInYOrder)
-{
-	const SimpleRailObject rail({ 5, 5 }, ObjectAngles::SOUTH, SimpleRailTypes::STRAIGHT);
-	ExpectNeighbors(rail, TileCoord_t{ 5, 4 }, TileCoord_t{ 5, 6 });
-}
-
-TEST(SimpleRailObjectUnitTest, StraightRailNortheastReturnsDiagonalNeighbors)
-{
-	const SimpleRailObject rail({ 5, 5 }, ObjectAngles::NORTHEAST, SimpleRailTypes::STRAIGHT);
 	ExpectNeighbors(rail, TileCoord_t{ 4, 6 }, TileCoord_t{ 6, 4 });
 }
 
-TEST(SimpleRailObjectUnitTest, StraightRailNorthwestReturnsDiagonalNeighbors)
+TEST(SimpleRailObjectUnitTest, NorthwestSoutheastStraightReturnsDiagonalNeighbors)
 {
-	const SimpleRailObject rail({ 5, 5 }, ObjectAngles::NORTHWEST, SimpleRailTypes::STRAIGHT);
-	ExpectNeighbors(rail, TileCoord_t{ 4, 4 }, TileCoord_t{ 6, 6 });
-}
+	const SimpleRailObject rail({ 5, 5 }, RailLink{ ObjectAngles::NORTHWEST, ObjectAngles::SOUTHEAST }, SimpleRailTypes::STRAIGHT);
 
-TEST(SimpleRailObjectUnitTest, StraightRailSouthwestReturnsDiagonalNeighbors)
-{
-	const SimpleRailObject rail({ 5, 5 }, ObjectAngles::SOUTHWEST, SimpleRailTypes::STRAIGHT);
-	ExpectNeighbors(rail, TileCoord_t{ 4, 6 }, TileCoord_t{ 6, 4 });
-}
-
-TEST(SimpleRailObjectUnitTest, StraightRailSoutheastReturnsDiagonalNeighbors)
-{
-	const SimpleRailObject rail({ 5, 5 }, ObjectAngles::SOUTHEAST, SimpleRailTypes::STRAIGHT);
 	ExpectNeighbors(rail, TileCoord_t{ 4, 4 }, TileCoord_t{ 6, 6 });
 }
 
 TEST(SimpleRailObjectUnitTest, TerminalUsesStraightRailGeometry)
 {
-	const SimpleRailObject rail({ 5, 5 }, ObjectAngles::WEST, SimpleRailTypes::TERMINAL);
+	const SimpleRailObject rail({ 5, 5 }, RailLink{ ObjectAngles::EAST, ObjectAngles::WEST }, SimpleRailTypes::TERMINAL);
+
 	ExpectNeighbors(rail, TileCoord_t{ 4, 5 }, TileCoord_t{ 6, 5 });
 }
 
-TEST(SimpleRailObjectUnitTest, LeftCurveEastReturnsExpectedNeighbors)
+TEST(SimpleRailObjectUnitTest, LeftCurveFromEastReturnsExpectedNeighbors)
 {
-	const SimpleRailObject rail({ 5, 5 }, ObjectAngles::EAST, SimpleRailTypes::CURVE_LEFT);
-	ExpectNeighbors(rail, TileCoord_t{ 4, 5 }, TileCoord_t{ 6, 4 });
-}
+	const SimpleRailObject rail({ 5, 5 }, RailLink{ ObjectAngles::EAST, ObjectAngles::SOUTHWEST }, SimpleRailTypes::CURVE_LEFT);
 
-TEST(SimpleRailObjectUnitTest, LeftCurveWestReturnsExpectedNeighbors)
-{
-	const SimpleRailObject rail({ 5, 5 }, ObjectAngles::WEST, SimpleRailTypes::CURVE_LEFT);
 	ExpectNeighbors(rail, TileCoord_t{ 4, 6 }, TileCoord_t{ 6, 5 });
 }
 
-TEST(SimpleRailObjectUnitTest, LeftCurveNorthReturnsExpectedNeighbors)
+TEST(SimpleRailObjectUnitTest, LeftCurveFromWestReturnsExpectedNeighbors)
 {
-	const SimpleRailObject rail({ 5, 5 }, ObjectAngles::NORTH, SimpleRailTypes::CURVE_LEFT);
-	ExpectNeighbors(rail, TileCoord_t{ 4, 4 }, TileCoord_t{ 5, 6 });
+	const SimpleRailObject rail({ 5, 5 }, RailLink{ ObjectAngles::WEST, ObjectAngles::NORTHEAST }, SimpleRailTypes::CURVE_LEFT);
+
+	ExpectNeighbors(rail, TileCoord_t{ 4, 5 }, TileCoord_t{ 6, 4 });
 }
 
-TEST(SimpleRailObjectUnitTest, LeftCurveSouthReturnsExpectedNeighbors)
+TEST(SimpleRailObjectUnitTest, LeftCurveFromNorthReturnsExpectedNeighbors)
 {
-	const SimpleRailObject rail({ 5, 5 }, ObjectAngles::SOUTH, SimpleRailTypes::CURVE_LEFT);
+	const SimpleRailObject rail({ 5, 5 }, RailLink{ ObjectAngles::NORTH, ObjectAngles::SOUTHEAST }, SimpleRailTypes::CURVE_LEFT);
+
 	ExpectNeighbors(rail, TileCoord_t{ 5, 4 }, TileCoord_t{ 6, 6 });
 }
 
-TEST(SimpleRailObjectUnitTest, RightCurveEastReturnsExpectedNeighbors)
+TEST(SimpleRailObjectUnitTest, LeftCurveFromSouthReturnsExpectedNeighbors)
 {
-	const SimpleRailObject rail({ 5, 5 }, ObjectAngles::EAST, SimpleRailTypes::CURVE_RIGHT);
-	ExpectNeighbors(rail, TileCoord_t{ 4, 5 }, TileCoord_t{ 6, 6 });
+	const SimpleRailObject rail({ 5, 5 }, RailLink{ ObjectAngles::SOUTH, ObjectAngles::NORTHWEST }, SimpleRailTypes::CURVE_LEFT);
+
+	ExpectNeighbors(rail, TileCoord_t{ 4, 4 }, TileCoord_t{ 5, 6 });
 }
 
-TEST(SimpleRailObjectUnitTest, RightCurveWestReturnsExpectedNeighbors)
+TEST(SimpleRailObjectUnitTest, RightCurveFromEastReturnsExpectedNeighbors)
 {
-	const SimpleRailObject rail({ 5, 5 }, ObjectAngles::WEST, SimpleRailTypes::CURVE_RIGHT);
+	const SimpleRailObject rail({ 5, 5 }, RailLink{ ObjectAngles::EAST, ObjectAngles::NORTHWEST }, SimpleRailTypes::CURVE_RIGHT);
+
 	ExpectNeighbors(rail, TileCoord_t{ 4, 4 }, TileCoord_t{ 6, 5 });
 }
 
-TEST(SimpleRailObjectUnitTest, RightCurveNorthReturnsExpectedNeighbors)
+TEST(SimpleRailObjectUnitTest, RightCurveFromWestReturnsExpectedNeighbors)
 {
-	const SimpleRailObject rail({ 5, 5 }, ObjectAngles::NORTH, SimpleRailTypes::CURVE_RIGHT);
-	ExpectNeighbors(rail, TileCoord_t{ 5, 6 }, TileCoord_t{ 6, 4 });
+	const SimpleRailObject rail({ 5, 5 }, RailLink{ ObjectAngles::WEST, ObjectAngles::SOUTHEAST }, SimpleRailTypes::CURVE_RIGHT);
+
+	ExpectNeighbors(rail, TileCoord_t{ 4, 5 }, TileCoord_t{ 6, 6 });
 }
 
-TEST(SimpleRailObjectUnitTest, RightCurveSouthReturnsExpectedNeighbors)
+TEST(SimpleRailObjectUnitTest, RightCurveFromNorthReturnsExpectedNeighbors)
 {
-	const SimpleRailObject rail({ 5, 5 }, ObjectAngles::SOUTH, SimpleRailTypes::CURVE_RIGHT);
+	const SimpleRailObject rail({ 5, 5 }, RailLink{ ObjectAngles::NORTH, ObjectAngles::SOUTHWEST }, SimpleRailTypes::CURVE_RIGHT);
+
 	ExpectNeighbors(rail, TileCoord_t{ 4, 6 }, TileCoord_t{ 5, 4 });
+}
+
+TEST(SimpleRailObjectUnitTest, RightCurveFromSouthReturnsExpectedNeighbors)
+{
+	const SimpleRailObject rail({ 5, 5 }, RailLink{ ObjectAngles::SOUTH, ObjectAngles::NORTHEAST }, SimpleRailTypes::CURVE_RIGHT);
+
+	ExpectNeighbors(rail, TileCoord_t{ 5, 6 }, TileCoord_t{ 6, 4 });
 }
 
 TEST(SimpleRailObjectUnitTest, HorizontalRailAtLeftMapEdgeHasNoLeftNeighbor)
 {
-	const SimpleRailObject rail({ 0, 5 }, ObjectAngles::EAST, SimpleRailTypes::STRAIGHT);
+	const SimpleRailObject rail({ 0, 5 }, RailLink{ ObjectAngles::EAST, ObjectAngles::WEST }, SimpleRailTypes::STRAIGHT);
+
 	ExpectNeighbors(rail, std::nullopt, TileCoord_t{ 1, 5 });
 }
 
 TEST(SimpleRailObjectUnitTest, HorizontalRailAtRightMapEdgeHasNoRightNeighbor)
 {
-	const SimpleRailObject rail({ 9, 5 }, ObjectAngles::EAST, SimpleRailTypes::STRAIGHT);
+	const SimpleRailObject rail({ 9, 5 }, RailLink{ ObjectAngles::EAST, ObjectAngles::WEST }, SimpleRailTypes::STRAIGHT);
+
 	ExpectNeighbors(rail, TileCoord_t{ 8, 5 }, std::nullopt);
 }
 
-TEST(SimpleRailObjectUnitTest, VerticalRailAtTopMapEdgeHasNoUpperNeighbor)
+TEST(SimpleRailObjectUnitTest, VerticalRailAtTopMapEdgeHasNoLeftNeighbor)
 {
-	const SimpleRailObject rail({ 5, 0 }, ObjectAngles::NORTH, SimpleRailTypes::STRAIGHT);
+	const SimpleRailObject rail({ 5, 0 }, RailLink{ ObjectAngles::NORTH, ObjectAngles::SOUTH }, SimpleRailTypes::STRAIGHT);
+
 	ExpectNeighbors(rail, std::nullopt, TileCoord_t{ 5, 1 });
 }
 
-TEST(SimpleRailObjectUnitTest, VerticalRailAtBottomMapEdgeHasNoLowerNeighbor)
+TEST(SimpleRailObjectUnitTest, VerticalRailAtBottomMapEdgeHasNoRightNeighbor)
 {
-	const SimpleRailObject rail({ 5, 9 }, ObjectAngles::NORTH, SimpleRailTypes::STRAIGHT);
+	const SimpleRailObject rail({ 5, 9 }, RailLink{ ObjectAngles::NORTH, ObjectAngles::SOUTH }, SimpleRailTypes::STRAIGHT);
+
 	ExpectNeighbors(rail, TileCoord_t{ 5, 8 }, std::nullopt);
 }
 
-TEST(SimpleRailObjectUnitTest, DiagonalRailAtMapEdgeHasMissingNeighbor)
+TEST(SimpleRailObjectUnitTest, DiagonalRailAtMapEdgeHasMissingPreviousNeighbor)
 {
-	const SimpleRailObject rail({ 0, 5 }, ObjectAngles::NORTHEAST, SimpleRailTypes::STRAIGHT);
+	const SimpleRailObject rail({ 0, 5 }, RailLink{ ObjectAngles::NORTHEAST, ObjectAngles::SOUTHWEST }, SimpleRailTypes::STRAIGHT);
+
 	ExpectNeighbors(rail, std::nullopt, TileCoord_t{ 1, 4 });
 }

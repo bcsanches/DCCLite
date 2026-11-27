@@ -4,6 +4,7 @@ set(LitePanelLib_SRCS
     MapObject.cpp
     MapObjectFactory.cpp
     Panel.cpp
+    RailLink.cpp
     RailObject.cpp
     TileMap.cpp
     Render/Color.cpp
@@ -21,6 +22,7 @@ set(LitePanelLib_HDRS
     MapObjectFactory.h
     Panel.h
     Point.h
+    RailLink.h
     RailObject.h
     Size.h
     TileMap.h

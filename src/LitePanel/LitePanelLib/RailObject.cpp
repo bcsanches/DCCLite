@@ -19,16 +19,19 @@
 
 namespace LitePanel
 {	
-	RailObject::RailObject(const TileCoord_t &position, ObjectAngles angle):
+	RailObject::RailObject(const TileCoord_t &position, const RailLink link):
 		MapObject(position),
-		m_tAngle(angle)
+		m_tLink{link}
 	{
 		//empty
 	}	
 
 	RailObject::RailObject(const rapidjson::Value &params) :
 		MapObject(params),
-		m_tAngle{params["angle"].GetInt()}
+		m_tLink{
+			static_cast<ObjectAngles>(params["previousTile"].GetInt()), 
+			static_cast<ObjectAngles>(params["nextTile"].GetInt())
+		}
 	{
 		//empty
 	}
@@ -37,11 +40,12 @@ namespace LitePanel
 	{
 		MapObject::OnSave(stream);
 
-		stream.AddIntValue("angle", static_cast<int>(m_tAngle));
+		stream.AddIntValue("previousTile", static_cast<int>(m_tLink.GetPrevious()));
+		stream.AddIntValue("nextTile", static_cast<int>(m_tLink.GetNext()));
 	}
 
-	SimpleRailObject::SimpleRailObject(const TileCoord_t& position, ObjectAngles angle, const SimpleRailTypes type, const BlockSplitTypes splitTypes) :
-		RailObject(position, angle),
+	SimpleRailObject::SimpleRailObject(const TileCoord_t& position, const RailLink link, const SimpleRailTypes type, const BlockSplitTypes splitTypes) :
+		RailObject(position, link),
 		m_kType(type),
 		m_kBlockSplit(splitTypes)
 	{
@@ -168,7 +172,7 @@ namespace LitePanel
 		auto halfTileSize = static_cast<float>(viewInfo.m_uHalfTileSize);
 		auto tileSize = static_cast<float>(viewInfo.m_uTileSize);
 
-		auto angle = this->GetAngle();
+		auto angle = m_tLink.GetNext();
 		
 		auto x = tileOrigin.m_tX + (halfTileSize / 2);
 		auto y = (m_kBlockSplit == BlockSplitTypes::TOP) ? tileOrigin.m_tY + 1 : tileOrigin.m_tY + tileSize - 1;
@@ -185,7 +189,7 @@ namespace LitePanel
 
 	void SimpleRailObject::DrawStraightRail(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const
 	{
-		DrawLine(renderer, viewInfo, tileOrigin, this->GetAngle());
+		DrawLine(renderer, viewInfo, tileOrigin, m_tLink.GetNext());
 
 		if (m_kBlockSplit != BlockSplitTypes::NONE)
 		{
@@ -195,7 +199,7 @@ namespace LitePanel
 
 	void SimpleRailObject::DrawCurveLeftRail(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const
 	{
-		auto angle = this->GetAngle();
+		auto angle = m_tLink.GetNext();
 		DrawHalfLine(renderer, viewInfo, tileOrigin, angle);
 
 		switch (angle)
@@ -228,7 +232,7 @@ namespace LitePanel
 
 	void SimpleRailObject::DrawCurveRightRail(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const
 	{
-		auto angle = this->GetAngle();
+		auto angle = m_tLink.GetNext();
 		DrawHalfLine(renderer, viewInfo, tileOrigin, angle);
 
 		switch (angle)
@@ -291,6 +295,25 @@ namespace LitePanel
 		};
 	}
 
+	static IntPoint_t GetPointForNeighbor(const IntPoint_t &position, const ObjectAngles neighbor)
+	{	
+		static constexpr std::array<IntPoint_t, 8> shift =
+		{
+			{
+				{1, 0},		//EAST
+				{1, -1},	//NORTHEAST
+				{0, -1},	//NORTH
+				{-1, -1},	//NORTHWEST
+				{-1, 0},	//WEST
+				{-1, 1},	//SOUTHWEST
+				{0, 1},		//SOUTH
+				{1, 1}		//SOUTHEAST
+			}
+		};		
+		
+		return position + shift[static_cast<int>(neighbor)];
+	}
+
 	NeighborPositions_t SimpleRailObject::GetNeighborPositions() const
 	{
 		const auto position = IntPoint_t{ GetPosition() };
@@ -298,79 +321,18 @@ namespace LitePanel
 		IntPoint_t first;
 		IntPoint_t second;
 
-		switch (m_kType)
+		const auto previousTile = m_tLink.GetPrevious();
+		const auto nextTile = m_tLink.GetPrevious();
+
+		if (((previousTile == ObjectAngles::NORTH) && (nextTile == ObjectAngles::SOUTH)) ||
+			((previousTile == ObjectAngles::SOUTH) && (nextTile == ObjectAngles::NORTH)))
 		{
-			case SimpleRailTypes::STRAIGHT:
-			case SimpleRailTypes::TERMINAL:
-			{
-				switch (GetAngle())
-				{
-					case ObjectAngles::EAST:
-					case ObjectAngles::WEST:
-						first = { position.m_tX - 1, position.m_tY };
-						second = { position.m_tX + 1, position.m_tY };
-						break;
-
-					case ObjectAngles::NORTH:
-					case ObjectAngles::SOUTH:
-						first = { position.m_tX, position.m_tY - 1 };
-						second = { position.m_tX, position.m_tY + 1 };
-						break;
-
-					case ObjectAngles::NORTHEAST:
-					case ObjectAngles::SOUTHWEST:
-						first = { position.m_tX - 1, position.m_tY + 1 };
-						second = { position.m_tX + 1, position.m_tY - 1 };
-						break;
-
-					case ObjectAngles::NORTHWEST:
-					case ObjectAngles::SOUTHEAST:
-						first = { position.m_tX - 1, position.m_tY - 1 };
-						second = { position.m_tX + 1, position.m_tY + 1 };
-						break;
-
-					default:
-						throw std::invalid_argument("[SimpleRailObject::GetNeighborPositions] Invalid angle");
-				}
-				break;
-			}
-
-			case SimpleRailTypes::CURVE_LEFT:
-			case SimpleRailTypes::CURVE_RIGHT:
-			{
-				const bool left = m_kType == SimpleRailTypes::CURVE_LEFT;
-
-				switch (GetAngle())
-				{
-					case ObjectAngles::EAST:
-						first = { position.m_tX - 1, position.m_tY };
-						second = { position.m_tX + 1, position.m_tY + (left ? -1 : 1) };
-						break;
-
-					case ObjectAngles::WEST:
-						first = { position.m_tX - 1, position.m_tY + (left ? 1 : -1) };
-						second = { position.m_tX + 1, position.m_tY };
-						break;
-
-					case ObjectAngles::NORTH:
-						first = { position.m_tX + (left ? -1 : 0), position.m_tY + (left ? -1 : 1) };
-						second = { position.m_tX + (left ? 0 : 1), position.m_tY + (left ? 1 : -1) };
-						break;
-
-					case ObjectAngles::SOUTH:
-						first = { position.m_tX + (left ? 0 : -1), position.m_tY + (left ? -1 : 1) };
-						second = { position.m_tX + (left ? 1 : 0), position.m_tY + (left ? 1 : -1) };
-						break;
-
-					default:
-						throw std::invalid_argument("[SimpleRailObject::GetNeighborPositions] Invalid curve angle");
-				}
-				break;
-			}
-
-			default:
-				throw std::invalid_argument("[SimpleRailObject::GetNeighborPositions] Invalid rail type");
+			//special case for vertical rail line, top is left, bottom is right
+			return { {position.m_tX, position.m_tY - 1}, {position.m_tX, position.m_tY + 1} };
 		}
+
+		first = GetPointForNeighbor(position, previousTile);
+		second = GetPointForNeighbor(position, nextTile);
 
 		if (first.m_tX > second.m_tX || (first.m_tX == second.m_tX && first.m_tY > second.m_tY))
 		{
@@ -402,24 +364,37 @@ namespace LitePanel
 		};
 	}
 
-	JunctionRailObject::JunctionRailObject(const TileCoord_t &position, ObjectAngles angle, const JunctionTypes type):
-		RailObject(position, angle),
+	static constexpr std::array<std::optional<ObjectAngles>, 8> g_kJunctionValidAngles =
+	{				
+		{
+			ObjectAngles::WEST, // From EAST
+			std::nullopt,		// From NORTHEAST
+			std::nullopt,		// From NORTH
+			std::nullopt,		// From NORTHWEST
+			ObjectAngles::EAST,	// From WEST
+			std::nullopt,		// From SOUTHWEST
+			std::nullopt,		// From SOUTH
+			std::nullopt,		// From SOUTHEAST
+		}
+	};
+
+	JunctionRailObject::JunctionRailObject(const TileCoord_t &position, const RailLink link, const JunctionTypes type):
+		RailObject(position, link),
 		m_tType(type)
 	{
-		switch (angle)
-		{
-			case ObjectAngles::EAST:
-			case ObjectAngles::WEST:
-				break;
+		const auto index = static_cast<int>(link.GetPrevious());
 
-			default:
-				throw std::invalid_argument(fmt::format("[JunctionRailObject] Invalid angle: {}", magic_enum::enum_name(angle)));
-		}
+		if (index >= g_kJunctionValidAngles.size())
+			throw std::out_of_range(fmt::format("[JunctionRailObject] Invalid angle : {}", magic_enum::enum_name(link.GetPrevious())));
+
+		const auto angle = g_kJunctionValidAngles[index];
+		if(!angle.has_value())
+			throw std::out_of_range(fmt::format("[JunctionRailObject] Invalid angle : {}", magic_enum::enum_name(link.GetPrevious())));
 	}	
 
 	void JunctionRailObject::Draw(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const
-	{
-		auto angle = this->GetAngle();
+	{		
+		const auto angle = m_tLink.GetNext();
 		DrawLine(renderer, viewInfo, tileOrigin, angle);
 
 		switch(angle)

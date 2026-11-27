@@ -107,11 +107,11 @@ namespace dcclite::PanelEditor
 		public:
 			InsertSimpleRailCmd(
 				const LitePanel::TileCoord_t &position,
-				LitePanel::ObjectAngles angle,
+				const LitePanel::RailLink link,
 				const LitePanel::SimpleRailTypes type,
 				const LitePanel::BlockSplitTypes splitTypes = LitePanel::BlockSplitTypes::NONE):
 				m_tPosition{ position },
-				m_kAngle{angle},
+				m_tLink{ link },
 				m_kType{ type },
 				m_kSplit{ splitTypes }
 			{
@@ -125,7 +125,7 @@ namespace dcclite::PanelEditor
 					manager.RunCmd(std::make_unique<DeleteRailCmd>(m_tPosition));
 				}
 
-				panel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(m_tPosition, m_kAngle, m_kType, m_kSplit));
+				panel.RegisterRail(std::make_unique<LitePanel::SimpleRailObject>(m_tPosition, m_tLink, m_kType, m_kSplit));
 			}
 
 			void Undo(LitePanel::Panel &panel, EditCommandManager &manager) override
@@ -134,18 +134,18 @@ namespace dcclite::PanelEditor
 			}
 
 		private:
-			LitePanel::TileCoord_t m_tPosition;
-			LitePanel::ObjectAngles m_kAngle;
-			LitePanel::SimpleRailTypes m_kType;
-			LitePanel::BlockSplitTypes m_kSplit;
+			LitePanel::TileCoord_t		m_tPosition;
+			LitePanel::RailLink			m_tLink;
+			LitePanel::SimpleRailTypes	m_kType;
+			LitePanel::BlockSplitTypes	m_kSplit;
 	};
 
 	class SimpleRailObjectToolButton : public ToolButton
 	{
 		public:
-			SimpleRailObjectToolButton(const LitePanel::TileCoord_t &position, LitePanel::ObjectAngles angle, LitePanel::SimpleRailTypes railType) :
+			SimpleRailObjectToolButton(const LitePanel::TileCoord_t &position, LitePanel::RailLink link, LitePanel::SimpleRailTypes railType) :
 				ToolButton{ position },
-				m_kAngle{ angle },
+				m_tLink{ link },
 				m_kType{ railType }
 			{
 				//empty
@@ -155,7 +155,7 @@ namespace dcclite::PanelEditor
 			{
 				return std::make_unique<LitePanel::SimpleRailObject>(
 					LitePanel::TileCoord_t{ 0, 0 },
-					m_kAngle,
+					m_tLink,
 					m_kType
 				);
 			}
@@ -164,23 +164,23 @@ namespace dcclite::PanelEditor
 			{
 				return std::make_unique<InsertSimpleRailCmd>(
 					position,
-					m_kAngle,
+					m_tLink,
 					m_kType,
 					LitePanel::BlockSplitTypes::NONE
 				);
 			}
 
 		private:
-			LitePanel::ObjectAngles		m_kAngle;
+			LitePanel::RailLink			m_tLink;
 			LitePanel::SimpleRailTypes	m_kType;
 	};
 
 	class JunctionRailObjectToolButton : public ToolButton
 	{
 		public:
-			JunctionRailObjectToolButton(const LitePanel::TileCoord_t &position, LitePanel::ObjectAngles angle, LitePanel::JunctionTypes junctionType) :
+			JunctionRailObjectToolButton(const LitePanel::TileCoord_t &position, LitePanel::RailLink link, LitePanel::JunctionTypes junctionType) :
 				ToolButton{ position },
-				m_kAngle{ angle },
+				m_tLink{ link },
 				m_kType{ junctionType }
 			{
 				//empty
@@ -190,13 +190,13 @@ namespace dcclite::PanelEditor
 			{
 				return std::make_unique<LitePanel::JunctionRailObject>(
 					LitePanel::TileCoord_t{ 0, 0 },
-					m_kAngle,
+					m_tLink,
 					m_kType
 				);
 			}
 
 		private:
-			LitePanel::ObjectAngles		m_kAngle;
+			LitePanel::RailLink			m_tLink;
 			LitePanel::JunctionTypes	m_kType;
 	};
 
@@ -222,7 +222,7 @@ namespace dcclite::PanelEditor
 		m_clToolsMap.RegisterObject(
 			std::make_unique<SimpleRailObjectToolButton>(
 				LitePanel::TileCoord_t{ 0, 0 },
-				LitePanel::ObjectAngles::EAST,
+				LitePanel::RailLink{ LitePanel::ObjectAngles::WEST, LitePanel::ObjectAngles::EAST },
 				LitePanel::SimpleRailTypes::STRAIGHT
 			),
 			kLAYER_BUTTON
@@ -231,7 +231,7 @@ namespace dcclite::PanelEditor
 		m_clToolsMap.RegisterObject(
 			std::make_unique<SimpleRailObjectToolButton>(
 				LitePanel::TileCoord_t{ 1, 0 },
-				LitePanel::ObjectAngles::NORTH,
+				LitePanel::RailLink{ LitePanel::ObjectAngles::SOUTH, LitePanel::ObjectAngles::NORTH },				
 				LitePanel::SimpleRailTypes::STRAIGHT
 			),
 			kLAYER_BUTTON
@@ -240,7 +240,7 @@ namespace dcclite::PanelEditor
 		m_clToolsMap.RegisterObject(
 			std::make_unique<SimpleRailObjectToolButton>(
 				LitePanel::TileCoord_t{ 0, 1 },
-				LitePanel::ObjectAngles::SOUTHEAST,
+				LitePanel::RailLink{ LitePanel::ObjectAngles::NORTHWEST, LitePanel::ObjectAngles::SOUTHEAST },				
 				LitePanel::SimpleRailTypes::STRAIGHT
 			),
 			kLAYER_BUTTON
@@ -249,7 +249,7 @@ namespace dcclite::PanelEditor
 		m_clToolsMap.RegisterObject(
 			std::make_unique<SimpleRailObjectToolButton>(
 				LitePanel::TileCoord_t{ 1, 1 },
-				LitePanel::ObjectAngles::NORTHEAST,
+				LitePanel::RailLink{ LitePanel::ObjectAngles::SOUTHWEST, LitePanel::ObjectAngles::NORTHEAST },				
 				LitePanel::SimpleRailTypes::STRAIGHT
 			),
 			kLAYER_BUTTON
@@ -258,7 +258,7 @@ namespace dcclite::PanelEditor
 		m_clToolsMap.RegisterObject(
 			std::make_unique<SimpleRailObjectToolButton>(
 				LitePanel::TileCoord_t{ 0, 2 },
-				LitePanel::ObjectAngles::WEST,
+				LitePanel::RailLink{ LitePanel::ObjectAngles::SOUTHEAST, LitePanel::ObjectAngles::WEST },				
 				LitePanel::SimpleRailTypes::CURVE_RIGHT
 			),
 			kLAYER_BUTTON
@@ -267,7 +267,7 @@ namespace dcclite::PanelEditor
 		m_clToolsMap.RegisterObject(
 			std::make_unique<SimpleRailObjectToolButton>(
 				LitePanel::TileCoord_t{ 1, 2 },
-				LitePanel::ObjectAngles::EAST,
+				LitePanel::RailLink{ LitePanel::ObjectAngles::NORTHWEST, LitePanel::ObjectAngles::EAST },
 				LitePanel::SimpleRailTypes::CURVE_LEFT
 			),
 			kLAYER_BUTTON
@@ -276,7 +276,7 @@ namespace dcclite::PanelEditor
 		m_clToolsMap.RegisterObject(
 			std::make_unique<SimpleRailObjectToolButton>(
 				LitePanel::TileCoord_t{ 0, 3 },
-				LitePanel::ObjectAngles::WEST,
+				LitePanel::RailLink{ LitePanel::ObjectAngles::SOUTHEAST, LitePanel::ObjectAngles::WEST },				
 				LitePanel::SimpleRailTypes::CURVE_LEFT
 			),
 			kLAYER_BUTTON
@@ -285,7 +285,7 @@ namespace dcclite::PanelEditor
 		m_clToolsMap.RegisterObject(
 			std::make_unique<SimpleRailObjectToolButton>(
 				LitePanel::TileCoord_t{ 1, 3 },
-				LitePanel::ObjectAngles::EAST,
+				LitePanel::RailLink{ LitePanel::ObjectAngles::SOUTHWEST, LitePanel::ObjectAngles::EAST },
 				LitePanel::SimpleRailTypes::CURVE_RIGHT
 			),
 			kLAYER_BUTTON
@@ -294,7 +294,7 @@ namespace dcclite::PanelEditor
 		m_clToolsMap.RegisterObject(
 			std::make_unique<JunctionRailObjectToolButton>(
 				LitePanel::TileCoord_t{ 0, 4 },
-				LitePanel::ObjectAngles::WEST,
+				LitePanel::RailLink{ LitePanel::ObjectAngles::EAST, LitePanel::ObjectAngles::WEST },
 				LitePanel::JunctionTypes::RIGHT_TURNOUT
 			),
 			kLAYER_BUTTON
@@ -303,7 +303,7 @@ namespace dcclite::PanelEditor
 		m_clToolsMap.RegisterObject(
 			std::make_unique<JunctionRailObjectToolButton>(
 				LitePanel::TileCoord_t{ 1, 4 },
-				LitePanel::ObjectAngles::EAST,
+				LitePanel::RailLink{ LitePanel::ObjectAngles::WEST, LitePanel::ObjectAngles::EAST },				
 				LitePanel::JunctionTypes::LEFT_TURNOUT
 			),
 			kLAYER_BUTTON
@@ -312,7 +312,7 @@ namespace dcclite::PanelEditor
 		m_clToolsMap.RegisterObject(
 			std::make_unique<JunctionRailObjectToolButton>(
 				LitePanel::TileCoord_t{ 0, 5 },
-				LitePanel::ObjectAngles::WEST,
+				LitePanel::RailLink{ LitePanel::ObjectAngles::EAST, LitePanel::ObjectAngles::WEST },
 				LitePanel::JunctionTypes::LEFT_TURNOUT
 			),
 			kLAYER_BUTTON
@@ -321,11 +321,11 @@ namespace dcclite::PanelEditor
 		m_clToolsMap.RegisterObject(
 			std::make_unique<JunctionRailObjectToolButton>(
 				LitePanel::TileCoord_t{ 1, 5 },
-				LitePanel::ObjectAngles::EAST,
+				LitePanel::RailLink{ LitePanel::ObjectAngles::WEST, LitePanel::ObjectAngles::EAST },
 				LitePanel::JunctionTypes::RIGHT_TURNOUT
 			),
 			kLAYER_BUTTON
-		);			
+		);
 
 		auto &mapSize = m_clToolsMap.GetSize();
 

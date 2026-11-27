@@ -2,6 +2,7 @@ package_add_test(LitePanelLibUnitTest
 	BlockIndexUnitTest.cpp
     BlockUnitTest.cpp
 	BlockManagerUnitTest.cpp
+    RailLinkTest.cpp
 	SimpleRailObjectUnitTest.cpp
 )
 

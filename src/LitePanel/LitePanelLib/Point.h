@@ -28,46 +28,46 @@ namespace LitePanel
 		Point(const Point &) = default;
 
 		template <typename Y>
-		inline Point(const Point<Y> &rhs) noexcept:
+		constexpr Point(const Point<Y> &rhs) noexcept:
 			m_tX{rhs.m_tX},
 			m_tY{rhs.m_tY}
 		{
 			//empty
 		}
 
-		inline Point(T x, T y) noexcept:
+		constexpr Point(T x, T y) noexcept:
 			m_tX(x),
 			m_tY(y)
 		{
 			//empty
 		}
 
-		inline const Point operator/(const T num) const noexcept
+		constexpr const Point operator/(const T num) const noexcept
 		{
 			return Point(m_tX / num, m_tY / num);
 		}
 		
-		inline const Point operator*(const T num) const noexcept
+		constexpr const Point operator*(const T num) const noexcept
 		{
 			return Point{ m_tX * num, m_tY * num };
 		}
 
-		inline const Point operator*(const Point &rhs) const noexcept
+		constexpr const Point operator*(const Point &rhs) const noexcept
 		{
 			return Point{ m_tX * rhs.m_tX, m_tY * rhs.m_tY };
 		}
 
-		inline const Point operator+(const Point &rhs) const noexcept
+		constexpr const Point operator+(const Point &rhs) const noexcept
 		{
 			return Point(m_tX + rhs.m_tX, m_tY + rhs.m_tY);
 		}
 
-		inline const Point operator-(const Point &rhs) const noexcept
+		constexpr const Point operator-(const Point &rhs) const noexcept
 		{
 			return Point(m_tX - rhs.m_tX, m_tY - rhs.m_tY);
 		}
 
-		inline const Point &operator+=(const Point &rhs) noexcept
+		constexpr const Point &operator+=(const Point &rhs) noexcept
 		{
 			m_tX += rhs.m_tX;
 			m_tY += rhs.m_tY;
@@ -75,7 +75,7 @@ namespace LitePanel
 			return *this;
 		}
 
-		inline Point operator+(const Size<T> &rhs) const noexcept
+		constexpr Point operator+(const Size<T> &rhs) const noexcept
 		{
 			return {
 				m_tX + rhs.m_tWidth,
@@ -83,12 +83,12 @@ namespace LitePanel
 			};
 		}
 
-		inline bool operator==(const Point& rhs) const noexcept
+		constexpr bool operator==(const Point& rhs) const noexcept
 		{
 			return (m_tX == rhs.m_tX) && (m_tY == rhs.m_tY);
 		}
 
-		inline bool operator!=(const Point &rhs) const noexcept
+		constexpr bool operator!=(const Point &rhs) const noexcept
 		{
 			return (m_tX != rhs.m_tX) || (m_tY != rhs.m_tY);
 		}
