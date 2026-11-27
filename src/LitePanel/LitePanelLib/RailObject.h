@@ -87,9 +87,11 @@ namespace LitePanel
 			}
 
 			std::optional<TileCoord_t> GetLeftNeighbor(const TileMapSize_t &mapSize) const;
-			std::optional<TileCoord_t> GetRightNeighbor(const TileMapSize_t &mapSize) const;
+			std::optional<TileCoord_t> GetRightNeighbor(const TileMapSize_t &mapSize) const;			
 
 			NeighborTiles_t GetNeighborTiles(const TileMapSize_t &mapSize) const;
+
+			std::optional<ObjectAngles> GetSplitAngle() const noexcept;
 
 			void Draw(Render::IRenderer &renderer, const Render::ViewInfo &viewInfo, const FloatPoint_t &tileOrigin) const override;
 

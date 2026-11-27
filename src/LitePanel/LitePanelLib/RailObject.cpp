@@ -287,6 +287,27 @@ namespace LitePanel
 		};
 	}
 
+	std::optional<ObjectAngles> SimpleRailObject::GetSplitAngle() const noexcept
+	{
+		if (m_kBlockSplit == BlockSplitTypes::NONE)
+			return std::nullopt;
+
+		const auto previous = m_tLink.GetPrevious();
+		const auto next = m_tLink.GetNext();
+
+		// Curves with a NORTH or SOUTH endpoint.
+		if (previous == ObjectAngles::NORTH || next == ObjectAngles::NORTH)
+			return ObjectAngles::NORTH;
+
+		if (previous == ObjectAngles::SOUTH || next == ObjectAngles::SOUTH)
+			return ObjectAngles::SOUTH;
+
+		// Horizontal straight rails.
+		return (m_kBlockSplit == BlockSplitTypes::LEFT)
+			? ObjectAngles::WEST
+			: ObjectAngles::EAST;
+	}
+
 	static constexpr std::array<std::optional<ObjectAngles>, 8> g_kJunctionValidAngles =
 	{				
 		{
