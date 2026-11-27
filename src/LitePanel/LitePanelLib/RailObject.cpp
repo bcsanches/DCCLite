@@ -324,13 +324,6 @@ namespace LitePanel
 		const auto previousTile = m_tLink.GetPrevious();
 		const auto nextTile = m_tLink.GetNext();
 
-		if (((previousTile == ObjectAngles::NORTH) && (nextTile == ObjectAngles::SOUTH)) ||
-			((previousTile == ObjectAngles::SOUTH) && (nextTile == ObjectAngles::NORTH)))
-		{
-			//special case for vertical rail line, top is left, bottom is right
-			return { {position.m_tX, position.m_tY - 1}, {position.m_tX, position.m_tY + 1} };
-		}
-
 		first = GetPointForNeighbor(position, previousTile);
 		second = GetPointForNeighbor(position, nextTile);
 
