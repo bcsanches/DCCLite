@@ -322,7 +322,7 @@ namespace LitePanel
 		IntPoint_t second;
 
 		const auto previousTile = m_tLink.GetPrevious();
-		const auto nextTile = m_tLink.GetPrevious();
+		const auto nextTile = m_tLink.GetNext();
 
 		if (((previousTile == ObjectAngles::NORTH) && (nextTile == ObjectAngles::SOUTH)) ||
 			((previousTile == ObjectAngles::SOUTH) && (nextTile == ObjectAngles::NORTH)))
